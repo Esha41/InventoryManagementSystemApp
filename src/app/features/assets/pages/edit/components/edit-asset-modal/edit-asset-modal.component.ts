@@ -9,6 +9,7 @@ import { ToastService } from '@services/toast.service';
 import { AssetDto, UpdateAssetDto } from '@models/asset.model';
 import { ButtonComponent } from '@components/button/button.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { formatDateForInput } from '@utils/format.utils';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -93,8 +94,7 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
     // Format dates for input type="date" (YYYY-MM-DD)
     const formatDate = (date: Date | string | undefined) => {
       if (!date) return null;
-      const d = new Date(date);
-      return d.toISOString().split('T')[0];
+      return formatDateForInput(date) || null;
     };
 
     this.editForm.patchValue({

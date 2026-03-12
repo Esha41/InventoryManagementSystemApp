@@ -1,7 +1,7 @@
 
 export const APP_CONSTANTS = {
   APP_NAME: 'Ettad',
-  VERSION: '1.1.2',
+  VERSION: '1.2.0',
   DEFAULT_PAGE_SIZE: 10,
   PAGE_SIZE_OPTIONS: [10, 25, 50, 100],
 } as const;
@@ -189,6 +189,7 @@ export const API_ENDPOINTS = {
   // Email Configuration
   EMAIL_CONFIGURATION: {
     BASE: '/EmailSettings',
+    IS_ENABLED: '/EmailSettings/IsEnabled',
   },
 
   // LDAP Settings

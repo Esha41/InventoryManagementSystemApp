@@ -41,11 +41,16 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           errorMessage = `Server Error: ${error.status} - ${error.statusText}`;
         }
 
-        configService.logError(`Server-side error (${error.status}):`, {
-          message: errorMessage,
-          details: errorDetails,
-          url: error.url
-        });
+        // Skip logging for expected 403/404 on EmailSettings (non-admin or config not set)
+        const skipLog = (error.status === 403 || error.status === 404) &&
+          error.url?.includes('/EmailSettings');
+        if (!skipLog) {
+          configService.logError(`Server-side error (${error.status}):`, {
+            message: errorMessage,
+            details: errorDetails,
+            url: error.url
+          });
+        }
       }
 
       // Create enhanced error object

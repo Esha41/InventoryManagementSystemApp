@@ -1,5 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
+import { APIOperationResponse } from '@models/api-response.model';
 
 /**
  * Known backend error message patterns that need translation
@@ -24,6 +25,11 @@ const TRANSLATABLE_ERROR_PATTERNS: { pattern: RegExp; translationKey: string; ex
     pattern: /IX_BaseItems_ItemNo|(?:Cannot insert )?duplicate key.*?(?:BaseItems|ItemNo)/i,
     translationKey: 'addAsset.errors.itemNoAlreadyExists',
     extractParams: () => ({})
+  },
+  {
+    pattern: /Assets without serial numbers cannot be supplied.*/i,
+    translationKey: 'weaponSupplyReview.assetsWithoutSerialCannotBeSupplied',
+    extractParams: () => ({})
   }
 ];
 
@@ -38,21 +44,34 @@ export class ErrorHandler {
   static extractErrorMessage(error: unknown, defaultMessage: string): string {
     if (!error) return defaultMessage;
 
+    // Check for userMessage from error interceptor (enhanced error)
+    if (typeof error === 'object' && error !== null) {
+      const err = error as Record<string, unknown>;
+      const userMsg = err['userMessage'];
+      if (typeof userMsg === 'string' && userMsg.trim()) return userMsg;
+    }
+
     // Helper to extract from a potential body object
-    const extractFromBody = (body: any): string | null => {
+    const extractFromBody = (body: unknown): string | null => {
       if (!body) return null;
+      if (typeof body === 'string') return body;
+      if (typeof body !== 'object') return null;
+      const obj = body as Record<string, unknown>;
       // Case: { message: { message: "..." } } - Nested project-specific structure
-      if (typeof body.message === 'object' && body.message !== null && body.message.message) {
-        return String(body.message.message);
+      const msg = obj['message'];
+      if (typeof msg === 'object' && msg !== null && 'message' in msg) {
+        const nested = (msg as Record<string, unknown>)['message'];
+        if (typeof nested === 'string') return nested;
       }
       // Case: { message: "..." } - Standard message property
-      if (typeof body.message === 'string') return body.message;
+      if (typeof msg === 'string') return msg;
       // Case: { errors: ["..."] } - Validation errors
-      if (body.errors) {
-        const errs = Array.isArray(body.errors) ? body.errors : Object.values(body.errors).flat();
-        if (errs.length > 0) return String(errs[0]);
+      const errs = obj['errors'];
+      if (errs) {
+        const arr = Array.isArray(errs) ? errs : Object.values(errs as object).flat();
+        if (arr.length > 0) return String(arr[0]);
       }
-      return typeof body === 'string' ? body : null;
+      return null;
     };
 
     // 1. Handle HttpErrorResponse (Standard instance)
@@ -67,11 +86,11 @@ export class ErrorHandler {
 
     // 3. Handle Generic Objects (APIOperationResponse or plain objects)
     if (typeof error === 'object' && error !== null) {
-      const errObj = error as any;
+      const errObj = error as Record<string, unknown>;
 
       // If it looks like an HttpErrorResponse shape (has .error property), check that first
-      if (errObj.error) {
-        const nestedMsg = extractFromBody(errObj.error);
+      if (errObj['error']) {
+        const nestedMsg = extractFromBody(errObj['error']);
         if (nestedMsg) return nestedMsg;
       }
 
@@ -83,7 +102,8 @@ export class ErrorHandler {
       }
 
       // Fallback for objects with a generic message string
-      if (errObj.message && typeof errObj.message === 'string') return errObj.message;
+      const msg = errObj['message'];
+      if (typeof msg === 'string') return msg;
     }
 
     // 4. Handle direct strings
@@ -121,6 +141,40 @@ export class ErrorHandler {
   static extractAndTranslateErrorMessage(error: unknown, defaultMessage: string, translate?: TranslateService): string {
     const message = this.extractErrorMessage(error, defaultMessage);
     return this.translateErrorMessage(message, translate);
+  }
+
+  /**
+   * Resolves error message from API response or HTTP error (for order submission flows)
+   */
+  static resolveOrderSubmissionError(
+    response: APIOperationResponse<unknown> | undefined,
+    error: unknown,
+    defaultMessage = 'Failed to submit order. Please try again.'
+  ): string {
+    if (response && typeof response === 'object') {
+      const resp = response as unknown as Record<string, unknown>;
+      const msg = resp['message'];
+      if (typeof msg === 'string') return msg;
+      const msgAlt = resp['Message'];
+      if (typeof msgAlt === 'string') return msgAlt;
+      const errs = resp['errors'];
+      if (errs && Array.isArray(errs) && errs.length > 0) {
+        const first = errs[0];
+        if (typeof first === 'object' && first !== null && 'description' in first) {
+          return String((first as Record<string, unknown>)['description']);
+        }
+        return String(first);
+      }
+      if (typeof errs === 'object' && errs !== null && !Array.isArray(errs)) {
+        const keys = Object.keys(errs as Record<string, unknown>);
+        if (keys.length > 0) {
+          const val = (errs as Record<string, unknown>)[keys[0]];
+          if (Array.isArray(val) && val.length > 0) return String(val[0]);
+          if (typeof val === 'string') return val;
+        }
+      }
+    }
+    return this.extractErrorMessage(error, defaultMessage);
   }
 
   /**

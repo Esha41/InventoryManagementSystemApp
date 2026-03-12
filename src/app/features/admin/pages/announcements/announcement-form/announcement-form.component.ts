@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -7,8 +7,11 @@ import { AnnouncementService } from '@services/announcement.service';
 import { BackendUserService } from '@services/backend-user.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
-import { ErrorHandlingService } from '@services/error-handling.service';
+import { Subject, takeUntil } from 'rxjs';
+import { ErrorHandler } from '@utils/error-handler.utils';
+import { formatDateForInput } from '@utils/format.utils';
 import { Priority } from '@utils/priority.utils';
+import { AnnouncementDeliveryType } from '@models/announcement.model';
 import { RoleDto } from '@models/backend-user.model';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 
@@ -17,17 +20,20 @@ import { DropdownComponent } from '@components/dropdown/dropdown.component';
     standalone: true,
     imports: [CommonModule, ReactiveFormsModule, TranslatePipe, DropdownComponent],
     templateUrl: './announcement-form.component.html',
-    styleUrls: ['./announcement-form.component.css']
+    styleUrls: ['./announcement-form.component.css'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AnnouncementFormComponent implements OnInit {
+export class AnnouncementFormComponent implements OnInit, OnDestroy {
     private readonly fb = inject(FormBuilder);
     private readonly announcementService = inject(AnnouncementService);
     private readonly userService = inject(BackendUserService);
     private readonly toastService = inject(ToastService);
     private readonly translationService = inject(TranslationService);
-    private readonly errorService = inject(ErrorHandlingService);
     private readonly router = inject(Router);
     private readonly route = inject(ActivatedRoute);
+    private readonly cdr = inject(ChangeDetectorRef);
+
+    private readonly destroy$ = new Subject<void>();
 
     form!: FormGroup;
     loading = signal(false);
@@ -36,11 +42,16 @@ export class AnnouncementFormComponent implements OnInit {
     announcementId: number | null = null;
     roles = signal<RoleDto[]>([]);
 
-    // Priority options
     priorities = [
         { value: Priority.Normal, label: 'Normal', colorClass: 'text-green-600' },
         { value: Priority.Urgent, label: 'Urgent', colorClass: 'text-orange-600' },
         { value: Priority.VeryUrgent, label: 'VeryUrgent', colorClass: 'text-red-600' }
+    ];
+
+    deliveryTypes = [
+        { value: AnnouncementDeliveryType.Banner, label: 'Banner', labelKey: 'announcements.deliveryTypes.banner' },
+        { value: AnnouncementDeliveryType.Notification, label: 'Notification', labelKey: 'announcements.deliveryTypes.notification' },
+        { value: AnnouncementDeliveryType.Both, label: 'Both', labelKey: 'announcements.deliveryTypes.both' }
     ];
 
     ngOnInit(): void {
@@ -55,12 +66,18 @@ export class AnnouncementFormComponent implements OnInit {
         }
     }
 
+    ngOnDestroy(): void {
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
+
     initForm(): void {
         this.form = this.fb.group({
             message: ['', [Validators.required, Validators.maxLength(500)]],
             priority: [Priority.Normal, Validators.required],
+            deliveryType: [AnnouncementDeliveryType.Banner, Validators.required],
             isDismissable: [true],
-            startDate: [new Date().toISOString().split('T')[0], Validators.required],
+            startDate: [formatDateForInput(new Date()), Validators.required],
             endDate: [''],
             targetRoles: [ [] ],
             isActive: [true]
@@ -68,36 +85,42 @@ export class AnnouncementFormComponent implements OnInit {
     }
 
     loadRoles(): void {
-        this.userService.getRoles().subscribe({
+        this.userService.getRoles().pipe(takeUntil(this.destroy$)).subscribe({
             next: (roles) => {
                 this.roles.set(roles);
+                this.cdr.markForCheck();
             },
             error: (error) => {
                 console.error('Failed to load roles:', error);
+                this.cdr.markForCheck();
             }
         });
     }
 
     loadAnnouncement(id: number): void {
         this.loading.set(true);
-        this.announcementService.getById(id).subscribe({
+        this.cdr.markForCheck();
+        this.announcementService.getById(id).pipe(takeUntil(this.destroy$)).subscribe({
             next: (response) => {
                 const announcement = response.data;
                 this.form.patchValue({
                     message: announcement.message,
                     priority: announcement.priority,
+                    deliveryType: announcement.deliveryType ?? AnnouncementDeliveryType.Banner,
                     isDismissable: announcement.isDismissable,
-                    startDate: new Date(announcement.startDate).toISOString().split('T')[0],
-                    endDate: announcement.endDate ? new Date(announcement.endDate).toISOString().split('T')[0] : '',
+                    startDate: formatDateForInput(announcement.startDate),
+                    endDate: announcement.endDate ? formatDateForInput(announcement.endDate) : '',
                     targetRoles: announcement.targetRoles ?? [],
                     isActive: announcement.isActive
                 });
                 this.loading.set(false);
+                this.cdr.markForCheck();
             },
             error: (error) => {
-                const message = this.errorService.resolveHttpErrorMessage(error);
+                const message = ErrorHandler.extractErrorMessage(error, 'Failed to load announcement');
                 this.toastService.error(message);
                 this.loading.set(false);
+                this.cdr.markForCheck();
                 this.router.navigate(['/admin/announcements']);
             }
         });
@@ -110,12 +133,17 @@ export class AnnouncementFormComponent implements OnInit {
         }
 
         this.submitting.set(true);
+        this.cdr.markForCheck();
         const formValue = this.form.value;
 
-        const targetRoles = Array.isArray(formValue.targetRoles) ? formValue.targetRoles : [];
+        const rawRoles = Array.isArray(formValue.targetRoles) ? formValue.targetRoles : [];
+        const targetRoles = rawRoles
+            .filter((id: unknown): id is string => id != null && String(id).trim() !== '')
+            .map((id: unknown) => String(id));
         const dto = {
             message: formValue.message,
             priority: formValue.priority,
+            deliveryType: formValue.deliveryType,
             isDismissable: formValue.isDismissable,
             startDate: formValue.startDate,
             endDate: formValue.endDate || null,
@@ -127,19 +155,21 @@ export class AnnouncementFormComponent implements OnInit {
             ? this.announcementService.update(this.announcementId, dto)
             : this.announcementService.create(dto);
 
-        request$.subscribe({
+        request$.pipe(takeUntil(this.destroy$)).subscribe({
             next: () => {
                 this.announcementService.notifyActiveAnnouncementsChanged();
                 const message = this.isEditMode()
                     ? this.translationService.getTranslation('announcements.updateSuccess')
                     : this.translationService.getTranslation('announcements.createSuccess');
                 this.toastService.success(message);
+                this.cdr.markForCheck();
                 this.router.navigate(['/admin/announcements']);
             },
             error: (error) => {
-                const message = this.errorService.resolveHttpErrorMessage(error);
+                const message = ErrorHandler.extractErrorMessage(error, 'Failed to save announcement');
                 this.toastService.error(message);
                 this.submitting.set(false);
+                this.cdr.markForCheck();
             }
         });
     }
@@ -169,6 +199,12 @@ export class AnnouncementFormComponent implements OnInit {
     getPriorityOptionLabel(option: { value?: number; label?: string } | number): string {
         const opt = option as { value?: number; label?: string };
         const label = opt?.label ?? 'Normal';
-        return this.translationService.getTranslation('common.priorityLevels.' + label);
+        return this.translationService.getTranslation('announcements.priorityLevels.' + label);
+    }
+
+    getDeliveryTypeOptionLabel = (option: { value?: number; label?: string; labelKey?: string } | number): string => {
+        const opt = option as { value?: number; label?: string; labelKey?: string };
+        const key = opt?.labelKey ?? 'announcements.deliveryTypes.banner';
+        return this.translationService.getTranslation(key);
     }
 }

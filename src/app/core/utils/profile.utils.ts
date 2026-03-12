@@ -35,6 +35,21 @@ export function getRolesString(user: AuthenticatedUser | null, translateService:
 }
 
 /**
+ * Get localized department name
+ * @param user - AuthenticatedUser object
+ * @param translateService - Translation service for language detection
+ * @returns Localized department name or empty string
+ */
+export function getDepartmentName(user: AuthenticatedUser | null, translateService: TranslateService): string {
+  if (!user) return '';
+  const currentLang = translateService.currentLang || 'en';
+  if (currentLang === 'ar' && user.departmentNameAr) {
+    return user.departmentNameAr;
+  }
+  return user.departmentNameEn || user.departmentName || '';
+}
+
+/**
  * Get localized rank name
  * @param user - AuthenticatedUser object
  * @param translateService - Translation service for language detection

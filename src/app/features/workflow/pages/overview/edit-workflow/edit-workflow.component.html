@@ -118,10 +118,17 @@
                   <th class="px-4 py-3 text-end" style="min-width: 100px;"></th>
                 </tr>
               </thead>
-              <tbody>
-                <tr *ngFor="let s of editSteps; let i = index"
+              <tbody cdkDropList (cdkDropListDropped)="onStepDrop($event)">
+                <tr *ngFor="let s of editSteps; trackBy: trackByIndex; let i = index" cdkDrag
                   class="border-t-2 border-[var(--color-border)] hover:bg-[var(--color-background-hover)] transition-colors">
-                  <td class="px-4 py-3 text-sm">{{ orderLabel(i + 1) }}</td>
+                  <td class="px-4 py-3 text-sm">
+                    <span class="flex items-center gap-2">
+                      <span cdkDragHandle class="cursor-grab active:cursor-grabbing touch-none inline-flex text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
+                        <lucide-angular [img]="GripVertical" class="h-4 w-4"></lucide-angular>
+                      </span>
+                      {{ orderLabel(i + 1) }}
+                    </span>
+                  </td>
                   <td class="px-4 py-3">
                     <app-dropdown class="w-full" [(ngModel)]="s.roleId" name="erole-{{i}}" [options]="roles"
                       optionLabel="name" optionValue="id" [placeholder]="'workflow.selectRole' | translate">

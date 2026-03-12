@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map, forkJoin, catchError, of, switchMap } from 'rxjs';
 import { ConfigService } from './config.service';
 import { ApiService } from './api.service';
@@ -43,7 +43,7 @@ export class WeaponService implements IImportableService {
         return response;
       }),
       catchError(error => {
-        console.error('Error fetching paginated weapons:', error);
+        this.config.logError('Error fetching paginated weapons', error);
         throw error;
       })
     );
@@ -107,14 +107,10 @@ export class WeaponService implements IImportableService {
   }
 
   // Get file as blob
+  // Auth interceptor handles Authorization header for all HttpClient requests
   getFileBlob(fileId: number): Observable<Blob> {
     const imageUrl = this.fileUploadService.getFileDownloadUrl(fileId);
-    const token = localStorage.getItem('auth_token');
-    let headers = new HttpHeaders();
-    if (token) {
-      headers = headers.set('Authorization', `Bearer ${token}`);
-    }
-    return this.http.get(imageUrl, { headers, responseType: 'blob' });
+    return this.http.get(imageUrl, { responseType: 'blob' });
   }
 
   // Delete a file
@@ -135,7 +131,7 @@ export class WeaponService implements IImportableService {
       return this.deleteFile(existingFileId).pipe(
         switchMap(() => upload$),
         catchError((deleteErr) => {
-          console.warn('Failed to delete old image, proceeding with upload anyway:', deleteErr);
+          this.config.logWarning('Failed to delete old image, proceeding with upload anyway', deleteErr);
           return upload$;
         })
       );
@@ -171,13 +167,13 @@ export class WeaponService implements IImportableService {
               return { id, url: null };
             }),
             catchError((error) => {
-              console.error(`Failed to fetch image blob for weapon ${id}`, error);
+              this.config.logError(`Failed to fetch image blob for weapon ${id}`, error);
               return of({ id, url: null });
             })
           );
         }),
         catchError((error) => {
-          console.error(`Failed to get image URL for weapon ${id}:`, error);
+          this.config.logError(`Failed to get image URL for weapon ${id}`, error);
           return of({ id, url: null });
         })
       )
@@ -192,7 +188,7 @@ export class WeaponService implements IImportableService {
         return map;
       }),
       catchError((err) => {
-        console.error('Failed to load weapon images:', err);
+        this.config.logError('Failed to load weapon images', err);
         return of(new Map());
       })
     );

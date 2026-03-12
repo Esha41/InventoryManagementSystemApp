@@ -7,7 +7,7 @@ import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { takeUntil, catchError } from 'rxjs/operators';
 import { throwError } from 'rxjs';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { SupplyService, SubmitSupplyDto, SupplyDto } from '@services/supply.service';
@@ -16,7 +16,6 @@ import { FileUploadService } from '@services/file-upload.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
-import { APIOperationResponse } from '@models/api-response.model';
 import { validateFile, showFileValidationErrors } from '@utils/file.utils';
 
 export interface ReceiverInfo {
@@ -79,16 +78,18 @@ export class WorkflowApprovalSupplyService {
         ? API_ENDPOINTS.ORDERS.SET_PICKUP_DATE(data.requestId)
         : API_ENDPOINTS.SUPPLY.SET_PICKUP_DATE_BY_ORDER(data.requestId);
 
-      // For weapon orders, use pickupDate format; for supply, use supplyDate
+      // For weapon orders, use pickupDate field; for supply, use supplyDate.
+      // IMPORTANT: send the datetime-local string as-is (no timezone conversion)
+      // to avoid shifting the time by the client's UTC offset.
       const payload = data.isWeaponOrder
         ? {
-          pickupDate: new Date(data.pickupDate).toISOString()
+          pickupDate: data.pickupDate
         }
         : {
-          supplyDate: new Date(data.pickupDate).toISOString()
+          supplyDate: data.pickupDate
         };
 
-      this.apiService.putWithAuth(endpoint, payload)
+      this.apiService.put<void>(endpoint, payload)
         .pipe(takeUntil(destroy$))
         .subscribe({
           next: () => {
@@ -125,16 +126,18 @@ export class WorkflowApprovalSupplyService {
         ? API_ENDPOINTS.ORDERS.SET_PICKUP_DATE(data.requestId)
         : API_ENDPOINTS.SUPPLY.CONFIRM_PICKUP_DATE_BY_ORDER(data.requestId);
 
-      // For weapon orders, use pickupDate format; for supply, use supplyDate
+      // For weapon orders, use pickupDate field; for supply, use supplyDate.
+      // IMPORTANT: send the datetime-local string as-is (no timezone conversion)
+      // to avoid shifting the time by the client's UTC offset.
       const payload = data.isWeaponOrder
         ? {
-          pickupDate: new Date(data.pickupDate).toISOString()
+          pickupDate: data.pickupDate
         }
         : {
-          supplyDate: new Date(data.pickupDate).toISOString()
+          supplyDate: data.pickupDate
         };
 
-      this.apiService.putWithAuth(endpoint, payload)
+      this.apiService.put<void>(endpoint, payload)
         .pipe(takeUntil(destroy$))
         .subscribe({
           next: () => {
@@ -189,16 +192,7 @@ export class WorkflowApprovalSupplyService {
             observer.complete();
           },
           error: (error) => {
-            // Extract error message from API response
-            let errorMessage = 'Failed to submit supply';
-
-            if (error?.error?.message) {
-              errorMessage = error.error.message;
-            } else if (error?.message) {
-              errorMessage = error.message;
-            } else {
-              errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to submit supply');
-            }
+            const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to submit supply');
 
             this.translateService.get(['toast.error']).subscribe(translations => {
               this.toastService.error(
@@ -221,31 +215,16 @@ export class WorkflowApprovalSupplyService {
     destroy$: Subject<void>
   ): Observable<number[]> {
     return new Observable(observer => {
-      // Create FormData for multipart/form-data request
       const formData = new FormData();
+      files.forEach((file) => formData.append('files', file));
 
-      // Append files
-      files.forEach((file) => {
-        formData.append('files', file);
-      });
+      const endpoint = `/FileUpload/upload-for-entity?entity=5&entityId=${supplyId}`;
 
-      const token = localStorage.getItem('auth_token');
-      let headers = new HttpHeaders();
-      if (token) {
-        headers = headers.set('Authorization', `Bearer ${token}`);
-      }
-      // Remove Content-Type header for FormData
-      headers = headers.delete('Content-Type');
-
-      this.http.post<APIOperationResponse<number[]>>(
-        `${this.config.apiUrl}/FileUpload/upload-for-entity?entity=5&entityId=${supplyId}`,
-        formData,
-        { headers }
-      )
+      this.apiService.post<number[]>(endpoint, formData)
         .pipe(
           takeUntil(destroy$),
-          catchError((error: any) => {
-            console.error('Failed to upload additional files:', error);
+          catchError((error: unknown) => {
+            this.config.logError('Failed to upload additional files', error);
             this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileUploadFailed']).subscribe(translations => {
               this.toastService.error(
                 ErrorHandler.extractErrorMessage(error, translations['workflowApprovalDetail.errors.fileUploadFailed'] || 'Failed to upload files'),
@@ -255,25 +234,18 @@ export class WorkflowApprovalSupplyService {
             return throwError(() => error);
           })
         )
-        .subscribe((response: APIOperationResponse<number[]>) => {
-          if (response.succeeded) {
+        .subscribe({
+          next: (fileIds) => {
             this.translateService.get(['toast.success', 'workflowApprovalDetail.success.filesUploaded']).subscribe(translations => {
               this.toastService.success(
                 translations['workflowApprovalDetail.success.filesUploaded'] || 'Files uploaded successfully',
                 translations['toast.success']
               );
             });
-            observer.next(response.data || []);
+            observer.next(fileIds ?? []);
             observer.complete();
-          } else {
-            this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileUploadFailed']).subscribe(translations => {
-              this.toastService.error(
-                response.message || translations['workflowApprovalDetail.errors.fileUploadFailed'] || 'Failed to upload files',
-                translations['toast.error']
-              );
-            });
-            observer.error(response.message || 'Failed to upload files');
-          }
+          },
+          error: (err) => observer.error(err)
         });
     });
   }
@@ -288,20 +260,13 @@ export class WorkflowApprovalSupplyService {
   ): Observable<Blob> {
     return new Observable(observer => {
       const downloadUrl = this.fileUploadService.getFileDownloadUrl(fileId);
-      const token = localStorage.getItem('auth_token');
-      let headers = new HttpHeaders();
-      if (token) {
-        headers = headers.set('Authorization', `Bearer ${token}`);
-      }
 
-      this.http.get(downloadUrl, {
-        headers: headers,
-        responseType: 'blob'
-      })
+      // Auth interceptor handles Authorization header for all HttpClient requests
+      this.http.get(downloadUrl, { responseType: 'blob' })
         .pipe(
           takeUntil(destroy$),
-          catchError((error: any) => {
-            console.error('Failed to download file:', error);
+          catchError((error: unknown) => {
+            this.config.logError('Failed to download file', error);
             this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileDownloadFailed']).subscribe(translations => {
               this.toastService.error(
                 ErrorHandler.extractErrorMessage(error, translations['workflowApprovalDetail.errors.fileDownloadFailed'] || 'Failed to download file'),
@@ -328,23 +293,15 @@ export class WorkflowApprovalSupplyService {
    */
   deleteFile(
     fileId: number,
-    fileName: string,
+    _fileName: string,
     destroy$: Subject<void>
   ): Observable<boolean> {
     return new Observable(observer => {
-      const token = localStorage.getItem('auth_token');
-      let headers = new HttpHeaders();
-      if (token) {
-        headers = headers.set('Authorization', `Bearer ${token}`);
-      }
-
-      this.http.delete<APIOperationResponse<boolean>>(`${this.config.apiUrl}/FileUpload/${fileId}`, {
-        headers: headers
-      })
+      this.apiService.delete<boolean>(`/FileUpload/${fileId}`)
         .pipe(
           takeUntil(destroy$),
-          catchError((error: any) => {
-            console.error('Failed to delete file:', error);
+          catchError((error: unknown) => {
+            this.config.logError('Failed to delete file', error);
             this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileDeleteFailed']).subscribe(translations => {
               this.toastService.error(
                 ErrorHandler.extractErrorMessage(error, translations['workflowApprovalDetail.errors.fileDeleteFailed'] || 'Failed to delete file'),
@@ -354,8 +311,8 @@ export class WorkflowApprovalSupplyService {
             return throwError(() => error);
           })
         )
-        .subscribe((response: APIOperationResponse<boolean>) => {
-          if (response.succeeded) {
+        .subscribe({
+          next: () => {
             this.translateService.get(['toast.success', 'workflowApprovalDetail.success.fileDeleted']).subscribe(translations => {
               this.toastService.success(
                 translations['workflowApprovalDetail.success.fileDeleted'] || 'File deleted successfully',
@@ -364,15 +321,8 @@ export class WorkflowApprovalSupplyService {
             });
             observer.next(true);
             observer.complete();
-          } else {
-            this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileDeleteFailed']).subscribe(translations => {
-              this.toastService.error(
-                response.message || translations['workflowApprovalDetail.errors.fileDeleteFailed'] || 'Failed to delete file',
-                translations['toast.error']
-              );
-            });
-            observer.error(response.message || 'Failed to delete file');
-          }
+          },
+          error: (err) => observer.error(err)
         });
     });
   }

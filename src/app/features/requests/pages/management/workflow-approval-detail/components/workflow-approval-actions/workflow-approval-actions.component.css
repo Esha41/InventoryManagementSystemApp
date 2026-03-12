@@ -66,7 +66,7 @@
   color: white;
 }
 
-/* Dropdown Panel Enhancement */
+/* Dropdown Panel Enhancement - opens above button */
 .return-dropdown-panel {
   transform-origin: bottom;
   animation: dropdownAppear 0.2s ease-out;

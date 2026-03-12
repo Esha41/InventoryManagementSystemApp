@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -18,7 +18,8 @@ export const MAX_FILE_SIZE_MB_EXPORT = MAX_FILE_SIZE_MB;
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule, ButtonComponent, DropdownComponent],
   templateUrl: './usage-form.component.html',
-  styleUrls: ['./usage-form.component.css']
+  styleUrls: ['./usage-form.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UsageFormComponent {
   constructor(
@@ -43,6 +44,15 @@ export class UsageFormComponent {
   /** Format date for input type="date" (YYYY-MM-DD) - for native picker */
   get usageDateToForInput(): string {
     return formatDateForInput(this.usageDateTo) || this.usageDateTo || '';
+  }
+
+  /** Minimum date for pickers - today in YYYY-MM-DD (prevents selecting past dates) */
+  get minDateForPicker(): string {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const d = String(today.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 
   /** Display date in DD/MM/YYYY format (app standard) */
@@ -206,6 +216,8 @@ export class UsageFormComponent {
     if (this.hasAttemptedSubmit) {
       if (!value || value.trim().length === 0) {
         this.formErrors.usageDateFrom = 'newIssueRequest.validation.usageDateRequired';
+      } else if (!this.isDateOnOrAfterToday(value)) {
+        this.formErrors.usageDateFrom = 'newIssueRequest.validation.usageDateFromMustBeTodayOrFuture';
       } else {
         this.clearError('usageDateFrom');
       }
@@ -234,6 +246,8 @@ export class UsageFormComponent {
     if (this.hasAttemptedSubmit) {
       if (!value || value.trim().length === 0) {
         this.formErrors.usageDateTo = 'newIssueRequest.validation.usageDateRequired';
+      } else if (!this.isDateOnOrAfterToday(value)) {
+        this.formErrors.usageDateTo = 'newIssueRequest.validation.usageDateToMustBeTodayOrFuture';
       } else {
         this.clearError('usageDateTo');
       }
@@ -363,6 +377,9 @@ export class UsageFormComponent {
     if (!this.usageDateFrom || this.usageDateFrom.trim().length === 0) {
       this.formErrors.usageDateFrom = 'newIssueRequest.validation.usageDateRequired';
       isValid = false;
+    } else if (!this.isDateOnOrAfterToday(this.usageDateFrom)) {
+      this.formErrors.usageDateFrom = 'newIssueRequest.validation.usageDateFromMustBeTodayOrFuture';
+      isValid = false;
     }
 
     // Validate usageTimeFrom - explicitly check for null/undefined/empty string (not falsy values)
@@ -375,6 +392,9 @@ export class UsageFormComponent {
 
     if (!this.usageDateTo || this.usageDateTo.trim().length === 0) {
       this.formErrors.usageDateTo = 'newIssueRequest.validation.usageDateRequired';
+      isValid = false;
+    } else if (!this.isDateOnOrAfterToday(this.usageDateTo)) {
+      this.formErrors.usageDateTo = 'newIssueRequest.validation.usageDateToMustBeTodayOrFuture';
       isValid = false;
     }
 
@@ -397,6 +417,21 @@ export class UsageFormComponent {
     }
 
     return isValid;
+  }
+
+  /**
+   * Checks if a date string is today or in the future (date part only, local timezone).
+   * Uses YYYY-MM-DD directly when present to avoid timezone shift from new Date() parsing.
+   */
+  private isDateOnOrAfterToday(dateStr: string): boolean {
+    if (!dateStr?.trim()) return false;
+    // Date input returns YYYY-MM-DD - use directly to avoid timezone shift (new Date("YYYY-MM-DD") = UTC midnight)
+    const ymdMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    const normalized = ymdMatch ? ymdMatch[0] : (formatDateForInput(dateStr) || dateStr.trim());
+    if (!normalized) return false;
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    return normalized >= todayStr;
   }
 
   private resolveUsePurposeLabel(value: number | null): string {

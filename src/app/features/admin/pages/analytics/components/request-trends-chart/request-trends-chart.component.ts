@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Input, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { EChartsOption } from 'echarts';
@@ -13,7 +13,8 @@ import { ThemeService } from '@services/theme.service';
     standalone: true,
     imports: [CommonModule, NgxEchartsModule, LucideAngularModule, TranslateModule],
     templateUrl: './request-trends-chart.component.html',
-    styleUrl: './request-trends-chart.component.css'
+    styleUrl: './request-trends-chart.component.css',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RequestTrendsChartComponent implements OnInit, OnDestroy {
     @Input() period: string = 'weekly';
@@ -54,12 +55,12 @@ export class RequestTrendsChartComponent implements OnInit, OnDestroy {
         if (this.period === period) return;
         this.period = period;
         this.loadData();
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
     }
 
     loadData(): void {
         this.loading = true;
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
 
         this.analyticsService.getRequestTrends(this.period)
             .pipe(takeUntil(this.destroy$))
@@ -68,13 +69,13 @@ export class RequestTrendsChartComponent implements OnInit, OnDestroy {
                     this.initChart(data);
                     this.loading = false;
                     this.error = false;
-                    this.cdr.detectChanges();
+                    this.cdr.markForCheck();
                 },
                 error: (err: any) => {
                     console.error(`Error loading request trends for ${this.period}:`, err);
                     this.loading = false;
                     this.error = true;
-                    this.cdr.detectChanges();
+                    this.cdr.markForCheck();
                 }
             });
     }
@@ -245,7 +246,7 @@ export class RequestTrendsChartComponent implements OnInit, OnDestroy {
                     }
                 ]
             };
-            this.cdr.detectChanges();
+            this.cdr.markForCheck();
         });
     }
 }

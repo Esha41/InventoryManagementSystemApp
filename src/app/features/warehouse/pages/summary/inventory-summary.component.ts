@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
@@ -9,7 +9,7 @@ import { InventoryService, LotDetailDto } from '@services/inventory.service';
 import { AssetService } from '@services/asset.service';
 import { AssetHistoryService, AssetHistoryDto } from '@services/asset-history.service';
 import { ItemInventorySummaryDto } from '@models/inventory.model';
-import { AssetDto, AssetStatus } from '@models/asset.model';
+import { AssetDto, AssetStatus, getAssetStatusLabel } from '@models/asset.model';
 import { CardComponent } from '@components/card/card.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { PaginationComponent } from '@components/pagination/pagination.component';
@@ -22,6 +22,7 @@ import { TranslationService } from '@services/translation.service';
 import { ExcelExportService, ExcelColumn } from '@services/excel-export.service';
 import { ToastService } from '@services/toast.service';
 import { AppDatePipe } from '@shared/pipes/app-date.pipe';
+import { trackById, trackByKey, trackByIndex } from '@utils/trackby.utils';
 
 @Component({
     selector: 'app-inventory-summary',
@@ -41,7 +42,8 @@ import { AppDatePipe } from '@shared/pipes/app-date.pipe';
     ],
     providers: [InventorySummaryDataService],
     templateUrl: './inventory-summary.component.html',
-    styleUrls: ['./inventory-summary.component.css']
+    styleUrls: ['./inventory-summary.component.css'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class InventorySummaryComponent implements OnInit, OnDestroy {
     // Data
@@ -85,6 +87,10 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
     readonly ArrowLeft = ArrowLeft;
     readonly User = User;
     readonly Building = Building;
+    readonly trackByItemId = trackByKey('itemId');
+    readonly trackById = trackById;
+    readonly trackByIndex = trackByIndex;
+    readonly trackByInventoryDetailId = trackByKey('inventoryDetailId');
 
     private destroy$ = new Subject<void>();
 
@@ -97,7 +103,8 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
         private translationService: TranslationService,
         private excelExportService: ExcelExportService,
         private toastService: ToastService,
-        private router: Router
+        private router: Router,
+        private cdr: ChangeDetectorRef
     ) { }
 
     get isRTL(): boolean {
@@ -134,6 +141,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
     loadInventorySummary(): void {
         this.loading = true;
         this.error = null;
+        this.cdr.markForCheck();
 
         this.dataService.loadAllItems()
             .pipe(takeUntil(this.destroy$))
@@ -142,10 +150,12 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
                     this.items = items;
                     this.applyFilters();
                     this.loading = false;
+                    this.cdr.markForCheck();
                 },
                 error: () => {
                     this.error = 'Failed to load inventory summary';
                     this.loading = false;
+                    this.cdr.markForCheck();
                 }
             });
     }
@@ -285,6 +295,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
      */
     private loadHistoryForAsset(assetId: number): void {
         this.loadingHistory.add(assetId);
+        this.cdr.markForCheck();
 
         this.assetHistoryService.getByAssetId(assetId)
             .pipe(takeUntil(this.destroy$))
@@ -292,11 +303,13 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
                 next: (history) => {
                     this.historyByAssetId.set(assetId, history);
                     this.loadingHistory.delete(assetId);
+                    this.cdr.markForCheck();
                 },
                 error: (err) => {
                     console.error('Error loading history', err);
                     this.loadingHistory.delete(assetId);
                     this.toastService.error('Error loading history');
+                    this.cdr.markForCheck();
                 }
             });
     }
@@ -314,6 +327,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
      */
     private loadLotsForItem(itemId: number): void {
         this.loadingLots.add(itemId);
+        this.cdr.markForCheck();
 
         this.inventoryService.getLotsByItemId(itemId)
             .pipe(takeUntil(this.destroy$))
@@ -321,9 +335,11 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
                 next: (lots) => {
                     this.lotsByItemId.set(itemId, lots);
                     this.loadingLots.delete(itemId);
+                    this.cdr.markForCheck();
                 },
                 error: () => {
                     this.loadingLots.delete(itemId);
+                    this.cdr.markForCheck();
                 }
             });
     }
@@ -347,6 +363,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
      */
     private loadAssetsForItem(itemId: number): void {
         this.loadingAssets.add(itemId);
+        this.cdr.markForCheck();
 
         this.assetService.getAll<AssetDto>({ search: '' })
             .pipe(takeUntil(this.destroy$))
@@ -356,9 +373,11 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
                     const itemAssets = assets.filter(a => a.itemId === itemId && !a.isDeleted);
                     this.assetsByItemId.set(itemId, itemAssets);
                     this.loadingAssets.delete(itemId);
+                    this.cdr.markForCheck();
                 },
                 error: () => {
                     this.loadingAssets.delete(itemId);
+                    this.cdr.markForCheck();
                 }
             });
     }
@@ -381,28 +400,27 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
      * Get asset status label
      */
     getAssetStatusLabel(asset: AssetDto): string {
-        switch (asset.status) {
-            case AssetStatus.Active: return 'assetStatus.active';
-            case AssetStatus.Inactive: return 'assetStatus.inactive';
-            case AssetStatus.Maintenance: return 'assetStatus.maintenance';
-            case AssetStatus.Disposed: return 'assetStatus.disposed';
-            case AssetStatus.Lost: return 'assetStatus.lost';
-            case AssetStatus.Damaged: return 'assetStatus.damaged';
-            default: return 'assetStatus.unknown';
-        }
+        return getAssetStatusLabel(asset.status);
     }
 
     /**
-     * Get asset status badge class
+     * Get asset status badge class (API returns enum names as strings)
      */
     getAssetStatusClass(asset: AssetDto): string {
-        switch (asset.status) {
-            case AssetStatus.Active: return 'bg-green-100 text-green-800';
-            case AssetStatus.Inactive: return 'bg-blue-100 text-blue-800';
-            case AssetStatus.Maintenance: return 'bg-yellow-100 text-yellow-800';
-            case AssetStatus.Disposed: return 'bg-red-100 text-red-800';
-            case AssetStatus.Lost: return 'bg-red-100 text-red-800';
-            case AssetStatus.Damaged: return 'bg-red-100 text-red-800';
+        const status = asset.status as AssetStatus | string | undefined;
+        switch (status) {
+            case AssetStatus.ReadyToIssue:
+            case 'ReadyToIssue': return 'bg-green-100 text-green-800';
+            case AssetStatus.InMaintenance:
+            case 'InMaintenance':
+            case AssetStatus.UnserviceableRepairable:
+            case 'UnserviceableRepairable': return 'bg-yellow-100 text-yellow-800';
+            case AssetStatus.UnserviceableUnrepairable:
+            case 'UnserviceableUnrepairable':
+            case AssetStatus.AwaitingDisposal:
+            case 'AwaitingDisposal':
+            case AssetStatus.Disposed:
+            case 'Disposed': return 'bg-red-100 text-red-800';
             default: return 'bg-gray-100 text-gray-800';
         }
     }

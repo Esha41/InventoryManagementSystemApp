@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ModalComponent } from '@components/modal/modal.component';
@@ -24,7 +24,8 @@ import { formatDateShort } from '@core/utils/format.utils';
     DropdownComponent
   ],
   templateUrl: './edit-inventory-detail-modal.component.html',
-  styleUrls: ['./edit-inventory-detail-modal.component.css']
+  styleUrls: ['./edit-inventory-detail-modal.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
   @Input() isOpen = false;
@@ -48,7 +49,8 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
   constructor(
     private fb: FormBuilder,
     private lookupService: LookupService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private cdr: ChangeDetectorRef
   ) {
     this.initializeForm();
   }
@@ -67,19 +69,34 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
     }
   }
 
+  private coerceToNumber(value: unknown, fallback: number): number {
+    if (value === null || value === undefined) return fallback;
+    const n = Number(value);
+    return !isNaN(n) && n > 0 ? n : fallback;
+  }
+
+  /** Normalize optional ID: null, undefined, 0, or empty string become null for dropdowns */
+  private normalizeOptionalId(value: number | string | null | undefined): number | null {
+    if (value === null || value === undefined || value === '') return null;
+    const n = Number(value);
+    return !isNaN(n) && n > 0 ? n : null;
+  }
+
   private initializeForm(): void {
+    const lot = this.coerceToNumber(this.inventoryDetail?.lot, 1);
+    const originalQuantity = this.coerceToNumber(this.inventoryDetail?.originalQuantity, 1000);
     this.detailForm = this.fb.group({
       // Inventory Detail fields
-      lot: [this.inventoryDetail?.lot || 1, [Validators.required, Validators.min(1)]],
-      originalQuantity: [this.inventoryDetail?.originalQuantity || 1000, [Validators.required, Validators.min(1)]],
+      lot: [lot, [Validators.required, Validators.min(1)]],
+      originalQuantity: [originalQuantity, [Validators.required, Validators.min(1)]],
       batchNo: [this.inventoryDetail?.batchNo || ''],
       expiryDate: [this.formatDateForDisplay(this.inventoryDetail?.expiryDate)],
       readyForIssue: [this.inventoryDetail?.readyForIssue ?? true],
-      supplierId: [this.inventoryDetail?.supplierId || null],
-      manufacturerId: [this.inventoryDetail?.manufacturerId || null],
-      countryId: [this.inventoryDetail?.countryId || null],
+      supplierId: [this.normalizeOptionalId(this.inventoryDetail?.supplierId)],
+      manufacturerId: [this.normalizeOptionalId(this.inventoryDetail?.manufacturerId)],
+      countryId: [this.normalizeOptionalId(this.inventoryDetail?.countryId)],
       // Invoice Information fields
-      invoiceNumber: [this.inventoryDetail?.invoiceNumber || this.inventory?.invoiceNumber || '', [Validators.pattern(/^\d*$/)]],
+      invoiceNumber: [this.inventoryDetail?.invoiceNumber || this.inventory?.invoiceNumber || ''],
       invoiceDate: [this.formatDateForDisplay(this.inventoryDetail?.invoiceDate || this.inventory?.invoiceDate)],
       recievedDate: [this.formatDateForDisplay(this.inventoryDetail?.recievedDate || this.inventory?.recievedDate)],
       contractNumber: [this.inventoryDetail?.contractNumber || this.inventory?.contractNumber || ''],
@@ -89,15 +106,17 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
 
   private loadFormData(): void {
     if (this.inventoryDetail || this.inventory) {
+      const lot = this.inventoryDetail?.lot;
+      const originalQuantity = this.inventoryDetail?.originalQuantity;
       this.detailForm.patchValue({
-        lot: this.inventoryDetail?.lot || 1,
-        originalQuantity: this.inventoryDetail?.originalQuantity || 1000,
+        lot: this.coerceToNumber(lot, 1),
+        originalQuantity: this.coerceToNumber(originalQuantity, 1000),
         batchNo: this.inventoryDetail?.batchNo || '',
         expiryDate: this.formatDateForDisplay(this.inventoryDetail?.expiryDate),
         readyForIssue: this.inventoryDetail?.readyForIssue ?? true,
-        supplierId: this.inventoryDetail?.supplierId || null,
-        manufacturerId: this.inventoryDetail?.manufacturerId || null,
-        countryId: this.inventoryDetail?.countryId || null,
+        supplierId: this.normalizeOptionalId(this.inventoryDetail?.supplierId),
+        manufacturerId: this.normalizeOptionalId(this.inventoryDetail?.manufacturerId),
+        countryId: this.normalizeOptionalId(this.inventoryDetail?.countryId),
         // Invoice Information
         invoiceNumber: this.inventoryDetail?.invoiceNumber || this.inventory?.invoiceNumber || '',
         invoiceDate: this.formatDateForDisplay(this.inventoryDetail?.invoiceDate || this.inventory?.invoiceDate),
@@ -111,25 +130,38 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
 
   private loadLookupData(): void {
     this.lookupService.getSuppliers().subscribe({
-      next: (data: LookupItem[]) => this.suppliers = data,
-      error: () => { /* Silently handle error - lookup data is optional */ }
+      next: (data: LookupItem[]) => {
+        this.suppliers = data;
+        this.cdr.markForCheck();
+      },
+      error: () => { this.cdr.markForCheck(); }
     });
 
     this.lookupService.getManufacturers().subscribe({
-      next: (data: LookupItem[]) => this.manufacturers = data,
-      error: () => { /* Silently handle error - lookup data is optional */ }
+      next: (data: LookupItem[]) => {
+        this.manufacturers = data;
+        this.cdr.markForCheck();
+      },
+      error: () => { this.cdr.markForCheck(); }
     });
 
     this.lookupService.getCountries().subscribe({
-      next: (data: LookupItem[]) => this.countries = data,
-      error: () => { /* Silently handle error - lookup data is optional */ }
+      next: (data: LookupItem[]) => {
+        this.countries = data;
+        this.cdr.markForCheck();
+      },
+      error: () => { this.cdr.markForCheck(); }
     });
   }
 
   onSubmit(): void {
     if (this.detailForm.invalid) {
+      const invalidFields = this.getInvalidFieldNames();
       this.translateService.get('editInventoryDetail.requiredFieldsError').subscribe(msg => {
-        this.errorMessage = msg;
+        this.errorMessage = invalidFields.length > 0
+          ? `${msg} (${invalidFields.join(', ')})`
+          : msg;
+        this.cdr.markForCheck();
       });
       Object.keys(this.detailForm.controls).forEach(key => {
         this.detailForm.get(key)?.markAsTouched();
@@ -257,17 +289,6 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
     return this.inventory?.inventoryDetails?.length || 0;
   }
 
-  /**
-   * Handle invoice number input - restrict to numbers only
-   */
-  onInvoiceNumberInput(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    // Remove any non-numeric characters
-    const numericValue = input.value.replace(/[^\d]/g, '');
-    // Update the form control value
-    this.detailForm.get('invoiceNumber')?.setValue(numericValue, { emitEvent: false });
-  }
-
   close(): void {
     this.detailForm.reset();
     this.errorMessage = '';
@@ -291,6 +312,29 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
       return '';
     }
     return getLocalizedName(item, getCurrentLang(this.translateService));
+  }
+
+  /**
+   * Get names of form controls that have validation errors (for diagnostic feedback)
+   */
+  private getInvalidFieldNames(): string[] {
+    const fieldLabels: Record<string, string> = {
+      lot: 'Lot Number',
+      originalQuantity: 'Item Quantity',
+      batchNo: 'Batch No',
+      expiryDate: 'Expiry Date',
+      supplierId: 'Supplier',
+      manufacturerId: 'Manufacturer',
+      countryId: 'Country',
+      invoiceNumber: 'Invoice Number',
+      invoiceDate: 'Invoice Date',
+      recievedDate: 'Received Date',
+      contractNumber: 'Contract Number',
+      notes: 'Notes'
+    };
+    return Object.keys(this.detailForm.controls)
+      .filter(key => this.detailForm.get(key)?.invalid)
+      .map(key => fieldLabels[key] || key);
   }
 
   getFieldError(fieldName: string): string {

@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { Chart, registerables } from 'chart.js';
@@ -11,7 +11,8 @@ Chart.register(...registerables);
   standalone: true,
   imports: [CommonModule, TranslateModule, ButtonComponent],
   templateUrl: './forecast.component.html',
-  styleUrls: ['./forecast.component.css']
+  styleUrls: ['./forecast.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ForecastComponent implements OnInit, AfterViewInit {
   @ViewChild('weeklyIssuesChart') weeklyIssuesChart!: ElementRef<HTMLCanvasElement>;

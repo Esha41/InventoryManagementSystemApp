@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -16,7 +16,6 @@ import { WeaponDto } from '@models/weapon.model';
 import { ExplosiveService } from '@services/explosive.service';
 import { ExplosiveDto } from '@models/explosive.model';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { ApiResponse } from '@models/api-response.model';
 import { ButtonComponent } from '@components/button/button.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { TranslationService } from '@services/translation.service';
@@ -24,6 +23,7 @@ import { ToastService } from '@services/toast.service';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { AllowanceItemDto, AllowanceTableRow } from '@models/allowance.model';
+import { TranslationMap } from '@models/common.types';
 import { processAllowanceData } from '@utils/allowance.mapper';
 import { filterAllowances } from '@utils/allowance.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
@@ -31,6 +31,8 @@ import { HasPermissionDirective } from '@core/directives/has-permission.directiv
 import { BackendAuthService } from '@services/backend-auth.service';
 import { UserContextService } from '@services/user-context.service';
 import { ItemType } from '@core/models/inventory.model';
+import { trackById } from '@utils/trackby.utils';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 @Component({
   selector: 'app-allowance-list',
@@ -51,7 +53,8 @@ import { ItemType } from '@core/models/inventory.model';
     ErrorStateComponent
   ],
   templateUrl: './allowance-list.component.html',
-  styleUrls: ['./allowance-list.component.css']
+  styleUrls: ['./allowance-list.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AllowanceListComponent implements OnInit, OnDestroy {
   readonly Plus = Plus;
@@ -59,6 +62,8 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   readonly Trash2 = Trash2;
   readonly Search = Search;
   readonly X = X;
+
+  readonly trackById = trackById;
 
   allowances: AllowanceTableRow[] = []; // Individual item rows
   allAllowances: AllowanceTableRow[] = []; // All allowances for pagination
@@ -87,8 +92,8 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   readonly itemOptionLabel = (option: DropdownOption<AmmunitionReadDto | WeaponDto | ExplosiveDto> | AmmunitionReadDto | WeaponDto | ExplosiveDto | null) => {
     const item = this.unwrapOption(option);
     if (!item) return '';
-    const localizedName = getLocalizedName(item as any, getCurrentLang(this.translateService));
-    return localizedName || (item as any).itemNo || `Item ${(item as any).id}`;
+    const localizedName = getLocalizedName(item, getCurrentLang(this.translateService));
+    return localizedName || item.itemNo || `Item ${item.id}`;
   };
   readonly itemTypeOptionLabel = (option: DropdownOption<{ value: ItemType | null; label: string }> | { value: ItemType | null; label: string } | null) => {
     const itemType = this.unwrapOption(option);
@@ -102,7 +107,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
 
   // Delete dialog state
   showDeleteDialog = false;
-  selectedAllowance: AllowanceTableRow | null = null;
+  selectedAllowance: (AllowanceTableRow & { isSingleItem?: boolean }) | null = null;
 
   private destroy$ = new Subject<void>();
 
@@ -113,11 +118,13 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     private weaponService: WeaponService,
     private explosiveService: ExplosiveService,
     private router: Router,
+    private route: ActivatedRoute,
     private translateService: TranslateService,
     private translationService: TranslationService,
     private toastService: ToastService,
     private backendAuthService: BackendAuthService,
-    private userContextService: UserContextService
+    private userContextService: UserContextService,
+    private cdr: ChangeDetectorRef
   ) {
     // Initialize user context
     this.initializeUserContext();
@@ -143,15 +150,53 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.initializeItemTypeOptions();
+    this.syncPageFromQueryParams();
+    this.setupQueryParamsSync();
     this.loadAllowances();
 
-    // Subscribe to language changes to reload allowances with new localized names
     this.translateService.onLangChange
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
         this.initializeItemTypeOptions();
         this.loadAllowances();
+        this.cdr.markForCheck();
       });
+  }
+
+  /** Read page from URL query params (Angular best practice: URL reflects state) */
+  private syncPageFromQueryParams(): void {
+    const page = this.route.snapshot.queryParamMap.get('page');
+    if (page) {
+      const parsed = parseInt(page, 10);
+      if (!isNaN(parsed) && parsed >= 1) {
+        this.currentPage = parsed;
+      }
+    }
+  }
+
+  /** Sync page changes to URL so pagination persists across navigation */
+  private setupQueryParamsSync(): void {
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+      const page = params['page'];
+      if (page) {
+        const parsed = parseInt(page, 10);
+        if (!isNaN(parsed) && parsed >= 1 && parsed !== this.currentPage) {
+          this.currentPage = parsed;
+          this.updatePagination();
+          this.cdr.markForCheck();
+        }
+      }
+    });
+  }
+
+  /** Update URL with current page (preserves other query params) */
+  private updatePageInUrl(): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { page: this.currentPage > 1 ? this.currentPage : null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
   }
 
   private initializeItemTypeOptions(): void {
@@ -176,13 +221,12 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   loadAllowances(): void {
     this.loading = true;
     this.error = null;
+    this.cdr.markForCheck();
 
     // The backend service automatically checks AllowanceItemViewAllDepartments permission
     // and returns all departments' data if user has permission, or only their department if not
     forkJoin({
-      allowances: this.apiService.getWithAuth<ApiResponse<AllowanceItemDto[]>>(
-        API_ENDPOINTS.ALLOWANCE.BASE
-      ),
+      allowances: this.apiService.get<AllowanceItemDto[]>(API_ENDPOINTS.ALLOWANCE.BASE),
       departments: this.lookupService.getDepartments(),
       ammunitionItems: this.ammunitionService.getAll<AmmunitionReadDto>().pipe(catchError(() => of([]))),
       weaponItems: this.weaponService.getAll<WeaponDto>().pipe(catchError(() => of([]))),
@@ -191,12 +235,13 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: ({ allowances, departments, ammunitionItems, weaponItems, explosiveItems }) => {
-          if (allowances.succeeded && allowances.data) {
-            this.processAllowanceData(allowances.data, departments, ammunitionItems || [], weaponItems || [], explosiveItems || []);
+          if (allowances && Array.isArray(allowances)) {
+            this.processAllowanceData(allowances, departments, ammunitionItems || [], weaponItems || [], explosiveItems || []);
           } else {
-            this.error = allowances.message || this.translateService.instant('allowance.errors.failedToLoad');
+            this.error = this.translateService.instant('allowance.errors.failedToLoad');
             this.loading = false;
           }
+          this.cdr.markForCheck();
         },
         error: (error) => {
           // Handle 403 Forbidden (authorization errors)
@@ -206,6 +251,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
             this.error = this.translateService.instant('allowance.errors.failedToLoad');
           }
           this.loading = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -236,10 +282,11 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     this.allAllowances = processed.allAllowances;
     this.filteredAllowances = [...this.allAllowances];
 
-    this.currentPage = 1;
     this.validateCurrentPage();
     this.updatePagination();
+    this.updatePageInUrl();
     this.loading = false;
+    this.cdr.markForCheck();
   }
 
   unwrapOption<T>(option: DropdownOption<T> | T | null): T | null {
@@ -356,6 +403,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     }
     this.currentPage = page;
     this.updatePagination();
+    this.updatePageInUrl();
   }
 
   onRowsPerPageChange(rows: number): void {
@@ -363,6 +411,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     this.currentPage = 1;
     this.validateCurrentPage();
     this.updatePagination();
+    this.updatePageInUrl();
   }
 
   get totalPages(): number {
@@ -370,7 +419,8 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   }
 
   onAddAllowance(): void {
-    this.router.navigate(['/allowance/add']);
+    const queryParams = this.currentPage > 1 ? { page: this.currentPage } : {};
+    this.router.navigate(['/allowance/add'], { queryParams });
   }
 
   formatDate(year: number): string {
@@ -379,7 +429,6 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
 
 
   onEdit(allowance: AllowanceTableRow): void {
-    // Verify user has permission to edit this allowance
     if (!this.isAdminUser && this.userDepartmentId !== null && allowance.departmentId !== this.userDepartmentId) {
       this.translateService.get(['toast.error', 'allowance.errors.unauthorizedAccess']).subscribe(translations => {
         this.toastService.error(translations['allowance.errors.unauthorizedAccess'], translations['toast.error']);
@@ -387,32 +436,26 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.router.navigate(['/allowance/add'], {
-      queryParams: {
-        departmentId: allowance.departmentId,
-        year: allowance.year,
-        itemId: allowance.itemId,
-        itemType: allowance.itemType,
-        edit: 'true'
-      }
-    });
+    const queryParams: Record<string, string | number> = {
+      departmentId: allowance.departmentId,
+      year: allowance.year,
+      itemId: allowance.itemId,
+      itemType: allowance.itemType,
+      edit: 'true'
+    };
+    if (this.currentPage > 1) {
+      queryParams['page'] = this.currentPage;
+    }
+    this.router.navigate(['/allowance/add'], { queryParams });
   }
 
   onDelete(allowance: AllowanceTableRow): void {
 
     this.selectedAllowance = {
-      id: allowance.id,
-      departmentId: allowance.departmentId,
-      departmentName: allowance.departmentName,
-      year: allowance.year,
-      itemId: allowance.itemId,
-      itemName: allowance.itemName || allowance.itemNo || `Item ${allowance.itemId}`,
-      quantity: allowance.quantity,
-      usedQuantityFromAllowance: allowance.usedQuantityFromAllowance,
-      reservedQuantityByDraftSupplies: allowance.reservedQuantityByDraftSupplies,
-      remainingQuantityFromAllowance: allowance.remainingQuantityFromAllowance,
+      ...allowance,
+      items: allowance.items ?? [],
       isSingleItem: true
-    } as any;
+    };
     this.showDeleteDialog = true;
   }
 
@@ -420,34 +463,34 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     if (!this.selectedAllowance) return;
 
 
-    const isSingleItem = (this.selectedAllowance as any).isSingleItem;
+    const isSingleItem = this.selectedAllowance.isSingleItem === true;
 
     if (isSingleItem) {
 
-      const itemId = (this.selectedAllowance as any).id;
+      const itemId = this.selectedAllowance.id;
       const endpoint = `${API_ENDPOINTS.ALLOWANCE.BASE}/${itemId}`;
 
-      this.apiService.deleteWithAuth<any>(endpoint)
+      this.apiService.delete<unknown>(endpoint)
         .pipe(
           takeUntil(this.destroy$),
-          catchError((err: any) => {
-            const isNotFound = err?.status === 404 || err?.message === 'Resource not found.';
+          catchError((err: unknown) => {
+            const isNotFound = (err as { status?: number; message?: string })?.status === 404 || (err as { message?: string })?.message === 'Resource not found.';
             if (isNotFound) {
-
               return of({ ok: true, notFound: true });
             }
             return of({ ok: false, error: err });
           })
         )
         .subscribe({
-          next: (result: any) => {
-            if (result && result.ok === false) {
-              const errorMessage = result.error?.error?.message || result.error?.message || this.translateService.instant('allowance.failedToDeleteItem');
-              this.translateService.get(['toast.error', 'allowance.failedToDeleteItem']).subscribe(tr => {
+          next: (result: unknown) => {
+            const r = result as { ok: boolean; error?: unknown } | undefined;
+            if (r && r.ok === false) {
+              const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(r.error, this.translateService.instant('allowance.failedToDeleteItem'), this.translateService);
+              this.translateService.get(['toast.error', 'allowance.failedToDeleteItem']).subscribe((tr: TranslationMap) => {
                 this.toastService.error(errorMessage, tr['toast.error']);
               });
             } else {
-              this.translateService.get(['toast.success', 'allowance.itemDeletedSuccessfully']).subscribe(tr => {
+              this.translateService.get(['toast.success', 'allowance.itemDeletedSuccessfully']).subscribe((tr: TranslationMap) => {
                 this.toastService.success(tr['allowance.itemDeletedSuccessfully'], tr['toast.success']);
               });
             }
@@ -455,13 +498,15 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
             this.showDeleteDialog = false;
             this.selectedAllowance = null;
             this.loadAllowances();
+            this.cdr.markForCheck();
           },
-          error: (error: any) => {
-            this.translateService.get(['toast.error', 'allowance.failedToDeleteItem']).subscribe(tr => {
+          error: (error: unknown) => {
+            this.translateService.get(['toast.error', 'allowance.failedToDeleteItem']).subscribe((tr: TranslationMap) => {
               this.toastService.error(tr['allowance.failedToDeleteItem'], tr['toast.error']);
             });
             this.showDeleteDialog = false;
             this.selectedAllowance = null;
+            this.cdr.markForCheck();
           }
         });
     } else {
@@ -470,29 +515,31 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
       const year = this.selectedAllowance.year;
 
 
-      this.apiService.getWithAuth<ApiResponse<AllowanceItemDto[]>>(API_ENDPOINTS.ALLOWANCE.BASE)
+      this.apiService.get<AllowanceItemDto[]>(API_ENDPOINTS.ALLOWANCE.BASE)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-          next: (resp) => {
-            const all = resp?.data || [];
-            const ids = all.filter(i => i.departmentId === deptId && i.year === year).map(i => i.id);
+          next: (all) => {
+            const items = Array.isArray(all) ? all : [];
+            const ids = items.filter(i => i.departmentId === deptId && i.year === year).map(i => i.id);
 
             if (ids.length === 0) {
 
-              this.translateService.get(['toast.success', 'allowance.alreadyDeleted']).subscribe(tr => {
+              this.translateService.get(['toast.success', 'allowance.alreadyDeleted']).subscribe((tr: TranslationMap) => {
                 this.toastService.success(tr['allowance.alreadyDeleted'], tr['toast.success']);
               });
               this.showDeleteDialog = false;
               this.selectedAllowance = null;
               this.loadAllowances();
+              this.cdr.markForCheck();
               return;
             }
 
+            type DeleteResult = { ok: true; id?: number; notFound?: boolean } | { ok: false; id?: number; error: unknown };
             const deleteObservables = ids.map(id => {
               const endpoint = `${API_ENDPOINTS.ALLOWANCE.BASE}/${id}`;
-              return this.apiService.deleteWithAuth<any>(endpoint).pipe(
-                catchError((err: any) => {
-                  const isNotFound = err?.status === 404 || err?.message === 'Resource not found.';
+              return this.apiService.delete<unknown>(endpoint).pipe(
+                catchError((err: unknown) => {
+                  const isNotFound = (err as { status?: number; message?: string })?.status === 404 || (err as { message?: string })?.message === 'Resource not found.';
                   if (isNotFound) return of({ ok: true, id, notFound: true });
                   return of({ ok: false, id, error: err });
                 })
@@ -502,16 +549,17 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
             forkJoin(deleteObservables)
               .pipe(takeUntil(this.destroy$))
               .subscribe({
-                next: (results: any[]) => {
-                  const hasHardError = results.some(r => r && r.ok === false);
+                next: (results: unknown) => {
+                  const r = results as DeleteResult[];
+                  const hasHardError = r.some(x => x && x.ok === false);
                   if (hasHardError) {
-                    const firstErr = results.find(r => r && r.ok === false)?.error;
-                    const errorMessage = firstErr?.error?.message || firstErr?.message || this.translateService.instant('allowance.failedToDelete');
-                    this.translateService.get(['toast.error', 'allowance.failedToDelete']).subscribe(tr => {
+                    const firstErr = r.find((x): x is { ok: false; error: unknown } => x.ok === false);
+                    const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(firstErr?.error, this.translateService.instant('allowance.failedToDelete'), this.translateService);
+                    this.translateService.get(['toast.error', 'allowance.failedToDelete']).subscribe((tr: TranslationMap) => {
                       this.toastService.error(errorMessage, tr['toast.error']);
                     });
                   } else {
-                    this.translateService.get(['toast.success', 'allowance.deletedSuccessfully']).subscribe(tr => {
+                    this.translateService.get(['toast.success', 'allowance.deletedSuccessfully']).subscribe((tr: TranslationMap) => {
                       this.toastService.success(tr['allowance.deletedSuccessfully'], tr['toast.success']);
                     });
                   }
@@ -519,20 +567,23 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
                   this.showDeleteDialog = false;
                   this.selectedAllowance = null;
                   this.loadAllowances();
+                  this.cdr.markForCheck();
                 },
                 error: () => {
-                  this.translateService.get(['toast.error', 'allowance.failedToDelete']).subscribe(tr => {
+                  this.translateService.get(['toast.error', 'allowance.failedToDelete']).subscribe((tr: TranslationMap) => {
                     this.toastService.error(tr['allowance.failedToDelete'], tr['toast.error']);
                   });
                   this.showDeleteDialog = false;
+                  this.cdr.markForCheck();
                 }
               });
           },
           error: () => {
-            this.translateService.get(['toast.error', 'allowance.failedToLoadForDeletion']).subscribe(tr => {
+            this.translateService.get(['toast.error', 'allowance.failedToLoadForDeletion']).subscribe((tr: TranslationMap) => {
               this.toastService.error(tr['allowance.failedToLoadForDeletion'], tr['toast.error']);
             });
             this.showDeleteDialog = false;
+            this.cdr.markForCheck();
           }
         });
     }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
@@ -8,6 +8,8 @@ import { BackendAuthService } from '@services/backend-auth.service';
 import { TranslationService } from '@services/translation.service';
 import { ConfigService } from '@services/config.service';
 import { environment } from '@environments/environment';
+import { LoginRequest } from '@models/auth.model';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 @Component({
   selector: 'app-login',
@@ -20,7 +22,8 @@ import { environment } from '@environments/environment';
     RouterLink
   ],
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+  styleUrls: ['./login.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LoginComponent implements OnInit {
   readonly Eye = Eye;
@@ -50,7 +53,8 @@ export class LoginComponent implements OnInit {
     private backendAuth: BackendAuthService,
     private translate: TranslateService,
     public translationService: TranslationService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private cdr: ChangeDetectorRef
   ) {
     this.loginForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
@@ -143,6 +147,7 @@ export class LoginComponent implements OnInit {
   loadCaptcha(): void {
     this.isLoadingCaptcha = true;
     this.showCaptcha = true;
+    this.cdr.markForCheck();
 
     // Add required validator to captcha field
     this.captcha?.setValidators([Validators.required]);
@@ -162,6 +167,7 @@ export class LoginComponent implements OnInit {
           throw new Error('Invalid captcha response: missing captchaCode');
         }
         this.isLoadingCaptcha = false;
+        this.cdr.markForCheck();
         // Clear any previous errors
         if (this.loginError && this.loginError.includes('captcha')) {
           this.loginError = '';
@@ -169,15 +175,10 @@ export class LoginComponent implements OnInit {
       },
       error: (error) => {
         this.isLoadingCaptcha = false;
+        this.cdr.markForCheck();
         this.configService.logError('Failed to load captcha', error);
 
-        // Extract error message from various possible locations
-        const errorMessage = error?.error?.message ||
-          error?.message ||
-          error?.error?.data?.message ||
-          error?.error?.error?.message ||
-          'Failed to load captcha. Please try again.';
-
+        const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load captcha. Please try again.');
         this.loginError = this.translate.instant('auth.login.errors.captchaLoadFailed') || errorMessage;
       }
     });
@@ -382,24 +383,24 @@ export class LoginComponent implements OnInit {
 
     this.isLoading = true;
     this.loginError = '';
+    this.cdr.markForCheck();
 
     const formValue = this.loginForm.value as { username: string; password: string; captcha: string; };
 
-    const loginRequest: any = {
+    const loginRequest: LoginRequest = {
       username: formValue.username,
       password: formValue.password,
-      isLdap: this.isLdapMode
+      isLdap: this.isLdapMode,
+      ...(this.showCaptcha && {
+        captchaId: this.captchaId,
+        captchaCode: formValue.captcha
+      })
     };
-
-    // Include captcha if required
-    if (this.showCaptcha) {
-      loginRequest.captchaId = this.captchaId;
-      loginRequest.captchaCode = formValue.captcha;
-    }
 
     this.backendAuth.login(loginRequest).subscribe({
       next: (response) => {
         this.isLoading = false;
+        this.cdr.markForCheck();
         // Reset failed attempts on successful login
         this.failedLoginAttempts = 0;
         sessionStorage.removeItem('loginFailedAttempts');
@@ -428,6 +429,7 @@ export class LoginComponent implements OnInit {
       },
       error: (error) => {
         this.isLoading = false;
+        this.cdr.markForCheck();
 
         // Check if error indicates ALREADY_LOGGED_IN (single-session: show take-over dialog)
         const errorCode = error?.error?.code?.value ||
@@ -447,6 +449,7 @@ export class LoginComponent implements OnInit {
         if (isAlreadyLoggedIn) {
           this.loginError = '';
           this.showTakeOverDialog = true;
+          this.cdr.markForCheck();
           this.pendingLoginCredentials = {
             username: formValue.username,
             password: formValue.password,
@@ -457,6 +460,7 @@ export class LoginComponent implements OnInit {
         }
 
         this.loginError = this.getUserFriendlyErrorMessage(error, formValue.username);
+        this.cdr.markForCheck();
 
         const isCaptchaRequired = errorCode === 'CAPTCHA_REQUIRED' ||
           errorCode === '0018' ||
@@ -482,8 +486,9 @@ export class LoginComponent implements OnInit {
     this.showTakeOverDialog = false;
     this.isLoading = true;
     this.loginError = '';
+    this.cdr.markForCheck();
 
-    const loginRequest: any = {
+    const loginRequest: LoginRequest = {
       ...this.pendingLoginCredentials,
       isLdap: this.isLdapMode,
       forceLogin: true
@@ -493,6 +498,7 @@ export class LoginComponent implements OnInit {
     this.backendAuth.login(loginRequest).subscribe({
       next: (response) => {
         this.isLoading = false;
+        this.cdr.markForCheck();
         this.failedLoginAttempts = 0;
         sessionStorage.removeItem('loginFailedAttempts');
         this.showCaptcha = false;
@@ -517,6 +523,7 @@ export class LoginComponent implements OnInit {
       error: (error) => {
         this.isLoading = false;
         this.loginError = this.getUserFriendlyErrorMessage(error, loginRequest.username);
+        this.cdr.markForCheck();
       }
     });
   }
@@ -541,17 +548,16 @@ export class LoginComponent implements OnInit {
         if (fieldName === 'username') {
           return this.translate.instant('auth.login.errors.usernameRequired');
         } else if (fieldName === 'password') {
-          return this.translate.instant('auth.login.errors.passwordRequired');
+          return this.translate.instant('auth.login.errors.invalidCredentials');
         } else if (fieldName === 'captcha') {
           return this.translate.instant('auth.login.errors.captchaRequired') || 'Captcha is required';
         }
       }
       if (field.errors['minlength']) {
-        const required = field.errors['minlength'].requiredLength;
         if (fieldName === 'username') {
           return this.translate.instant('auth.login.errors.usernameMinLength');
         }
-        return this.translate.instant('auth.login.errors.passwordMinLength');
+        return '';
       }
     }
     return '';
@@ -600,32 +606,31 @@ export class LoginComponent implements OnInit {
    * @param error - The error object from the API
    * @param username - The username that was attempted (to determine if it's likely a password issue)
    */
-  private getUserFriendlyErrorMessage(error: any, username?: string): string {
-    // Extract error message from various possible locations (prioritize backend message)
-    const errorMessage = error?.error?.message ||
-      error?.error?.data?.message ||
-      error?.message ||
-      error?.error?.error?.message ||
-      error?.error?.data ||
-      '';
+  private getUserFriendlyErrorMessage(error: unknown, username?: string): string {
+    const err = error as Record<string, unknown> | null | undefined;
+    const errError = err?.['error'] as Record<string, unknown> | undefined;
+    const errCode = errError?.['code'] as Record<string, unknown> | undefined;
+    const errData = errError?.['data'] as Record<string, unknown> | undefined;
+
+    // Extract error message using centralized ErrorHandler
+    const errorMessage = ErrorHandler.extractErrorMessage(error, '');
 
     // Extract error code from various possible locations (including 'value' and 'code' fields)
     // Backend returns CommonErrorCodes which has both Value (string) and Code (int)
-    let errorCode = error?.error?.code?.value ||
-      error?.error?.code?.Value ||
-      error?.error?.value ||
-      error?.error?.errorCode ||
-      error?.errorCode ||
-      error?.error?.code?.value ||
-      error?.error?.data?.errorCode ||
+    let errorCode = (errCode?.['value'] as string) ||
+      (errCode?.['Value'] as string) ||
+      (errError?.['value'] as string) ||
+      (errError?.['errorCode'] as string) ||
+      (err?.['errorCode'] as string) ||
+      (errData?.['errorCode'] as string) ||
       '';
-    
+
     // Also check numeric code and map to string value if needed
     if (!errorCode) {
-      const numericCode = error?.error?.code?.code ||
-        error?.error?.code?.Code ||
-        (typeof error?.error?.code === 'number' ? error?.error?.code : null) ||
-        error?.errorCode;
+      const numericCode = (errCode?.['code'] as number) ??
+        (errCode?.['Code'] as number) ??
+        (typeof errCode === 'number' ? errCode : null) ??
+        (err?.['errorCode'] as number);
       
       // Map numeric codes to string values
       if (numericCode !== undefined && numericCode !== null) {
@@ -646,9 +651,9 @@ export class LoginComponent implements OnInit {
     }
 
     // Extract status code
-    const statusCode = error?.status || error?.error?.status || 0;
+    const statusCode = (err?.['status'] as number) || (errError?.['status'] as number) || 0;
 
-    const lowerMessage = errorMessage.toLowerCase();
+    const lowerMessage = String(errorMessage).toLowerCase();
 
     // Check if username looks valid (to determine if it's likely a password issue)
     const hasValidUsername = username && username.trim().length >= 3;
@@ -772,22 +777,12 @@ export class LoginComponent implements OnInit {
         return errorMessage;
       }
       
-      // Fallback to generic messages based on context
+      // Fallback to generic message - never reveal which field is incorrect
       if (this.isLdapMode) {
-        // For LDAP, provide more specific guidance
-        if (!hasValidUsername || (username && !username.includes('@'))) {
-          return this.translate.instant('auth.login.errors.invalidLdapCredentials') || 
-                 this.translate.instant('auth.login.errors.invalidCredentials');
-        }
-        // Username looks valid (has @), likely password issue
-        return this.translate.instant('auth.login.errors.wrongPassword');
-      } else {
-        // Standard login
-        if (hasValidUsername) {
-          return this.translate.instant('auth.login.errors.wrongPassword');
-        }
-        return this.translate.instant('auth.login.errors.invalidCredentials');
+        return this.translate.instant('auth.login.errors.invalidLdapCredentials') || 
+               this.translate.instant('auth.login.errors.invalidCredentials');
       }
+      return this.translate.instant('auth.login.errors.invalidCredentials');
     }
 
     // Check for session conflicts
@@ -806,27 +801,22 @@ export class LoginComponent implements OnInit {
       return this.translate.instant('auth.login.errors.invalidLogin');
     }
 
-    // Check for password-specific errors first
+    // Check for password-specific errors - return generic message (never reveal which field is wrong)
     if (lowerMessage.includes('incorrect password') ||
       lowerMessage.includes('wrong password') ||
       lowerMessage.includes('invalid password') ||
       lowerMessage.includes('password is incorrect') ||
       lowerMessage.includes('password incorrect')) {
-      return this.translate.instant('auth.login.errors.wrongPassword');
+      return this.translate.instant('auth.login.errors.invalidCredentials');
     }
 
-    // Check for invalid credentials patterns
-    // If username is provided and looks valid, assume it's a password issue
+    // Check for invalid credentials patterns - always return generic message
     if ((lowerMessage.includes('invalid') &&
       (lowerMessage.includes('login') || lowerMessage.includes('password') || lowerMessage.includes('credential') || lowerMessage.includes('username'))) ||
       lowerMessage.includes('unauthorized') ||
       lowerMessage.includes('bad credentials') ||
       lowerMessage.includes('authentication failed') ||
       lowerMessage.includes('access denied')) {
-      // If username looks valid, it's likely a password issue
-      if (hasValidUsername && (errorCode === 'INVALID_EMAIL_OR_PASSWORD' || errorCode === '0008' || statusCode === 401)) {
-        return this.translate.instant('auth.login.errors.wrongPassword');
-      }
       return this.translate.instant('auth.login.errors.invalidCredentials');
     }
 
@@ -846,8 +836,8 @@ export class LoginComponent implements OnInit {
       lowerMessage.includes('connection refused') ||
       lowerMessage.includes('cannot connect') ||
       lowerMessage.includes('net::err_') ||
-      error?.message?.includes('ERR_INTERNET_DISCONNECTED') ||
-      error?.message?.includes('ERR_CONNECTION_REFUSED');
+      lowerMessage.includes('ERR_INTERNET_DISCONNECTED') ||
+      lowerMessage.includes('ERR_CONNECTION_REFUSED');
     if (isLikelyNetworkError) {
       return this.translate.instant('auth.login.errors.networkError');
     }
@@ -873,13 +863,8 @@ export class LoginComponent implements OnInit {
       return this.translate.instant('auth.login.errors.accessDenied');
     }
 
-    // Unauthorized (401) - typically invalid credentials
-    // If username looks valid, assume it's a password issue
+    // Unauthorized (401) - return generic message (never reveal which field is wrong)
     if (statusCode === 401) {
-      const hasValidUsername = username && username.trim().length >= 3;
-      if (hasValidUsername && (errorCode === 'INVALID_EMAIL_OR_PASSWORD' || errorCode === '0008' || errorCode === 'INVALID_CREDENTIALS')) {
-        return this.translate.instant('auth.login.errors.wrongPassword');
-      }
       return this.translate.instant('auth.login.errors.invalidCredentials');
     }
 

@@ -47,7 +47,7 @@ export class AssetImportService {
           msg += ` Reason: ${reason}`;
         } else {
           // Check for common issues in bulk
-          const hasDuplicates = result.errors.some((e: any) =>
+          const hasDuplicates = result.errors.some((e: { errorMessage: string }) =>
             e.errorMessage?.toLowerCase().includes('duplicate') ||
             e.errorMessage?.toLowerCase().includes('already exists')
           );

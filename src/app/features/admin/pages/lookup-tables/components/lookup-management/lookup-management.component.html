@@ -1,7 +1,13 @@
 <div class="flex flex-col gap-6">
+  <!-- Empty state when user has no lookup permissions -->
+  <app-card *ngIf="lookupTables.length === 0" class="p-8 text-center">
+    <p class="text-[var(--color-text-muted)]">{{ 'lookupManagement.noLookupPermissions' | translate }}</p>
+  </app-card>
+
+  <ng-container *ngIf="lookupTables.length > 0">
   <!-- Header with Add Button -->
   <div class="flex items-center justify-end">
-    <button *ngIf="selectedTable" (click)="onAddLookup()"
+    <button *ngIf="canAdd()" (click)="onAddLookup()"
       class="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors">
       <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
       {{ getAddButtonLabel() }}
@@ -26,13 +32,13 @@
         <div class="flex items-start justify-between">
           <h3 class="font-bold text-[var(--color-text)] text-sm">{{ item.nameEn }}</h3>
 
-          <div class="flex items-center gap-1">
-            <button (click)="onEditLookup(item)"
+          <div *ngIf="canEdit() || canDelete()" class="flex items-center gap-1">
+            <button *ngIf="canEdit()" (click)="onEditLookup(item)"
               class="p-1.5 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors"
               [title]="'lookupManagement.edit' | translate">
               <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
             </button>
-            <button (click)="onDeleteLookup(item)"
+            <button *ngIf="canDelete()" (click)="onDeleteLookup(item)"
               class="p-1.5 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
               [title]="'lookupManagement.delete' | translate">
               <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
@@ -44,11 +50,27 @@
         <div class="text-sm font-medium text-[var(--color-text)]" dir="rtl">{{ item.nameAr }}</div>
 
         <!-- Details Grid -->
-        <div *ngIf="selectedTable.hasCode || selectedTable.name === 'ItemType' || selectedTable.name === 'Unit'"
+        <div *ngIf="selectedTable.hasCode || selectedTable.name === 'ItemType' || selectedTable.name === 'Unit' || selectedTable.name === 'Employee'"
           class="grid grid-cols-2 gap-2 text-xs border-t border-[var(--color-border-muted)] pt-3 mt-1">
           <div *ngIf="selectedTable.hasCode">
-            <span class="text-[var(--color-text-muted)] block mb-0.5">{{ 'lookupManagement.code' | translate }}</span>
+            <span class="text-[var(--color-text-muted)] block mb-0.5">{{ (selectedTable.name === 'Employee' ? 'lookupManagement.militaryId' : 'lookupManagement.code') | translate }}</span>
             <span class="font-medium text-[var(--color-text)] font-mono">{{ item.code || '-' }}</span>
+          </div>
+          <div *ngIf="selectedTable.name === 'Employee'">
+            <span class="text-[var(--color-text-muted)] block mb-0.5">{{ 'lookupManagement.department' | translate }}</span>
+            <span class="font-medium text-[var(--color-text)]">{{ item.departmentName || '-' }}</span>
+          </div>
+          <div *ngIf="selectedTable.name === 'Employee'">
+            <span class="text-[var(--color-text-muted)] block mb-0.5">{{ 'lookupManagement.rank' | translate }}</span>
+            <span class="font-medium text-[var(--color-text)]">{{ item.rankName || '-' }}</span>
+          </div>
+          <div *ngIf="selectedTable.name === 'Employee'">
+            <span class="text-[var(--color-text-muted)] block mb-0.5">{{ 'lookupManagement.phone' | translate }}</span>
+            <span class="font-medium text-[var(--color-text)]">{{ item.phone || '-' }}</span>
+          </div>
+          <div *ngIf="selectedTable.name === 'Employee'">
+            <span class="text-[var(--color-text-muted)] block mb-0.5">{{ 'lookupManagement.email' | translate }}</span>
+            <span class="font-medium text-[var(--color-text)] truncate">{{ item.email || '-' }}</span>
           </div>
           <div *ngIf="selectedTable.name === 'ItemType' || selectedTable.name === 'Unit'">
             <span class="text-[var(--color-text-muted)] block mb-0.5">{{ 'lookupManagement.itemType' | translate
@@ -80,13 +102,29 @@
             </th>
             <th *ngIf="selectedTable.hasCode"
               class="px-6 py-3 text-center align-middle text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-              {{ 'lookupManagement.code' | translate }}
+              {{ (selectedTable.name === 'Employee' ? 'lookupManagement.militaryId' : 'lookupManagement.code') | translate }}
+            </th>
+            <th *ngIf="selectedTable.name === 'Employee'"
+              class="px-6 py-3 text-center align-middle text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+              {{ 'lookupManagement.department' | translate }}
+            </th>
+            <th *ngIf="selectedTable.name === 'Employee'"
+              class="px-6 py-3 text-center align-middle text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+              {{ 'lookupManagement.rank' | translate }}
+            </th>
+            <th *ngIf="selectedTable.name === 'Employee'"
+              class="px-6 py-3 text-center align-middle text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+              {{ 'lookupManagement.phone' | translate }}
+            </th>
+            <th *ngIf="selectedTable.name === 'Employee'"
+              class="px-6 py-3 text-center align-middle text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+              {{ 'lookupManagement.email' | translate }}
             </th>
             <th *ngIf="selectedTable.name === 'ItemType' || selectedTable.name === 'Unit'"
               class="px-6 py-3 text-center align-middle text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
               {{ 'lookupManagement.itemType' | translate }}
             </th>
-            <th
+            <th *ngIf="canEdit() || canDelete()"
               class="px-6 py-3 text-center align-middle text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
               {{ 'lookupManagement.actions' | translate }}
             </th>
@@ -104,6 +142,18 @@
             <td *ngIf="selectedTable.hasCode" class="px-6 py-4 text-center align-middle">
               <span class="text-sm text-[var(--color-text-muted)]">{{ item.code || '-' }}</span>
             </td>
+            <td *ngIf="selectedTable.name === 'Employee'" class="px-6 py-4 text-center align-middle">
+              <span class="text-sm text-[var(--color-text)]">{{ item.departmentName || '-' }}</span>
+            </td>
+            <td *ngIf="selectedTable.name === 'Employee'" class="px-6 py-4 text-center align-middle">
+              <span class="text-sm text-[var(--color-text)]">{{ item.rankName || '-' }}</span>
+            </td>
+            <td *ngIf="selectedTable.name === 'Employee'" class="px-6 py-4 text-center align-middle">
+              <span class="text-sm text-[var(--color-text)]">{{ item.phone || '-' }}</span>
+            </td>
+            <td *ngIf="selectedTable.name === 'Employee'" class="px-6 py-4 text-center align-middle">
+              <span class="text-sm text-[var(--color-text)]">{{ item.email || '-' }}</span>
+            </td>
             <td *ngIf="selectedTable.name === 'ItemType' || selectedTable.name === 'Unit'" class="px-6 py-4 text-center align-middle">
               <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" [ngClass]="{
                     'bg-blue-100 text-blue-800': getItemType(item) === 1,
@@ -113,14 +163,14 @@
                 {{ getItemTypeName(item) }}
               </span>
             </td>
-            <td class="px-6 py-4 text-center align-middle">
+            <td *ngIf="canEdit() || canDelete()" class="px-6 py-4 text-center align-middle">
               <div class="inline-flex items-center gap-2">
-                <button (click)="onEditLookup(item)"
+                <button *ngIf="canEdit()" (click)="onEditLookup(item)"
                   class="p-2 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors"
                   [title]="'lookupManagement.edit' | translate">
                   <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
                 </button>
-                <button (click)="onDeleteLookup(item)"
+                <button *ngIf="canDelete()" (click)="onDeleteLookup(item)"
                   class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
                   [title]="'lookupManagement.delete' | translate">
                   <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
@@ -163,12 +213,26 @@
   <!-- Error Message -->
   <app-error-state *ngIf="lookupErrorMessage" [error]="lookupErrorMessage" variant="banner" containerClass="mt-4">
   </app-error-state>
+  </ng-container>
 </div>
 
 <!-- Lookup Form Modal -->
-<app-lookup-form-modal [isOpen]="showLookupModal" [lookupItem]="selectedLookupItem" [tableConfig]="selectedTable"
-  [mode]="lookupModalMode" [externalLoading]="lookupModalLoading"
-  (closed)="showLookupModal = false; lookupModalLoading = false" (saved)="onLookupSaved($event)" />
+<app-lookup-form-modal
+  [isOpen]="showLookupModal"
+  [lookupItem]="selectedLookupItem"
+  [tableConfig]="selectedTable"
+  [mode]="lookupModalMode"
+  [externalLoading]="lookupModalLoading"
+  (closed)="showLookupModal = false; lookupModalLoading = false"
+  (saved)="onLookupSaved($event)" />
+
+<!-- Employee Form Modal (for Employee lookup table) -->
+<app-employee-form-modal
+  [isOpen]="showEmployeeModal"
+  [mode]="employeeModalMode"
+  [employee]="selectedEmployee"
+  (closed)="onEmployeeModalClosed()"
+  (saved)="onEmployeeSaved()" />
 
 <!-- Lookup Delete Confirmation -->
 <app-confirm-dialog [isOpen]="showLookupDeleteConfirm" [title]="'lookupManagement.deleteItem' | translate"

@@ -155,9 +155,9 @@ export class AssetExportService {
   /**
    * Get template data based on active tab
    */
-  private getTemplateData(activeTab: AssetType): { headers: ExcelColumn[]; sampleData: any[] } {
+  private getTemplateData(activeTab: AssetType): { headers: ExcelColumn[]; sampleData: Record<string, unknown>[] } {
     let headers: ExcelColumn[] = [];
-    let sampleData: any[] = [];
+    let sampleData: Record<string, unknown>[] = [];
 
     if (activeTab === 'ammunition') {
       headers = [

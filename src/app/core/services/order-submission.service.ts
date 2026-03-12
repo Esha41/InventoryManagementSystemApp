@@ -2,11 +2,12 @@ import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { switchMap, map, catchError } from 'rxjs/operators';
 import { OrderService } from './order.service';
-import { ErrorHandlingService } from './error-handling.service';
+import { ErrorHandler } from '@utils/error-handler.utils';
 import { APIOperationResponse } from '@models/api-response.model';
 import { CreateOrderDto, OrderDto } from '@models/order.model';
 import { Cartridge } from '@requests/pages/new-issue/components/cartridge-list/cartridge-list.component';
 import { parseOptionalInteger } from '@utils/number.utils';
+import { formatDateForInput } from '@core/utils/format.utils';
 
 export interface OrderSubmissionData {
   selectedEntries: Array<{ id: number; quantity: number }>;
@@ -50,10 +51,7 @@ export interface OrderSubmissionResult {
   providedIn: 'root'
 })
 export class OrderSubmissionService {
-  constructor(
-    private orderService: OrderService,
-    private errorHandlingService: ErrorHandlingService
-  ) { }
+  constructor(private orderService: OrderService) { }
 
   /**
    * Validates order data before submission
@@ -97,6 +95,12 @@ export class OrderSubmissionService {
       };
     }
 
+    if (!this.isDateOnOrAfterToday(data.usageDateFrom)) {
+      return {
+        isValid: false,
+        error: 'newIssueRequest.validation.usageDateFromMustBeTodayOrFuture'
+      };
+    }
 
     if (data.usageTimeFrom === null || data.usageTimeFrom === undefined ||
       (typeof data.usageTimeFrom === 'string' && data.usageTimeFrom.trim().length === 0)) {
@@ -110,6 +114,13 @@ export class OrderSubmissionService {
       return {
         isValid: false,
         error: 'Usage date to is required.'
+      };
+    }
+
+    if (!this.isDateOnOrAfterToday(data.usageDateTo)) {
+      return {
+        isValid: false,
+        error: 'newIssueRequest.validation.usageDateToMustBeTodayOrFuture'
       };
     }
 
@@ -193,9 +204,10 @@ export class OrderSubmissionService {
     return this.orderService.createOrder(payload, files).pipe(
       switchMap((response: APIOperationResponse<number>) => {
         if (!response?.succeeded) {
-          const errorMessage = this.errorHandlingService.resolveOrderSubmissionError(
+          const errorMessage = ErrorHandler.resolveOrderSubmissionError(
             response,
-            undefined
+            undefined,
+            'Failed to submit order. Please try again.'
           );
           return of({
             success: false,
@@ -229,9 +241,10 @@ export class OrderSubmissionService {
         );
       }),
       catchError((error: unknown) => {
-        const errorMessage = this.errorHandlingService.resolveOrderSubmissionError(
+        const errorMessage = ErrorHandler.resolveOrderSubmissionError(
           undefined,
-          error
+          error,
+          'Failed to submit order. Please try again.'
         );
         return of({
           success: false,
@@ -239,6 +252,21 @@ export class OrderSubmissionService {
         } as OrderSubmissionResult);
       })
     );
+  }
+
+  /**
+   * Checks if a date string is today or in the future (date part only, local timezone).
+   * Uses YYYY-MM-DD directly when present to avoid timezone shift from new Date() parsing.
+   */
+  private isDateOnOrAfterToday(dateStr: string): boolean {
+    if (!dateStr?.trim()) return false;
+    // Date input returns YYYY-MM-DD - use directly to avoid timezone shift (new Date("YYYY-MM-DD") = UTC midnight)
+    const ymdMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    const normalized = ymdMatch ? ymdMatch[0] : (formatDateForInput(dateStr) || dateStr.trim());
+    if (!normalized) return false;
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    return normalized >= todayStr;
   }
 
   /**

@@ -56,6 +56,19 @@ export class EmailConfigurationService {
     return API_ENDPOINTS.EMAIL_CONFIGURATION.BASE;
   }
 
+  /**
+   * Check if email notifications are enabled. Any authenticated user can call this.
+   * Use this for notification service instead of getEmailConfiguration (which requires admin).
+   */
+  isEmailNotificationsEnabled(): Observable<boolean> {
+    return this.apiService
+      .getRaw<boolean>(API_ENDPOINTS.EMAIL_CONFIGURATION.IS_ENABLED)
+      .pipe(
+        map(response => response?.data ?? false),
+        catchError(() => of(false))
+      );
+  }
+
   getEmailConfiguration(): Observable<EmailConfigurationDto> {
     this.config.log('Fetching email configuration');
 

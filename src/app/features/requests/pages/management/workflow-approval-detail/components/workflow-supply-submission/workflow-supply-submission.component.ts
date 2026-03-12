@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnDestroy, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -13,6 +13,7 @@ import { WorkflowApprovalDataService } from '../../services/workflow-approval-da
 import { WorkflowApprovalStateService } from '../../services/workflow-approval-state.service';
 import { WorkflowApprovalNavigationService } from '../../services/workflow-approval-navigation.service';
 import { ToastService } from '@services/toast.service';
+import { ConfigService } from '@services/config.service';
 import { getRankDisplayName as getRankDisplayNameHelper } from '../../utils/workflow-approval-helpers';
 
 @Component({
@@ -26,7 +27,8 @@ import { getRankDisplayName as getRankDisplayNameHelper } from '../../utils/work
     DropdownComponent
   ],
   templateUrl: './workflow-supply-submission.component.html',
-  styleUrls: ['./workflow-supply-submission.component.css']
+  styleUrls: ['./workflow-supply-submission.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WorkflowSupplySubmissionComponent implements OnDestroy, OnChanges {
   @Input() supplyId: number | null = null;
@@ -89,6 +91,7 @@ export class WorkflowSupplySubmissionComponent implements OnDestroy, OnChanges {
   constructor(
     private translateService: TranslateService,
     private toastService: ToastService,
+    private configService: ConfigService,
     private supplyServiceHelper: WorkflowApprovalSupplyService,
     private dataService: WorkflowApprovalDataService,
     private stateService: WorkflowApprovalStateService,
@@ -174,7 +177,7 @@ export class WorkflowSupplySubmissionComponent implements OnDestroy, OnChanges {
 
     // Prevent submission if already submitted
     if (this.supplyData?.submissionStatus === 2) {
-      this.translateService.get(['toast.error', 'workflowApprovalDetail.alreadySubmitted']).subscribe(translations => {
+      this.translateService.get(['toast.error', 'workflowApprovalDetail.alreadySubmitted']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.error(
           translations['workflowApprovalDetail.alreadySubmittedMessage'] || 'Supply is already submitted',
           translations['toast.error']
@@ -185,7 +188,7 @@ export class WorkflowSupplySubmissionComponent implements OnDestroy, OnChanges {
 
     // Validate required fields
     if (!this.receiverInfo.recieverName || !this.receiverInfo.recieverName.trim()) {
-      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.receiverNameRequired']).subscribe(translations => {
+      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.receiverNameRequired']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.error(
           translations['workflowApprovalDetail.errors.receiverNameRequired'] || 'Receiver name is required',
           translations['toast.error']
@@ -195,7 +198,7 @@ export class WorkflowSupplySubmissionComponent implements OnDestroy, OnChanges {
     }
 
     if (!this.receiverInfo.receiverRankId || this.receiverInfo.receiverRankId <= 0) {
-      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.receiverRankRequired']).subscribe(translations => {
+      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.receiverRankRequired']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.error(
           translations['workflowApprovalDetail.errors.receiverRankRequired'] || 'Receiver rank is required',
           translations['toast.error']
@@ -205,7 +208,7 @@ export class WorkflowSupplySubmissionComponent implements OnDestroy, OnChanges {
     }
 
     if (!this.receiverInfo.recieverMilitaryId || !this.receiverInfo.recieverMilitaryId.trim()) {
-      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.militaryIdRequired']).subscribe(translations => {
+      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.militaryIdRequired']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.error(
           translations['workflowApprovalDetail.errors.militaryIdRequired'] || 'Military ID is required',
           translations['toast.error']
@@ -216,7 +219,7 @@ export class WorkflowSupplySubmissionComponent implements OnDestroy, OnChanges {
 
     // Validate that at least one file is selected
     if (!this.selectedFiles || this.selectedFiles.length === 0) {
-      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.filesRequired']).subscribe(translations => {
+      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.filesRequired']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.error(
           translations['workflowApprovalDetail.errors.filesRequired'] || 'At least one file attachment is required',
           translations['toast.error']
@@ -228,6 +231,7 @@ export class WorkflowSupplySubmissionComponent implements OnDestroy, OnChanges {
     this.isSubmittingSupply = true;
 
     this.supplyServiceHelper.submitSupply(this.supplyId, this.receiverInfo, this.selectedFiles, this.destroy$)
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
           this.isSubmittingSupply = false;
@@ -242,7 +246,8 @@ export class WorkflowSupplySubmissionComponent implements OnDestroy, OnChanges {
           // Emit event to parent
           this.supplySubmitted.emit();
         },
-        error: (error: any) => {
+        error: (error: unknown) => {
+          this.configService.logError('Failed to submit supply', error);
           this.isSubmittingSupply = false;
         }
       });
@@ -344,6 +349,7 @@ export class WorkflowSupplySubmissionComponent implements OnDestroy, OnChanges {
     this.isUploadingAdditionalFiles = true;
 
     this.supplyServiceHelper.uploadAdditionalFiles(this.supplyId, this.additionalFiles, this.destroy$)
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
           // Clear selected files
@@ -355,7 +361,8 @@ export class WorkflowSupplySubmissionComponent implements OnDestroy, OnChanges {
           this.supplyDataChanged.emit();
           this.isUploadingAdditionalFiles = false;
         },
-        error: (error: any) => {
+        error: (error: unknown) => {
+          this.configService.logError('Failed to upload additional files', error);
           this.isUploadingAdditionalFiles = false;
         }
       });
@@ -363,6 +370,7 @@ export class WorkflowSupplySubmissionComponent implements OnDestroy, OnChanges {
 
   downloadFile(fileId: number, fileName: string): void {
     this.supplyServiceHelper.downloadFile(fileId, fileName, this.destroy$)
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (blob: Blob) => {
           const url = window.URL.createObjectURL(blob);
@@ -387,7 +395,7 @@ export class WorkflowSupplySubmissionComponent implements OnDestroy, OnChanges {
       'workflowApprovalDetail.confirmDeleteFileMessage',
       'common.delete',
       'common.cancel'
-    ]).subscribe(translations => {
+    ]).pipe(takeUntil(this.destroy$)).subscribe(translations => {
       const confirmed = confirm(
         `${translations['workflowApprovalDetail.confirmDeleteFileMessage'] || 'Are you sure you want to delete'} "${fileName}"?`
       );
@@ -397,6 +405,7 @@ export class WorkflowSupplySubmissionComponent implements OnDestroy, OnChanges {
       }
 
       this.supplyServiceHelper.deleteFile(fileId, fileName, this.destroy$)
+        .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => {
             // Remove file from the list

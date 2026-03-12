@@ -47,9 +47,9 @@ export class OrderReportService {
    * Load orders from API
    */
   loadOrders(): Observable<OrderDto[]> {
-    return this.apiService.getWithAuth<OrderDto[]>('/Request/user-actions')
+    return this.apiService.get<OrderDto[]>('/Request/user-actions')
       .pipe(
-        map((res: any) => Array.isArray(res) ? res as OrderDto[] : (res?.data || [] as OrderDto[])),
+        map((res: any) => Array.isArray(res) ? res as OrderDto[] : []),
         map((orders: OrderDto[]) => {
           // Sort orders by ID
           return orders.sort((a, b) => (a.id || 0) - (b.id || 0));
@@ -70,7 +70,7 @@ export class OrderReportService {
     orders: OrderDto[], 
     orderSummary: OrderSummary
   ): Observable<OrderReportApprovalStep[]> {
-    return this.apiService.getWithAuth<any>(
+    return this.apiService.get<any>(
       API_ENDPOINTS.WORKFLOW_APPROVAL.BASE_REQUEST_BY_ID(orderId)
     )
       .pipe(

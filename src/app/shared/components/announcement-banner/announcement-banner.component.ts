@@ -6,9 +6,7 @@ import { LucideAngularModule, Megaphone, X } from 'lucide-angular';
 import { filter, takeUntil } from 'rxjs';
 import { Subject } from 'rxjs';
 import { AnnouncementService } from '@services/announcement.service';
-import { ToastService } from '@services/toast.service';
-import { ErrorHandlingService } from '@services/error-handling.service';
-import { ActiveAnnouncement } from '@models/announcement.model';
+import { ActiveAnnouncement, AnnouncementDeliveryType } from '@models/announcement.model';
 
 @Component({
     selector: 'app-announcement-banner',
@@ -19,8 +17,6 @@ import { ActiveAnnouncement } from '@models/announcement.model';
 })
 export class AnnouncementBannerComponent implements OnInit, OnDestroy {
     private readonly announcementService = inject(AnnouncementService);
-    private readonly toastService = inject(ToastService);
-    private readonly errorService = inject(ErrorHandlingService);
     private readonly router = inject(Router);
     private readonly destroy$ = new Subject<void>();
     private retryTimeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -66,16 +62,21 @@ export class AnnouncementBannerComponent implements OnInit, OnDestroy {
         this.loading.set(true);
         this.announcementService.getActive().subscribe({
             next: (response) => {
-                // Handle both camelCase (data) and PascalCase (Data) from backend
-                const data = response?.data ?? (response as any)?.Data ?? [];
-                this.announcements.set(Array.isArray(data) ? data : []);
+                const data: ActiveAnnouncement[] = response?.data ?? (response as any)?.Data ?? [];
+                const all = Array.isArray(data) ? data : [];
+
+                const bannerAnnouncements = all.filter(a => {
+                    const dt = this.normalizeDeliveryType(a.deliveryType);
+                    return (dt & AnnouncementDeliveryType.Banner) !== 0;
+                });
+                this.announcements.set(bannerAnnouncements);
+
                 this.loading.set(false);
             },
             error: (error) => {
                 console.error('Failed to load announcements:', error);
                 this.announcements.set([]);
                 this.loading.set(false);
-                // Retry once after delay - fixes auth timing (user just logged in, token not yet processed)
                 if (error?.status === 401) {
                     this.retryTimeoutId = setTimeout(() => {
                         this.retryTimeoutId = null;
@@ -88,6 +89,17 @@ export class AnnouncementBannerComponent implements OnInit, OnDestroy {
         });
     }
 
+    private normalizeDeliveryType(dt: number | string | undefined | null): number {
+        if (dt === null || dt === undefined) return AnnouncementDeliveryType.Banner;
+        if (typeof dt === 'number') return dt;
+        const s = String(dt).toLowerCase();
+        if (s === 'banner' || s === '1') return AnnouncementDeliveryType.Banner;
+        if (s === 'notification' || s === '2') return AnnouncementDeliveryType.Notification;
+        if (s === 'both' || s === '3') return AnnouncementDeliveryType.Both;
+        const n = parseInt(String(dt), 10);
+        return isNaN(n) ? AnnouncementDeliveryType.Banner : n;
+    }
+
     dismiss(announcement: ActiveAnnouncement): void {
         this.announcementService.dismiss(announcement.id).subscribe({
             next: () => {
@@ -96,8 +108,7 @@ export class AnnouncementBannerComponent implements OnInit, OnDestroy {
                 );
             },
             error: (error) => {
-                const message = this.errorService.resolveHttpErrorMessage(error);
-                this.toastService.error(message);
+                console.error('Failed to dismiss announcement:', error);
             }
         });
     }

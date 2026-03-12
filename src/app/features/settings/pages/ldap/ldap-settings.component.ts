@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
@@ -31,7 +31,8 @@ interface LdapSettingsForm extends LdapSettingsDto {
     ErrorStateComponent
   ],
   templateUrl: './ldap-settings.component.html',
-  styleUrls: ['./ldap-settings.component.css']
+  styleUrls: ['./ldap-settings.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LdapSettingsComponent implements OnInit, OnDestroy {
   ldapSettings: Partial<LdapSettingsForm> = {
@@ -50,7 +51,8 @@ export class LdapSettingsComponent implements OnInit, OnDestroy {
   constructor(
     private readonly ldapSettingsService: LdapSettingsService,
     private readonly toastService: ToastService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -65,6 +67,7 @@ export class LdapSettingsComponent implements OnInit, OnDestroy {
   loadLdapSettings(): void {
     this.isLoading = true;
     this.errorMessage = '';
+    this.cdr.markForCheck();
 
     this.ldapSettingsService.getLdapSettings()
       .pipe(takeUntil(this.destroy$))
@@ -83,11 +86,14 @@ export class LdapSettingsComponent implements OnInit, OnDestroy {
 
           this.originalValues = { ...this.ldapSettings };
           this.isLoading = false;
+          this.cdr.markForCheck();
         },
         error: (error) => {
           this.isLoading = false;
-          const is403 = (error as any)?.status === 403 || error?.message?.includes('403') || error?.message?.includes('Forbidden');
-          const is404 = (error as any)?.status === 404 || error?.message?.includes('404') || error?.message?.includes('Not Found');
+          this.cdr.markForCheck();
+          const err = error as { status?: number; message?: string };
+          const is403 = err?.status === 403 || error?.message?.includes('403') || error?.message?.includes('Forbidden');
+          const is404 = err?.status === 404 || error?.message?.includes('404') || error?.message?.includes('Not Found');
 
           if (!is403 && !is404) {
             this.errorMessage = error.message || 'Failed to load LDAP settings';
@@ -98,6 +104,7 @@ export class LdapSettingsComponent implements OnInit, OnDestroy {
               );
             });
           }
+          this.cdr.markForCheck();
         }
       });
   }
@@ -109,6 +116,7 @@ export class LdapSettingsComponent implements OnInit, OnDestroy {
 
     this.isSaving = true;
     this.errorMessage = '';
+    this.cdr.markForCheck();
 
     const payload: LdapSettingsDto = {
       ldapServer: (this.ldapSettings.ldapServer || '').trim(),
@@ -141,15 +149,18 @@ export class LdapSettingsComponent implements OnInit, OnDestroy {
               translations['toast.success']
             );
           });
+          this.cdr.markForCheck();
         },
-        error: (error) => {
+        error: (error: unknown) => {
           this.isSaving = false;
+          this.cdr.markForCheck();
+          const err = error as { status?: number; message?: string };
           let message = 'Failed to save LDAP settings';
 
           if (error instanceof Error && error.message) {
             message = error.message;
-          } else if ((error as any)?.message) {
-            message = (error as any).message;
+          } else if (err?.message) {
+            message = err.message;
           }
 
           this.errorMessage = message;
@@ -159,6 +170,7 @@ export class LdapSettingsComponent implements OnInit, OnDestroy {
               translations['toast.error']
             );
           });
+          this.cdr.markForCheck();
         }
       });
   }

@@ -1,4 +1,4 @@
-import { Component, Input, ElementRef, ViewChild } from '@angular/core';
+import { Component, Input, ElementRef, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -8,7 +8,8 @@ import { TranslateModule } from '@ngx-translate/core';
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './annual-activity-card.component.html',
-  styleUrls: ['./annual-activity-card.component.css']
+  styleUrls: ['./annual-activity-card.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AnnualActivityCardComponent {
   @Input() title: string = 'Annual Supply Activity';

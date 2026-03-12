@@ -4,6 +4,43 @@
  */
 
 /**
+ * Raw API response shape - backend may return different field names (e.g. militoryId, fullNameEN)
+ * Used for normalizing API responses to BackendUserDto
+ */
+export interface RawUserApiResponse {
+  id?: string;
+  userName?: string;
+  email?: string;
+  militoryId?: string;
+  fullNameEN?: string;
+  fullNameAR?: string;
+  roles?: RawRoleApiResponse[];
+  roleIds?: string[];
+  departmentId?: number;
+  departmentName?: string;
+  department?: { id?: number; nameEn?: string; nameAr?: string };
+  rankId?: number;
+  rankNameEn?: string;
+  rankNameAr?: string;
+  rank?: { id?: number; nameEn?: string; nameAr?: string; name?: string };
+}
+
+/** Raw role object from API - may use roleId/roleName instead of id/name */
+export interface RawRoleApiResponse {
+  id?: string;
+  roleId?: string;
+  name?: string;
+  roleName?: string;
+  isDefaultRole?: boolean;
+  isDefault?: boolean;
+  isSuperAdmin?: boolean;
+  superAdmin?: boolean;
+  isAdmin?: boolean;
+  admin?: boolean;
+  applicationEntityIds?: number[];
+}
+
+/**
  * User DTO matching backend UserDto
  */
 export interface BackendUserDto {
@@ -17,9 +54,14 @@ export interface BackendUserDto {
   organizationId?: number;
   departmentId?: number;
   departmentName?: string;
+  departmentNameEn?: string;
+  departmentNameAr?: string;
   // Optional profile fields if backend provides them
   nameEn?: string;
   nameAr?: string;
+  /** Depot user API may return fullNameEN/fullNameAR (PascalCase) */
+  fullNameEN?: string;
+  fullNameAR?: string;
   rankId?: number;
   rankNameEn?: string;
   rankNameAr?: string;
@@ -172,6 +214,22 @@ export interface CrudPermission {
 export interface CheckBox {
   displayValue: string;
   isSelected?: boolean;
+}
+
+/**
+ * Application entity (department, etc.) - used in workflow steps and role assignment
+ */
+export interface ApplicationEntityDto {
+  id: number;
+  applicationEntityId?: number;
+  code?: string;
+  nameAr?: string;
+  nameEn?: string;
+  isDeleted?: boolean;
+  creationDate?: string;
+  modificationDate?: string | null;
+  modifiedBy?: string | null;
+  createdBy?: string | null;
 }
 
 /**

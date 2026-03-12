@@ -25,7 +25,9 @@ export function mapApiResponseToAuthenticatedUser(
     ? apiUser.roles.map(role => role.name).filter(name => !!name)
     : [];
 
-  // Extract department name from nested department object
+  // Extract department names from nested department object
+  const departmentNameEn = apiUser.department?.nameEn ?? undefined;
+  const departmentNameAr = apiUser.department?.nameAr ?? undefined;
   const departmentName = apiUser.department
     ? getLocalizedName(apiUser.department, getCurrentLang(translateService))
     : undefined;
@@ -54,6 +56,8 @@ export function mapApiResponseToAuthenticatedUser(
     organizationId: undefined, // Not in API response
     departmentId: departmentId,
     departmentName: departmentName,
+    departmentNameEn: departmentNameEn,
+    departmentNameAr: departmentNameAr,
     nameEn: apiUser.fullNameEN ?? undefined,
     nameAr: apiUser.fullNameAR ?? undefined,
     rankId: rankId,

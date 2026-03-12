@@ -5,6 +5,8 @@ import { LookupService } from './lookup.service';
 import { RequestPurposeService } from './request-purpose.service';
 import { TranslateService } from '@ngx-translate/core';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { EmployeeService } from './employee.service';
+import { EmployeeDto } from '@core/models/asset.model';
 
 /**
  * Lookup Management Service
@@ -17,7 +19,8 @@ export class LookupManagementService {
   constructor(
     private lookupService: LookupService,
     private requestPurposeService: RequestPurposeService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private employeeService: EmployeeService
   ) {}
 
   /**
@@ -31,6 +34,38 @@ export class LookupManagementService {
    * Load lookup items for a specific table
    */
   loadLookupItems(table: LookupTableConfig): Observable<LookupItem[]> {
+    // Special case: Employee uses dedicated Employee API but is managed via lookup UI
+    if (table.name === 'Employee') {
+      return this.employeeService.getEmployees().pipe(
+        map((employees: EmployeeDto[]) =>
+          (employees || [])
+            .filter(e => !e.isDeleted)
+            .map(e => {
+              const dept = e.department;
+              const rank = e.rank;
+              const lang = getCurrentLang(this.translateService);
+              const departmentName = dept
+                ? (lang === 'ar' ? (dept.nameAr || dept.nameEn) : (dept.nameEn || dept.nameAr)) || '-'
+                : '-';
+              const rankName = rank
+                ? (lang === 'ar' ? (rank.nameAr || rank.nameEn) : (rank.nameEn || rank.nameAr)) || '-'
+                : '-';
+              return {
+                id: e.id,
+                nameEn: e.nameEn || '',
+                nameAr: e.nameAr || '',
+                code: e.militaryId || '',
+                isDeleted: e.isDeleted,
+                departmentName,
+                rankName,
+                phone: e.phone || '-',
+                email: e.email || '-'
+              } as LookupItem;
+            })
+        )
+      );
+    }
+
     if (table.requestPurposeType) {
       return this.requestPurposeService.getAll(table.requestPurposeType).pipe(
         map(items => items.filter(item => !item.isDeleted))
@@ -82,7 +117,11 @@ export class LookupManagementService {
     return items.filter(item =>
       item.nameEn.toLowerCase().includes(search) ||
       item.nameAr.toLowerCase().includes(search) ||
-      (item.code && item.code.toLowerCase().includes(search))
+      (item.code && item.code.toLowerCase().includes(search)) ||
+      (item.departmentName && item.departmentName.toLowerCase().includes(search)) ||
+      (item.rankName && item.rankName.toLowerCase().includes(search)) ||
+      (item.phone && item.phone !== '-' && item.phone.toLowerCase().includes(search)) ||
+      (item.email && item.email !== '-' && item.email.toLowerCase().includes(search))
     );
   }
 

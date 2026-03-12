@@ -1,4 +1,4 @@
-import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, Input, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -19,7 +19,8 @@ import { LucideAngularModule, X } from 'lucide-angular';
         DropdownComponent,
         LucideAngularModule
     ],
-    templateUrl: './add-delegation-modal.component.html'
+    templateUrl: './add-delegation-modal.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddDelegationModalComponent implements OnInit {
     @Input() isOpen = false;
@@ -37,7 +38,8 @@ export class AddDelegationModalComponent implements OnInit {
 
     constructor(
         private fb: FormBuilder,
-        private delegationService: UserDelegationService
+        private delegationService: UserDelegationService,
+        private cdr: ChangeDetectorRef
     ) {
         this.form = this.fb.group({
             delegateeUserId: ['', Validators.required],
@@ -54,13 +56,14 @@ export class AddDelegationModalComponent implements OnInit {
 
     loadUsers(): void {
         this.delegationService.getAvailableUsers().subscribe({
-            next: (response) => {
-                if (response && response.succeeded && response.data) {
-                    this.users = response.data;
-                    this.userOptions = response.data.map(user => ({
+            next: (users) => {
+                if (users && users.length > 0) {
+                    this.users = users;
+                    this.userOptions = users.map(user => ({
                         label: user.nameEn || user.userName || 'Unknown User',
                         value: user.id
                     }));
+                    this.cdr.markForCheck();
                 }
             }
         });
@@ -69,6 +72,7 @@ export class AddDelegationModalComponent implements OnInit {
     submit(): void {
         if (this.form.valid && this.form.value.delegationScopes?.length > 0) {
             this.loading = true;
+            this.cdr.markForCheck();
             const dto: CreateUserDelegation = {
                 delegateeUserId: this.form.value.delegateeUserId,
                 startDate: new Date(this.form.value.startDate).toISOString(),
@@ -78,9 +82,10 @@ export class AddDelegationModalComponent implements OnInit {
             };
 
             this.delegationService.create(dto).subscribe({
-                next: (res) => {
+                next: (success) => {
                     this.loading = false;
-                    if (res && res.succeeded) {
+                    this.cdr.markForCheck();
+                    if (success) {
                         this.closeModal.emit(true);
                         this.form.reset({ 
                             startDate: this.minDate,
@@ -90,6 +95,7 @@ export class AddDelegationModalComponent implements OnInit {
                 },
                 error: () => {
                     this.loading = false;
+                    this.cdr.markForCheck();
                 }
             });
         }

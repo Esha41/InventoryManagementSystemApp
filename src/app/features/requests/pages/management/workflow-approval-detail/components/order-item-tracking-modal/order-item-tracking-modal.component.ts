@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ChangeDetectorRef, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ChangeDetectorRef, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Clock, User, ArrowRight, FileText, Activity, RotateCcw } from 'lucide-angular';
@@ -24,7 +24,8 @@ import { AppDatePipe } from '@shared/pipes/app-date.pipe';
     :host {
       display: block;
     }
-  `]
+  `],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OrderItemTrackingModalComponent implements OnInit, OnDestroy, OnChanges {
     readonly Clock = Clock;

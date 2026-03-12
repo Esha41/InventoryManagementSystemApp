@@ -19,6 +19,7 @@ export class WorkflowApprovalPermissionsService {
   private readonly VIEW_SUPPLY_DATE_PERMISSION = 'ViewSupplyDate';
   private readonly SUBMIT_SUPPLY_PERMISSION = 'SubmitSupply';
   private readonly REVIEW_WEAPON_SUPPLY_PERMISSION = 'ReviewWeaponSupply';
+  private readonly SELECT_DEPOTS_PERMISSION = 'SelectDepots';
   private readonly UPDATE_REQUEST_ITEMS_PERMISSION = 'UpdateRequestItems';
 
   constructor(private authService: BackendAuthService) { }
@@ -355,6 +356,21 @@ export class WorkflowApprovalPermissionsService {
 
       // Check if items are weapons and user has permission
       return this.authService.hasPermission(this.REVIEW_WEAPON_SUPPLY_PERMISSION) && isWeaponOrder;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /**
+   * Check if user can select depots (weapon supply flow).
+   * Requires canReviewWeaponSupply context AND the SelectDepots permission.
+   */
+  canSelectDepots(requestDetail: RequestDetail | null, isWeaponOrder: boolean): boolean {
+    try {
+      if (this.authService.isSuperAdmin()) {
+        return true;
+      }
+      return this.authService.hasPermission(this.SELECT_DEPOTS_PERMISSION);
     } catch (error) {
       return false;
     }

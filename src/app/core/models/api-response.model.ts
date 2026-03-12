@@ -9,7 +9,7 @@
 
 
 // Standard API Response wrapper from backend
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   succeeded: boolean;
   message: string;
   data: T;

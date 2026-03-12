@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -8,6 +8,7 @@ import { BackendAuthService } from '@services/backend-auth.service';
 import { ButtonComponent } from '@components/button/button.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-access-denied',
   standalone: true,
   imports: [CommonModule, TranslateModule, LucideAngularModule, ButtonComponent],

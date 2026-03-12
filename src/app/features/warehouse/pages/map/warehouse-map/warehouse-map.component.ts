@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit, NgZone, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -13,13 +13,15 @@ import { LoadingStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
+import { trackByStringId } from '@utils/trackby.utils';
 
 @Component({
   selector: 'app-warehouse-map',
   standalone: true,
   imports: [CommonModule, LucideAngularModule, TranslateModule, LoadingStateComponent],
   templateUrl: './warehouse-map.component.html',
-  styleUrls: ['./warehouse-map.component.css']
+  styleUrls: ['./warehouse-map.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
   warehouseId: string = '';
@@ -30,6 +32,7 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly ArrowLeft = ArrowLeft;
   readonly ArrowRight = ArrowRight;
   readonly Trash2 = Trash2;
+  readonly trackByStringId = trackByStringId;
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;
@@ -71,7 +74,8 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
     private lookupService: LookupService,
     private offlineMapService: OfflineMapService,
     private translate: TranslateService,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -80,6 +84,7 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
       // Support both inventory route (itemId) and assets route (id)
       this.itemId = params['itemId'] ?? params['id'] ?? '';
       this.fromAssets = this.route.snapshot.queryParams['from'] === 'assets';
+      this.cdr.markForCheck();
       this.loadWarehouseLocations();
     });
 
@@ -455,6 +460,7 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
             .map(depot => this.mapDepotToWarehouseLocation(depot));
 
           this.loading = false;
+          this.cdr.markForCheck();
 
           // Add markers to map if it's already initialized
           if (this.map) {
@@ -463,6 +469,7 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
         },
         error: () => {
           this.loading = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -510,6 +517,7 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
     const cacheInfo = await this.offlineMapService.getCacheInfo();
     this.cacheStatus.isCached = cacheInfo.count > 0;
     this.cacheStatus.tileCount = cacheInfo.count;
+    this.cdr.markForCheck();
   }
 
 
@@ -531,6 +539,7 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.cacheStatus.autoCaching = true;
+    this.cdr.markForCheck();
 
     // Pre-cache tiles in the background (silently, without user interaction)
     this.offlineMapService.preCacheTiles([8, 9, 10, 11, 12])
@@ -542,6 +551,7 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
       })
       .finally(() => {
         this.cacheStatus.autoCaching = false;
+        this.cdr.markForCheck();
       });
   }
 

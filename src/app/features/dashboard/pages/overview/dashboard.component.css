@@ -1,5 +1,21 @@
 /* Dashboard specific styles */
 
+/* Industry standard: min-height: 0 on flex children allows them to shrink below content size.
+   page-wrapper uses min-h-screen globally, but inside main layout the scroll area is < 100vh. */
+:host .page-wrapper {
+  min-height: 0;
+  padding-bottom: 0; /* Eliminate bottom padding - last child handles spacing */
+}
+
+/* Min-height only when loading/empty so overlay has space; avoids forcing height when cards fit */
+.dashboard-main-content {
+  min-height: 0;
+  padding-bottom: 0.5rem; /* Override page-container py - reduces accumulated bottom space */
+}
+.dashboard-main-content--tall {
+  min-height: 400px;
+}
+
 /* Smooth animations */
 @keyframes fadeIn {
   from {
@@ -11,14 +27,16 @@
   }
 }
 
+/* Use margin instead of transform to avoid creating a containing block that breaks
+   position:fixed dropdowns (e.g. filter dropdowns) - transform constrains fixed positioning */
 @keyframes slideInRight {
   from {
-    transform: translateX(2rem);
+    margin-inline-start: 2rem;
     opacity: 0;
   }
 
   to {
-    transform: translateX(0);
+    margin-inline-start: 0;
     opacity: 1;
   }
 }

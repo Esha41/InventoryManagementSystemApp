@@ -318,7 +318,6 @@
     "notesPlaceholder": "Optional notes about this assignment",
     "totalAssignments": "Total Assignments",
     "assignmentDetails": "Assignment Details",
-    "noAssignments": "No assignments found",
     "noItemsFound": "No items found matching your search",
     "errors": {
       "fillRequiredFields": "Please fill in all required fields",

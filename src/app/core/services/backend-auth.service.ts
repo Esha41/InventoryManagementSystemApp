@@ -19,6 +19,7 @@ import {
 import { ChangePasswordRequest } from '@models/change-password.model';
 import { ApiResponse } from '@models/api-response.model';
 import { ProfileDataService } from './profile-data.service';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 /**
  * Backend Authentication Service
@@ -142,10 +143,7 @@ export class BackendAuthService {
       }),
       catchError(error => {
         this.configService.logError('Failed to generate captcha', error);
-        const errorMessage = error?.error?.message ||
-          error?.message ||
-          error?.error?.data?.message ||
-          'Failed to generate captcha. Please try again.';
+        const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to generate captcha. Please try again.');
         return throwError(() => new Error(errorMessage));
       })
     );
@@ -323,13 +321,21 @@ export class BackendAuthService {
           apiData.DepartmentId
         );
 
-        const departmentName = (
+        const departmentNameEn = (
           apiData.department?.nameEn ??
           apiData.department?.NameEn ??
-          apiData.Department?.NameEn ??
+          apiData.Department?.NameEn
+        ) || undefined;
+
+        const departmentNameAr = (
           apiData.department?.nameAr ??
           apiData.department?.NameAr ??
-          apiData.Department?.NameAr ??
+          apiData.Department?.NameAr
+        ) || undefined;
+
+        const departmentName = (
+          departmentNameEn ??
+          departmentNameAr ??
           apiData.departmentName ??
           apiData.DepartmentName
         ) || undefined;
@@ -364,6 +370,8 @@ export class BackendAuthService {
           permissions: [],
           departmentId: departmentId ?? undefined,
           departmentName: departmentName,
+          departmentNameEn: departmentNameEn,
+          departmentNameAr: departmentNameAr,
           organizationId: organizationId ?? undefined,
           nameEn: nameEn,
           nameAr: nameAr
@@ -896,15 +904,13 @@ export class BackendAuthService {
     this.stopSessionHeartbeat();
 
     try {
-      // Clear specific auth-related storage items
+      this.profileDataService.clearProfile();
       this.storageService.remove('auth_token');
       this.storageService.remove('current_user');
       this.storageService.remove('token_expires_at');
 
-      // Clear all localStorage and sessionStorage
       if (typeof window !== 'undefined') {
-        localStorage.clear();
-        sessionStorage.clear();
+        this.storageService.clear();
       }
 
       // Update observables

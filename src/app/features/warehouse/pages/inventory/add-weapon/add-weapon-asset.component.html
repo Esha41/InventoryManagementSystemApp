@@ -82,7 +82,7 @@
 
                 <!-- Assets List -->
                 <div class="space-y-4" formArrayName="assets">
-                    <div *ngFor="let assetGroup of assetsFormArray.controls; let i = index" [formGroupName]="i"
+                    <div *ngFor="let assetGroup of assetsFormArray.controls; trackBy: trackByIndex; let i = index" [formGroupName]="i"
                         class="p-4 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background-active)]">
                         <div class="flex items-start justify-between mb-4">
                             <h3 class="text-sm font-medium text-[var(--color-text)]">{{ 'addWeaponAsset.asset' |
@@ -108,6 +108,22 @@
                                 </app-dropdown>
                                 <p *ngIf="isFieldInvalid('itemId', i)" class="mt-1 text-sm text-red-500">
                                     {{ getFieldError('itemId', i) || ('addWeaponAsset.required' | translate) }}
+                                </p>
+                            </div>
+
+                            <!-- Batch Number -->
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                    {{ 'addWeaponAsset.batchNumber' | translate }} <span
+                                        class="text-[var(--color-error)]">*</span>
+                                </label>
+                                <input type="text" formControlName="batchNumber"
+                                    (input)="onFieldChange('batchNumber', i)"
+                                    class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
+                                    [class.border-[var(--color-error)]]="isFieldInvalid('batchNumber', i)"
+                                    [placeholder]="'addWeaponAsset.enterBatchNumber' | translate">
+                                <p *ngIf="isFieldInvalid('batchNumber', i)" class="mt-1 text-sm text-[var(--color-error)]">
+                                    {{ getFieldError('batchNumber', i) || ('addWeaponAsset.required' | translate) }}
                                 </p>
                             </div>
 
@@ -282,7 +298,7 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Weapon Selection -->
-                    <div>
+                    <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
                             {{ 'addWeaponAsset.weapon' | translate }} <span class="text-[var(--color-error)]">*</span>
                         </label>
@@ -293,7 +309,17 @@
                         </app-dropdown>
                     </div>
 
-                    <!-- Quantity -->
+                    <!-- Batch Number and Quantity in one row -->
+                    <div>
+                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                            {{ 'addWeaponAsset.batchNumber' | translate }} <span class="text-[var(--color-error)]">*</span>
+                        </label>
+                        <input type="text" formControlName="batchNumber"
+                            class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
+                            [class.border-[var(--color-error)]]="!!(bulkForm.get('batchNumber')?.errors?.['required'] && bulkForm.get('batchNumber')?.touched)"
+                            [placeholder]="'addWeaponAsset.enterBatchNumber' | translate">
+                    </div>
+
                     <div>
                         <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
                             {{ 'addWeaponAsset.bulk.quantity' | translate }} <span

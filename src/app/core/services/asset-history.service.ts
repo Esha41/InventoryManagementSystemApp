@@ -1,9 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { environment } from 'src/environments/environment';
-import { APIOperationResponse } from '@models/api-response.model';
+import { ApiService } from './api.service';
 
 export interface AssetHistoryDto {
     id: number;
@@ -42,23 +40,20 @@ export interface AssetHistoryDto {
     providedIn: 'root'
 })
 export class AssetHistoryService {
-    private apiUrl = `${environment.apiUrl}/AssetHistory`;
+    private readonly basePath = '/AssetHistory';
 
-    constructor(private http: HttpClient) { }
+    constructor(private apiService: ApiService) { }
 
     getByAssetId(assetId: number): Observable<AssetHistoryDto[]> {
-        return this.http.get<APIOperationResponse<AssetHistoryDto[]>>(`${this.apiUrl}/asset/${assetId}`)
-            .pipe(map(response => response.data));
+        return this.apiService.get<AssetHistoryDto[]>(`${this.basePath}/asset/${assetId}`);
     }
 
     getByOrderId(orderId: number): Observable<AssetHistoryDto[]> {
-        return this.http.get<APIOperationResponse<AssetHistoryDto[]>>(`${this.apiUrl}/order/${orderId}`)
-            .pipe(map(response => response.data));
+        return this.apiService.get<AssetHistoryDto[]>(`${this.basePath}/order/${orderId}`);
     }
 
     getBySupplyId(supplyId: number): Observable<AssetHistoryDto[]> {
-        return this.http.get<APIOperationResponse<AssetHistoryDto[]>>(`${this.apiUrl}/supply/${supplyId}`)
-            .pipe(map(response => response.data));
+        return this.apiService.get<AssetHistoryDto[]>(`${this.basePath}/supply/${supplyId}`);
     }
 
     getByActionType(actionType: number, fromDate?: string, toDate?: string): Observable<AssetHistoryDto[]> {
@@ -66,7 +61,6 @@ export class AssetHistoryService {
         if (fromDate) params = params.set('fromDate', fromDate);
         if (toDate) params = params.set('toDate', toDate);
 
-        return this.http.get<APIOperationResponse<AssetHistoryDto[]>>(`${this.apiUrl}/action-type/${actionType}`, { params })
-            .pipe(map(response => response.data));
+        return this.apiService.get<AssetHistoryDto[]>(`${this.basePath}/action-type/${actionType}`, params);
     }
 }

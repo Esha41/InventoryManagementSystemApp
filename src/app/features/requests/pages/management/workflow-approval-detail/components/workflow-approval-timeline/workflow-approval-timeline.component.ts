@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy } from '@angular/core';
+import { Component, Input, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
@@ -22,7 +22,8 @@ import { getApprovalStatusBadgeClass } from '@utils/status-class.utils';
     LucideAngularModule
   ],
   templateUrl: './workflow-approval-timeline.component.html',
-  styleUrls: ['./workflow-approval-timeline.component.css']
+  styleUrls: ['./workflow-approval-timeline.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WorkflowApprovalTimelineComponent implements OnDestroy {
   readonly CheckCircle = CheckCircle;

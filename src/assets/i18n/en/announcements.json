@@ -1,6 +1,40 @@
 {
   "announcements": {
-    "title": "Announcements","create":"Create Announcement","edit":"Edit Announcement","delete":"Delete Announcement","deleteConfirm":"Are you sure you want to delete this announcement?","message":"Message","priority":"Priority","dismissable":"Dismissable","startDate":"Start Date","endDate":"End Date","targetRoles":"Target Roles","targetRolesHelp":"Select 'All Roles' to show to everyone, or pick specific roles to limit visibility.","targetRolesHint":"Choosing 'All Roles' = visible to all users. Selecting specific roles = visible only to users with those roles.","allRoles":"All Roles","active":"Active","inactive":"Inactive","status":"Status","actions":"Actions","dismiss":"Dismiss","createSuccess":"Announcement created successfully","updateSuccess":"Announcement updated successfully","deleteSuccess":"Announcement deleted successfully","dismissSuccess":"Announcement dismissed"
+    "title": "Announcements",
+    "create": "Create Announcement",
+    "edit": "Edit Announcement",
+    "delete": "Delete Announcement",
+    "deleteConfirm": "Are you sure you want to delete this announcement?",
+    "message": "Message",
+    "priority": "Color",
+    "priorityLevels": {
+      "Normal": "Green",
+      "Urgent": "Orange",
+      "VeryUrgent": "Red"
+    },
+    "deliveryType": "Delivery Type",
+    "deliveryTypeHelp": "Choose how users will see this announcement: as a banner at the top of the page, as a notification toast, or both.",
+    "deliveryTypes": {
+      "banner": "Banner",
+      "notification": "Notification",
+      "both": "Banner & Notification"
+    },
+    "dismissable": "Dismissable",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "targetRoles": "Target Roles",
+    "targetRolesHelp": "Select 'All Roles' to show to everyone, or pick specific roles to limit visibility.",
+    "targetRolesHint": "Choosing 'All Roles' = visible to all users. Selecting specific roles = visible only to users with those roles.",
+    "allRoles": "All Roles",
+    "active": "Active",
+    "inactive": "Inactive",
+    "status": "Status",
+    "actions": "Actions",
+    "dismiss": "Dismiss",
+    "createSuccess": "Announcement created successfully",
+    "updateSuccess": "Announcement updated successfully",
+    "deleteSuccess": "Announcement deleted successfully",
+    "dismissSuccess": "Announcement dismissed"
   },
   "validation": {
     "required": "This field is required."

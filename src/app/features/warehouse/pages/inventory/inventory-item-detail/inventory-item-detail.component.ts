@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -16,6 +16,7 @@ import { TranslationService } from '@services/translation.service';
 import { formatDateShort } from '@utils/format.utils';
 import { FileUploadService, FileEntityType } from '@services/file-upload.service';
 import { HttpClient } from '@angular/common/http';
+import { trackByKey } from '@utils/trackby.utils';
 
 type TabType = 'overview' | 'stock';
 
@@ -24,9 +25,11 @@ type TabType = 'overview' | 'stock';
   standalone: true,
   imports: [CommonModule, RouterModule, LucideAngularModule, TranslateModule, AssetDetailsComponent, WarehouseDetailLayoutComponent],
   templateUrl: './inventory-item-detail.component.html',
-  styleUrls: ['./inventory-item-detail.component.css']
+  styleUrls: ['./inventory-item-detail.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class InventoryItemDetailComponent implements OnInit, OnDestroy {
+  readonly trackByInventoryDetailId = trackByKey('inventoryDetailId');
   inventoryDetailId: number = 0;
   warehouseId: number = 0;
   inventoryDetail: InventoryDetailDto | null = null;
@@ -53,14 +56,15 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
     private translateService: TranslateService,
     private translationService: TranslationService,
     private fileUploadService: FileUploadService,
-    private http: HttpClient
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe(params => {
       this.warehouseId = parseInt(params['warehouseId'], 10);
       this.inventoryDetailId = parseInt(params['itemId'], 10);
-
+      this.cdr.markForCheck();
       if (this.warehouseId && this.inventoryDetailId) {
         this.loadItemDetails();
       }
@@ -72,6 +76,7 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
       if (tabParam && (tabParam === 'ammunition' || tabParam === 'weapon' || tabParam === 'explosive')) {
         // Store tab for potential use if item.itemType is not available
         this.activeTab = queryParams['tab'] === 'ammunition' ? 'overview' : this.activeTab;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -94,6 +99,7 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
   private loadItemDetails(): void {
     this.loading = true;
     this.error = null;
+    this.cdr.markForCheck();
 
     // Fetch all inventory details for the warehouse and find the specific item
     this.inventoryService.getWarehouseInventoryItems(this.warehouseId)
@@ -105,6 +111,7 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
           if (!this.inventoryDetail) {
             this.translateService.get('warehouseInventory.itemNotFound').subscribe(text => {
               this.error = text;
+              this.cdr.markForCheck();
             });
           } else {
             // Store itemId for loading lots
@@ -120,12 +127,15 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
           }
 
           this.loading = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.translateService.get('warehouseInventory.failedToLoadItem').subscribe(text => {
             this.error = text;
+            this.cdr.markForCheck();
           });
           this.loading = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -145,15 +155,18 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
     if (!this.itemId) return;
 
     this.loadingLots = true;
+    this.cdr.markForCheck();
     this.inventoryService.getLotsByItemId(this.itemId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (lots) => {
           this.lots = lots;
           this.loadingLots = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.loadingLots = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -460,6 +473,7 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
                 const blobUrl = URL.createObjectURL(blob);
                 this.blobUrls.add(blobUrl);
                 this.imageUrl = blobUrl;
+                this.cdr.markForCheck();
               }
               return of(null);
             }),
@@ -474,6 +488,6 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
           return of(null);
         })
       )
-      .subscribe();
+      .subscribe(() => this.cdr.markForCheck());
   }
 }

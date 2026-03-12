@@ -356,7 +356,9 @@ footer {
 }
 
 [dir="rtl"] table th.text-right,
-[dir="rtl"] table td.text-right {
+[dir="rtl"] table td.text-right,
+[dir="rtl"] table th.text-end,
+[dir="rtl"] table td.text-end {
   text-align: end;
 }
 

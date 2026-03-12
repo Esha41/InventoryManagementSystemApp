@@ -1,10 +1,9 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { UserDelegationService } from '../../../../../core/services/user-delegation.service';
 import { UserDelegation } from '../../../../../core/models/user-delegation';
-import { ApiResponse } from '@models/api-response.model';
-import { LucideAngularModule, Users, Calendar, User, AlertCircle, Filter, RefreshCw, ArrowRight, Ban, Network, ShieldCheck } from 'lucide-angular';
+import { LucideAngularModule, Users, Calendar, User, AlertCircle, Filter, RefreshCw, ArrowRight, Ban, Network } from 'lucide-angular';
 import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 import { finalize } from 'rxjs/operators';
 import { ToastService } from '@services/toast.service';
@@ -21,7 +20,8 @@ import { ConfirmationDialogComponent } from '@shared/components/confirmation-dia
         ConfirmationDialogComponent
     ],
     templateUrl: './admin-delegations.component.html',
-    styleUrls: ['./admin-delegations.component.css']
+    styleUrls: ['./admin-delegations.component.css'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AdminDelegationsComponent implements OnInit {
     readonly Users = Users;
@@ -33,7 +33,6 @@ export class AdminDelegationsComponent implements OnInit {
     readonly ArrowRight = ArrowRight;
     readonly Ban = Ban;
     readonly Network = Network;
-    readonly ShieldCheck = ShieldCheck;
 
     delegations: UserDelegation[] = [];
     filteredDelegations: UserDelegation[] = [];
@@ -67,11 +66,11 @@ export class AdminDelegationsComponent implements OnInit {
         this.delegationService.getAllDelegations()
             .pipe(finalize(() => {
                 this.isLoading = false;
-                this.cdr.detectChanges();
+                this.cdr.markForCheck();
             }))
             .subscribe({
-                next: (res: ApiResponse<UserDelegation[]>) => {
-                    this.delegations = res?.succeeded && res.data ? res.data : [];
+                next: (data) => {
+                    this.delegations = Array.isArray(data) ? data : [];
                     this.applyFilter();
                 },
                 error: () => {
@@ -87,10 +86,8 @@ export class AdminDelegationsComponent implements OnInit {
         // Load Cross Department Setting
         this.delegationService.getCrossDepartmentSetting()
             .subscribe({
-                next: (res) => {
-                    if (res.succeeded) {
-                        this.allowCrossDepartment = res.data;
-                    }
+                next: (value) => {
+                    this.allowCrossDepartment = value;
                 }
             });
 
@@ -98,13 +95,11 @@ export class AdminDelegationsComponent implements OnInit {
         this.delegationService.getDelegatorActionSetting()
             .pipe(finalize(() => {
                 this.isSettingsLoading = false;
-                this.cdr.detectChanges();
+                this.cdr.markForCheck();
             }))
             .subscribe({
-                next: (res) => {
-                    if (res.succeeded) {
-                        this.allowDelegatorAction = res.data;
-                    }
+                next: (value) => {
+                    this.allowDelegatorAction = value;
                 }
             });
     }
@@ -116,15 +111,15 @@ export class AdminDelegationsComponent implements OnInit {
         this.delegationService.updateCrossDepartmentSetting(newValue)
             .pipe(finalize(() => {
                 this.isSettingsLoading = false;
-                this.cdr.detectChanges();
+                this.cdr.markForCheck();
             }))
             .subscribe({
-                next: (res) => {
-                    if (res.succeeded) {
+                next: (success) => {
+                    if (success) {
                         this.allowCrossDepartment = newValue;
                         this.toast.success(this.translate.instant('DELEGATION.SETTINGS.UPDATE_SUCCESS') || 'Delegation settings updated successfully');
                     } else {
-                        this.toast.error(res.message || 'Failed to update settings');
+                        this.toast.error('Failed to update settings');
                     }
                 },
                 error: () => {
@@ -140,15 +135,15 @@ export class AdminDelegationsComponent implements OnInit {
         this.delegationService.updateDelegatorActionSetting(newValue)
             .pipe(finalize(() => {
                 this.isSettingsLoading = false;
-                this.cdr.detectChanges();
+                this.cdr.markForCheck();
             }))
             .subscribe({
-                next: (res) => {
-                    if (res.succeeded) {
+                next: (success) => {
+                    if (success) {
                         this.allowDelegatorAction = newValue;
                         this.toast.success(this.translate.instant('DELEGATION.SETTINGS.UPDATE_SUCCESS') || 'Delegation settings updated successfully');
                     } else {
-                        this.toast.error(res.message || 'Failed to update settings');
+                        this.toast.error('Failed to update settings');
                     }
                 },
                 error: () => {
@@ -176,7 +171,7 @@ export class AdminDelegationsComponent implements OnInit {
         } else if (this.filterStatus === 'expired') {
             this.filteredDelegations = this.delegations.filter(d => d.status === 'Expired');
         }
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
     }
 
     getStatusBadgeClass(delegation: UserDelegation): string {
@@ -214,15 +209,15 @@ export class AdminDelegationsComponent implements OnInit {
             .pipe(finalize(() => {
                 this.isLoading = false;
                 this.selectedDelegationForRevoke = null;
-                this.cdr.detectChanges();
+                this.cdr.markForCheck();
             }))
             .subscribe({
-                next: (res) => {
-                    if (res.succeeded) {
+                next: (success) => {
+                    if (success) {
                         this.toast.success('Delegation revoked successfully');
                         this.refresh();
                     } else {
-                        this.toast.error(res.message || 'Failed to revoke delegation');
+                        this.toast.error('Failed to revoke delegation');
                     }
                 },
                 error: () => {

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
@@ -19,7 +19,8 @@ import { RequestStatusUpdateService } from '@services/request-status-update.serv
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, PaginationComponent, RowsPerPageComponent, RequestFilterBarComponent, AppDatePipe],
   templateUrl: './requests-management.component.html',
-  styleUrls: ['./requests-management.component.css']
+  styleUrls: ['./requests-management.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RequestsManagementComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
@@ -42,7 +43,8 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
   constructor(
     private requestsManagementService: RequestsManagementService,
     private router: Router,
-    private requestStatusUpdateService: RequestStatusUpdateService
+    private requestStatusUpdateService: RequestStatusUpdateService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -75,6 +77,7 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
 
   loadRequests(): void {
     this.loading = true;
+    this.cdr.markForCheck();
 
     this.requestsManagementService.getRequests(
       this.currentPage,
@@ -89,11 +92,13 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
           this.requests = response.items;
           this.totalItems = response.totalCount;
           this.loading = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.loading = false;
           this.requests = [];
           this.totalItems = 0;
+          this.cdr.markForCheck();
         }
       });
   }
