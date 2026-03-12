@@ -188,12 +188,50 @@ export class AssetSupplyService {
   }
 
   /**
-   * Create and submit a new asset supply
+   * Create and submit a new asset supply with file attachments (multipart/form-data).
+   * Mirrors the SupplyController.Submit pattern.
    */
-  createAndSubmit(dto: CreateAssetSupplyDto): Observable<number> {
+  createAndSubmit(dto: CreateAssetSupplyDto, files: File[]): Observable<number> {
     this.config.log('Creating asset supply', dto);
-    
-    return this.apiService.post<number>(`${this.baseEndpoint}`, dto).pipe(
+
+    const formData = new FormData();
+
+    // Header fields
+    formData.append('OrderId', dto.orderId.toString());
+    formData.append('ReceiverName', dto.receiverName);
+    formData.append('ReceiverMilitaryId', dto.receiverMilitaryId);
+    formData.append('ReceiverRankId', dto.receiverRankId.toString());
+
+    if (dto.location) {
+      formData.append('Location', dto.location);
+    }
+    if (dto.expectedReturnDate) {
+      formData.append('ExpectedReturnDate', dto.expectedReturnDate);
+    }
+    if (dto.notes) {
+      formData.append('Notes', dto.notes);
+    }
+
+    // Detail collection: SupplyDetails[i].Property
+    dto.supplyDetails.forEach((detail, index) => {
+      formData.append(`SupplyDetails[${index}].AssetId`, detail.assetId.toString());
+      if (detail.conditionOnSupply) {
+        formData.append(`SupplyDetails[${index}].ConditionOnSupply`, detail.conditionOnSupply);
+      }
+      if (detail.custodianId != null) {
+        formData.append(`SupplyDetails[${index}].CustodianId`, detail.custodianId.toString());
+      }
+      if (detail.notes) {
+        formData.append(`SupplyDetails[${index}].Notes`, detail.notes);
+      }
+    });
+
+    // Files
+    files.forEach(file => {
+      formData.append('files', file);
+    });
+
+    return this.apiService.post<number>(`${this.baseEndpoint}`, formData).pipe(
       catchError(error => {
         this.config.logError('Failed to create asset supply', error);
         return throwError(() => error);

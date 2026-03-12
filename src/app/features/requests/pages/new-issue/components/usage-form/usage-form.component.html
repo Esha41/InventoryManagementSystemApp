@@ -229,6 +229,7 @@
             </div>
             <input #dateFromPicker type="date" [ngModel]="usageDateFromForInput"
               (ngModelChange)="onUsageDateFromChange($event)"
+              [attr.min]="minDateForPicker"
               class="absolute inset-0 w-full h-full opacity-0 cursor-pointer pointer-events-none"
               [attr.aria-label]="'newIssueRequest.usageDateFrom' | translate">
           </div>
@@ -256,6 +257,7 @@
               </svg>
             </div>
             <input #dateToPicker type="date" [ngModel]="usageDateToForInput" (ngModelChange)="onUsageDateToChange($event)"
+              [attr.min]="minDateForPicker"
               class="absolute inset-0 w-full h-full opacity-0 cursor-pointer pointer-events-none"
               [attr.aria-label]="'newIssueRequest.usageDateTo' | translate">
           </div>

@@ -173,13 +173,21 @@ export class UserContextService {
       apiData.DepartmentId
     );
 
-    const departmentName = (
+    const departmentNameEn = (
       apiData.department?.nameEn ??
       apiData.department?.NameEn ??
-      apiData.Department?.NameEn ??
+      apiData.Department?.NameEn
+    ) || undefined;
+
+    const departmentNameAr = (
       apiData.department?.nameAr ??
       apiData.department?.NameAr ??
-      apiData.Department?.NameAr ??
+      apiData.Department?.NameAr
+    ) || undefined;
+
+    const departmentName = (
+      departmentNameEn ??
+      departmentNameAr ??
       apiData.departmentName ??
       apiData.DepartmentName
     ) || undefined;
@@ -258,6 +266,8 @@ export class UserContextService {
       organizationId: this.toNumber(apiData.organizationId ?? apiData.OrganizationId) ?? undefined,
       departmentId: departmentId ?? undefined,
       departmentName: departmentName,
+      departmentNameEn: departmentNameEn,
+      departmentNameAr: departmentNameAr,
       nameEn: nameEn,
       nameAr: nameAr,
       rankId: rankId ?? undefined,

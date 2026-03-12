@@ -548,17 +548,16 @@ export class LoginComponent implements OnInit {
         if (fieldName === 'username') {
           return this.translate.instant('auth.login.errors.usernameRequired');
         } else if (fieldName === 'password') {
-          return this.translate.instant('auth.login.errors.passwordRequired');
+          return this.translate.instant('auth.login.errors.invalidCredentials');
         } else if (fieldName === 'captcha') {
           return this.translate.instant('auth.login.errors.captchaRequired') || 'Captcha is required';
         }
       }
       if (field.errors['minlength']) {
-        const required = field.errors['minlength'].requiredLength;
         if (fieldName === 'username') {
           return this.translate.instant('auth.login.errors.usernameMinLength');
         }
-        return this.translate.instant('auth.login.errors.passwordMinLength');
+        return '';
       }
     }
     return '';
@@ -778,22 +777,12 @@ export class LoginComponent implements OnInit {
         return errorMessage;
       }
       
-      // Fallback to generic messages based on context
+      // Fallback to generic message - never reveal which field is incorrect
       if (this.isLdapMode) {
-        // For LDAP, provide more specific guidance
-        if (!hasValidUsername || (username && !username.includes('@'))) {
-          return this.translate.instant('auth.login.errors.invalidLdapCredentials') || 
-                 this.translate.instant('auth.login.errors.invalidCredentials');
-        }
-        // Username looks valid (has @), likely password issue
-        return this.translate.instant('auth.login.errors.wrongPassword');
-      } else {
-        // Standard login
-        if (hasValidUsername) {
-          return this.translate.instant('auth.login.errors.wrongPassword');
-        }
-        return this.translate.instant('auth.login.errors.invalidCredentials');
+        return this.translate.instant('auth.login.errors.invalidLdapCredentials') || 
+               this.translate.instant('auth.login.errors.invalidCredentials');
       }
+      return this.translate.instant('auth.login.errors.invalidCredentials');
     }
 
     // Check for session conflicts
@@ -812,27 +801,22 @@ export class LoginComponent implements OnInit {
       return this.translate.instant('auth.login.errors.invalidLogin');
     }
 
-    // Check for password-specific errors first
+    // Check for password-specific errors - return generic message (never reveal which field is wrong)
     if (lowerMessage.includes('incorrect password') ||
       lowerMessage.includes('wrong password') ||
       lowerMessage.includes('invalid password') ||
       lowerMessage.includes('password is incorrect') ||
       lowerMessage.includes('password incorrect')) {
-      return this.translate.instant('auth.login.errors.wrongPassword');
+      return this.translate.instant('auth.login.errors.invalidCredentials');
     }
 
-    // Check for invalid credentials patterns
-    // If username is provided and looks valid, assume it's a password issue
+    // Check for invalid credentials patterns - always return generic message
     if ((lowerMessage.includes('invalid') &&
       (lowerMessage.includes('login') || lowerMessage.includes('password') || lowerMessage.includes('credential') || lowerMessage.includes('username'))) ||
       lowerMessage.includes('unauthorized') ||
       lowerMessage.includes('bad credentials') ||
       lowerMessage.includes('authentication failed') ||
       lowerMessage.includes('access denied')) {
-      // If username looks valid, it's likely a password issue
-      if (hasValidUsername && (errorCode === 'INVALID_EMAIL_OR_PASSWORD' || errorCode === '0008' || statusCode === 401)) {
-        return this.translate.instant('auth.login.errors.wrongPassword');
-      }
       return this.translate.instant('auth.login.errors.invalidCredentials');
     }
 
@@ -879,13 +863,8 @@ export class LoginComponent implements OnInit {
       return this.translate.instant('auth.login.errors.accessDenied');
     }
 
-    // Unauthorized (401) - typically invalid credentials
-    // If username looks valid, assume it's a password issue
+    // Unauthorized (401) - return generic message (never reveal which field is wrong)
     if (statusCode === 401) {
-      const hasValidUsername = username && username.trim().length >= 3;
-      if (hasValidUsername && (errorCode === 'INVALID_EMAIL_OR_PASSWORD' || errorCode === '0008' || errorCode === 'INVALID_CREDENTIALS')) {
-        return this.translate.instant('auth.login.errors.wrongPassword');
-      }
       return this.translate.instant('auth.login.errors.invalidCredentials');
     }
 

@@ -78,13 +78,15 @@ export class WorkflowApprovalSupplyService {
         ? API_ENDPOINTS.ORDERS.SET_PICKUP_DATE(data.requestId)
         : API_ENDPOINTS.SUPPLY.SET_PICKUP_DATE_BY_ORDER(data.requestId);
 
-      // For weapon orders, use pickupDate format; for supply, use supplyDate
+      // For weapon orders, use pickupDate field; for supply, use supplyDate.
+      // IMPORTANT: send the datetime-local string as-is (no timezone conversion)
+      // to avoid shifting the time by the client's UTC offset.
       const payload = data.isWeaponOrder
         ? {
-          pickupDate: new Date(data.pickupDate).toISOString()
+          pickupDate: data.pickupDate
         }
         : {
-          supplyDate: new Date(data.pickupDate).toISOString()
+          supplyDate: data.pickupDate
         };
 
       this.apiService.put<void>(endpoint, payload)
@@ -124,13 +126,15 @@ export class WorkflowApprovalSupplyService {
         ? API_ENDPOINTS.ORDERS.SET_PICKUP_DATE(data.requestId)
         : API_ENDPOINTS.SUPPLY.CONFIRM_PICKUP_DATE_BY_ORDER(data.requestId);
 
-      // For weapon orders, use pickupDate format; for supply, use supplyDate
+      // For weapon orders, use pickupDate field; for supply, use supplyDate.
+      // IMPORTANT: send the datetime-local string as-is (no timezone conversion)
+      // to avoid shifting the time by the client's UTC offset.
       const payload = data.isWeaponOrder
         ? {
-          pickupDate: new Date(data.pickupDate).toISOString()
+          pickupDate: data.pickupDate
         }
         : {
-          supplyDate: new Date(data.pickupDate).toISOString()
+          supplyDate: data.pickupDate
         };
 
       this.apiService.put<void>(endpoint, payload)

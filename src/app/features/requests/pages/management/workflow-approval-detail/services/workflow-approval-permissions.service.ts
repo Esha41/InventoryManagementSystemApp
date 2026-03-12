@@ -366,7 +366,6 @@ export class WorkflowApprovalPermissionsService {
    * Requires canReviewWeaponSupply context AND the SelectDepots permission.
    */
   canSelectDepots(requestDetail: RequestDetail | null, isWeaponOrder: boolean): boolean {
-   
     try {
       if (this.authService.isSuperAdmin()) {
         return true;

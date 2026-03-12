@@ -54,6 +54,8 @@ export interface BackendUserDto {
   organizationId?: number;
   departmentId?: number;
   departmentName?: string;
+  departmentNameEn?: string;
+  departmentNameAr?: string;
   // Optional profile fields if backend provides them
   nameEn?: string;
   nameAr?: string;

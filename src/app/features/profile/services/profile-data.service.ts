@@ -192,6 +192,8 @@ export class ProfileDataService {
       organizationId: profileData.organizationId,
       departmentId: profileData.departmentId,
       departmentName: profileData.departmentName,
+      departmentNameEn: profileData.departmentNameEn,
+      departmentNameAr: profileData.departmentNameAr,
       nameEn: profileData.nameEn,
       nameAr: profileData.nameAr,
       rankId: profileData.rankId,

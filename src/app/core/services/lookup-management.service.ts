@@ -40,13 +40,28 @@ export class LookupManagementService {
         map((employees: EmployeeDto[]) =>
           (employees || [])
             .filter(e => !e.isDeleted)
-            .map(e => ({
-              id: e.id,
-              nameEn: e.nameEn || '',
-              nameAr: e.nameAr || '',
-              code: e.militaryId || '',
-              isDeleted: e.isDeleted
-            } as LookupItem))
+            .map(e => {
+              const dept = e.department;
+              const rank = e.rank;
+              const lang = getCurrentLang(this.translateService);
+              const departmentName = dept
+                ? (lang === 'ar' ? (dept.nameAr || dept.nameEn) : (dept.nameEn || dept.nameAr)) || '-'
+                : '-';
+              const rankName = rank
+                ? (lang === 'ar' ? (rank.nameAr || rank.nameEn) : (rank.nameEn || rank.nameAr)) || '-'
+                : '-';
+              return {
+                id: e.id,
+                nameEn: e.nameEn || '',
+                nameAr: e.nameAr || '',
+                code: e.militaryId || '',
+                isDeleted: e.isDeleted,
+                departmentName,
+                rankName,
+                phone: e.phone || '-',
+                email: e.email || '-'
+              } as LookupItem;
+            })
         )
       );
     }
@@ -102,7 +117,11 @@ export class LookupManagementService {
     return items.filter(item =>
       item.nameEn.toLowerCase().includes(search) ||
       item.nameAr.toLowerCase().includes(search) ||
-      (item.code && item.code.toLowerCase().includes(search))
+      (item.code && item.code.toLowerCase().includes(search)) ||
+      (item.departmentName && item.departmentName.toLowerCase().includes(search)) ||
+      (item.rankName && item.rankName.toLowerCase().includes(search)) ||
+      (item.phone && item.phone !== '-' && item.phone.toLowerCase().includes(search)) ||
+      (item.email && item.email !== '-' && item.email.toLowerCase().includes(search))
     );
   }
 
