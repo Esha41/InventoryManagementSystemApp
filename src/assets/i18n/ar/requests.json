@@ -500,6 +500,7 @@
       "invalidRequestData": "بيانات الطلب غير صالحة",
       "selectPickupDate": "يرجى اختيار تاريخ الاستلام",
       "pickupDateAlreadySet": "تم تعيين تاريخ الاستلام مسبقاً",
+      "pickupDateMustBeTodayOrFuture": "يجب أن يكون تاريخ الاستلام اليوم أو في المستقبل.",
       "failedToSetPickupDate": "فشل تعيين تاريخ الاستلام",
       "failedToConfirmPickupDate": "فشل تأكيد تاريخ الاستلام",
       "receiverNameRequired": "اسم المستلم مطلوب",

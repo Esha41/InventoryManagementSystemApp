@@ -455,50 +455,30 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
     this.submitting = true;
     this.cdr.markForCheck();
 
-    this.reviewService.submitSupply(dto)
+    this.reviewService.submitSupply(dto, this.selectedFiles)
       .pipe(
         takeUntil(this.destroy$),
-        switchMap((supplyId: number) => {
-          // Upload files linked to the created asset supply
-          if (this.selectedFiles.length > 0 && supplyId) {
-            return this.fileUploadService.uploadFilesForEntity(
-              this.selectedFiles,
-              FileEntityType.AssetSupply,
-              supplyId
-            ).pipe(
-              catchError((error) => {
-                this.config.logError('Failed to upload files for asset supply', error);
-                this.toastService.warning(
-                  this.translate.instant('weaponSupplyReview.fileUploadFailed'),
-                  this.translate.instant('toast.warning')
-                );
-                // Don't fail the whole submission if file upload fails
-                return of([]);
-              })
-            );
-          }
-          return of([]);
-        }),
         catchError((error) => {
           this.handleError('Failed to submit asset supply', error, 'weaponSupplyReview.failedToSubmit');
           this.submitting = false;
           this.cdr.markForCheck();
-          return [];
+          return of(null);
         })
       )
-      .subscribe({
-        next: () => {
-          this.submitting = false;
-          this.selectedFiles = [];
-          this.cdr.markForCheck();
-          this.toastService.success(
-            this.translate.instant('weaponSupplyReview.submitSuccess'),
-            this.translate.instant('toast.success')
-          );
-          setTimeout(() => {
-            this.router.navigate(['/requests-management', this.orderId, 'workflow-approval']);
-          }, 1500);
+      .subscribe((supplyId: number | null) => {
+        if (supplyId == null) {
+          return;
         }
+        this.submitting = false;
+        this.selectedFiles = [];
+        this.cdr.markForCheck();
+        this.toastService.success(
+          this.translate.instant('weaponSupplyReview.submitSuccess'),
+          this.translate.instant('toast.success')
+        );
+        setTimeout(() => {
+          this.router.navigate(['/requests-management', this.orderId, 'workflow-approval']);
+        }, 1500);
       });
   }
 
