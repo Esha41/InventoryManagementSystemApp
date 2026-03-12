@@ -52,6 +52,8 @@ export interface AuthenticatedUser {
   organizationId?: number;
   departmentId?: number;
   departmentName?: string;
+  departmentNameEn?: string;
+  departmentNameAr?: string;
   nameEn?: string;
   nameAr?: string;
   rankId?: number;
