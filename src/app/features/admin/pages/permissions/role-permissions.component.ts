@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
@@ -57,7 +57,8 @@ interface PermissionInfo {
     LoadingStateComponent
   ],
   templateUrl: './role-permissions.component.html',
-  styleUrls: ['./role-permissions.component.css']
+  styleUrls: ['./role-permissions.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RolePermissionsComponent implements OnInit, OnDestroy {
   // ============================================================================
@@ -125,7 +126,8 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
     private toastService: ToastService,
     private translateService: TranslateService,
     private profileDataService: ProfileDataService,
-    private authService: BackendAuthService
+    private authService: BackendAuthService,
+    private cdr: ChangeDetectorRef
   ) {
     this.permissionForm = this.fb.group({});
   }
@@ -193,15 +195,18 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
   // ============================================================================
   loadRoles(): void {
     this.isLoading = true;
+    this.cdr.markForCheck();
     this.backendUserService.getRoles()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (roles) => {
           this.roles = roles;
           this.isLoading = false;
+          this.cdr.markForCheck();
         },
         error: (error) => {
           this.isLoading = false;
+          this.cdr.markForCheck();
           this.translateService.get(['toast.failedToLoadRoles', 'toast.error']).subscribe(translations => {
             this.toastService.error(translations['toast.failedToLoadRoles'], translations['toast.error']);
           });
@@ -216,6 +221,7 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
 
   loadRolePermissions(roleId: string): void {
     this.isLoading = true;
+    this.cdr.markForCheck();
 
     // Load both CRUD and Plain permissions in parallel
     forkJoin({
@@ -230,9 +236,11 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
           this.organizePermissions();
           this.createPermissionForm();
           this.isLoading = false;
+          this.cdr.markForCheck();
         },
         error: (error) => {
           this.isLoading = false;
+          this.cdr.markForCheck();
           this.translateService.get(['toast.failedToLoadPermissions', 'toast.error']).subscribe(translations => {
             this.toastService.error(translations['toast.failedToLoadPermissions'], translations['toast.error']);
           });
@@ -541,6 +549,7 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
     if (!this.selectedRole) return;
 
     this.isSaving = true;
+    this.cdr.markForCheck();
     const selectedPermissions: string[] = [];
 
     // Collect CRUD permissions
@@ -583,10 +592,12 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
       .subscribe({
         next: ({ message }) => {
           this.isSaving = false;
+          this.cdr.markForCheck();
           this.toastService.success(message ?? this.translateService.instant('rolePermissions.permissionsSaved'));
         },
         error: () => {
           this.isSaving = false;
+          this.cdr.markForCheck();
           this.toastService.error(this.translateService.instant('rolePermissions.errorSaving'));
         }
       });

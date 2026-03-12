@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { UserDelegationService } from '@services/user-delegation.service';
@@ -18,7 +18,8 @@ import { finalize } from 'rxjs/operators';
         LucideAngularModule,
         AppDatePipe
     ],
-    templateUrl: './pending-delegations.component.html'
+    templateUrl: './pending-delegations.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PendingDelegationsComponent implements OnInit {
     readonly CheckCircle = CheckCircle;
@@ -50,11 +51,11 @@ export class PendingDelegationsComponent implements OnInit {
         this.delegationService.getPendingDelegations()
             .pipe(finalize(() => {
                 this.isLoading = false;
-                this.cdr.detectChanges();
+                this.cdr.markForCheck();
             }))
             .subscribe({
-                next: (res) => {
-                    this.pendingDelegations = res?.succeeded && res.data ? res.data : [];
+                next: (data) => {
+                    this.pendingDelegations = Array.isArray(data) ? data : [];
                 },
                 error: () => {
                     this.pendingDelegations = [];
@@ -75,8 +76,8 @@ export class PendingDelegationsComponent implements OnInit {
     onApproveConfirmed(): void {
         if (this.delegationToProcess) {
             this.delegationService.approve(this.delegationToProcess.id).subscribe({
-                next: (res) => {
-                    if (res?.succeeded) {
+                next: (success) => {
+                    if (success) {
                         this.loadPendingDelegations();
                     }
                 }
@@ -94,8 +95,8 @@ export class PendingDelegationsComponent implements OnInit {
     onRejectConfirmed(): void {
         if (this.delegationToProcess) {
             this.delegationService.reject(this.delegationToProcess.id).subscribe({
-                next: (res) => {
-                    if (res?.succeeded) {
+                next: (success) => {
+                    if (success) {
                         this.loadPendingDelegations();
                     }
                 }

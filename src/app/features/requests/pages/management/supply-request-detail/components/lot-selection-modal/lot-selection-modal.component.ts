@@ -3,7 +3,7 @@
  * Handles lot selection for a single order item
  */
 
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -26,7 +26,8 @@ import { formatDate as formatDateUtil, formatNumber as formatNumberUtil } from '
     ModalComponent
   ],
   templateUrl: './lot-selection-modal.component.html',
-  styleUrls: ['./lot-selection-modal.component.css']
+  styleUrls: ['./lot-selection-modal.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LotSelectionModalComponent implements OnInit, OnChanges {
   @Input() isOpen: boolean = false;
@@ -36,6 +37,7 @@ export class LotSelectionModalComponent implements OnInit, OnChanges {
   @Input() loadingManualLot: boolean = false;
   @Output() closed = new EventEmitter<void>();
   @Output() showAvailableLots = new EventEmitter<void>();
+  @Output() showAllLots = new EventEmitter<void>();
   @Output() addLotManually = new EventEmitter<void>();
   @Output() getManualLotDetails = new EventEmitter<string>();
   @Output() lotQuantityChange = new EventEmitter<{ lotNumber: number; quantity: number }>();
@@ -85,6 +87,10 @@ export class LotSelectionModalComponent implements OnInit, OnChanges {
 
   onShowAvailableLots(): void {
     this.showAvailableLots.emit();
+  }
+
+  onShowAllLots(): void {
+    this.showAllLots.emit();
   }
 
   onAddLotManually(): void {

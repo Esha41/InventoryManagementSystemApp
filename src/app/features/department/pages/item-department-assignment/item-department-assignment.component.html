@@ -1,0 +1,135 @@
+<div class="page-wrapper">
+  <div class="page-container">
+    <div class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
+      <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'itemDepartmentAssignment.title' | translate }}</h1>
+      <button *appHasPermission="'Permissions.ItemDepartmentAssignment.Create'" (click)="openAddModal()"
+        class="flex items-center gap-2 px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors w-full sm:w-auto justify-center">
+        <lucide-icon [img]="Plus" [size]="20"></lucide-icon>
+        {{ 'itemDepartmentAssignment.addAssignment' | translate }}
+      </button>
+    </div>
+
+    <div *ngIf="errorMessage"
+      class="mb-4 p-4 bg-[var(--color-error)]/10 border-2 border-[var(--color-error)]/20 text-[var(--color-error)] rounded-lg">
+      {{ errorMessage }}
+    </div>
+
+    <div class="mb-6">
+      <div class="relative">
+        <input type="text" [(ngModel)]="searchTerm" (input)="onSearch()"
+          [placeholder]="'itemDepartmentAssignment.search' | translate"
+          class="w-full ps-10 pe-4 py-2 border-2 border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] bg-[var(--color-background)] text-[var(--color-text)]" />
+        <lucide-icon [img]="Search"
+          class="absolute start-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--color-text-muted)]"></lucide-icon>
+      </div>
+    </div>
+
+    <app-loading-state *ngIf="loading && !showModal" message="common.loading" size="sm"
+      containerClass="flex justify-center items-center py-12">
+    </app-loading-state>
+
+    <div *ngIf="!loading || showModal">
+      <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md border-2 border-[var(--color-border)] overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b-2 border-[var(--color-border)] bg-[var(--color-background-muted)]">
+                <th class="px-6 py-4 text-start text-sm font-semibold text-[var(--color-text)]">{{ 'itemDepartmentAssignment.department' | translate }}</th>
+                <th class="px-6 py-4 text-center text-sm font-semibold text-[var(--color-text)]">{{ 'itemDepartmentAssignment.ammunitionLabel' | translate }}</th>
+                <th class="px-6 py-4 text-center text-sm font-semibold text-[var(--color-text)]">{{ 'itemDepartmentAssignment.explosivesLabel' | translate }}</th>
+                <th class="px-6 py-4 text-center text-sm font-semibold text-[var(--color-text)]">{{ 'itemDepartmentAssignment.weaponsLabel' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let summary of paginatedSummaries">
+                <tr class="border-b border-[var(--color-border)] hover:bg-[var(--color-background-hover)] transition-colors cursor-pointer"
+                  (click)="toggleDepartmentItems(summary.departmentId)">
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                      <button type="button" (click)="toggleDepartmentItems(summary.departmentId); $event.stopPropagation()"
+                        class="p-1 hover:bg-[var(--color-background-hover)] rounded transition-colors">
+                        <lucide-icon
+                          [img]="isDepartmentExpanded(summary.departmentId) ? ChevronDown : ChevronRight"
+                          [size]="20"
+                          class="text-[var(--color-text-muted)]">
+                        </lucide-icon>
+                      </button>
+                      <span class="text-base font-semibold text-[var(--color-text)]">
+                        {{ getSummaryDepartmentName(summary) }}
+                      </span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 text-center text-sm text-[var(--color-text)]">{{ summary.ammunitionCount }}</td>
+                  <td class="px-6 py-4 text-center text-sm text-[var(--color-text)]">{{ summary.explosivesCount }}</td>
+                  <td class="px-6 py-4 text-center text-sm text-[var(--color-text)]">{{ summary.weaponsCount }}</td>
+                </tr>
+                <tr *ngIf="isDepartmentExpanded(summary.departmentId)">
+                  <td colspan="4" class="p-0 bg-[var(--color-background-muted)]">
+                    <app-department-assignments-table
+                      [assignments]="getDepartmentAssignments(summary.departmentId)"
+                      [allItems]="allItems"
+                      [departmentId]="summary.departmentId"
+                      (deleteAssignment)="deleteAssignment($event)"
+                      (addItems)="openAddModalForDepartment($event)">
+                    </app-department-assignments-table>
+                  </td>
+                </tr>
+              </ng-container>
+              <tr *ngIf="filteredSummaries.length === 0">
+                <td colspan="4" class="px-6 py-12 text-center">
+                  <p class="text-[var(--color-text-secondary)]">
+                    {{ searchTerm ? ('itemDepartmentAssignment.noDepartmentsFound' | translate) : ('itemDepartmentAssignment.noDepartments' | translate) }}
+                  </p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div *ngIf="filteredSummaries.length > 0 && !loading"
+        class="border-t-2 border-[var(--color-border)] bg-[var(--color-background-muted)] px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="filteredSummaries.length"
+          [visibleItems]="paginatedSummaries.length" (rowsPerPageChange)="onRowsPerPageChange($event)">
+        </app-rows-per-page>
+        <div *ngIf="totalPages > 1" class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
+          </app-pagination>
+          <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+            {{ currentPage }} {{ 'common.of' | translate }} {{ totalPages }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <app-assignment-modal
+      [isOpen]="showModal"
+      [isEditMode]="isEditMode"
+      [departments]="departments"
+      [allItems]="allItems"
+      [currentAssignment]="currentAssignment"
+      [currentAssignmentId]="currentAssignmentId"
+      [selectedAmmunitionIds]="selectedAmmunitionIds"
+      [selectedWeaponIds]="selectedWeaponIds"
+      [selectedExplosiveIds]="selectedExplosiveIds"
+      [availableItems]="availableItems"
+      [loading]="loading"
+      [errorMessage]="errorMessage"
+      (save)="saveAssignment()"
+      (cancel)="closeModal()"
+      (departmentChange)="onDepartmentChange($event)"
+      (itemSelectChange)="onItemSelectChange($event)"
+      (ammunitionChange)="onAmmunitionChange($event)"
+      (weaponsChange)="onWeaponsChange($event)"
+      (explosivesChange)="onExplosivesChange($event)">
+    </app-assignment-modal>
+  </div>
+
+  <app-confirm-dialog [isOpen]="showDeleteDialog" [title]="'itemDepartmentAssignment.deleteConfirmation.title' | translate"
+    [message]="'itemDepartmentAssignment.deleteConfirmation.message' | translate"
+    [description]="('itemDepartmentAssignment.deleteConfirmation.assignment' | translate) + ': ' + (assignmentToDelete?.itemName || '') + ' - ' + (assignmentToDelete ? getDepartmentName(assignmentToDelete.departmentId) : '')"
+    [confirmText]="'itemDepartmentAssignment.deleteConfirmation.confirmDelete' | translate"
+    [cancelText]="'itemDepartmentAssignment.deleteConfirmation.cancel' | translate" confirmVariant="danger" (confirmed)="onDeleteConfirm()"
+    (cancelled)="onDeleteCancel()">
+  </app-confirm-dialog>
+</div>

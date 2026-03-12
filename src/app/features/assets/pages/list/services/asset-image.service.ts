@@ -7,7 +7,9 @@ import { Injectable } from '@angular/core';
 import { Observable, forkJoin, of } from 'rxjs';
 import { map, catchError, filter, switchMap } from 'rxjs/operators';
 import { Asset, AssetType } from '@models/asset-list.model';
+import { FileUploadDto, FileEntityType } from '@models/file-upload.model';
 import { AmmunitionService } from '@services/ammunition.service';
+import { FileUploadService } from '@services/file-upload.service';
 import { WeaponService } from '@services/weapon.service';
 import { ExplosiveService } from '@services/explosive.service';
 
@@ -34,26 +36,15 @@ export class AssetImageService {
   loadAssetImages(assets: Asset[], activeTab: AssetType): Observable<ImageLoadResult[]> {
     const imageRequests = assets
       .map(asset => {
-        const originalData = asset.originalData as any;
+        const originalData = asset.originalData as { images?: FileUploadDto[] } | undefined;
         if (!originalData?.images || originalData.images.length === 0) {
           return null;
         }
 
-        // Get main images (there might be multiple with isMain: true)
-        const mainImages = originalData.images.filter((img: any) => img.isMain);
-        let image: any;
-
-        if (mainImages.length > 0) {
-          // If multiple main images exist, get the one with highest ID (latest uploaded)
-          image = mainImages.reduce((latest: any, current: any) =>
-            (current.id > latest.id) ? current : latest
-          );
-        } else {
-          // If no main image, get the image with highest ID (latest uploaded)
-          image = originalData.images.reduce((latest: any, current: any) =>
-            (current.id > latest.id) ? current : latest
-          );
-        }
+        const mainImages = originalData.images.filter((img: FileUploadDto) => img.isMain);
+        const image = mainImages.length > 0
+          ? mainImages.reduce((latest, current) => (current.id > latest.id) ? current : latest)
+          : originalData.images.reduce((latest, current) => (current.id > latest.id) ? current : latest);
 
         if (!image?.id) {
           return null;
@@ -102,16 +93,16 @@ export class AssetImageService {
   loadEditImage(
     id: number,
     activeTab: AssetType,
-    fileUploadService: any,
+    fileUploadService: FileUploadService,
     callback?: () => void
   ): Observable<{ fileId: number | null; url: string | null }> {
-    let entityType: any;
+    let entityType: FileEntityType;
     if (activeTab === 'ammunition') {
-      entityType = 'Ammunition';
+      entityType = FileEntityType.Ammunition;
     } else if (activeTab === 'weapon') {
-      entityType = 'Weapon';
+      entityType = FileEntityType.Weapon;
     } else if (activeTab === 'explosive') {
-      entityType = 'Explosive';
+      entityType = FileEntityType.Explosive;
     } else {
       if (callback) callback();
       return of({ fileId: null, url: null });
@@ -120,20 +111,12 @@ export class AssetImageService {
     const service = this.getServiceForTab(activeTab);
 
     return fileUploadService.getFilesByEntity(entityType, id).pipe(
-      switchMap((files: any[]) => {
+      switchMap((files: FileUploadDto[]) => {
         if (files && files.length > 0) {
-          const mainImages = files.filter((img: any) => img.isMain);
-          let latestImage: any;
-
-          if (mainImages.length > 0) {
-            latestImage = mainImages.reduce((latest: any, current: any) =>
-              (current.id > latest.id) ? current : latest
-            );
-          } else {
-            latestImage = files.reduce((latest: any, current: any) =>
-              (current.id > latest.id) ? current : latest
-            );
-          }
+          const mainImages = files.filter((img: FileUploadDto) => img.isMain);
+          const latestImage = mainImages.length > 0
+            ? mainImages.reduce((latest, current) => (current.id > latest.id) ? current : latest)
+            : files.reduce((latest, current) => (current.id > latest.id) ? current : latest);
 
           if (latestImage?.id) {
             return service.getFileBlob(latestImage.id).pipe(

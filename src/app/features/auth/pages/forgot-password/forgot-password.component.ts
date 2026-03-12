@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Mail, ArrowLeft, Send } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
+import { ErrorHandler } from '@utils/error-handler.utils';
 import { ToastService } from '@services/toast.service';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -19,7 +20,8 @@ import { Subject, takeUntil } from 'rxjs';
         RouterLink
     ],
     templateUrl: './forgot-password.component.html',
-    styleUrls: ['./forgot-password.component.css']
+    styleUrls: ['./forgot-password.component.css'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ForgotPasswordComponent implements OnInit, OnDestroy {
     readonly Mail = Mail;
@@ -37,7 +39,8 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
         private authService: BackendAuthService,
         private toastService: ToastService,
         private translateService: TranslateService,
-        private router: Router
+        private router: Router,
+        private cdr: ChangeDetectorRef
     ) {
         this.forgotPasswordForm = this.fb.group({
             email: ['', [Validators.required, Validators.email]]
@@ -49,6 +52,7 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
         this.isRTL = this.translateService.currentLang === 'ar';
         this.translateService.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(event => {
             this.isRTL = event.lang === 'ar';
+            this.cdr.markForCheck();
         });
     }
 
@@ -66,6 +70,7 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
         }
 
         this.isSubmitting = true;
+        this.cdr.markForCheck();
         const email = this.forgotPasswordForm.value.email;
 
         this.authService.forgotPassword(email)
@@ -74,6 +79,7 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
                 next: () => {
                     this.isSubmitting = false;
                     this.emailSent = true;
+                    this.cdr.markForCheck();
                     this.toastService.success(
                         this.translateService.instant('auth.forgotPassword.emailSent'),
                         this.translateService.instant('common.success')
@@ -81,7 +87,8 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
                 },
                 error: (error) => {
                     this.isSubmitting = false;
-                    const errorMessage = error?.message || this.translateService.instant('auth.forgotPassword.error');
+                    this.cdr.markForCheck();
+                    const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, this.translateService.instant('auth.forgotPassword.error'), this.translateService);
                     this.toastService.error(
                         errorMessage,
                         this.translateService.instant('common.error')

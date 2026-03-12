@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { UserDelegationService } from '@services/user-delegation.service';
@@ -20,7 +20,8 @@ import { finalize } from 'rxjs/operators';
         LucideAngularModule,
         AppDatePipe
     ],
-    templateUrl: './delegation-list.component.html'
+    templateUrl: './delegation-list.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DelegationListComponent implements OnInit {
     readonly Plus = Plus;
@@ -66,11 +67,11 @@ export class DelegationListComponent implements OnInit {
         this.delegationService.getMyDelegations()
             .pipe(finalize(() => {
                 this.isLoading = false;
-                this.cdr.detectChanges();
+                this.cdr.markForCheck();
             }))
             .subscribe({
-                next: (res) => {
-                    this.delegations = res?.succeeded && res.data ? res.data : [];
+                next: (data) => {
+                    this.delegations = Array.isArray(data) ? data : [];
                 },
                 error: () => {
                     this.delegations = [];
@@ -81,9 +82,9 @@ export class DelegationListComponent implements OnInit {
     loadPendingDelegations(): void {
         this.delegationService.getPendingDelegations()
             .subscribe({
-                next: (res) => {
-                    this.pendingDelegations = res?.succeeded && res.data ? res.data : [];
-                    this.cdr.detectChanges();
+                next: (data) => {
+                    this.pendingDelegations = Array.isArray(data) ? data : [];
+                    this.cdr.markForCheck();
                 },
                 error: () => {
                     this.pendingDelegations = [];
@@ -110,8 +111,8 @@ export class DelegationListComponent implements OnInit {
     onRevokeConfirmed(): void {
         if (this.delegationToRevoke) {
             this.delegationService.revoke(this.delegationToRevoke.id).subscribe({
-                next: (res) => {
-                    if (res?.succeeded) {
+                next: (success) => {
+                    if (success) {
                         this.loadDelegations();
                     }
                 }
@@ -139,8 +140,8 @@ export class DelegationListComponent implements OnInit {
     onApproveConfirmed(): void {
         if (this.delegationToProcess) {
             this.delegationService.approve(this.delegationToProcess.id).subscribe({
-                next: (res) => {
-                    if (res?.succeeded) {
+                next: (success) => {
+                    if (success) {
                         this.loadPendingDelegations();
                         this.loadDelegations();
                     } else {
@@ -168,8 +169,8 @@ export class DelegationListComponent implements OnInit {
     onRejectConfirmed(): void {
         if (this.delegationToProcess) {
             this.delegationService.reject(this.delegationToProcess.id).subscribe({
-                next: (res) => {
-                    if (res?.succeeded) {
+                next: (success) => {
+                    if (success) {
                         this.loadPendingDelegations();
                         this.loadDelegations();
                     } else {

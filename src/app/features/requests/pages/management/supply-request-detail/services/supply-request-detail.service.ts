@@ -111,13 +111,11 @@ export class SupplyRequestDetailService {
    * Load approval history and update request detail
    */
   loadApprovalHistory(orderId: number, requestDetail: SupplyRequestDetail): Observable<SupplyRequestDetail> {
-    return this.apiService.getWithAuth<BaseRequestDto[]>(
+    return this.apiService.get<BaseRequestDto[]>(
       API_ENDPOINTS.WORKFLOW_APPROVAL.ALL_BASE_REQUESTS
     ).pipe(
       map((response: any) => {
-        const data: BaseRequestDto[] = Array.isArray(response)
-          ? response
-          : (response?.data || []);
+        const data: BaseRequestDto[] = Array.isArray(response) ? response : [];
 
         const baseRequest = data.find(r => r.id === orderId);
 
@@ -333,6 +331,13 @@ export class SupplyRequestDetailService {
    */
   loadAvailableLotsForQuantity(itemId: number, quantity: number, excludeSupplyId?: number): Observable<LotDetailDto[]> {
     return this.inventoryService.getAvailableLotsForQuantity(itemId, quantity, undefined, excludeSupplyId);
+  }
+
+  /**
+   * Load ALL lots for an item (including expired and empty lots)
+   */
+  loadAllLotsForItem(itemId: number): Observable<LotDetailDto[]> {
+    return this.inventoryService.getLotsByItemId(itemId);
   }
 
   /**

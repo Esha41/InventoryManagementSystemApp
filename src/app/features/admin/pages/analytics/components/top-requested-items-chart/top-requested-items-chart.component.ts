@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { EChartsOption } from 'echarts';
@@ -12,7 +12,8 @@ import { LucideAngularModule, TrendingUp, RefreshCw, AlertCircle } from 'lucide-
     standalone: true,
     imports: [CommonModule, NgxEchartsModule, LucideAngularModule, TranslateModule],
     templateUrl: './top-requested-items-chart.component.html',
-    styleUrl: './top-requested-items-chart.component.css'
+    styleUrl: './top-requested-items-chart.component.css',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TopRequestedItemsChartComponent implements OnInit, OnDestroy {
     private destroy$ = new Subject<void>();
@@ -41,7 +42,7 @@ export class TopRequestedItemsChartComponent implements OnInit, OnDestroy {
 
     loadData(): void {
         this.loading = true;
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
 
         this.analyticsService.getTopRequestedItems()
             .pipe(takeUntil(this.destroy$))
@@ -50,13 +51,13 @@ export class TopRequestedItemsChartComponent implements OnInit, OnDestroy {
                     this.initChart(data);
                     this.loading = false;
                     this.error = false;
-                    this.cdr.detectChanges();
+                    this.cdr.markForCheck();
                 },
                 error: (err: any) => {
                     console.error('Error loading top requested items:', err);
                     this.loading = false;
                     this.error = true;
-                    this.cdr.detectChanges();
+                    this.cdr.markForCheck();
                 }
             });
     }
@@ -130,6 +131,6 @@ export class TopRequestedItemsChartComponent implements OnInit, OnDestroy {
                 barMaxWidth: 30
             }]
         };
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
     }
 }

@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { Router, CanActivateFn, ActivatedRouteSnapshot } from '@angular/router';
 import { BackendAuthService } from '@services/backend-auth.service';
+import { ConfigService } from '@services/config.service';
 
 /**
  * Permission guard for role-based route protection
@@ -13,6 +14,7 @@ import { BackendAuthService } from '@services/backend-auth.service';
 export const permissionGuard: CanActivateFn = (route: ActivatedRouteSnapshot, state) => {
   const router = inject(Router);
   const backendAuth = inject(BackendAuthService);
+  const configService = inject(ConfigService);
 
   // First check if user is authenticated
   if (!backendAuth.isAuthenticated()) {
@@ -34,10 +36,10 @@ export const permissionGuard: CanActivateFn = (route: ActivatedRouteSnapshot, st
     ? backendAuth.hasAllPermissions(permissions)
     : backendAuth.hasAnyPermission(permissions);
 
-  // Debug logging for permission checks
+  // Debug logging for permission checks (respects enableLogging)
   const user = backendAuth.getCurrentUser();
   if (!hasPermission) {
-    console.warn('Permission Guard: Access Denied', {
+    configService.logWarning('Permission Guard: Access Denied', {
       route: state.url,
       requiredPermissions: permissions,
       requireAll: requireAll || false,

@@ -4,6 +4,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Edit2, Trash2, Eye } from 'lucide-angular';
 import { AssetDto } from '@models/asset.model';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
+import { trackById } from '@utils/trackby.utils';
 
 @Component({
   selector: 'app-asset-table',
@@ -29,5 +30,6 @@ export class AssetTableComponent {
   readonly Edit2 = Edit2;
   readonly Trash2 = Trash2;
   readonly Eye = Eye;
+  readonly trackById = trackById;
 }
 

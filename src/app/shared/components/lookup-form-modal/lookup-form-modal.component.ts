@@ -1,8 +1,9 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ModalComponent } from '../modal/modal.component';
 import { ButtonComponent } from '../button/button.component';
+import { Subject, takeUntil } from 'rxjs';
 import { LookupItem, CreateUpdateLookupDto, LookupTableConfig } from '@models/lookup.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DropdownComponent, DropdownOption } from '../dropdown/dropdown.component';
@@ -21,7 +22,7 @@ import { DropdownComponent, DropdownOption } from '../dropdown/dropdown.componen
   templateUrl: './lookup-form-modal.component.html',
   styleUrls: ['./lookup-form-modal.component.css']
 })
-export class LookupFormModalComponent implements OnInit, OnChanges {
+export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
   @Input() isOpen = false;
   @Input() lookupItem?: LookupItem;
   @Input() tableConfig?: LookupTableConfig;
@@ -35,6 +36,8 @@ export class LookupFormModalComponent implements OnInit, OnChanges {
   isLoading = false;
   errorMessage = '';
 
+  private readonly destroy$ = new Subject<void>();
+
   // Item type options for dropdown
   itemTypeOptions: DropdownOption<number>[] = [
     { value: 1, label: '' },
@@ -44,12 +47,12 @@ export class LookupFormModalComponent implements OnInit, OnChanges {
 
   constructor(private fb: FormBuilder, private translateService: TranslateService) {
     // Subscribe to translation changes (including initial load)
-    this.translateService.onTranslationChange.subscribe(() => {
+    this.translateService.onTranslationChange.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.updateItemTypeTranslations();
     });
 
     // Subscribe to language changes
-    this.translateService.onLangChange.subscribe(() => {
+    this.translateService.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.updateItemTypeTranslations();
     });
   }
@@ -63,9 +66,14 @@ export class LookupFormModalComponent implements OnInit, OnChanges {
       'lookupFormModal.ammunition',
       'lookupFormModal.weapon',
       'lookupFormModal.explosive'
-    ]).subscribe(() => {
+    ]).pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.updateItemTypeTranslations();
     });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   ngOnChanges(changes: SimpleChanges): void {

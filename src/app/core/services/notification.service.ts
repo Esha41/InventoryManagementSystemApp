@@ -6,12 +6,13 @@ import { API_ENDPOINTS, STORAGE_KEYS } from '@constants/app.constants';
 import { Notification } from '@models/notification.model';
 import { ApiService } from './api.service';
 import { ConfigService } from './config.service';
+import { StorageService } from './storage.service';
 import { BackendAuthService } from './backend-auth.service';
 import { AuthenticatedUser } from '@models/auth.model';
 import { ToastService } from './toast.service';
 import { TranslateService } from '@ngx-translate/core';
 import { EmailService } from './email.service';
-import { EmailConfigurationService, EmailConfigurationDto } from './email-configuration.service';
+import { EmailConfigurationService } from './email-configuration.service';
 import { OrderService } from './order.service';
 import { ReturnService } from './return.service';
 import { DiscardService } from './discard.service';
@@ -67,6 +68,7 @@ export class NotificationService implements OnDestroy {
     private readonly apiService: ApiService,
     private readonly configService: ConfigService,
     private readonly authService: BackendAuthService,
+    private readonly storageService: StorageService,
     private readonly toastService: ToastService,
     private readonly translate: TranslateService,
     private readonly ngZone: NgZone,
@@ -98,8 +100,13 @@ export class NotificationService implements OnDestroy {
             this.loadInitialData();
             this.startHubConnection();
 
-            // Check email config when user logs in
-            this.checkEmailConfiguration();
+            // Only check email config when user can access it (super admin). Others get 403.
+            if (this.authService.isSuperAdmin()) {
+              this.checkEmailConfiguration();
+            } else {
+              this.emailNotificationsEnabled = false;
+              this.emailConfigChecked = true;
+            }
           }
         } else {
           this.currentUser = null;
@@ -311,7 +318,7 @@ export class NotificationService implements OnDestroy {
       return;
     }
 
-    const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN) ?? '';
+    const token = this.storageService.get<string>(STORAGE_KEYS.AUTH_TOKEN) ?? '';
     const hubUrl = this.buildHubUrl();
 
     this.hubConnection = new HubConnectionBuilder()
@@ -406,26 +413,22 @@ export class NotificationService implements OnDestroy {
   }
 
   /**
-   * Check email configuration to see if email notifications are enabled
+   * Check if email notifications are enabled.
+   * 403/404 are expected (user lacks permission or config not set) - treat as disabled, no log.
    */
   private checkEmailConfiguration(): void {
     this.emailConfigService.getEmailConfiguration().subscribe({
-      next: (config: EmailConfigurationDto) => {
-        this.emailNotificationsEnabled = config.enableEmailNotifications ?? false;
+      next: (config) => {
+        this.emailNotificationsEnabled = config?.enableEmailNotifications ?? false;
         this.emailConfigChecked = true;
       },
       error: (error: unknown) => {
-        const httpError = error as { status?: number };
-        // If 404, email config doesn't exist yet, so disable email notifications
-        if (httpError?.status === 404) {
-          this.emailNotificationsEnabled = false;
-          this.emailConfigChecked = true;
-        } else {
-          // For other errors, log but don't block notifications
+        const status = (error as { status?: number })?.status;
+        if (status !== 403 && status !== 404) {
           this.configService.logError('Failed to check email configuration', error);
-          this.emailNotificationsEnabled = false;
-          this.emailConfigChecked = true;
         }
+        this.emailNotificationsEnabled = false;
+        this.emailConfigChecked = true;
       }
     });
   }
@@ -456,7 +459,7 @@ export class NotificationService implements OnDestroy {
 
     if (!recipientEmail) {
       // Try to get email from JWT token payload as fallback
-      const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+      const token = this.storageService.get<string>(STORAGE_KEYS.AUTH_TOKEN);
       if (token) {
         try {
           const payload = JSON.parse(atob(token.split('.')[1]));

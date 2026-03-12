@@ -20,8 +20,13 @@
     "tabs": {
       "ammunition": "الذخيرة",
       "weapon": "الأسلحة",
-      "explosive": "المتفجرات"
+      "explosive": "المتفجرات",
+      "batch": "الأسلحة"
     },
+    "batchNumber": "رقم الدفعة",
+    "assetCount": "عدد الأصول",
+    "depot": "المستودع",
+    "noBatches": "لا توجد دفعات أسلحة",
     "inventory": "المخزون",
     "backToWarehouses": "العودة إلى المستودعات",
     "accessDenied": "تم رفض الوصول",
@@ -41,10 +46,10 @@
     "currentQty": "الكمية الحالية",
     "expiryDate": "تاريخ الانتهاء",
     "invoiceNumber": "رقم الفاتورة",
-    "readyForIssue": "جاهز للإصدار",
+    "readyForIssue": "جاهز للصرف",
     "serialNumber": "الرقم التسلسلي",
     "filterByInvoice": "تصفية حسب رقم الفاتورة",
-    "rfidTag": "علامة RFID",
+    "rfidTag": "RFID",
     "assetTag": "علامة الأصل",
     "status": "الحالة",
     "condition": "الوضع",
@@ -102,7 +107,12 @@
     "deleteAssetWarning": "لا يمكن التراجع عن هذا الإجراء.",
     "assetDeleted": "تم حذف الأصل بنجاح",
     "failedToDeleteAsset": "فشل حذف الأصل",
-    "editAssetComingSoon": "وظيفة تعديل الأصل قريباً"
+    "editAssetComingSoon": "وظيفة تعديل الأصل قريباً",
+    "viewAssets": "عرض الأصول",
+    "deleteBatchConfirm": "حذف الدفعة؟",
+    "deleteBatchMessage": "هل أنت متأكد من حذف هذه الدفعة؟ سيتم حذف جميع الأصول في الدفعة. ستفشل العملية إذا كانت أي أصول معينة أو في أوامر التوريد.",
+    "batchDeleted": "تم حذف الدفعة بنجاح",
+    "failedToDeleteBatch": "فشل حذف الدفعة"
   },
   "assetDetails": {
     "title": "تفاصيل الأصل",
@@ -113,7 +123,7 @@
     "weaponName": "اسم السلاح",
     "status": "الحالة",
     "serialNumber": "الرقم التسلسلي",
-    "rfidTag": "علامة RFID",
+    "rfidTag": "RFID",
     "assetTag": "علامة الأصل",
     "condition": "الوضع",
     "purchaseDate": "تاريخ الشراء",
@@ -462,7 +472,7 @@
       "primer": "المفجر",
       "totalWeight": "الوزن الكلي",
       "isLinked": "مرتبط",
-      "readyForIssue": "جاهز للإصدار",
+      "readyForIssue": "جاهز للصرف",
       "expiryDate": "تاريخ الانتهاء",
       "commonFields": "الحقول المشتركة"
     },
@@ -526,7 +536,7 @@
       "isLinked": "مرتبط",
       "notLinked": "غير مرتبط",
       "linked": "مرتبط",
-      "readyForIssue": "جاهز للإصدار",
+      "readyForIssue": "جاهز للصرف",
       "expiryDate": "تاريخ الانتهاء",
       "price": "السعر",
       "pricePlaceholder": "أدخل السعر (اختياري)",
@@ -682,5 +692,21 @@
     "dragInstruction": "اسحب العلامات لتعديل الموضع. يتم حساب الإحداثيات تلقائياً.",
     "confirmClearCache": "هل أنت متأكد من رغبتك في مسح ذاكرة التخزين المؤقت للخريطة؟",
     "cacheCleared": "تم مسح ذاكرة التخزين المؤقت للخريطة."
+  },
+  "editBatch": {
+    "title": "تعديل دفعة الأسلحة",
+    "backToBatches": "العودة إلى الأسلحة",
+    "commonInfo": "معلومات دفعة الأسلحة",
+    "purchaseDetails": "تفاصيل الشراء",
+    "assetsTable": "الأصول",
+    "removeRow": "إزالة الصف",
+    "noAssets": "لا توجد أصول في دفعة الأسلحة هذه",
+    "assetCount": "الأصول في دفعة الأسلحة",
+    "saveAll": "حفظ الكل",
+    "saving": "جاري الحفظ...",
+    "saveSuccess": "تم تحديث جميع الأصول بنجاح",
+    "saveError": "فشل في تحديث الأصول. يرجى المحاولة مرة أخرى.",
+    "validationError": "يرجى إصلاح أخطاء التحقق قبل الحفظ",
+    "selectStatus": "اختر الحالة"
   }
 }

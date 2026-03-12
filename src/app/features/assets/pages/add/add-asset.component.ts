@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -80,7 +80,8 @@ type AssetType = 'ammunition' | 'weapon' | 'explosive';
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule, CardComponent, LucideAngularModule, DropdownComponent, HasPermissionDirective, LoadingStateComponent, ErrorStateComponent],
   templateUrl: './add-asset.component.html',
-  styleUrls: ['./add-asset.component.css']
+  styleUrls: ['./add-asset.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddAssetComponent implements OnInit, OnDestroy {
   readonly Save = Save;
@@ -132,7 +133,8 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     private toastService: ToastService,
     private router: Router,
     private route: ActivatedRoute,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   get isRTL(): boolean {
@@ -227,6 +229,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (units) => {
           this.units = units;
+          this.cdr.markForCheck();
         },
         error: (error) => {
           const errorMsg = this.translationService.getTranslation('addAsset.errorLoadingUnits') || 'Failed to load units';
@@ -268,12 +271,14 @@ export class AddAssetComponent implements OnInit, OnDestroy {
           this.itemTypes = data.itemTypes;
           this.countries = data.countries;
           this.loading = false;
+          this.cdr.markForCheck();
           // Load units for the active tab
           this.loadUnitsForTab(this.activeTab);
         },
         error: () => {
           this.errorMessage = 'Failed to load lookup data. Please try again.';
           this.loading = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -360,7 +365,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       formData.append('files', this.assetForm.image);
     }
 
-    const request = this.apiService.postWithAuth<APIOperationResponse<AmmunitionReadDto>>('/Ammunition', formData);
+    const request = this.apiService.post<AmmunitionReadDto>('/Ammunition', formData);
     request.pipe(takeUntil(this.destroy$)).subscribe(this.getSubmitObserver());
   }
 
@@ -399,7 +404,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       formData.append('files', this.assetForm.image);
     }
 
-    const request = this.apiService.postWithAuth<APIOperationResponse<WeaponDto>>('/Weapon', formData);
+    const request = this.apiService.post<WeaponDto>('/Weapon', formData);
     request.pipe(takeUntil(this.destroy$)).subscribe(this.getSubmitObserver());
   }
 
@@ -437,33 +442,41 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       formData.append('files', this.assetForm.image);
     }
 
-    const request = this.apiService.postWithAuth<APIOperationResponse<ExplosiveDto>>('/Explosive', formData);
+    const request = this.apiService.post<ExplosiveDto>('/Explosive', formData);
     request.pipe(takeUntil(this.destroy$)).subscribe(this.getSubmitObserver());
   }
 
   private getSubmitObserver() {
     return {
-      next: (response: APIOperationResponse<any>) => {
-        if (response.succeeded) {
+      next: (asset: AmmunitionReadDto | WeaponDto | ExplosiveDto) => {
+        if (asset) {
           const successMessage = this.translationService.getTranslation('addAsset.successMessage');
           this.toastService.success(successMessage || 'Asset created successfully', this.translationService.getTranslation('toast.success'));
           setTimeout(() => {
-            this.router.navigate(['/asset-list'], {
-              queryParams: { tab: this.activeTab }
-            });
+            const queryParams: Record<string, string | number> = { tab: this.activeTab };
+            const page = this.route.snapshot.queryParamMap.get('page');
+            if (page) {
+              const parsed = parseInt(page, 10);
+              if (!isNaN(parsed) && parsed >= 1) {
+                queryParams['page'] = parsed;
+              }
+            }
+            this.router.navigate(['/asset-list'], { queryParams });
           }, 800);
         } else {
-          const rawMsg = response.message || 'Failed to create asset';
+          const rawMsg = 'Failed to create asset';
           this.errorMessage = ErrorHandler.translateErrorMessage(rawMsg, this.translateService);
           this.toastService.error(this.errorMessage || '', this.translationService.getTranslation('toast.error'));
         }
         this.submitting = false;
+        this.cdr.markForCheck();
       },
       error: (error: unknown) => {
         let errorMsg = ErrorHandler.extractAndTranslateErrorMessage(error, 'Failed to create asset. Please try again.', this.translateService);
         this.errorMessage = errorMsg;
         this.toastService.error(errorMsg, this.translationService.getTranslation('toast.error'));
         this.submitting = false;
+        this.cdr.markForCheck();
       }
     };
   }
@@ -569,6 +582,22 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       }
       this.assetForm.image = file;
       this.generatePreview(file);
+    }
+  }
+
+  /** Prevents + and - keys in numeric fields (bullet diameter, total weight). */
+  blockSignKeys(event: KeyboardEvent): void {
+    if (event.key === '-' || event.key === '+') {
+      event.preventDefault();
+    }
+  }
+
+  /** Sanitizes pasted text: removes + and - from numeric fields. */
+  onPasteNumber(event: ClipboardEvent, field: 'bulletDiameter' | 'totalWeight'): void {
+    const pasted = (event.clipboardData?.getData('text') ?? '').replace(/[+-]/g, '');
+    if (pasted !== (event.clipboardData?.getData('text') ?? '')) {
+      event.preventDefault();
+      this.assetForm[field] = pasted;
     }
   }
 

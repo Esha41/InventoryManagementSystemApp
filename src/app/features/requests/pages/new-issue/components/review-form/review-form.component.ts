@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -14,7 +14,8 @@ import { formatDateTimeExtended } from '@utils/format.utils';
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule, ButtonComponent, HasPermissionDirective, LucideAngularModule],
   templateUrl: './review-form.component.html',
-  styleUrls: ['./review-form.component.css']
+  styleUrls: ['./review-form.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ReviewFormComponent {
   readonly Eye = Eye;

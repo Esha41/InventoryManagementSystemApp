@@ -47,6 +47,22 @@
                 </app-dropdown>
             </div>
 
+            <!-- Delivery Type -->
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+                    {{ 'announcements.deliveryType' | translate }} <span class="text-[var(--color-error)]">*</span>
+                </label>
+                <p class="text-xs text-[var(--color-text-muted)] mb-2">
+                    {{ 'announcements.deliveryTypeHelp' | translate }}
+                </p>
+                <app-dropdown class="w-full" formControlName="deliveryType" [options]="deliveryTypes"
+                    optionValue="value" [optionLabelFn]="getDeliveryTypeOptionLabel"
+                    [placeholder]="'announcements.deliveryType' | translate"
+                    [error]="!!(form.get('deliveryType')?.invalid && form.get('deliveryType')?.touched)"
+                    [noDataText]="'common.noData' | translate">
+                </app-dropdown>
+            </div>
+
             <!-- Dismissable -->
             <div class="mb-4">
                 <label class="flex items-center gap-2 cursor-pointer">

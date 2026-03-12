@@ -3,7 +3,7 @@
  * Handles add, edit, and remove item modals
  */
 
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -30,7 +30,8 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
     DropdownComponent
   ],
   templateUrl: './item-management-modals.component.html',
-  styleUrls: ['./item-management-modals.component.css']
+  styleUrls: ['./item-management-modals.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ItemManagementModalsComponent implements OnInit, OnChanges {
   @Input() isAddItemModalOpen: boolean = false;

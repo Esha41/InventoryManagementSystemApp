@@ -12,6 +12,7 @@ import { SupplyOrderDataService } from '@requests/services/supply-order-data.ser
 import { ToastService } from '@services/toast.service';
 import { formatDate as formatDateUtil, formatNumber as formatNumberUtil } from '@utils/format.utils';
 import { getLocalizedOrderItemName } from '@utils/supply-order-format.utils';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 /**
  * Add Lot Modal Component
@@ -135,12 +136,22 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
 
   onShowAvailableLots(): void {
     if (!this.selectedItemForLot) {
-      this.translateService.get(['supplyOrder.toast.pleaseSelectItemFirst', 'toast.warning']).subscribe(translations => {
+      this.translateService.get(['supplyOrder.toast.pleaseSelectItemFirst', 'toast.warning']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.warning(translations['supplyOrder.toast.pleaseSelectItemFirst'], translations['toast.warning']);
       });
       return;
     }
     this.loadAvailableLotsForQuantity(this.selectedItemForLot);
+  }
+
+  onShowAllLots(): void {
+    if (!this.selectedItemForLot) {
+      this.translateService.get(['supplyOrder.toast.pleaseSelectItemFirst', 'toast.warning']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
+        this.toastService.warning(translations['supplyOrder.toast.pleaseSelectItemFirst'], translations['toast.warning']);
+      });
+      return;
+    }
+    this.loadAllLotsForItem(this.selectedItemForLot);
   }
 
   onAddLotManually(): void {
@@ -152,7 +163,7 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
 
   onGetManualLotDetails(): void {
     if (!this.selectedItemForLot || !this.manualLotNumber.trim()) {
-      this.translateService.get(['supplyOrder.toast.pleaseEnterLotNumber', 'toast.warning']).subscribe(translations => {
+      this.translateService.get(['supplyOrder.toast.pleaseEnterLotNumber', 'toast.warning']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.warning(translations['supplyOrder.toast.pleaseEnterLotNumber'], translations['toast.warning']);
       });
       return;
@@ -160,7 +171,7 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
 
     const lotNum = parseInt(this.manualLotNumber.trim(), 10);
     if (isNaN(lotNum)) {
-      this.translateService.get(['supplyOrder.toast.invalidLotNumber', 'toast.error']).subscribe(translations => {
+      this.translateService.get(['supplyOrder.toast.invalidLotNumber', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.error(translations['supplyOrder.toast.invalidLotNumber'], translations['toast.error']);
       });
       return;
@@ -172,7 +183,7 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (lot) => {
           if (lot.itemId !== this.selectedItemForLot!.itemId) {
-            this.translateService.get(['supplyOrder.toast.lotBelongsToDifferentItemWithName', 'toast.error']).subscribe(translations => {
+            this.translateService.get(['supplyOrder.toast.lotBelongsToDifferentItemWithName', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
               const errorMsg = translations['supplyOrder.toast.lotBelongsToDifferentItemWithName']
                 .replace('{{lotNumber}}', lotNum.toString())
                 .replace('{{itemName}}', lot.itemName || 'Unknown');
@@ -184,7 +195,7 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
 
           const existingLot = this.availableLots.find(l => l.lotNumber === lot.lot);
           if (existingLot) {
-            this.translateService.get(['supplyOrder.toast.lotAlreadyInListWithNumber', 'toast.warning']).subscribe(translations => {
+            this.translateService.get(['supplyOrder.toast.lotAlreadyInListWithNumber', 'toast.warning']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
               const warningMsg = translations['supplyOrder.toast.lotAlreadyInListWithNumber'].replace('{{lotNumber}}', lotNum.toString());
               this.toastService.warning(warningMsg, translations['toast.warning']);
             });
@@ -196,7 +207,7 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
           this.availableLots.push(newLot);
           this.availableLots.sort((a, b) => a.daysUntilExpiry - b.daysUntilExpiry);
 
-          this.translateService.get(['supplyOrder.toast.lotAddedSuccessfullyWithNumber', 'toast.success']).subscribe(translations => {
+          this.translateService.get(['supplyOrder.toast.lotAddedSuccessfullyWithNumber', 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             const successMsg = translations['supplyOrder.toast.lotAddedSuccessfullyWithNumber'].replace('{{lotNumber}}', lotNum.toString());
             this.toastService.success(successMsg, translations['toast.success']);
           });
@@ -204,9 +215,9 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
           this.loadingManualLot = false;
           this.cdr.markForCheck();
         },
-        error: (error: any) => {
-          const errorMessage = error instanceof Error ? error.message : 'Lot not found or error loading details';
-          this.translateService.get(['toast.error']).subscribe(translations => {
+        error: (error: unknown) => {
+          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Lot not found or error loading details');
+          this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.error(errorMessage, translations['toast.error']);
           });
           this.loadingManualLot = false;
@@ -225,23 +236,56 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
           this.loadingAllLots = false;
 
           if (this.availableLots.length > 0) {
-            this.translateService.get(['supplyOrder.toast.loadedAvailableLotsCount', 'toast.success']).subscribe(translations => {
+            this.translateService.get(['supplyOrder.toast.loadedAvailableLotsCount', 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
               const successMsg = translations['supplyOrder.toast.loadedAvailableLotsCount']
                 .replace('{{count}}', this.availableLots.length.toString())
                 .replace('{{quantity}}', formatNumberUtil(item.quantity));
               this.toastService.success(successMsg, translations['toast.success']);
             });
           } else {
-            this.translateService.get(['supplyOrder.toast.noAvailableLotsFoundForQuantity', 'toast.warning']).subscribe(translations => {
+            this.translateService.get(['supplyOrder.toast.noAvailableLotsFoundForQuantity', 'toast.warning']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
               this.toastService.warning(translations['supplyOrder.toast.noAvailableLotsFoundForQuantity'], translations['toast.warning']);
             });
           }
           this.loadingAllLots = false;
           this.cdr.markForCheck();
         },
-        error: (error: any) => {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to load available lots';
-          this.translateService.get(['toast.error']).subscribe(translations => {
+        error: (error: unknown) => {
+          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load available lots');
+          this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
+            this.toastService.error(errorMessage, translations['toast.error']);
+          });
+          this.loadingAllLots = false;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  private loadAllLotsForItem(item: OrderRequestItemDto): void {
+    this.loadingAllLots = true;
+    this.supplyOrderDataService.loadAllLotsForItem(item.itemId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (lots: LotItem[]) => {
+          this.availableLots = lots;
+          this.loadingAllLots = false;
+
+          if (this.availableLots.length > 0) {
+            this.translateService.get(['supplyOrder.toast.loadedAllLotsCount', 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
+              const successMsg = translations['supplyOrder.toast.loadedAllLotsCount']
+                .replace('{{count}}', this.availableLots.length.toString());
+              this.toastService.success(successMsg, translations['toast.success']);
+            });
+          } else {
+            this.translateService.get(['supplyOrder.toast.noLotsFound', 'toast.warning']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
+              this.toastService.warning(translations['supplyOrder.toast.noLotsFound'], translations['toast.warning']);
+            });
+          }
+          this.cdr.markForCheck();
+        },
+        error: (error: unknown) => {
+          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load lots');
+          this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.error(errorMessage, translations['toast.error']);
           });
           this.loadingAllLots = false;
@@ -260,6 +304,13 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
     return getLocalizedOrderItemName(this.selectedItemForLot, this.translateService);
   }
 
+  /** Selected lot has no available quantity (e.g. from "Show All Lots" including empty lots) */
+  get isSelectedLotEmpty(): boolean {
+    if (!this.selectedLotNumber) return false;
+    const lot = this.availableLots.find(l => l.lotNumber === this.selectedLotNumber);
+    return lot ? lot.quantity <= 0 : false;
+  }
+
   itemOptionLabel = (option: OrderRequestItemDto | { value?: OrderRequestItemDto } | null): string => {
     if (!option) return '';
     const item: OrderRequestItemDto | undefined = (option as { value?: OrderRequestItemDto }).value || (option as OrderRequestItemDto);
@@ -272,7 +323,7 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
   onAddLot(): void {
     if (!this.selectedItemForLot) {
       this.addLotForm.get('itemId')?.markAsTouched();
-      this.translateService.get(['supplyOrder.toast.pleaseSelectItem', 'toast.error']).subscribe(translations => {
+      this.translateService.get(['supplyOrder.toast.pleaseSelectItem', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.error(translations['supplyOrder.toast.pleaseSelectItem'], translations['toast.error']);
       });
       return;
@@ -280,7 +331,7 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
 
     if (!this.selectedLotNumber) {
       this.addLotForm.get('lot')?.markAsTouched();
-      this.translateService.get(['supplyOrder.toast.pleaseSelectLot', 'toast.error']).subscribe(translations => {
+      this.translateService.get(['supplyOrder.toast.pleaseSelectLot', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.error(translations['supplyOrder.toast.pleaseSelectLot'], translations['toast.error']);
       });
       return;
@@ -288,7 +339,7 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
 
     if (this.addLotForm.invalid) {
       this.addLotForm.markAllAsTouched();
-      this.translateService.get(['supplyOrder.toast.pleaseFillRequiredFields', 'toast.error']).subscribe(translations => {
+      this.translateService.get(['supplyOrder.toast.pleaseFillRequiredFields', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.error(translations['supplyOrder.toast.pleaseFillRequiredFields'], translations['toast.error']);
       });
       return;
@@ -305,16 +356,16 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
     }).pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.translateService.get(['supplyOrder.toast.lotAddedSuccessfullyToSupply', 'toast.success']).subscribe(translations => {
+          this.translateService.get(['supplyOrder.toast.lotAddedSuccessfullyToSupply', 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.success(translations['supplyOrder.toast.lotAddedSuccessfullyToSupply'], translations['toast.success']);
           });
           this.loadingLotDetails = false;
           this.closeModal();
           this.lotAdded.emit();
         },
-        error: (error: any) => {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to add lot';
-          this.translateService.get(['toast.error']).subscribe(translations => {
+        error: (error: unknown) => {
+          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to add lot');
+          this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.error(errorMessage, translations['toast.error']);
           });
           this.loadingLotDetails = false;

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -20,7 +20,8 @@ import { ErrorHandler } from '@utils/error-handler.utils';
     LucideAngularModule
   ],
   templateUrl: './workflow-pickup-date.component.html',
-  styleUrls: ['./workflow-pickup-date.component.css']
+  styleUrls: ['./workflow-pickup-date.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WorkflowPickupDateComponent implements OnChanges, OnDestroy {
   readonly Clock = Clock;

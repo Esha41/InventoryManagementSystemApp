@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
@@ -59,7 +59,8 @@ import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
     AppDateTimePipe
   ],
   templateUrl: './notifications.component.html',
-  styleUrls: ['./notifications.component.css']
+  styleUrls: ['./notifications.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotificationsComponent implements OnInit, OnDestroy {
   readonly Bell = Bell;
@@ -116,7 +117,8 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     private readonly fb: FormBuilder,
     private readonly translateService: TranslateService,
     private readonly detailService: NotificationDetailService,
-    private readonly translationService: TranslationService
+    private readonly translationService: TranslationService,
+    private readonly cdr: ChangeDetectorRef
   ) {
     this.proposeForm = this.fb.group({
       pickupDate: ['', Validators.required],
@@ -206,9 +208,10 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     }
 
     this.togglePending(notification.id, true);
+    this.cdr.markForCheck();
     this.notificationService.markAsRead(notification.id)
       .pipe(
-        finalize(() => this.togglePending(notification.id, false)),
+        finalize(() => { this.togglePending(notification.id, false); this.cdr.markForCheck(); }),
         takeUntil(this.destroy$)
       )
       .subscribe();
@@ -220,9 +223,10 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     }
 
     this.markingAll = true;
+    this.cdr.markForCheck();
     this.notificationService.markAllAsRead()
       .pipe(
-        finalize(() => this.markingAll = false),
+        finalize(() => { this.markingAll = false; this.cdr.markForCheck(); }),
         takeUntil(this.destroy$)
       )
       .subscribe();
@@ -234,9 +238,10 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     }
 
     this.togglePending(notification.id, true);
+    this.cdr.markForCheck();
     this.notificationService.confirmPickup(notification.id)
       .pipe(
-        finalize(() => this.togglePending(notification.id, false)),
+        finalize(() => { this.togglePending(notification.id, false); this.cdr.markForCheck(); }),
         takeUntil(this.destroy$)
       )
       .subscribe(() => {
@@ -252,6 +257,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     }
 
     this.selectedNotification = notification;
+    this.cdr.markForCheck();
     const metadata = notification.metadata as Record<string, any> | null;
 
     this.proposeForm.patchValue({
@@ -260,6 +266,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     });
 
     this.isProposeModalOpen = true;
+    this.cdr.markForCheck();
   }
 
   closeProposeModal(): void {
@@ -269,6 +276,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
       pickupTime: ''
     });
     this.isSubmittingProposal = false;
+    this.cdr.markForCheck();
   }
 
   /**
@@ -320,6 +328,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     }
 
     this.isSubmittingProposal = true;
+    this.cdr.markForCheck();
     // Convert military time format (HHMM) if needed
     let pickupTime = this.proposeForm.value.pickupTime || '';
     if (pickupTime && pickupTime.includes(':')) {
@@ -333,11 +342,12 @@ export class NotificationsComponent implements OnInit, OnDestroy {
 
     this.notificationService.proposeNewTime(notification.id, payload as { pickupDate: string; pickupTime: string })
       .pipe(
-        finalize(() => this.isSubmittingProposal = false),
+        finalize(() => { this.isSubmittingProposal = false; this.cdr.markForCheck(); }),
         takeUntil(this.destroy$)
       )
       .subscribe(() => {
         this.closeProposeModal();
+        this.cdr.markForCheck();
       });
   }
 
@@ -405,6 +415,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     }
 
     this.detailLoading = true;
+    this.cdr.markForCheck();
     this.detailService.loadDetail(notification)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -422,10 +433,12 @@ export class NotificationsComponent implements OnInit, OnDestroy {
               this.discardDetail = result.detail as DiscardDto;
             }
           }
+          this.cdr.markForCheck();
         },
         error: () => {
           this.detailLoading = false;
           this.detailError = 'notifications.details.unknown';
+          this.cdr.markForCheck();
         }
       });
   }

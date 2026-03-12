@@ -1,0 +1,9 @@
+/* Asset tabs scroll - inherited from parent asset-list if needed */
+.asset-tabs-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.asset-tabs-scroll::-webkit-scrollbar {
+  display: none;
+}

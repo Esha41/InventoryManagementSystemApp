@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -44,6 +44,7 @@ import { TranslationService } from '@services/translation.service';
 import { getCurrentLang, getLocalizedName } from '@utils/localization.utils';
 import { mapOrderPriorityToString as mapPriorityToString } from '@utils/priority.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { trackByKey } from '@utils/trackby.utils';
 
 @Component({
   selector: 'app-supply-request-detail',
@@ -62,7 +63,8 @@ import { ErrorHandler } from '@utils/error-handler.utils';
     ButtonComponent
   ],
   templateUrl: './supply-request-detail.component.html',
-  styleUrls: ['./supply-request-detail.component.css']
+  styleUrls: ['./supply-request-detail.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
@@ -76,6 +78,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   readonly CheckCircle = CheckCircle;
   readonly AlertTriangle = AlertTriangle;
   readonly Math = Math;
+  readonly trackByRequestItemId = trackByKey('requestItemId');
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;
@@ -167,6 +170,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
 
   loadRequestDetail(): void {
     this.loading = true;
+    this.cdr.markForCheck();
 
     this.supplyRequestDetailService.loadRequestDetail(this.orderId)
       .pipe(takeUntil(this.destroy$))
@@ -177,6 +181,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           this.requestDetail = result.requestDetail;
 
           this.loading = false;
+          this.cdr.markForCheck();
           this.loadSuggestionsAutomatically();
         },
         error: (error) => {
@@ -185,6 +190,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           const title = this.translate.instant('toast.error');
           this.toastService.error(message, title);
           this.loading = false;
+          this.cdr.markForCheck();
           this.goBack();
         }
       });
@@ -196,6 +202,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     }
 
     this.loadingSuggestion = true;
+    this.cdr.markForCheck();
 
     this.supplyRequestDetailService.loadSuggestionsWithDraftCheck(this.orderId)
       .pipe(takeUntil(this.destroy$))
@@ -235,6 +242,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           }
 
           this.loadingSuggestion = false;
+          this.cdr.markForCheck();
 
           if (!suggestion.canFulfillCompletely && !hasEmptySuggestions) {
             const message = this.translate.instant('supplyRequestDetail.insufficientInventoryNote');
@@ -245,6 +253,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
         error: (error) => {
           this.config.logError('Failed to load suggestions', error);
           this.loadingSuggestion = false;
+          this.cdr.markForCheck();
           const message = this.translate.instant('supplyRequestDetail.failedToLoadSuggestions');
           const title = this.translate.instant('toast.error');
           this.toastService.error(message, title);
@@ -288,6 +297,11 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     this.loadAvailableLotsForQuantity(this.selectedItem);
   }
 
+  onShowAllLots(): void {
+    if (!this.selectedItem) return;
+    this.loadAllLotsForItem(this.selectedItem);
+  }
+
   onAddLotManually(): void {
     this.showManualLotEntry = !this.showManualLotEntry;
     if (this.showManualLotEntry) {
@@ -308,6 +322,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     }
 
     this.loadingManualLot = true;
+    this.cdr.markForCheck();
     this.lotSelectionService.getLotByNumberAndValidate(validation.parsedNumber!, this.selectedItem)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -318,6 +333,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
               : this.translate.instant('toast.warning');
             this.toastService.warning(error!, title);
             this.loadingManualLot = false;
+            this.cdr.markForCheck();
             return;
           }
 
@@ -330,6 +346,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           const title = this.translate.instant('toast.success');
           this.toastService.success(message, title);
           this.loadingManualLot = false;
+          this.cdr.markForCheck();
         },
         error: (error) => {
           this.config.logError('Failed to load lot details', error);
@@ -337,12 +354,14 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           const title = this.translate.instant('toast.error');
           this.toastService.error(message, title);
           this.loadingManualLot = false;
+          this.cdr.markForCheck();
         }
       });
   }
 
   private loadAvailableLotsForQuantity(item: OrderItem): void {
     this.loadingAllLots = true;
+    this.cdr.markForCheck();
     const currentSelections = new Map(this.tempLotSelections);
 
     // Use the service method that supports excludeSupplyId
@@ -360,6 +379,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
         next: (result) => {
           item.availableLots = result.lots;
           this.loadingAllLots = false;
+          this.cdr.markForCheck();
 
           if (item.availableLots.length > 0) {
             const message = this.translate.instant('supplyRequestDetail.loadedAvailableLots', {
@@ -380,8 +400,49 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           const title = this.translate.instant('toast.error');
           this.toastService.error(message, title);
           this.loadingAllLots = false;
+          this.cdr.markForCheck();
         }
       });
+  }
+
+  private loadAllLotsForItem(item: OrderItem): void {
+    this.loadingAllLots = true;
+    this.cdr.markForCheck();
+    const currentSelections = new Map(this.tempLotSelections);
+
+    this.supplyRequestDetailService.loadAllLotsForItem(item.itemId).pipe(
+      map((lots: LotDetailDto[]) => {
+        const mappedLots = mapLotDetailsToLotItems(lots, currentSelections, true);
+        return { lots: mappedLots, success: true };
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (result) => {
+        item.availableLots = result.lots;
+        this.loadingAllLots = false;
+        this.cdr.markForCheck();
+
+        if (item.availableLots.length > 0) {
+          const message = this.translate.instant('supplyRequestDetail.loadedAllLots', {
+            count: item.availableLots.length
+          });
+          const title = this.translate.instant('toast.success');
+          this.toastService.success(message, title);
+        } else {
+          const message = this.translate.instant('supplyRequestDetail.noLotsFound');
+          const title = this.translate.instant('toast.warning');
+          this.toastService.warning(message, title);
+        }
+      },
+      error: (error) => {
+        this.config.logError('Failed to load lots', error);
+        const message = this.translate.instant('supplyRequestDetail.failedToLoadLots');
+        const title = this.translate.instant('toast.error');
+        this.toastService.error(message, title);
+        this.loadingAllLots = false;
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   onTempLotQuantityChange(event: { lotNumber: number; quantity: number }): void {
@@ -417,6 +478,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
       .reduce((sum, lot) => sum + lot.selectedQuantity, 0);
 
     this.closeLotModal();
+    this.cdr.markForCheck();
   }
 
   // ==================== DISCHARGE PROCESSING ====================
@@ -466,27 +528,31 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     if (!this.requestDetail) return;
 
     this.processingDischarge = true;
+    this.cdr.markForCheck();
     this.supplyRequestDetailService.processDischarge(this.orderId, this.requestDetail)
       .pipe(
         takeUntil(this.destroy$),
         catchError((error) => {
           this.config.logError('Failed to process discharge', error);
-          const errorMessage = error?.error?.message || error?.message || this.translate.instant('supplyRequestDetail.failedToProcessDischarge');
+          const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, this.translate.instant('supplyRequestDetail.failedToProcessDischarge'), this.translate);
           const title = this.translate.instant('toast.error');
           this.toastService.error(errorMessage, title);
           this.processingDischarge = false;
+          this.cdr.markForCheck();
           return [];
         })
       )
       .subscribe({
         next: () => {
           this.processingDischarge = false;
+          this.cdr.markForCheck();
         }
       });
   }
 
   onSuggestForAllItems(): void {
     this.loadingSuggestion = true;
+    this.cdr.markForCheck();
     this.supplyRequestDetailService.getSupplySuggestion(this.orderId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -495,6 +561,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
             this.supplyRequestDetailService.applySuggestions(this.requestDetail, suggestion);
           }
           this.loadingSuggestion = false;
+          this.cdr.markForCheck();
 
           if (suggestion.canFulfillCompletely) {
             const message = this.translate.instant('supplyRequestDetail.suggestionsLoadedAllFulfilled');
@@ -512,6 +579,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           const title = this.translate.instant('toast.error');
           this.toastService.error(message, title);
           this.loadingSuggestion = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -580,6 +648,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
 
   onSaveAddItem(itemDto: CreateRequestItemDto): void {
     this.savingItem = true;
+    this.cdr.markForCheck();
     this.orderItemManagementService.addItem(this.orderId, itemDto)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -598,18 +667,21 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
             );
           }
           this.savingItem = false;
+          this.cdr.markForCheck();
         },
         error: (error) => {
           this.config.logError('Failed to add item', error);
           const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, 'Failed to add item', this.translate);
           this.orderItemManagementService.showErrorMessage('supplyRequestDetail.failedToAddItem', errorMessage);
           this.savingItem = false;
+          this.cdr.markForCheck();
         }
       });
   }
 
   onSaveEditItem(data: { requestItemId: number; quantity: number }): void {
     this.savingItem = true;
+    this.cdr.markForCheck();
     this.orderItemManagementService.updateItemQuantity(this.orderId, data.requestItemId, data.quantity)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -625,12 +697,14 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
             );
           }
           this.savingItem = false;
+          this.cdr.markForCheck();
         },
         error: (error) => {
           this.config.logError('Failed to update item quantity', error);
           const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, 'Failed to update item quantity', this.translate);
           this.orderItemManagementService.showErrorMessage('supplyRequestDetail.failedToUpdateItemQuantity', errorMessage);
           this.savingItem = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -650,10 +724,12 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
               response.message
             );
           }
+          this.cdr.markForCheck();
         },
         error: (error) => {
           this.config.logError('Failed to remove item', error);
           this.orderItemManagementService.showErrorMessage('supplyRequestDetail.failedToRemoveItem');
+          this.cdr.markForCheck();
         }
       });
   }

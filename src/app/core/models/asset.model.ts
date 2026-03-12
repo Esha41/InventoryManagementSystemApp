@@ -13,12 +13,12 @@ import { DepartmentDto } from './lookup.model';
  * Asset Status Enum
  */
 export enum AssetStatus {
-    Active = 1,
-    Inactive = 2,
-    Maintenance = 3,
-    Disposed = 4,
-    Lost = 5,
-    Damaged = 6
+    ReadyToIssue = 1,
+    InMaintenance = 2,
+    UnserviceableRepairable = 3,
+    UnserviceableUnrepairable = 4,
+    AwaitingDisposal = 5,
+    Disposed = 6
 }
 
 
@@ -28,10 +28,16 @@ export enum AssetStatus {
  */
 export interface EmployeeDto {
     id: number;
+    userId?: string;
     nameAr?: string;
     nameEn?: string;
-    name?: string;
-    employeeNumber?: string;
+    militaryId?: string;
+    departmentId?: number;
+    phone?: string;
+    email?: string;
+    notes?: string;
+    rankId?: number;
+    isDeleted?: boolean;
 }
 
 
@@ -44,6 +50,8 @@ export interface AssetDto {
     serialNumber?: string;
     rfid?: string;
     depotId: number;
+    batchId: number;
+    batchNumber: string;
     departmentId?: number;
     custodianId?: number;
     location?: string;
@@ -69,6 +77,7 @@ export interface AssetDto {
  */
 export interface CreateAssetDto {
     itemId: number;
+    batchNumber: string;
     serialNumber?: string;
     rfid?: string;
     depotId: number;
@@ -98,20 +107,26 @@ export interface UpdateAssetDto {
 /**
  * Asset Status Label Helper
  */
-export function getAssetStatusLabel(status?: AssetStatus): string {
+export function getAssetStatusLabel(status?: AssetStatus | string): string {
     switch (status) {
-        case AssetStatus.Active:
-            return 'assetStatus.active';
-        case AssetStatus.Inactive:
-            return 'assetStatus.inactive';
-        case AssetStatus.Maintenance:
-            return 'assetStatus.maintenance';
+        case AssetStatus.ReadyToIssue:
+        case 'ReadyToIssue':
+            return 'assetStatus.readyToIssue';
+        case AssetStatus.InMaintenance:
+        case 'InMaintenance':
+            return 'assetStatus.inMaintenance';
+        case AssetStatus.UnserviceableRepairable:
+        case 'UnserviceableRepairable':
+            return 'assetStatus.unserviceableRepairable';
+        case AssetStatus.UnserviceableUnrepairable:
+        case 'UnserviceableUnrepairable':
+            return 'assetStatus.unserviceableUnrepairable';
+        case AssetStatus.AwaitingDisposal:
+        case 'AwaitingDisposal':
+            return 'assetStatus.awaitingDisposal';
         case AssetStatus.Disposed:
+        case 'Disposed':
             return 'assetStatus.disposed';
-        case AssetStatus.Lost:
-            return 'assetStatus.lost';
-        case AssetStatus.Damaged:
-            return 'assetStatus.damaged';
         default:
             return 'assetStatus.unknown';
     }
@@ -120,19 +135,22 @@ export function getAssetStatusLabel(status?: AssetStatus): string {
 /**
  * Asset Status Color Helper (for badges)
  */
-export function getAssetStatusColor(status?: AssetStatus): string {
+export function getAssetStatusColor(status?: AssetStatus | string): string {
     switch (status) {
-        case AssetStatus.Active:
+        case AssetStatus.ReadyToIssue:
+        case 'ReadyToIssue':
             return 'success';       // Green
-        case AssetStatus.Inactive:
-            return 'secondary';     // Gray
-        case AssetStatus.Maintenance:
+        case AssetStatus.InMaintenance:
+        case 'InMaintenance':
+        case AssetStatus.UnserviceableRepairable:
+        case 'UnserviceableRepairable':
             return 'warning';       // Orange
+        case AssetStatus.UnserviceableUnrepairable:
+        case 'UnserviceableUnrepairable':
+        case AssetStatus.AwaitingDisposal:
+        case 'AwaitingDisposal':
         case AssetStatus.Disposed:
-            return 'error';         // Red
-        case AssetStatus.Lost:
-            return 'error';         // Red
-        case AssetStatus.Damaged:
+        case 'Disposed':
             return 'error';         // Red
         default:
             return 'default';

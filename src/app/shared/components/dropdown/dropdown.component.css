@@ -77,7 +77,7 @@
   top: calc(100% + 0.5rem);
   left: 0;
   right: 0;
-  z-index: 9999;
+  z-index: 99999;
   border-radius: 0.75rem;
   border: 2px solid var(--color-border);
   background-color: var(--color-background);

@@ -1,26 +1,20 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ModalComponent } from '../modal/modal.component';
 import { ButtonComponent } from '../button/button.component';
-import { RoleDto, CreateRoleDto, UpdateRoleDto } from '@models/backend-user.model';
+import { RoleDto, CreateRoleDto, UpdateRoleDto, ApplicationEntityDto } from '@models/backend-user.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BackendUserService } from '@services/backend-user.service';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
+import { Subject, takeUntil } from 'rxjs';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { ProfileDataService } from '@services/profile-data.service';
+import { ErrorHandler } from '@utils/error-handler.utils';
+import { ConfigService } from '@services/config.service';
 
-export interface ApplicationEntity {
-  id: number;
-  code: string;
-  nameAr: string;
-  nameEn: string;
-  isDeleted: boolean;
-  creationDate?: string;
-  modificationDate?: string | null;
-  modifiedBy?: string | null;
-  createdBy?: string | null;
-}
+/** @deprecated Use ApplicationEntityDto from @models/backend-user.model */
+export type ApplicationEntity = ApplicationEntityDto;
 
 @Component({
   selector: 'app-role-form-modal',
@@ -35,7 +29,7 @@ export interface ApplicationEntity {
   templateUrl: './role-form-modal.component.html',
   styleUrls: ['./role-form-modal.component.css']
 })
-export class RoleFormModalComponent implements OnInit, OnChanges {
+export class RoleFormModalComponent implements OnInit, OnChanges, OnDestroy {
   @Input() isOpen = false;
   @Input() role?: RoleDto;
   @Input() mode: 'create' | 'edit' = 'create';
@@ -48,9 +42,9 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
   isLoading = false;
   isLoadingEntities = false;
   errorMessage = '';
-  entities: ApplicationEntity[] = [];
-  selectedEntityId: number | null = null; // Store single entity ID
-  readonly entityOptionLabel = (option: DropdownOption<ApplicationEntity> | ApplicationEntity | null) => {
+  entities: ApplicationEntityDto[] = [];
+  selectedEntityId: number | null = null;
+  readonly entityOptionLabel = (option: DropdownOption<ApplicationEntityDto> | ApplicationEntityDto | null) => {
     const entity = this.unwrapEntityOption(option);
     return entity ? this.getEntityName(entity) : '';
   };
@@ -58,11 +52,14 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
   // Super admin check
   isSuperAdmin = false;
 
+  private readonly destroy$ = new Subject<void>();
+
   constructor(
     private fb: FormBuilder,
     private backendUserService: BackendUserService,
     private translateService: TranslateService,
-    private profileDataService: ProfileDataService
+    private profileDataService: ProfileDataService,
+    private configService: ConfigService
   ) {
     this.initializeForm();
   }
@@ -105,6 +102,11 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
     }
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   private initializeForm(): void {
     this.roleForm = this.fb.group({
       nameEn: [this.role?.nameEn || this.role?.name || '', [Validators.required, Validators.minLength(3)]],
@@ -116,25 +118,27 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
   }
 
   private loadEntities(): void {
-    console.log('Loading application entities...');
     this.isLoadingEntities = true;
-    this.backendUserService.getApplicationEntities().subscribe({
-      next: (entities: ApplicationEntity[]) => {
-        console.log('Entities loaded successfully:', entities);
-        this.entities = entities;
-        this.isLoadingEntities = false;
-      },
-      error: (error: any) => {
-        this.isLoadingEntities = false;
-        console.error('Failed to load entities:', error);
-        this.translateService.get('roleFormModal.failedToLoadEntities').subscribe(translation => {
-          this.errorMessage = `${translation}: ${error.message || 'Unknown error'}`;
-        });
-      }
-    });
+    this.backendUserService.getApplicationEntities()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (entities: ApplicationEntityDto[]) => {
+          this.entities = entities;
+          this.isLoadingEntities = false;
+        },
+        error: (error: unknown) => {
+          this.isLoadingEntities = false;
+          this.configService.logError('Failed to load entities', error);
+          this.translateService.get('roleFormModal.failedToLoadEntities')
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((translation: string) => {
+              this.errorMessage = `${translation}: ${ErrorHandler.extractErrorMessage(error, 'Unknown error')}`;
+            });
+        }
+      });
   }
 
-  getEntityName(entity: ApplicationEntity): string {
+  getEntityName(entity: ApplicationEntityDto): string {
     const localizedName = getLocalizedName(entity, getCurrentLang(this.translateService));
     return localizedName || entity.code || entity.id.toString();
   }
@@ -170,8 +174,6 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
     const selectedEntityId = this.roleForm.value.applicationEntityId;
     const applicationEntityIds = selectedEntityId ? [selectedEntityId] : undefined;
 
-    console.log('Selected entity ID:', selectedEntityId);
-
     if (this.mode === 'create') {
       const dto: CreateRoleDto = {
         name: this.roleForm.value.nameEn, // Use nameEn as primary name for now
@@ -182,19 +184,18 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
         applicationEntityIds: applicationEntityIds
       };
 
-      console.log('Creating role with DTO:', dto);
-
-      this.backendUserService.createRole(dto).subscribe({
+      this.backendUserService.createRole(dto)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
         next: (role: RoleDto) => {
-          console.log('Role created successfully:', role);
           this.isLoading = false;
           this.saved.emit(role);
           this.close();
         },
-        error: (error: any) => {
-          console.error('Error creating role:', error);
+        error: (error: unknown) => {
+          this.configService.logError('Error creating role', error);
           this.isLoading = false;
-          const errorMsg = error.message || 'Failed to create role';
+          const errorMsg = ErrorHandler.extractErrorMessage(error, 'Failed to create role');
           this.errorMessage = errorMsg;
           this.error.emit(errorMsg);
         }
@@ -210,17 +211,17 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
         applicationEntityIds: applicationEntityIds
       };
 
-      console.log('Updating role with DTO:', dto);
-
-      this.backendUserService.updateRole(this.role.id, dto).subscribe({
+      this.backendUserService.updateRole(this.role.id, dto)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
         next: (role: RoleDto) => {
           this.isLoading = false;
           this.saved.emit(role);
           this.close();
         },
-        error: (error: any) => {
+        error: (error: unknown) => {
           this.isLoading = false;
-          const errorMsg = error.message || 'Failed to update role';
+          const errorMsg = ErrorHandler.extractErrorMessage(error, 'Failed to update role');
           this.errorMessage = errorMsg;
           this.error.emit(errorMsg);
         }
@@ -236,14 +237,14 @@ export class RoleFormModalComponent implements OnInit, OnChanges {
     this.closed.emit();
   }
 
-  private unwrapEntityOption(option: DropdownOption<ApplicationEntity> | ApplicationEntity | null): ApplicationEntity | null {
+  private unwrapEntityOption(option: DropdownOption<ApplicationEntityDto> | ApplicationEntityDto | null): ApplicationEntityDto | null {
     if (!option) {
       return null;
     }
     if (typeof option === 'object' && 'value' in option) {
-      return option.value as ApplicationEntity;
+      return option.value as ApplicationEntityDto;
     }
-    return option as ApplicationEntity;
+    return option as ApplicationEntityDto;
   }
 
   private markFormGroupTouched(): void {

@@ -90,8 +90,8 @@
       "@workflow/*": [
         "src/app/features/workflow/*"
       ],
-      "@allowance/*": [
-        "src/app/features/allowance/*"
+      "@department/*": [
+        "src/app/features/department/*"
       ],
       "@forecast/*": [
         "src/app/features/forecast/*"

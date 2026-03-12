@@ -22,7 +22,7 @@
       <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
         {{ 'warehouseInventory.invoiceNumber' | translate }}
       </th>
-      <th class="px-6 py-3 text-center text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+      <th class="px-6 py-3 text-end text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider w-36">
         {{ 'warehouseInventory.actions' | translate }}
       </th>
     </tr>
@@ -35,7 +35,7 @@
       </td>
     </tr>
     <!-- Inventory Items -->
-    <tr *ngFor="let detail of items"
+    <tr *ngFor="let detail of items; trackBy: trackById"
       class="bg-[var(--color-background)] hover:bg-[var(--color-background-hover)] transition-colors">
       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)] text-start">
         {{ getItemName(detail) }}
@@ -66,8 +66,8 @@
         </button>
         <span *ngIf="!detail.invoiceNumber" class="text-[var(--color-text-muted)]">-</span>
       </td>
-      <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-        <div class="flex items-center justify-center gap-2">
+      <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium w-36">
+        <div class="inline-flex items-center gap-2">
           <!-- Edit Button - Only for inventory items (not static) -->
           <ng-container *ngIf="!isStaticItem(detail)">
             <button *appHasPermission="'Inventory.Edit'" (click)="editItem.emit(detail)"

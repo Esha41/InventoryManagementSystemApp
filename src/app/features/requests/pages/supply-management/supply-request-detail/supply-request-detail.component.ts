@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -23,7 +23,8 @@ import { RequestSummarySidebarComponent } from '@requests/components/request-sum
   standalone: true,
   imports: [CommonModule, TranslateModule, LucideAngularModule, LoadingStateComponent, ErrorStateComponent, RequestItemsTableComponent, RequestSummarySidebarComponent],
   templateUrl: './supply-request-detail.component.html',
-  styleUrls: ['./supply-request-detail.component.css']
+  styleUrls: ['./supply-request-detail.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   readonly ArrowLeft = ArrowLeft;
@@ -52,7 +53,8 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private apiService: ApiService,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -63,9 +65,11 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
         if (isNaN(id)) {
           this.error = 'Invalid request ID';
           this.loading = false;
+          this.cdr.markForCheck();
           return;
         }
         this.requestId = id;
+        this.cdr.markForCheck();
         this.loadRequestDetail();
       });
   }
@@ -78,22 +82,20 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   loadRequestDetail(): void {
     this.loading = true;
     this.error = null;
+    this.cdr.markForCheck();
 
-    this.apiService.getWithAuth<FlexibleApiListResponse<BaseRequestDto>>(
-      API_ENDPOINTS.WORKFLOW_APPROVAL.ALL_BASE_REQUESTS
-    )
+    this.apiService.get<BaseRequestDto[]>(API_ENDPOINTS.WORKFLOW_APPROVAL.ALL_BASE_REQUESTS)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          const data: BaseRequestDto[] = Array.isArray(response)
-            ? response
-            : (response?.data || []);
+          const data: BaseRequestDto[] = Array.isArray(response) ? response : [];
 
           const baseRequest = data.find(r => r.id === this.requestId);
 
           if (!baseRequest) {
             this.error = 'Request not found';
             this.loading = false;
+            this.cdr.markForCheck();
             return;
           }
 
@@ -101,15 +103,18 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           this.loadRequestItems(baseRequest).then(() => {
             this.requestDetail = mapToRequestDetail(baseRequest);
             this.loading = false;
+            this.cdr.markForCheck();
           }).catch(() => {
             // Still show the request detail even if items fail to load
             this.requestDetail = mapToRequestDetail(baseRequest);
             this.loading = false;
+            this.cdr.markForCheck();
           });
         },
         error: (error) => {
           this.error = ErrorHandler.extractErrorMessage(error, 'Failed to load request details');
           this.loading = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -159,20 +164,21 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
         return;
       }
 
-      this.apiService.getWithAuth<DetailApiResponse>(endpoint)
+      this.apiService.get<DetailApiResponse>(endpoint)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-          next: (response) => {
-            const detailData = response?.data || response;
+          next: (detailData) => {
 
             if (detailData && detailData.requestItems) {
               baseRequest.requestItems = (detailData.requestItems as any[]) as RequestItemDto[];
             }
 
+            this.cdr.markForCheck();
             resolve();
           },
           error: () => {
             // Don't reject - just continue without items
+            this.cdr.markForCheck();
             resolve();
           }
         });

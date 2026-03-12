@@ -40,7 +40,7 @@
           </tr>
       </thead>
       <tbody class="bg-[var(--color-background)]">
-        <tr *ngFor="let s of (workflow.workflowSteps || []); let i = index"
+        <tr *ngFor="let s of (workflow.workflowSteps || []); trackBy: trackById; let i = index"
           class="border-t-2 border-[var(--color-border)] hover:bg-[var(--color-background-hover)] transition-colors">
           <td class="px-4 py-2 text-[var(--color-text)]">{{ s.stepOrder || (i+1) }}</td>
           <td class="px-4 py-2 text-[var(--color-text)]">{{ s.applicationRoleName || s.applicationRoleId }}</td>

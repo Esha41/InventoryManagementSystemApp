@@ -86,7 +86,9 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['selectedAsset'] && this.selectedAsset && this.editForm) {
       // Use originalData when available (Asset from table) for correct IDs and entity-specific fields
-      const source: any = (this.selectedAsset as any)?.originalData ?? this.selectedAsset;
+      const source = ('originalData' in this.selectedAsset && this.selectedAsset.originalData)
+        ? this.selectedAsset.originalData
+        : this.selectedAsset;
       this.editForm.patchValue(source || {});
       this.cdr.markForCheck();
     }
@@ -153,6 +155,23 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
   onDragOver(event: DragEvent): void {
     event.preventDefault();
     event.stopPropagation();
+  }
+
+  /** Prevents + and - keys in numeric fields (bullet diameter, total weight). */
+  blockSignKeys(event: KeyboardEvent): void {
+    if (event.key === '-' || event.key === '+') {
+      event.preventDefault();
+    }
+  }
+
+  /** Sanitizes pasted text: removes + and - from numeric fields. */
+  onPasteNumber(event: ClipboardEvent, field: 'bulletDiameter' | 'totalWeight'): void {
+    const pasted = (event.clipboardData?.getData('text') ?? '').replace(/[+-]/g, '');
+    if (pasted !== (event.clipboardData?.getData('text') ?? '')) {
+      event.preventDefault();
+      this.editForm.get(field)?.setValue(pasted, { emitEvent: true });
+      this.cdr.markForCheck();
+    }
   }
 
   onDrop(event: DragEvent): void {

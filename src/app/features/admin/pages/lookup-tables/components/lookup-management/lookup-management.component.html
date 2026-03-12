@@ -166,9 +166,22 @@
 </div>
 
 <!-- Lookup Form Modal -->
-<app-lookup-form-modal [isOpen]="showLookupModal" [lookupItem]="selectedLookupItem" [tableConfig]="selectedTable"
-  [mode]="lookupModalMode" [externalLoading]="lookupModalLoading"
-  (closed)="showLookupModal = false; lookupModalLoading = false" (saved)="onLookupSaved($event)" />
+<app-lookup-form-modal
+  [isOpen]="showLookupModal"
+  [lookupItem]="selectedLookupItem"
+  [tableConfig]="selectedTable"
+  [mode]="lookupModalMode"
+  [externalLoading]="lookupModalLoading"
+  (closed)="showLookupModal = false; lookupModalLoading = false"
+  (saved)="onLookupSaved($event)" />
+
+<!-- Employee Form Modal (for Employee lookup table) -->
+<app-employee-form-modal
+  [isOpen]="showEmployeeModal"
+  [mode]="employeeModalMode"
+  [employee]="selectedEmployee"
+  (closed)="onEmployeeModalClosed()"
+  (saved)="onEmployeeSaved()" />
 
 <!-- Lookup Delete Confirmation -->
 <app-confirm-dialog [isOpen]="showLookupDeleteConfirm" [title]="'lookupManagement.deleteItem' | translate"

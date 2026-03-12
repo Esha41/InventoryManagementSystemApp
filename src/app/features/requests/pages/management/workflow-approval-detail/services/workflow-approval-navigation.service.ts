@@ -29,7 +29,7 @@ export class WorkflowApprovalNavigationService {
     }
 
     if (isWeaponOrder) {
-      this.router.navigate(['/requests-management', requestId, 'weapon-supply-review']);
+      this.router.navigate(['/requests-management', requestId, 'weapon-supply-selection']);
     } else {
       this.router.navigate(['/requests-management', requestId, 'supply-request-detail']);
     }
@@ -54,8 +54,27 @@ export class WorkflowApprovalNavigationService {
   }
 
   /**
-   * Navigate directly to weapon supply review page
-   * This is separate from the general Review button
+   * Navigate to weapon supply selection (depot + batch selection)
+   */
+  navigateToWeaponSupplySelection(requestId: number, isWeaponOrder: boolean): void {
+    if (!requestId) {
+      return;
+    }
+
+    if (isWeaponOrder) {
+      this.router.navigate(['/requests-management', requestId, 'weapon-supply-selection']);
+    } else {
+      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.notWeaponOrder']).subscribe(translations => {
+        this.toastService.error(
+          translations['workflowApprovalDetail.errors.notWeaponOrder'] || 'This order does not contain weapon items',
+          translations['toast.error']
+        );
+      });
+    }
+  }
+
+  /**
+   * Navigate directly to weapon supply review page (asset selection, receiver info, submit)
    */
   navigateToWeaponSupplyReview(requestId: number, isWeaponOrder: boolean): void {
     if (!requestId) {
@@ -104,7 +123,7 @@ export class WorkflowApprovalNavigationService {
       }
       
       // Pass requestId and tab (itemType) as query parameters
-      this.router.navigate(['/item-detail', itemId], {
+      this.router.navigate(['/asset-list', itemId], {
         queryParams: queryParams
       });
     }

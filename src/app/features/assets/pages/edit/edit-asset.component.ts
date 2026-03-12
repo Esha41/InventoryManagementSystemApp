@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -8,9 +8,10 @@ import { LucideAngularModule, ArrowLeft, Save, Loader2 } from 'lucide-angular';
 
 import { AssetService } from '@services/asset.service';
 import { ToastService } from '@services/toast.service';
-import { AssetDto, UpdateAssetDto, AssetStatus } from '@models/asset.model';
+import { AssetDto, UpdateAssetDto } from '@models/asset.model';
 import { CardComponent } from '@components/card/card.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { formatDateForInput } from '@utils/format.utils';
 
 @Component({
   selector: 'app-edit-asset',
@@ -23,7 +24,8 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
     CardComponent
   ],
   templateUrl: './edit-asset.component.html',
-  styleUrl: './edit-asset.component.css'
+  styleUrl: './edit-asset.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EditAssetComponent implements OnInit, OnDestroy {
   readonly ArrowLeft = ArrowLeft;
@@ -47,7 +49,8 @@ export class EditAssetComponent implements OnInit, OnDestroy {
     private router: Router,
     private assetService: AssetService,
     private toastService: ToastService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -61,6 +64,7 @@ export class EditAssetComponent implements OnInit, OnDestroy {
     } else {
       this.loading = false;
       this.error = 'Invalid Asset ID';
+      this.cdr.markForCheck();
     }
   }
 
@@ -87,6 +91,7 @@ export class EditAssetComponent implements OnInit, OnDestroy {
 
   private loadAsset(id: number): void {
     this.loading = true;
+    this.cdr.markForCheck();
     this.assetService.getById<AssetDto>(id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -96,11 +101,13 @@ export class EditAssetComponent implements OnInit, OnDestroy {
             this.patchForm(asset);
           }
           this.loading = false;
+          this.cdr.markForCheck();
         },
         error: (error) => {
           console.error('Error loading asset:', error);
           this.error = 'Failed to load asset details';
           this.loading = false;
+          this.cdr.markForCheck();
           this.translateService.get(['toast.error', 'assetDetails.failedToLoad']).subscribe(translations => {
             this.toastService.error(
               translations['assetDetails.failedToLoad'] || 'Failed to load asset details',
@@ -115,8 +122,7 @@ export class EditAssetComponent implements OnInit, OnDestroy {
     // Format dates for input type="date" (YYYY-MM-DD)
     const formatDate = (date: Date | string | undefined) => {
       if (!date) return null;
-      const d = new Date(date);
-      return d.toISOString().split('T')[0];
+      return formatDateForInput(date) || null;
     };
 
     this.editForm.patchValue({
@@ -161,6 +167,7 @@ export class EditAssetComponent implements OnInit, OnDestroy {
     if (!this.asset) return;
 
     this.saving = true;
+    this.cdr.markForCheck();
     const formValue = this.editForm.value;
 
     const updateDto: UpdateAssetDto = {
@@ -180,6 +187,7 @@ export class EditAssetComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.saving = false;
+          this.cdr.markForCheck();
           this.translateService.get(['toast.success', 'common.savedSuccessfully']).subscribe(translations => {
             this.toastService.success(
               translations['common.savedSuccessfully'] || 'Saved successfully',
@@ -191,6 +199,7 @@ export class EditAssetComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Error updating asset:', error);
           this.saving = false;
+          this.cdr.markForCheck();
           this.translateService.get(['toast.error', 'common.failedToSave']).subscribe(translations => {
             this.toastService.error(
               translations['common.failedToSave'] || 'Failed to save changes',

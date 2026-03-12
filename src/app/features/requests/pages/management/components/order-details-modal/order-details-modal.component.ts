@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, X } from 'lucide-angular';
 
@@ -15,7 +15,8 @@ interface Request {
   standalone: true,
   imports: [CommonModule, LucideAngularModule],
   templateUrl: './order-details-modal.component.html',
-  styleUrls: ['./order-details-modal.component.css']
+  styleUrls: ['./order-details-modal.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OrderDetailsModalComponent {
   @Input() isOpen = false;

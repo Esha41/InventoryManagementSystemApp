@@ -17,10 +17,14 @@ import {
   PermissionDto,
   AssignPermissionsDto,
   CrudPermission,
-  UserInRoleDto
+  UserInRoleDto,
+  ApplicationEntityDto,
+  RawUserApiResponse,
+  RawRoleApiResponse
 } from '@models/backend-user.model';
 import { RoleApplicationEntityLinkDto } from '@models/backend-user.model';
 import { ApiResponse, PagedResponse, PagedRequest, PaginatedList } from '@models/api-response.model';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 export interface UserSummaryDto {
   totalUsers: number;
@@ -79,18 +83,18 @@ export class BackendUserService {
         const items = response.items || [];
 
         // Normalize user data (similar to previous implementation but for paginated items)
-        const normalizedItems = items.map(rawUser => {
+        const normalizedItems = items.map((rawUser: RawUserApiResponse) => {
           const user = { ...rawUser } as BackendUserDto;
 
-          // Normalize militoryId
-          if ((rawUser as any).militoryId && !user.militaryId) {
-            user.militaryId = (rawUser as any).militoryId;
+          // Normalize militoryId (API typo) to militaryId
+          if (rawUser.militoryId && !user.militaryId) {
+            user.militaryId = rawUser.militoryId;
           }
 
           // Normalize roles
-          const rawRoles = Array.isArray((rawUser as any).roles) ? (rawUser as any).roles : [];
+          const rawRoles = Array.isArray(rawUser.roles) ? rawUser.roles : [];
           if (rawRoles.length > 0) {
-            const mappedRoles: RoleDto[] = rawRoles.map((role: any) => ({
+            const mappedRoles: RoleDto[] = rawRoles.map((role: RawRoleApiResponse) => ({
               id: String(role.id ?? role.roleId ?? ''),
               name: role.name ?? role.roleName ?? '',
               isDefaultRole: !!(role.isDefaultRole ?? role.isDefault),
@@ -110,26 +114,26 @@ export class BackendUserService {
           }
 
           // Normalize department
-          const department = (rawUser as any).department;
+          const department = rawUser.department;
           if (department) {
             user.departmentId = department.id ?? user.departmentId;
             user.departmentName = department.nameEn ?? department.nameAr ?? user.departmentName;
           }
 
           // Normalize rank
-          const rank = (rawUser as any).rank;
+          const rank = rawUser.rank;
           if (rank) {
             user.rankId = rank.id ?? user.rankId;
             user.rankNameEn = rank.nameEn ?? rank.name ?? user.rankNameEn;
             user.rankNameAr = rank.nameAr ?? user.rankNameAr;
           }
 
-          // Normalize full names
+          // Normalize full names (API uses PascalCase)
           if (!user.nameEn) {
-            user.nameEn = (rawUser as any).fullNameEN ?? user.nameEn;
+            user.nameEn = rawUser.fullNameEN ?? user.nameEn;
           }
           if (!user.nameAr) {
-            user.nameAr = (rawUser as any).fullNameAR ?? user.nameAr;
+            user.nameAr = rawUser.fullNameAR ?? user.nameAr;
           }
 
           return user;
@@ -176,15 +180,15 @@ export class BackendUserService {
     return this.apiService.get<BackendUserDto>(
       API_ENDPOINTS.USERS.BY_ID(id)
     ).pipe(
-      map(userData => {
+      map((userData: RawUserApiResponse & BackendUserDto) => {
         if (!userData) {
           throw new Error('Failed to fetch user');
         }
         // Normalize militoryId to militaryId for consistency
-        if ((userData as any).militoryId && !userData.militaryId) {
-          userData.militaryId = (userData as any).militoryId;
+        if (userData.militoryId && !userData.militaryId) {
+          (userData as BackendUserDto).militaryId = userData.militoryId;
         }
-        return userData;
+        return userData as BackendUserDto;
       }),
       catchError(error => {
         this.configService.logError('Failed to fetch user', error);
@@ -219,29 +223,7 @@ export class BackendUserService {
       }),
       catchError(error => {
         this.configService.logError('Failed to create user', error);
-        
-        // Extract error message from various possible locations
-        let errorMessage = 'Failed to create user';
-        
-        if (error instanceof Error) {
-          errorMessage = error.message || errorMessage;
-        } else if (error?.error) {
-          // HTTP error response
-          if (error.error.message) {
-            errorMessage = error.error.message;
-          } else if (typeof error.error === 'string') {
-            errorMessage = error.error;
-          } else if (error.error.data?.message) {
-            errorMessage = error.error.data.message;
-          } else if (error.error.error?.message) {
-            errorMessage = error.error.error.message;
-          }
-        } else if (error?.message) {
-          errorMessage = error.message;
-        } else if (error?.userMessage) {
-          errorMessage = error.userMessage;
-        }
-        
+        const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to create user');
         return throwError(() => new Error(errorMessage));
       })
     );
@@ -252,21 +234,20 @@ export class BackendUserService {
    */
   updateUser(id: string, user: UpdateUserDto): Observable<BackendUserDto> {
     this.configService.log('Updating user', { id });
-    console.log("User update DTO:", JSON.stringify(user, null, 2));
 
     return this.apiService.put<BackendUserDto>(
       API_ENDPOINTS.USERS.BY_ID(id),
       { ...user, id }
     ).pipe(
-      map(userData => {
+      map((userData: RawUserApiResponse & BackendUserDto) => {
         if (!userData) {
           throw new Error('Failed to update user');
         }
         // Normalize militoryId to militaryId for consistency
-        if ((userData as any).militoryId && !userData.militaryId) {
-          userData.militaryId = (userData as any).militoryId;
+        if (userData.militoryId && !userData.militaryId) {
+          (userData as BackendUserDto).militaryId = userData.militoryId;
         }
-        return userData;
+        return userData as BackendUserDto;
       }),
       tap(updatedUser => {
         // Update local users list
@@ -280,29 +261,7 @@ export class BackendUserService {
       }),
       catchError(error => {
         this.configService.logError('Failed to update user', error);
-        
-        // Extract error message from various possible locations
-        let errorMessage = 'Failed to update user';
-        
-        if (error instanceof Error) {
-          errorMessage = error.message || errorMessage;
-        } else if (error?.error) {
-          // HTTP error response
-          if (error.error.message) {
-            errorMessage = error.error.message;
-          } else if (typeof error.error === 'string') {
-            errorMessage = error.error;
-          } else if (error.error.data?.message) {
-            errorMessage = error.error.data.message;
-          } else if (error.error.error?.message) {
-            errorMessage = error.error.error.message;
-          }
-        } else if (error?.message) {
-          errorMessage = error.message;
-        } else if (error?.userMessage) {
-          errorMessage = error.userMessage;
-        }
-        
+        const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to update user');
         return throwError(() => new Error(errorMessage));
       })
     );
@@ -407,10 +366,7 @@ export class BackendUserService {
     return this.apiService.get<RoleDto[]>(
       API_ENDPOINTS.USERS.ROLES(userId)
     ).pipe(
-      map(roles => {
-        console.log("response", roles);
-        return roles || [];
-      }),
+      map(roles => roles || []),
       catchError(error => {
         this.configService.logError('Failed to fetch user roles', error);
         return throwError(() => new Error(
@@ -424,7 +380,6 @@ export class BackendUserService {
    * Update user roles
    */
   updateUserRoles(userId: string, roleIds: string[]): Observable<boolean> {
-    console.log("updateUserRoles", roleIds)
     this.configService.log('Updating user roles', { userId, roleIds });
 
     const dto: UpdateUserRolesDto = { userId, roleIds };
@@ -574,7 +529,6 @@ export class BackendUserService {
    */
   createRole(role: CreateRoleDto): Observable<RoleDto> {
     this.configService.log('Creating role', { name: role.name });
-    console.log('BackendUserService - Creating role with payload:', JSON.stringify(role, null, 2));
 
     return this.apiService.post<RoleDto>(
       API_ENDPOINTS.ROLES.BASE,
@@ -772,50 +726,31 @@ export class BackendUserService {
   /**
    * Get all application entities
    */
-  getApplicationEntities(): Observable<any[]> {
+  getApplicationEntities(): Observable<ApplicationEntityDto[]> {
     this.configService.log('Fetching application entities');
     const endpoint = API_ENDPOINTS.APPLICATION_ENTITIES.BASE;
-    console.log('API Call: GET', endpoint);
-    console.log('Full URL will be:', `${this.configService.apiUrl}${endpoint}`);
 
-    return this.apiService.get<any[]>(
+    return this.apiService.get<ApplicationEntityDto[]>(
       endpoint
     ).pipe(
-      map((response: any) => {
-        console.log('API Response:', response);
-
-        // Handle different response formats
+      map((response: ApplicationEntityDto[] | Record<string, unknown>) => {
         if (Array.isArray(response)) {
           return response;
         }
-
-        // If it's a wrapped response but was auto-unwrapped, response is the data
-        if (response && typeof response === 'object') {
-          return response;
+        if (response && typeof response === 'object' && !Array.isArray(response)) {
+          return (response as { data?: ApplicationEntityDto[] })?.data ?? [];
         }
-
         return [];
       }),
       tap(entities => {
-        console.log(`Successfully parsed ${entities.length} application entities:`, entities);
         this.configService.log(`Fetched ${entities.length} application entities`);
       }),
       catchError(error => {
-        console.error('API Error fetching application entities:', error);
-        console.error('Error details:', {
-          status: error?.status,
-          statusText: error?.statusText,
-          message: error?.message,
-          error: error?.error,
-          url: error?.url
-        });
         this.configService.logError('Failed to fetch application entities', error);
-
-        // Provide more helpful error message
-        const errorMessage = error?.status === 404
+        const err = error as { status?: number } | undefined;
+        const errorMessage = err?.status === 404
           ? 'Application entities endpoint not found. Please check the API endpoint.'
-          : error?.message || error?.error?.message || 'Failed to fetch application entities';
-
+          : ErrorHandler.extractErrorMessage(error, 'Failed to fetch application entities');
         return throwError(() => new Error(errorMessage));
       })
     );
@@ -860,9 +795,8 @@ export class BackendUserService {
       }),
       catchError(error => {
         this.configService.logError('Failed to remove users from role', error);
-        return throwError(() => new Error(
-          error.userMessage || 'Failed to remove users from role'
-        ));
+        const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to remove users from role');
+        return throwError(() => new Error(errorMessage));
       })
     );
   }

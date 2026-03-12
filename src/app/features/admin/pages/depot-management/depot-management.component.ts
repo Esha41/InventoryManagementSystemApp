@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -14,15 +14,18 @@ import { API_ENDPOINTS } from '@constants/app.constants';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { LoadingStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { ErrorHandler } from '@utils/error-handler.utils';
 import { ProfileDataService } from '@services/profile-data.service';
 import { DepotUserAssignmentModalComponent } from './components/depot-user-assignment-modal/depot-user-assignment-modal.component';
+import { trackById } from '@utils/trackby.utils';
 
 @Component({
   selector: 'app-depot-management',
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, ConfirmDialogComponent, HasPermissionDirective, LoadingStateComponent, DepotUserAssignmentModalComponent],
   templateUrl: './depot-management.component.html',
-  styleUrls: ['./depot-management.component.css']
+  styleUrls: ['./depot-management.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DepotManagementComponent implements OnInit, OnDestroy {
   readonly Plus = Plus;
@@ -30,6 +33,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
   readonly Trash2 = Trash2;
   readonly X = X;
   readonly Users = Users;
+  readonly trackById = trackById;
 
   depots: DepotDto[] = [];
   loading = false;
@@ -59,7 +63,8 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
     private apiService: ApiService,
     private toastService: ToastService,
     private translateService: TranslateService,
-    private profileDataService: ProfileDataService
+    private profileDataService: ProfileDataService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -78,6 +83,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
           ...depot,
           displayName: getLocalizedName(depot, getCurrentLang(this.translateService))
         }));
+        this.cdr.markForCheck();
       });
   }
 
@@ -89,6 +95,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
   loadDepots(): void {
     this.loading = true;
     this.errorMessage = null;
+    this.cdr.markForCheck();
 
     this.lookupService.getDepotList()
       .pipe(takeUntil(this.destroy$))
@@ -103,10 +110,12 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
               location: depot.location || ''
             }));
           this.loading = false;
+          this.cdr.markForCheck();
         },
         error: (error) => {
-          this.errorMessage = error?.message ?? error?.userMessage ?? 'Failed to load depots';
+          this.errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load depots');
           this.loading = false;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -115,6 +124,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
     this.isEditMode = false;
     this.currentDepot = this.getEmptyDepot();
     this.showModal = true;
+    this.cdr.markForCheck();
   }
 
   openEditModal(depot: DepotDto): void {
@@ -125,12 +135,14 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
       Code: depot.Code || depot.code || ''
     };
     this.showModal = true;
+    this.cdr.markForCheck();
   }
 
   closeModal(): void {
     this.showModal = false;
     this.currentDepot = this.getEmptyDepot();
     this.errorMessage = null;
+    this.cdr.markForCheck();
   }
 
   saveDepot(): void {
@@ -147,68 +159,43 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
 
     this.loading = true;
     this.errorMessage = null;
+    this.cdr.markForCheck();
 
     const request$ = this.isEditMode
-      ? this.apiService.putWithAuth<APIOperationResponse<DepotDto>>(
+      ? this.apiService.put<DepotDto>(
         `${API_ENDPOINTS.DEPOT.BASE}/${this.currentDepot.id}`,
         this.currentDepot
       )
-      : this.apiService.postWithAuth<APIOperationResponse<DepotDto>>(
+      : this.apiService.post<DepotDto>(
         API_ENDPOINTS.DEPOT.BASE,
         this.currentDepot
       );
 
     request$.pipe(takeUntil(this.destroy$)).subscribe({
-      next: (response) => {
-        if (response.succeeded) {
-          this.translateService.get([
-            this.isEditMode ? 'toast.depotUpdated' : 'toast.depotCreated',
-            'toast.success'
-          ]).subscribe(translations => {
-            const messageKey = this.isEditMode ? 'toast.depotUpdated' : 'toast.depotCreated';
-            this.toastService.success(translations[messageKey], translations['toast.success']);
-          });
-          this.closeModal();
-          this.lookupService.clearCacheFor('depots');
-          this.loadDepots();
-        } else {
-          this.translateService.get(['toast.failedToSaveDepot', 'toast.error']).subscribe(translations => {
+      next: () => {
+        this.translateService.get([
+          this.isEditMode ? 'toast.depotUpdated' : 'toast.depotCreated',
+          'toast.success'
+        ]).pipe(takeUntil(this.destroy$)).subscribe(translations => {
+          const messageKey = this.isEditMode ? 'toast.depotUpdated' : 'toast.depotCreated';
+          this.toastService.success(translations[messageKey], translations['toast.success']);
+        });
+        this.closeModal();
+        this.lookupService.clearCacheFor('depots');
+        this.loadDepots();
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+        error: (error) => {
+        const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to save depot');
+        this.translateService.get(['toast.failedToSaveDepot', 'toast.error']).subscribe(translations => {
             this.toastService.error(
-              response.message || translations['toast.failedToSaveDepot'],
+              errorMessage || translations['toast.failedToSaveDepot'],
               translations['toast.error']
             );
           });
-        }
         this.loading = false;
-      },
-      error: (error) => {
-        // Extract error message from various possible locations
-        let errorMessage = 'Failed to save depot';
-        
-        // Check userMessage from error interceptor first
-        if (error?.userMessage) {
-          errorMessage = error.userMessage;
-        } 
-        // Check error.error.message (backend response body)
-        else if (error?.error?.message) {
-          errorMessage = error.error.message;
-        } 
-        // Check error.message (standard error message)
-        else if (error?.message) {
-          errorMessage = error.message;
-        }
-        // Check if error.error is a string
-        else if (typeof error?.error === 'string') {
-          errorMessage = error.error;
-        }
-        
-        this.translateService.get(['toast.failedToSaveDepot', 'toast.error']).subscribe(translations => {
-          this.toastService.error(
-            errorMessage || translations['toast.failedToSaveDepot'],
-            translations['toast.error']
-          );
-        });
-        this.loading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -216,6 +203,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
   deleteDepot(depot: DepotDto): void {
     this.depotToDelete = depot;
     this.showDeleteDialog = true;
+    this.cdr.markForCheck();
   }
 
   onDeleteConfirm(): void {
@@ -224,6 +212,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.errorMessage = null;
     this.showDeleteDialog = false;
+    this.cdr.markForCheck();
 
    
     const deleteDto = {
@@ -246,13 +235,13 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response: APIOperationResponse<DepotDto>) => {
           if (response.succeeded) {
-            this.translateService.get(['toast.depotDeleted', 'toast.success']).subscribe(translations => {
+            this.translateService.get(['toast.depotDeleted', 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
               this.toastService.success(translations['toast.depotDeleted'], translations['toast.success']);
             });
             this.lookupService.clearCacheFor('depots');
             this.loadDepots();
           } else {
-            this.translateService.get(['toast.failedToDeleteDepot', 'toast.error']).subscribe(translations => {
+            this.translateService.get(['toast.failedToDeleteDepot', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
               this.toastService.error(
                 response.message || translations['toast.failedToDeleteDepot'],
                 translations['toast.error']
@@ -261,29 +250,11 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
           }
           this.loading = false;
           this.depotToDelete = undefined;
+          this.cdr.markForCheck();
         },
         error: (err) => {
-          // Extract the actual error message from various possible error structures
-          let errorMessage = 'Failed to delete depot';
-
-          // Check for userMessage from error interceptor first
-          if (err?.userMessage) {
-            errorMessage = err.userMessage;
-          } else if (err instanceof Error && err.message) {
-            // The API service's handleError wraps the error in an Error object with message property
-            errorMessage = err.message;
-          } else if (err?.error?.message) {
-            // Direct error response from backend
-            errorMessage = err.error.message;
-          } else if (err?.message) {
-            // Error message at top level
-            errorMessage = err.message;
-          } else if (typeof err === 'string') {
-            // String error
-            errorMessage = err;
-          }
-
-          this.translateService.get('toast.error').subscribe(translations => {
+          const errorMessage = ErrorHandler.extractErrorMessage(err, 'Failed to delete depot');
+          this.translateService.get('toast.error').pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.error(
               errorMessage,
               translations['toast.error']
@@ -291,6 +262,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
           });
           this.loading = false;
           this.depotToDelete = undefined;
+          this.cdr.markForCheck();
         }
       });
   }
@@ -298,22 +270,26 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
   onDeleteCancel(): void {
     this.showDeleteDialog = false;
     this.depotToDelete = undefined;
+    this.cdr.markForCheck();
   }
 
   openAssignUsersModal(depot: DepotDto): void {
     this.assignUsersDepot = depot;
     this.showAssignUsersModal = true;
+    this.cdr.markForCheck();
   }
 
   onAssignUsersModalClosed(): void {
     this.showAssignUsersModal = false;
     this.assignUsersDepot = undefined;
+    this.cdr.markForCheck();
   }
 
   onAssignUsersSaved(): void {
     this.showAssignUsersModal = false;
     this.assignUsersDepot = undefined;
     this.lookupService.clearCacheFor('Depot');
+    this.cdr.markForCheck();
   }
 
   validateDepot(): { valid: boolean; errorMessage?: string } {

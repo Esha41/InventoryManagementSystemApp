@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -18,7 +18,8 @@ export const MAX_FILE_SIZE_MB_EXPORT = MAX_FILE_SIZE_MB;
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule, ButtonComponent, DropdownComponent],
   templateUrl: './usage-form.component.html',
-  styleUrls: ['./usage-form.component.css']
+  styleUrls: ['./usage-form.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UsageFormComponent {
   constructor(

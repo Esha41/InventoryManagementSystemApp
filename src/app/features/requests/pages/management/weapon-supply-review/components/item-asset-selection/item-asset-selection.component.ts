@@ -2,10 +2,11 @@ import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChange
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule, Search, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-angular';
+import { LucideAngularModule, Search, ArrowUp, ArrowDown, ArrowUpDown, Pencil } from 'lucide-angular';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
+import { FocusOnInitDirective } from '@core/directives/focus-on-init.directive';
 import { AssetSelectionService, SelectedAsset, AssetFilterState, AssetPaginationState } from '../../services/asset-selection.service';
 import { formatNumber as formatNumberUtil } from '@utils/format.utils';
 
@@ -23,7 +24,8 @@ import { formatNumber as formatNumberUtil } from '@utils/format.utils';
     LucideAngularModule,
     DropdownComponent,
     PaginationComponent,
-    RowsPerPageComponent
+    RowsPerPageComponent,
+    FocusOnInitDirective
   ],
   templateUrl: './item-asset-selection.component.html',
   styleUrls: ['./item-asset-selection.component.css']
@@ -32,21 +34,29 @@ export class ItemAssetSelectionComponent implements OnInit, OnChanges {
   @Input() assets: SelectedAsset[] = [];
   @Input() requestedQuantity: number = 0;
   @Input() selectedCount: number = 0;
-  @Input() defaultCustodianId: string = '';
-  @Input() userDropdownOptions: DropdownOption<string>[] = [];
-  @Input() loadingUsers: boolean = false;
+  @Input() defaultCustodianId: number | undefined;
+  @Input() employeeDropdownOptions: DropdownOption<number>[] = [];
+  @Input() loadingEmployees: boolean = false;
+  @Input() addEmployeeActionLabel?: string;
 
   @Output() assetSelectionChange = new EventEmitter<{ asset: SelectedAsset; selected: boolean }>();
   @Output() bulkSelectChange = new EventEmitter<number>();
-  @Output() custodianChange = new EventEmitter<{ asset: SelectedAsset; custodianId: string }>();
-  @Output() conditionChange = new EventEmitter<{ asset: SelectedAsset; condition: string }>();
+  @Output() custodianChange = new EventEmitter<{ asset: SelectedAsset; custodianId: number }>();
   @Output() notesChange = new EventEmitter<{ asset: SelectedAsset; notes: string }>();
+  @Output() serialNumberChange = new EventEmitter<{ asset: SelectedAsset; serialNumber: string }>();
+  @Output() addEmployeeClick = new EventEmitter<void>();
 
   // Icons
   readonly Search = Search;
   readonly ArrowUp = ArrowUp;
   readonly ArrowDown = ArrowDown;
   readonly ArrowUpDown = ArrowUpDown;
+  readonly Pencil = Pencil;
+
+  /** Asset ID currently in edit mode for serial number */
+  editingSerialAssetId: number | null = null;
+  /** Local value while editing (avoids OnPush/immutability issues) */
+  editingSerialValue: string = '';
 
   // Filter and sort state
   filterState: AssetFilterState = {
@@ -116,7 +126,7 @@ export class ItemAssetSelectionComponent implements OnInit, OnChanges {
   /**
    * Handle sort toggle
    */
-  toggleSort(column: 'serialNumber' | 'assetTag' | 'condition'): void {
+  toggleSort(column: 'serialNumber'): void {
     if (this.filterState.sortColumn === column) {
       this.filterState.sortDirection = this.filterState.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
@@ -129,7 +139,7 @@ export class ItemAssetSelectionComponent implements OnInit, OnChanges {
   /**
    * Get sort icon
    */
-  getSortIcon(column: 'serialNumber' | 'assetTag' | 'condition'): typeof ArrowUp | typeof ArrowDown | typeof ArrowUpDown {
+  getSortIcon(column: 'serialNumber'): typeof ArrowUp | typeof ArrowDown | typeof ArrowUpDown {
     if (this.filterState.sortColumn !== column) {
       return ArrowUpDown;
     }
@@ -208,15 +218,8 @@ export class ItemAssetSelectionComponent implements OnInit, OnChanges {
   /**
    * Handle custodian change
    */
-  onCustodianChange(asset: SelectedAsset, custodianId: string): void {
+  onCustodianChange(asset: SelectedAsset, custodianId: number): void {
     this.custodianChange.emit({ asset, custodianId });
-  }
-
-  /**
-   * Handle condition change
-   */
-  onConditionChange(asset: SelectedAsset, condition: string): void {
-    this.conditionChange.emit({ asset, condition });
   }
 
   /**
@@ -224,6 +227,27 @@ export class ItemAssetSelectionComponent implements OnInit, OnChanges {
    */
   onNotesChange(asset: SelectedAsset, notes: string): void {
     this.notesChange.emit({ asset, notes });
+  }
+
+  startEditingSerial(asset: SelectedAsset): void {
+    this.editingSerialAssetId = asset.id;
+    this.editingSerialValue = asset.serialNumber ?? '';
+  }
+
+  onSerialNumberSave(asset: SelectedAsset): void {
+    const value = this.editingSerialValue.trim();
+    this.serialNumberChange.emit({ asset, serialNumber: value });
+    this.editingSerialAssetId = null;
+    this.editingSerialValue = '';
+  }
+
+  cancelEditingSerial(): void {
+    this.editingSerialAssetId = null;
+    this.editingSerialValue = '';
+  }
+
+  trackByAssetId(_index: number, asset: SelectedAsset): number {
+    return asset.id;
   }
 
   /**

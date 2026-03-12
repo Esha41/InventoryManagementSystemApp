@@ -105,10 +105,17 @@
                   <th class="px-4 py-2"></th>
                 </tr>
               </thead>
-              <tbody>
-                <tr *ngFor="let step of steps; let i = index"
+              <tbody cdkDropList (cdkDropListDropped)="onStepDrop($event)">
+                <tr *ngFor="let step of steps; trackBy: trackByIndex; let i = index" cdkDrag
                   class="border-t-2 border-[var(--color-border)] hover:bg-[var(--color-background-hover)] transition-colors">
-                  <td class="px-3 py-2 text-sm text-[var(--color-text)]">{{ orderLabel(i + 1) }}</td>
+                  <td class="px-3 py-2 text-sm text-[var(--color-text)]">
+                    <span class="flex items-center gap-2">
+                      <span cdkDragHandle class="cursor-grab active:cursor-grabbing touch-none inline-flex text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
+                        <lucide-angular [img]="GripVertical" class="h-4 w-4"></lucide-angular>
+                      </span>
+                      {{ orderLabel(i + 1) }}
+                    </span>
+                  </td>
                   <td class="px-3 py-2">
                     <app-dropdown class="w-full" [(ngModel)]="step.roleId"
                       (ngModelChange)="onRoleChange(i); onStepFieldBlur(i)" name="role-{{i}}" [options]="roles"

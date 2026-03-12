@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -8,6 +8,7 @@ import { ToastService } from '@services/toast.service';
 import { AssetDto, UpdateAssetDto } from '@models/asset.model';
 import { ModalComponent } from '@components/modal/modal.component';
 import { ButtonComponent } from '@components/button/button.component';
+import { formatDateForInput } from '@utils/format.utils';
 
 @Component({
     selector: 'app-edit-asset-modal',
@@ -20,7 +21,8 @@ import { ButtonComponent } from '@components/button/button.component';
         ModalComponent,
         ButtonComponent
     ],
-    templateUrl: './edit-asset-modal.component.html'
+    templateUrl: './edit-asset-modal.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EditAssetModalComponent implements OnInit, OnChanges {
     @Input() isOpen = false;
@@ -70,8 +72,7 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
 
         const formatDate = (date: Date | string | undefined) => {
             if (!date) return null;
-            const d = new Date(date);
-            return d.toISOString().split('T')[0];
+            return formatDateForInput(date) || null;
         };
 
         this.assetForm.patchValue({

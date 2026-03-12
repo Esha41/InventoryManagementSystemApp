@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { Observable, throwError, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { APIOperationResponse } from '@models/api-response.model';
 import { ConfigService } from '@services/config.service';
 import { ApiService } from '@services/api.service';
 
@@ -60,15 +59,9 @@ export class EmailConfigurationService {
     this.config.log('Fetching email configuration');
 
     return this.apiService
-      .getWithAuth<APIOperationResponse<EmailConfigurationApiDto>>(this.endpoint)
+      .get<EmailConfigurationApiDto>(this.endpoint)
       .pipe(
-        map(response => {
-          // If response succeeded but no data, return empty config
-          if (response.succeeded && !response.data) {
-            return {};
-          }
-          return this.backendApiDtoToInternalDto(response?.data);
-        }),
+        map(data => data ? this.backendApiDtoToInternalDto(data) : {}),
         catchError(error => {
           // If 404, return empty config (settings don't exist yet)
           // Check both HttpErrorResponse status and error message
@@ -105,14 +98,9 @@ export class EmailConfigurationService {
     const apiDto = this.internalDtoToApiDto(config);
 
     return this.apiService
-      .postWithAuth<APIOperationResponse<EmailSettingsApiDto>>(this.endpoint, apiDto)
+      .post<EmailSettingsApiDto>(this.endpoint, apiDto)
       .pipe(
-        map(response => {
-          if (!response.succeeded) {
-            throw new Error(response.message || 'Failed to update email configuration');
-          }
-          return this.apiDtoToInternalDto(response?.data);
-        }),
+        map(data => this.apiDtoToInternalDto(data)),
         catchError(error => {
           // Provide more specific error messages
           let errorMessage = 'Failed to update email configuration';

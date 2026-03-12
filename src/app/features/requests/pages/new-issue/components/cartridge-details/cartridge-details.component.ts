@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { Cartridge } from '../cartridge-list/cartridge-list.component';
@@ -14,7 +14,8 @@ import { catchError, switchMap, of } from 'rxjs';
   standalone: true,
   imports: [CommonModule, TranslateModule],
   templateUrl: './cartridge-details.component.html',
-  styleUrls: ['./cartridge-details.component.css']
+  styleUrls: ['./cartridge-details.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CartridgeDetailsComponent implements OnChanges, OnDestroy {
   @Input() cartridge: Cartridge | null = null;

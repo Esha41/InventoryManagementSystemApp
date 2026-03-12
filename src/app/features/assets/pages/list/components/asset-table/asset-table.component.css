@@ -4,7 +4,14 @@
 .view-tabs-container {
   border-bottom: 2px solid var(--color-border);
   overflow-x: auto;
+  overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox: hide scrollbar when not needed */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.view-tabs-container::-webkit-scrollbar {
+  display: none; /* Chrome/Safari: hide scrollbar, scroll still works on overflow */
 }
 
 .view-tabs {

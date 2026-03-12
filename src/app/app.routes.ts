@@ -73,12 +73,6 @@ export const routes: Routes = [
         canActivate: [permissionGuard],
         data: { permissions: ['analytics.page', 'analytics.view'] }
       },
-      // {
-      //   path: 'advanced-analytics-dashboard',
-      //   loadComponent: () => import('@admin/pages/advanced-analytics/advanced-analytics-dashboard.component').then(m => m.AdvancedAnalyticsDashboardComponent),
-      //   canActivate: [permissionGuard],
-      //   data: { permissions: ['analytics.page', 'analytics.view', 'advancedAnalytics.page', 'advancedAnalytics.view'] }
-      // },
       {
         path: 'supply-request-management',
         loadComponent: () => import('@requests/pages/supply-management/supply-request-management.component').then(m => m.SupplyRequestManagementComponent),
@@ -111,13 +105,13 @@ export const routes: Routes = [
       },
       {
         path: 'allowance',
-        loadComponent: () => import('@allowance/pages/list/allowance-list.component').then(m => m.AllowanceListComponent),
+        loadComponent: () => import('@department/pages/list/allowance-list.component').then(m => m.AllowanceListComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['allowanceitem.page', 'allowanceitem.view', 'order.create'] }
       },
       {
         path: 'allowance/add',
-        loadComponent: () => import('@allowance/pages/overview/allowance.component').then(m => m.AllowanceComponent),
+        loadComponent: () => import('@department/pages/overview/allowance.component').then(m => m.AllowanceComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['allowanceitem.create', 'order.create'] }
       },
@@ -164,10 +158,22 @@ export const routes: Routes = [
         data: { permissions: ['asset.view'] }
       },
       {
+        path: 'warehouse/:warehouseId/assets/:id/map',
+        loadComponent: () => import('@warehouse/pages/map/warehouse-map/warehouse-map.component').then(m => m.WarehouseMapComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['WarehouseMapView'] }
+      },
+      {
         path: 'warehouse/:warehouseId/assets/:id/edit',
         loadComponent: () => import('@assets/pages/edit/edit-asset.component').then(m => m.EditAssetComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['asset.edit'] }
+      },
+      {
+        path: 'warehouse/:id/batches/:batchId/edit',
+        loadComponent: () => import('@warehouse/pages/inventory/edit-batch/edit-batch.component').then(m => m.EditBatchComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['asset.page', 'asset.edit'] }
       },
       {
         path: 'workflow',
@@ -230,6 +236,12 @@ export const routes: Routes = [
         data: { permissions: ['viewrequest.page', 'viewrequest.view', 'order.view'] }
       },
       {
+        path: 'requests-management/:id/weapon-supply-selection',
+        loadComponent: () => import('@requests/pages/management/weapon-supply-review/components/weapon-supply-selection/weapon-supply-selection.component').then(m => m.WeaponSupplySelectionComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['ReviewWeaponSupply', 'viewrequest.page', 'viewrequest.view', 'order.view', 'Permissions.AssetSupply.View'] }
+      },
+      {
         path: 'requests-management/:id/weapon-supply-review',
         loadComponent: () => import('@requests/pages/management/weapon-supply-review/weapon-supply-review.component').then(m => m.WeaponSupplyReviewComponent),
         canActivate: [permissionGuard],
@@ -268,12 +280,6 @@ export const routes: Routes = [
       {
         path: 'asset-list/:id',
         loadComponent: () => import('@shared/components/asset-details/asset-details.component').then(m => m.AssetDetailsComponent),
-        canActivate: [permissionGuard],
-        data: { permissions: ['ammunition.view', 'weapon.view', 'explosive.view'] }
-      },
-      {
-        path: 'item-detail/:id',
-        loadComponent: () => import('@components/asset-details/asset-details.component').then(m => m.AssetDetailsComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['ammunition.view', 'weapon.view', 'explosive.view'] }
       },
@@ -327,7 +333,7 @@ export const routes: Routes = [
       },
       {
         path: 'item-department-assignment',
-        loadComponent: () => import('@admin/pages/item-department-assignment/item-department-assignment.component').then(m => m.ItemDepartmentAssignmentComponent),
+        loadComponent: () => import('@department/pages/item-department-assignment/item-department-assignment.component').then(m => m.ItemDepartmentAssignmentComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['Permissions.ItemDepartmentAssignment.Page'] }
       },

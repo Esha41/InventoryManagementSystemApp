@@ -51,7 +51,7 @@
   </div>
 
   <!-- Main Content -->
-  <div class="page-container relative min-h-[400px]">
+  <div class="page-container relative dashboard-main-content" [class.dashboard-main-content--tall]="isLoading || visibleCards.length === 0">
     <!-- Loading Overlay -->
     <div *ngIf="isLoading"
       class="absolute inset-0 z-50 flex items-center justify-center bg-[var(--color-background)]/60 backdrop-blur-[2px]">
@@ -65,7 +65,7 @@
     <!-- Status Cards Grid -->
     <div *ngIf="viewMode === 'grid' && visibleCards.length > 0"
       class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-6 mb-6 md:mb-8">
-      <app-status-card *ngFor="let card of paginatedCards" [title]="card.title" [status]="card.status"
+      <app-status-card *ngFor="let card of paginatedCards; trackBy: trackByCard" [title]="card.title" [status]="card.status"
         [orders]="card.orders" [orderRequestId]="card.orderRequestId || null"
         [returnRequestId]="card.returnRequestId || null" [discardRequestId]="card.discardRequestId || null"
         [isMyTurn]="card.isMyTurn || false" (viewOrderDetails)="onViewOrderDetails($event)"
@@ -78,7 +78,7 @@
 
       <!-- Mobile Table (Card) View -->
       <div class="md:hidden grid grid-cols-1 gap-4 p-4 overflow-x-hidden">
-        <div *ngFor="let card of paginatedCards"
+        <div *ngFor="let card of paginatedCards; trackBy: trackByCard"
           class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] relative overflow-hidden transition-all duration-200"
           [class.border-l-4]="card.isMyTurn" [class.border-l-[var(--color-brand)]]="card.isMyTurn">
 
@@ -200,7 +200,7 @@
             </tr>
           </thead>
           <tbody class="bg-[var(--color-background)] divide-y divide-[var(--color-border)]">
-            <tr *ngFor="let card of paginatedCards" [class.action-required-highlight]="card.isMyTurn"
+            <tr *ngFor="let card of paginatedCards; trackBy: trackByCard" [class.action-required-highlight]="card.isMyTurn"
               class="hover:bg-[var(--color-background-hover)] transition-colors">
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)]">
                 {{ card.orders[0].orderId || card.title }}
@@ -239,7 +239,7 @@
 
     <!-- Pagination Footer -->
     <div *ngIf="visibleCards.length > 0 || totalItems > 0"
-      class="flex flex-col sm:flex-row items-stretch sm:items-center justify-start sm:justify-between gap-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] rounded-lg px-4 sm:px-6 py-4 mb-6 md:mb-8 text-start">
+      class="flex flex-col sm:flex-row items-stretch sm:items-center justify-start sm:justify-between gap-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] rounded-lg px-4 sm:px-6 py-4 text-start">
       <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="totalItems" [visibleItems]="visibleCards.length"
         (rowsPerPageChange)="onRowsPerPageChange($event)">
       </app-rows-per-page>

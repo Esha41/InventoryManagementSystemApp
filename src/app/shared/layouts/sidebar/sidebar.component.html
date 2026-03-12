@@ -5,7 +5,7 @@
   aria-hidden="true"></div>
 
 <aside
-  class="bg-[var(--color-background)] shadow-custom-lg transition-all duration-300 ease-in-out flex flex-col h-full fixed inset-y-0 z-50 md:relative md:z-auto md:translate-x-0 w-[85vw] max-w-64 md:w-64 will-change-transform"
+  class="bg-[var(--color-background)] shadow-custom-lg transition-all duration-300 ease-in-out flex flex-col h-full fixed inset-y-0 z-50 md:relative md:z-20 md:translate-x-0 w-[85vw] max-w-64 md:w-64 will-change-transform"
   [class.left-0]="!isRTL" [class.right-0]="isRTL" [class.translate-x-0]="mobileOpen"
   [class.-translate-x-full]="!mobileOpen && !isRTL" [class.translate-x-full]="!mobileOpen && isRTL"
   [class.md:w-64]="!isCollapsed" [class.md:w-20]="isCollapsed">
@@ -31,8 +31,8 @@
     </button>
   </div>
 
-  <!-- Navigation Menu - smooth scroll on iOS -->
-  <nav class="flex-1 overflow-y-auto overflow-x-hidden py-4 overscroll-contain">
+  <!-- Navigation Menu - smooth scroll on iOS (scrollbar hidden to avoid double scrollbar with main) -->
+  <nav class="flex-1 overflow-y-auto overflow-x-hidden py-4 overscroll-contain scrollbar-hide">
     <ul class="space-y-1 px-3">
       <li *ngFor="let item of menuItems; let i = index">
         <!-- Separator before Reports section -->

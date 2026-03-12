@@ -1,125 +1,405 @@
-/* Component-specific styles */
-
-/* Table wrapper for proper overflow handling */
-.assets-table-wrapper {
-  width: 100%;
-  position: relative;
+/* Assets Selection Card */
+.assets-selection-card {
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
-/* Assets table styling */
+/* Toolbar */
+.assets-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--color-background-muted);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.assets-search {
+  flex: 1;
+  min-width: 200px;
+  max-width: 320px;
+}
+
+.assets-search-inner {
+  position: relative;
+  width: 100%;
+}
+
+.assets-search-icon-wrap {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  inset-inline-start: 0;
+  display: flex;
+  align-items: center;
+  padding-inline-start: 0.75rem;
+  pointer-events: none;
+}
+
+.assets-search-icon {
+  width: 1rem;
+  height: 1rem;
+  min-width: 1rem;
+  color: var(--color-text-muted);
+  display: block;
+}
+
+.assets-search-input {
+  width: 100%;
+  padding-inline-start: 2.25rem;
+  padding-inline-end: 0.75rem;
+  padding-block: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.25;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-background);
+  color: var(--color-text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.assets-search-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.assets-search-input:focus {
+  outline: none;
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px rgba(var(--color-brand-rgb, 59, 130, 246), 0.15);
+}
+
+.assets-bulk-select {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.assets-bulk-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.assets-bulk-input {
+  width: 4rem;
+  padding: 0.5rem 0.5rem;
+  font-size: 0.875rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-background);
+  color: var(--color-text);
+}
+
+.assets-bulk-input:focus {
+  outline: none;
+  border-color: var(--color-brand);
+}
+
+.assets-bulk-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: white;
+  background: var(--color-brand);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.assets-bulk-btn:hover {
+  background: var(--color-brand-dark);
+}
+
+.assets-bulk-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-brand);
+}
+
+/* Table */
+.assets-table-wrapper {
+  overflow-x: auto;
+}
+
 .assets-table {
   width: 100%;
-  table-layout: fixed;
   border-collapse: collapse;
+  font-size: 0.875rem;
 }
 
-/* Column widths */
-.assets-table th:nth-child(1),
-.assets-table td:nth-child(1) {
-  width: 5%;
-  min-width: 50px;
+.assets-table thead {
+  background: var(--color-background-muted);
 }
 
-.assets-table th:nth-child(2),
-.assets-table td:nth-child(2) {
-  width: 18%;
-  min-width: 150px;
+.assets-table th {
+  padding: 0.75rem 1rem;
+  text-align: start;
+  font-weight: 600;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border);
 }
 
-.assets-table th:nth-child(3),
-.assets-table td:nth-child(3) {
-  width: 15%;
-  min-width: 120px;
+.th-checkbox { width: 3rem; min-width: 3rem; }
+.th-sortable { min-width: 140px; }
+.th-depot { min-width: 120px; }
+.th-assignee { min-width: 180px; }
+.th-notes { min-width: 140px; }
+
+.th-sortable {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
 }
 
-.assets-table th:nth-child(4),
-.assets-table td:nth-child(4) {
-  width: 15%;
-  min-width: 120px;
+.th-sortable:hover {
+  color: var(--color-text);
 }
 
-.assets-table th:nth-child(5),
-.assets-table td:nth-child(5) {
-  width: 25%;
-  min-width: 200px;
+.th-sortable .sort-icon {
+  margin-inline-start: 0.25rem;
+  width: 0.875rem;
+  height: 0.875rem;
+  vertical-align: -2px;
+  opacity: 0.6;
 }
 
-.assets-table th:nth-child(6),
-.assets-table td:nth-child(6) {
-  width: 22%;
-  min-width: 180px;
-}
-
-/* Table cell styling */
 .assets-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-border);
   vertical-align: middle;
-  word-wrap: break-word;
 }
 
-/* Dropdown cell - ensure proper overflow handling */
-.dropdown-cell {
-  position: relative;
+.td-checkbox { width: 3rem; }
+.td-serial { min-width: 140px; }
+.td-depot { min-width: 120px; color: var(--color-text-muted); }
+.td-assignee { min-width: 180px; }
+.td-notes { min-width: 140px; }
+
+/* Row states */
+.asset-row {
+  transition: background 0.15s ease;
+}
+
+.asset-row:hover:not(.asset-row-disabled) {
+  background: var(--color-background-hover);
+}
+
+.asset-row-selected {
+  background: rgba(var(--color-brand-rgb, 59, 130, 246), 0.08);
+  border-inline-start: 3px solid var(--color-brand);
+}
+
+.asset-row-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.asset-row-disabled input {
+  cursor: not-allowed;
+}
+
+/* When editing serial, the cell must receive pointer events even if row is disabled */
+.asset-row-disabled .td-serial-editing {
+  pointer-events: auto;
+}
+
+/* Inputs */
+.checkbox-input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--color-brand);
+  cursor: pointer;
+}
+
+.serial-input,
+.notes-input {
   width: 100%;
-  min-width: 200px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-background);
+  color: var(--color-text);
+  transition: border-color 0.2s;
 }
 
-/* Ensure dropdown panels can escape overflow containers */
-:host ::ng-deep .assets-table-wrapper > div {
-  overflow-x: auto;
-  overflow-y: visible;
+.serial-input { font-weight: 500; }
+
+.serial-display-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-/* Dropdown panel z-index and smooth transitions */
+.serial-display {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.serial-display-empty {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.serial-edit-btn {
+  flex-shrink: 0;
+  padding: 0.375rem;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
+}
+
+.serial-edit-btn:hover {
+  color: var(--color-brand);
+  background: var(--color-background-hover);
+  border-color: var(--color-brand);
+}
+
+.serial-save-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+  z-index: 100000;
+  pointer-events: auto;
+}
+
+.serial-save-row .serial-input {
+  flex: 1;
+  min-width: 0;
+  pointer-events: auto;
+}
+
+.serial-save-btn {
+  flex-shrink: 0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: white;
+  background: var(--color-brand);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.serial-save-btn:hover {
+  background: var(--color-brand-dark, #2563eb);
+}
+
+.serial-cancel-btn {
+  flex-shrink: 0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text);
+  background: var(--color-background-muted);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.serial-cancel-btn:hover {
+  background: var(--color-background-hover);
+  border-color: var(--color-text-muted);
+}
+
+.serial-readonly {
+  display: inline-block;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text);
+  background: var(--color-background-muted);
+  border-radius: 6px;
+  border: 1px solid transparent;
+}
+
+.serial-input:focus,
+.notes-input:focus {
+  outline: none;
+  border-color: var(--color-brand);
+}
+
+.cell-empty {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+/* Dropdown cell */
+.dropdown-cell {
+  min-width: 160px;
+}
+
 :host ::ng-deep .dropdown-cell app-dropdown .app-dropdown-panel {
   z-index: 10001 !important;
-  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-/* Smooth dropdown opening */
-:host ::ng-deep .dropdown-cell app-dropdown .app-dropdown {
-  position: relative;
+/* Empty row */
+.empty-row td {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
 }
 
-:host ::ng-deep .dropdown-cell app-dropdown .app-dropdown-trigger {
-  transition: all 0.2s ease;
+/* Filter summary */
+.assets-filter-summary {
+  padding: 0.5rem 1.25rem;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  background: var(--color-background-muted);
+  border-top: 1px solid var(--color-border);
 }
 
-/* Input styling improvements */
-.assets-table input[type="text"] {
-  transition: all 0.2s ease;
+.assets-filter-summary strong {
+  color: var(--color-text);
+  font-weight: 600;
 }
 
-.assets-table input[type="text"]:focus {
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+/* Pagination */
+.assets-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--color-background-muted);
+  border-top: 1px solid var(--color-border);
 }
 
-/* Table row hover effect */
-.assets-table tbody tr {
-  transition: background-color 0.15s ease;
+/* RTL support */
+[dir="rtl"] .assets-pagination-row {
+  flex-direction: row-reverse;
 }
 
-/* Sortable header styling */
-.assets-table th[class*="cursor-pointer"] {
-  user-select: none;
-}
-
-.assets-table th[class*="cursor-pointer"]:hover {
-  background-color: var(--color-background-hover);
-}
-
-/* Selected row highlighting */
-.assets-table tbody tr[class*="bg-blue-50"],
-.assets-table tbody tr[class*="dark:bg-blue-900"] {
-  border-left: 3px solid var(--color-brand);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .assets-table {
-    min-width: 900px;
+@media (max-width: 640px) {
+  .assets-toolbar {
+    flex-direction: column;
+    align-items: stretch;
   }
-  
-  .assets-table-wrapper > div {
-    overflow-x: auto;
+
+  .assets-search {
+    max-width: none;
+  }
+
+  .assets-table {
+    min-width: 600px;
   }
 }

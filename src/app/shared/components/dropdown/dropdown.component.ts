@@ -6,6 +6,7 @@ import {
   HostBinding,
   HostListener,
   Input,
+  OnDestroy,
   Optional,
   Output,
   forwardRef
@@ -51,7 +52,7 @@ export interface DropdownOption<T = Primitive> {
   ]
 })
 export class DropdownComponent<T = Primitive>
-  implements ControlValueAccessor, Validator {
+  implements ControlValueAccessor, Validator, OnDestroy {
   readonly ChevronDown = ChevronDown;
   readonly Search = Search;
 
@@ -164,6 +165,17 @@ export class DropdownComponent<T = Primitive>
    */
   @Output() selectionChange = new EventEmitter<T | null | T[]>();
 
+  /**
+   * Optional label for an "Add" action button shown at the bottom of the dropdown panel.
+   * When set, a button is rendered; use addActionClick to handle the click.
+   */
+  @Input() addActionLabel?: string;
+
+  /**
+   * Emits when the add action button is clicked.
+   */
+  @Output() addActionClick = new EventEmitter<void>();
+
   isOpen = false;
   hoveredIndex: number | null = null;
   searchTerm = '';
@@ -173,6 +185,15 @@ export class DropdownComponent<T = Primitive>
   private onChange: (value: T | null | T[]) => void = () => { };
   private onTouched: () => void = () => { };
   private onValidatorChange: () => void = () => { };
+
+  private scrollHandler = (event: Event): void => {
+    if (!this.isOpen) return;
+    const target = event.target as Node;
+    if (!this.host.nativeElement.contains(target)) {
+      this.close();
+      this.onTouched();
+    }
+  };
 
   @HostBinding('attr.name')
   get attrName(): string | null {
@@ -184,6 +205,10 @@ export class DropdownComponent<T = Primitive>
     @Optional() private translate?: TranslateService,
     @Optional() private translationService?: TranslationService
   ) { }
+
+  ngOnDestroy(): void {
+    document.removeEventListener('scroll', this.scrollHandler, { capture: true });
+  }
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;
@@ -313,6 +338,9 @@ export class DropdownComponent<T = Primitive>
     this.isOpen = !this.isOpen;
     if (this.isOpen) {
       setTimeout(() => this.adjustPanelPosition(), 0);
+      document.addEventListener('scroll', this.scrollHandler, { passive: true, capture: true });
+    } else {
+      document.removeEventListener('scroll', this.scrollHandler, { capture: true });
     }
     this.openedChange.emit(this.isOpen);
   }
@@ -324,23 +352,43 @@ export class DropdownComponent<T = Primitive>
     this.isOpen = true;
     this.searchTerm = '';
     setTimeout(() => this.adjustPanelPosition(), 0);
+    document.addEventListener('scroll', this.scrollHandler, { passive: true, capture: true });
     this.openedChange.emit(true);
   }
 
   private adjustPanelPosition(): void {
     const panel = this.host.nativeElement.querySelector('.app-dropdown-panel') as HTMLElement;
-    if (!panel) return;
+    const trigger = this.host.nativeElement.querySelector('.app-dropdown-trigger') as HTMLElement;
+    if (!panel || !trigger) return;
 
-    // Reset manual positioning to rely on CSS absolute positioning
-    // This fixes issues where transformed ancestors (like modals) would break fixed positioning
-    panel.style.position = '';
-    panel.style.top = '';
-    panel.style.left = '';
-    panel.style.width = '';
-    panel.style.minWidth = '';
+    // Use fixed positioning to escape overflow clipping (e.g. tables with overflow-x-auto)
+    const rect = trigger.getBoundingClientRect();
+    const gap = 8;
+    panel.style.position = 'fixed';
+    panel.style.top = `${rect.bottom + gap}px`;
+    panel.style.left = `${rect.left}px`;
+    panel.style.width = `${rect.width}px`;
+    panel.style.minWidth = `${rect.width}px`;
     panel.style.maxWidth = '';
-    panel.style.right = '';
-    panel.style.zIndex = '';
+    panel.style.right = 'auto';
+    panel.style.zIndex = '99999';
+
+    if (this.isRTL) {
+      panel.style.left = 'auto';
+      panel.style.right = `${window.innerWidth - rect.right}px`;
+    }
+
+    // Keep panel in viewport if it would overflow bottom
+    requestAnimationFrame(() => {
+      const panelRect = panel.getBoundingClientRect();
+      if (panelRect.bottom > window.innerHeight - 10) {
+        const spaceAbove = rect.top - 10;
+        if (spaceAbove > 100) {
+          panel.style.top = 'auto';
+          panel.style.bottom = `${window.innerHeight - rect.top + gap}px`;
+        }
+      }
+    });
   }
 
 
@@ -352,8 +400,7 @@ export class DropdownComponent<T = Primitive>
     this.isOpen = false;
     this.hoveredIndex = null;
     this.searchTerm = '';
-
-
+    document.removeEventListener('scroll', this.scrollHandler, { capture: true });
 
     // Reset panel positioning
     const panel = this.host.nativeElement.querySelector('.app-dropdown-panel') as HTMLElement;
@@ -387,8 +434,12 @@ export class DropdownComponent<T = Primitive>
 
     const value = this.getOptionValue(option);
 
-    // Handle placeholder option
-    if (this.placeholderSelectable && value === this.placeholderValue) {
+    // Handle placeholder option (value may be undefined when optionValue is set but placeholder has no such prop)
+    const isPlaceholderSelection =
+      this.placeholderSelectable &&
+      (value === this.placeholderValue ||
+        (this.placeholderValue == null && (value === undefined || value === null)));
+    if (isPlaceholderSelection) {
       if (this.multiple) {
         this.innerValue = [] as T[];
       } else {
@@ -586,6 +637,13 @@ export class DropdownComponent<T = Primitive>
 
   onTriggerBlur(): void {
     this.onTouched();
+  }
+
+  onAddActionClick(event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.addActionClick.emit();
+    this.close();
   }
 }
 

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -12,15 +12,20 @@ import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ButtonComponent } from '@components/button/button.component';
 import { PaginatedList } from '@models/api-response.model';
 import { StockNotificationService, LowStockNotificationScheduleDto, LowStockNotificationSettingsDto } from '@settings/services/stock-notification.service';
+import { ErrorHandler } from '@utils/error-handler.utils';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-stock-notification-settings',
   standalone: true,
   imports: [TranslateModule, ErrorStateComponent, CardComponent, DropdownComponent, ButtonComponent, FormsModule, CommonModule, ReactiveFormsModule],
   templateUrl: './stock-notification-settings.component.html',
-  styleUrl: './stock-notification-settings.component.css'
+  styleUrl: './stock-notification-settings.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class StockNotificationSettingsComponent {
+export class StockNotificationSettingsComponent implements OnInit, OnDestroy {
+  private readonly destroy$ = new Subject<void>();
+
   roles: RoleDto[] = [];
   users: BackendUserDto[] = [];
   selectedRoles: string[] = [];
@@ -39,16 +44,22 @@ export class StockNotificationSettingsComponent {
     private backendUserService: BackendUserService,
     private toastService: ToastService,
     private stockNotificationService: StockNotificationService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private cdr: ChangeDetectorRef
   ) {
   }
   ngOnInit(): void {
+    this.initializeRecipientsForm();
+    this.initializeScheduleForm();
     this.loadRoles();
     this.loadUsers();
     this.loadSelectedRecipients();
     this.loadSchedule();
-    this.initializeRecipientsForm();
-    this.initializeScheduleForm();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private initializeRecipientsForm() {
@@ -67,71 +78,75 @@ export class StockNotificationSettingsComponent {
   }
   private loadRoles(): void {
     this.isLoadingRoles = true;
-    this.backendUserService.getAllRolesSimple().subscribe({
+    this.backendUserService.getAllRolesSimple().pipe(takeUntil(this.destroy$)).subscribe({
       next: (roles: RoleDto[]) => {
         this.roles = roles;
         this.isLoadingRoles = false;
+        this.cdr.markForCheck();
       },
-      error: (error: any) => {
+      error: (error: unknown) => {
         console.error('Failed to load roles from API:', error);
         this.isLoadingRoles = false;
-        this.errorMessage = 'Failed to load roles';
+        this.errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load roles');
+        this.cdr.markForCheck();
       }
     });
   }
 
   private loadUsers(): void {
     this.isLoadingUsers = true;
-    this.backendUserService.getUsers({ page: 1, pageSize: 1000 }).subscribe({
+    this.backendUserService.getUsers({ page: 1, pageSize: 1000 }).pipe(takeUntil(this.destroy$)).subscribe({
       next: (response: PaginatedList<BackendUserDto>) => {
         this.users = response.items || [];
         this.isLoadingUsers = false;
+        this.cdr.markForCheck();
       },
-      error: (error) => {
+      error: (error: unknown) => {
         this.isLoadingUsers = false;
-        this.errorMessage = 'Failed to load users: ' + (error.message || 'Unknown error');
+        this.errorMessage = 'Failed to load users: ' + ErrorHandler.extractErrorMessage(error, 'Unknown error');
+        this.cdr.markForCheck();
       }
     });
   }
 
   private loadSelectedRecipients(): void {
     this.isLoadingSelectedRecipients = true;
-    this.stockNotificationService.getSettings().subscribe({
+    this.stockNotificationService.getSettings().pipe(takeUntil(this.destroy$)).subscribe({
       next: (data) => {
-        this.selectedRoles = data.data.roles;
-        this.selectedUsers = data.data.users;
+        this.selectedRoles = data.roles ?? [];
+        this.selectedUsers = data.users ?? [];
         this.recipientsForm.patchValue({
           rolesIds: this.selectedRoles ?? [],
           usersIds: this.selectedUsers ?? [],
         })
         this.isLoadingSelectedRecipients = false;
+        this.cdr.markForCheck();
       },
-      error: (error: any) => {
+      error: (error: unknown) => {
         console.error('Failed to load selected roles and users from API:', error);
-        this.errorMessage = 'Failed to load selected roles and users';
+        this.errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load selected roles and users');
         this.isLoadingSelectedRecipients = false;
+        this.cdr.markForCheck();
       }
     });
   }
 
   private updateSelectedRecipients(dto: LowStockNotificationSettingsDto): void {
-
-    const operation = this.stockNotificationService.updateSettings(dto)
-
-    operation.subscribe({
-      next: (item) => {
-        this.translateService.get(['toast.success', 'stockNotificationSettings.recipientsSavedSuccess']).subscribe(translations => {
+    this.stockNotificationService.updateSettings(dto).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.cdr.markForCheck();
+        this.translateService.get(['toast.success', 'stockNotificationSettings.recipientsSavedSuccess']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
           this.toastService.success(
             translations['stockNotificationSettings.recipientsSavedSuccess'],
             translations['toast.success']
           );
         });
       },
-      error: (error) => {
-
-        this.translateService.get(['toast.error', 'stockNotificationSettings.recipientsSaveFailed']).subscribe(translations => {
+      error: (error: unknown) => {
+        this.cdr.markForCheck();
+        this.translateService.get(['toast.error', 'stockNotificationSettings.recipientsSaveFailed']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
           this.toastService.error(
-            error.message || translations['stockNotificationSettings.recipientsSaveFailed'],
+            ErrorHandler.extractErrorMessage(error, translations['stockNotificationSettings.recipientsSaveFailed']),
             translations['toast.error']
           );
         });
@@ -139,24 +154,22 @@ export class StockNotificationSettingsComponent {
     });
   }
 
-  private updateSchedule(dateTime: LowStockNotificationScheduleDto) {
-    const operation = this.stockNotificationService.updateSchedule(dateTime)
-
-    operation.subscribe({
-      next: (item) => {
-        this.translateService.get(['toast.success', 'stockNotificationSettings.scheduleSavedSuccess']).subscribe(translations => {
+  private updateSchedule(dateTime: LowStockNotificationScheduleDto): void {
+    this.stockNotificationService.updateSchedule(dateTime).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.cdr.markForCheck();
+        this.translateService.get(['toast.success', 'stockNotificationSettings.scheduleSavedSuccess']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
           this.toastService.success(
             translations['stockNotificationSettings.scheduleSavedSuccess'],
             translations['toast.success']
           );
         });
       },
-      error: (error) => {
-
-        this.translateService.get(['toast.error', 'stockNotificationSettings.scheduleSaveFailed']).subscribe(translations => {
+      error: (error: unknown) => {
+        this.cdr.markForCheck();
+        this.translateService.get(['toast.error', 'stockNotificationSettings.scheduleSaveFailed']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
           this.toastService.error(
-            error.message ||
-            translations['stockNotificationSettings.scheduleSaveFailed'],
+            ErrorHandler.extractErrorMessage(error, translations['stockNotificationSettings.scheduleSaveFailed']),
             translations['toast.error']
           );
         });
@@ -167,26 +180,26 @@ export class StockNotificationSettingsComponent {
 
 
   private loadSchedule(): void {
-    this.isLoadingSchedule = true
+    this.isLoadingSchedule = true;
     this.stockNotificationService.getSchedule<string | null>().subscribe({
-      next: (data) => {
-        if (data.data) {
+      next: (scheduleValue) => {
+        if (scheduleValue && typeof scheduleValue === 'string') {
           // Backend returns date string like "2026-01-20T12:47:00"
           // Extract just the date and time parts for datetime-local input (YYYY-MM-DDTHH:mm)
-          // Use the string directly without any conversion
-          const dateStr = (data.data as string).slice(0, 16);
+          const dateStr = scheduleValue.slice(0, 16);
           this.scheduleForm.patchValue({ dateTime: dateStr });
         } else {
           this.scheduleForm.patchValue({ dateTime: '' });
         }
         this.isLoadingSchedule = false;
+        this.cdr.markForCheck();
       },
-      error: (error) => {
+      error: (error: unknown) => {
         this.isLoadingSchedule = false;
-        this.errorMessage = 'Failed to load schedule: ' + (error.message || 'Unknown error');
+        this.errorMessage = 'Failed to load schedule: ' + ErrorHandler.extractErrorMessage(error, 'Unknown error');
+        this.cdr.markForCheck();
       }
-
-    })
+    });
   }
 
   onSubmitRecipientsForm(): void {
@@ -218,8 +231,8 @@ export class StockNotificationSettingsComponent {
     const dateTimeWithOffset = `${formValue.dateTime}:00${offsetString}`;
 
     const dto: LowStockNotificationScheduleDto = {
-      scheduleTime: dateTimeWithOffset as any // Send as string, backend will parse to DateTime
-    }
+      scheduleTime: dateTimeWithOffset // string | Date - backend parses ISO string to DateTime
+    };
     this.updateSchedule(dto)
   }
 

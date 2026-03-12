@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -9,13 +9,15 @@ import { WarehouseSummaryDto } from '@models/warehouse.model';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
+import { trackByStringId } from '@utils/trackby.utils';
 
 @Component({
   selector: 'app-warehouse-list',
   standalone: true,
   imports: [CommonModule, RouterModule, LucideAngularModule, TranslateModule, LoadingStateComponent, ErrorStateComponent, HasPermissionDirective],
   templateUrl: './warehouse-list.component.html',
-  styleUrls: ['./warehouse-list.component.css']
+  styleUrls: ['./warehouse-list.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WarehouseListComponent implements OnInit, OnDestroy {
   warehouses: WarehouseSummaryDto[] = [];
@@ -23,13 +25,15 @@ export class WarehouseListComponent implements OnInit, OnDestroy {
   error: string | null = null;
 
   readonly Map = Map;
+  readonly trackByStringId = trackByStringId;
 
   private destroy$ = new Subject<void>();
 
   constructor(
     private lookupService: LookupService,
     private router: Router,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -44,6 +48,7 @@ export class WarehouseListComponent implements OnInit, OnDestroy {
           ...warehouse,
           name: getLocalizedName(warehouse.depot, getCurrentLang(this.translateService))
         }));
+        this.cdr.markForCheck();
       });
   }
 
@@ -55,6 +60,7 @@ export class WarehouseListComponent implements OnInit, OnDestroy {
   private loadWarehouses(): void {
     this.loading = true;
     this.error = null;
+    this.cdr.markForCheck();
 
     this.lookupService.getDepots()
       .pipe(takeUntil(this.destroy$))
@@ -65,12 +71,15 @@ export class WarehouseListComponent implements OnInit, OnDestroy {
             .filter(depot => !depot.isDeleted)
             .map(depot => this.mapDepotToWarehouse(depot));
           this.loading = false;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.translateService.get('warehouse.failedToLoad').subscribe(msg => {
             this.error = msg;
+            this.cdr.markForCheck();
           });
           this.loading = false;
+          this.cdr.markForCheck();
         }
       });
   }

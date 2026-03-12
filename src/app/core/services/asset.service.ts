@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { AssetDto, CreateAssetDto, UpdateAssetDto } from '@models/asset.model';
 import { PagedListRequest, PaginatedList } from '@models/pagination.model';
 import { APIOperationResponse } from '@models/api-response.model';
@@ -19,9 +20,7 @@ import { ImportResult } from '../models';
     providedIn: 'root'
 })
 export class AssetService implements IImportableService {
-    private get baseUrl(): string {
-        return `${this.configService.apiUrl}/Asset`;
-    }
+    private readonly basePath = '/Asset';
 
     constructor(
         private http: HttpClient,
@@ -40,9 +39,9 @@ export class AssetService implements IImportableService {
         }
 
         return this.apiService.post<PaginatedList<AssetDto>>(
-            '/Asset/search',
+            `${this.basePath}/search`,
             request,
-            params
+            { params }
         ).pipe(
             map(response => {
                 // Response is already unwrapped PaginatedList from apiService
@@ -63,133 +62,69 @@ export class AssetService implements IImportableService {
      */
     getAll<T = AssetDto>(query?: { search?: string; depotId?: number }): Observable<T[]> {
         let params = new HttpParams();
+        if (query?.search) params = params.set('search', query.search);
+        if (query?.depotId) params = params.set('depotId', query.depotId.toString());
 
-        if (query?.search) {
-            params = params.set('search', query.search);
-        }
-
-        if (query?.depotId) {
-            params = params.set('depotId', query.depotId.toString());
-        }
-
-        return this.http.get<APIOperationResponse<T[]>>(this.baseUrl, { params }).pipe(
-            map(response => {
-                if (response.succeeded && response.data) {
-                    return response.data;
-                }
-                throw new Error(response.message || 'Failed to fetch assets');
-            }),
-            catchError(error => {
-                console.error('Error fetching assets:', error);
-                return throwError(() => error);
-            })
-        );
+        return this.apiService.get<T[]>(this.basePath, params);
     }
 
     /**
      * Get asset by ID
      */
     getById<T = AssetDto>(id: number): Observable<T | null> {
-        return this.http.get<APIOperationResponse<T>>(`${this.baseUrl}/${id}`).pipe(
-            map(response => {
-                if (response.succeeded) {
-                    return response.data || null;
-                }
-                throw new Error(response.message || 'Failed to fetch asset');
-            }),
-            catchError(error => {
-                console.error('Error fetching asset:', error);
-                return throwError(() => error);
-            })
-        );
+        return this.apiService.get<T | null>(`${this.basePath}/${id}`);
     }
 
     /**
      * Get asset by Serial Number
      */
     getBySerialNumber<T = AssetDto>(serialNumber: string): Observable<T | null> {
-        return this.http.get<APIOperationResponse<T>>(`${this.baseUrl}/serial/${serialNumber}`).pipe(
-            map(response => {
-                if (response.succeeded) {
-                    return response.data || null;
-                }
-                throw new Error(response.message || 'Failed to fetch asset by serial number');
-            }),
-            catchError(error => {
-                console.error('Error fetching asset by serial:', error);
-                return throwError(() => error);
-            })
-        );
+        return this.apiService.get<T | null>(`${this.basePath}/serial/${serialNumber}`);
     }
 
     /**
      * Create new asset
      */
-    create<T = AssetDto>(data: CreateAssetDto, files?: File[]): Observable<APIOperationResponse<T>> {
+    create<T = AssetDto>(data: CreateAssetDto, files?: File[]): Observable<T> {
         const formData = new FormData();
 
-        // Append asset data
         Object.keys(data).forEach(key => {
-            const value = (data as any)[key];
+            const value = (data as unknown as Record<string, unknown>)[key];
             if (value !== null && value !== undefined) {
                 if (value instanceof Date) {
                     formData.append(key, value.toISOString());
                 } else {
-                    formData.append(key, value.toString());
+                    formData.append(key, String(value));
                 }
             }
         });
 
-        // Append files if provided
-        if (files && files.length > 0) {
-            files.forEach(file => {
-                formData.append('files', file, file.name);
-            });
+        if (files?.length) {
+            files.forEach(file => formData.append('files', file, file.name));
         }
 
-        return this.http.post<APIOperationResponse<T>>(this.baseUrl, formData).pipe(
-            catchError(error => {
-                console.error('Error creating asset:', error);
-                return throwError(() => error);
-            })
-        );
+        return this.apiService.post<T>(this.basePath, formData);
     }
 
     /**
      * Create bulk assets
      */
-    createBulk<T = number[]>(data: CreateAssetDto[]): Observable<APIOperationResponse<T>> {
-        console.log('[DEBUG] createBulk called with', data.length, 'items');
-        return this.http.post<APIOperationResponse<T>>(`${this.baseUrl}/Bulk`, data).pipe(
-            catchError(error => {
-                console.error('Error creating bulk assets:', error);
-                return throwError(() => error);
-            })
-        );
+    createBulk<T = number[]>(data: CreateAssetDto[]): Observable<T> {
+        return this.apiService.post<T>(`${this.basePath}/Bulk`, data);
     }
 
     /**
      * Update existing asset
      */
-    update<T = AssetDto>(id: number, data: UpdateAssetDto): Observable<APIOperationResponse<T>> {
-        return this.http.put<APIOperationResponse<T>>(`${this.baseUrl}/${id}`, data).pipe(
-            catchError(error => {
-                console.error('Error updating asset:', error);
-                return throwError(() => error);
-            })
-        );
+    update<T = AssetDto>(id: number, data: UpdateAssetDto): Observable<T> {
+        return this.apiService.put<T>(`${this.basePath}/${id}`, data);
     }
 
     /**
      * Delete asset (soft delete)
      */
-    delete(id: number): Observable<APIOperationResponse<void>> {
-        return this.http.delete<APIOperationResponse<void>>(`${this.baseUrl}/${id}`).pipe(
-            catchError(error => {
-                console.error('Error deleting asset:', error);
-                return throwError(() => error);
-            })
-        );
+    delete(id: number): Observable<void> {
+        return this.apiService.delete<void>(`${this.basePath}/${id}`);
     }
 
     /**
@@ -200,21 +135,24 @@ export class AssetService implements IImportableService {
     }
 
     /**
+     * Update serial number for a single asset
+     */
+    updateSerialNumber(assetId: number, serialNumber: string | null): Observable<boolean> {
+        return this.apiService.put<boolean>(
+            `${this.basePath}/${assetId}/serial-number`,
+            { serialNumber }
+        );
+    }
+
+    /**
      * Check if serial number is unique
      */
     checkSerialNumberUnique(serialNumber: string, excludeId?: number): Observable<boolean> {
         let params = new HttpParams().set('serialNumber', serialNumber);
+        if (excludeId) params = params.set('excludeId', excludeId.toString());
 
-        if (excludeId) {
-            params = params.set('excludeId', excludeId.toString());
-        }
-
-        return this.http.get<APIOperationResponse<boolean>>(`${this.baseUrl}/check-serial`, { params }).pipe(
-            map(response => response.data ?? true),
-            catchError(() => {
-                // If endpoint doesn't exist, assume it's unique
-                return [true];
-            })
+        return this.apiService.get<boolean>(`${this.basePath}/check-serial`, params).pipe(
+            catchError(() => of(true))
         );
     }
 
@@ -223,70 +161,44 @@ export class AssetService implements IImportableService {
      */
     checkRfidUnique(rfid: string, excludeId?: number): Observable<boolean> {
         let params = new HttpParams().set('rfid', rfid);
+        if (excludeId) params = params.set('excludeId', excludeId.toString());
 
-        if (excludeId) {
-            params = params.set('excludeId', excludeId.toString());
-        }
-
-        return this.http.get<APIOperationResponse<boolean>>(`${this.baseUrl}/check-rfid`, { params }).pipe(
-            map(response => response.data ?? true),
-            catchError(() => {
-                // If endpoint doesn't exist, assume it's unique
-                return [true];
-            })
+        return this.apiService.get<boolean>(`${this.basePath}/check-rfid`, params).pipe(
+            catchError(() => of(true))
         );
     }
 
     /**
      * Import assets from Excel file
      */
-    importData(file: File, language: string = 'en', depotId?: number): Observable<APIOperationResponse<any>> {
+    importData(file: File, language: string = 'en', depotId?: number): Observable<APIOperationResponse<ImportResult>> {
         const formData = new FormData();
         formData.append('file', file);
-        if (depotId) {
-            formData.append('depotId', depotId.toString());
-        }
+        if (depotId) formData.append('depotId', depotId.toString());
         const params = new HttpParams().set('language', language);
 
-        return this.http.post<APIOperationResponse<any>>(`${this.baseUrl}/Import`, formData, { params }).pipe(
-            catchError(error => {
-                console.error('Error importing assets:', error);
-                return throwError(() => error);
-            })
-        );
+        return this.apiService.postRaw<ImportResult>(`${this.basePath}/Import`, formData, { params });
     }
 
     /**
      * Preview asset import from Excel file (validation only)
      */
-    importPreview(file: File, language: string = 'en', depotId?: number): Observable<APIOperationResponse<any>> {
+    importPreview(file: File, language: string = 'en', depotId?: number): Observable<APIOperationResponse<ImportResult>> {
         const formData = new FormData();
         formData.append('file', file);
-        if (depotId) {
-            formData.append('depotId', depotId.toString());
-        }
+        if (depotId) formData.append('depotId', depotId.toString());
         const params = new HttpParams().set('language', language);
 
-        return this.http.post<APIOperationResponse<any>>(`${this.baseUrl}/ImportPreview`, formData, { params }).pipe(
-            catchError(error => {
-                console.error('Error previewing asset import:', error);
-                return throwError(() => error);
-            })
-        );
+        return this.apiService.postRaw<ImportResult>(`${this.basePath}/ImportPreview`, formData, { params });
     }
 
     /**
-     * Download asset import template
+     * Download asset import template (HttpClient required for blob response)
      */
     generateImportTemplate(language: string = 'en', depotId?: number): Observable<Blob> {
-        return this.http.get(`${this.baseUrl}/template?depotId=${depotId || ''}&language=${language}`, {
-            responseType: 'blob',
-            observe: 'body'
-        }).pipe(
-            catchError(error => {
-                console.error('Error downloading template:', error);
-                return throwError(() => error);
-            })
+        const url = `${this.configService.apiUrl}${this.basePath}/template?depotId=${depotId || ''}&language=${language}`;
+        return this.http.get(url, { responseType: 'blob', observe: 'body' }).pipe(
+            map(blob => blob as Blob)
         );
     }
 }

@@ -230,3 +230,21 @@ label,
 .steps-table-container th {
   text-transform: capitalize !important;
 }
+
+/* CDK Drag-Drop styles */
+.steps-table .cdk-drag-preview {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  background-color: var(--color-background);
+  border: 2px solid var(--color-border);
+  border-radius: 0.25rem;
+  opacity: 0.95;
+}
+
+.steps-table .cdk-drag-placeholder {
+  opacity: 0.3;
+  background-color: var(--color-background-muted);
+}
+
+.steps-table .cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}

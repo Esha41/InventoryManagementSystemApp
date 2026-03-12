@@ -23,7 +23,7 @@
 
     <!-- Warehouse Cards -->
     <div *ngIf="!loading && !error" class="grid grid-cols-1 gap-6 max-w-4xl mx-auto">
-      <div *ngFor="let warehouse of warehouses"
+      <div *ngFor="let warehouse of warehouses; trackBy: trackByStringId"
         class="bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-xl shadow-custom-md hover:shadow-custom-lg transition-all duration-300 p-6 md:p-8">
 
         <!-- Warehouse Emblem and Name -->

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -15,13 +15,15 @@ import { mapOrderToSupplyRequest } from './utils/supply-request-mapper.utils';
 import { getPriorityColor, getStatusButtonClass, getPageNumbers } from './utils/ui-helpers.utils';
 import { formatNumber } from '@utils/format.utils';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import { trackById, trackByIndex } from '@utils/trackby.utils';
 
 @Component({
   selector: 'app-supply-request-management',
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, DropdownComponent, LoadingStateComponent, ErrorStateComponent],
   templateUrl: './supply-request-management.component.html',
-  styleUrls: ['./supply-request-management.component.css']
+  styleUrls: ['./supply-request-management.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SupplyRequestManagementComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
@@ -33,7 +35,8 @@ export class SupplyRequestManagementComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private translationService: TranslationService,
-    private orderService: OrderService
+    private orderService: OrderService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   requests: SupplyRequest[] = [];
@@ -57,6 +60,8 @@ export class SupplyRequestManagementComponent implements OnInit, OnDestroy {
   readonly getPriorityColor = getPriorityColor;
   readonly getStatusButtonClass = getStatusButtonClass;
   readonly formatNumber = formatNumber;
+  readonly trackById = trackById;
+  readonly trackByIndex = trackByIndex;
 
   ngOnInit(): void {
     this.loadOrders();
@@ -70,6 +75,7 @@ export class SupplyRequestManagementComponent implements OnInit, OnDestroy {
   private loadOrders(): void {
     this.loading = true;
     this.error = null;
+    this.cdr.markForCheck();
     this.orderService.getAllOrders()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -78,6 +84,7 @@ export class SupplyRequestManagementComponent implements OnInit, OnDestroy {
           this.filterRequests();
           this.calculateTotalPages();
           this.loading = false;
+          this.cdr.markForCheck();
         },
         error: (error) => {
           this.error = ErrorHandler.extractErrorMessage(error, 'Failed to load supply requests. Please try again.');
@@ -85,6 +92,7 @@ export class SupplyRequestManagementComponent implements OnInit, OnDestroy {
           // Still show empty state
           this.filterRequests();
           this.calculateTotalPages();
+          this.cdr.markForCheck();
         }
       });
   }

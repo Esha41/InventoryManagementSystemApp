@@ -1,120 +1,13 @@
-/* Component-specific styles */
-
-/* Table wrapper for proper overflow handling */
-.assets-table-wrapper {
-  width: 100%;
-  position: relative;
+/* Section header buttons */
+.section-header-btn {
+  cursor: pointer;
 }
 
-/* Assets table styling */
-.assets-table {
-  width: 100%;
-  table-layout: fixed;
-  border-collapse: collapse;
-}
-
-/* Column widths */
-.assets-table th:nth-child(1),
-.assets-table td:nth-child(1) {
-  width: 5%;
-  min-width: 50px;
-}
-
-.assets-table th:nth-child(2),
-.assets-table td:nth-child(2) {
-  width: 18%;
-  min-width: 150px;
-}
-
-.assets-table th:nth-child(3),
-.assets-table td:nth-child(3) {
-  width: 15%;
-  min-width: 120px;
-}
-
-.assets-table th:nth-child(4),
-.assets-table td:nth-child(4) {
-  width: 15%;
-  min-width: 120px;
-}
-
-.assets-table th:nth-child(5),
-.assets-table td:nth-child(5) {
-  width: 25%;
-  min-width: 200px;
-}
-
-.assets-table th:nth-child(6),
-.assets-table td:nth-child(6) {
-  width: 22%;
-  min-width: 180px;
-}
-
-/* Table cell styling */
-.assets-table td {
-  vertical-align: middle;
-  word-wrap: break-word;
-}
-
-/* Dropdown cell - ensure proper overflow handling */
-.dropdown-cell {
-  position: relative;
-  width: 100%;
-  min-width: 200px;
-}
-
-/* Ensure dropdown panels can escape overflow containers */
-:host ::ng-deep .assets-table-wrapper > div {
-  overflow-x: auto;
-  overflow-y: visible;
-}
-
-/* Dropdown panel z-index and smooth transitions */
-:host ::ng-deep .dropdown-cell app-dropdown .app-dropdown-panel {
-  z-index: 10001 !important;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-/* Smooth dropdown opening */
-:host ::ng-deep .dropdown-cell app-dropdown .app-dropdown {
-  position: relative;
-}
-
-:host ::ng-deep .dropdown-cell app-dropdown .app-dropdown-trigger {
-  transition: all 0.2s ease;
-}
-
-/* Input styling improvements */
-.assets-table input[type="text"] {
-  transition: all 0.2s ease;
-}
-
-.assets-table input[type="text"]:focus {
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-/* Table row hover effect */
-.assets-table tbody tr {
-  transition: background-color 0.15s ease;
-}
-
-/* Submit section */
-.submit-section {
-  margin-top: 2rem;
-  background-color: var(--color-background);
-}
-
-/* Enhanced card hover effects */
-.bg-\[var\(--color-background\)\] {
-  transition: all 0.2s ease;
-}
-
-/* Smooth transitions for interactive elements */
+/* Smooth transitions */
 button, input, textarea, select {
   transition: all 0.2s ease;
 }
 
-/* Enhanced focus states */
 button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
@@ -123,43 +16,143 @@ select:focus-visible {
   outline-offset: 2px;
 }
 
-/* Badge animations */
-span[class*="rounded"] {
-  transition: all 0.2s ease;
+/* Spinner for loading */
+.animate-spin {
+  animation: spin 0.8s linear infinite;
 }
 
-/* Search input styling */
-input[type="text"]:focus,
-input[type="number"]:focus {
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-/* Sortable header styling */
-.assets-table th[class*="cursor-pointer"] {
-  user-select: none;
+/* Accordion row styles */
+.accordion-row {
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
 }
 
-.assets-table th[class*="cursor-pointer"]:hover {
+.accordion-row:hover {
   background-color: var(--color-background-hover);
 }
 
-/* Selected row highlighting */
-.assets-table tbody tr[class*="bg-blue-50"],
-.assets-table tbody tr[class*="dark:bg-blue-900"] {
-  border-left: 3px solid var(--color-brand);
+.accordion-row.expanded {
+  background-color: var(--color-background-active);
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .assets-table {
-    min-width: 900px;
+/* Detail row animation */
+.detail-row {
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
   }
-  
-  .assets-table-wrapper > div {
-    overflow-x: auto;
-  }
-  
-  .submit-section {
-    padding: 1rem;
+  to {
+    opacity: 1;
+    max-height: 2000px;
   }
 }
+
+.detail-row td {
+  padding: 0 !important;
+}
+
+/* Unified table styles for Request Items, Batches, and Assets */
+.review-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.review-table thead th {
+  padding: 1rem 1.5rem;
+  background-color: var(--color-background-muted);
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-align: start;
+  border-bottom: 2px solid var(--color-border);
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.review-table thead th.text-center,
+.review-table tbody td.text-center {
+  text-align: center;
+}
+
+.review-table tbody td {
+  padding: 1rem 1.5rem;
+  vertical-align: middle;
+  font-size: 0.875rem;
+  border-bottom: 1px solid var(--color-border);
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.review-table tbody tr:hover {
+  background-color: var(--color-background-hover);
+}
+
+/* Assets table - proper cell padding for consistent spacing */
+.assets-table thead th,
+.assets-table tbody td {
+  padding: 0.5rem 1.5rem !important;
+}
+
+/* Assets table - compact inputs and improved styling */
+.assets-table .assets-table-input {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.assets-table .assets-table-input:focus {
+  outline: none;
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand) 25%, transparent);
+}
+.assets-table .assets-table-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.assets-table .assets-table-dropdown {
+  display: block;
+  min-width: 0;
+  width: 100%;
+}
+
+.assets-table .assets-table-delete-btn {
+  color: var(--color-text-muted);
+}
+.assets-table .assets-table-delete-btn:hover {
+  color: var(--color-error);
+  background-color: color-mix(in srgb, var(--color-error) 12%, transparent);
+}
+
+/* Assets table - min-width for horizontal scroll on small screens */
+@media (max-width: 768px) {
+  .assets-table {
+    min-width: 700px;
+  }
+}
+
+/* Dropdown cell overflow */
+:host ::ng-deep app-dropdown .app-dropdown-panel {
+  z-index: 10001 !important;
+}
+
+/* RTL support */
+[dir="rtl"] .section-header-btn {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .header-content {
+  flex-direction: row-reverse;
+}
+
