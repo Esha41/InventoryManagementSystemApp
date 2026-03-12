@@ -363,9 +363,14 @@ export class WorkflowApprovalPermissionsService {
 
   /**
    * Check if user can select depots (weapon supply flow).
+   * Only shown for weapon orders, same as Review Weapon Supply.
    * Requires canReviewWeaponSupply context AND the SelectDepots permission.
    */
   canSelectDepots(requestDetail: RequestDetail | null, isWeaponOrder: boolean): boolean {
+    if (!isWeaponOrder) {
+      return false;
+    }
+
     try {
       if (this.authService.isSuperAdmin()) {
         return true;

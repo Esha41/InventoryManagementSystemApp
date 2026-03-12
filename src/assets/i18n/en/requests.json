@@ -525,6 +525,7 @@
       "invalidFileFormat": "File \"{{fileName}}\" has an invalid format. Allowed formats: JPEG, JPG, PNG, PDF, XLSX, DOCX.",
       "pickupDateRequired": "Please set the supply pickup date before approving.",
       "supplySubmissionRequired": "Please submit the supply information before approving.",
+      "depotSelectionRequired": "Please select at least one depot before approving.",
       "approveFailed": "Failed to approve request. Please try again.",
       "rejectFailed": "Failed to reject request. Please try again.",
       "returnForReviewFailed": "Failed to return request for review. Please try again.",

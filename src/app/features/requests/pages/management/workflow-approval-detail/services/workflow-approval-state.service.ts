@@ -19,6 +19,7 @@ export interface WorkflowApprovalState {
   processing: boolean;
   isWeaponOrder: boolean;
   isPickupDateAlreadySet: boolean;
+  isDepotSelected: boolean;
   isSuperAdmin: boolean;
   supplyData: any | null;
   previousWorkflowSteps: any[];
@@ -35,6 +36,7 @@ export class WorkflowApprovalStateService {
     processing: false,
     isWeaponOrder: false,
     isPickupDateAlreadySet: false,
+    isDepotSelected: false,
     isSuperAdmin: false,
     supplyData: null,
     previousWorkflowSteps: [],
@@ -87,6 +89,7 @@ export class WorkflowApprovalStateService {
       processing: false,
       isWeaponOrder: false,
       isPickupDateAlreadySet: false,
+      isDepotSelected: false,
       isSuperAdmin: false,
       supplyData: null,
       previousWorkflowSteps: [],
@@ -282,6 +285,13 @@ export class WorkflowApprovalStateService {
 
   getWorkflowStepDisplayName(step: any): string {
     return getWorkflowStepDisplayName(step, this.translateService);
+  }
+
+  /**
+   * Check if depot selection has been made (for weapon orders with SelectDepots permission)
+   */
+  isDepotSelected(): boolean {
+    return this.getState().isDepotSelected;
   }
 
   /**
