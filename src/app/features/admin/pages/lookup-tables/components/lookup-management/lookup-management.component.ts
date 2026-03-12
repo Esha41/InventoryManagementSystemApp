@@ -16,6 +16,7 @@ import { PaginationComponent, RowsPerPageComponent } from '@components/index';
 import { EmployeeFormModalComponent } from '@components/employee-form-modal/employee-form-modal.component';
 import { EmployeeDto } from '@core/models/asset.model';
 import { EmployeeService } from '@services/employee.service';
+import { BackendAuthService } from '@services/backend-auth.service';
 
 /**
  * Lookup Management Component
@@ -77,15 +78,20 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
     private toastService: ToastService,
     private translateService: TranslateService,
     private cdr: ChangeDetectorRef,
-    private employeeService: EmployeeService
+    private employeeService: EmployeeService,
+    private authService: BackendAuthService
   ) { }
 
   ngOnInit(): void {
-    this.lookupTables = this.lookupManagementService.getLookupTables();
+    const allTables = this.lookupManagementService.getLookupTables();
+    this.lookupTables = allTables.filter(table =>
+      this.authService.hasPermission(table.pagePermission)
+    );
     if (this.lookupTables.length > 0 && !this.selectedTable) {
       this.selectedTable = this.lookupTables[0];
       this.loadLookupItems();
     }
+    this.cdr.markForCheck();
   }
 
   ngOnDestroy(): void {
@@ -379,6 +385,18 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
 
   getItemType(item: LookupItem): number {
     return this.lookupManagementService.getItemType(item);
+  }
+
+  canAdd(): boolean {
+    return !!this.selectedTable && this.authService.hasPermission(this.selectedTable.createPermission);
+  }
+
+  canEdit(): boolean {
+    return !!this.selectedTable && this.authService.hasPermission(this.selectedTable.editPermission);
+  }
+
+  canDelete(): boolean {
+    return !!this.selectedTable && this.authService.hasPermission(this.selectedTable.deletePermission);
   }
 
   // Employee modal event handlers
