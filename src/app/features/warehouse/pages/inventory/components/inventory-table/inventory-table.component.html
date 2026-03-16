@@ -59,12 +59,12 @@
         {{ formatDate(detail.expiryDate) }}
       </td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
-        <button *ngIf="detail.invoiceNumber" 
-          (click)="filterByInvoice.emit(detail.invoiceNumber)"
-          class="text-[var(--color-brand)] hover:text-[var(--color-brand-dark)] hover:underline font-medium transition-colors">
+        <span *ngIf="detail.invoiceNumber; else noInvoice">
           {{ detail.invoiceNumber }}
-        </button>
-        <span *ngIf="!detail.invoiceNumber" class="text-[var(--color-text-muted)]">-</span>
+        </span>
+        <ng-template #noInvoice>
+          <span class="text-[var(--color-text-muted)]">-</span>
+        </ng-template>
       </td>
       <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium w-36">
         <div class="inline-flex items-center gap-2">
