@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { MainLayoutComponent } from '@layouts/main-layout/main-layout.component';
 import { AuthLayoutComponent } from '@layouts/auth-layout/auth-layout.component';
-import { authGuard, permissionGuard, maintenanceGuard } from '@guards/index';
+import { authGuard, permissionGuard } from '@guards/index';
 
 export const routes: Routes = [
   {
@@ -10,8 +10,7 @@ export const routes: Routes = [
     children: [
       {
         path: 'login',
-        loadComponent: () => import('@auth/pages/login/login.component').then(m => m.LoginComponent),
-        canActivate: [maintenanceGuard]
+        loadComponent: () => import('@auth/pages/login/login.component').then(m => m.LoginComponent)
       },
       {
         path: 'forgot-password',
@@ -20,10 +19,6 @@ export const routes: Routes = [
       {
         path: 'reset-password',
         loadComponent: () => import('@auth/pages/reset-password/reset-password.component').then(m => m.ResetPasswordComponent)
-      },
-      {
-        path: 'under-maintenance',
-        loadComponent: () => import('@auth/pages/under-maintenance/under-maintenance.component').then(m => m.UnderMaintenanceComponent)
       },
       {
         path: '',
@@ -35,7 +30,7 @@ export const routes: Routes = [
   {
     path: '',
     component: MainLayoutComponent,
-    canActivate: [authGuard, maintenanceGuard],
+    canActivate: [authGuard],
     children: [
       {
         path: '',

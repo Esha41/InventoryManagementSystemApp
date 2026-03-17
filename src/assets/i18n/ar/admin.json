@@ -493,11 +493,6 @@
     "importExportDescription": "استيراد وتصدير بيانات النظام",
     "workflowDescription": "تكوين عمليات سير العمل",
     "stockNotificationDescription": "إدارة إعدادات إشعارات المخزون",
-    "maintenanceMode": "وضع الصيانة",
-    "maintenanceModeDescription": "عند التفعيل، سيرى المستخدمون صفحة قيد الصيانة بعد تسجيل الدخول",
-    "maintenanceEnabled": "تم تفعيل وضع الصيانة",
-    "maintenanceDisabled": "تم إيقاف وضع الصيانة",
-    "maintenanceToggleError": "فشل في تحديث وضع الصيانة",
     "chartsComingSoon": "الرسوم البيانية والتحليلات المتقدمة قريباً",
     "lastUpdated": "آخر تحديث",
     "status": {

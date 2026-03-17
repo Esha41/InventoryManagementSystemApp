@@ -331,11 +331,6 @@
       "cancel": "Cancel"
     }
   },
-  "underMaintenance": {
-    "title": "Under Maintenance",
-    "message": "The system is currently undergoing scheduled maintenance. Please try again later. We apologize for any inconvenience.",
-    "logout": "Sign out"
-  },
   "accessDenied": {
     "title": "Access denied",
     "message": "You do not have permission to view this page. Please contact an administrator or choose another section.",

@@ -4,6 +4,30 @@ aside nav {
   -webkit-overflow-scrolling: touch;
 }
 
+/* Visible scrollbar for sidebar nav - users can tell when content is scrollable */
+aside nav.sidebar-nav-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-text-muted) var(--color-background-active);
+}
+
+aside nav.sidebar-nav-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+aside nav.sidebar-nav-scroll::-webkit-scrollbar-track {
+  background: var(--color-background-active);
+  border-radius: var(--radius-md);
+}
+
+aside nav.sidebar-nav-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-text-muted);
+  border-radius: var(--radius-md);
+}
+
+aside nav.sidebar-nav-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text);
+}
+
 /* Custom tooltip for collapsed sidebar - matches website design */
 .menu-tooltip {
   position: fixed;

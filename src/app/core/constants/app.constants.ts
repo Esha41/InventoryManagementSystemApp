@@ -213,11 +213,6 @@ export const API_ENDPOINTS = {
     SUBMIT: (id: number) => `/Supply/${id}/submit`,
   },
 
-  // Maintenance mode (admin-configurable)
-  MAINTENANCE: {
-    STATUS: '/Maintenance/status',
-  },
-
   //Low stock notification settings
   STOCK_NOTIFICATION: {
     BASE: '/ItemNotification',

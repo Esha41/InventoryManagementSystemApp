@@ -3,16 +3,10 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { firstValueFrom } from 'rxjs';
 
-export interface MaintenanceConfig {
-  enabled?: boolean;
-  showWhenApiDown?: boolean;
-}
-
 interface RuntimeConfig {
   apiUrl?: string;
   notificationHubUrl?: string;
   fileBaseUrl?: string;
-  maintenance?: MaintenanceConfig;
 }
 
 @Injectable({
@@ -94,18 +88,6 @@ export class ConfigService {
       environment.fileBaseUrl ??
       ''
     );
-  }
-
-  // =================================================
-  // MAINTENANCE (works when server is down)
-  // =================================================
-
-  get maintenanceEnabled(): boolean {
-    return this.runtimeConfig?.maintenance?.enabled ?? false;
-  }
-
-  get maintenanceShowWhenApiDown(): boolean {
-    return this.runtimeConfig?.maintenance?.showWhenApiDown ?? true;
   }
 
   /**
