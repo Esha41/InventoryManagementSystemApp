@@ -51,6 +51,8 @@ export class UserFormModalComponent implements OnInit, OnChanges, OnDestroy {
   isLoadingRanks = false;
   // Super admin check
   isCurrentUserSuperAdmin = false;
+  /** SuperAdmin role IDs the edited user has - preserved on save for non-superadmin editors */
+  private userSuperAdminRoleIds: string[] = [];
   readonly departmentOptionLabel = (option: DropdownOption<DepartmentDto> | DepartmentDto | null) =>
     this.getLocalizedName(this.unwrapOption(option));
   readonly rankOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null) =>
@@ -59,6 +61,12 @@ export class UserFormModalComponent implements OnInit, OnChanges, OnDestroy {
     const role = this.unwrapOption(option);
     return role ? getLocalizedName(role, getCurrentLang(this.translate)) || role.name || '' : '';
   };
+
+  /** Roles for dropdown - hide SuperAdmin entirely for non-superadmin users */
+  get rolesForDropdown(): RoleDto[] {
+    if (this.isCurrentUserSuperAdmin) return this.roles;
+    return this.roles.filter(r => !r.isSuperAdmin);
+  }
 
   constructor(
     private fb: FormBuilder,
@@ -98,6 +106,8 @@ export class UserFormModalComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private initializeForm(): void {
+    if (this.mode === 'create') this.userSuperAdminRoleIds = [];
+
     // Handle both nameEn/nameAr (from frontend) and fullNameEN/fullNameAR (from API)
     const nameEn = this.user?.nameEn || this.user?.fullNameEN || '';
     const nameAr = this.user?.nameAr || this.user?.fullNameAR || '';
@@ -269,29 +279,34 @@ export class UserFormModalComponent implements OnInit, OnChanges, OnDestroy {
   private loadUserRoles(): void {
     if (!this.user?.id) return;
 
+    this.userSuperAdminRoleIds = [];
+
     this.backendUserService.getUserRoles(this.user.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
       next: (roles: any[]) => {
-        // If roles are returned from getUserRoles, use them (they should include all roles with selection info)
-        // Otherwise, keep the existing roles from loadRoles()
         if (roles && roles.length > 0) {
-          // Map to RoleDto, including required fields
           this.roles = roles.map(r => ({
             id: r.roleId,
             name: r.roleName,
-            isDefaultRole: r.isDefaultRole || false,  // set default if missing
-            isSuperAdmin: r.isSuperAdmin || false,     // set default if missing
-            isAdmin: r.isAdmin || false               // set default if missing
+            isDefaultRole: r.isDefaultRole || false,
+            isSuperAdmin: r.isSuperAdmin || false,
+            isAdmin: r.isAdmin || false
           }));
-        }
 
-        // Pre-select all selected roles (multiple selection)
-        const selectedRoleIds = roles?.filter(r => r.isSelected).map(r => r.roleId) || [];
-        if (selectedRoleIds.length > 0) {
-          this.userForm.patchValue({ roleIds: selectedRoleIds });
+          // For non-superadmin: hide SuperAdmin from selection but preserve for save
+          const selectedRoleIds = roles.filter(r => r.isSelected).map(r => r.roleId);
+          const superAdminIds = roles.filter(r => r.isSelected && r.isSuperAdmin).map(r => r.roleId);
+          if (!this.isCurrentUserSuperAdmin && superAdminIds.length > 0) {
+            this.userSuperAdminRoleIds = superAdminIds;
+          }
+          const visibleRoleIds = this.isCurrentUserSuperAdmin
+            ? selectedRoleIds
+            : selectedRoleIds.filter(id => !this.userSuperAdminRoleIds.includes(id));
+          if (visibleRoleIds.length > 0 || selectedRoleIds.length > 0) {
+            this.userForm.patchValue({ roleIds: visibleRoleIds.length > 0 ? visibleRoleIds : [] });
+          }
         } else if (this.user?.roleIds && this.user.roleIds.length > 0) {
-          // Fallback: use all role IDs from user data
           this.userForm.patchValue({ roleIds: this.user.roleIds });
         }
 
@@ -314,10 +329,13 @@ export class UserFormModalComponent implements OnInit, OnChanges, OnDestroy {
 
   /**
    * Custom validator to ensure at least one role is selected
+   * (or user has preserved SuperAdmin roles when non-superadmin edits)
    */
   validateRoleIds(control: any): { [key: string]: any } | null {
     const roleIds = control.value;
-    if (!roleIds || !Array.isArray(roleIds) || roleIds.length === 0) {
+    const hasVisibleRoles = roleIds && Array.isArray(roleIds) && roleIds.length > 0;
+    const hasPreservedSuperAdmin = this.mode === 'edit' && this.userSuperAdminRoleIds.length > 0;
+    if (!hasVisibleRoles && !hasPreservedSuperAdmin) {
       return { required: true };
     }
     return null;
@@ -415,6 +433,12 @@ export class UserFormModalComponent implements OnInit, OnChanges, OnDestroy {
       // For non-super-admin users, ensure isLdapUser is true
       const isLdapUser = !this.isCurrentUserSuperAdmin ? true : (formValue.isLdapUser || false);
 
+      // Preserve SuperAdmin role IDs when non-superadmin edits a user who has them
+      const formRoleIds = formValue.roleIds || [];
+      const roleIds = this.isCurrentUserSuperAdmin
+        ? formRoleIds
+        : [...formRoleIds, ...this.userSuperAdminRoleIds];
+
       const dto: UpdateUserDto = {
         id: this.user.id,
         userName: formValue.userName,
@@ -425,7 +449,7 @@ export class UserFormModalComponent implements OnInit, OnChanges, OnDestroy {
         extraEmployeesView: formValue.extraEmployeesView || undefined,
         organizationId: this.user.organizationId,
         departmentId: formValue.departmentId || undefined,
-        roleIds: formValue.roleIds || [], // Multiple roles as array
+        roleIds,
         // Map form field names to API field names
         fullNameEN: formValue.nameEn || undefined,
         fullNameAR: formValue.nameAr || undefined,

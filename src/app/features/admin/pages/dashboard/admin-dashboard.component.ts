@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
+import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, LayoutDashboard, Users, RefreshCw, Badge, Settings, Mail, Upload, GitBranch } from 'lucide-angular';
 import { AdminAnalyticsService, UserActivityMetrics } from '@services/admin-analytics.service';
 import { UserActivityCardComponent } from './components/kpi-cards/user-activity-card/user-activity-card.component';
@@ -19,6 +20,7 @@ import { AdminDelegationsComponent } from './admin-delegations/admin-delegations
         CommonModule,
         RouterLink,
         TranslateModule,
+        FormsModule,
         LucideAngularModule,
         UserActivityCardComponent,
         AdminDelegationsComponent,
@@ -40,8 +42,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     readonly Upload = Upload;
     readonly GitBranch = GitBranch;
 
-
-
     // Metrics
     userActivityMetrics: UserActivityMetrics | null = null;
 
@@ -59,7 +59,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         this.adminAnalyticsService.startAutoRefresh();
 
         // Subscribe to the observable stream - this will automatically update on refresh
-        // The observable uses shareReplay and reacts to refresh$ subject changes
         this.adminAnalyticsService.getUserActivityMetrics()
             .pipe(takeUntil(this.destroy$))
             .subscribe({
@@ -67,7 +66,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
                     this.userActivityMetrics = metrics;
                     this.isLoading = false;
                     this.isRefreshing = false;
-                    this.cdr.markForCheck(); // Trigger change detection for OnPush
+                    this.cdr.markForCheck();
                 },
                 error: (error) => {
                     console.error('Error loading dashboard metrics:', error);
