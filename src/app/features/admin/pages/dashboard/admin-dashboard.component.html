@@ -38,6 +38,35 @@
                 <p class="section-subtitle">{{ 'adminDashboard.quickActionsDescription' | translate }}</p>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <!-- Maintenance Mode Toggle Card -->
+                <div class="quick-action-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-amber-200 dark:border-amber-800/50 bg-amber-50/30 dark:bg-amber-950/20">
+                    <div class="flex items-center gap-3 flex-1 min-w-0">
+                        <div class="quick-action-icon bg-amber-100 dark:bg-amber-900/40">
+                            <lucide-angular [img]="Construction" class="icon text-amber-600 dark:text-amber-400"></lucide-angular>
+                        </div>
+                        <div class="quick-action-content">
+                            <h3 class="quick-action-title">{{ 'adminDashboard.maintenanceMode' | translate }}</h3>
+                            <p class="quick-action-description">{{ 'adminDashboard.maintenanceModeDescription' | translate }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0 pl-0 sm:pl-2">
+                        <span class="text-xs font-medium text-[var(--color-text-muted)]" *ngIf="!maintenanceLoading">
+                            {{ maintenanceEnabled ? ('manageAdmins.active' | translate) : ('manageAdmins.inactive' | translate) }}
+                        </span>
+                        <label class="relative inline-flex items-center cursor-pointer" *ngIf="!maintenanceLoading">
+                            <input type="checkbox" [(ngModel)]="maintenanceEnabled" (change)="onMaintenanceToggle()"
+                                [disabled]="maintenanceToggling"
+                                class="sr-only peer">
+                            <div class="w-11 h-6 bg-[var(--color-border)] rounded-full peer peer-checked:bg-amber-500 peer-disabled:opacity-50
+                                peer-focus:ring-2 peer-focus:ring-amber-500/30
+                                after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white
+                                after:rounded-full after:h-5 after:w-5 after:transition-all after:shadow-sm
+                                peer-checked:after:translate-x-5 rtl:peer-checked:after:-translate-x-5"></div>
+                        </label>
+                        <span *ngIf="maintenanceLoading" class="text-xs text-[var(--color-text-muted)]">{{ 'common.loading' | translate }}</span>
+                    </div>
+                </div>
+
                 <a [routerLink]="['/manage-admins']" class="quick-action-card">
                     <div class="quick-action-icon">
                         <lucide-angular [img]="Users" class="icon"></lucide-angular>

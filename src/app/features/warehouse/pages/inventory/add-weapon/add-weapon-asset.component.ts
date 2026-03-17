@@ -60,6 +60,7 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
     // Data
     warehouseId!: number;
     warehouseName: string = '';
+    currentDepot: LookupItem | null = null;
     availableWeapons: WeaponDto[] = [];
 
     // State
@@ -107,7 +108,19 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
                 this.initializeForm();
                 this.loadData();
             }
+            this.cdr.markForCheck();
         });
+
+        // Subscribe to language changes to update warehouse name (same as add-inventory)
+        this.translateService.onLangChange
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(() => {
+                if (this.currentDepot) {
+                    this.warehouseName = getLocalizedName(this.currentDepot, getCurrentLang(this.translateService)) ||
+                        `${this.translateService.instant('addWeaponAsset.warehouse')} ${this.warehouseId}`;
+                    this.cdr.markForCheck();
+                }
+            });
     }
 
     ngOnDestroy(): void {
@@ -167,8 +180,8 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: ({ depot, weapons }) => {
-                    const currentDepot = depot.find(d => d.id === this.warehouseId);
-                    this.warehouseName = getLocalizedName(currentDepot, getCurrentLang(this.translateService)) ||
+                    this.currentDepot = depot.find(d => d.id === this.warehouseId) || null;
+                    this.warehouseName = getLocalizedName(this.currentDepot, getCurrentLang(this.translateService)) ||
                         `${this.translateService.instant('addWeaponAsset.warehouse')} ${this.warehouseId}`;
 
                     this.availableWeapons = weapons;

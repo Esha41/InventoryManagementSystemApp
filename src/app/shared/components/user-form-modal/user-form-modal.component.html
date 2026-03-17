@@ -110,7 +110,7 @@
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'userFormModal.roles' | translate }} <span class="text-[var(--color-error)]">*</span>
       </label>
-      <app-dropdown class="w-full" formControlName="roleIds" [options]="roles" optionValue="id" optionLabel="name"
+      <app-dropdown class="w-full" formControlName="roleIds" [options]="rolesForDropdown" optionValue="id" optionLabel="name"
         [multiple]="true" [required]="true" [placeholderSelectable]="false"
         [error]="!!(userForm.get('roleIds')?.invalid && userForm.get('roleIds')?.touched)"
         placeholder="{{ 'userFormModal.rolesPlaceholder' | translate }}">

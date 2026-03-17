@@ -3,8 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, LayoutDashboard, Users, RefreshCw, Badge, Settings, Mail, Upload, GitBranch } from 'lucide-angular';
+import { FormsModule } from '@angular/forms';
+import { LucideAngularModule, LayoutDashboard, Users, RefreshCw, Badge, Settings, Mail, Upload, GitBranch, Construction } from 'lucide-angular';
 import { AdminAnalyticsService, UserActivityMetrics } from '@services/admin-analytics.service';
+import { MaintenanceService } from '@services/maintenance.service';
+import { ToastService } from '@services/toast.service';
+import { TranslateService } from '@ngx-translate/core';
 import { UserActivityCardComponent } from './components/kpi-cards/user-activity-card/user-activity-card.component';
 import { AdminDelegationsComponent } from './admin-delegations/admin-delegations.component';
 
@@ -19,6 +23,7 @@ import { AdminDelegationsComponent } from './admin-delegations/admin-delegations
         CommonModule,
         RouterLink,
         TranslateModule,
+        FormsModule,
         LucideAngularModule,
         UserActivityCardComponent,
         AdminDelegationsComponent,
@@ -39,8 +44,12 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     readonly Mail = Mail;
     readonly Upload = Upload;
     readonly GitBranch = GitBranch;
+    readonly Construction = Construction;
 
-
+    // Maintenance mode
+    maintenanceEnabled = false;
+    maintenanceLoading = false;
+    maintenanceToggling = false;
 
     // Metrics
     userActivityMetrics: UserActivityMetrics | null = null;
@@ -51,6 +60,9 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
     constructor(
         private adminAnalyticsService: AdminAnalyticsService,
+        private maintenanceService: MaintenanceService,
+        private toastService: ToastService,
+        private translate: TranslateService,
         private cdr: ChangeDetectorRef
     ) { }
 
@@ -58,8 +70,23 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         // Start auto-refresh timer BEFORE subscribing to ensure it's active
         this.adminAnalyticsService.startAutoRefresh();
 
+        // Load maintenance status
+        this.maintenanceLoading = true;
+        this.maintenanceService.getStatus()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (status) => {
+                    this.maintenanceEnabled = status.isEnabled;
+                    this.maintenanceLoading = false;
+                    this.cdr.markForCheck();
+                },
+                error: () => {
+                    this.maintenanceLoading = false;
+                    this.cdr.markForCheck();
+                }
+            });
+
         // Subscribe to the observable stream - this will automatically update on refresh
-        // The observable uses shareReplay and reacts to refresh$ subject changes
         this.adminAnalyticsService.getUserActivityMetrics()
             .pipe(takeUntil(this.destroy$))
             .subscribe({
@@ -67,12 +94,40 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
                     this.userActivityMetrics = metrics;
                     this.isLoading = false;
                     this.isRefreshing = false;
-                    this.cdr.markForCheck(); // Trigger change detection for OnPush
+                    this.cdr.markForCheck();
                 },
                 error: (error) => {
                     console.error('Error loading dashboard metrics:', error);
                     this.isLoading = false;
                     this.isRefreshing = false;
+                    this.cdr.markForCheck();
+                }
+            });
+    }
+
+    onMaintenanceToggle(): void {
+        if (this.maintenanceToggling) return;
+        this.maintenanceToggling = true;
+        const valueToSet = this.maintenanceEnabled; // ngModel already updated
+        this.maintenanceService.setEnabled(valueToSet)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (success) => {
+                    this.maintenanceToggling = false;
+                    if (success) {
+                        this.maintenanceEnabled = valueToSet;
+                        const msg = this.translate.instant(valueToSet ? 'adminDashboard.maintenanceEnabled' : 'adminDashboard.maintenanceDisabled');
+                        this.toastService.success(msg);
+                    } else {
+                        this.maintenanceEnabled = !valueToSet; // Revert on failure
+                        this.toastService.error(this.translate.instant('adminDashboard.maintenanceToggleError'));
+                    }
+                    this.cdr.markForCheck();
+                },
+                error: () => {
+                    this.maintenanceToggling = false;
+                    this.maintenanceEnabled = !valueToSet; // Revert on error
+                    this.toastService.error(this.translate.instant('adminDashboard.maintenanceToggleError'));
                     this.cdr.markForCheck();
                 }
             });

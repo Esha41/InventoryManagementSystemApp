@@ -168,7 +168,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
 
   private initializeForm(): void {
     this.inventoryForm = this.fb.group({
-      invoiceNumber: ['', [Validators.pattern(/^\d*$/)]],
+      invoiceNumber: [''],
       invoiceDate: [''],
       receivedDate: [''],
       contractNumber: [''],
@@ -324,9 +324,6 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     if (control.errors['maxlength']) {
       return `Maximum length is ${control.errors['maxlength'].requiredLength}`;
     }
-    if (control.errors['pattern']) {
-      return this.translateService.instant('addInventory.invoiceNumberMustBeNumeric') || 'Invoice number must contain only numbers';
-    }
     if (control.errors['futureDate']) {
       return this.translateService.instant('addInventory.cannotBeFuture');
     }
@@ -355,11 +352,9 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
 
   onInvoiceNumberInput(event: Event): void {
     const input = event.target as HTMLInputElement;
-    // Remove any non-numeric characters
-    const numericValue = input.value.replace(/[^\d]/g, '');
-    // Update the form control value
-    this.inventoryForm.get('invoiceNumber')?.setValue(numericValue, { emitEvent: false });
-    // Trigger change detection
+    // Allow full alphanumeric + symbols; just trim whitespace
+    const value = input.value;
+    this.inventoryForm.get('invoiceNumber')?.setValue(value, { emitEvent: false });
     this.onFieldChange('invoiceNumber');
   }
 

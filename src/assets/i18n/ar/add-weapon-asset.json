@@ -1,6 +1,8 @@
 {
     "addWeaponAsset": {
         "title": "إضافة أصول الأسلحة إلى {{name}}",
+        "titlePrefix": "إضافة أصول الأسلحة",
+        "titleTo": "إلى",
         "subtitle": "إضافة أصول أسلحة فردية مع أرقام تسلسلية وتتبع RFID",
         "backToInventory": "العودة إلى المخزون",
         "weaponAssets": "أصول الأسلحة",

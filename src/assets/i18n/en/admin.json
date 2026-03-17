@@ -493,6 +493,11 @@
     "importExportDescription": "Import and export system data",
     "workflowDescription": "Configure workflow processes",
     "stockNotificationDescription": "Manage stock notification settings",
+    "maintenanceMode": "Maintenance Mode",
+    "maintenanceModeDescription": "When enabled, users will see an under-maintenance page after login",
+    "maintenanceEnabled": "Maintenance mode enabled",
+    "maintenanceDisabled": "Maintenance mode disabled",
+    "maintenanceToggleError": "Failed to update maintenance mode",
     "chartsComingSoon": "Advanced charts and analytics coming soon",
     "lastUpdated": "Last updated",
     "status": {

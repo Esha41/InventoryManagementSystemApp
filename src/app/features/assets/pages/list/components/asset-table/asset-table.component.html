@@ -367,8 +367,11 @@
     class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 sm:px-6 py-4">
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-start sm:justify-between gap-4">
       <!-- Rows Per Page Selector -->
-      <app-rows-per-page [rowsPerPage]="paginationState.rowsPerPage" [totalItems]="filteredAssets.length"
-        [visibleItems]="paginatedAssets.length" (rowsPerPageChange)="onRowsPerPageChange($event)">
+      <app-rows-per-page
+        [rowsPerPage]="paginationState.rowsPerPage"
+        [totalItems]="totalItems"
+        [visibleItems]="paginatedAssets.length"
+        (rowsPerPageChange)="onRowsPerPageChange($event)">
       </app-rows-per-page>
 
       <!-- Pagination Controls -->
