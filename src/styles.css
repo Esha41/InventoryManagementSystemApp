@@ -430,6 +430,17 @@ textarea:-moz-autofill-preview {
   filter: none !important;
 }
 
+/* Remove number input spinners (e.g. Lot Number field) */
+input[type="number"].no-spinner::-webkit-outer-spin-button,
+input[type="number"].no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"].no-spinner {
+  -moz-appearance: textfield;
+}
+
 /* Ensure all inputs maintain proper theming in all states */
 input[type="text"],
 input[type="email"],

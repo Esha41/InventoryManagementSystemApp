@@ -44,7 +44,11 @@
     "deleted": "محذوف",
     "restoreUser": "استعادة المستخدم",
     "userRestoredSuccess": "تم استعادة المستخدم {{userName}} بنجاح",
-    "userRestoredError": "فشل استعادة المستخدم"
+    "userRestoredError": "فشل استعادة المستخدم",
+    "permanentDeleteUserTitle": "حذف نهائي",
+    "permanentDeleteUserConfirm": "هل أنت متأكد من أنك تريد حذف نهائياً",
+    "userPermanentlyDeletedSuccess": "تم حذف المستخدم {{userName}} نهائياً",
+    "userPermanentlyDeletedError": "فشل الحذف النهائي للمستخدم"
   },
   "adminRoles": {
     "title": "إدارة الأدوار",
