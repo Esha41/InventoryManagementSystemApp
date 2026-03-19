@@ -352,7 +352,8 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   }
 
   buildPagedRequest() {
-    const searchTerm = this.searchControl.value?.trim();
+    const searchTermRaw = this.searchControl.value ?? '';
+    const searchTerm = searchTermRaw.trim();
     let filterData: FilterData | undefined;
 
     if (this.activeTab === 'batch') {
@@ -370,7 +371,6 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       }
     } else {
       // Filter for Inventory (Ammo/Explosive)
-      // 1. Determine ItemType based on activeTab
       let itemType = ItemType.Ammunition;
       if (this.activeTab === 'explosive') itemType = ItemType.Explosive;
 
@@ -386,17 +386,29 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           value: this.invoiceFilter
         });
       } else if (searchTerm) {
-        // Add search term filters if provided (general search)
+        const orFilters: any[] = [
+          { field: 'Item.Name', operator: 'contains', value: searchTerm },
+          { field: 'Item.ItemNo', operator: 'contains', value: searchTerm },
+          { field: 'BatchNo', operator: 'contains', value: searchTerm },
+          { field: 'Supplier.NameEn', operator: 'contains', value: searchTerm },
+          { field: 'Supplier.NameAr', operator: 'contains', value: searchTerm },
+          { field: 'Inventory.InvoiceNumber', operator: 'contains', value: searchTerm }
+        ];
+
+        // If the search term is numeric, also allow matching by Lot (integer)
+        const numericLot = Number(searchTerm);
+        if (!isNaN(numericLot)) {
+          orFilters.push({
+            field: 'Lot',
+            operator: 'eq',
+            // FilterData.Value is string; Dynamic LINQ will convert to int
+            value: searchTerm
+          });
+        }
+
         filters.push({
           logic: 'or',
-          filters: [
-            { field: 'Item.Name', operator: 'contains', value: searchTerm },
-            { field: 'Item.ItemNo', operator: 'contains', value: searchTerm },
-            { field: 'BatchNo', operator: 'contains', value: searchTerm },
-            { field: 'Supplier.NameEn', operator: 'contains', value: searchTerm },
-            { field: 'Supplier.NameAr', operator: 'contains', value: searchTerm },
-            { field: 'Inventory.InvoiceNumber', operator: 'contains', value: searchTerm }
-          ]
+          filters: orFilters
         });
       }
 
