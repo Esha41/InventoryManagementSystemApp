@@ -44,7 +44,11 @@
     "deleted": "Deleted",
     "restoreUser": "Restore User",
     "userRestoredSuccess": "User {{userName}} has been restored successfully",
-    "userRestoredError": "Failed to restore user"
+    "userRestoredError": "Failed to restore user",
+    "permanentDeleteUserTitle": "Permanent Delete",
+    "permanentDeleteUserConfirm": "Are you sure you want to permanently delete",
+    "userPermanentlyDeletedSuccess": "User {{userName}} has been permanently deleted",
+    "userPermanentlyDeletedError": "Failed to permanently delete user"
   },
   "adminRoles": {
     "title": "Role Management",

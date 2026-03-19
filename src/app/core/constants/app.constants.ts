@@ -41,6 +41,7 @@ export const API_ENDPOINTS = {
     UPDATE_ROLES: (id: string) => `/Users/${id}/roles`,
     TOGGLE_STATUS: (id: string) => `/Users/${id}/toggle-status`,
     RESTORE: (id: string) => `/Users/${id}/restore`,
+    PERMANENT_DELETE: (id: string) => `/Users/${id}/permanent`,
     CHANGE_PASSWORD: '/Users/change-password',
   },
 
