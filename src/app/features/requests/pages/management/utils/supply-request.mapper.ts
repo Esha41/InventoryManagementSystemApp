@@ -139,11 +139,11 @@ export function applySuggestionToItems(
       itemsWithSuggestions.add(item.requestItemId);
       
       // Preserve existing selections before applying new suggestions
-      const existingSelections = new Map<number, number>();
+      const existingSelections = new Map<string, number>();
       if (item.availableLots && item.availableLots.length > 0) {
         item.availableLots.forEach(lot => {
           if (lot.selectedQuantity > 0) {
-            existingSelections.set(lot.lotNumber, lot.selectedQuantity);
+            existingSelections.set(String(lot.lotNumber), lot.selectedQuantity);
           }
         });
       }

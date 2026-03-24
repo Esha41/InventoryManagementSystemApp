@@ -75,6 +75,11 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
     return !isNaN(n) && n > 0 ? n : fallback;
   }
 
+  private coerceLotString(value: unknown): string {
+    if (value === null || value === undefined) return '';
+    return String(value).trim();
+  }
+
   /** Normalize optional ID: null, undefined, 0, or empty string become null for dropdowns */
   private normalizeOptionalId(value: number | string | null | undefined): number | null {
     if (value === null || value === undefined || value === '') return null;
@@ -83,11 +88,11 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
   }
 
   private initializeForm(): void {
-    const lot = this.coerceToNumber(this.inventoryDetail?.lot, 1);
+    const lot = this.coerceLotString(this.inventoryDetail?.lot);
     const originalQuantity = this.coerceToNumber(this.inventoryDetail?.originalQuantity, 1000);
     this.detailForm = this.fb.group({
       // Inventory Detail fields
-      lot: [lot, [Validators.required, Validators.min(1)]],
+      lot: [lot, [Validators.required, Validators.maxLength(64)]],
       originalQuantity: [originalQuantity, [Validators.required, Validators.min(1)]],
       batchNo: [this.inventoryDetail?.batchNo || ''],
       expiryDate: [this.formatDateForDisplay(this.inventoryDetail?.expiryDate)],
@@ -109,7 +114,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
       const lot = this.inventoryDetail?.lot;
       const originalQuantity = this.inventoryDetail?.originalQuantity;
       this.detailForm.patchValue({
-        lot: this.coerceToNumber(lot, 1),
+        lot: this.coerceLotString(lot),
         originalQuantity: this.coerceToNumber(originalQuantity, 1000),
         batchNo: this.inventoryDetail?.batchNo || '',
         expiryDate: this.formatDateForDisplay(this.inventoryDetail?.expiryDate),
@@ -172,7 +177,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
     const updateDetailDto: UpdateInventoryDetailDto = {
       id: this.inventoryDetail?.id,
       itemId: this.inventoryDetail!.itemId,
-      lot: this.detailForm.value.lot,
+      lot: String(this.detailForm.value.lot ?? '').trim(),
       supplierId: this.detailForm.value.supplierId || undefined,
       manufacturerId: this.detailForm.value.manufacturerId || undefined,
       countryId: this.detailForm.value.countryId || undefined,
@@ -347,6 +352,10 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
       if (control.errors['min']) {
         const key = `editInventoryDetail.${fieldName}MustBeGreater`;
         return this.translateService.instant(key) || `${fieldName} must be greater than ${control.errors['min'].min}`;
+      }
+      if (control.errors['maxlength']) {
+        return this.translateService.instant('editInventoryDetail.lotMaxLength') ||
+          `Maximum length is ${control.errors['maxlength'].requiredLength}`;
       }
     }
     return '';

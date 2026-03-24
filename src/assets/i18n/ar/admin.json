@@ -402,6 +402,12 @@
     "noUsersAvailable": "لا يوجد مستخدمون متاحون",
     "searchUsers": "البحث بالاسم أو اسم المستخدم...",
     "noUsersMatchSearch": "لا يوجد مستخدمون يطابقون البحث",
+    "noUsersMatchFilter": "لا يوجد مستخدمون في هذا العرض. جرّب فلتراً أو بحثاً آخر.",
+    "showUsers": "عرض",
+    "filterPlaceholder": "من يظهر في القائمة",
+    "filterAllUsers": "جميع المستخدمين",
+    "filterSelected": "المحددون لهذا المستودع",
+    "filterUnselected": "غير المحددين",
     "of": "من"
   },
   "emailSettings": {

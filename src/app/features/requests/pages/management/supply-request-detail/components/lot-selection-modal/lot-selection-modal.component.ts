@@ -40,15 +40,15 @@ export class LotSelectionModalComponent implements OnInit, OnChanges {
   @Output() showAllLots = new EventEmitter<void>();
   @Output() addLotManually = new EventEmitter<void>();
   @Output() getManualLotDetails = new EventEmitter<string>();
-  @Output() lotQuantityChange = new EventEmitter<{ lotNumber: number; quantity: number }>();
-  @Output() removeLot = new EventEmitter<number>();
-  @Output() confirmSelection = new EventEmitter<Map<number, number>>();
+  @Output() lotQuantityChange = new EventEmitter<{ lotNumber: string; quantity: number }>();
+  @Output() removeLot = new EventEmitter<string>();
+  @Output() confirmSelection = new EventEmitter<Map<string, number>>();
 
   readonly Package = Package;
   readonly AlertTriangle = AlertTriangle;
   readonly XIcon = X;
 
-  tempLotSelections: Map<number, number> = new Map();
+  tempLotSelections: Map<string, number> = new Map();
   showManualLotEntry: boolean = false;
   manualLotNumber: string = '';
 
@@ -73,7 +73,7 @@ export class LotSelectionModalComponent implements OnInit, OnChanges {
     if (this.selectedItem?.availableLots) {
       this.selectedItem.availableLots.forEach(lot => {
         if (lot.selectedQuantity > 0) {
-          this.tempLotSelections.set(lot.lotNumber, lot.selectedQuantity);
+          this.tempLotSelections.set(String(lot.lotNumber), lot.selectedQuantity);
         }
       });
     }
@@ -108,21 +108,23 @@ export class LotSelectionModalComponent implements OnInit, OnChanges {
     }
   }
 
-  onLotQuantityChange(lotNumber: number, quantity: number): void {
+  onLotQuantityChange(lotNumber: string, quantity: number): void {
     // Handle NaN or invalid values
     const validQuantity = Number.isNaN(quantity) ? 0 : Math.max(0, quantity);
-    
+    const key = String(lotNumber);
+
     if (validQuantity > 0) {
-      this.tempLotSelections.set(lotNumber, validQuantity);
+      this.tempLotSelections.set(key, validQuantity);
     } else {
-      this.tempLotSelections.delete(lotNumber);
+      this.tempLotSelections.delete(key);
     }
-    this.lotQuantityChange.emit({ lotNumber, quantity: validQuantity });
+    this.lotQuantityChange.emit({ lotNumber: key, quantity: validQuantity });
   }
 
-  onRemoveLot(lotNumber: number): void {
-    this.removeLot.emit(lotNumber);
-    this.tempLotSelections.delete(lotNumber);
+  onRemoveLot(lotNumber: string): void {
+    const key = String(lotNumber);
+    this.removeLot.emit(key);
+    this.tempLotSelections.delete(key);
   }
 
   getTempTotalSelected(): number {
@@ -155,8 +157,8 @@ export class LotSelectionModalComponent implements OnInit, OnChanges {
     return formatNumberUtil(num);
   }
 
-  getTempQuantity(lotNumber: number): number {
-    return this.tempLotSelections.get(lotNumber) || 0;
+  getTempQuantity(lotNumber: string): number {
+    return this.tempLotSelections.get(String(lotNumber)) || 0;
   }
 }
 

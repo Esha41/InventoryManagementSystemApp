@@ -54,7 +54,7 @@ export function calculateDaysUntilExpiry(expiryDate?: string): number {
  */
 export function mapLotDetailsToLotItems(
   lotDetails: LotDetailDto[],
-  existingSelections?: Map<number, number>,
+  existingSelections?: Map<string, number>,
   includeEmptyLots?: boolean
 ): LotItem[] {
   const lots = lotDetails

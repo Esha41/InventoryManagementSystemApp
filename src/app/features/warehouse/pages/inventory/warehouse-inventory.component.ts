@@ -29,8 +29,8 @@ import { WarehouseInventoryFilterService } from './services/warehouse-inventory-
 import { WarehouseInventoryFormatterService } from './services/warehouse-inventory-formatter.service';
 import { WarehouseInventoryCrudService } from './services/warehouse-inventory-crud.service';
 import { WarehouseInventoryExportService } from './services/warehouse-inventory-export.service';
-import { InventoryTableComponent } from './components/inventory-table/inventory-table.component';
-import { BatchTableComponent } from './components/batch-table/batch-table.component';
+import { InventoryTableComponent, WarehouseInventoryTableSortColumn } from './components/inventory-table/inventory-table.component';
+import { BatchTableComponent, BatchTableSortColumn } from './components/batch-table/batch-table.component';
 import { InventoryFiltersComponent } from './components/inventory-filters/inventory-filters.component';
 import { trackById } from '@utils/trackby.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
@@ -89,6 +89,14 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   // Pagination
   currentPage = 1;
   rowsPerPage = 10;
+
+  /** Server-side sort for ammunition / explosives table */
+  inventorySortColumn: WarehouseInventoryTableSortColumn = 'itemName';
+  inventorySortDirection: 'asc' | 'desc' = 'asc';
+
+  /** Client-side sort for weapon batches (full list loaded) */
+  batchSortColumn: BatchTableSortColumn = 'batchNumber';
+  batchSortDirection: 'asc' | 'desc' = 'asc';
 
   readonly ArrowLeft = ArrowLeft;
   readonly ArrowRight = ArrowRight;
@@ -390,21 +398,11 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           { field: 'Item.Name', operator: 'contains', value: searchTerm },
           { field: 'Item.ItemNo', operator: 'contains', value: searchTerm },
           { field: 'BatchNo', operator: 'contains', value: searchTerm },
+          { field: 'Lot', operator: 'contains', value: searchTerm },
           { field: 'Supplier.NameEn', operator: 'contains', value: searchTerm },
           { field: 'Supplier.NameAr', operator: 'contains', value: searchTerm },
           { field: 'Inventory.InvoiceNumber', operator: 'contains', value: searchTerm }
         ];
-
-        // If the search term is numeric, also allow matching by Lot (integer)
-        const numericLot = Number(searchTerm);
-        if (!isNaN(numericLot)) {
-          orFilters.push({
-            field: 'Lot',
-            operator: 'eq',
-            // FilterData.Value is string; Dynamic LINQ will convert to int
-            value: searchTerm
-          });
-        }
 
         filters.push({
           logic: 'or',
@@ -412,9 +410,14 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
         });
       }
 
+      const sortField = this.resolveInventoryBackendSortField(this.inventorySortColumn);
+      const sortDirection = this.inventorySortDirection === 'asc' ? 1 : 2;
+
       filterData = {
         logic: 'and',
-        filters
+        filters,
+        sortField,
+        sortDirection
       };
     }
 
@@ -425,6 +428,73 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     };
   }
 
+  private resolveInventoryBackendSortField(column: WarehouseInventoryTableSortColumn): string {
+    const lang = getCurrentLang(this.translateService);
+    const supplierField = lang === 'ar' ? 'Supplier.NameAr' : 'Supplier.NameEn';
+    const map: Record<WarehouseInventoryTableSortColumn, string> = {
+      itemName: 'Item.Name',
+      supplier: supplierField,
+      lot: 'Lot',
+      quantity: 'ItemQuantity',
+      readyForIssue: 'ReadyForIssue',
+      expiryDate: 'ExpiryDate',
+      invoiceNumber: 'Inventory.InvoiceNumber'
+    };
+    return map[column];
+  }
+
+  private defaultDirectionForInventoryColumn(column: WarehouseInventoryTableSortColumn): 'asc' | 'desc' {
+    switch (column) {
+      case 'quantity':
+      case 'readyForIssue':
+        return 'desc';
+      case 'expiryDate':
+        return 'asc';
+      default:
+        return 'asc';
+    }
+  }
+
+  onInventorySort(column: WarehouseInventoryTableSortColumn): void {
+    if (this.inventorySortColumn === column) {
+      this.inventorySortDirection = this.inventorySortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.inventorySortColumn = column;
+      this.inventorySortDirection = this.defaultDirectionForInventoryColumn(column);
+    }
+    this.currentPage = 1;
+    this.updatePageInUrl();
+    if (this.activeTab !== 'batch') {
+      this.loadTabContent();
+    }
+    this.cdr.markForCheck();
+  }
+
+  private defaultDirectionForBatchColumn(column: BatchTableSortColumn): 'asc' | 'desc' {
+    return column === 'quantity' ? 'desc' : 'asc';
+  }
+
+  onBatchSort(column: BatchTableSortColumn): void {
+    if (this.batchSortColumn === column) {
+      this.batchSortDirection = this.batchSortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.batchSortColumn = column;
+      this.batchSortDirection = this.defaultDirectionForBatchColumn(column);
+    }
+    this.cdr.markForCheck();
+  }
+
+  private sortBatches(batches: BatchSummaryDto[]): BatchSummaryDto[] {
+    const list = [...batches];
+    const mul = this.batchSortDirection === 'asc' ? 1 : -1;
+    list.sort((a, b) => {
+      if (this.batchSortColumn === 'quantity') {
+        return mul * (a.quantity - b.quantity);
+      }
+      return mul * (a.batchNumber || '').localeCompare(b.batchNumber || '', undefined, { numeric: true, sensitivity: 'base' });
+    });
+    return list;
+  }
 
   switchTab(tab: 'ammunition' | 'explosive' | 'batch'): void {
     if (this.activeTab === tab) {
@@ -487,8 +557,9 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
   get paginatedBatches(): BatchSummaryDto[] {
     if (this.activeTab !== 'batch') return [];
+    const sorted = this.sortBatches(this.filteredBatches);
     const start = (this.currentPage - 1) * this.rowsPerPage;
-    return this.filteredBatches.slice(start, start + this.rowsPerPage);
+    return sorted.slice(start, start + this.rowsPerPage);
   }
 
   private validateCurrentPage(): void {

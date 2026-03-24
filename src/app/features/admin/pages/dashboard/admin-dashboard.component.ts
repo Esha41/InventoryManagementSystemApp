@@ -8,6 +8,7 @@ import { LucideAngularModule, LayoutDashboard, Users, RefreshCw, Badge, Settings
 import { AdminAnalyticsService, UserActivityMetrics } from '@services/admin-analytics.service';
 import { UserActivityCardComponent } from './components/kpi-cards/user-activity-card/user-activity-card.component';
 import { AdminDelegationsComponent } from './admin-delegations/admin-delegations.component';
+import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 
 /**
  * Admin Dashboard Component
@@ -24,6 +25,7 @@ import { AdminDelegationsComponent } from './admin-delegations/admin-delegations
         LucideAngularModule,
         UserActivityCardComponent,
         AdminDelegationsComponent,
+        HasPermissionDirective,
     ],
     templateUrl: './admin-dashboard.component.html',
     styleUrls: ['./admin-dashboard.component.css'],

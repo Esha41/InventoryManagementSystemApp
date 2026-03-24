@@ -337,7 +337,7 @@ export class SupplyOrderDataService {
   /**
    * Get lot by number
    */
-  getLotByNumber(lotNumber: number): Observable<LotDetailDto> {
+  getLotByNumber(lotNumber: string): Observable<LotDetailDto> {
     return this.inventoryService.getLotByNumber(lotNumber).pipe(
       catchError((error) => {
         const errorMessage = ErrorHandler.extractErrorMessage(error, 'Lot not found or error loading details');
@@ -355,7 +355,7 @@ export class SupplyOrderDataService {
 
     return {
       inventoryDetailId: lot.inventoryDetailId,
-      lotNumber: lot.lot,
+      lotNumber: String(lot.lot ?? ''),
       quantity: lot.remainingQuantity,
       expiryDate: lot.expiryDate ? new Date(lot.expiryDate) : undefined,
       location: formatLocation(lot.depot),
@@ -422,7 +422,7 @@ export class SupplyOrderDataService {
    */
   addSupplyDetail(
     supplyId: number,
-    detail: { itemId: number; lot: number; quantity: number; notes?: string }
+    detail: { itemId: number; lot: string; quantity: number; notes?: string }
   ): Observable<void> {
     return this.supplyService.addSupplyDetail(supplyId, detail).pipe(
       map(() => void 0),
@@ -439,7 +439,7 @@ export class SupplyOrderDataService {
   updateSupplyDetail(
     supplyId: number,
     supplyDetailId: number,
-    detail: { itemId: number; lot: number; quantity: number; notes?: string }
+    detail: { itemId: number; lot: string; quantity: number; notes?: string }
   ): Observable<void> {
     return this.supplyService.updateSupplyDetail(supplyId, supplyDetailId, detail).pipe(
       map(() => void 0),

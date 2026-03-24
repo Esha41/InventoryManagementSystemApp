@@ -184,7 +184,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
   createItemFormGroup(): FormGroup {
     return this.fb.group({
       itemId: [null, [Validators.required]],
-      lot: [1, [Validators.required, Validators.min(1)]],
+      lot: ['', [Validators.required, Validators.maxLength(64)]],
       originalQuantity: [0, [Validators.required, Validators.min(1)]],
       batchNo: [''],
       expiryDate: [''],
@@ -446,7 +446,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
       notes: formValue.notes?.trim() || undefined,
       inventoryDetails: formValue.items.map((item: {
         itemId: number;
-        lot: number;
+        lot: string;
         supplierId?: number;
         manufacturerId?: number;
         countryId?: number;
@@ -456,7 +456,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
         readyForIssue?: boolean;
       }) => ({
         itemId: item.itemId,
-        lot: item.lot,
+        lot: String(item.lot ?? '').trim(),
         supplierId: item.supplierId || undefined,
         manufacturerId: item.manufacturerId || undefined,
         countryId: item.countryId || undefined,

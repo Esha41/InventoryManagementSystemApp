@@ -14,7 +14,7 @@ export interface SupplyLotSuggestionDto {
   inventoryDetailId: number;
   itemId: number;
   itemName: string;
-  lot: number;
+  lot: string;
   availableQuantity: number;
   suggestedQuantity: number;
   expiryDate?: string;
@@ -57,7 +57,7 @@ export interface OrderSupplySuggestionDto {
 
 export interface CreateSupplyDetailDto {
   itemId: number;
-  lot: number;
+  lot: string;
   quantity: number;
   notes?: string;
 }
@@ -83,7 +83,7 @@ export interface SubmitSupplyDto {
 
 export interface UpdateSupplyDetailDto {
   itemId: number;
-  lot: number;
+  lot: string;
   quantity: number;
   notes?: string;
 }
@@ -92,7 +92,7 @@ export interface SupplyDetailDto {
   id: number;
   supplyId: number;
   itemId: number;
-  lot: number;
+  lot: string;
   quantity: number;
   notes?: string;
   requestedQuantity: number;
