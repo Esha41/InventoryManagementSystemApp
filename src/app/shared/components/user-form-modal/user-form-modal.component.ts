@@ -122,9 +122,11 @@ export class UserFormModalComponent implements OnInit, OnChanges, OnDestroy {
     const userNameValidators = this.isCurrentUserSuperAdmin
       ? [Validators.required, Validators.minLength(3)]
       : [];
-    const passwordValidators = this.isCurrentUserSuperAdmin
-      ? [Validators.required, Validators.minLength(6)]
-      : [];
+    // LDAP users authenticate via directory — no local password on create (super-admin only)
+    const passwordValidators =
+      this.isCurrentUserSuperAdmin && !isLdapUser
+        ? [Validators.required, Validators.minLength(6)]
+        : [];
 
     this.userForm = this.fb.group({
       userName: [this.user?.userName || '', userNameValidators],
@@ -554,14 +556,27 @@ export class UserFormModalComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     // For super-admin users, handle LDAP toggle behavior
+    const passwordControl = this.mode === 'create' ? this.userForm.get('password') : null;
+
     const applyState = (isLdap: boolean) => {
       if (isLdap) {
         ldapUserNameControl.enable({ emitEvent: false });
         ldapUserNameControl.setValidators([Validators.required]);
+        if (passwordControl) {
+          passwordControl.clearValidators();
+          passwordControl.setValue('', { emitEvent: false });
+          passwordControl.disable({ emitEvent: false });
+          passwordControl.updateValueAndValidity({ emitEvent: false });
+        }
       } else {
         ldapUserNameControl.setValidators([]);
         ldapUserNameControl.setValue('', { emitEvent: false });
         ldapUserNameControl.disable({ emitEvent: false });
+        if (passwordControl) {
+          passwordControl.enable({ emitEvent: false });
+          passwordControl.setValidators([Validators.required, Validators.minLength(6)]);
+          passwordControl.updateValueAndValidity({ emitEvent: false });
+        }
       }
       ldapUserNameControl.updateValueAndValidity({ emitEvent: false });
     };
