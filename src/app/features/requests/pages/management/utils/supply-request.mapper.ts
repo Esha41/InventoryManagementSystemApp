@@ -170,6 +170,42 @@ export function applySuggestionToItems(
       // Otherwise, keep existing lots as-is
     }
   });
+
+  requestDetail.items.forEach(item => capOrderItemDischargeToApprovedQuantity(item));
+}
+
+/**
+ * When order item quantity is reduced, draft discharge selections may still sum above the new approved amount.
+ * Trim lot selections (FIFO over lots) so totals match approved quantity and UI/discharge stay consistent.
+ */
+export function capOrderItemDischargeToApprovedQuantity(item: OrderItem): void {
+  if (!item.availableLots?.length) {
+    return;
+  }
+
+  let sum = item.availableLots.reduce((s, lot) => s + (lot.selectedQuantity || 0), 0);
+  const cap = item.approvedQuantity ?? 0;
+
+  if (sum <= cap) {
+    item.totalSelectedForDischarge = sum;
+    return;
+  }
+
+  let toRemove = sum - cap;
+  for (const lot of item.availableLots) {
+    if (toRemove <= 0) {
+      break;
+    }
+    const q = lot.selectedQuantity || 0;
+    const take = Math.min(q, toRemove);
+    lot.selectedQuantity = q - take;
+    toRemove -= take;
+  }
+
+  item.totalSelectedForDischarge = item.availableLots.reduce(
+    (s, lot) => s + (lot.selectedQuantity || 0),
+    0
+  );
 }
 
 /**

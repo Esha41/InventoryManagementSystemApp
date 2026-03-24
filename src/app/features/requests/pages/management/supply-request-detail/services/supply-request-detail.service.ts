@@ -15,7 +15,7 @@ import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { BaseRequestDto } from '@models/workflow-approval.model';
 import { SupplyRequestDetail, OrderItem } from '@models/supply-request.model';
-import { mapOrderToRequestDetail, applySuggestionToItems } from '../../utils/supply-request.mapper';
+import { mapOrderToRequestDetail, applySuggestionToItems, capOrderItemDischargeToApprovedQuantity } from '../../utils/supply-request.mapper';
 import { mapLotDetailsToLotItems } from '@utils/lot.utils';
 import { mapWorkflowStepsToApprovalSteps } from '@utils/approval-workflow.utils';
 import { mapApprovalHistory, mapRequestStatus } from '@utils/request-mapper.utils';
@@ -228,6 +228,7 @@ export class SupplyRequestDetailService {
         (sum, lot) => sum + lot.selectedQuantity,
         0
       );
+      capOrderItemDischargeToApprovedQuantity(item);
     });
 
     selectionsByItemAndLot.forEach((quantity, key) => {
@@ -313,6 +314,7 @@ export class SupplyRequestDetailService {
             (sum: number, lot: any) => sum + lot.selectedQuantity,
             0
           );
+          capOrderItemDischargeToApprovedQuantity(item);
         });
       }),
       map(() => undefined),
@@ -443,6 +445,8 @@ export class SupplyRequestDetailService {
    * Consolidates duplicate item+lot combinations by summing quantities
    */
   private buildSupplyDetails(requestDetail: SupplyRequestDetail): CreateSupplyDetailDto[] {
+    requestDetail.items.forEach(item => capOrderItemDischargeToApprovedQuantity(item));
+
     const supplyDetails: CreateSupplyDetailDto[] = [];
 
     requestDetail.items.forEach(item => {
