@@ -1,4 +1,11 @@
-/* Asset List - responsive tabs */
+/* Asset edit modal: no transform on dialog (so app-dropdown fixed + getBoundingClientRect align).
+   Explicit z-index keeps the panel above the dimmed overlay; dropdown list stays opaque. */
+:host ::ng-deep app-asset-edit-modal .app-dropdown-panel {
+  background-color: var(--color-background);
+  opacity: 1;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
 
 .asset-tab {
   touch-action: manipulation;

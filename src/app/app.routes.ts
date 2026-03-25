@@ -101,6 +101,7 @@ export const routes: Routes = [
         path: 'warehouse',
         loadComponent: () => import('@warehouse/pages/list/warehouse-list.component').then(m => m.WarehouseListComponent),
         canActivate: [permissionGuard],
+        // Warehouse (depot) list: Permissions.WarehousePage.Page / .View only — not Inventory.* (different module).
         data: { permissions: ['warehousepage.page', 'warehousepage.view'] }
       },
       {
@@ -287,7 +288,8 @@ export const routes: Routes = [
         path: 'depot-management',
         loadComponent: () => import('@admin/pages/depot-management/depot-management.component').then(m => m.DepotManagementComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['depots.page', 'depots.view'] }
+        // Depots: .page = access this admin screen; .view / .viewAll = read via API (see backend DepotService / DepotAccessService).
+        data: { permissions: ['depots.page'] }
       },
       {
         path: 'manage-admins',

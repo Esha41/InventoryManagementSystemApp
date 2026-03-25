@@ -170,7 +170,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       label: 'nav.warehouse',
       icon: Warehouse,
       route: '/warehouse',
-      permissions: ['inventory.page']
+      permissions: ['warehousepage.page', 'warehousepage.view']
     },
     {
       label: 'nav.depotManagement',
