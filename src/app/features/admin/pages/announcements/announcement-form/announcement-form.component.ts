@@ -10,6 +10,7 @@ import { TranslationService } from '@services/translation.service';
 import { Subject, takeUntil } from 'rxjs';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { formatDateForInput } from '@utils/format.utils';
+import { DateUtils } from '@utils/date.utils';
 import { Priority } from '@utils/priority.utils';
 import { AnnouncementDeliveryType } from '@models/announcement.model';
 import { RoleDto } from '@models/backend-user.model';
@@ -206,5 +207,13 @@ export class AnnouncementFormComponent implements OnInit, OnDestroy {
         const opt = option as { value?: number; label?: string; labelKey?: string };
         const key = opt?.labelKey ?? 'announcements.deliveryTypes.banner';
         return this.translationService.getTranslation(key);
+    }
+
+    openDatePicker(input: HTMLInputElement | null): void {
+        DateUtils.openNativeDatePicker(input);
+    }
+
+    getDateDisplay(value?: Date | string | null): string {
+        return DateUtils.formatDateValue(value);
     }
 }

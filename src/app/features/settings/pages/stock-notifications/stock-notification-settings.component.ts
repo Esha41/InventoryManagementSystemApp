@@ -13,6 +13,7 @@ import { ButtonComponent } from '@components/button/button.component';
 import { PaginatedList } from '@models/api-response.model';
 import { StockNotificationService, LowStockNotificationScheduleDto, LowStockNotificationSettingsDto } from '@settings/services/stock-notification.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { DateUtils } from '@utils/date.utils';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -178,6 +179,18 @@ export class StockNotificationSettingsComponent implements OnInit, OnDestroy {
   }
 
 
+
+  openDateTimePicker(input: HTMLInputElement | null): void {
+    DateUtils.openNativeDatePicker(input);
+  }
+
+  /**
+   * Display `dd/mm/yyyy hh:mm AM/PM` for datetime-local values.
+   * datetime-local value is `YYYY-MM-DDTHH:mm`.
+   */
+  getDateTimeDisplay(dateTimeValue?: string | null): string {
+    return DateUtils.formatDateTimeValue(dateTimeValue);
+  }
 
   private loadSchedule(): void {
     this.isLoadingSchedule = true;

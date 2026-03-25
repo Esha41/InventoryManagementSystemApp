@@ -23,6 +23,7 @@ import { LoadingStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslationService } from '@services/translation.service';
 import { trackByIndex } from '@utils/trackby.utils';
+import { DateUtils } from '@utils/date.utils';
 
 @Component({
   selector: 'app-add-inventory',
@@ -366,8 +367,8 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     const invoiceDateControl = this.inventoryForm.get('invoiceDate');
     const invoiceDateValue = invoiceDateControl?.value;
     if (invoiceDateValue) {
-      const invoiceDate = new Date(invoiceDateValue);
-      if (invoiceDate > now) {
+      const invoiceDate = DateUtils.parseDate(invoiceDateValue);
+      if (invoiceDate && invoiceDate > now) {
         invoiceDateControl?.setErrors({ futureDate: true });
         hasErrors = true;
       } else {
@@ -383,8 +384,8 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     const receivedDateControl = this.inventoryForm.get('receivedDate');
     const receivedDateValue = receivedDateControl?.value;
     if (receivedDateValue) {
-      const receivedDate = new Date(receivedDateValue);
-      if (receivedDate > now) {
+      const receivedDate = DateUtils.parseDate(receivedDateValue);
+      if (receivedDate && receivedDate > now) {
         receivedDateControl?.setErrors({ futureDate: true });
         hasErrors = true;
       } else {
@@ -398,6 +399,19 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     }
 
     return !hasErrors;
+  }
+
+  openDatePicker(input: HTMLInputElement): void {
+    DateUtils.openNativeDatePicker(input);
+  }
+
+  getDateDisplay(fieldPath: string, index?: number): string {
+    const control = index !== undefined
+      ? (this.itemsFormArray.at(index) as FormGroup).get(fieldPath)
+      : this.inventoryForm.get(fieldPath);
+
+    const value = control?.value as string | Date | null | undefined;
+    return DateUtils.formatDateValue(value);
   }
 
   onSubmit(): void {
