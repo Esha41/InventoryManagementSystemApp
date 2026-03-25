@@ -13,7 +13,7 @@ import { ButtonComponent } from '@components/button/button.component';
 import { PaginatedList } from '@models/api-response.model';
 import { StockNotificationService, LowStockNotificationScheduleDto, LowStockNotificationSettingsDto } from '@settings/services/stock-notification.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
-import { DateUtils } from '@utils/date.utils';
+import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -26,6 +26,7 @@ import { Subject, takeUntil } from 'rxjs';
 })
 export class StockNotificationSettingsComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
+  private readonly appDatePipe = new AppDatePipe();
 
   roles: RoleDto[] = [];
   users: BackendUserDto[] = [];
@@ -181,7 +182,12 @@ export class StockNotificationSettingsComponent implements OnInit, OnDestroy {
 
 
   openDateTimePicker(input: HTMLInputElement | null): void {
-    DateUtils.openNativeDatePicker(input);
+    if (!input) return;
+    if (input.showPicker) {
+      input.showPicker();
+      return;
+    }
+    input.focus();
   }
 
   /**
@@ -189,7 +195,24 @@ export class StockNotificationSettingsComponent implements OnInit, OnDestroy {
    * datetime-local value is `YYYY-MM-DDTHH:mm`.
    */
   getDateTimeDisplay(dateTimeValue?: string | null): string {
-    return DateUtils.formatDateTimeValue(dateTimeValue);
+    if (!dateTimeValue) return '';
+
+    const match = dateTimeValue.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/);
+    if (!match) return dateTimeValue;
+
+    const [, yyyy, mm, dd, hhStr, min] = match;
+
+    // Use shared pipe for the date portion (dd/MM/yyyy) to match the app format.
+    const dateObj = new Date(parseInt(yyyy, 10), parseInt(mm, 10) - 1, parseInt(dd, 10));
+    const datePart = this.appDatePipe.transform(dateObj);
+    if (!datePart || datePart === 'N/A') return '';
+
+    const hour24 = parseInt(hhStr, 10);
+    const ampm = hour24 >= 12 ? 'PM' : 'AM';
+    const hour12 = (hour24 % 12) || 12;
+    const hour12Str = String(hour12).padStart(2, '0');
+
+    return `${datePart} ${hour12Str}:${min} ${ampm}`;
   }
 
   private loadSchedule(): void {

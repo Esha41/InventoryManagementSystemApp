@@ -10,11 +10,11 @@ import { TranslationService } from '@services/translation.service';
 import { Subject, takeUntil } from 'rxjs';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { formatDateForInput } from '@utils/format.utils';
-import { DateUtils } from '@utils/date.utils';
 import { Priority } from '@utils/priority.utils';
 import { AnnouncementDeliveryType } from '@models/announcement.model';
 import { RoleDto } from '@models/backend-user.model';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
+import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 
 @Component({
     selector: 'app-announcement-form',
@@ -209,11 +209,19 @@ export class AnnouncementFormComponent implements OnInit, OnDestroy {
         return this.translationService.getTranslation(key);
     }
 
+    private readonly appDatePipe = new AppDatePipe();
+
     openDatePicker(input: HTMLInputElement | null): void {
-        DateUtils.openNativeDatePicker(input);
+        if (!input) return;
+        if (input.showPicker) {
+            input.showPicker();
+            return;
+        }
+        input.focus();
     }
 
     getDateDisplay(value?: Date | string | null): string {
-        return DateUtils.formatDateValue(value);
+        const formatted = this.appDatePipe.transform(value);
+        return formatted === 'N/A' ? '' : formatted;
     }
 }
