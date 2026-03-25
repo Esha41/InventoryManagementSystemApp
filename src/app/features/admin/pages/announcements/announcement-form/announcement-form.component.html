@@ -80,16 +80,68 @@
                     <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
                         {{ 'announcements.startDate' | translate }} <span class="text-[var(--color-error)]">*</span>
                     </label>
-                    <input type="date" formControlName="startDate"
-                        class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all bg-[var(--color-background)] text-[var(--color-text)] cursor-pointer"
-                        [class.border-[var(--color-error)]]="form.get('startDate')?.invalid && form.get('startDate')?.touched">
+                    <div
+                        class="relative min-h-[44px] w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] cursor-pointer focus:outline-none focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
+                        (click)="openDatePicker(startDatePicker)"
+                        [class.border-[var(--color-error)]]="form.get('startDate')?.invalid && form.get('startDate')?.touched"
+                    >
+                        <div class="absolute inset-0 flex items-center px-4 pointer-events-none z-10">
+                            <span class="text-sm">
+                                {{
+                                    getDateDisplay(form.get('startDate')?.value) || 'DD/MM/YYYY'
+                                }}
+                            </span>
+                            <svg
+                                class="w-4 h-4 ml-auto text-[var(--color-text-muted)] flex-shrink-0" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"stroke-linejoin="round"
+                                aria-hidden="true">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                        </div>
+                        <input
+                            #startDatePicker
+                            type="date"
+                            formControlName="startDate"
+                            class="absolute inset-0 w-full h-full cursor-pointer pointer-events-none"
+                            style="opacity: 0; z-index: 0;"
+                        />
+                    </div>
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
                         {{ 'announcements.endDate' | translate }}
                     </label>
-                    <input type="date" formControlName="endDate"
-                        class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all bg-[var(--color-background)] text-[var(--color-text)] cursor-pointer">
+                    <div
+                        class="relative min-h-[44px] w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] cursor-pointer focus:outline-none focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
+                        (click)="openDatePicker(endDatePicker)"
+                    >
+                        <div class="absolute inset-0 flex items-center px-4 pointer-events-none z-10">
+                            <span class="text-sm">
+                                {{
+                                    getDateDisplay(form.get('endDate')?.value) || 'DD/MM/YYYY'
+                                }}
+                            </span>
+                            <svg
+                                class="w-4 h-4 ml-auto text-[var(--color-text-muted)] flex-shrink-0" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                aria-hidden="true">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                        </div>
+                        <input
+                            #endDatePicker
+                            type="date"
+                            formControlName="endDate"
+                            class="absolute inset-0 w-full h-full cursor-pointer pointer-events-none"
+                            style="opacity: 0; z-index: 0;"
+                        />
+                    </div>
                 </div>
             </div>
 

@@ -14,6 +14,7 @@ import { Priority } from '@utils/priority.utils';
 import { AnnouncementDeliveryType } from '@models/announcement.model';
 import { RoleDto } from '@models/backend-user.model';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
+import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 
 @Component({
     selector: 'app-announcement-form',
@@ -206,5 +207,21 @@ export class AnnouncementFormComponent implements OnInit, OnDestroy {
         const opt = option as { value?: number; label?: string; labelKey?: string };
         const key = opt?.labelKey ?? 'announcements.deliveryTypes.banner';
         return this.translationService.getTranslation(key);
+    }
+
+    private readonly appDatePipe = new AppDatePipe();
+
+    openDatePicker(input: HTMLInputElement | null): void {
+        if (!input) return;
+        if (input.showPicker) {
+            input.showPicker();
+            return;
+        }
+        input.focus();
+    }
+
+    getDateDisplay(value?: Date | string | null): string {
+        const formatted = this.appDatePipe.transform(value);
+        return formatted === 'N/A' ? '' : formatted;
     }
 }

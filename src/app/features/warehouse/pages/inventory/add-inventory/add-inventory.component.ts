@@ -23,6 +23,7 @@ import { LoadingStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslationService } from '@services/translation.service';
 import { trackByIndex } from '@utils/trackby.utils';
+import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 
 @Component({
   selector: 'app-add-inventory',
@@ -110,6 +111,8 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
   errorMessage: string | null = null;
 
   private destroy$ = new Subject<void>();
+
+  private readonly appDatePipe = new AppDatePipe();
 
   constructor(
     private router: Router,
@@ -366,8 +369,8 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     const invoiceDateControl = this.inventoryForm.get('invoiceDate');
     const invoiceDateValue = invoiceDateControl?.value;
     if (invoiceDateValue) {
-      const invoiceDate = new Date(invoiceDateValue);
-      if (invoiceDate > now) {
+      const invoiceDate = this.parseYmdToLocalDate(invoiceDateValue);
+      if (invoiceDate && invoiceDate > now) {
         invoiceDateControl?.setErrors({ futureDate: true });
         hasErrors = true;
       } else {
@@ -383,8 +386,8 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     const receivedDateControl = this.inventoryForm.get('receivedDate');
     const receivedDateValue = receivedDateControl?.value;
     if (receivedDateValue) {
-      const receivedDate = new Date(receivedDateValue);
-      if (receivedDate > now) {
+      const receivedDate = this.parseYmdToLocalDate(receivedDateValue);
+      if (receivedDate && receivedDate > now) {
         receivedDateControl?.setErrors({ futureDate: true });
         hasErrors = true;
       } else {
@@ -398,6 +401,37 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     }
 
     return !hasErrors;
+  }
+
+  openDatePicker(input: HTMLInputElement): void {
+    if (input.showPicker) {
+      input.showPicker();
+      return;
+    }
+    input.focus();
+  }
+
+  getDateDisplay(fieldPath: string, index?: number): string {
+    const control = index !== undefined
+      ? (this.itemsFormArray.at(index) as FormGroup).get(fieldPath)
+      : this.inventoryForm.get(fieldPath);
+
+    const value = control?.value as string | Date | null | undefined;
+    const formatted = this.appDatePipe.transform(value);
+    return formatted === 'N/A' ? '' : formatted;
+  }
+
+  private parseYmdToLocalDate(value: string): Date | undefined {
+    const m = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return undefined;
+    const year = parseInt(m[1], 10);
+    const month = parseInt(m[2], 10);
+    const day = parseInt(m[3], 10);
+    if (month < 1 || month > 12) return undefined;
+    if (day < 1 || day > 31) return undefined;
+    const d = new Date(year, month - 1, day);
+    if (d.getFullYear() !== year || d.getMonth() !== month - 1 || d.getDate() !== day) return undefined;
+    return d;
   }
 
   onSubmit(): void {
