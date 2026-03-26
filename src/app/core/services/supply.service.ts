@@ -118,6 +118,8 @@ export interface WorkflowSupplySummaryLineDto {
   itemName: string;
   itemNo?: string | null;
   requestedQuantity: number;
+  /** Quantity approved on the order (may be less than originally requested). */
+  approvedQuantity?: number;
   suppliedQuantity: number;
   lot: string;
   depotId?: number | null;

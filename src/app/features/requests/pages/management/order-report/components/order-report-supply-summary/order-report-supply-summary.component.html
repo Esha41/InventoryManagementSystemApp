@@ -37,13 +37,22 @@
     </div>
 
     <div *ngIf="summary.receiverName || summary.receiverRankName || summary.receiverMilitaryId" class="print-info-grid supply-summary-stack">
-      <div class="print-info-item print-info-item--full">
-        <span class="print-info-label">{{ 'workflowApprovalDetail.workflowSupplySummary.receiver' | translate }}:</span>
-        <span class="print-info-value">
-          <ng-container *ngIf="summary.receiverName">{{ summary.receiverName }}</ng-container>
-          <ng-container *ngIf="summary.receiverRankName"> · {{ summary.receiverRankName }}</ng-container>
-          <ng-container *ngIf="summary.receiverMilitaryId"> · {{ summary.receiverMilitaryId }}</ng-container>
-        </span>
+      <div class="print-info-item print-info-item--full supply-receiver-block">
+        <span class="print-info-label">{{ 'workflowApprovalDetail.workflowSupplySummary.receiver' | translate }}</span>
+        <div class="supply-receiver-lines">
+          <div *ngIf="summary.receiverName" class="supply-receiver-line">
+            <span class="supply-receiver-line-label">{{ 'workflowApprovalDetail.receiverName' | translate }}:</span>
+            <span class="supply-receiver-line-value">{{ summary.receiverName }}</span>
+          </div>
+          <div *ngIf="summary.receiverRankName" class="supply-receiver-line">
+            <span class="supply-receiver-line-label">{{ 'workflowApprovalDetail.workflowSupplySummary.receiverRank' | translate }}:</span>
+            <span class="supply-receiver-line-value">{{ summary.receiverRankName }}</span>
+          </div>
+          <div *ngIf="summary.receiverMilitaryId" class="supply-receiver-line">
+            <span class="supply-receiver-line-label">{{ 'workflowApprovalDetail.workflowSupplySummary.receiverMilitaryId' | translate }}:</span>
+            <span class="supply-receiver-line-value">{{ summary.receiverMilitaryId }}</span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -61,6 +70,7 @@
           <th class="print-table-header">{{ 'requestsManagement.orderReport.table.itemName' | translate }}</th>
           <th class="print-table-header">{{ 'requestsManagement.orderReport.table.itemNo' | translate }}</th>
           <th class="print-table-header print-table-header-right">{{ 'requestsManagement.orderReport.table.requestedQty' | translate }}</th>
+          <th class="print-table-header print-table-header-right">{{ 'requestsManagement.orderReport.table.approvedQty' | translate }}</th>
           <th class="print-table-header print-table-header-right">{{ 'requestsManagement.orderReport.table.suppliedQty' | translate }}</th>
           <th class="print-table-header">{{ 'requestsManagement.orderReport.table.lot' | translate }}</th>
           <th class="print-table-header">{{ 'requestsManagement.orderReport.table.depot' | translate }}</th>
@@ -72,6 +82,7 @@
           <td class="print-table-cell">{{ line.itemName }}</td>
           <td class="print-table-cell">{{ line.itemNo || '—' }}</td>
           <td class="print-table-cell print-table-cell-right">{{ line.requestedQuantity | number }}</td>
+          <td class="print-table-cell print-table-cell-right">{{ (line.approvedQuantity ?? line.requestedQuantity) | number }}</td>
           <td class="print-table-cell print-table-cell-right">{{ line.suppliedQuantity | number }}</td>
           <td class="print-table-cell">{{ line.lot || '—' }}</td>
           <td class="print-table-cell">{{ depotDisplay(line) }}</td>

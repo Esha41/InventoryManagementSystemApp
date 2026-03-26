@@ -93,6 +93,8 @@
               <th class="px-3 py-2 text-end text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                 {{ 'workflowApprovalDetail.workflowSupplySummary.colRequested' | translate }}</th>
               <th class="px-3 py-2 text-end text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                {{ 'workflowApprovalDetail.workflowSupplySummary.colApproved' | translate }}</th>
+              <th class="px-3 py-2 text-end text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                 {{ 'workflowApprovalDetail.workflowSupplySummary.colSupplied' | translate }}</th>
               <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                 {{ 'workflowApprovalDetail.workflowSupplySummary.colLot' | translate }}</th>
@@ -105,6 +107,7 @@
               <td class="px-3 py-2 text-[var(--color-text)]">{{ line.itemName }}</td>
               <td class="px-3 py-2 text-[var(--color-text-muted)]">{{ line.itemNo || '—' }}</td>
               <td class="px-3 py-2 text-end font-medium">{{ line.requestedQuantity }}</td>
+              <td class="px-3 py-2 text-end font-medium">{{ line.approvedQuantity ?? line.requestedQuantity }}</td>
               <td class="px-3 py-2 text-end font-medium">{{ line.suppliedQuantity }}</td>
               <td class="px-3 py-2 text-[var(--color-text)]">{{ line.lot || '—' }}</td>
               <td class="px-3 py-2 text-[var(--color-text)]">{{ depotDisplay(line) }}</td>
