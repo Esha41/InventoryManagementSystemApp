@@ -73,7 +73,8 @@
       "returnApproved": "Return Approved",
       "returnRejected": "Return Rejected",
       "discardApproved": "Discard Approved",
-      "discardRejected": "Discard Rejected"
+      "discardRejected": "Discard Rejected",
+      "approvalRequired": "New Approval Required"
     },
     "messages": {
       "orderCreated": "Order request {{requestNo}} has been created{{fromAllowance}}.",
@@ -85,15 +86,18 @@
       "returnApproved": "Return request {{requestNo}} has been approved.",
       "returnRejected": "Return request {{requestNo}} has been rejected.",
       "discardApproved": "Discard request {{requestNo}} has been approved.",
-      "discardRejected": "Discard request {{requestNo}} has been rejected."
+      "discardRejected": "Discard request {{requestNo}} has been rejected.",
+      "requestAwaitingApproval": "A request awaits your approval."
     },
     "entityTypes": {
       "order": "Order",
       "return": "Return",
       "discard": "Discard",
+      "request": "Request",
       "Order": "Order",
       "Return": "Return",
-      "Discard": "Discard"
+      "Discard": "Discard",
+      "Request": "Request"
     }
   },
   "toast": {
