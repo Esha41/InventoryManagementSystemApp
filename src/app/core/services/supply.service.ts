@@ -113,6 +113,33 @@ export interface SupplyDetailDto {
   };
 }
 
+export interface WorkflowSupplySummaryLineDto {
+  itemId: number;
+  itemName: string;
+  itemNo?: string | null;
+  requestedQuantity: number;
+  suppliedQuantity: number;
+  lot: string;
+  depotId?: number | null;
+  depotName?: string | null;
+  depotCode?: string | null;
+  notes?: string | null;
+}
+
+export interface WorkflowSupplySummaryDto {
+  orderId: number;
+  orderSupplyDate?: string | null;
+  supplyDate?: string | null;
+  submissionStatus: number;
+  fulfillmentStatus: number;
+  receiverName?: string | null;
+  receiverMilitaryId?: string | null;
+  receiverRankName?: string | null;
+  notes?: string | null;
+  isWeaponOrder: boolean;
+  lines: WorkflowSupplySummaryLineDto[];
+}
+
 export interface SupplyDto {
   id: number;
   orderId: number;
@@ -186,6 +213,14 @@ export class SupplyService {
   getByOrderId(orderId: number): Observable<SupplyDto> {
     this.config.log(`Fetching supply for order ${orderId}`);
     return this.apiService.get<SupplyDto>(`${this.endpoint}/${orderId}/getByOrderId`);
+  }
+
+  /**
+   * Read-only workflow summary (completed orders; requires ViewWorkflowSupplySummary).
+   */
+  getWorkflowSupplySummary(orderId: number): Observable<WorkflowSupplySummaryDto> {
+    this.config.log(`Fetching workflow supply summary for order ${orderId}`);
+    return this.apiService.get<WorkflowSupplySummaryDto>(`${this.endpoint}/${orderId}/workflow-summary`);
   }
 
   /**

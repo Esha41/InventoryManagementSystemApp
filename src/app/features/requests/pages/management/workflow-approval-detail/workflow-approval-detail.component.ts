@@ -49,6 +49,7 @@ import { WorkflowPickupDateComponent } from './components/workflow-pickup-date/w
 import { WorkflowApprovalTimelineComponent } from './components/workflow-approval-timeline/workflow-approval-timeline.component';
 import { WorkflowRequestInformationComponent } from './components/workflow-request-information/workflow-request-information.component';
 import { WorkflowRequestItemsComponent } from './components/workflow-request-items/workflow-request-items.component';
+import { WorkflowSupplySummaryComponent } from './components/workflow-supply-summary/workflow-supply-summary.component';
 import { WeaponReviewItemsModalComponent } from './components/weapon-review-items-modal/weapon-review-items-modal.component';
 import { OrderItemTrackingModalComponent } from './components/order-item-tracking-modal/order-item-tracking-modal.component';
 
@@ -70,6 +71,7 @@ import { OrderItemTrackingModalComponent } from './components/order-item-trackin
     WorkflowApprovalTimelineComponent,
     WorkflowRequestInformationComponent,
     WorkflowRequestItemsComponent,
+    WorkflowSupplySummaryComponent,
     WeaponReviewItemsModalComponent,
     OrderItemTrackingModalComponent
   ],
@@ -212,6 +214,10 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     // Use local values to ensure template reactivity works correctly
     // The state service might not be updated at the exact moment the template checks
     return this.permissionsService.canSubmitSupply(this.requestDetail, this.isWeaponOrder);
+  }
+
+  canViewWorkflowSupplySummarySection(): boolean {
+    return this.permissionsService.canViewWorkflowSupplySummarySection(this.requestDetail);
   }
 
   hasHigherApproval(): boolean {

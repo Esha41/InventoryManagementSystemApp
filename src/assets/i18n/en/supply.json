@@ -48,7 +48,8 @@
       "requestId": "Request ID",
       "type": "Type",
       "itemsLabel": "Items",
-      "requestPrefix": "Request"
+      "requestPrefix": "Request",
+      "supplyPickupDate": "Supply pickup date"
     }
   },
   "supplyRequestDetail": {

@@ -296,7 +296,18 @@
         "orderDetails": "تفاصيل الطلب",
         "approvalWorkflow": "مسار الموافقات",
         "workflowDetails": "تفاصيل سير العمل من الطلب",
-        "qrCode": "رمز الاستجابة السريعة"
+        "qrCode": "رمز الاستجابة السريعة",
+        "supplySummary": "ملخص الصرف"
+      },
+      "workflowStatus": {
+        "completed": "مكتمل"
+      },
+      "supplySummary": {
+        "loading": "جاري تحميل ملخص الصرف...",
+        "loadError": "تعذر تحميل ملخص الصرف.",
+        "noLines": "لا توجد بنود صرف مسجلة.",
+        "linesTitle": "المواد الموردة",
+        "weaponOrder": "طلب سلاح"
       },
       "labels": {
         "department": "القسم",
@@ -350,6 +361,10 @@
         "itemName": "اسم مادة",
         "itemNo": "رقم مادة",
         "quantity": "الكمية",
+        "requestedQty": "المطلوب",
+        "suppliedQty": "المورد",
+        "lot": "الدفعة",
+        "depot": "المستودع",
         "notes": "ملاحظات"
       },
       "noApprovalHistory": "لا يوجد تاريخ موافقات متاح حتى الآن.",
@@ -420,6 +435,32 @@
     "pickupDate": "تاريخ الاستلام",
     "supplyDate": "تاريخ الصرف",
     "supplyDetails": "تفاصيل الصرف",
+    "workflowSupplySummary": {
+      "title": "ملخص التوريد وتاريخ الاستلام",
+      "loadError": "تعذر تحميل ملخص التوريد.",
+      "loading": "جاري تحميل ملخص التوريد...",
+      "orderPickupDate": "تاريخ استلام الطلب",
+      "supplyPickupDate": "تاريخ استلام التوريد",
+      "submissionStatus": "حالة الإرسال",
+      "fulfillmentStatus": "حالة التنفيذ",
+      "receiver": "المستلم",
+      "receiverRank": "الرتبة",
+      "receiverMilitaryId": "الرقم العسكري",
+      "supplyNotes": "ملاحظات التوريد",
+      "linesTitle": "بنود التوريد",
+      "colItemName": "المادة",
+      "colItemNo": "رقم المادة",
+      "colRequested": "المطلوب",
+      "colSupplied": "المورد",
+      "colLot": "الدفعة",
+      "colDepot": "المستودع",
+      "noLines": "لا توجد تفاصيل لبنود التوريد.",
+      "weaponOrder": "طلب أسلحة",
+      "submissionDraft": "مسودة",
+      "submissionSubmitted": "مُرسل",
+      "fulfillmentPartial": "مكتمل جزئياً",
+      "fulfillmentFull": "مكتمل بالكامل"
+    },
     "dateSetLocked": "تم تعيين التاريخ",
     "dateSetLockedMessage": "تم تعيين تاريخ الاستلام ولا يمكن تغييره.",
     "setPickupDate": "تعيين تاريخ الاستلام",

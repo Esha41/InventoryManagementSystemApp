@@ -140,6 +140,13 @@
               </div>
             </div>
 
+            <div *ngIf="requestDetail.requestType === 'Order' && requestDetail.supplyDate" class="space-y-1">
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                {{ 'supplyRequestManagement.detail.supplyPickupDate' | translate }}
+              </label>
+              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ requestDetail.supplyDate | appDateTime }}</p>
+            </div>
+
             <div *ngIf="requestDetail.notes" class="md:col-span-2 space-y-1">
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
                 {{ 'supplyRequestManagement.detail.notes' | translate }}

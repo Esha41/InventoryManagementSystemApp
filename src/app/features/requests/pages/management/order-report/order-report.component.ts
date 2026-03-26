@@ -24,6 +24,8 @@ import { OrderReportHeaderComponent } from './components/order-report-header/ord
 import { OrderInfoSectionComponent } from './components/order-info-section/order-info-section.component';
 import { OrderItemsTableComponent } from './components/order-items-table/order-items-table.component';
 import { ApprovalWorkflowComponent } from './components/approval-workflow/approval-workflow.component';
+import { OrderReportSupplySummaryComponent } from './components/order-report-supply-summary/order-report-supply-summary.component';
+import { WorkflowApprovalPermissionsService } from '@requests/pages/management/workflow-approval-detail/services/workflow-approval-permissions.service';
 
 @Component({
   selector: 'app-order-report',
@@ -39,7 +41,8 @@ import { ApprovalWorkflowComponent } from './components/approval-workflow/approv
     OrderReportHeaderComponent,
     OrderInfoSectionComponent,
     OrderItemsTableComponent,
-    ApprovalWorkflowComponent
+    ApprovalWorkflowComponent,
+    OrderReportSupplySummaryComponent
   ],
   templateUrl: './order-report.component.html',
   styleUrls: ['./order-report.component.css'],
@@ -95,7 +98,8 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private orderReportService: OrderReportService,
     private orderReportPrintService: OrderReportPrintService,
-    private orderReportQrService: OrderReportQrService
+    private orderReportQrService: OrderReportQrService,
+    private workflowPermissionsService: WorkflowApprovalPermissionsService
   ) { }
 
   get isRTL(): boolean {
@@ -104,6 +108,13 @@ export class OrderReportComponent implements OnInit, OnDestroy {
 
   get backIcon() {
     return this.isRTL ? ArrowRight : ArrowLeft;
+  }
+
+  get showOrderReportSupplySummary(): boolean {
+    return (
+      this.selectedOrderId != null &&
+      this.workflowPermissionsService.canViewWorkflowSupplySummaryForOrderReport(this.orderSummary)
+    );
   }
 
   ngOnInit(): void {

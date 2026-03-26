@@ -300,7 +300,18 @@
         "orderDetails": "Order Detail",
         "approvalWorkflow": "Approval Workflow",
         "workflowDetails": "Workflow Details from Order",
-        "qrCode": "QR Code"
+        "qrCode": "QR Code",
+        "supplySummary": "Supply Summary"
+      },
+      "workflowStatus": {
+        "completed": "Completed"
+      },
+      "supplySummary": {
+        "loading": "Loading supply summary...",
+        "loadError": "Could not load supply summary.",
+        "noLines": "No supply lines recorded.",
+        "linesTitle": "Supplied items",
+        "weaponOrder": "Weapon order"
       },
       "labels": {
         "department": "Department",
@@ -354,6 +365,10 @@
         "itemName": "Item Name",
         "itemNo": "Item No",
         "quantity": "Quantity",
+        "requestedQty": "Requested",
+        "suppliedQty": "Supplied",
+        "lot": "Lot",
+        "depot": "Depot",
         "notes": "Notes"
       },
       "noApprovalHistory": "No approval history available yet.",
@@ -424,6 +439,32 @@
     "pickupDate": "Pickup Date",
     "supplyDate": "Supply Date",
     "supplyDetails": "Supply Details",
+    "workflowSupplySummary": {
+      "title": "Supply & pickup summary",
+      "loadError": "Could not load supply summary.",
+      "loading": "Loading supply summary...",
+      "orderPickupDate": "Order pickup date",
+      "supplyPickupDate": "Supply pickup date",
+      "submissionStatus": "Submission status",
+      "fulfillmentStatus": "Fulfillment status",
+      "receiver": "Receiver",
+      "receiverRank": "Rank",
+      "receiverMilitaryId": "Military ID",
+      "supplyNotes": "Supply notes",
+      "linesTitle": "Supplied lines",
+      "colItemName": "Item",
+      "colItemNo": "Item No",
+      "colRequested": "Requested",
+      "colSupplied": "Supplied",
+      "colLot": "Lot",
+      "colDepot": "Depot",
+      "noLines": "No supply line details recorded.",
+      "weaponOrder": "Weapon order",
+      "submissionDraft": "Draft",
+      "submissionSubmitted": "Submitted",
+      "fulfillmentPartial": "Partially fulfilled",
+      "fulfillmentFull": "Fully fulfilled"
+    },
     "dateSetLocked": "✓ Date Set (Locked)",
     "dateSetLockedMessage": "This date has been set and is locked. It can now only be confirmed by authorized personnel.",
     "setPickupDate": "Set Pickup Date",

@@ -6,6 +6,8 @@
 import { Injectable } from '@angular/core';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { RequestDetail, WorkflowApprovalStep } from '@models/workflow-approval.model';
+import { OrderSummary } from '@models/order-report.model';
+import { REQUEST_STATUS_APPROVED } from '@utils/status.utils';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +19,7 @@ export class WorkflowApprovalPermissionsService {
   private readonly SET_SUPPLY_PICKUP_DATE_PERMISSION = 'SetSupplyPickupDate';
   private readonly CONFIRM_SUPPLY_PICKUP_DATE_PERMISSION = 'ConfirmSupplyPickupDate';
   private readonly VIEW_SUPPLY_DATE_PERMISSION = 'ViewSupplyDate';
+  private readonly VIEW_WORKFLOW_SUPPLY_SUMMARY_PERMISSION = 'ViewWorkflowSupplySummary';
   private readonly SUBMIT_SUPPLY_PERMISSION = 'SubmitSupply';
   private readonly REVIEW_WEAPON_SUPPLY_PERMISSION = 'ReviewWeaponSupply';
   private readonly SELECT_DEPOTS_PERMISSION = 'SelectDepots';
@@ -387,6 +390,51 @@ export class WorkflowApprovalPermissionsService {
   canViewSupplyDate(): boolean {
     try {
       return this.authService.hasPermission(this.VIEW_SUPPLY_DATE_PERMISSION);
+    } catch {
+      return false;
+    }
+  }
+
+  /** Order is fully completed (approved) — workflow supply summary is shown only in this state. */
+  isRequestCompletedForSupplySummary(requestDetail: RequestDetail | null): boolean {
+    return requestDetail?.status === 'Approved';
+  }
+
+  /**
+   * Completed orders only; SuperAdmin or ViewWorkflowSupplySummary.
+   */
+  canViewWorkflowSupplySummarySection(requestDetail: RequestDetail | null): boolean {
+    if (!requestDetail || requestDetail.requestType !== 'Order') {
+      return false;
+    }
+    if (!this.isRequestCompletedForSupplySummary(requestDetail)) {
+      return false;
+    }
+    try {
+      if (this.authService.isSuperAdmin()) {
+        return true;
+      }
+      return this.authService.hasPermission(this.VIEW_WORKFLOW_SUPPLY_SUMMARY_PERMISSION);
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Order report: same rules as workflow supply summary, using {@link OrderSummary} from the report mapper.
+   */
+  canViewWorkflowSupplySummaryForOrderReport(orderSummary: OrderSummary | null): boolean {
+    if (!orderSummary || orderSummary.requestType !== 'Order') {
+      return false;
+    }
+    if (orderSummary.requestStatusCode !== REQUEST_STATUS_APPROVED) {
+      return false;
+    }
+    try {
+      if (this.authService.isSuperAdmin()) {
+        return true;
+      }
+      return this.authService.hasPermission(this.VIEW_WORKFLOW_SUPPLY_SUMMARY_PERMISSION);
     } catch {
       return false;
     }

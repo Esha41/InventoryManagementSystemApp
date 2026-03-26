@@ -207,7 +207,7 @@ export function getStatusLabelTranslation(status?: number | string | null): stri
     case 2:
       return 'dashboard.statusLabels.underProcess';
     case 3:
-      return 'dashboard.statusLabels.approved';
+      return 'requestsManagement.orderReport.workflowStatus.completed';
     case 4:
       return 'dashboard.statusLabels.rejected';
     case 5:

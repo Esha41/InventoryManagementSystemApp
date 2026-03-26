@@ -209,6 +209,7 @@ export const API_ENDPOINTS = {
     BASE: '/Supply',
     BY_ID: (id: number) => `/Supply/${id}`,
     BY_ORDER_ID: (orderId: number) => `/Supply/${orderId}/getByOrderId`,
+    WORKFLOW_SUMMARY: (orderId: number) => `/Supply/${orderId}/workflow-summary`,
     SET_PICKUP_DATE_BY_ORDER: (orderId: number) => `/Supply/order/${orderId}/set-pickup-date`,
     CONFIRM_PICKUP_DATE_BY_ORDER: (orderId: number) => `/Supply/order/${orderId}/confirm-pickup-date`,
     SUBMIT: (id: number) => `/Supply/${id}/submit`,

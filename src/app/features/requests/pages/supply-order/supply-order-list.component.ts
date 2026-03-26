@@ -127,7 +127,7 @@ export class SupplyOrderListComponent implements OnInit, OnDestroy {
     const statusMap: { [key: number]: string } = {
       1: 'dashboard.statusLabels.new',
       2: 'dashboard.statusLabels.underProcess',
-      3: 'dashboard.statusLabels.approved',
+      3: 'requestsManagement.orderReport.workflowStatus.completed',
       4: 'dashboard.statusLabels.rejected',
       5: 'dashboard.statusLabels.completed'
     };

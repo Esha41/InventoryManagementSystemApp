@@ -48,7 +48,8 @@
       "requestId": "رقم الطلب",
       "type": "النوع",
       "itemsLabel": "مواد",
-      "requestPrefix": "طلب"
+      "requestPrefix": "طلب",
+      "supplyPickupDate": "تاريخ استلام التوريد"
     }
   },
   "supplyRequestDetail": {

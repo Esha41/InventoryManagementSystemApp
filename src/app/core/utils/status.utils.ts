@@ -62,7 +62,8 @@ export function getSubmissionStatusClass(status: number): string {
 // Request Status values (matching REQUEST_STATUS constants)
 const REQUEST_STATUS_NEW = 1;
 const REQUEST_STATUS_UNDER_PROCESS = 2;
-const REQUEST_STATUS_APPROVED = 3;
+/** Workflow / order status: approved (completed). */
+export const REQUEST_STATUS_APPROVED = 3;
 const REQUEST_STATUS_REJECTED = 4;
 const REQUEST_STATUS_CANCELLED = 5;
 const REQUEST_STATUS_RETURNED_FOR_REVIEW = 6;
@@ -206,7 +207,7 @@ export function getRequestStatusTranslationKey(status?: number | string | null):
     case REQUEST_STATUS_UNDER_PROCESS:
       return 'dashboard.statusLabels.underProcess';
     case REQUEST_STATUS_APPROVED:
-      return 'dashboard.statusLabels.approved';
+      return 'requestsManagement.orderReport.workflowStatus.completed';
     case REQUEST_STATUS_REJECTED:
       return 'dashboard.statusLabels.rejected';
     case REQUEST_STATUS_CANCELLED:

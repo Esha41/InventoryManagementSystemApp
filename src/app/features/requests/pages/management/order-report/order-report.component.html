@@ -99,6 +99,11 @@
               [totalQuantity]="orderSummary.totalQuantity">
             </app-order-items-table>
 
+            <app-order-report-supply-summary
+              *ngIf="showOrderReportSupplySummary && selectedOrderId != null"
+              [orderId]="selectedOrderId">
+            </app-order-report-supply-summary>
+
             <!-- Approval Workflow Section -->
             <app-approval-workflow
               [workflow]="approvalWorkflow"
