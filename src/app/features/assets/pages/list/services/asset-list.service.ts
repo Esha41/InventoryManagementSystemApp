@@ -49,8 +49,11 @@ function buildExplosiveSearchFilters(searchTerm: string): FilterData {
       { field: 'Nsn', operator: 'contains', value: term },
       { field: 'ArmNumber', operator: 'contains', value: term },
       { field: 'UNNumber', operator: 'contains', value: term },
-      { field: 'Type.Name', operator: 'contains', value: term },
-      { field: 'Compatibility.Name', operator: 'contains', value: term }
+      // Lookups use NameAr / NameEn in the backend entities.
+      { field: 'Type.NameEn', operator: 'contains', value: term },
+      { field: 'Type.NameAr', operator: 'contains', value: term },
+      { field: 'Compatibility.NameEn', operator: 'contains', value: term },
+      { field: 'Compatibility.NameAr', operator: 'contains', value: term }
     ]
   };
 }
@@ -174,7 +177,7 @@ export class AssetListService {
         'name': 'Name',
         'itemNo': 'ItemNo',
         'partNo': 'PartNo',
-        'nsn': 'NSN',
+        'nsn': 'Nsn',
         'price': 'Price',
         'minimumQuantity': 'MinimumQuantity'
       };
@@ -257,7 +260,7 @@ export class AssetListService {
         'name': 'Name',
         'itemNo': 'ItemNo',
         'partNo': 'PartNo',
-        'nsn': 'NSN',
+        'nsn': 'Nsn',
         'price': 'Price',
         'minimumQuantity': 'MinimumQuantity'
       };
@@ -349,7 +352,7 @@ export class AssetListService {
         'name': 'Name',
         'itemNo': 'ItemNo',
         'partNo': 'PartNo',
-        'nsn': 'NSN',
+        'nsn': 'Nsn',
         'price': 'Price',
         'minimumQuantity': 'MinimumQuantity'
       };
@@ -499,7 +502,7 @@ export class AssetListService {
         'name': 'Name',
         'itemNo': 'ItemNo',
         'partNo': 'PartNo',
-        'nsn': 'NSN',
+        'nsn': 'Nsn',
         'price': 'Price',
         'minimumQuantity': 'MinimumQuantity'
       };
@@ -581,7 +584,7 @@ export class AssetListService {
         'name': 'Name',
         'itemNo': 'ItemNo',
         'partNo': 'PartNo',
-        'nsn': 'NSN',
+        'nsn': 'Nsn',
         'price': 'Price',
         'minimumQuantity': 'MinimumQuantity'
       };
