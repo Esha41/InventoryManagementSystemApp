@@ -1,8 +1,8 @@
 :host {
   display: block;
   width: 100%;
-  --app-dropdown-accent-color: var(--dropdown-accent-color, #d0b888);
-  --app-dropdown-accent-color-rgb: var(--dropdown-accent-color-rgb, 208, 184, 136);
+  --app-dropdown-accent-color: var(--dropdown-accent-color, var(--color-brand));
+  --app-dropdown-accent-color-rgb: var(--dropdown-accent-color-rgb, var(--color-brand-rgb));
 }
 
 .app-dropdown {

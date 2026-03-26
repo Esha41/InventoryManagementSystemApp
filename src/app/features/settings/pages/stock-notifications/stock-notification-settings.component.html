@@ -106,16 +106,20 @@
               {{ "stockNotificationSettings.dateAndTime" | translate }}
             </label>
             <div
-              class="relative min-h-[52px] w-full px-3 border-2 border-[var(--color-border)] rounded-xl text-sm text-[var(--color-text)] bg-white cursor-pointer focus:outline-none focus:ring-2 transition-all"
+              class="relative min-h-[52px] w-full px-3 border-2 border-[var(--color-border)] rounded-xl text-sm bg-[var(--color-background)] text-[var(--color-text)] hover:bg-[var(--color-background-hover)] cursor-pointer transition-all focus-within:border-[var(--color-brand)] focus-within:ring-2 focus-within:ring-[var(--color-brand)]/25"
               (click)="openDateTimePicker(dateTimePicker)"
             >
               <div class="absolute inset-0 flex items-center px-3 py-3 pointer-events-none">
-                <span class="text-sm">
-                  {{
-                    getDateTimeDisplay(scheduleForm.get('dateTime')?.value) ||
-                      'dd/mm/yyyy hh:mm AM/PM'
-                  }}
-                </span>
+                <ng-container *ngIf="scheduleForm.get('dateTime')?.value; else dateTimePlaceholder">
+                  <span class="text-sm text-[var(--color-text)]">{{
+                    getDateTimeDisplay(scheduleForm.get('dateTime')?.value)
+                  }}</span>
+                </ng-container>
+                <ng-template #dateTimePlaceholder>
+                  <span class="text-sm text-[var(--color-text-muted)]"
+                    >dd/mm/yyyy hh:mm AM/PM</span
+                  >
+                </ng-template>
                 <svg
                   class="w-4 h-4 ml-auto text-[var(--color-text-muted)] flex-shrink-0"
                   viewBox="0 0 24 24"

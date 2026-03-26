@@ -1,15 +1,16 @@
-<nav class="navbar-theme shadow-custom-md h-14 min-h-[3.5rem] md:h-16 flex items-center px-4 md:px-6 z-40 border-b border-[var(--color-border)]">
+<nav
+  class="navbar-theme shadow-custom-md h-14 min-h-[3.5rem] md:h-16 flex items-center px-4 md:px-6 z-40 border-b border-[var(--color-navbar-border)]">
   <div class="flex items-center justify-between w-full min-w-0 gap-2">
     <!-- Left side - Logo -->
-    <div class="flex items-center gap-1 md:gap-2 min-w-0 flex-shrink-0">
+    <div class="flex items-center gap-2 md:gap-3 min-w-0 flex-shrink-0 ps-2 sm:ps-3 md:ps-4">
       <button (click)="onMenuClick()"
-        class="md:hidden navbar-button-hover min-w-[2.75rem] min-h-[2.75rem] p-2 rounded-lg transition-colors duration-200 flex items-center justify-center -ml-1"
+        class="md:hidden navbar-button-hover min-w-[2.75rem] min-h-[2.75rem] p-2 rounded-lg transition-colors duration-200 flex items-center justify-center -ms-1"
         aria-label="Toggle menu">
-        <lucide-angular [img]="Menu" class="h-6 w-6 text-[var(--color-text)]"></lucide-angular>
+        <lucide-angular [img]="Menu" class="h-6 w-6 text-[var(--color-navbar-fg)]"></lucide-angular>
       </button>
 
-      <img src="assets/Code_Generated_Image.png" alt="EMDAD Logo" class="h-20 md:h-24 max-w-[160px] md:max-w-[200px] navbar-logo object-contain object-left flex-shrink-0 -ml-2 md:-ml-4"
-        [style.filter]="isDarkMode ? 'brightness(0) saturate(100%) invert(75%) sepia(18%) saturate(612%) hue-rotate(348deg) brightness(92%) contrast(88%)' : 'none'"
+      <img src="assets/EMDAD-EXT-VER-Digi-Logo-White_updated.png" alt="EMDAD Logo"
+        class="h-14 md:h-16 max-w-[132px] md:max-w-[168px] navbar-logo object-contain object-left flex-shrink-0"
         style="direction: ltr;" />
     </div>
 
@@ -20,22 +21,22 @@
         class="flex navbar-button-hover min-w-[2.75rem] min-h-[2.75rem] p-2 rounded-lg transition-colors duration-200 items-center justify-center"
         [attr.aria-label]="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'"
         [attr.title]="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'">
-        <lucide-angular [img]="isDarkMode ? Sun : Moon" class="h-5 w-5 text-[var(--color-text)]"></lucide-angular>
+        <lucide-angular [img]="isDarkMode ? Sun : Moon" class="h-5 w-5 text-[var(--color-navbar-fg)]"></lucide-angular>
       </button>
 
       <!-- Language Toggle -->
       <button (click)="toggleLanguage()"
         class="flex items-center gap-2 min-w-[2.75rem] min-h-[2.75rem] p-2 md:px-3 md:py-2 rounded-lg hover:bg-white/20 transition-colors duration-200 justify-center"
         aria-label="Change language">
-        <lucide-angular [img]="Globe" class="h-5 w-5 text-[var(--color-text)]"></lucide-angular>
-        <span class="hidden md:inline text-sm font-medium text-[var(--color-text)]">{{ getCurrentLanguage() }}</span>
+        <lucide-angular [img]="Globe" class="h-5 w-5 text-[var(--color-navbar-fg)]"></lucide-angular>
+        <span class="hidden md:inline text-sm font-medium text-[var(--color-navbar-fg)]">{{ getCurrentLanguage() }}</span>
       </button>
 
       <!-- Notifications -->
       <button (click)="navigateToNotifications()"
         class="relative min-w-[2.75rem] min-h-[2.75rem] p-2 rounded-lg hover:bg-white/20 transition-colors duration-200 flex items-center justify-center"
         aria-label="Notifications">
-        <lucide-angular [img]="Bell" class="h-5 w-5 text-[var(--color-text)]"></lucide-angular>
+        <lucide-angular [img]="Bell" class="h-5 w-5 text-[var(--color-navbar-fg)]"></lucide-angular>
         <span *ngIf="notificationCount > 0"
           class="absolute top-1 h-5 w-5 bg-[var(--color-error)] rounded-full flex items-center justify-center"
           [class.right-1]="!isRTL" [class.left-1]="isRTL">
@@ -57,12 +58,12 @@
 
           <!-- User Info (Hidden on mobile) -->
           <div class="hidden md:flex flex-col items-start">
-            <span class="text-sm font-semibold text-[var(--color-text)]">{{ getUserFullName() }}</span>
+            <span class="text-sm font-semibold text-[var(--color-navbar-fg)]">{{ getUserFullName() }}</span>
           </div>
 
           <!-- Chevron -->
           <lucide-angular [img]="ChevronDown"
-            class="hidden md:block h-4 w-4 text-[var(--color-text-muted)] transition-transform duration-200"
+            class="hidden md:block h-4 w-4 text-[var(--color-navbar-fg-muted)] transition-transform duration-200"
             [class.rotate-180]="showUserMenu"></lucide-angular>
         </button>
 

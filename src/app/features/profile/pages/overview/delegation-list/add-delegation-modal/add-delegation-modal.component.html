@@ -22,7 +22,7 @@
 
                     <div class="space-y-2">
                         <label class="text-sm font-medium text-[var(--color-text)]">{{ 'DELEGATION.SELECT_USER' |
-                            translate }}</label>
+                            translate }}<span class="text-[var(--color-error)] ms-0.5" aria-hidden="true">*</span></label>
                         <app-dropdown formControlName="delegateeUserId" [options]="userOptions"
                             [placeholder]="'DELEGATION.SELECT_USER' | translate" [required]="true">
                         </app-dropdown>
@@ -31,14 +31,14 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div class="space-y-2">
                             <label class="text-sm font-medium text-[var(--color-text)]">{{ 'DELEGATION.START_DATE' |
-                                translate }}</label>
+                                translate }}<span class="text-[var(--color-error)] ms-0.5" aria-hidden="true">*</span></label>
                             <input type="date" formControlName="startDate" [min]="minDate"
                                 class="w-full px-4 py-2 bg-[var(--color-background-muted)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent text-[var(--color-text)]">
                         </div>
 
                         <div class="space-y-2">
                             <label class="text-sm font-medium text-[var(--color-text)]">{{ 'DELEGATION.END_DATE' |
-                                translate }}</label>
+                                translate }}<span class="text-[var(--color-error)] ms-0.5" aria-hidden="true">*</span></label>
                             <input type="date" formControlName="endDate" [min]="form.value.startDate || minDate"
                                 class="w-full px-4 py-2 bg-[var(--color-background-muted)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent text-[var(--color-text)]">
                         </div>
@@ -46,7 +46,7 @@
 
                     <div class="space-y-2">
                         <label class="text-sm font-medium text-[var(--color-text)]">{{ 'DELEGATION.REASON' | translate
-                            }}</label>
+                            }}<span class="text-[var(--color-error)] ms-0.5" aria-hidden="true">*</span></label>
                         <textarea formControlName="reason" rows="3"
                             class="w-full px-4 py-2 bg-[var(--color-background-muted)] border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent text-[var(--color-text)]"></textarea>
                     </div>
@@ -54,7 +54,7 @@
                     <!-- Delegation Scopes -->
                     <div class="space-y-2">
                         <label class="text-sm font-medium text-[var(--color-text)]">
-                            {{ 'DELEGATION.SCOPES' | translate }}
+                            {{ 'DELEGATION.SCOPES' | translate }}<span class="text-[var(--color-error)] ms-0.5" aria-hidden="true">*</span>
                         </label>
                         <div class="space-y-2 p-3 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
                             <label *ngFor="let scope of availableScopes"

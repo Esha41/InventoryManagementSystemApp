@@ -87,8 +87,6 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   approvalWorkflowStatus: string = '';
   currentDate: string = '';
   currentUser: string = '';
-  logoDataUrl: string = '/assets/Code_Generated_Image.png'; // EMDAD logo - absolute path from root
-
   constructor(
     private router: Router,
     private toastService: ToastService,

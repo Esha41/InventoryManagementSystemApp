@@ -136,7 +136,7 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
         this.bulkForm = this.fb.group({
             itemId: [null, Validators.required],
             batchNumber: ['', [Validators.required, Validators.maxLength(500)]],
-            quantity: [null as number | null, [Validators.required, Validators.min(1), Validators.max(1000)]],
+            quantity: [null as number | null, [Validators.required, Validators.min(1), Validators.max(5000)]],
             fillIdentifiers: [false], // Checkbox for filling RFID/Serial numbers
             // Common
             purchaseDate: [''],

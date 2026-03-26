@@ -25,6 +25,23 @@
   height: auto;
 }
 
+.order-report-brand-logo {
+  width: 100%;
+  height: 3.75rem;
+}
+
+@media (min-width: 640px) {
+  .order-report-brand-logo {
+    height: 4.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .order-report-brand-logo {
+    height: 5.25rem;
+  }
+}
+
 .print-qr-container {
   text-align: center;
   border: none;

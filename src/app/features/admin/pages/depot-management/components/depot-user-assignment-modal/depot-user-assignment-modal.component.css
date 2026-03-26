@@ -21,7 +21,7 @@
 /* Match shared dropdown to app theme (brand accent) */
 .depot-modal__assignment-dropdown {
   --dropdown-accent-color: var(--color-brand);
-  --dropdown-accent-color-rgb: 200, 168, 127;
+  --dropdown-accent-color-rgb: var(--color-brand-rgb);
 }
 
 .depot-modal__search {

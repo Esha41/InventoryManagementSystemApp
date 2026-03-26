@@ -38,6 +38,26 @@
     display: none;
     /* Chrome, Safari and Opera */
   }
+
+  /**
+   * White-on-transparent EMDAD PNG as solid #183553 (see --emdad-logo-mark).
+   * Login + order report only; navbar keeps the unmodified white PNG.
+   */
+  .emdad-logo-mark--brand {
+    display: block;
+    flex-shrink: 0;
+    background-color: var(--emdad-logo-mark);
+    -webkit-mask-image: url('/assets/EMDAD-EXT-VER-Digi-Logo-White_updated.png');
+    mask-image: url('/assets/EMDAD-EXT-VER-Digi-Logo-White_updated.png');
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
 }
 
 /* Lock body scroll when mobile sidebar is open */
@@ -54,11 +74,16 @@ body:has(main.overflow-y-auto) {
 @layer base {
   :root {
     /* Brand Colors */
-    --color-brand: #c8a87f;
-    /* Primary brand color - Pantone 4251 C */
-    --color-brand-light: #d9bfa0;
-    --color-brand-dark: #b89668;
-    --color-brand-hover: #b89668;
+    --color-brand: #183553;
+    /* Primary brand color - Dark Blue */
+    --color-brand-light: #2a4d6e;
+    --color-brand-dark: #0f2538;
+    --color-brand-hover: #0f2538;
+    /* For rgba(var(--color-brand-rgb), a) — matches #183553 */
+    --color-brand-rgb: 24, 53, 83;
+
+    /* EMDAD logo tint on login + order report (always brand navy, including dark theme) */
+    --emdad-logo-mark: #183553;
 
     /* Accent Colors */
     --color-accent: #0F60FF;
@@ -144,8 +169,11 @@ body:has(main.overflow-y-auto) {
     --spacing-2xl: 3rem;
     /* 48px */
 
-    /* Navbar Background - Custom color */
-    --color-navbar-bg: #c8a87f;
+    /* Navbar background (brand navy; logo stays white PNG as-is) */
+    --color-navbar-bg: #183553;
+    --color-navbar-fg: #f8fafc;
+    --color-navbar-fg-muted: #cbd5e1;
+    --color-navbar-border: rgb(255 255 255 / 0.14);
 
     /* Transitions */
     --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -156,23 +184,29 @@ body:has(main.overflow-y-auto) {
   /* Dark Theme Variables */
   [data-theme="dark"],
   .dark {
-    /* Navbar Background - Black in dark mode */
-    --color-navbar-bg: #0a0a0a;
+    /* Navbar — same brand bar; reads clearly above dark chrome */
+    --color-navbar-bg: #183553;
+    --color-navbar-fg: #f8fafc;
+    --color-navbar-fg-muted: #cbd5e1;
+    --color-navbar-border: rgb(255 255 255 / 0.14);
 
-    /* Brand Colors - Keep brand colors similar for consistency */
-    --color-brand: #c8a87f;
-    --color-brand-light: #d9bfa0;
-    --color-brand-dark: #b89668;
+    /* Brand — same navy as light theme (no separate “light blue” dark palette) */
+    --color-brand: #183553;
+    --color-brand-light: #2a4d6e;
+    --color-brand-dark: #0f2538;
+    --color-brand-hover: #2a4d6e;
 
-    /* Accent Colors */
-    --color-accent: #60A5FA;
-    /* Lighter blue for dark mode */
-    --color-accent-light: #93C5FD;
-    --color-accent-dark: #3B82F6;
+    --emdad-logo-mark: #183553;
+    --color-brand-rgb: 24, 53, 83;
+
+    /* Accent / primary — navy family only (no sky / light blue in dark mode) */
+    --color-accent: #2a4d6e;
+    --color-accent-light: #3d5d7a;
+    --color-accent-dark: #0f2538;
 
     /* Primary Colors (alias for accent) */
-    --color-primary: #60A5FA;
-    --color-primary-dark: #3B82F6;
+    --color-primary: #2a4d6e;
+    --color-primary-dark: #183553;
 
     /* Background Colors */
     --color-background: #1A1D24;
@@ -210,8 +244,7 @@ body:has(main.overflow-y-auto) {
     /* Lighter orange */
     --color-error: #F87171;
     /* Lighter red */
-    --color-info: #60A5FA;
-    /* Lighter blue */
+    --color-info: #2a4d6e;
 
     /* Shadows - Adjusted for dark mode */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
@@ -316,6 +349,15 @@ body {
 /* Smooth theme transition */
 html {
   transition: background-color var(--transition-base), color var(--transition-base);
+}
+
+/* Native date/time/datetime controls follow app theme (Chrome/Edge/Safari pickers) */
+html[data-theme='light'] {
+  color-scheme: light;
+}
+
+html[data-theme='dark'] {
+  color-scheme: dark;
 }
 
 /* Transition for elements using CSS variables */
@@ -533,9 +575,9 @@ input:autofill {
   gap: 6px;
   padding: 2px 10px;
   border-radius: 9999px;
-  background: rgba(200, 168, 127, 0.12);
-  border: 1px solid rgba(200, 168, 127, 0.4);
-  color: var(--color-brand-dark, #BEA06E);
+  background: color-mix(in srgb, var(--color-brand) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-brand) 40%, transparent);
+  color: var(--color-brand-dark, #0f2538);
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
@@ -545,12 +587,13 @@ input:autofill {
 
 .action-required-highlight {
   position: relative;
-  background-color: rgba(200, 168, 127, 0.04) !important;
+  background-color: color-mix(in srgb, var(--color-brand) 4%, transparent) !important;
 }
 
 /* For table rows, use box-shadow instead of ::before to avoid layout issues */
 tr.action-required-highlight {
-  box-shadow: inset 4px 0 0 0 var(--color-brand), inset 0 0 0 1px rgba(200, 168, 127, 0.1);
+  box-shadow: inset 4px 0 0 0 var(--color-brand),
+    inset 0 0 0 1px color-mix(in srgb, var(--color-brand) 10%, transparent);
 }
 
 /* For non-table elements, keep the ::before approach */
@@ -562,21 +605,21 @@ tr.action-required-highlight {
   width: 4px;
   height: 100%;
   background: var(--color-brand);
-  box-shadow: 2px 0 10px rgba(200, 168, 127, 0.3);
+  box-shadow: 2px 0 10px color-mix(in srgb, var(--color-brand) 30%, transparent);
   pointer-events: none;
 }
 
 @keyframes action-pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(200, 168, 127, 0.4);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-brand) 40%, transparent);
   }
 
   70% {
-    box-shadow: 0 0 0 6px rgba(200, 168, 127, 0);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-brand) 0%, transparent);
   }
 
   100% {
-    box-shadow: 0 0 0 0 rgba(200, 168, 127, 0);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-brand) 0%, transparent);
   }
 }
 
@@ -590,8 +633,8 @@ tr.action-required-highlight {
 }
 
 .logo-filter-brand {
-  /* Brand color gold/beige (#c8a87f) */
-  filter: brightness(0) saturate(100%) invert(75%) sepia(18%) saturate(612%) hue-rotate(348deg) brightness(92%) contrast(88%);
+  /* Brand navy (#183553) — for monochrome icons on light surfaces */
+  filter: brightness(0) saturate(100%) invert(11%) sepia(32%) saturate(2000%) hue-rotate(174deg) brightness(92%) contrast(90%);
 }
 
 .dark-mode-logo {
