@@ -44,6 +44,7 @@ export class WorkflowPickupDateComponent implements OnChanges, OnDestroy {
   confirmPickupDateProcessing: boolean = false;
 
   @ViewChild('pickupDatePicker') pickupDatePickerRef?: ElementRef<HTMLInputElement>;
+  @ViewChild('confirmPickupDatePicker') confirmPickupDatePickerRef?: ElementRef<HTMLInputElement>;
 
   // State from service
   get isPickupDateAlreadySet(): boolean {
@@ -123,8 +124,18 @@ export class WorkflowPickupDateComponent implements OnChanges, OnDestroy {
     return this.stateService.hasPendingStep();
   }
 
-  openPickupDatePicker(): void {
-    const el = this.pickupDatePickerRef?.nativeElement;
+  /** Opens the native picker for the Set section (only that block has #pickupDatePicker). */
+  openSetPickupDatePicker(): void {
+    this.openNativeDatetimePicker(this.pickupDatePickerRef);
+  }
+
+  /** Opens the native picker for Update/Confirm section — required when Set section is hidden (e.g. user only has Confirm permission). */
+  openConfirmPickupDatePicker(): void {
+    this.openNativeDatetimePicker(this.confirmPickupDatePickerRef);
+  }
+
+  private openNativeDatetimePicker(ref?: ElementRef<HTMLInputElement>): void {
+    const el = ref?.nativeElement;
     if (el?.showPicker) {
       el.showPicker();
     } else {

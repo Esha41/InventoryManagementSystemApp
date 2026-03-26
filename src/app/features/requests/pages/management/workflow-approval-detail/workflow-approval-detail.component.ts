@@ -535,7 +535,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
               requestId: this.requestId,
               requestDetail: this.requestDetail,
               processing: this.processing,
-              isWeaponOrder: this.isWeaponOrder
+              isWeaponOrder: this.isWeaponOrder,
+              isPickupDateAlreadySet: this.isPickupDateAlreadySet
             });
 
             // Load supply data if needed (for Order requests)
@@ -561,7 +562,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
               requestId: this.requestId,
               requestDetail: this.requestDetail,
               processing: this.processing,
-              isWeaponOrder: this.isWeaponOrder
+              isWeaponOrder: this.isWeaponOrder,
+              isPickupDateAlreadySet: this.isPickupDateAlreadySet
             });
             // Load supply data if needed
             if (this.requestDetail.requestType === 'Order') {
@@ -627,13 +629,20 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     this.stateService.updateState({
       isPickupDateAlreadySet: this.isPickupDateAlreadySet
     });
+    // OnPush children (e.g. approval actions) read this from state; refresh immediately
+    this.cdr.markForCheck();
   }
 
   /**
    * Handle pickup date confirmed event from child component
    */
   onPickupDateConfirmed(): void {
-    // Date confirmed, no additional action needed
+    // Confirm path does not emit pickupDateSet; still required for approve validation / UI
+    this.isPickupDateAlreadySet = true;
+    this.stateService.updateState({
+      isPickupDateAlreadySet: true
+    });
+    this.cdr.markForCheck();
   }
 
   /**

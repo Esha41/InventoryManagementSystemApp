@@ -8,6 +8,7 @@ import { BackendAuthService } from '@services/backend-auth.service';
 import { RequestDetail, WorkflowApprovalStep } from '@models/workflow-approval.model';
 import { OrderSummary } from '@models/order-report.model';
 import { REQUEST_STATUS_APPROVED } from '@utils/status.utils';
+import { hasPendingStep } from '../utils/workflow-approval-helpers';
 
 @Injectable({
   providedIn: 'root'
@@ -485,6 +486,36 @@ export class WorkflowApprovalPermissionsService {
   }
 
   /**
+   * True if this user appears as the actor on any Approved/Rejected workflow history row.
+   * Used to stop pickup-date edits after they have taken an approval decision (unless they are again the active approver).
+   */
+  private hasCurrentUserRecordedApproveOrReject(requestDetail: RequestDetail): boolean {
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser || !requestDetail.approvalHistory?.length) {
+      return false;
+    }
+
+    const currentUserId = currentUser.id?.toLowerCase() || '';
+    const currentUserName = currentUser.userName?.toLowerCase() || '';
+    const currentUserEmail = currentUser.email?.toLowerCase() || '';
+
+    return requestDetail.approvalHistory.some(step => {
+      if (step.status !== 'Approved' && step.status !== 'Rejected') {
+        return false;
+      }
+      const changedBy = step.changedBy?.toLowerCase() || '';
+      const approverName = step.approverName?.toLowerCase() || '';
+
+      const matchesUserId = currentUserId && changedBy.includes(currentUserId);
+      const matchesUserName = currentUserName &&
+        (changedBy.includes(currentUserName) || approverName.includes(currentUserName));
+      const matchesUserEmail = currentUserEmail && changedBy.includes(currentUserEmail);
+
+      return matchesUserId || matchesUserName || matchesUserEmail;
+    });
+  }
+
+  /**
    * Check if pickup date is editable
    */
   isPickupDateEditable(requestDetail: RequestDetail | null): boolean {
@@ -512,16 +543,27 @@ export class WorkflowApprovalPermissionsService {
       // If admin check fails, continue with normal checks
     }
 
-    const pendingStep = requestDetail.approvalHistory?.find(
-      step => step.status === 'Pending' && step.isPending === true
-    );
-
-    if (!pendingStep) {
+    // Confirm permission + active workflow
+    if (!hasPendingStep(requestDetail)) {
       return false;
     }
 
-    // For weapon orders and ammunitions/explosives, allow editing even if date is already set
-    return pendingStep.isCurrentUserApprover === true;
+    if (!this.canConfirmSupplyPickupDate(requestDetail)) {
+      return false;
+    }
+
+    // After this user has approved/rejected, lock pickup edits unless they are the current approver again
+    // (e.g. multi-step workflow). Confirm-only users have no Approve/Reject rows and stay editable.
+    const pendingStep = requestDetail.approvalHistory?.find(
+      step => step.status === 'Pending' && step.isPending === true
+    );
+    const isCurrentApprover = pendingStep?.isCurrentUserApprover === true;
+
+    if (this.hasCurrentUserRecordedApproveOrReject(requestDetail) && !isCurrentApprover) {
+      return false;
+    }
+
+    return true;
   }
 
   /**
