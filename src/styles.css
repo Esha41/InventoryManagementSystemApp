@@ -46,6 +46,11 @@ body:has(.mobile-sidebar-open) {
   touch-action: none;
 }
 
+/* Main layout provides the only scroll container (prevents double scrollbars) */
+body:has(main.overflow-y-auto) {
+  overflow: hidden;
+}
+
 @layer base {
   :root {
     /* Brand Colors */
