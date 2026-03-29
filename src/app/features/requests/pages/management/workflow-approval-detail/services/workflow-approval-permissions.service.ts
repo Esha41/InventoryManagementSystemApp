@@ -396,19 +396,15 @@ export class WorkflowApprovalPermissionsService {
     }
   }
 
-  /** Order is fully completed (approved) — workflow supply summary is shown only in this state. */
-  isRequestCompletedForSupplySummary(requestDetail: RequestDetail | null): boolean {
-    return requestDetail?.status === 'Approved';
-  }
-
   /**
-   * Completed orders only; SuperAdmin or ViewWorkflowSupplySummary.
+   * SuperAdmin or ViewWorkflowSupplySummary; not shown for rejected orders (cancelled still blocked by API).
+   * The parent page additionally requires an initial supply before mounting the summary card.
    */
   canViewWorkflowSupplySummarySection(requestDetail: RequestDetail | null): boolean {
     if (!requestDetail || requestDetail.requestType !== 'Order') {
       return false;
     }
-    if (!this.isRequestCompletedForSupplySummary(requestDetail)) {
+    if (requestDetail.status === 'Rejected') {
       return false;
     }
     try {
@@ -422,7 +418,7 @@ export class WorkflowApprovalPermissionsService {
   }
 
   /**
-   * Order report: same rules as workflow supply summary, using {@link OrderSummary} from the report mapper.
+   * Order report: approved/completed orders only (final summary), plus permission — unlike workflow detail which can show provisional summary while in progress.
    */
   canViewWorkflowSupplySummaryForOrderReport(orderSummary: OrderSummary | null): boolean {
     if (!orderSummary || orderSummary.requestType !== 'Order') {

@@ -74,6 +74,22 @@ export class OrderReportSupplySummaryComponent implements OnInit, OnChanges, OnD
     return name || code || '—';
   }
 
+  showSupplyDateRow(): boolean {
+    return !!this.summary?.supplyDate && this.summary.isOrderCompleted === true;
+  }
+
+  isSuppliedPhase(): boolean {
+    return this.summary?.phase === 'Supplied';
+  }
+
+  isAmmoPhase(): boolean {
+    return !this.summary?.isWeaponOrder || this.summary?.phase === 'None' || !this.summary?.phase;
+  }
+
+  hasWeaponSuppliedLines(): boolean {
+    return !!this.summary?.weaponLines?.length;
+  }
+
   private fetchSummary(): void {
     if (this.orderId == null) {
       return;

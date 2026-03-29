@@ -128,6 +128,30 @@ export interface WorkflowSupplySummaryLineDto {
   notes?: string | null;
 }
 
+export interface WeaponSelectionLineDto {
+  itemId: number;
+  itemName: string;
+  depotId: number;
+  depotName?: string | null;
+  depotCode?: string | null;
+  batchId: number;
+  batchNumber: string;
+  selectedQuantity: number;
+}
+
+export interface WeaponSuppliedLineDto {
+  itemId: number;
+  itemName: string;
+  assetId: number;
+  serialNumber?: string | null;
+  depotId?: number | null;
+  depotName?: string | null;
+  depotCode?: string | null;
+  batchNumber?: string | null;
+  assigneeName?: string | null;
+  notes?: string | null;
+}
+
 export interface WorkflowSupplySummaryDto {
   orderId: number;
   orderSupplyDate?: string | null;
@@ -139,7 +163,13 @@ export interface WorkflowSupplySummaryDto {
   receiverRankName?: string | null;
   notes?: string | null;
   isWeaponOrder: boolean;
+  /** True when the order is fully approved; false while workflow is in progress. */
+  isOrderCompleted?: boolean;
+  /** None | Selection | Supplied */
+  phase?: string;
   lines: WorkflowSupplySummaryLineDto[];
+  selectionLines?: WeaponSelectionLineDto[];
+  weaponLines?: WeaponSuppliedLineDto[];
 }
 
 export interface SupplyDto {
@@ -218,7 +248,8 @@ export class SupplyService {
   }
 
   /**
-   * Read-only workflow summary (completed orders; requires ViewWorkflowSupplySummary).
+   * Read-only workflow supply/pickup summary (provisional while order in progress, final when approved).
+   * Requires ViewWorkflowSupplySummary.
    */
   getWorkflowSupplySummary(orderId: number): Observable<WorkflowSupplySummaryDto> {
     this.config.log(`Fetching workflow supply summary for order ${orderId}`);
