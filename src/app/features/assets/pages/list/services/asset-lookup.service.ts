@@ -63,7 +63,7 @@ export class AssetLookupService {
   getFilterOptions(activeTab: AssetType, lookups: AssetLookups): AssetFilterOptions {
     const ammoOptions = this.assetFilterService.getAmmunitionFilterOptions(
       lookups.caseTypes,
-      lookups.hazardDivisions,
+      lookups.primaryPurposes,
       lookups.compatibilities,
       lookups.propellants
     );
@@ -81,7 +81,7 @@ export class AssetLookupService {
 
     return {
       caseType: ammoOptions.caseType,
-      hazardDivision: ammoOptions.hazardDivision,
+      primaryPurpose: ammoOptions.primaryPurpose,
       compatibility: ammoOptions.compatibility,
       propellant: ammoOptions.propellant,
       weaponType: weaponOptions.weaponType,

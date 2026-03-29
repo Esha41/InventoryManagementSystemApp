@@ -175,82 +175,34 @@
               <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">
                 {{ 'assetList.table.image' | translate }}
               </th>
-              <th
-                class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
-                (click)="onSort('name')">
-                <div class="flex items-center gap-2">
-                  {{ 'assetList.table.name' | translate }}
-                  <lucide-angular *ngIf="sortState.column !== 'name'" [img]="ArrowUpDown"
-                    class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                  <lucide-angular *ngIf="sortState.column === 'name' && sortState.direction === 'asc'"
-                    [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                  <lucide-angular *ngIf="sortState.column === 'name' && sortState.direction === 'desc'"
-                    [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                </div>
-              </th>
-              <th
-                class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
-                (click)="onSort('itemNo')">
-                <div class="flex items-center gap-2">
-                  {{ 'assetList.table.itemNo' | translate }}
-                  <lucide-angular *ngIf="sortState.column !== 'itemNo'" [img]="ArrowUpDown"
-                    class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                  <lucide-angular *ngIf="sortState.column === 'itemNo' && sortState.direction === 'asc'"
-                    [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                  <lucide-angular *ngIf="sortState.column === 'itemNo' && sortState.direction === 'desc'"
-                    [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                </div>
-              </th>
-              <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">
-                {{ 'assetList.table.partNo' | translate }}
-              </th>
-              <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">
-                {{ 'assetList.table.nsn' | translate }}
-              </th>
+              <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'name', labelKey: 'assetList.table.name' }"></ng-container>
+              <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'itemNo', labelKey: 'assetList.table.itemNo' }"></ng-container>
+              <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'partNo', labelKey: 'assetList.table.partNo' }"></ng-container>
+              <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'nsn', labelKey: 'assetList.table.nsn' }"></ng-container>
 
               <!-- Ammunition Specific Columns -->
-              <th *ngIf="activeTab === 'ammunition'"
-                class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">
-                {{ 'assetList.table.caseType' | translate }}
-              </th>
-              <th *ngIf="activeTab === 'ammunition'"
-                class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">
-                {{ 'assetList.table.hazardDivision' | translate }}
-              </th>
+              <ng-container *ngIf="activeTab === 'ammunition'">
+                <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'caseType', labelKey: 'assetList.table.caseType' }"></ng-container>
+                <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'primaryPurpose', labelKey: 'assetList.table.primaryPurpose' }"></ng-container>
+              </ng-container>
 
               <!-- Weapon Specific Columns -->
-              <th *ngIf="activeTab === 'weapon'"
-                class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">
-                {{ 'addAsset.weaponType' | translate }}
-              </th>
-              <th *ngIf="activeTab === 'weapon'"
-                class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">
-                {{ 'addAsset.caliber' | translate }}
-              </th>
+              <ng-container *ngIf="activeTab === 'weapon'">
+                <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'weaponType', labelKey: 'addAsset.weaponType' }"></ng-container>
+                <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'caliber', labelKey: 'addAsset.caliber' }"></ng-container>
+              </ng-container>
 
               <!-- Explosive Specific Columns -->
-              <th *ngIf="activeTab === 'explosive'"
-                class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">
-                {{ 'addAsset.armNumber' | translate }}
-              </th>
-              <th *ngIf="activeTab === 'explosive'"
-                class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">
-                {{ 'addAsset.explosiveType' | translate }}
-              </th>
-              <th *ngIf="activeTab === 'explosive'"
-                class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">
-                {{ 'addAsset.unNumber' | translate }}
-              </th>
-              <th *ngIf="activeTab === 'explosive'"
-                class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">
-                {{ 'addAsset.compatibility' | translate }}
-              </th>
+              <ng-container *ngIf="activeTab === 'explosive'">
+                <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'armNumber', labelKey: 'addAsset.armNumber' }"></ng-container>
+                <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'explosiveType', labelKey: 'addAsset.explosiveType' }"></ng-container>
+                <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'unNumber', labelKey: 'addAsset.unNumber' }"></ng-container>
+                <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'compatibility', labelKey: 'addAsset.compatibility' }"></ng-container>
+              </ng-container>
 
               <!-- Common Columns -->
-              <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{
-                'assetList.table.price' | translate }}</th>
-              <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{
-                'assetList.table.minimumQuantity' | translate }}</th>
+              <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'price', labelKey: 'assetList.table.price' }"></ng-container>
+              <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'minimumQuantity', labelKey: 'assetList.table.minimumQuantity' }"></ng-container>
               <th class="text-end py-4 px-6 font-semibold text-[var(--color-text)] text-sm">{{
                 'assetList.table.actions' | translate }}</th>
             </tr>
@@ -283,7 +235,7 @@
               <td *ngIf="activeTab === 'ammunition'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
                 asset.caseType }}</td>
               <td *ngIf="activeTab === 'ammunition'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
-                asset.hazardDivision }}</td>
+                asset.primaryPurpose }}</td>
 
               <!-- Weapon Columns -->
               <td *ngIf="activeTab === 'weapon'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
@@ -386,6 +338,22 @@
     </div>
   </div>
 </app-card>
+
+<ng-template #sortHeaderCell let-column="column" let-labelKey="labelKey">
+  <th
+    (click)="onSort(column)"
+    class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors">
+    <div class="flex items-center gap-2">
+      {{ labelKey | translate }}
+      <lucide-angular *ngIf="sortState.column !== column" [img]="ArrowUpDown"
+        class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+      <lucide-angular *ngIf="sortState.column === column && sortState.direction === 'asc'" [img]="ArrowUp"
+        class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+      <lucide-angular *ngIf="sortState.column === column && sortState.direction === 'desc'" [img]="ArrowDown"
+        class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+    </div>
+  </th>
+</ng-template>
 
 <!-- Image Preview Tooltip -->
 <app-image-preview-tooltip></app-image-preview-tooltip>

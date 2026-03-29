@@ -25,6 +25,7 @@ export function mapAmmunitionToAsset(
     batchNo: dto.batchNo || '-',
     nsn: dto.nsn || '-',
     caseType: getLocalizedName(dto.caseType, currentLang) || '-',
+    primaryPurpose: getLocalizedName(dto.primaryPurpos, currentLang) || '-',
     hazardDivision: getLocalizedName(dto.hazardDivision, currentLang) || '-',
     compatibility: getLocalizedName(dto.compatibility, currentLang) || '-',
     propellant: getLocalizedName(dto.propellant, currentLang) || '-',

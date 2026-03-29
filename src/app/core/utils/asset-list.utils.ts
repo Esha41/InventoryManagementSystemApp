@@ -81,10 +81,10 @@ export function filterAssets(
         }
       }
 
-      // Hazard Division filter
-      if (filterState.selectedHazardDivision) {
-        const assetHazardDivisionId = originalData?.hazardDivision?.id;
-        if (assetHazardDivisionId !== parseInt(filterState.selectedHazardDivision)) {
+      // Primary purpose filter
+      if (filterState.selectedPrimaryPurpose) {
+        const assetPrimaryPurposeId = originalData?.primaryPurpos?.id;
+        if (assetPrimaryPurposeId !== parseInt(filterState.selectedPrimaryPurpose)) {
           return false;
         }
       }

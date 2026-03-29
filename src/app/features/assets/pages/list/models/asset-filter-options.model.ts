@@ -13,7 +13,7 @@ export interface FilterOption {
  */
 export interface AmmunitionFilterOptions {
   caseType: FilterOption[];
-  hazardDivision: FilterOption[];
+  primaryPurpose: FilterOption[];
   compatibility: FilterOption[];
   propellant: FilterOption[];
 }
@@ -43,7 +43,7 @@ export interface ExplosiveFilterOptions {
  */
 export interface AssetFilterOptions {
   caseType: FilterOption[];
-  hazardDivision: FilterOption[];
+  primaryPurpose: FilterOption[];
   compatibility: FilterOption[];
   propellant: FilterOption[];
   weaponType: FilterOption[];
