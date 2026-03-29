@@ -222,6 +222,12 @@ export const API_ENDPOINTS = {
     SCHEDULE: '/ItemNotification/schedule',
   },
 
+  // Onboarding
+  ONBOARDING: {
+    STATUS: '/account/onboarding-status',
+    COMPLETE: '/account/complete-onboarding',
+  },
+
   // File Upload Management
   FILE_UPLOAD: {
     BASE: '/FileUpload',

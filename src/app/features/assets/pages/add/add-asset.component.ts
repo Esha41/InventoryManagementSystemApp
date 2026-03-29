@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -8,6 +8,7 @@ import { CardComponent } from '@components/card/card.component';
 import { ButtonComponent } from '@components/button/button.component';
 import { LucideAngularModule, Save, X } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
+import { OnboardingTourService } from '@features/onboarding/services/onboarding-tour.service';
 import { LookupService, NatureOptionDto } from '@services/lookup.service';
 import { LookupItem } from '@models/lookup.model';
 import { AmmunitionCreateDto, AmmunitionReadDto } from '@models/ammunition.model';
@@ -83,7 +84,7 @@ type AssetType = 'ammunition' | 'weapon' | 'explosive';
   styleUrls: ['./add-asset.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AddAssetComponent implements OnInit, OnDestroy {
+export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
   readonly Save = Save;
   readonly X = X;
 
@@ -134,7 +135,8 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private translateService: TranslateService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private onboardingTourService: OnboardingTourService
   ) { }
 
   get isRTL(): boolean {
@@ -188,6 +190,10 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       netExplosiveQuantityUnitId: '',
       unitId: ''
     };
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => this.onboardingTourService.checkAndStartPageTour('add-asset'), 300);
   }
 
   ngOnInit(): void {

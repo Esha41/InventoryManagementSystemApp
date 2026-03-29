@@ -1,8 +1,9 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { OnboardingTourService } from '@features/onboarding/services/onboarding-tour.service';
 import { Subject, combineLatest } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
@@ -44,7 +45,7 @@ import { TranslationService } from '@services/translation.service';
   styleUrls: ['./asset-list.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AssetListComponent implements OnInit, OnDestroy {
+export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild(ImagePreviewTooltipComponent) imagePreviewTooltip!: ImagePreviewTooltipComponent;
 
   private readonly destroy$ = new Subject<void>();
@@ -59,7 +60,8 @@ export class AssetListComponent implements OnInit, OnDestroy {
     private readonly assetModalService: AssetModalService,
     private readonly assetExportService: AssetExportService,
     private readonly propertyAccessor: AssetPropertyAccessor,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
+    private readonly onboardingTourService: OnboardingTourService
   ) {}
 
   get isRTL(): boolean {
@@ -106,6 +108,10 @@ export class AssetListComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
     if (this.imagePreviewTooltip) this.imagePreviewTooltip.hide();
     this.facade.destroy();
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => this.onboardingTourService.checkAndStartPageTour('asset-list'), 300);
   }
 
   ngOnInit(): void {

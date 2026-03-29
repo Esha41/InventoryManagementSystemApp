@@ -1,6 +1,9 @@
 /* Leaflet CSS - Required for map functionality */
 @import 'leaflet/dist/leaflet.css';
 
+/* Driver.js CSS - Required for onboarding tour */
+@import 'driver.js/dist/driver.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -40,7 +43,7 @@
   }
 
   /**
-   * White-on-transparent EMDAD PNG as solid #183553 (see --emdad-logo-mark).
+   * White-on-transparent EMDAD PNG masked with --emdad-logo-mark (navy in light theme, white in dark).
    * Login + order report only; navbar keeps the unmodified white PNG.
    */
   .emdad-logo-mark--brand {
@@ -82,7 +85,7 @@ body:has(main.overflow-y-auto) {
     /* For rgba(var(--color-brand-rgb), a) — matches #183553 */
     --color-brand-rgb: 24, 53, 83;
 
-    /* EMDAD logo tint on login + order report (always brand navy, including dark theme) */
+    /* EMDAD logo tint on login + order report (brand navy on light backgrounds) */
     --emdad-logo-mark: #183553;
 
     /* Accent Colors */
@@ -196,7 +199,8 @@ body:has(main.overflow-y-auto) {
     --color-brand-dark: #0f2538;
     --color-brand-hover: #2a4d6e;
 
-    --emdad-logo-mark: #183553;
+    /* Masked logo reads as this color; white on dark chrome (login, etc.) */
+    --emdad-logo-mark: #ffffff;
     --color-brand-rgb: 24, 53, 83;
 
     /* Accent / primary — navy family only (no sky / light blue in dark mode) */
@@ -639,4 +643,145 @@ tr.action-required-highlight {
 
 .dark-mode-logo {
   @apply logo-filter-brand;
+}
+
+/* ============================================
+   DRIVER.JS ONBOARDING TOUR THEME OVERRIDES
+   Uses CSS custom properties for automatic
+   light/dark theme support.
+   ============================================ */
+
+.driver-popover.ettad-tour-popover {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  max-width: 360px;
+}
+
+.driver-popover.ettad-tour-popover .driver-popover-title {
+  color: var(--color-text);
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.driver-popover.ettad-tour-popover .driver-popover-description {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.driver-popover.ettad-tour-popover .driver-popover-progress-text {
+  color: var(--color-text-light);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.driver-popover.ettad-tour-popover .driver-popover-navigation-btns {
+  gap: 0.5rem;
+}
+
+.driver-popover.ettad-tour-popover .driver-popover-next-btn {
+  background-color: var(--color-brand);
+  color: white;
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 0.5rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: background-color var(--transition-fast);
+  text-shadow: none;
+}
+
+.driver-popover.ettad-tour-popover .driver-popover-next-btn:hover {
+  background-color: var(--color-brand-dark);
+}
+
+.driver-popover.ettad-tour-popover .driver-popover-prev-btn {
+  background-color: var(--color-background-active);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 0.5rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: background-color var(--transition-fast);
+}
+
+.driver-popover.ettad-tour-popover .driver-popover-prev-btn:hover {
+  background-color: var(--color-background-hover);
+}
+
+.driver-popover.ettad-tour-popover .driver-popover-close-btn {
+  color: var(--color-text-muted);
+}
+
+.driver-popover.ettad-tour-popover .driver-popover-close-btn:hover {
+  color: var(--color-text);
+}
+
+.driver-popover.ettad-tour-popover .driver-popover-arrow-side-left .driver-popover-arrow,
+.driver-popover.ettad-tour-popover .driver-popover-arrow-side-right .driver-popover-arrow,
+.driver-popover.ettad-tour-popover .driver-popover-arrow-side-top .driver-popover-arrow,
+.driver-popover.ettad-tour-popover .driver-popover-arrow-side-bottom .driver-popover-arrow {
+  border-color: var(--color-background);
+}
+
+[dir="rtl"] .driver-popover.ettad-tour-popover .driver-popover-navigation-btns {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .driver-popover.ettad-tour-popover {
+  text-align: right;
+}
+
+[dir="rtl"] .driver-popover.ettad-tour-popover .driver-popover-footer {
+  flex-direction: row-reverse;
+}
+
+.driver-popover.ettad-tour-welcome {
+  max-width: 440px;
+}
+
+.driver-popover.ettad-tour-welcome .driver-popover-title {
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.driver-popover.ettad-tour-welcome .driver-popover-description {
+  font-size: 0.9375rem;
+  text-align: center;
+}
+
+.ettad-tour-lang-hint {
+  margin-top: 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-light);
+  font-style: italic;
+}
+
+.driver-popover.ettad-tour-welcome .driver-popover-footer {
+  gap: 1rem;
+}
+
+.driver-popover.ettad-tour-popover .ettad-tour-lang-btn {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-background-active);
+  color: var(--color-text-muted);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.driver-popover.ettad-tour-popover .ettad-tour-lang-btn:hover {
+  background-color: var(--color-background-hover);
+  color: var(--color-text);
+  border-color: var(--color-text-muted);
 }

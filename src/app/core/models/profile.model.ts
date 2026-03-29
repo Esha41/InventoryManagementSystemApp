@@ -52,5 +52,6 @@ export interface UserMeResponse {
   militoryId?: string | number | null; // Note: API has typo "militoryId"
   department?: ProfileDepartment;
   rank?: ProfileRank;
+  isOnboardingCompleted?: boolean;
 }
 
