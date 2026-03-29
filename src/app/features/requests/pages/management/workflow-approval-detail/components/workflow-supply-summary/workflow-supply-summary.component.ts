@@ -2,6 +2,8 @@ import {
   Component,
   Input,
   OnInit,
+  OnChanges,
+  SimpleChanges,
   ChangeDetectionStrategy,
   ChangeDetectorRef
 } from '@angular/core';
@@ -21,11 +23,13 @@ import { ErrorHandler } from '@utils/error-handler.utils';
   styleUrls: ['./workflow-supply-summary.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class WorkflowSupplySummaryComponent implements OnInit {
+export class WorkflowSupplySummaryComponent implements OnInit, OnChanges {
   readonly Package = Package;
 
   @Input({ required: true }) orderId!: number;
   @Input({ required: true }) destroy$!: Subject<void>;
+  /** Parent increments this after supply/pickup updates so the summary reloads without leaving the page. */
+  @Input() refreshTick = 0;
 
   loading = true;
   error: string | null = null;
@@ -37,6 +41,24 @@ export class WorkflowSupplySummaryComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.loadSummary();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['orderId'] && !changes['orderId'].firstChange) {
+      this.loadSummary();
+      return;
+    }
+    if (changes['refreshTick'] && !changes['refreshTick'].firstChange) {
+      this.loadSummary();
+    }
+  }
+
+  private loadSummary(): void {
+    this.loading = true;
+    this.error = null;
+    this.cdr.markForCheck();
+
     this.supplyService.getWorkflowSupplySummary(this.orderId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -53,6 +75,34 @@ export class WorkflowSupplySummaryComponent implements OnInit {
           this.cdr.markForCheck();
         }
       });
+  }
+
+  showProvisionalBanner(): boolean {
+    return !!this.summary && this.summary.isOrderCompleted === false;
+  }
+
+  showSupplyDateRow(): boolean {
+    return !!this.summary?.supplyDate && this.summary.isOrderCompleted === true;
+  }
+
+  isSelectionPhase(): boolean {
+    return this.summary?.phase === 'Selection';
+  }
+
+  isSuppliedPhase(): boolean {
+    return this.summary?.phase === 'Supplied';
+  }
+
+  isAmmoPhase(): boolean {
+    return !this.summary?.isWeaponOrder || this.summary?.phase === 'None' || !this.summary?.phase;
+  }
+
+  hasWeaponSelectionLines(): boolean {
+    return !!this.summary?.selectionLines?.length;
+  }
+
+  hasWeaponSuppliedLines(): boolean {
+    return !!this.summary?.weaponLines?.length;
   }
 
   submissionLabelKey(status: number): string {

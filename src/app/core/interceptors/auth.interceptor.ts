@@ -75,12 +75,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       if (error.status === 401) {
         if (skipAuth) {
           configService.logWarning('Refresh failed - redirecting to login');
+          sessionStorage.setItem('sessionExpired', 'true');
           backendAuth.clearSession();
           router.navigate(['/auth/login']);
           return throwError(() => error);
         }
 
-        // Don't try refresh when login failed - pass through the original 401 so user sees proper message (wrong password, etc.)
         if (isLogin) {
           return throwError(() => error);
         }
@@ -95,6 +95,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           }),
           catchError(refreshError => {
             configService.logWarning('Token refresh failed - redirecting to login');
+            sessionStorage.setItem('sessionExpired', 'true');
             backendAuth.clearSession();
             router.navigate(['/auth/login']);
             return throwError(() => refreshError);

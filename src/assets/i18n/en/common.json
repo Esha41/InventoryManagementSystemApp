@@ -141,7 +141,13 @@
       "nineteenth": "19th",
       "twentieth": "20th"
     },
-    "requiredSuffix": "*"
+    "requiredSuffix": "*",
+    "idleTimeout": {
+      "title": "Are you still there?",
+      "message": "You will be logged out in {{seconds}} seconds due to inactivity.",
+      "stayActive": "Stay logged in",
+      "signOut": "Sign out"
+    }
   },
   "importDialog": {
     "description": "Upload an Excel file to import {{entityName}} data. Please ensure your file follows the required format.",

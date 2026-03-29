@@ -8,5 +8,7 @@ export const environment: Environment = {
   version: '1.2.1',
   notificationHubUrl: 'https://localhost:7148/hubs/notification',
   mockData: false,
-  debugMode: true
+  debugMode: true,
+  idleWarningAfterMinutes: 15,
+  idleLogoutCountdownSeconds: 60
 };
