@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnDestroy, OnInit, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Cartridge } from './components/cartridge-list/cartridge-list.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -24,6 +24,7 @@ import { IssueRequestUserContextService } from '@requests/services/issue-request
 import { IssueRequestCartridgeLoaderService } from '@requests/services/issue-request-cartridge-loader.service';
 import { IssueRequestCartridgeManagementService } from '@requests/services/issue-request-cartridge-management.service';
 import { IssueRequestSubmissionService } from '@requests/services/issue-request-submission.service';
+import { OnboardingTourService } from '@features/onboarding/services/onboarding-tour.service';
 import {
   RequestPurposeDto,
   FilterState,
@@ -91,7 +92,7 @@ interface ExtendedFilterOptions extends FilterOptions {
   styleUrls: ['./new-issue-request.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NewIssueRequestComponent implements OnInit, OnDestroy {
+export class NewIssueRequestComponent implements OnInit, OnDestroy, AfterViewInit {
   private destroy$ = new Subject<void>();
   private pendingSelections: Array<{ id: number; quantity: number }> | null = null;
   currentStep = 0;
@@ -118,7 +119,8 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     private cartridgeManagementService: IssueRequestCartridgeManagementService,
     private submissionService: IssueRequestSubmissionService,
     private toastService: ToastService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private onboardingTourService: OnboardingTourService
   ) { }
 
   // Grouped state objects
@@ -275,6 +277,10 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       this.userContextState.fallbackRequesterName,
       this.reviewFormData.requesterName
     );
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => this.onboardingTourService.checkAndStartPageTour('issue-request'), 300);
   }
 
   ngOnInit(): void {

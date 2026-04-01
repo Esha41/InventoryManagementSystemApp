@@ -1,0 +1,107 @@
+{
+  "onboarding": {
+    "welcome": {
+      "title": "Welcome to EMDAD!",
+      "description": "Let us give you a quick tour of the system. This will only take a moment.",
+      "langHint": "You can switch the language using the button below."
+    },
+    "sidebar": {
+      "title": "Navigation Menu",
+      "description": "Access all system features from the sidebar. It organizes everything into clear sections for easy navigation."
+    },
+    "dashboard": {
+      "title": "Dashboard Overview",
+      "description": "Your central hub for monitoring all requests. View statuses, track progress, and stay on top of operations at a glance."
+    },
+    "requestManagement": {
+      "title": "Request Management",
+      "description": "Create and manage requests from here. You can issue new requests, submit returns, or initiate discards."
+    },
+    "approvalManagement": {
+      "title": "Approval Management",
+      "description": "Review and manage approval workflows for all requests. Track request statuses, approve or reject pending items, and view detailed order reports."
+    },
+    "theme": {
+      "title": "Theme Toggle",
+      "description": "Switch between light and dark mode to suit your preference."
+    },
+    "language": {
+      "title": "Language",
+      "description": "Switch between English and Arabic. The entire interface will update instantly."
+    },
+    "notifications": {
+      "title": "Notifications",
+      "description": "Stay informed with real-time notifications about request updates, approvals, and important alerts."
+    },
+    "profile": {
+      "title": "Your Profile",
+      "description": "Access your profile settings, manage delegations, and sign out from here."
+    },
+    "complete": {
+      "title": "You're All Set!",
+      "description": "You now know the essentials. You can replay this tour anytime from your profile page."
+    },
+    "btnNext": "Next",
+    "btnPrev": "Previous",
+    "btnSkip": "Skip",
+    "btnDone": "Get Started",
+    "replay": "Replay Tour",
+    "replayDescription": "Take the guided tour again to review system features",
+    "pageTour": {
+      "issueRequest": {
+        "intro": {
+          "title": "Issue New Request",
+          "description": "This wizard guides you through 5 steps to create a new issue request."
+        },
+        "stepper": {
+          "title": "Request Steps",
+          "description": "1. Allowance Selection – Choose regular or reserve allowance\n2. Selection – Pick items and quantities\n3. Usage – Specify purpose, location, and dates\n4. Review – Verify all details before submitting\n5. Send – Submit and receive confirmation"
+        }
+      },
+      "returnRequest": {
+        "intro": {
+          "title": "Return Request",
+          "description": "Use this page to submit a return request for previously issued items."
+        },
+        "tabs": {
+          "title": "Item Type Tabs",
+          "description": "Select the category of items you want to return: Ammunition, Weapons, or Explosives. Each tab shows the relevant form for that item type."
+        }
+      },
+      "discardRequest": {
+        "intro": {
+          "title": "Discard Request",
+          "description": "Use this page to submit a discard request for items that need to be disposed of."
+        },
+        "tabs": {
+          "title": "Item Type Tabs",
+          "description": "Select the category of items to discard: Ammunition, Weapons, or Explosives. Each tab shows the relevant form for that item type."
+        }
+      },
+      "addAsset": {
+        "intro": {
+          "title": "Add New Asset",
+          "description": "Use this page to register a new asset into the system. Select the asset type and fill in the required details."
+        },
+        "tabs": {
+          "title": "Asset Type Tabs",
+          "description": "Choose the type of asset you want to add: Ammunition, Explosive, or Weapon. Each tab shows the specific form fields for that asset type."
+        }
+      },
+      "assetList": {
+        "intro": {
+          "title": "Asset List",
+          "description": "Browse and manage all registered assets. You can view, edit, delete, and filter assets from this page."
+        },
+        "header": {
+          "title": "Tabs & Actions",
+          "description": "Switch between Ammunition, Explosives, and Weapons tabs to view each category. Use the Add button to register a new asset."
+        },
+        "filters": {
+          "title": "Filters & Search",
+          "description": "Narrow down the list using filters and the search bar. You can filter by various attributes and clear them at any time."
+        }
+      }
+    }
+  }
+}

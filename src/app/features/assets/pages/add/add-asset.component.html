@@ -15,7 +15,7 @@
     </app-error-state>
 
     <!-- Tabs - scroll inside container when space is limited -->
-    <app-card [shadow]="true" class="mb-6 min-w-0">
+    <app-card data-onboarding="add-asset-tabs" [shadow]="true" class="mb-6 min-w-0">
       <div class="asset-tabs-scroll overflow-x-auto overflow-y-hidden scrollbar-hide bg-gradient-to-r from-[var(--color-background)] to-[var(--color-background-hover)]" [ngClass]="{'flex justify-end': isRTL}">
         <nav class="asset-tabs flex gap-2 p-2 w-max min-w-full" aria-label="Tabs" [ngClass]="{'flex-row-reverse': isRTL}">
           <button (click)="setActiveTab('ammunition')" [ngClass]="{
