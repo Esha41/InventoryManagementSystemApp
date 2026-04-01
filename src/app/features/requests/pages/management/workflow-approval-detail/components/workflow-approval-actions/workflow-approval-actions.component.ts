@@ -206,6 +206,22 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
     return this.stateService.isDepotSelected();
   }
 
+  canSetReturnDepot(): boolean {
+    return this.stateService.canSetReturnDepot();
+  }
+
+  canSetReturnDeliveryDate(): boolean {
+    return this.stateService.canSetReturnDeliveryDate();
+  }
+
+  isReturnDepotSet(): boolean {
+    return this.stateService.isReturnDepotSet();
+  }
+
+  isReturnDeliveryDateSet(): boolean {
+    return this.stateService.isReturnDeliveryDateSet();
+  }
+
   shouldShowApproveButton(): boolean {
     if (this.isSuperAdmin) {
       return true;
@@ -370,6 +386,28 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
       this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.depotSelectionRequired']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.error(
           translations['workflowApprovalDetail.errors.depotSelectionRequired'] || 'Please select at least one depot before approving.',
+          translations['toast.error']
+        );
+      });
+      return;
+    }
+
+    // Validate: Return depot must be set if user has permission
+    if (!this.isSuperAdmin && this.canSetReturnDepot() && !this.isReturnDepotSet()) {
+      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.returnDepotRequired']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
+        this.toastService.error(
+          translations['workflowApprovalDetail.errors.returnDepotRequired'] || 'Please set the return depot before approving.',
+          translations['toast.error']
+        );
+      });
+      return;
+    }
+
+    // Validate: Return delivery date must be set if user has permission
+    if (!this.isSuperAdmin && this.canSetReturnDeliveryDate() && !this.isReturnDeliveryDateSet()) {
+      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.returnDeliveryDateRequired']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
+        this.toastService.error(
+          translations['workflowApprovalDetail.errors.returnDeliveryDateRequired'] || 'Please set the delivery date before approving.',
           translations['toast.error']
         );
       });

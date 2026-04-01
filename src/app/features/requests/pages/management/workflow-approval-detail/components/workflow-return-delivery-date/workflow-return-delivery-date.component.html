@@ -1,0 +1,88 @@
+<!-- Return Delivery Date Section -->
+<div *ngIf="canShow" class="mt-6 pb-6">
+  <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">
+    <div class="flex items-center gap-3 mb-4 pb-4 border-b border-[var(--color-border)]">
+      <div class="w-10 h-10 rounded-lg bg-[var(--color-info)]/10 flex items-center justify-center">
+        <lucide-angular [img]="Calendar" class="h-5 w-5 text-[var(--color-info)]"></lucide-angular>
+      </div>
+      <div>
+        <h2 class="text-lg font-semibold text-[var(--color-text)]">
+          {{ 'workflowApprovalDetail.setReturnDeliveryDate' | translate }}
+        </h2>
+        <p class="text-sm text-[var(--color-text-muted)] mt-1">
+          {{ 'workflowApprovalDetail.deliveryDateDescription' | translate }}
+        </p>
+      </div>
+    </div>
+
+    <div class="space-y-6">
+      <!-- Display Mode: date is already set and not editing -->
+      <div *ngIf="isAlreadySet && !isEditMode">
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+          {{ 'workflowApprovalDetail.deliveryDate' | translate }}
+          <span class="ms-2 text-xs font-normal text-[var(--color-success)] bg-[var(--color-success)]/20 px-2 py-1 rounded">
+            {{ 'workflowApprovalDetail.valueSet' | translate }}
+          </span>
+        </label>
+        <div class="relative min-h-[42px] rounded border border-[var(--color-border)] bg-[var(--color-background-active)] cursor-not-allowed">
+          <div class="flex items-center px-3 py-2 gap-2">
+            <span class="text-sm text-[var(--color-text)] flex-1">{{ deliveryDateDisplay }}</span>
+            <svg class="w-5 h-5 text-[var(--color-text-muted)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+          </div>
+        </div>
+        <div *ngIf="canChangeReturnDeliveryDate" class="flex justify-end mt-4">
+          <button (click)="enableEdit()"
+            type="button"
+            class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--color-brand)] bg-[var(--color-brand)]/10 rounded-lg hover:bg-[var(--color-brand)]/20 transition-colors">
+            <lucide-angular [img]="Edit3" class="h-4 w-4"></lucide-angular>
+            {{ 'workflowApprovalDetail.update' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Edit Mode: date not set or user clicked Update (only when not approved) -->
+      <div *ngIf="canChangeReturnDeliveryDate && (!isAlreadySet || isEditMode)">
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+          {{ 'workflowApprovalDetail.deliveryDate' | translate }}
+          <span class="text-[var(--color-error)]">*</span>
+        </label>
+        <div
+          class="relative min-h-[42px] rounded border bg-[var(--color-background)] cursor-pointer border-[var(--color-border)] hover:border-[var(--color-brand)]/50"
+          (click)="!processing && openDatePicker()">
+          <div class="absolute inset-0 flex items-center px-3 py-2 pointer-events-none gap-2">
+            <span class="text-sm text-start flex-1 min-w-0"
+              [class.text-[var(--color-text-muted)]]="!deliveryDateDisplay">
+              {{ deliveryDateDisplay || ('workflowApprovalDetail.selectDeliveryDate' | translate) }}
+            </span>
+            <svg class="w-5 h-5 text-[var(--color-text-muted)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+          </div>
+          <input
+            #deliveryDatePicker
+            type="datetime-local"
+            [ngModel]="deliveryDateForInput"
+            (ngModelChange)="onDateChange($event)"
+            [attr.min]="minDeliveryDateForPicker"
+            class="absolute inset-0 w-full h-full opacity-0 pointer-events-none"
+            [attr.aria-label]="'workflowApprovalDetail.deliveryDate' | translate">
+        </div>
+      </div>
+
+      <!-- Set Button -->
+      <div *ngIf="canChangeReturnDeliveryDate && (!isAlreadySet || isEditMode)" class="flex justify-end">
+        <button (click)="setDeliveryDate()"
+          type="button"
+          [disabled]="processing || !localDeliveryDate"
+          class="px-6 py-3 bg-[var(--color-info)] text-white rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-custom-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-info)] focus:ring-offset-2">
+          <span *ngIf="!processing">{{ 'workflowApprovalDetail.setDeliveryDate' | translate }}</span>
+          <span *ngIf="processing">{{ 'common.processing' | translate }}...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,187 @@
+<div class="min-h-screen bg-[var(--color-background-main)] p-4 md:p-6">
+  <div class="max-w-5xl mx-auto">
+
+    <!-- Header with Back Button -->
+    <div class="flex items-center gap-4 mb-6">
+      <button (click)="goBack()"
+        class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-background-active)] transition-colors">
+        <lucide-angular [img]="backIcon" class="h-4 w-4"></lucide-angular>
+        {{ 'common.back' | translate }}
+      </button>
+      <div>
+        <h1 class="text-2xl font-bold text-[var(--color-text)]">
+          {{ 'processReturnItems.title' | translate }}
+        </h1>
+        <p *ngIf="requestNo" class="text-sm text-[var(--color-text-muted)] mt-1">
+          {{ 'processReturnItems.requestNo' | translate }}: {{ requestNo }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <app-loading-state *ngIf="loading"></app-loading-state>
+
+    <!-- Error State -->
+    <app-error-state *ngIf="!loading && error" [error]="error" actionText="Retry" (action)="ngOnInit()"></app-error-state>
+
+    <!-- Content -->
+    <div *ngIf="!loading && !error">
+
+      <!-- Ammo / Explosive Section -->
+      <div *ngIf="hasAmmoExplosiveItems" class="bg-[var(--color-background)] rounded-xl shadow-custom-md p-6 border border-[var(--color-border)] mb-6">
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-[var(--color-border)]">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-[var(--color-warning)]/10 flex items-center justify-center">
+              <lucide-angular [img]="Package" class="h-5 w-5 text-[var(--color-warning)]"></lucide-angular>
+            </div>
+            <h2 class="text-lg font-semibold text-[var(--color-text)]">
+              {{ 'processReturnItems.ammoExplosiveSection' | translate }}
+            </h2>
+          </div>
+          <button (click)="addAmmoRow()" [disabled]="processing"
+            class="flex items-center gap-1 px-3 py-2 text-sm font-medium text-[var(--color-brand)] bg-[var(--color-brand)]/10 rounded-lg hover:bg-[var(--color-brand)]/20 transition-colors disabled:opacity-50">
+            <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
+            {{ 'processReturnItems.addRow' | translate }}
+          </button>
+        </div>
+
+        <!-- Table Header -->
+        <div class="hidden md:grid grid-cols-12 gap-3 mb-3 px-2">
+          <div class="col-span-4 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+            {{ 'processReturnItems.item' | translate }}
+          </div>
+          <div class="col-span-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+            {{ 'processReturnItems.quantity' | translate }}
+          </div>
+          <div class="col-span-4 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+            {{ 'processReturnItems.lot' | translate }}
+          </div>
+          <div class="col-span-1"></div>
+        </div>
+
+        <!-- Ammo/Explosive Rows -->
+        <div *ngFor="let row of ammoExplosiveRows; let i = index"
+          class="grid grid-cols-1 md:grid-cols-12 gap-3 mb-3 p-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-background-main)]">
+          <!-- Item Name (read-only) -->
+          <div class="md:col-span-4">
+            <label class="md:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">{{ 'processReturnItems.item' | translate }}</label>
+            <div class="px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background-active)] text-sm text-[var(--color-text)] min-h-[38px] flex items-center">
+              {{ row.itemName || '-' }}
+            </div>
+          </div>
+          <!-- Quantity -->
+          <div class="md:col-span-3">
+            <label class="md:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">{{ 'processReturnItems.quantity' | translate }}</label>
+            <input type="number" [(ngModel)]="row.quantity" [disabled]="processing" min="1"
+              class="w-full px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50"
+              [placeholder]="'processReturnItems.enterQuantity' | translate">
+          </div>
+          <!-- Lot -->
+          <div class="md:col-span-4">
+            <label class="md:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">{{ 'processReturnItems.lot' | translate }}</label>
+            <input type="text" [(ngModel)]="row.lot" [disabled]="processing"
+              class="w-full px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50"
+              [placeholder]="'processReturnItems.enterLot' | translate">
+          </div>
+          <!-- Remove -->
+          <div class="md:col-span-1 flex items-center justify-center">
+            <button (click)="removeAmmoRow(i)" [disabled]="processing"
+              class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors disabled:opacity-50">
+              <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="ammoExplosiveRows.length === 0" class="text-center py-8 text-sm text-[var(--color-text-muted)]">
+          {{ 'processReturnItems.noAmmoRows' | translate }}
+        </div>
+      </div>
+
+      <!-- Weapon Section -->
+      <div *ngIf="hasWeaponItems" class="bg-[var(--color-background)] rounded-xl shadow-custom-md p-6 border border-[var(--color-border)] mb-6">
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-[var(--color-border)]">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-[var(--color-error)]/10 flex items-center justify-center">
+              <lucide-angular [img]="Package" class="h-5 w-5 text-[var(--color-error)]"></lucide-angular>
+            </div>
+            <h2 class="text-lg font-semibold text-[var(--color-text)]">
+              {{ 'processReturnItems.weaponSection' | translate }}
+            </h2>
+          </div>
+          <button (click)="addWeaponRow()" [disabled]="processing"
+            class="flex items-center gap-1 px-3 py-2 text-sm font-medium text-[var(--color-brand)] bg-[var(--color-brand)]/10 rounded-lg hover:bg-[var(--color-brand)]/20 transition-colors disabled:opacity-50">
+            <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
+            {{ 'processReturnItems.addRow' | translate }}
+          </button>
+        </div>
+
+        <!-- Table Header -->
+        <div class="hidden md:grid grid-cols-12 gap-3 mb-3 px-2">
+          <div class="col-span-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+            {{ 'processReturnItems.item' | translate }}
+          </div>
+          <div class="col-span-4 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+            {{ 'processReturnItems.serialNumber' | translate }}
+          </div>
+          <div class="col-span-4 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+            {{ 'processReturnItems.batchNumber' | translate }}
+          </div>
+          <div class="col-span-1"></div>
+        </div>
+
+        <!-- Weapon Rows -->
+        <div *ngFor="let row of weaponRows; let i = index"
+          class="grid grid-cols-1 md:grid-cols-12 gap-3 mb-3 p-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-background-main)]">
+          <!-- Item Name (read-only) -->
+          <div class="md:col-span-3">
+            <label class="md:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">{{ 'processReturnItems.item' | translate }}</label>
+            <div class="px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background-active)] text-sm text-[var(--color-text)] min-h-[38px] flex items-center">
+              {{ row.itemName || '-' }}
+            </div>
+          </div>
+          <!-- Serial Number -->
+          <div class="md:col-span-4">
+            <label class="md:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">{{ 'processReturnItems.serialNumber' | translate }}</label>
+            <input type="text" [(ngModel)]="row.serialNumber" [disabled]="processing"
+              class="w-full px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50"
+              [placeholder]="'processReturnItems.enterSerialNumber' | translate">
+          </div>
+          <!-- Batch Number -->
+          <div class="md:col-span-4">
+            <label class="md:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">{{ 'processReturnItems.batchNumber' | translate }}</label>
+            <input type="text" [(ngModel)]="row.batchNumber" [disabled]="processing"
+              class="w-full px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50"
+              [placeholder]="'processReturnItems.enterBatchNumber' | translate">
+          </div>
+          <!-- Remove -->
+          <div class="md:col-span-1 flex items-center justify-center">
+            <button (click)="removeWeaponRow(i)" [disabled]="processing"
+              class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors disabled:opacity-50">
+              <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="weaponRows.length === 0" class="text-center py-8 text-sm text-[var(--color-text-muted)]">
+          {{ 'processReturnItems.noWeaponRows' | translate }}
+        </div>
+      </div>
+
+      <!-- Submit / Cancel Buttons -->
+      <div class="flex flex-col sm:flex-row gap-3 justify-end">
+        <button (click)="goBack()" [disabled]="processing"
+          class="px-6 py-3 bg-[var(--color-background)] text-[var(--color-text)] rounded-lg font-semibold border border-[var(--color-border)] hover:bg-[var(--color-background-active)] transition-all disabled:opacity-50">
+          {{ 'common.cancel' | translate }}
+        </button>
+        <button (click)="submit()" [disabled]="processing || !canSubmit"
+          class="px-6 py-3 bg-[var(--color-success)] text-white rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-custom-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-success)] focus:ring-offset-2">
+          <span *ngIf="!processing">{{ 'processReturnItems.submit' | translate }}</span>
+          <span *ngIf="processing" class="flex items-center gap-2">
+            <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+            {{ 'common.processing' | translate }}...
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

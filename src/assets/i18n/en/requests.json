@@ -550,6 +550,8 @@
       "supplySubmitted": "Supply submitted successfully",
       "approved": "Request approved successfully",
       "rejected": "Request rejected successfully",
+      "returnDepotSet": "Return depot set successfully.",
+      "returnDeliveryDateSet": "Delivery date set successfully.",
       "returnedForReview": "Request returned for review successfully"
     },
     "selectSkipToStepRequired": "Please select a step to go to from the \"Go To Step\" dropdown before approving this request.",
@@ -575,11 +577,28 @@
       "pickupDateRequired": "Please set the supply pickup date before approving.",
       "supplySubmissionRequired": "Please submit the supply information before approving.",
       "depotSelectionRequired": "Please select at least one depot before approving.",
+      "returnDepotRequired": "Please set the return depot before approving.",
+      "returnDeliveryDateRequired": "Please set the delivery date before approving.",
       "approveFailed": "Failed to approve request. Please try again.",
       "rejectFailed": "Failed to reject request. Please try again.",
       "returnForReviewFailed": "Failed to return request for review. Please try again.",
       "requestNotFound": "Request not found"
-    }
+    },
+    "setReturnDepot": "Set Return Depot",
+    "returnDepotDescription": "Select the depot where the returned items will be stored. This is required before approving the return request.",
+    "returnDepot": "Return Depot",
+    "selectDepot": "Select a depot",
+    "setDepot": "Set Depot",
+    "setReturnDeliveryDate": "Set Delivery Date",
+    "deliveryDateDescription": "Set the expected delivery date for the returned items. This is required before approving the return request.",
+    "deliveryDate": "Delivery Date",
+    "selectDeliveryDate": "Select a delivery date",
+    "setDeliveryDate": "Set Delivery Date",
+    "valueSet": "Set",
+    "update": "Update",
+    "processReturnItems": "Process Return Items",
+    "processReturnItemsDescription": "Process the return items by entering lot and serial number information for each item.",
+    "goToProcessReturnItems": "Go to Process Return Items"
   },
   "supplyRequestDetail": {
     "title": "Supply Request",
@@ -753,5 +772,25 @@
     "ACTION_SUPPLIED": "Item Supplied",
     "ACTION_ASSETSUPPLIED": "Asset Supplied",
     "ACTION_UNKNOWN": "Other Action"
+  },
+  "processReturnItems": {
+    "title": "Process Return Items",
+    "requestNo": "Request No",
+    "ammoExplosiveSection": "Ammunition / Explosive Items",
+    "weaponSection": "Weapon Items",
+    "item": "Item",
+    "quantity": "Quantity",
+    "lot": "Lot",
+    "serialNumber": "Serial Number",
+    "batchNumber": "Batch Number",
+    "addRow": "Add Row",
+    "enterQuantity": "Enter quantity",
+    "enterLot": "Enter lot number",
+    "enterSerialNumber": "Enter serial number",
+    "enterBatchNumber": "Enter batch number",
+    "noAmmoRows": "No ammunition/explosive items to process.",
+    "noWeaponRows": "No weapon items to process.",
+    "submit": "Submit & Process",
+    "success": "Return items processed and request approved successfully."
   }
 }

@@ -565,6 +565,8 @@
       "pickupDateRequired": "يرجى تحديد تاريخ استلام التوريد قبل الموافقة.",
       "supplySubmissionRequired": "يرجى تقديم معلومات التوريد قبل الموافقة.",
       "depotSelectionRequired": "يرجى تحديد مستودع واحد على الأقل قبل الموافقة.",
+      "returnDepotRequired": "يرجى تحديد مستودع الإرجاع قبل الموافقة.",
+      "returnDeliveryDateRequired": "يرجى تحديد تاريخ التسليم قبل الموافقة.",
       "approveFailed": "فشل الموافقة على الطلب. يرجى المحاولة مرة أخرى.",
       "rejectFailed": "فشل رفض الطلب. يرجى المحاولة مرة أخرى.",
       "returnForReviewFailed": "فشل إرجاع الطلب للمراجعة. يرجى المحاولة مرة أخرى."
@@ -575,8 +577,25 @@
       "supplySubmitted": "تم تقديم التوريد بنجاح",
       "approved": "تمت الموافقة على الطلب بنجاح",
       "rejected": "تم رفض الطلب بنجاح",
-      "returnedForReview": "تم إرجاع الطلب للمراجعة بنجاح"
-    }
+      "returnedForReview": "تم إرجاع الطلب للمراجعة بنجاح",
+      "returnDepotSet": "تم تحديد مستودع الإرجاع بنجاح.",
+      "returnDeliveryDateSet": "تم تحديد تاريخ التسليم بنجاح."
+    },
+    "setReturnDepot": "تحديد مستودع الإرجاع",
+    "returnDepotDescription": "اختر المستودع الذي سيتم تخزين المواد المرتجعة فيه. هذا مطلوب قبل الموافقة على طلب الإرجاع.",
+    "returnDepot": "مستودع الإرجاع",
+    "selectDepot": "اختر مستودعاً",
+    "setDepot": "تحديد المستودع",
+    "setReturnDeliveryDate": "تحديد تاريخ التسليم",
+    "deliveryDateDescription": "حدد تاريخ التسليم المتوقع للأصناف المرتجعة. هذا مطلوب قبل الموافقة على طلب الإرجاع.",
+    "deliveryDate": "تاريخ التسليم",
+    "selectDeliveryDate": "اختر تاريخ التسليم",
+    "setDeliveryDate": "تحديد تاريخ التسليم",
+    "valueSet": "تم التحديد",
+    "update": "تحديث",
+    "processReturnItems": "معالجة أصناف الإرجاع",
+    "processReturnItemsDescription": "قم بمعالجة أصناف الإرجاع بإدخال معلومات الدفعة والرقم التسلسلي لكل صنف.",
+    "goToProcessReturnItems": "الذهاب لمعالجة أصناف الإرجاع"
   },
   "supplyRequestDetail": {
     "title": "طلب توريد",
@@ -727,5 +746,25 @@
     "ACTION_SUPPLIED": "مادة موردة",
     "ACTION_ASSETSUPPLIED": "سلاح مورد",
     "ACTION_UNKNOWN": "إجراء آخر"
+  },
+  "processReturnItems": {
+    "title": "معالجة أصناف الإرجاع",
+    "requestNo": "رقم الطلب",
+    "ammoExplosiveSection": "أصناف الذخيرة / المتفجرات",
+    "weaponSection": "أصناف الأسلحة",
+    "item": "الصنف",
+    "quantity": "الكمية",
+    "lot": "رقم الدفعة",
+    "serialNumber": "الرقم التسلسلي",
+    "batchNumber": "رقم الدفعة",
+    "addRow": "إضافة سطر",
+    "enterQuantity": "أدخل الكمية",
+    "enterLot": "أدخل رقم الدفعة",
+    "enterSerialNumber": "أدخل الرقم التسلسلي",
+    "enterBatchNumber": "أدخل رقم الدفعة",
+    "noAmmoRows": "لا توجد أصناف ذخيرة/متفجرات للمعالجة.",
+    "noWeaponRows": "لا توجد أصناف أسلحة للمعالجة.",
+    "submit": "إرسال ومعالجة",
+    "success": "تمت معالجة أصناف الإرجاع والموافقة على الطلب بنجاح."
   }
 }

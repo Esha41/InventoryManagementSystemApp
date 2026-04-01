@@ -128,6 +128,11 @@ export interface RequestDetail {
   isFromAllowance?: boolean;
   creationDate?: string | Date;
   supplyDate?: string | Date | null;
+  // Return-specific fields
+  returnToDepotId?: number;
+  returnToDepotNameAr?: string;
+  returnToDepotNameEn?: string;
+  deliveryDate?: string | Date | null;
 }
 
 /**

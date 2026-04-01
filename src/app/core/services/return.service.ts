@@ -131,5 +131,73 @@ export class ReturnService {
       })
     );
   }
+
+  /**
+   * Set/update the depot for a return request
+   */
+  setDepot(returnId: number, depotId: number): Observable<boolean> {
+    this.configService.log(`Setting depot ${depotId} for return ${returnId}`);
+    return this.apiService.put<boolean>(
+      API_ENDPOINTS.RETURNS.SET_DEPOT(returnId),
+      { depotId }
+    ).pipe(
+      catchError(error => {
+        this.configService.logError('Failed to set return depot', error);
+        const msg = ErrorHandler.extractErrorMessage(error, 'Failed to set return depot');
+        return throwError(() => new Error(msg));
+      })
+    );
+  }
+
+  /**
+   * Set/update the delivery date for a return request
+   */
+  setDeliveryDate(returnId: number, deliveryDate: string): Observable<boolean> {
+    this.configService.log(`Setting delivery date for return ${returnId}`);
+    return this.apiService.put<boolean>(
+      API_ENDPOINTS.RETURNS.SET_DELIVERY_DATE(returnId),
+      { deliveryDate }
+    ).pipe(
+      catchError(error => {
+        this.configService.logError('Failed to set return delivery date', error);
+        const msg = ErrorHandler.extractErrorMessage(error, 'Failed to set return delivery date');
+        return throwError(() => new Error(msg));
+      })
+    );
+  }
+
+  /**
+   * Process return items (ammo/explosive and weapon) and approve the return
+   */
+  processReturnItems(returnId: number, dto: ProcessReturnItemsDto): Observable<boolean> {
+    this.configService.log(`Processing return items for return ${returnId}`, dto);
+    return this.apiService.put<boolean>(
+      API_ENDPOINTS.RETURNS.PROCESS_ITEMS(returnId),
+      dto
+    ).pipe(
+      catchError(error => {
+        this.configService.logError('Failed to process return items', error);
+        const msg = ErrorHandler.extractErrorMessage(error, 'Failed to process return items');
+        return throwError(() => new Error(msg));
+      })
+    );
+  }
+}
+
+export interface ProcessReturnItemsDto {
+  ammoExplosiveItems: ReturnAmmoExplosiveItemDto[];
+  weaponItems: ReturnWeaponItemDto[];
+}
+
+export interface ReturnAmmoExplosiveItemDto {
+  itemId: number;
+  quantity: number;
+  lot: string;
+}
+
+export interface ReturnWeaponItemDto {
+  itemId: number;
+  serialNumber: string;
+  batchNumber: string;
 }
 

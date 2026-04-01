@@ -394,7 +394,12 @@ export function mapToRequestDetail(data: BaseRequestDto): RequestDetail {
     numberOfOtherRank: data['numberOfOtherRank'],
     isFromAllowance: data['isFromAllowance'],
     creationDate: data.creationDate,
-    supplyDate: data['supplyDate'] ?? undefined
+    supplyDate: data['supplyDate'] ?? undefined,
+    // Return-specific fields
+    returnToDepotId: data['returnToDepotId'],
+    returnToDepotNameAr: data['returnToDepot']?.nameAr,
+    returnToDepotNameEn: data['returnToDepot']?.nameEn,
+    deliveryDate: data['deliveryDate'] ?? undefined,
   };
 }
 
