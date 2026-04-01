@@ -82,7 +82,6 @@
           <div #reportContent class="print-report-content">
             <!-- Print Header with Logo and QR Code -->
             <app-order-report-header
-              [logoUrl]="logoDataUrl"
               [qrCodeDataUrl]="qrCodeDataUrl"
               [orderId]="orderSummary.orderId">
             </app-order-report-header>
@@ -98,6 +97,11 @@
               [items]="orderItems"
               [totalQuantity]="orderSummary.totalQuantity">
             </app-order-items-table>
+
+            <app-order-report-supply-summary
+              *ngIf="showOrderReportSupplySummary && selectedOrderId != null"
+              [orderId]="selectedOrderId">
+            </app-order-report-supply-summary>
 
             <!-- Approval Workflow Section -->
             <app-approval-workflow

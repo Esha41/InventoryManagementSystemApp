@@ -75,7 +75,7 @@ export class AssetListFacade {
   private readonly _units = new BehaviorSubject<LookupItem[]>([]);
   private readonly _filterOptions = new BehaviorSubject<AssetFilterOptions>({
     caseType: [],
-    hazardDivision: [],
+    primaryPurpose: [],
     compatibility: [],
     propellant: [],
     weaponType: [],

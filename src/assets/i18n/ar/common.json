@@ -144,7 +144,13 @@
       "twentieth": "العشرون"
     },
     "requiredSuffix": "*",
-    "saving": "جاري الحفظ..."
+    "saving": "جاري الحفظ...",
+    "idleTimeout": {
+      "title": "هل ما زلت هنا؟",
+      "message": "سيتم تسجيل خروجك خلال {{seconds}} ثانية بسبب عدم النشاط.",
+      "stayActive": "البقاء مسجلاً",
+      "signOut": "تسجيل الخروج"
+    }
   },
   "importDialog": {
     "description": "قم بتحميل ملف Excel لاستيراد بيانات {{entityName}}. يرجى التأكد من أن ملفك يتبع التنسيق المطلوب.",

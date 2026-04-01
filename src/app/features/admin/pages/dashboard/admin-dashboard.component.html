@@ -137,14 +137,16 @@
             </div>
         </div>
 
-        <!-- Delegations Section -->
-        <div class="delegations-section">
-            <div class="section-header">
-                <h2 class="section-title">{{ 'DELEGATION.ADMIN_TITLE' | translate }}</h2>
+        <!-- Delegation Management: plain permission DelegationManagement (see Role Permissions → System Features) -->
+        <ng-container *appHasPermission="'DelegationManagement'">
+            <div class="delegations-section">
+                <div class="section-header">
+                    <h2 class="section-title">{{ 'DELEGATION.ADMIN_TITLE' | translate }}</h2>
+                </div>
+                <div class="delegations-view">
+                    <app-admin-delegations></app-admin-delegations>
+                </div>
             </div>
-            <div class="delegations-view">
-                <app-admin-delegations></app-admin-delegations>
-            </div>
-        </div>
+        </ng-container>
     </div>
 </div>

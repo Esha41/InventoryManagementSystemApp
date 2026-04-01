@@ -48,12 +48,12 @@
 
       <div *ngIf="activeTab === 'ammunition'" class="w-full sm:w-[180px]">
         <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
-          {{ 'assetList.filters.hazardDivision' | translate }}
+          {{ 'assetList.filters.primaryPurpose' | translate }}
         </label>
-        <app-dropdown class="w-full" [(ngModel)]="filterState.selectedHazardDivision"
-          (selectionChange)="onFilterChange()" [options]="filterOptions.hazardDivision" optionLabel="label"
+        <app-dropdown class="w-full" [(ngModel)]="filterState.selectedPrimaryPurpose"
+          (selectionChange)="onFilterChange()" [options]="filterOptions.primaryPurpose" optionLabel="label"
           optionValue="value" [placeholderSelectable]="false"
-          placeholder="{{ 'assetList.filters.allHazardDivisions' | translate }}">
+          placeholder="{{ 'assetList.filters.allPrimaryPurposes' | translate }}">
         </app-dropdown>
       </div>
 

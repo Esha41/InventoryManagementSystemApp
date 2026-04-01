@@ -211,15 +211,19 @@
             [loadingBatchAssets]="loadingBatchAssets"
             [getAssetItemName]="getAssetItemName" [getAssetItemNo]="getAssetItemNo"
             [getAssetStatusLabel]="getAssetStatusLabel" [formatDate]="formatDate"
-            (rowClick)="onBatchRowClick($event)" (editBatch)="onEditBatch($event)" (deleteBatch)="onDeleteBatch($event)">
+            [sortColumn]="batchSortColumn" [sortDirection]="batchSortDirection"
+            (rowClick)="onBatchRowClick($event)" (editBatch)="onEditBatch($event)" (deleteBatch)="onDeleteBatch($event)"
+            (sortChange)="onBatchSort($event)">
           </app-batch-table>
 
           <!-- Inventory Items Table (Ammunition & Explosives) -->
           <app-inventory-table *ngIf="activeTab !== 'batch'" [items]="paginatedItems"
             [isStaticItem]="isStaticItem.bind(this)" [getItemName]="getItemName" [getSupplierName]="getSupplierName"
-            [formatNumber]="formatNumber" [formatDate]="formatDate" (editItem)="onEditItem($event)"
+            [formatNumber]="formatNumber" [formatDate]="formatDate"
+            [sortColumn]="inventorySortColumn" [sortDirection]="inventorySortDirection"
+            (editItem)="onEditItem($event)"
             (deleteItem)="onDeleteItem($event)" (viewItem)="onViewItem($event)"
-            (filterByInvoice)="searchByInvoice($event)">
+            (filterByInvoice)="searchByInvoice($event)" (sortChange)="onInventorySort($event)">
           </app-inventory-table>
         </div>
 

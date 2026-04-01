@@ -360,6 +360,30 @@ export class BackendUserService {
   }
 
   /**
+   * Permanently delete a soft-deleted user (only if user has no transaction history)
+   */
+  permanentDeleteUser(id: string): Observable<boolean> {
+    this.configService.log('Permanently deleting user', { id });
+
+    return this.apiService.delete<any>(
+      API_ENDPOINTS.USERS.PERMANENT_DELETE(id)
+    ).pipe(
+      map(() => true),
+      tap(() => {
+        const currentUsers = this.usersSubject.value;
+        this.usersSubject.next(currentUsers.filter(u => u.id !== id));
+        this.configService.log('User permanently deleted', { id });
+      }),
+      catchError(error => {
+        this.configService.logError('Failed to permanently delete user', error);
+        return throwError(() => new Error(
+          error.userMessage || error.message || 'Failed to permanently delete user'
+        ));
+      })
+    );
+  }
+
+  /**
    * Get user roles
    */
   getUserRoles(userId: string): Observable<RoleDto[]> {

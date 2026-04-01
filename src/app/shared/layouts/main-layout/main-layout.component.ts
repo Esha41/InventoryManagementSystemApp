@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { NavbarComponent } from '../navbar/navbar.component';
@@ -7,21 +7,23 @@ import { FooterComponent } from '../footer/footer.component';
 import { ToastComponent } from '@components/toast/toast.component';
 import { filter } from 'rxjs/operators';
 import { AnnouncementBannerComponent } from '@components/announcement-banner/announcement-banner.component';
+import { IdleTimeoutModalComponent } from '@components/idle-timeout-modal/idle-timeout-modal.component';
+import { IdleService } from '@services/idle.service';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, NavbarComponent, SidebarComponent, FooterComponent, ToastComponent, AnnouncementBannerComponent],
+  imports: [CommonModule, RouterOutlet, NavbarComponent, SidebarComponent, FooterComponent, ToastComponent, AnnouncementBannerComponent, IdleTimeoutModalComponent],
   templateUrl: './main-layout.component.html',
   styleUrls: ['./main-layout.component.css']
 })
-export class MainLayoutComponent {
+export class MainLayoutComponent implements OnInit, OnDestroy {
   isSidebarCollapsed = false;
   mobileSidebarOpen = false;
   shouldCollapseSidebar = false;
   shouldHideSidebar = false;
 
-  constructor(private router: Router) {
+  constructor(private router: Router, private idleService: IdleService) {
     // Check current route
     this.checkRoute();
     
@@ -39,6 +41,14 @@ export class MainLayoutComponent {
     this.shouldCollapseSidebar = url.includes('/report-designer/designer');
     // Hide sidebar completely when on report viewer
     this.shouldHideSidebar = url.includes('/report-viewer');
+  }
+
+  ngOnInit(): void {
+    this.idleService.start();
+  }
+
+  ngOnDestroy(): void {
+    this.idleService.stop();
   }
 
   onSidebarToggle(collapsed: boolean): void {

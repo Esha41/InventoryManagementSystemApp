@@ -70,7 +70,7 @@ export class RequestFilterBarComponent {
         { label: 'requestsManagement.actionRequired', value: 'action-required' },
         { label: 'dashboard.statusLabels.new', value: 'new' },
         { label: 'dashboard.statusLabels.underProcess', value: 'on-progress' },
-        { label: 'dashboard.statusLabels.approved', value: 'completed' },
+        { label: 'requestsManagement.orderReport.workflowStatus.completed', value: 'completed' },
         { label: 'dashboard.statusLabels.rejected', value: 'declined' },
         { label: 'dashboard.statusLabels.returnedForReview', value: 'returned' }
     ];

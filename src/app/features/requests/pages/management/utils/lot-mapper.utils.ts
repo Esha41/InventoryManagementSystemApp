@@ -14,29 +14,30 @@ import { getLocalizedName } from '@utils/localization.utils';
  */
 export function mapSuggestedLotsToLotItems(
   suggestions: any[],
-  existingSelections?: Map<number, number>,
+  existingSelections?: Map<string, number>,
   currentLang: string = 'en'
 ): LotItem[] {
   // Remove duplicate suggestions by lot number (keep first occurrence)
   const uniqueSuggestions: any[] = [];
-  const seenLots = new Set<number>();
-  
+  const seenLots = new Set<string>();
+
   suggestions.forEach(suggestion => {
-    if (!seenLots.has(suggestion.lot)) {
-      seenLots.add(suggestion.lot);
+    const lotKey = String(suggestion.lot ?? '');
+    if (!seenLots.has(lotKey)) {
+      seenLots.add(lotKey);
       uniqueSuggestions.push(suggestion);
     }
   });
 
   const lots = uniqueSuggestions.map(lotSuggestion => ({
     inventoryDetailId: lotSuggestion.inventoryDetailId,
-    lotNumber: lotSuggestion.lot,
+    lotNumber: String(lotSuggestion.lot ?? ''),
     quantity: lotSuggestion.availableQuantity,
     expiryDate: lotSuggestion.expiryDate ? new Date(lotSuggestion.expiryDate) : undefined,
     location: formatLocation(lotSuggestion.depot),
     condition: determineCondition(lotSuggestion.expiryDate),
     daysUntilExpiry: calculateDaysUntilExpiry(lotSuggestion.expiryDate),
-    selectedQuantity: existingSelections?.get(lotSuggestion.lot) ?? lotSuggestion.suggestedQuantity,
+    selectedQuantity: existingSelections?.get(String(lotSuggestion.lot ?? '')) ?? lotSuggestion.suggestedQuantity,
     depotName: lotSuggestion.depot ? getLocalizedName(lotSuggestion.depot, currentLang) : undefined,
     supplierName: lotSuggestion.supplier ? getLocalizedName(lotSuggestion.supplier, currentLang) : undefined,
     manufacturerName: lotSuggestion.manufacturer ? getLocalizedName(lotSuggestion.manufacturer, currentLang) : undefined

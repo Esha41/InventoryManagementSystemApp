@@ -348,7 +348,8 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!item.lot || item.lot <= 0) {
+    const lotStr = String(item.lot ?? '').trim();
+    if (!lotStr || lotStr.length > 64) {
       this.translateService.get(['supplyOrder.toast.invalidLotNumber', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.error(translations['supplyOrder.toast.invalidLotNumber'], translations['toast.error']);
       });
@@ -383,7 +384,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     this.updatingItem = true;
     this.supplyOrderDataService.updateSupplyDetail(this.supplyId, item.supplyDetailId, {
       itemId: item.itemId,
-      lot: item.lot,
+      lot: lotStr,
       quantity: item.quantity,
       notes: item.notes || undefined
     }).pipe(takeUntil(this.destroy$))

@@ -2,13 +2,21 @@
     <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
         <tr>
             <th class="w-10 px-2 py-3"></th>
-            <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-                {{ 'warehouseInventory.batchNumber' | translate }}
+            <th scope="col" class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                <button type="button" (click)="toggleSort('batchNumber')"
+                    class="inline-flex items-center gap-1 max-w-full cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
+                    {{ 'warehouseInventory.batchNumber' | translate }}
+                    <lucide-angular [img]="sortIcon('batchNumber')" class="h-3.5 w-3.5 shrink-0 text-[var(--color-text-muted)]"></lucide-angular>
+                </button>
             </th>
-            <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-                {{ 'warehouseInventory.quantity' | translate }}
+            <th scope="col" class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                <button type="button" (click)="toggleSort('quantity')"
+                    class="inline-flex items-center gap-1 max-w-full cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
+                    {{ 'warehouseInventory.quantity' | translate }}
+                    <lucide-angular [img]="sortIcon('quantity')" class="h-3.5 w-3.5 shrink-0 text-[var(--color-text-muted)]"></lucide-angular>
+                </button>
             </th>
-            <th class="px-6 py-3 text-end text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider w-36">
+            <th scope="col" class="px-6 py-3 text-end text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider w-36">
                 {{ 'warehouseInventory.actions' | translate }}
             </th>
         </tr>

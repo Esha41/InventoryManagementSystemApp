@@ -57,6 +57,13 @@
       <app-workflow-request-information [requestDetail]="requestDetail" [orderFiles]="orderFiles" [destroy$]="destroy$">
       </app-workflow-request-information>
 
+      <ng-container *ngIf="showWorkflowSupplySummarySection()">
+        <div class="pt-3 sm:pt-5">
+          <app-workflow-supply-summary [orderId]="requestId" [destroy$]="destroy$"
+            [refreshTick]="workflowSupplySummaryRefreshTick">
+          </app-workflow-supply-summary>
+        </div>
+      </ng-container>
 
       <!-- Request Items -->
       <app-workflow-request-items [requestDetail]="requestDetail" (reviewClick)="openWeaponReviewItemsModal()"

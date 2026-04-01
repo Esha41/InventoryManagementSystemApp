@@ -4,8 +4,28 @@
   flex-direction: column;
 }
 
+.depot-modal__toolbar {
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--color-border) 60%, transparent);
+}
+
+.depot-modal__field-label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: 0.375rem;
+}
+
+/* Match shared dropdown to app theme (brand accent) */
+.depot-modal__assignment-dropdown {
+  --dropdown-accent-color: var(--color-brand);
+  --dropdown-accent-color-rgb: var(--color-brand-rgb);
+}
+
 .depot-modal__search {
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .depot-modal__search:focus-within {
@@ -13,12 +33,34 @@
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand) 25%, transparent);
 }
 
+/* Inputs default to white in many browsers — match muted toolbar */
+.depot-modal__search-input {
+  color: var(--color-text);
+  background-color: var(--color-background-muted);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 .depot-modal__search-input::placeholder {
   color: var(--color-text-muted);
+  opacity: 1;
+}
+
+.depot-modal__search-input:focus {
+  outline: none;
+}
+
+/* Chrome / Safari autofill (fixes “white flash” over placeholder) */
+.depot-modal__search-input:-webkit-autofill,
+.depot-modal__search-input:-webkit-autofill:hover,
+.depot-modal__search-input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--color-background-muted) inset;
+  -webkit-text-fill-color: var(--color-text);
+  caret-color: var(--color-text);
+  transition: background-color 99999s ease-out;
 }
 
 .depot-modal__list {
-  /* Ensure scroll is contained and doesn't overlap footer */
   overscroll-behavior: contain;
 }
 

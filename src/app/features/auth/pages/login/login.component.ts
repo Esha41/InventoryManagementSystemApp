@@ -447,6 +447,22 @@ export class LoginComponent implements OnInit {
         const isAlreadyLoggedIn = errorCode === 'ALREADY_LOGGED_IN' || numericCode === 22;
 
         if (isAlreadyLoggedIn) {
+          const wasSessionExpired = sessionStorage.getItem('sessionExpired') === 'true';
+          sessionStorage.removeItem('sessionExpired');
+
+          if (wasSessionExpired) {
+            this.loginError = '';
+            this.cdr.markForCheck();
+            this.pendingLoginCredentials = {
+              username: formValue.username,
+              password: formValue.password,
+              captchaId: this.showCaptcha ? this.captchaId : undefined,
+              captchaCode: this.showCaptcha ? formValue.captcha : undefined
+            };
+            this.takeOverSession();
+            return;
+          }
+
           this.loginError = '';
           this.showTakeOverDialog = true;
           this.cdr.markForCheck();

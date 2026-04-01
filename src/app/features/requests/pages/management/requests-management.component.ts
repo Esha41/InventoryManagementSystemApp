@@ -187,7 +187,7 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Get status translation key
+   * Get status translation key (aligned with order report: approved → Completed, same dashboard keys as elsewhere).
    */
   getStatusText(status: string): string {
     const statusLower = status?.toLowerCase().trim() || '';
@@ -197,7 +197,7 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
       case 'pending':
         return 'dashboard.statusLabels.underProcess';
       case 'confirmed':
-        return 'requestsManagement.confirmed';
+        return 'requestsManagement.orderReport.workflowStatus.completed';
       case 'rejected':
         return 'dashboard.statusLabels.rejected';
       case 'returned':

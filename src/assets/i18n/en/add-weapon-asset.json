@@ -1,6 +1,8 @@
 {
     "addWeaponAsset": {
         "title": "Add Weapon Assets to {{name}}",
+        "titlePrefix": "Add Weapon Assets",
+        "titleTo": "to",
         "subtitle": "Add individual weapon assets with serial numbers and RFID tracking",
         "backToInventory": "Back to Inventory",
         "weaponAssets": "Weapon Assets",

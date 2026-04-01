@@ -76,8 +76,8 @@ export class AssetExportService {
           format: (value: string) => value || '-'
         },
         {
-          header: this.translateService.instant('assetList.table.hazardDivision'),
-          key: 'hazardDivision',
+          header: this.translateService.instant('assetList.table.primaryPurpose'),
+          key: 'primaryPurpose',
           width: 20,
           format: (value: string | LookupDto) => {
             if (!value) return '-';

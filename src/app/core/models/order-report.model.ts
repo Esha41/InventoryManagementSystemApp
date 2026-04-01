@@ -23,6 +23,8 @@ export interface OrderSummary {
   isFromAllowance?: boolean;
   requestType?: string;
   supplyDate?: string | Date | null; // Supply/pickup date (permission-gated)
+  /** Numeric request status (e.g. 3 = approved); used for permission-gated sections. */
+  requestStatusCode?: number;
 }
 
 /**

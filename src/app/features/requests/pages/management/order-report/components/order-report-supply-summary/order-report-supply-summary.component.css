@@ -1,0 +1,305 @@
+/* Match order-info-section + order-items-table (encapsulated; parent styles do not apply here). */
+
+.print-section {
+  background: var(--color-background);
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  border: 2px solid var(--color-border);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.print-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--color-primary);
+}
+
+.print-section-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--color-text);
+  margin: 0;
+  padding-bottom: 0;
+}
+
+.allowance-badge {
+  background: var(--color-background-muted);
+  padding: 4px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.print-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+.print-info-item {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  background: var(--color-background-muted);
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+
+.print-info-item--full {
+  grid-column: 1 / -1;
+}
+
+.print-info-label {
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.print-info-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.supply-summary-stack {
+  margin-top: 12px;
+}
+
+.supply-receiver-block {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.supply-receiver-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.supply-receiver-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.supply-receiver-line-label {
+  font-weight: 600;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.supply-receiver-line-value {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.supply-notes-text {
+  white-space: pre-wrap;
+}
+
+.print-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+
+.print-table-header {
+  background-color: #2563eb;
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+  padding: 12px;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.print-table-header-right {
+  text-align: right;
+}
+
+.print-table-row:nth-child(even) {
+  background-color: var(--color-background-muted);
+}
+
+.print-table-row:hover {
+  background-color: var(--color-background-hover);
+}
+
+.print-table-cell {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+.print-table-cell-right {
+  text-align: right;
+  font-weight: 600;
+}
+
+.print-table-empty {
+  text-align: center;
+  padding: 32px;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.supply-summary-loading {
+  font-size: 0.875rem;
+  padding: 16px 0;
+  color: var(--color-text-muted);
+}
+
+.order-report-supply-summary-error {
+  font-size: 0.875rem;
+  padding: 16px 0;
+  color: var(--color-error, #b91c1c);
+}
+
+.supply-lines-heading {
+  font-size: 1rem;
+  font-weight: bold;
+  margin: 16px 0 8px 0;
+  color: var(--color-text);
+}
+
+@media print {
+  .print-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    border: 2px solid #000 !important;
+    border-radius: 0 !important;
+    padding: 12px !important;
+    margin-bottom: 15px !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+  }
+
+  .print-section-header {
+    border-bottom-color: #000 !important;
+  }
+
+  .print-section-title {
+    font-size: 14pt !important;
+    color: #000 !important;
+  }
+
+  .print-info-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px 15px !important;
+  }
+
+  .print-info-item {
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    padding: 6px 0 !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    border-bottom: 1px solid #ddd !important;
+  }
+
+  .supply-receiver-block {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  .supply-receiver-lines {
+    gap: 4px !important;
+    margin-top: 4px !important;
+  }
+
+  .supply-receiver-line {
+    font-size: 9pt !important;
+    display: block !important;
+  }
+
+  .supply-receiver-line-label,
+  .supply-receiver-line-value {
+    font-size: 9pt !important;
+    font-weight: normal !important;
+  }
+
+  .print-info-label {
+    min-width: 120px !important;
+    font-size: 9pt !important;
+    margin-bottom: 0 !important;
+    text-transform: none !important;
+  }
+
+  .print-info-value {
+    font-size: 9pt !important;
+    font-weight: normal !important;
+  }
+
+  .print-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-top: 10px !important;
+    page-break-inside: avoid !important;
+    border: 2px solid #000 !important;
+    border-radius: 0 !important;
+  }
+
+  .print-table-header {
+    background-color: #333 !important;
+    color: #ffffff !important;
+    font-size: 10pt !important;
+    padding: 6px 12px !important;
+    border: 1px solid #000 !important;
+  }
+
+  .print-table-cell {
+    padding: 6px 12px !important;
+    border: 1px solid #333 !important;
+    font-size: 10pt !important;
+    color: #000 !important;
+  }
+
+  .print-table-row:nth-child(even) {
+    background-color: #f9f9f9 !important;
+  }
+
+  .print-table-empty {
+    padding: 20px !important;
+    border: 1px solid #333 !important;
+    font-size: 10pt !important;
+  }
+
+  .supply-lines-heading {
+    font-size: 12pt !important;
+    color: #000 !important;
+    margin: 10px 0 6px 0 !important;
+  }
+
+  .order-report-supply-summary-error {
+    color: #000 !important;
+    font-size: 10pt !important;
+  }
+
+  .allowance-badge {
+    background: #f5f5f5 !important;
+    border: none !important;
+    color: #000 !important;
+  }
+}

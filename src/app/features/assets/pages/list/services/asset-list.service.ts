@@ -49,8 +49,11 @@ function buildExplosiveSearchFilters(searchTerm: string): FilterData {
       { field: 'Nsn', operator: 'contains', value: term },
       { field: 'ArmNumber', operator: 'contains', value: term },
       { field: 'UNNumber', operator: 'contains', value: term },
-      { field: 'Type.Name', operator: 'contains', value: term },
-      { field: 'Compatibility.Name', operator: 'contains', value: term }
+      // Lookups use NameAr / NameEn in the backend entities.
+      { field: 'Type.NameEn', operator: 'contains', value: term },
+      { field: 'Type.NameAr', operator: 'contains', value: term },
+      { field: 'Compatibility.NameEn', operator: 'contains', value: term },
+      { field: 'Compatibility.NameAr', operator: 'contains', value: term }
     ]
   };
 }
@@ -169,14 +172,15 @@ export class AssetListService {
     let sortDirection: number | undefined;
 
     if (sortState.column) {
-      // Map frontend column names to backend field names
       const fieldMap: Record<string, string> = {
-        'name': 'Name',
-        'itemNo': 'ItemNo',
-        'partNo': 'PartNo',
-        'nsn': 'NSN',
-        'price': 'Price',
-        'minimumQuantity': 'MinimumQuantity'
+        name: 'Name',
+        itemNo: 'ItemNo',
+        partNo: 'PartNo',
+        nsn: 'Nsn',
+        weaponType: 'Type.NameEn',
+        caliber: 'Caliber',
+        price: 'Price',
+        minimumQuantity: 'MinimumQuantity'
       };
 
       sortField = fieldMap[sortState.column] || sortState.column;
@@ -230,12 +234,12 @@ export class AssetListService {
       });
     }
 
-    // Hazard Division filter
-    if (filterState.selectedHazardDivision) {
+    // Primary purpose filter
+    if (filterState.selectedPrimaryPurpose) {
       filters.push({
-        field: 'HazardDivisionId',
+        field: 'PrimaryPurposId',
         operator: 'eq',
-        value: filterState.selectedHazardDivision.toString()
+        value: filterState.selectedPrimaryPurpose.toString()
       });
     }
 
@@ -254,12 +258,14 @@ export class AssetListService {
 
     if (sortState.column) {
       const fieldMap: Record<string, string> = {
-        'name': 'Name',
-        'itemNo': 'ItemNo',
-        'partNo': 'PartNo',
-        'nsn': 'NSN',
-        'price': 'Price',
-        'minimumQuantity': 'MinimumQuantity'
+        name: 'Name',
+        itemNo: 'ItemNo',
+        partNo: 'PartNo',
+        nsn: 'Nsn',
+        caseType: 'CaseType.NameEn',
+        primaryPurpose: 'PrimaryPurpos.NameEn',
+        price: 'Price',
+        minimumQuantity: 'MinimumQuantity'
       };
 
       sortField = fieldMap[sortState.column] || sortState.column;
@@ -346,12 +352,16 @@ export class AssetListService {
 
     if (sortState.column) {
       const fieldMap: Record<string, string> = {
-        'name': 'Name',
-        'itemNo': 'ItemNo',
-        'partNo': 'PartNo',
-        'nsn': 'NSN',
-        'price': 'Price',
-        'minimumQuantity': 'MinimumQuantity'
+        name: 'Name',
+        itemNo: 'ItemNo',
+        partNo: 'PartNo',
+        nsn: 'Nsn',
+        armNumber: 'ArmNumber',
+        explosiveType: 'Type.NameEn',
+        unNumber: 'UNNumber',
+        compatibility: 'Compatibility.NameEn',
+        price: 'Price',
+        minimumQuantity: 'MinimumQuantity'
       };
 
       sortField = fieldMap[sortState.column] || sortState.column;
@@ -422,12 +432,14 @@ export class AssetListService {
 
     if (sortState.column) {
       const fieldMap: Record<string, string> = {
-        'name': 'Name',
-        'itemNo': 'ItemNo',
-        'partNo': 'PartNo',
-        'nsn': 'Nsn',
-        'price': 'Price',
-        'minimumQuantity': 'MinimumQuantity'
+        name: 'Name',
+        itemNo: 'ItemNo',
+        partNo: 'PartNo',
+        nsn: 'Nsn',
+        weaponType: 'Type.NameEn',
+        caliber: 'Caliber',
+        price: 'Price',
+        minimumQuantity: 'MinimumQuantity'
       };
 
       sortField = fieldMap[sortState.column] || sortState.column;
@@ -475,11 +487,11 @@ export class AssetListService {
       });
     }
 
-    if (filterState.selectedHazardDivision) {
+    if (filterState.selectedPrimaryPurpose) {
       filters.push({
-        field: 'HazardDivisionId',
+        field: 'PrimaryPurposId',
         operator: 'eq',
-        value: filterState.selectedHazardDivision.toString()
+        value: filterState.selectedPrimaryPurpose.toString()
       });
     }
 
@@ -496,12 +508,14 @@ export class AssetListService {
 
     if (sortState.column) {
       const fieldMap: Record<string, string> = {
-        'name': 'Name',
-        'itemNo': 'ItemNo',
-        'partNo': 'PartNo',
-        'nsn': 'NSN',
-        'price': 'Price',
-        'minimumQuantity': 'MinimumQuantity'
+        name: 'Name',
+        itemNo: 'ItemNo',
+        partNo: 'PartNo',
+        nsn: 'Nsn',
+        caseType: 'CaseType.NameEn',
+        primaryPurpose: 'PrimaryPurpos.NameEn',
+        price: 'Price',
+        minimumQuantity: 'MinimumQuantity'
       };
 
       sortField = fieldMap[sortState.column] || sortState.column;
@@ -578,12 +592,16 @@ export class AssetListService {
 
     if (sortState.column) {
       const fieldMap: Record<string, string> = {
-        'name': 'Name',
-        'itemNo': 'ItemNo',
-        'partNo': 'PartNo',
-        'nsn': 'NSN',
-        'price': 'Price',
-        'minimumQuantity': 'MinimumQuantity'
+        name: 'Name',
+        itemNo: 'ItemNo',
+        partNo: 'PartNo',
+        nsn: 'Nsn',
+        armNumber: 'ArmNumber',
+        explosiveType: 'Type.NameEn',
+        unNumber: 'UNNumber',
+        compatibility: 'Compatibility.NameEn',
+        price: 'Price',
+        minimumQuantity: 'MinimumQuantity'
       };
 
       sortField = fieldMap[sortState.column] || sortState.column;

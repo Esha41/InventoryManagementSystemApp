@@ -5,7 +5,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil, combineLatest, of, merge, interval, forkJoin, Observable } from 'rxjs';
 import { catchError, filter, map, startWith, switchMap, finalize, distinctUntilChanged } from 'rxjs/operators';
-import { LucideAngularModule, ShieldAlert, RefreshCw, Grid, List, Eye } from 'lucide-angular';
+import { LucideAngularModule, ShieldAlert, RefreshCw, Grid, List, Eye, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-angular';
 import { RequestDetailsModalComponent, UnifiedRequestDto } from '@dashboard/pages/overview/components/request-details-modal/request-details-modal.component';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { OrderService } from '@services/order.service';
@@ -59,6 +59,11 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   currentPage = 1;
   rowsPerPage = 10;
 
+  sortState: { column: string | null; direction: 'asc' | 'desc' } = {
+    column: null,
+    direction: 'asc'
+  };
+
   // Dashboard cards
   visibleCards: DashboardCard[] = [];
   totalItems: number = 0;
@@ -84,6 +89,9 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   readonly Grid = Grid;
   readonly List = List;
   readonly Eye = Eye;
+  readonly ArrowUp = ArrowUp;
+  readonly ArrowDown = ArrowDown;
+  readonly ArrowUpDown = ArrowUpDown;
 
   showContactAdminNotice = false;
   errorMessage: string | null = null;
@@ -107,6 +115,21 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     private readonly monitoringService: MonitoringService,
     private readonly dashboardDataService: DashboardDataService
   ) { }
+
+  trackByCard(_: number, card: DashboardCard): number | string {
+    return card.orderRequestId ?? card.returnRequestId ?? card.discardRequestId ?? _;
+  }
+
+  sortByColumn(column: string): void {
+    if (this.sortState.column === column) {
+      this.sortState.direction = this.sortState.direction === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortState.column = column;
+      this.sortState.direction = 'asc';
+    }
+    this.currentPage = 1;
+    this.manualRefresh$.next();
+  }
 
   ngOnInit(): void {
     this.setupLoadingPipeline();
@@ -212,7 +235,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       this.rowsPerPage,
       this.searchQuery,
       this.selectedStatusFilter,
-      { column: null, direction: 'asc' } // Default sort for inventory dashboard
+      this.sortState
     );
   }
 

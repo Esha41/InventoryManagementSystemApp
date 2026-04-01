@@ -162,7 +162,7 @@
       <!-- Approve Button -->
       <div class="flex flex-col flex-1" *ngIf="shouldShowApproveButton()">
         <button (click)="approveRequest()"
-          [disabled]="processing || isProcessingAction || (canSetSupplyPickupDate() && !isPickupDateAlreadySet && !isSuperAdmin) || (canSubmitSupply() && !isSupplySubmitted() && !isSuperAdmin)"
+          [disabled]="processing || isProcessingAction || (canSetSupplyPickupDate() && !isPickupDateAlreadySet && !isSuperAdmin) || (canSubmitSupply() && !isSupplySubmitted() && !isSuperAdmin) || (canSelectDepots() && !isDepotSelected() && !isSuperAdmin)"
           class="action-btn btn-approve w-full">
           <lucide-angular *ngIf="!processing && !isProcessingAction" [img]="CheckCircle"
             class="h-4 w-4"></lucide-angular>
@@ -179,6 +179,10 @@
         <p *ngIf="canSubmitSupply() && !isSupplySubmitted() && !isSuperAdmin"
           class="text-[10px] text-[var(--color-error)] mt-2 text-center font-semibold uppercase tracking-wider">
           {{ 'workflowApprovalDetail.errors.supplySubmissionRequired' | translate }}
+        </p>
+        <p *ngIf="canSelectDepots() && !isDepotSelected() && !isSuperAdmin"
+          class="text-[10px] text-[var(--color-error)] mt-2 text-center font-semibold uppercase tracking-wider">
+          {{ 'workflowApprovalDetail.errors.depotSelectionRequired' | translate }}
         </p>
       </div>
     </div>

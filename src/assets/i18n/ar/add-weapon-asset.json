@@ -1,6 +1,8 @@
 {
     "addWeaponAsset": {
         "title": "إضافة أصول الأسلحة إلى {{name}}",
+        "titlePrefix": "إضافة أصول الأسلحة",
+        "titleTo": "إلى",
         "subtitle": "إضافة أصول أسلحة فردية مع أرقام تسلسلية وتتبع RFID",
         "backToInventory": "العودة إلى المخزون",
         "weaponAssets": "أصول الأسلحة",
@@ -8,8 +10,8 @@
         "asset": "أصل",
         "weapon": "السلاح",
         "selectWeapon": "اختر السلاح",
-        "batchNumber": "رقم الدفعة",
-        "enterBatchNumber": "أدخل رقم الدفعة",
+        "batchNumber": "Batch Number",
+        "enterBatchNumber": "Enter batch number",
         "serialNumber": "الرقم التسلسلي",
         "enterSerialNumber": "أدخل الرقم التسلسلي",
         "rfidTag": "RFID",

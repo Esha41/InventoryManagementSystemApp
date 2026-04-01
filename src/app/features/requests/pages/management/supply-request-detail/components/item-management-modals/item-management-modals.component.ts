@@ -101,8 +101,8 @@ export class ItemManagementModalsComponent implements OnInit, OnChanges {
 
   private initializeEditItemForm(item?: OrderItem): void {
     const currentQty = item?.approvedQuantity || 1;
-    const minAllowed = Math.max(1, item?.totalSelectedForDischarge || 0);
-    const min = this.canDecreaseQuantity ? minAllowed : currentQty;
+    // Allow reducing below current discharge selections; selections are capped to the new approved qty after save.
+    const min = this.canDecreaseQuantity ? 1 : currentQty;
     const max = this.canIncreaseQuantity ? undefined : currentQty;
     const validators = [Validators.required, Validators.min(min)];
     if (max !== undefined) {
@@ -187,8 +187,7 @@ export class ItemManagementModalsComponent implements OnInit, OnChanges {
 
   get editQuantityMin(): number {
     if (!this.selectedItemForEdit) return 1;
-    const minFromDischarge = Math.max(1, this.selectedItemForEdit.totalSelectedForDischarge || 0);
-    return this.canDecreaseQuantity ? minFromDischarge : (this.selectedItemForEdit.approvedQuantity || 1);
+    return this.canDecreaseQuantity ? 1 : (this.selectedItemForEdit.approvedQuantity || 1);
   }
 
   get editQuantityMax(): number | null {

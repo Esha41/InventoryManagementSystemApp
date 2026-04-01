@@ -53,7 +53,7 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
   addLotForm!: FormGroup;
   selectedItemForLot: OrderRequestItemDto | null = null;
   availableLots: LotItem[] = [];
-  selectedLotNumber: number | null = null;
+  selectedLotNumber: string | null = null;
   showManualLotEntry: boolean = false;
   manualLotNumber: string = '';
   loadingAllLots: boolean = false;
@@ -169,8 +169,8 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const lotNum = parseInt(this.manualLotNumber.trim(), 10);
-    if (isNaN(lotNum)) {
+    const lotKey = this.manualLotNumber.trim();
+    if (lotKey.length > 64) {
       this.translateService.get(['supplyOrder.toast.invalidLotNumber', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.error(translations['supplyOrder.toast.invalidLotNumber'], translations['toast.error']);
       });
@@ -178,14 +178,14 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
     }
 
     this.loadingManualLot = true;
-    this.supplyOrderDataService.getLotByNumber(lotNum)
+    this.supplyOrderDataService.getLotByNumber(lotKey)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (lot) => {
           if (lot.itemId !== this.selectedItemForLot!.itemId) {
             this.translateService.get(['supplyOrder.toast.lotBelongsToDifferentItemWithName', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
               const errorMsg = translations['supplyOrder.toast.lotBelongsToDifferentItemWithName']
-                .replace('{{lotNumber}}', lotNum.toString())
+                .replace('{{lotNumber}}', lotKey)
                 .replace('{{itemName}}', lot.itemName || 'Unknown');
               this.toastService.error(errorMsg, translations['toast.error']);
             });
@@ -193,10 +193,10 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
             return;
           }
 
-          const existingLot = this.availableLots.find(l => l.lotNumber === lot.lot);
+          const existingLot = this.availableLots.find(l => String(l.lotNumber) === String(lot.lot));
           if (existingLot) {
             this.translateService.get(['supplyOrder.toast.lotAlreadyInListWithNumber', 'toast.warning']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-              const warningMsg = translations['supplyOrder.toast.lotAlreadyInListWithNumber'].replace('{{lotNumber}}', lotNum.toString());
+              const warningMsg = translations['supplyOrder.toast.lotAlreadyInListWithNumber'].replace('{{lotNumber}}', lotKey);
               this.toastService.warning(warningMsg, translations['toast.warning']);
             });
             this.loadingManualLot = false;
@@ -208,7 +208,7 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
           this.availableLots.sort((a, b) => a.daysUntilExpiry - b.daysUntilExpiry);
 
           this.translateService.get(['supplyOrder.toast.lotAddedSuccessfullyWithNumber', 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-            const successMsg = translations['supplyOrder.toast.lotAddedSuccessfullyWithNumber'].replace('{{lotNumber}}', lotNum.toString());
+            const successMsg = translations['supplyOrder.toast.lotAddedSuccessfullyWithNumber'].replace('{{lotNumber}}', lotKey);
             this.toastService.success(successMsg, translations['toast.success']);
           });
           this.manualLotNumber = '';
@@ -294,9 +294,10 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
       });
   }
 
-  onSelectLot(lotNumber: number): void {
-    this.selectedLotNumber = lotNumber;
-    this.addLotForm.patchValue({ lot: lotNumber });
+  onSelectLot(lotNumber: string): void {
+    const key = String(lotNumber);
+    this.selectedLotNumber = key;
+    this.addLotForm.patchValue({ lot: key });
   }
 
   getSelectedItemDisplayName(): string {
@@ -307,7 +308,7 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
   /** Selected lot has no available quantity (e.g. from "Show All Lots" including empty lots) */
   get isSelectedLotEmpty(): boolean {
     if (!this.selectedLotNumber) return false;
-    const lot = this.availableLots.find(l => l.lotNumber === this.selectedLotNumber);
+    const lot = this.availableLots.find(l => String(l.lotNumber) === String(this.selectedLotNumber));
     return lot ? lot.quantity <= 0 : false;
   }
 
@@ -350,7 +351,7 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
 
     this.supplyOrderDataService.addSupplyDetail(this.supplyId, {
       itemId: this.selectedItemForLot.itemId,
-      lot: this.selectedLotNumber,
+      lot: String(this.selectedLotNumber).trim(),
       quantity: formValue.quantity,
       notes: formValue.notes
     }).pipe(takeUntil(this.destroy$))

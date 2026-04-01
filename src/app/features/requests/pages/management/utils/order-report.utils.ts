@@ -171,7 +171,8 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
     lastUpdated: lastUpdated, // Raw date for pipe formatting
     isFromAllowance: order.isFromAllowance || false,
     requestType: requestType,
-    supplyDate: order.supplyDate ?? null
+    supplyDate: order.supplyDate ?? null,
+    requestStatusCode: statusValue
   };
 }
 

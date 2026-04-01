@@ -23,7 +23,7 @@ export interface SupplyItemDisplay {
   itemId: number;
   itemName: string;
   itemType: string;
-  lot: number;
+  lot: string;
   quantity: number;
   requestedQuantity: number;
   totalSuppliedQuantity: number;
@@ -43,7 +43,7 @@ export interface SupplyItemDisplay {
  */
 export interface LotItem {
   inventoryDetailId: number;
-  lotNumber: number;
+  lotNumber: string;
   quantity: number;
   expiryDate?: Date;
   location: string;

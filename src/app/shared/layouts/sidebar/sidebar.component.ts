@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, filter } from 'rxjs';
-import { LucideAngularModule, LayoutDashboard, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Badge, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList, Package, Building2, GitBranch, Mail, Upload, BarChart3, Database, Calendar, Megaphone } from 'lucide-angular';
+import { LucideAngularModule, LayoutDashboard, House, Boxes, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Badge, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList, Package, Building2, GitBranch, Mail, Upload, BarChart3, Database,Calendar, Megaphone } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { TranslationService } from '@services/translation.service';
 
@@ -65,13 +65,13 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   private allMenuItems: MenuItem[] = [
     {
       label: 'nav.dashboard',
-      icon: LayoutDashboard,
+      icon: House,
       route: '/dashboard',
       permissions: ['dashboard_view']
     },
     {
       label: 'nav.inventoryDashboard',
-      icon: LayoutDashboard,
+      icon: Boxes,
       route: '/inventory-dashboard',
       permissions: ['inventoryDashboard']
     },
@@ -185,7 +185,7 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       label: 'nav.warehouse',
       icon: Warehouse,
       route: '/warehouse',
-      permissions: ['inventory.page']
+      permissions: ['warehousepage.page', 'warehousepage.view']
     },
     {
       label: 'nav.depotManagement',

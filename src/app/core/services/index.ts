@@ -55,6 +55,7 @@ export * from './weapon.service';
 export * from './monitoring.service';
 export * from './role.service';
 export * from './report.service';
+export * from './idle.service';
 
 // Re-export commonly used types from supply.service for convenience
 export type {
