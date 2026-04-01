@@ -35,7 +35,6 @@ export * from './logging.service';
 export * from './user-context.service';
 export * from './admin-analytics.service';
 export * from './asset-history.service';
-export * from './asset-supply.service';
 export * from './asset.service';
 export * from './dashboard-data.service';
 export * from './dashboard-filter.service';
