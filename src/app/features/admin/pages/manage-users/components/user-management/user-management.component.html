@@ -151,6 +151,13 @@
               <lucide-angular [img]="RotateCcw" class="h-4 w-4"></lucide-angular>
             </button>
           </ng-container>
+          <ng-container *appHasPermission="'SystemUsers.Delete'">
+            <button *ngIf="statusFilter === 'deleted'" [disabled]="isUserSuperAdmin(user)" (click)="onPermanentDelete(user)"
+              class="p-2 text-[var(--color-error)] bg-[var(--color-error)]/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              [title]="'manageAdmins.permanentDeleteUserTitle' | translate">
+              <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+            </button>
+          </ng-container>
         </div>
       </div>
     </div>
@@ -260,6 +267,14 @@
                     <lucide-angular [img]="RotateCcw" class="h-4 w-4"></lucide-angular>
                   </button>
                 </ng-container>
+                <ng-container *appHasPermission="'SystemUsers.Delete'">
+                  <button *ngIf="statusFilter === 'deleted'" [disabled]="isUserSuperAdmin(user)"
+                    (click)="onPermanentDelete(user)"
+                    class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    [title]="'manageAdmins.permanentDeleteUserTitle' | translate">
+                    <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+                  </button>
+                </ng-container>
               </div>
             </td>
           </tr>
@@ -312,3 +327,9 @@
   [message]="('manageAdmins.deleteUserConfirm' | translate) + ' ' + (selectedUser?.userName || ('manageAdmins.thisUser' | translate)) + '?'"
   [confirmText]="'common.delete' | translate" confirmColor="error" (confirmed)="confirmDelete()"
   (cancelled)="showDeleteConfirm = false" />
+
+<!-- Permanent Delete Confirmation -->
+<app-confirm-dialog [isOpen]="showPermanentDeleteConfirm" [title]="'manageAdmins.permanentDeleteUserTitle' | translate"
+  [message]="('manageAdmins.permanentDeleteUserConfirm' | translate) + ' ' + (selectedUser?.userName || ('manageAdmins.thisUser' | translate)) + '?'"
+  [confirmText]="'common.delete' | translate" confirmColor="error" (confirmed)="confirmPermanentDelete()"
+  (cancelled)="onCancelPermanentDelete()" />

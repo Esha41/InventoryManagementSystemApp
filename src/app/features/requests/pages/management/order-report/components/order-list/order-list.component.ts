@@ -72,8 +72,27 @@ export class OrderListComponent implements OnChanges, OnInit {
     return order.id;
   }
 
-  getStatusLabel(status: number | string): string {
-    return mapOrderStatusFromApi(status);
+  /**
+   * i18n key for the status badge (dashboard labels + order-report "completed" for approved).
+   */
+  getOrderListStatusTranslationKey(status: number | string): string {
+    const label = mapOrderStatusFromApi(status);
+    switch (label) {
+      case 'Approved':
+        return 'requestsManagement.orderReport.workflowStatus.completed';
+      case 'New':
+        return 'dashboard.statusLabels.new';
+      case 'In Progress':
+        return 'dashboard.statusLabels.underProcess';
+      case 'Rejected':
+        return 'dashboard.statusLabels.rejected';
+      case 'Cancelled':
+        return 'dashboard.statusLabels.cancelled';
+      case 'Returned for Review':
+        return 'dashboard.statusLabels.returnedForReview';
+      default:
+        return 'dashboard.statusLabels.new';
+    }
   }
 
   getPriorityLabel(priority: number | string): string {

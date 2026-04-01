@@ -1,28 +1,63 @@
 <table class="w-full">
   <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
     <tr>
-      <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-        {{ 'warehouseInventory.itemName' | translate }}
+      <th scope="col"
+        class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+        <button type="button" (click)="toggleSort('itemName')"
+          class="inline-flex items-center gap-1 max-w-full cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
+          {{ 'warehouseInventory.itemName' | translate }}
+          <lucide-angular [img]="sortIcon('itemName')" class="h-3.5 w-3.5 shrink-0 text-[var(--color-text-muted)]"></lucide-angular>
+        </button>
       </th>
-      <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-        {{ 'warehouseInventory.supplier' | translate }}
+      <th scope="col"
+        class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+        <button type="button" (click)="toggleSort('supplier')"
+          class="inline-flex items-center gap-1 max-w-full cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
+          {{ 'warehouseInventory.supplier' | translate }}
+          <lucide-angular [img]="sortIcon('supplier')" class="h-3.5 w-3.5 shrink-0 text-[var(--color-text-muted)]"></lucide-angular>
+        </button>
       </th>
-      <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-        {{ 'warehouseInventory.lot' | translate }}
+      <th scope="col"
+        class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+        <button type="button" (click)="toggleSort('lot')"
+          class="inline-flex items-center gap-1 max-w-full cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
+          {{ 'warehouseInventory.lot' | translate }}
+          <lucide-angular [img]="sortIcon('lot')" class="h-3.5 w-3.5 shrink-0 text-[var(--color-text-muted)]"></lucide-angular>
+        </button>
       </th>
-      <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-        {{ 'warehouseInventory.quantity' | translate }}
+      <th scope="col"
+        class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+        <button type="button" (click)="toggleSort('quantity')"
+          class="inline-flex items-center gap-1 max-w-full cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
+          {{ 'warehouseInventory.quantity' | translate }}
+          <lucide-angular [img]="sortIcon('quantity')" class="h-3.5 w-3.5 shrink-0 text-[var(--color-text-muted)]"></lucide-angular>
+        </button>
       </th>
-      <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-        {{ 'warehouseInventory.readyForIssue' | translate }}
+      <th scope="col"
+        class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+        <button type="button" (click)="toggleSort('readyForIssue')"
+          class="inline-flex items-center gap-1 max-w-full cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
+          {{ 'warehouseInventory.readyForIssue' | translate }}
+          <lucide-angular [img]="sortIcon('readyForIssue')" class="h-3.5 w-3.5 shrink-0 text-[var(--color-text-muted)]"></lucide-angular>
+        </button>
       </th>
-      <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-        {{ 'warehouseInventory.expiryDate' | translate }}
+      <th scope="col"
+        class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+        <button type="button" (click)="toggleSort('expiryDate')"
+          class="inline-flex items-center gap-1 max-w-full cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
+          {{ 'warehouseInventory.expiryDate' | translate }}
+          <lucide-angular [img]="sortIcon('expiryDate')" class="h-3.5 w-3.5 shrink-0 text-[var(--color-text-muted)]"></lucide-angular>
+        </button>
       </th>
-      <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-        {{ 'warehouseInventory.invoiceNumber' | translate }}
+      <th scope="col"
+        class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+        <button type="button" (click)="toggleSort('invoiceNumber')"
+          class="inline-flex items-center gap-1 max-w-full cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
+          {{ 'warehouseInventory.invoiceNumber' | translate }}
+          <lucide-angular [img]="sortIcon('invoiceNumber')" class="h-3.5 w-3.5 shrink-0 text-[var(--color-text-muted)]"></lucide-angular>
+        </button>
       </th>
-      <th class="px-6 py-3 text-end text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider w-36">
+      <th scope="col" class="px-6 py-3 text-end text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider w-36">
         {{ 'warehouseInventory.actions' | translate }}
       </th>
     </tr>
@@ -59,12 +94,12 @@
         {{ formatDate(detail.expiryDate) }}
       </td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
-        <button *ngIf="detail.invoiceNumber" 
-          (click)="filterByInvoice.emit(detail.invoiceNumber)"
-          class="text-[var(--color-brand)] hover:text-[var(--color-brand-dark)] hover:underline font-medium transition-colors">
+        <span *ngIf="detail.invoiceNumber; else noInvoice">
           {{ detail.invoiceNumber }}
-        </button>
-        <span *ngIf="!detail.invoiceNumber" class="text-[var(--color-text-muted)]">-</span>
+        </span>
+        <ng-template #noInvoice>
+          <span class="text-[var(--color-text-muted)]">-</span>
+        </ng-template>
       </td>
       <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium w-36">
         <div class="inline-flex items-center gap-2">

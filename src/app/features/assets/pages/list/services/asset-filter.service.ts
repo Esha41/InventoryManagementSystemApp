@@ -21,13 +21,13 @@ export class AssetFilterService {
    */
   getAmmunitionFilterOptions(
     caseTypeList: LookupItem[],
-    hazardDivisionList: LookupItem[],
+    primaryPurposeList: LookupItem[],
     compatibilityList: LookupItem[],
     propellantList: LookupItem[]
   ) {
     return {
       caseType: createFilterOptions(caseTypeList, this.translateService),
-      hazardDivision: createFilterOptions(hazardDivisionList, this.translateService),
+      primaryPurpose: createFilterOptions(primaryPurposeList, this.translateService),
       compatibility: createFilterOptions(compatibilityList, this.translateService),
       propellant: createFilterOptions(propellantList, this.translateService)
     };

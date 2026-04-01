@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, X, CheckCircle, AlertCircle, Upload, Download, Filter } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
+import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 import * as XLSX from 'xlsx';
 
 export interface PreviewRow {
@@ -32,6 +33,7 @@ export type RowFilter = 'all' | 'valid' | 'invalid';
         TranslateModule,
         LucideAngularModule
     ],
+    providers: [AppDateTimePipe],
     templateUrl: './import-preview-dialog.component.html',
     styleUrls: ['./import-preview-dialog.component.css']
 })
@@ -53,7 +55,8 @@ export class ImportPreviewDialogComponent implements OnInit {
 
     constructor(
         private translationService: TranslationService,
-        private cdr: ChangeDetectorRef
+        private cdr: ChangeDetectorRef,
+        private appDateTimePipe: AppDateTimePipe
     ) { }
 
     get isRTL(): boolean {
@@ -113,6 +116,32 @@ export class ImportPreviewDialogComponent implements OnInit {
         return row.data[column] ?? '-';
     }
 
+    /** Formats ISO / Date values like the rest of the app; leaves other cells unchanged. */
+    getDisplayCellValue(row: PreviewRow, column: string): string {
+        const raw = row.data[column];
+        if (raw === null || raw === undefined || raw === '') {
+            return '-';
+        }
+        if (this.isDateLikeForPreview(raw)) {
+            const formatted = this.appDateTimePipe.transform(
+                raw instanceof Date ? raw : String(raw).trim()
+            );
+            return formatted || String(raw);
+        }
+        return String(raw);
+    }
+
+    private isDateLikeForPreview(value: unknown): boolean {
+        if (value instanceof Date) {
+            return !isNaN(value.getTime());
+        }
+        if (typeof value !== 'string') {
+            return false;
+        }
+        const s = value.trim();
+        return /^\d{4}-\d{2}-\d{2}/.test(s);
+    }
+
     getErrorsForRow(row: PreviewRow): string {
         return row.errors.join(', ');
     }
@@ -134,7 +163,7 @@ export class ImportPreviewDialogComponent implements OnInit {
 
             // Add all column data
             this.previewData!.columns.forEach(column => {
-                rowData[this.getColumnHeader(column)] = this.getCellValue(row, column);
+                rowData[this.getColumnHeader(column)] = this.getDisplayCellValue(row, column);
             });
 
             return rowData;

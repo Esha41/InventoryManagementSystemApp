@@ -44,7 +44,11 @@
     "deleted": "Deleted",
     "restoreUser": "Restore User",
     "userRestoredSuccess": "User {{userName}} has been restored successfully",
-    "userRestoredError": "Failed to restore user"
+    "userRestoredError": "Failed to restore user",
+    "permanentDeleteUserTitle": "Permanent Delete",
+    "permanentDeleteUserConfirm": "Are you sure you want to permanently delete",
+    "userPermanentlyDeletedSuccess": "User {{userName}} has been permanently deleted",
+    "userPermanentlyDeletedError": "Failed to permanently delete user"
   },
   "adminRoles": {
     "title": "Role Management",
@@ -398,6 +402,12 @@
     "noUsersAvailable": "No users available",
     "searchUsers": "Search by name or username...",
     "noUsersMatchSearch": "No users match your search",
+    "noUsersMatchFilter": "No users in this view. Try another filter or search.",
+    "showUsers": "Show",
+    "filterPlaceholder": "Who to show in the list",
+    "filterAllUsers": "All users",
+    "filterSelected": "Selected for this depot",
+    "filterUnselected": "Not selected",
     "of": "of"
   },
   "emailSettings": {

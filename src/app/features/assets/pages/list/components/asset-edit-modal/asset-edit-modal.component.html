@@ -1,8 +1,8 @@
 <div *ngIf="isOpen" class="fixed inset-0 z-40 overflow-y-auto">
   <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-    <div class="fixed inset-0 transition-opacity bg-black/60 backdrop-blur-sm" (click)="close()"></div>
+    <div class="fixed inset-0 z-0 transition-opacity bg-black/60 backdrop-blur-sm" (click)="close()"></div>
     <div
-      class="inline-block align-bottom bg-[var(--color-background)] rounded-xl text-start overflow-hidden shadow-custom-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+      class="relative z-10 isolate inline-block align-bottom bg-[var(--color-background)] rounded-xl text-start overflow-hidden shadow-custom-xl sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
       <div class="bg-[var(--color-background)] px-6 py-4 border-b border-[var(--color-border)]">
         <div class="flex items-center justify-between">
           <h3 class="text-xl font-semibold text-[var(--color-text)]">

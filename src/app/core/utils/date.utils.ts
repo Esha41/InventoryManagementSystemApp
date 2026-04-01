@@ -16,6 +16,9 @@ export class DateUtils {
     return `${day}/${month}/${year}`;
   }
 
+
+  
+
   /**
    * Get current date in ISO format
    */
@@ -46,6 +49,21 @@ export class DateUtils {
     const diffTime = Math.abs(date2.getTime() - date1.getTime());
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
+
+  /**
+   * Open a native date/datetime picker input.
+   * Works across browsers by using `showPicker()` when available.
+   */
+  static openNativeDatePicker(input: HTMLInputElement | null | undefined): void {
+    if (!input) return;
+    if (input.showPicker) {
+      input.showPicker();
+      return;
+    }
+    input.focus();
+  }
+
+ 
 }
 
 /**

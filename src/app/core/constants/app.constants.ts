@@ -1,7 +1,7 @@
 
 export const APP_CONSTANTS = {
   APP_NAME: 'Ettad',
-  VERSION: '1.2.0',
+  VERSION: '1.2.1',
   DEFAULT_PAGE_SIZE: 10,
   PAGE_SIZE_OPTIONS: [10, 25, 50, 100],
 } as const;
@@ -41,6 +41,7 @@ export const API_ENDPOINTS = {
     UPDATE_ROLES: (id: string) => `/Users/${id}/roles`,
     TOGGLE_STATUS: (id: string) => `/Users/${id}/toggle-status`,
     RESTORE: (id: string) => `/Users/${id}/restore`,
+    PERMANENT_DELETE: (id: string) => `/Users/${id}/permanent`,
     CHANGE_PASSWORD: '/Users/change-password',
   },
 
@@ -208,6 +209,7 @@ export const API_ENDPOINTS = {
     BASE: '/Supply',
     BY_ID: (id: number) => `/Supply/${id}`,
     BY_ORDER_ID: (orderId: number) => `/Supply/${orderId}/getByOrderId`,
+    WORKFLOW_SUMMARY: (orderId: number) => `/Supply/${orderId}/workflow-summary`,
     SET_PICKUP_DATE_BY_ORDER: (orderId: number) => `/Supply/order/${orderId}/set-pickup-date`,
     CONFIRM_PICKUP_DATE_BY_ORDER: (orderId: number) => `/Supply/order/${orderId}/confirm-pickup-date`,
     SUBMIT: (id: number) => `/Supply/${id}/submit`,

@@ -238,7 +238,6 @@ export class WeaponSupplyReviewService {
         if (!receiverName || !receiverMilitaryId || !receiverRankId) return false;
         if (!hasFiles) return false;
         if (this.getTotalSelectedCount() === 0) return false;
-        if (!this.isFullyFulfilled()) return false;
         if (this.validateQuantities() !== null) return false;
         return true;
     }

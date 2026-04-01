@@ -4,10 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, ArrowRight, AlertTriangle, CheckCircle, Clock, User, Package, FileText, Eye, ChevronDown, ChevronUp, RotateCcw, X, Check, XCircle, History as HistoryIcon } from 'lucide-angular';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { ToastService } from '@services/toast.service';
 import { SupplyService, SupplyDto, SubmitSupplyDto } from '@services/supply.service';
+import { AssetSupplyService } from '@services/asset-supply.service';
 import { LookupItem } from '@services/lookup.service';
 import { RequestDetail, BaseRequestDto, WorkflowApprovalStep, FileUploadDto } from '@models/workflow-approval.model';
 import { mapToRequestDetail } from '@utils/request-mapper.utils';
@@ -49,6 +51,7 @@ import { WorkflowPickupDateComponent } from './components/workflow-pickup-date/w
 import { WorkflowApprovalTimelineComponent } from './components/workflow-approval-timeline/workflow-approval-timeline.component';
 import { WorkflowRequestInformationComponent } from './components/workflow-request-information/workflow-request-information.component';
 import { WorkflowRequestItemsComponent } from './components/workflow-request-items/workflow-request-items.component';
+import { WorkflowSupplySummaryComponent } from './components/workflow-supply-summary/workflow-supply-summary.component';
 import { WeaponReviewItemsModalComponent } from './components/weapon-review-items-modal/weapon-review-items-modal.component';
 import { OrderItemTrackingModalComponent } from './components/order-item-tracking-modal/order-item-tracking-modal.component';
 
@@ -70,6 +73,7 @@ import { OrderItemTrackingModalComponent } from './components/order-item-trackin
     WorkflowApprovalTimelineComponent,
     WorkflowRequestInformationComponent,
     WorkflowRequestItemsComponent,
+    WorkflowSupplySummaryComponent,
     WeaponReviewItemsModalComponent,
     OrderItemTrackingModalComponent
   ],
@@ -146,6 +150,10 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
   supplyId: number | null = null;
   supplyData: SupplyDto | null = null;
+  /** True once a Supply exists (ammo/explosives) or AssetSupply exists (weapon-only orders). Drives visibility of the workflow supply summary card. */
+  hasInitialSupplyForSummary = false;
+  /** Incremented to tell {@link WorkflowSupplySummaryComponent} to re-fetch after supply/pickup updates. */
+  workflowSupplySummaryRefreshTick = 0;
   ranks: LookupItem[] = [];
   isLoadingRanks: boolean = false;
   isUserRestricted: boolean = false;
@@ -179,6 +187,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     private navigationService: WorkflowApprovalNavigationService,
     private confirmationService: WorkflowApprovalConfirmationService,
     private stateService: WorkflowApprovalStateService,
+    private assetSupplyService: AssetSupplyService,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -212,6 +221,19 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     // Use local values to ensure template reactivity works correctly
     // The state service might not be updated at the exact moment the template checks
     return this.permissionsService.canSubmitSupply(this.requestDetail, this.isWeaponOrder);
+  }
+
+  canViewWorkflowSupplySummarySection(): boolean {
+    return this.permissionsService.canViewWorkflowSupplySummarySection(this.requestDetail);
+  }
+
+  /** Supply summary is shown only when the user may view it and an initial supply record exists. */
+  showWorkflowSupplySummarySection(): boolean {
+    return this.canViewWorkflowSupplySummarySection() && this.hasInitialSupplyForSummary;
+  }
+
+  private bumpWorkflowSupplySummaryRefresh(): void {
+    this.workflowSupplySummaryRefreshTick++;
   }
 
   hasHigherApproval(): boolean {
@@ -327,36 +349,73 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     this.dataService.loadSupplyData(this.requestId, this.destroy$)
       .subscribe({
         next: (supply: SupplyDto | null) => {
-          if (!supply) {
-            return; // Supply might not exist yet, which is fine
+          if (supply) {
+            this.supplyData = supply;
+            this.supplyId = supply.id;
+            this.hasInitialSupplyForSummary = true;
+
+            // If supply exists and has a supply date, populate the pickup date field
+            if (supply.supplyDate) {
+              this.pickupDate = this.supplyServiceHelper.formatDateForInput(supply.supplyDate);
+              // Mark that the date has already been set to lock the "Set Supply Pickup Date" section
+              // The "Update Supply Pickup Date" section remains editable via isPickupDateEditable()
+              // This applies to both weapon orders and ammunitions/explosives
+              this.isPickupDateAlreadySet = true;
+            }
+
+            // Update state service with supply data
+            this.stateService.updateState({
+              supplyData: this.supplyData,
+              isPickupDateAlreadySet: this.isPickupDateAlreadySet
+            });
+
+            // Load ranks for dropdown if user can submit supply
+            if (this.canSubmitSupply()) {
+              this.loadRanks();
+            }
+
+            this.bumpWorkflowSupplySummaryRefresh();
+            this.cdr.markForCheck();
+            return;
           }
 
-          this.supplyData = supply;
-          this.supplyId = supply.id;
-
-          // If supply exists and has a supply date, populate the pickup date field
-          if (supply.supplyDate) {
-            this.pickupDate = this.supplyServiceHelper.formatDateForInput(supply.supplyDate);
-            // Mark that the date has already been set to lock the "Set Supply Pickup Date" section
-            // The "Update Supply Pickup Date" section remains editable via isPickupDateEditable()
-            // This applies to both weapon orders and ammunitions/explosives
-            this.isPickupDateAlreadySet = true;
+          this.supplyData = null;
+          this.supplyId = null;
+          if (this.isWeaponOrder) {
+            this.resolveWeaponInitialSupplyForSummary();
+          } else {
+            this.hasInitialSupplyForSummary = false;
+            this.bumpWorkflowSupplySummaryRefresh();
+            this.cdr.markForCheck();
           }
-
-          // Update state service with supply data
-          this.stateService.updateState({
-            supplyData: this.supplyData,
-            isPickupDateAlreadySet: this.isPickupDateAlreadySet
-          });
-
-          // Load ranks for dropdown if user can submit supply
-          if (this.canSubmitSupply()) {
-            this.loadRanks();
-          }
-
-          // Trigger change detection for OnPush strategy
-          this.cdr.markForCheck();
         }
+      });
+  }
+
+  private resolveWeaponInitialSupplyForSummary(): void {
+    this.assetSupplyService.getByOrderId(this.requestId)
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError(() => of(null))
+      )
+      .subscribe(assetSupply => {
+        if (assetSupply) {
+          this.hasInitialSupplyForSummary = true;
+          this.bumpWorkflowSupplySummaryRefresh();
+          this.cdr.markForCheck();
+          return;
+        }
+        // No asset supply yet — check if depot/batch selections exist
+        this.assetSupplyService.getWeaponSupplySelection(this.requestId)
+          .pipe(
+            takeUntil(this.destroy$),
+            catchError(() => of([]))
+          )
+          .subscribe(selections => {
+            this.hasInitialSupplyForSummary = Array.isArray(selections) && selections.length > 0;
+            this.bumpWorkflowSupplySummaryRefresh();
+            this.cdr.markForCheck();
+          });
       });
   }
 
@@ -478,6 +537,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       this.isPickupDateAlreadySet = false;
       this.orderSupplyDate = null;
       this.isWeaponOrder = false;
+      this.supplyData = null;
+      this.supplyId = null;
+      this.hasInitialSupplyForSummary = false;
       this.stateService.updateState({ isDepotSelected: false });
     } else {
       // For silent refresh, only reset processing state
@@ -529,7 +591,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
               requestId: this.requestId,
               requestDetail: this.requestDetail,
               processing: this.processing,
-              isWeaponOrder: this.isWeaponOrder
+              isWeaponOrder: this.isWeaponOrder,
+              isPickupDateAlreadySet: this.isPickupDateAlreadySet
             });
 
             // Load supply data if needed (for Order requests)
@@ -555,7 +618,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
               requestId: this.requestId,
               requestDetail: this.requestDetail,
               processing: this.processing,
-              isWeaponOrder: this.isWeaponOrder
+              isWeaponOrder: this.isWeaponOrder,
+              isPickupDateAlreadySet: this.isPickupDateAlreadySet
             });
             // Load supply data if needed
             if (this.requestDetail.requestType === 'Order') {
@@ -621,13 +685,22 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     this.stateService.updateState({
       isPickupDateAlreadySet: this.isPickupDateAlreadySet
     });
+    this.bumpWorkflowSupplySummaryRefresh();
+    // OnPush children (e.g. approval actions) read this from state; refresh immediately
+    this.cdr.markForCheck();
   }
 
   /**
    * Handle pickup date confirmed event from child component
    */
   onPickupDateConfirmed(): void {
-    // Date confirmed, no additional action needed
+    // Confirm path does not emit pickupDateSet; still required for approve validation / UI
+    this.isPickupDateAlreadySet = true;
+    this.stateService.updateState({
+      isPickupDateAlreadySet: true
+    });
+    this.bumpWorkflowSupplySummaryRefresh();
+    this.cdr.markForCheck();
   }
 
   /**

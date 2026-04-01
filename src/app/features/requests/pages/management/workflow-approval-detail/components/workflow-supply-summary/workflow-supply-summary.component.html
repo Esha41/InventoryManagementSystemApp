@@ -1,0 +1,197 @@
+<div class="bg-[var(--color-background)] rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">
+  <div class="flex items-center gap-3 mb-6 pb-4 border-b border-[var(--color-border)]">
+    <div class="w-10 h-10 rounded-lg bg-[var(--color-info)]/10 flex items-center justify-center">
+      <lucide-angular [img]="Package" class="h-5 w-5 text-[var(--color-info)]"></lucide-angular>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <h2 class="text-lg font-semibold text-[var(--color-text)]">
+        {{ 'workflowApprovalDetail.workflowSupplySummary.title' | translate }}
+      </h2>
+      <span *ngIf="summary?.isWeaponOrder"
+        class="text-xs font-medium px-2 py-0.5 rounded border border-[var(--color-border)] text-[var(--color-text-muted)]">
+        {{ 'workflowApprovalDetail.workflowSupplySummary.weaponOrder' | translate }}
+      </span>
+    </div>
+  </div>
+
+  <div *ngIf="showProvisionalBanner()"
+    class="mb-4 rounded-lg border border-[var(--color-info)]/40 bg-[var(--color-info)]/5 px-4 py-3 text-sm text-[var(--color-text)]">
+    {{ 'workflowApprovalDetail.workflowSupplySummary.provisionalBanner' | translate }}
+  </div>
+
+  <div *ngIf="loading" class="text-sm text-[var(--color-text-muted)] py-4">
+    {{ 'workflowApprovalDetail.workflowSupplySummary.loading' | translate }}
+  </div>
+
+  <div *ngIf="!loading && error" class="text-sm text-[var(--color-error)] py-2">
+    {{ error }}
+  </div>
+
+  <div *ngIf="!loading && !error && summary" class="space-y-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div *ngIf="summary.orderSupplyDate" class="space-y-1">
+        <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+          {{ 'workflowApprovalDetail.workflowSupplySummary.orderPickupDate' | translate }}
+        </label>
+        <p class="text-sm text-[var(--color-text)] font-medium">{{ summary.orderSupplyDate | appDateTime }}</p>
+      </div>
+      <div *ngIf="showSupplyDateRow()" class="space-y-1">
+        <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+          {{ 'workflowApprovalDetail.workflowSupplySummary.supplyPickupDate' | translate }}
+        </label>
+        <p class="text-sm text-[var(--color-text)] font-medium">{{ summary.supplyDate | appDateTime }}</p>
+      </div>
+      <div *ngIf="summary.submissionStatus > 0" class="space-y-1">
+        <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+          {{ 'workflowApprovalDetail.workflowSupplySummary.submissionStatus' | translate }}
+        </label>
+        <p class="text-sm text-[var(--color-text)] font-medium">{{ submissionLabelKey(summary.submissionStatus) | translate }}</p>
+      </div>
+      <div *ngIf="summary.fulfillmentStatus > 0" class="space-y-1">
+        <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+          {{ 'workflowApprovalDetail.workflowSupplySummary.fulfillmentStatus' | translate }}
+        </label>
+        <p class="text-sm text-[var(--color-text)] font-medium">{{ fulfillmentLabelKey(summary.fulfillmentStatus) | translate }}</p>
+      </div>
+    </div>
+
+    <div *ngIf="summary.receiverName || summary.receiverRankName || summary.receiverMilitaryId"
+      class="rounded-lg border border-[var(--color-border)] p-4 bg-[var(--color-background-muted)]/50">
+      <h3 class="text-sm font-semibold text-[var(--color-text)] mb-3">
+        {{ 'workflowApprovalDetail.workflowSupplySummary.receiver' | translate }}
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+        <div *ngIf="summary.receiverName">
+          <span class="text-[var(--color-text-muted)]">{{ 'workflowApprovalDetail.receiverName' | translate }}: </span>
+          <span class="text-[var(--color-text)] font-medium">{{ summary.receiverName }}</span>
+        </div>
+        <div *ngIf="summary.receiverRankName">
+          <span class="text-[var(--color-text-muted)]">{{ 'workflowApprovalDetail.workflowSupplySummary.receiverRank' | translate }}: </span>
+          <span class="text-[var(--color-text)] font-medium">{{ summary.receiverRankName }}</span>
+        </div>
+        <div *ngIf="summary.receiverMilitaryId">
+          <span class="text-[var(--color-text-muted)]">{{ 'workflowApprovalDetail.workflowSupplySummary.receiverMilitaryId' | translate }}: </span>
+          <span class="text-[var(--color-text)] font-medium">{{ summary.receiverMilitaryId }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="summary.notes" class="space-y-1">
+      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+        {{ 'workflowApprovalDetail.workflowSupplySummary.supplyNotes' | translate }}
+      </label>
+      <p class="text-sm text-[var(--color-text)] whitespace-pre-wrap">{{ summary.notes }}</p>
+    </div>
+
+    <!-- Weapon order: depot/batch selection table (shown in Selection and Supplied phases) -->
+    <div *ngIf="(isSelectionPhase() || isSuppliedPhase()) && hasWeaponSelectionLines()">
+      <h3 class="text-sm font-semibold text-[var(--color-text)] mb-3">
+        {{ 'workflowApprovalDetail.workflowSupplySummary.weaponSelectionTitle' | translate }}
+      </h3>
+      <div class="overflow-x-auto border border-[var(--color-border)] rounded-lg">
+        <table class="w-full text-sm">
+          <thead class="bg-[var(--color-background-muted)]">
+            <tr>
+              <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                {{ 'workflowApprovalDetail.workflowSupplySummary.colItemName' | translate }}</th>
+              <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                {{ 'workflowApprovalDetail.workflowSupplySummary.colDepot' | translate }}</th>
+              <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                {{ 'workflowApprovalDetail.workflowSupplySummary.colBatch' | translate }}</th>
+              <th class="px-3 py-2 text-end text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                {{ 'workflowApprovalDetail.workflowSupplySummary.colSelectedQty' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[var(--color-border)]">
+            <tr *ngFor="let line of summary.selectionLines" class="hover:bg-[var(--color-background-hover)]">
+              <td class="px-3 py-2 text-[var(--color-text)]">{{ line.itemName }}</td>
+              <td class="px-3 py-2 text-[var(--color-text)]">{{ depotDisplay(line) }}</td>
+              <td class="px-3 py-2 text-[var(--color-text)]">{{ line.batchNumber || '—' }}</td>
+              <td class="px-3 py-2 text-end font-medium">{{ line.selectedQuantity }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Weapon order: supplied assets table (shown only in Supplied phase) -->
+    <div *ngIf="isSuppliedPhase()">
+      <h3 class="text-sm font-semibold text-[var(--color-text)] mb-3 mt-6">
+        {{ 'workflowApprovalDetail.workflowSupplySummary.weaponSuppliedTitle' | translate }}
+      </h3>
+      <div *ngIf="hasWeaponSuppliedLines()" class="overflow-x-auto border border-[var(--color-border)] rounded-lg">
+        <table class="w-full text-sm">
+          <thead class="bg-[var(--color-background-muted)]">
+            <tr>
+              <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                {{ 'workflowApprovalDetail.workflowSupplySummary.colItemName' | translate }}</th>
+              <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                {{ 'workflowApprovalDetail.workflowSupplySummary.colSerialNumber' | translate }}</th>
+              <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                {{ 'workflowApprovalDetail.workflowSupplySummary.colBatch' | translate }}</th>
+              <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                {{ 'workflowApprovalDetail.workflowSupplySummary.colDepot' | translate }}</th>
+              <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                {{ 'workflowApprovalDetail.workflowSupplySummary.colAssignee' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[var(--color-border)]">
+            <tr *ngFor="let line of summary.weaponLines" class="hover:bg-[var(--color-background-hover)]">
+              <td class="px-3 py-2 text-[var(--color-text)]">{{ line.itemName }}</td>
+              <td class="px-3 py-2 text-[var(--color-text)] font-mono">{{ line.serialNumber || '—' }}</td>
+              <td class="px-3 py-2 text-[var(--color-text)]">{{ line.batchNumber || '—' }}</td>
+              <td class="px-3 py-2 text-[var(--color-text)]">{{ depotDisplay(line) }}</td>
+              <td class="px-3 py-2 text-[var(--color-text)]">{{ line.assigneeName || '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p *ngIf="!hasWeaponSuppliedLines()" class="text-sm text-[var(--color-text-muted)] py-2">
+        {{ 'workflowApprovalDetail.workflowSupplySummary.noLines' | translate }}
+      </p>
+    </div>
+
+    <!-- Ammunition / explosives lines (non-weapon) -->
+    <div *ngIf="isAmmoPhase()">
+      <h3 class="text-sm font-semibold text-[var(--color-text)] mb-3">
+        {{ 'workflowApprovalDetail.workflowSupplySummary.linesTitle' | translate }}
+      </h3>
+      <div *ngIf="summary.lines?.length" class="overflow-x-auto border border-[var(--color-border)] rounded-lg">
+        <table class="w-full text-sm">
+          <thead class="bg-[var(--color-background-muted)]">
+            <tr>
+              <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                {{ 'workflowApprovalDetail.workflowSupplySummary.colItemName' | translate }}</th>
+              <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                {{ 'workflowApprovalDetail.workflowSupplySummary.colItemNo' | translate }}</th>
+              <th class="px-3 py-2 text-end text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                {{ 'workflowApprovalDetail.workflowSupplySummary.colRequested' | translate }}</th>
+              <th class="px-3 py-2 text-end text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                {{ 'workflowApprovalDetail.workflowSupplySummary.colApproved' | translate }}</th>
+              <th class="px-3 py-2 text-end text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                {{ 'workflowApprovalDetail.workflowSupplySummary.colSupplied' | translate }}</th>
+              <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                {{ 'workflowApprovalDetail.workflowSupplySummary.colLot' | translate }}</th>
+              <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                {{ 'workflowApprovalDetail.workflowSupplySummary.colDepot' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[var(--color-border)]">
+            <tr *ngFor="let line of summary.lines" class="hover:bg-[var(--color-background-hover)]">
+              <td class="px-3 py-2 text-[var(--color-text)]">{{ line.itemName }}</td>
+              <td class="px-3 py-2 text-[var(--color-text-muted)]">{{ line.itemNo || '—' }}</td>
+              <td class="px-3 py-2 text-end font-medium">{{ line.requestedQuantity }}</td>
+              <td class="px-3 py-2 text-end font-medium">{{ line.approvedQuantity ?? line.requestedQuantity }}</td>
+              <td class="px-3 py-2 text-end font-medium">{{ line.suppliedQuantity }}</td>
+              <td class="px-3 py-2 text-[var(--color-text)]">{{ line.lot || '—' }}</td>
+              <td class="px-3 py-2 text-[var(--color-text)]">{{ depotDisplay(line) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p *ngIf="!summary.lines?.length" class="text-sm text-[var(--color-text-muted)] py-2">
+        {{ 'workflowApprovalDetail.workflowSupplySummary.noLines' | translate }}
+      </p>
+    </div>
+  </div>
+</div>

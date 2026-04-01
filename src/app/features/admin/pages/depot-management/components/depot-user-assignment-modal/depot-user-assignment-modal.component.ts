@@ -1,9 +1,11 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
+import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, merge, takeUntil } from 'rxjs';
+import { startWith } from 'rxjs/operators';
 import { LucideAngularModule, X, Search, User } from 'lucide-angular';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { UserDepotService } from '@services/user-depot.service';
 import { BackendUserService } from '@services/backend-user.service';
 import { ToastService } from '@services/toast.service';
@@ -15,7 +17,7 @@ import { trackByStringId } from '@utils/trackby.utils';
 @Component({
   selector: 'app-depot-user-assignment-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, TranslateModule, LucideAngularModule, LoadingStateComponent],
+  imports: [CommonModule, ReactiveFormsModule, TranslateModule, LucideAngularModule, LoadingStateComponent, DropdownComponent],
   templateUrl: './depot-user-assignment-modal.component.html',
   styleUrls: ['./depot-user-assignment-modal.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -25,6 +27,12 @@ export class DepotUserAssignmentModalComponent implements OnInit, OnDestroy {
   readonly Search = Search;
   readonly User = User;
   readonly trackByStringId = trackByStringId;
+
+  readonly assignmentFilterOptions: DropdownOption<'all' | 'selected' | 'unselected'>[] = [
+    { label: 'depot.filterAllUsers', value: 'all' },
+    { label: 'depot.filterSelected', value: 'selected' },
+    { label: 'depot.filterUnselected', value: 'unselected' }
+  ];
 
   @Input() depotId!: number;
   @Input() depotName = '';
@@ -38,19 +46,31 @@ export class DepotUserAssignmentModalComponent implements OnInit, OnDestroy {
   saving = false;
   error: string | null = null;
 
+  assignmentFilterControl = new FormControl<'all' | 'selected' | 'unselected'>('all', { nonNullable: true });
+
   searchControl = new FormControl<string>('', { nonNullable: true });
 
   private destroy$ = new Subject<void>();
 
   get filteredUsers(): BackendUserDto[] {
     const term = this.searchControl.value?.trim().toLowerCase() || '';
-    if (!term) return this.allUsers;
-    return this.allUsers.filter(u => {
-      const name = this.getUserDisplayName(u).toLowerCase();
-      const userName = (u.userName || '').toLowerCase();
-      const id = (u.id || '').toLowerCase();
-      return name.includes(term) || userName.includes(term) || id.includes(term);
-    });
+    let users = term
+      ? this.allUsers.filter(u => {
+          const name = this.getUserDisplayName(u).toLowerCase();
+          const userName = (u.userName || '').toLowerCase();
+          const id = (u.id || '').toLowerCase();
+          return name.includes(term) || userName.includes(term) || id.includes(term);
+        })
+      : this.allUsers;
+
+    const filter = this.assignmentFilterControl.value;
+    if (filter === 'selected') {
+      users = users.filter(u => this.selectedUserIds.has(u.id));
+    } else if (filter === 'unselected') {
+      users = users.filter(u => !this.selectedUserIds.has(u.id));
+    }
+
+    return users;
   }
 
   constructor(
@@ -62,6 +82,15 @@ export class DepotUserAssignmentModalComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    merge(
+      this.searchControl.valueChanges.pipe(startWith(this.searchControl.value)),
+      this.assignmentFilterControl.valueChanges.pipe(startWith(this.assignmentFilterControl.value))
+    )
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.cdr.markForCheck());
+
+    this.translateService.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
+
     this.loadData();
   }
 
@@ -128,6 +157,7 @@ export class DepotUserAssignmentModalComponent implements OnInit, OnDestroy {
       this.selectedUserIds.add(userId);
     }
     this.selectedUserIds = new Set(this.selectedUserIds);
+    this.cdr.markForCheck();
   }
 
   selectAll(): void {
@@ -135,10 +165,12 @@ export class DepotUserAssignmentModalComponent implements OnInit, OnDestroy {
     const newSelected = new Set(this.selectedUserIds);
     usersToSelect.forEach(u => newSelected.add(u.id));
     this.selectedUserIds = newSelected;
+    this.cdr.markForCheck();
   }
 
   clearAll(): void {
     this.selectedUserIds.clear();
+    this.cdr.markForCheck();
   }
 
   save(): void {

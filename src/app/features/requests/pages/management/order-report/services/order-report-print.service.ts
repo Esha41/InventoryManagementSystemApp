@@ -131,15 +131,25 @@ export class OrderReportPrintService {
         justify-content: center !important;
         align-items: center !important;
       }
-      
-      .print-logo,
-      img[alt="Organization Logo"] {
+
+      .print-logo.emdad-logo-mark--brand,
+      .emdad-logo-mark--brand.print-logo {
         display: block !important;
         visibility: visible !important;
         max-width: 200px !important;
-        max-height: 100px !important;
-        height: auto !important;
-        object-fit: contain !important;
+        width: 100% !important;
+        height: 72px !important;
+        background-color: #183553 !important;
+        -webkit-mask-image: url('/assets/EMDAD-EXT-VER-Digi-Logo-White_updated.png') !important;
+        mask-image: url('/assets/EMDAD-EXT-VER-Digi-Logo-White_updated.png') !important;
+        -webkit-mask-size: contain !important;
+        mask-size: contain !important;
+        -webkit-mask-repeat: no-repeat !important;
+        mask-repeat: no-repeat !important;
+        -webkit-mask-position: center !important;
+        mask-position: center !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
       
       .print-qr-container {

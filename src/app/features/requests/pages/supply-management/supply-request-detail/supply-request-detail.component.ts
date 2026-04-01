@@ -17,11 +17,12 @@ import { FlexibleApiListResponse, DetailApiResponse } from '@models/api-response
 
 import { RequestItemsTableComponent } from '@requests/components/request-items-table/request-items-table.component';
 import { RequestSummarySidebarComponent } from '@requests/components/request-summary-sidebar/request-summary-sidebar.component';
+import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 
 @Component({
   selector: 'app-supply-request-detail',
   standalone: true,
-  imports: [CommonModule, TranslateModule, LucideAngularModule, LoadingStateComponent, ErrorStateComponent, RequestItemsTableComponent, RequestSummarySidebarComponent],
+  imports: [CommonModule, TranslateModule, LucideAngularModule, LoadingStateComponent, ErrorStateComponent, RequestItemsTableComponent, RequestSummarySidebarComponent, AppDateTimePipe],
   templateUrl: './supply-request-detail.component.html',
   styleUrls: ['./supply-request-detail.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -169,8 +170,11 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
         .subscribe({
           next: (detailData) => {
 
-            if (detailData && detailData.requestItems) {
-              baseRequest.requestItems = (detailData.requestItems as any[]) as RequestItemDto[];
+            if (detailData) {
+              Object.assign(baseRequest, detailData);
+              if (detailData.requestItems && Array.isArray(detailData.requestItems)) {
+                baseRequest.requestItems = detailData.requestItems as RequestItemDto[];
+              }
             }
 
             this.cdr.markForCheck();

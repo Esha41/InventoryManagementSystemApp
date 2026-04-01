@@ -9,7 +9,7 @@
         <span class="approval-step-number">{{ step.step }}</span>
         <span class="approval-status" [ngClass]="'status-' + step.status">
           <ng-container [ngSwitch]="step.status">
-            <span *ngSwitchCase="'approved'">{{ 'common.statuses.Approved' | translate }}</span>
+            <span *ngSwitchCase="'approved'">{{ 'requestsManagement.orderReport.workflowStatus.completed' | translate }}</span>
             <span *ngSwitchCase="'rejected'">{{ 'common.statuses.Rejected' | translate }}</span>
             <span *ngSwitchCase="'pending'">{{ 'common.statuses.Pending' | translate }}</span>
             <span *ngSwitchCase="'in-progress'">{{ 'common.statuses.Processing' | translate }}</span>

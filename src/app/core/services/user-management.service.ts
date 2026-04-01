@@ -128,6 +128,13 @@ export class UserManagementService {
   }
 
   /**
+   * Permanently delete a soft-deleted user (only if no transaction history)
+   */
+  permanentDeleteUser(userId: string): Observable<boolean> {
+    return this.backendUserService.permanentDeleteUser(userId);
+  }
+
+  /**
    * Toggle user active status
    */
   toggleUserStatus(userId: string): Observable<boolean> {

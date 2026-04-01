@@ -41,7 +41,7 @@ export enum ItemType {
 export interface InventoryDetailDto {
   id: number;
   itemId: number;
-  lot: number;
+  lot: string;
   inventoryId: number;
   supplierId?: number;
   manufacturerId?: number;
@@ -109,7 +109,7 @@ export interface CreateInventoryDto {
 
 export interface CreateInventoryDetailDto {
   itemId: number;
-  lot: number;
+  lot: string;
   supplierId?: number;
   manufacturerId?: number;
   countryId?: number;
@@ -135,7 +135,7 @@ export interface UpdateInventoryDto {
 export interface UpdateInventoryDetailDto {
   id?: number;
   itemId: number;
-  lot: number;
+  lot: string;
   supplierId?: number;
   manufacturerId?: number;
   countryId?: number;

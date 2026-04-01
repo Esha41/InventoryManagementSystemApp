@@ -109,7 +109,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   // Lot Selection Modal
   isLotModalOpen: boolean = false;
   selectedItem: OrderItem | null = null;
-  tempLotSelections: Map<number, number> = new Map();
+  tempLotSelections: Map<string, number> = new Map();
   showManualLotEntry: boolean = false;
   manualLotNumber: string = '';
 
@@ -283,7 +283,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     if (item.availableLots) {
       item.availableLots.forEach(lot => {
         if (lot.selectedQuantity > 0) {
-          this.tempLotSelections.set(lot.lotNumber, lot.selectedQuantity);
+          this.tempLotSelections.set(String(lot.lotNumber), lot.selectedQuantity);
         }
       });
     }
@@ -329,7 +329,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
 
     this.loadingManualLot = true;
     this.cdr.markForCheck();
-    this.lotSelectionService.getLotByNumberAndValidate(validation.parsedNumber!, this.selectedItem)
+    this.lotSelectionService.getLotByNumberAndValidate(validation.parsedLot!, this.selectedItem)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: ({ lot, isValid, error }) => {
@@ -347,7 +347,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
           this.lotSelectionService.addLotToItem(this.selectedItem!, newLot);
 
           const message = this.translate.instant('supplyRequestDetail.lotAddedSuccessfully', {
-            lotNumber: validation.parsedNumber
+            lotNumber: validation.parsedLot
           });
           const title = this.translate.instant('toast.success');
           this.toastService.success(message, title);
@@ -451,20 +451,20 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  onTempLotQuantityChange(event: { lotNumber: number; quantity: number }): void {
+  onTempLotQuantityChange(event: { lotNumber: string; quantity: number }): void {
     if (event.quantity > 0) {
-      this.tempLotSelections.set(event.lotNumber, event.quantity);
+      this.tempLotSelections.set(String(event.lotNumber), event.quantity);
     } else {
-      this.tempLotSelections.delete(event.lotNumber);
+      this.tempLotSelections.delete(String(event.lotNumber));
     }
   }
 
-  onRemoveLot(lotNumber: number): void {
+  onRemoveLot(lotNumber: string): void {
     if (!this.selectedItem) return;
 
     const removed = this.lotSelectionService.removeLotFromItem(this.selectedItem, lotNumber);
     if (removed) {
-      this.tempLotSelections.delete(lotNumber);
+      this.tempLotSelections.delete(String(lotNumber));
       const message = this.translate.instant('supplyRequestDetail.lotRemovedFromList', {
         lotNumber: lotNumber
       });
@@ -473,11 +473,11 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
     }
   }
 
-  confirmLotSelection(selections: Map<number, number>): void {
+  confirmLotSelection(selections: Map<string, number>): void {
     if (!this.selectedItem) return;
 
     this.selectedItem.availableLots.forEach(lot => {
-      lot.selectedQuantity = selections.get(lot.lotNumber) || 0;
+      lot.selectedQuantity = selections.get(String(lot.lotNumber)) || 0;
     });
 
     this.selectedItem.totalSelectedForDischarge = this.selectedItem.availableLots

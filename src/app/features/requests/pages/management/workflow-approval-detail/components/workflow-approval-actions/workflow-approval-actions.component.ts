@@ -120,14 +120,10 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
       });
     }
 
-    // Subscribe to state changes
-    this.stateService.isPickupDateAlreadySet$
+    // OnPush: approve disabled / validation text read state via getters — re-check when state updates
+    this.stateService.state$
       .pipe(takeUntil(this.destroy$))
-      .subscribe();
-
-    this.stateService.isSuperAdmin$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe();
+      .subscribe(() => this.cdr.markForCheck());
   }
 
   ngAfterViewChecked(): void {

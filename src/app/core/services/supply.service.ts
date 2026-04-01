@@ -14,7 +14,7 @@ export interface SupplyLotSuggestionDto {
   inventoryDetailId: number;
   itemId: number;
   itemName: string;
-  lot: number;
+  lot: string;
   availableQuantity: number;
   suggestedQuantity: number;
   expiryDate?: string;
@@ -57,7 +57,7 @@ export interface OrderSupplySuggestionDto {
 
 export interface CreateSupplyDetailDto {
   itemId: number;
-  lot: number;
+  lot: string;
   quantity: number;
   notes?: string;
 }
@@ -83,7 +83,7 @@ export interface SubmitSupplyDto {
 
 export interface UpdateSupplyDetailDto {
   itemId: number;
-  lot: number;
+  lot: string;
   quantity: number;
   notes?: string;
 }
@@ -92,7 +92,7 @@ export interface SupplyDetailDto {
   id: number;
   supplyId: number;
   itemId: number;
-  lot: number;
+  lot: string;
   quantity: number;
   notes?: string;
   requestedQuantity: number;
@@ -111,6 +111,65 @@ export interface SupplyDetailDto {
     itemType?: number;
     batchNo?: string;
   };
+}
+
+export interface WorkflowSupplySummaryLineDto {
+  itemId: number;
+  itemName: string;
+  itemNo?: string | null;
+  requestedQuantity: number;
+  /** Quantity approved on the order (may be less than originally requested). */
+  approvedQuantity?: number;
+  suppliedQuantity: number;
+  lot: string;
+  depotId?: number | null;
+  depotName?: string | null;
+  depotCode?: string | null;
+  notes?: string | null;
+}
+
+export interface WeaponSelectionLineDto {
+  itemId: number;
+  itemName: string;
+  depotId: number;
+  depotName?: string | null;
+  depotCode?: string | null;
+  batchId: number;
+  batchNumber: string;
+  selectedQuantity: number;
+}
+
+export interface WeaponSuppliedLineDto {
+  itemId: number;
+  itemName: string;
+  assetId: number;
+  serialNumber?: string | null;
+  depotId?: number | null;
+  depotName?: string | null;
+  depotCode?: string | null;
+  batchNumber?: string | null;
+  assigneeName?: string | null;
+  notes?: string | null;
+}
+
+export interface WorkflowSupplySummaryDto {
+  orderId: number;
+  orderSupplyDate?: string | null;
+  supplyDate?: string | null;
+  submissionStatus: number;
+  fulfillmentStatus: number;
+  receiverName?: string | null;
+  receiverMilitaryId?: string | null;
+  receiverRankName?: string | null;
+  notes?: string | null;
+  isWeaponOrder: boolean;
+  /** True when the order is fully approved; false while workflow is in progress. */
+  isOrderCompleted?: boolean;
+  /** None | Selection | Supplied */
+  phase?: string;
+  lines: WorkflowSupplySummaryLineDto[];
+  selectionLines?: WeaponSelectionLineDto[];
+  weaponLines?: WeaponSuppliedLineDto[];
 }
 
 export interface SupplyDto {
@@ -186,6 +245,15 @@ export class SupplyService {
   getByOrderId(orderId: number): Observable<SupplyDto> {
     this.config.log(`Fetching supply for order ${orderId}`);
     return this.apiService.get<SupplyDto>(`${this.endpoint}/${orderId}/getByOrderId`);
+  }
+
+  /**
+   * Read-only workflow supply/pickup summary (provisional while order in progress, final when approved).
+   * Requires ViewWorkflowSupplySummary.
+   */
+  getWorkflowSupplySummary(orderId: number): Observable<WorkflowSupplySummaryDto> {
+    this.config.log(`Fetching workflow supply summary for order ${orderId}`);
+    return this.apiService.get<WorkflowSupplySummaryDto>(`${this.endpoint}/${orderId}/workflow-summary`);
   }
 
   /**

@@ -35,6 +35,7 @@ export interface Asset {
 
   // Ammunition specific
   caseType?: string;
+  primaryPurpose?: string;
   propellant?: string;
 
   // Shared (Ammunition & Explosive)
@@ -74,7 +75,7 @@ export interface AssetFilterState {
   searchTerm: string;
   // Ammunition filters
   selectedCaseType: string | null;
-  selectedHazardDivision: string | null;
+  selectedPrimaryPurpose: string | null;
   selectedCompatibility: string | null;
   selectedPropellant: string | null;
   // Weapon filters

@@ -37,7 +37,7 @@ export class LotSelectionService {
    */
   loadAvailableLotsForQuantity(
     item: OrderItem,
-    existingSelections: Map<number, number>
+    existingSelections: Map<string, number>
   ): Observable<LoadLotsResult> {
     return this.inventoryService.getAvailableLotsForQuantity(item.itemId, item.approvedQuantity).pipe(
       map((lots: LotDetailDto[]) => {
@@ -56,7 +56,7 @@ export class LotSelectionService {
    * Get lot by number and validate it belongs to the item
    */
   getLotByNumberAndValidate(
-    lotNumber: number,
+    lotNumber: string,
     item: OrderItem
   ): Observable<{ lot: LotDetailDto; isValid: boolean; error?: string }> {
     return this.inventoryService.getLotByNumber(lotNumber).pipe(
@@ -72,7 +72,7 @@ export class LotSelectionService {
           };
         }
 
-        const existingLot = item.availableLots.find(l => l.lotNumber === lot.lot);
+        const existingLot = item.availableLots.find(l => String(l.lotNumber) === String(lot.lot));
         if (existingLot) {
           return {
             lot,
@@ -94,7 +94,7 @@ export class LotSelectionService {
   convertLotDetailToLotItem(lot: LotDetailDto): LotItem {
     return {
       inventoryDetailId: lot.inventoryDetailId,
-      lotNumber: lot.lot,
+      lotNumber: String(lot.lot ?? ''),
       quantity: lot.remainingQuantity,
       expiryDate: lot.expiryDate ? new Date(lot.expiryDate) : undefined,
       location: formatLocation(lot.depot),
@@ -118,8 +118,8 @@ export class LotSelectionService {
   /**
    * Remove lot from item's available lots
    */
-  removeLotFromItem(item: OrderItem, lotNumber: number): boolean {
-    const index = item.availableLots.findIndex(lot => lot.lotNumber === lotNumber);
+  removeLotFromItem(item: OrderItem, lotNumber: string): boolean {
+    const index = item.availableLots.findIndex(lot => String(lot.lotNumber) === String(lotNumber));
     if (index > -1) {
       item.availableLots.splice(index, 1);
       return true;
@@ -130,23 +130,23 @@ export class LotSelectionService {
   /**
    * Validate lot number input
    */
-  validateLotNumber(lotNumber: string): { isValid: boolean; parsedNumber?: number; error?: string } {
-    if (!lotNumber || !lotNumber.trim()) {
+  validateLotNumber(lotNumber: string): { isValid: boolean; parsedLot?: string; error?: string } {
+    const trimmed = lotNumber?.trim() ?? '';
+    if (!trimmed) {
       return {
         isValid: false,
         error: this.translate.instant('supplyRequestDetail.pleaseEnterLotNumber')
       };
     }
 
-    const parsed = parseInt(lotNumber.trim(), 10);
-    if (isNaN(parsed)) {
+    if (trimmed.length > 64) {
       return {
         isValid: false,
         error: this.translate.instant('supplyRequestDetail.invalidLotNumber')
       };
     }
 
-    return { isValid: true, parsedNumber: parsed };
+    return { isValid: true, parsedLot: trimmed };
   }
 }
 

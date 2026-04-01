@@ -13,11 +13,6 @@ import { CommonModule } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OrderReportHeaderComponent {
-  @Input() logoUrl: string = '/assets/Code_Generated_Image.png';
   @Input() qrCodeDataUrl: string | null = null;
   @Input() orderId: string = '';
-
-  onLogoError(): void {
-    this.logoUrl = 'assets/Code_Generated_Image.png';
-  }
 }

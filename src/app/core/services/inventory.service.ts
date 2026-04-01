@@ -217,9 +217,9 @@ export class InventoryService implements IImportableService {
    * Get lot details by lot number
    * Endpoint: GET /api/Inventory/lot/{lotNumber}
    */
-  getLotByNumber(lotNumber: number): Observable<LotDetailDto> {
-    const url = `${this.endpoint}/lot/${lotNumber}`;
-    console.log('getLotByNumber - Making API call to:', url);
+  getLotByNumber(lotNumber: string): Observable<LotDetailDto> {
+    const encoded = encodeURIComponent(lotNumber.trim());
+    const url = `${this.endpoint}/lot/${encoded}`;
     this.config.log(`Fetching lot details for lot ${lotNumber}`);
     return this.apiService.get<LotDetailDto>(url);
   }
@@ -290,7 +290,7 @@ export interface LotDetailDto {
   inventoryDetailId: number;
   itemId: number;
   itemName: string;
-  lot: number;
+  lot: string;
   originalQuantity: number;
   usedQuantity: number;
   remainingQuantity: number;

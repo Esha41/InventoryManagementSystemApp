@@ -68,6 +68,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   // Modal states
   showUserModal = false;
   showDeleteConfirm = false;
+  showPermanentDeleteConfirm = false;
   userModalMode: 'create' | 'edit' = 'create';
   selectedUser?: BackendUserDto;
 
@@ -439,6 +440,54 @@ export class UserManagementComponent implements OnInit, OnDestroy {
           );
         }
       });
+  }
+
+  onPermanentDelete(user: BackendUserDto): void {
+    if (this.isUserSuperAdmin(user)) {
+      this.toastService.error(
+        this.translateService.instant('manageAdmins.cannotDeleteSuperAdmin'),
+        this.translateService.instant('common.error')
+      );
+      return;
+    }
+    this.selectedUser = user;
+    this.showPermanentDeleteConfirm = true;
+    this.cdr.markForCheck();
+  }
+
+  onCancelPermanentDelete(): void {
+    this.showPermanentDeleteConfirm = false;
+    this.selectedUser = undefined;
+    this.cdr.markForCheck();
+  }
+
+  confirmPermanentDelete(): void {
+    if (this.selectedUser) {
+      this.userManagementService.permanentDeleteUser(this.selectedUser.id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (success) => {
+            if (success) {
+              this.showPermanentDeleteConfirm = false;
+              const userName = this.selectedUser?.userName || this.translateService.instant('manageAdmins.user');
+              this.selectedUser = undefined;
+              this.cdr.markForCheck();
+              this.loadUsers();
+              this.loadUserSummary();
+              this.toastService.success(
+                this.translateService.instant('manageAdmins.userPermanentlyDeletedSuccess', { userName }),
+                this.translateService.instant('manageAdmins.permanentDeleteUserTitle')
+              );
+            }
+          },
+          error: (error) => {
+            this.toastService.error(
+              error.message || this.translateService.instant('manageAdmins.userPermanentlyDeletedError'),
+              this.translateService.instant('manageAdmins.permanentDeleteUserTitle')
+            );
+          }
+        });
+    }
   }
 }
 

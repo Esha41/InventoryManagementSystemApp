@@ -15,7 +15,7 @@ import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { BaseRequestDto } from '@models/workflow-approval.model';
 import { SupplyRequestDetail, OrderItem } from '@models/supply-request.model';
-import { mapOrderToRequestDetail, applySuggestionToItems } from '../../utils/supply-request.mapper';
+import { mapOrderToRequestDetail, applySuggestionToItems, capOrderItemDischargeToApprovedQuantity } from '../../utils/supply-request.mapper';
 import { mapLotDetailsToLotItems } from '@utils/lot.utils';
 import { mapWorkflowStepsToApprovalSteps } from '@utils/approval-workflow.utils';
 import { mapApprovalHistory, mapRequestStatus } from '@utils/request-mapper.utils';
@@ -201,7 +201,7 @@ export class SupplyRequestDetailService {
 
     const selectionsByItemAndLot = new Map<string, number>();
     supplyDetails.forEach(detail => {
-      if (detail.itemId && detail.lot && detail.quantity > 0) {
+      if (detail.itemId && detail.lot != null && detail.lot !== '' && detail.quantity > 0) {
         const key = `${detail.itemId}_${detail.lot}`;
         selectionsByItemAndLot.set(key, detail.quantity);
       }
@@ -228,13 +228,17 @@ export class SupplyRequestDetailService {
         (sum, lot) => sum + lot.selectedQuantity,
         0
       );
+      capOrderItemDischargeToApprovedQuantity(item);
     });
 
     selectionsByItemAndLot.forEach((quantity, key) => {
-      const [itemId, lotNumber] = key.split('_');
+      const firstSep = key.indexOf('_');
+      if (firstSep < 0) return;
+      const itemId = key.slice(0, firstSep);
+      const lotNumber = key.slice(firstSep + 1);
       const item = requestDetail.items.find(i => i.itemId.toString() === itemId);
       if (item) {
-        const lot = item.availableLots?.find(l => l.lotNumber.toString() === lotNumber);
+        const lot = item.availableLots?.find(l => String(l.lotNumber) === lotNumber);
         if (!lot) {
           notFoundCount++;
         }
@@ -295,15 +299,15 @@ export class SupplyRequestDetailService {
 
           item.availableLots = mapLotDetailsToLotItems(lots);
 
-          const selectionsByLot = new Map<number, number>();
+          const selectionsByLot = new Map<string, number>();
           details.forEach((detail: any) => {
-            if (detail.lot && detail.quantity > 0) {
-              selectionsByLot.set(detail.lot, detail.quantity);
+            if (detail.lot != null && detail.lot !== '' && detail.quantity > 0) {
+              selectionsByLot.set(String(detail.lot), detail.quantity);
             }
           });
 
           item.availableLots.forEach((lot: any) => {
-            const selectedQty = selectionsByLot.get(lot.lotNumber);
+            const selectedQty = selectionsByLot.get(String(lot.lotNumber));
             if (selectedQty !== undefined) {
               lot.selectedQuantity = selectedQty;
             }
@@ -313,6 +317,7 @@ export class SupplyRequestDetailService {
             (sum: number, lot: any) => sum + lot.selectedQuantity,
             0
           );
+          capOrderItemDischargeToApprovedQuantity(item);
         });
       }),
       map(() => undefined),
@@ -343,7 +348,7 @@ export class SupplyRequestDetailService {
   /**
    * Get lot by number
    */
-  getLotByNumber(lotNumber: number): Observable<LotDetailDto> {
+  getLotByNumber(lotNumber: string): Observable<LotDetailDto> {
     return this.inventoryService.getLotByNumber(lotNumber);
   }
 
@@ -443,6 +448,8 @@ export class SupplyRequestDetailService {
    * Consolidates duplicate item+lot combinations by summing quantities
    */
   private buildSupplyDetails(requestDetail: SupplyRequestDetail): CreateSupplyDetailDto[] {
+    requestDetail.items.forEach(item => capOrderItemDischargeToApprovedQuantity(item));
+
     const supplyDetails: CreateSupplyDetailDto[] = [];
 
     requestDetail.items.forEach(item => {
@@ -450,7 +457,7 @@ export class SupplyRequestDetailService {
         if (lot.selectedQuantity > 0) {
           supplyDetails.push({
             itemId: item.itemId,
-            lot: lot.lotNumber,
+            lot: String(lot.lotNumber).trim(),
             quantity: lot.selectedQuantity,
             notes: undefined
           });

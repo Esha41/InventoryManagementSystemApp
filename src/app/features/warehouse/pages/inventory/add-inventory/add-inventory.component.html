@@ -78,9 +78,9 @@
                 <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
                   {{ 'addInventory.lotNumber' | translate }} <span class="text-[var(--color-error)]">*</span>
                 </label>
-                <input type="number" formControlName="lot" min="1" step="1" [max]="999999"
+                <input type="text" formControlName="lot" maxlength="64" autocomplete="off"
+                  class="no-spinner w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
                   (input)="onFieldChange('lot', i)"
-                  class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
                   [class.border-[var(--color-border)]]="!isFieldInvalid('lot', i)"
                   [class.border-[var(--color-error)]]="isFieldInvalid('lot', i)"
                   [placeholder]="'addInventory.enterLotNumber' | translate">
@@ -121,8 +121,31 @@
                 <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
                   {{ 'addInventory.expiryDate' | translate }}
                 </label>
-                <input type="date" formControlName="expiryDate" (input)="onFieldChange('expiryDate', i)"
-                  class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors">
+                <div
+                  class="relative min-h-[42px] rounded border bg-[var(--color-background)] cursor-pointer"
+                  (click)="openDatePicker(expiryDatePicker)"
+                  [ngClass]="{
+                    'border-red-500': isFieldInvalid('expiryDate', i),
+                    'border-[var(--color-border)] hover:border-[var(--color-brand)]/50': !isFieldInvalid('expiryDate', i)
+                  }">
+                  <div class="absolute inset-0 flex items-center px-3 py-2 pointer-events-none gap-2">
+                    <span class="text-sm text-start flex-1 min-w-0"
+                      [class.text-[var(--color-text-muted)]]="!getDateDisplay('expiryDate', i)">
+                      {{ getDateDisplay('expiryDate', i) || 'DD/MM/YYYY' }}
+                    </span>
+                  <svg class="w-4 h-4 text-[var(--color-text-muted)] flex-shrink-0" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    aria-hidden="true">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  </div>
+                  <input #expiryDatePicker type="date" formControlName="expiryDate"
+                    (input)="onFieldChange('expiryDate', i)"
+                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer pointer-events-none">
+                </div>
               </div>
 
               <!-- Supplier -->
@@ -187,8 +210,7 @@
               class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
               [class.border-[var(--color-error)]]="isFieldInvalid('invoiceNumber')"
               [placeholder]="'addInventory.enterInvoiceNumber' | translate"
-              pattern="[0-9]*"
-              inputmode="numeric">
+              >
             <p *ngIf="isFieldInvalid('invoiceNumber')" class="mt-1 text-sm text-[var(--color-error)]">
               {{ getFieldError('invoiceNumber') }}
             </p>
@@ -199,10 +221,32 @@
             <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
               {{ 'addInventory.invoiceDate' | translate }}
             </label>
-            <input type="date" formControlName="invoiceDate" (input)="onFieldChange('invoiceDate'); validateDates()"
-              [max]="getMaxDate()"
-              class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
-              [class.border-[var(--color-error)]]="isFieldInvalid('invoiceDate')">
+            <div
+              class="relative min-h-[42px] rounded border bg-[var(--color-background)] cursor-pointer"
+              (click)="openDatePicker(invoiceDatePicker)"
+              [ngClass]="{
+                'border-red-500': isFieldInvalid('invoiceDate'),
+                'border-[var(--color-border)] hover:border-[var(--color-brand)]/50': !isFieldInvalid('invoiceDate')
+              }">
+              <div class="absolute inset-0 flex items-center px-3 py-2 pointer-events-none gap-2">
+                <span class="text-sm text-start flex-1 min-w-0"
+                  [class.text-[var(--color-text-muted)]]="!getDateDisplay('invoiceDate')">
+                      {{ getDateDisplay('invoiceDate') || 'DD/MM/YYYY' }}
+                </span>
+                  <svg class="w-4 h-4 text-[var(--color-text-muted)] flex-shrink-0" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    aria-hidden="true">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+              </div>
+              <input #invoiceDatePicker type="date" formControlName="invoiceDate"
+                (input)="onFieldChange('invoiceDate'); validateDates()"
+                [max]="getMaxDate()"
+                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer pointer-events-none">
+            </div>
             <p *ngIf="isFieldInvalid('invoiceDate')" class="mt-1 text-sm text-[var(--color-error)]">
               {{ getFieldError('invoiceDate') || ('addInventory.cannotBeFuture' | translate) }}
             </p>
@@ -215,10 +259,32 @@
             <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
               {{ 'addInventory.receivedDate' | translate }}
             </label>
-            <input type="date" formControlName="receivedDate" (input)="onFieldChange('receivedDate'); validateDates()"
-              [max]="getMaxDate()"
-              class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
-              [class.border-[var(--color-error)]]="isFieldInvalid('receivedDate')">
+            <div
+              class="relative min-h-[42px] rounded border bg-[var(--color-background)] cursor-pointer"
+              (click)="openDatePicker(receivedDatePicker)"
+              [ngClass]="{
+                'border-red-500': isFieldInvalid('receivedDate'),
+                'border-[var(--color-border)] hover:border-[var(--color-brand)]/50': !isFieldInvalid('receivedDate')
+              }">
+              <div class="absolute inset-0 flex items-center px-3 py-2 pointer-events-none gap-2">
+                <span class="text-sm text-start flex-1 min-w-0"
+                  [class.text-[var(--color-text-muted)]]="!getDateDisplay('receivedDate')">
+                      {{ getDateDisplay('receivedDate') || 'DD/MM/YYYY' }}
+                </span>
+                  <svg class="w-4 h-4 text-[var(--color-text-muted)] flex-shrink-0" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    aria-hidden="true">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+              </div>
+              <input #receivedDatePicker type="date" formControlName="receivedDate"
+                (input)="onFieldChange('receivedDate'); validateDates()"
+                [max]="getMaxDate()"
+                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer pointer-events-none">
+            </div>
             <p *ngIf="isFieldInvalid('receivedDate')" class="mt-1 text-sm text-[var(--color-error)]">
               {{ getFieldError('receivedDate') || ('addInventory.cannotBeFuture' | translate) }}
             </p>

@@ -114,7 +114,7 @@ export function resolveRequesterName(orderData: OrderDto | null, translateServic
 export function getApprovalStatusTranslationKey(status: string): string {
   const statusLower = status?.toLowerCase().trim() || '';
   if (statusLower === 'approved') {
-    return 'dashboard.statusLabels.approved';
+    return 'requestsManagement.orderReport.workflowStatus.completed';
   } else if (statusLower === 'rejected') {
     return 'dashboard.statusLabels.rejected';
   } else if (statusLower === 'pending') {
