@@ -23,7 +23,7 @@ import {
   RawRoleApiResponse
 } from '@models/backend-user.model';
 import { RoleApplicationEntityLinkDto } from '@models/backend-user.model';
-import { ApiResponse, PagedResponse, PagedRequest, PaginatedList } from '@models/api-response.model';
+import { ApiResponse, PagedResponse, PagedRequest, PaginatedList, FilterData } from '@models/api-response.model';
 import { ErrorHandler } from '@utils/error-handler.utils';
 
 export interface UserSummaryDto {
@@ -153,37 +153,25 @@ export class BackendUserService {
     );
   }
 
-  private appendFilterParams(params: HttpParams, prefix: string, filter: any): HttpParams {
-    if (!filter) {
-      return params;
-    }
+  private appendFilterParams(params: HttpParams, prefix: string, filter?: FilterData): HttpParams {
+    if (!filter) return params;
 
-    // Leaf properties (case-insensitive on ASP.NET Core binding, but we keep exact names used elsewhere)
-    if (filter.field !== undefined && filter.field !== null && filter.field !== '') {
-      params = params.set(`${prefix}.Field`, String(filter.field));
-    }
-    if (filter.operator !== undefined && filter.operator !== null && filter.operator !== '') {
-      params = params.set(`${prefix}.Operator`, String(filter.operator));
-    }
-    if (filter.value !== undefined && filter.value !== null && filter.value !== '') {
-      params = params.set(`${prefix}.Value`, String(filter.value));
-    }
-    if (filter.logic !== undefined && filter.logic !== null && filter.logic !== '') {
-      params = params.set(`${prefix}.Logic`, String(filter.logic));
-    }
+    const setIf = (key: string, value: unknown): void => {
+      if (value === undefined || value === null) return;
+      const str = String(value).trim();
+      if (str.length === 0) return;
+      params = params.set(key, str);
+    };
 
-    // Optional sorting
-    if (filter.sortField !== undefined && filter.sortField !== null && filter.sortField !== '') {
-      params = params.set(`${prefix}.sortField`, String(filter.sortField));
-    }
-    if (filter.sortDirection !== undefined && filter.sortDirection !== null && filter.sortDirection !== '') {
-      params = params.set(`${prefix}.sortDirection`, String(filter.sortDirection));
-    }
+    // Leaf properties (ASP.NET Core binding is case-insensitive; we match backend property names)
+    setIf(`${prefix}.Field`, filter.field);
+    setIf(`${prefix}.Operator`, filter.operator);
+    setIf(`${prefix}.Value`, filter.value);
+    setIf(`${prefix}.Logic`, filter.logic);
 
     // Nested filters
-    const nested = filter.filters;
-    if (Array.isArray(nested)) {
-      nested.forEach((child: any, idx: number) => {
+    if (Array.isArray(filter.filters) && filter.filters.length > 0) {
+      filter.filters.forEach((child, idx) => {
         params = this.appendFilterParams(params, `${prefix}.Filters[${idx}]`, child);
       });
     }
