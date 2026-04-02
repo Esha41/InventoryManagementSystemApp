@@ -223,6 +223,9 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
   }
 
   shouldShowApproveButton(): boolean {
+    if (this.stateService.shouldHideStandaloneApproveForReturn()) {
+      return false;
+    }
     if (this.isSuperAdmin) {
       return true;
     }

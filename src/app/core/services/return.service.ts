@@ -167,17 +167,35 @@ export class ReturnService {
   }
 
   /**
-   * Process return items (ammo/explosive and weapon) and approve the return
+   * Process return items (ammo/explosive and weapon) and approve the return.
+   * With files: sends multipart/form-data (field `payload` = JSON, `files` = files). Without files: JSON body.
    */
-  processReturnItems(returnId: number, dto: ProcessReturnItemsDto): Observable<boolean> {
+  processReturnItems(returnId: number, dto: ProcessReturnItemsDto, files?: File[]): Observable<boolean> {
     this.configService.log(`Processing return items for return ${returnId}`, dto);
+
+    if (files && files.length > 0) {
+      const formData = new FormData();
+      formData.append('payload', JSON.stringify(dto));
+      files.forEach(f => formData.append('files', f, f.name));
+      return this.apiService.put<boolean>(
+        API_ENDPOINTS.RETURNS.PROCESS_ITEMS(returnId),
+        formData
+      ).pipe(
+        catchError(error => {
+          this.configService.logError('Failed to review return items', error);
+          const msg = ErrorHandler.extractErrorMessage(error, 'Failed to review return items');
+          return throwError(() => new Error(msg));
+        })
+      );
+    }
+
     return this.apiService.put<boolean>(
       API_ENDPOINTS.RETURNS.PROCESS_ITEMS(returnId),
       dto
     ).pipe(
       catchError(error => {
-        this.configService.logError('Failed to process return items', error);
-        const msg = ErrorHandler.extractErrorMessage(error, 'Failed to process return items');
+        this.configService.logError('Failed to review return items', error);
+        const msg = ErrorHandler.extractErrorMessage(error, 'Failed to review return items');
         return throwError(() => new Error(msg));
       })
     );

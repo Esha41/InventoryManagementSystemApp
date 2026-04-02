@@ -352,4 +352,11 @@ export class WorkflowApprovalStateService {
   isReturnDeliveryDateSet(): boolean {
     return this.getState().isReturnDeliveryDateSet;
   }
+
+  /**
+   * When true, the Take Action Approve button must be hidden — return completion goes through Review & complete only.
+   */
+  shouldHideStandaloneApproveForReturn(): boolean {
+    return this.permissionsService.shouldHideStandaloneApproveForReturn(this.getState().requestDetail);
+  }
 }

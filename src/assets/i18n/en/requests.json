@@ -584,21 +584,21 @@
       "returnForReviewFailed": "Failed to return request for review. Please try again.",
       "requestNotFound": "Request not found"
     },
-    "setReturnDepot": "Set Return Depot",
-    "returnDepotDescription": "Select the depot where the returned items will be stored. This is required before approving the return request.",
+    "setReturnDepot": "Return Depot",
+    "returnDepotDescription": "The depot where returned items will be stored. Required before you can approve the return request.",
     "returnDepot": "Return Depot",
     "selectDepot": "Select a depot",
     "setDepot": "Set Depot",
-    "setReturnDeliveryDate": "Set Delivery Date",
-    "deliveryDateDescription": "Set the expected delivery date for the returned items. This is required before approving the return request.",
+    "setReturnDeliveryDate": "Delivery Date",
+    "deliveryDateDescription": "The expected delivery date and time for returned items. Required before you can approve the return request.",
     "deliveryDate": "Delivery Date",
     "selectDeliveryDate": "Select a delivery date",
     "setDeliveryDate": "Set Delivery Date",
     "valueSet": "Set",
     "update": "Update",
-    "processReturnItems": "Process Return Items",
-    "processReturnItemsDescription": "Process the return items by entering lot and serial number information for each item.",
-    "goToProcessReturnItems": "Go to Process Return Items"
+    "processReturnItems": "Review and complete the request",
+    "processReturnItemsDescription": "On the next screen, confirm received quantities. For ammunition and explosives, enter the lot; for weapons, enter the serial number and batch number. Submit to complete this request and approve it.",
+    "goToProcessReturnItems": "Review & complete the request"
   },
   "supplyRequestDetail": {
     "title": "Supply Request",
@@ -774,12 +774,17 @@
     "ACTION_UNKNOWN": "Other Action"
   },
   "processReturnItems": {
-    "title": "Process Return Items",
+    "title": "Review and complete the request",
     "requestNo": "Request No",
     "ammoExplosiveSection": "Ammunition / Explosive Items",
     "weaponSection": "Weapon Items",
     "item": "Item",
     "quantity": "Quantity",
+    "returnedQuantity": "Returned qty",
+    "receivedQuantity": "Received qty",
+    "enterReceivedQuantity": "Received quantity",
+    "depotColumn": "Return depot",
+    "depotNotSet": "Not set",
     "lot": "Lot",
     "serialNumber": "Serial Number",
     "batchNumber": "Batch Number",
@@ -788,9 +793,14 @@
     "enterLot": "Enter lot number",
     "enterSerialNumber": "Enter serial number",
     "enterBatchNumber": "Enter batch number",
-    "noAmmoRows": "No ammunition/explosive items to process.",
-    "noWeaponRows": "No weapon items to process.",
-    "submit": "Submit & Process",
-    "success": "Return items processed and request approved successfully."
+    "noAmmoRows": "No ammunition/explosive items to review.",
+    "noWeaponRows": "No weapon items to review.",
+    "submit": "Submit & complete",
+    "success": "Request reviewed and completed successfully.",
+    "attachments": "Attachments",
+    "attachmentsHint": "Optional files are uploaded when you submit. They are stored with this return (same as request attachments).",
+    "existingAttachments": "Already on file",
+    "pendingUpload": "Will upload on submit",
+    "openFile": "Open"
   }
 }

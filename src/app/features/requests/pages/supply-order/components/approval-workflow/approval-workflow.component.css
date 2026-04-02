@@ -1,2 +1,57 @@
-/* Approval Workflow Component Styles */
+/* Timeline layout (same pattern as workflow-approval-timeline; RTL-safe connector) */
+.approval-workflow-container {
+  position: relative;
+}
 
+.approval-circle {
+  position: relative;
+  z-index: 20;
+  transition: all 0.3s ease;
+}
+
+.approval-circle:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.approval-circle.approved {
+  border-color: var(--color-success) !important;
+  background-color: var(--color-background);
+}
+
+.approval-circle.approved .lucide-angular {
+  color: var(--color-success);
+}
+
+.approval-circle.pending {
+  border-color: var(--color-warning) !important;
+  background-color: var(--color-background);
+}
+
+.approval-circle.pending .lucide-angular {
+  color: var(--color-warning);
+}
+
+.approval-circle.rejected {
+  border-color: var(--color-error) !important;
+  background-color: var(--color-background);
+}
+
+.approval-circle.rejected .lucide-angular {
+  color: var(--color-error);
+}
+
+.approval-connector-line {
+  position: absolute;
+  inset-inline-start: 1.5rem;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    var(--color-border) 0%,
+    var(--color-border-muted) 50%,
+    var(--color-border) 100%
+  );
+  z-index: 1;
+  border-radius: 1px;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.05);
+}

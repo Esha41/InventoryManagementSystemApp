@@ -10,7 +10,7 @@ import { WorkflowApprovalStateService } from '../../services/workflow-approval-s
 import { WorkflowApprovalPermissionsService } from '../../services/workflow-approval-permissions.service';
 import { ToastService } from '@services/toast.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
-import { formatDateForInput, formatDateShort } from '@core/utils/format.utils';
+import { formatDateForInput, formatDateTimeExtended } from '@core/utils/format.utils';
 import { hasPendingStep } from '../../utils/workflow-approval-helpers';
 
 @Component({
@@ -77,17 +77,8 @@ export class WorkflowReturnDeliveryDateComponent implements OnChanges {
 
   get deliveryDateDisplay(): string {
     if (!this.localDeliveryDate?.trim()) return '';
-    const dateMatch = this.localDeliveryDate.match(/^(\d{4}-\d{2}-\d{2})/);
-    const datePart = dateMatch ? dateMatch[1] : (formatDateForInput(this.localDeliveryDate) || this.localDeliveryDate);
-    if (!datePart) return '';
-    const formattedDate = formatDateShort(datePart);
-    if (formattedDate === 'N/A') return '';
-    let timePart = '';
-    const timeMatch = this.localDeliveryDate.match(/T(\d{2}:\d{2})/);
-    if (timeMatch) {
-      timePart = timeMatch[1];
-    }
-    return timePart ? `${formattedDate} ${timePart}` : formattedDate;
+    const raw = this.localDeliveryDate.trim();
+    return formatDateTimeExtended(raw) || '';
   }
 
   get minDeliveryDateForPicker(): string {

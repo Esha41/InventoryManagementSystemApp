@@ -6,7 +6,7 @@
     "selection": "الاختيار",
     "usage": "الاستخدام",
     "review": "المراجعة",
-    "send": "إرسال",
+    "send": "تنفيذ",
     "selectOrderSource": "اختر مصدر الطلب",
     "selectOrderSourceDescription": "اختر ما إذا كنت تريد الطلب من مخصص قسمك أو من جميع الذخائر المتاحة",
     "fromAllowance": "ضمن المقرر",
@@ -47,15 +47,15 @@
     "usedQuantity": "الكمية المصروفة سابقا",
     "itemName": "اسم مادة",
     "itemNo": "رقم مادة",
-    "orderSubmitted": "تم إرسال الطلب بنجاح!",
-    "orderSentSuccessfully": "تم إرسال طلبك بنجاح",
+    "orderSubmitted": "تم تنفيذ الطلب بنجاح!",
+    "orderSentSuccessfully": "تم تنفيذ طلبك بنجاح",
     "orderNumber": "رقم طلبك هو",
     "trackOrder": "تتبع الطلب",
     "createNewIssueRequest": "إنشاء طلب صرف جديد",
     "productId": "معرف المنتج",
     "ncn": "NCN",
     "primaryPurpose": "الغرض الأساسي",
-    "sendRequest": "إرسال الطلب",
+    "sendRequest": "تنفيذ الطلب",
     "selectType": "النوع",
     "selectAssetType": "اختر نوع المادة",
     "selectAmmunitionType": "نوع الذخيرة",
@@ -144,7 +144,7 @@
     "yes": "نعم",
     "no": "لا",
     "previous": "السابق",
-    "submit": "إرسال",
+    "submit": "تنفيذ",
     "clearFilters": "تطبيق الاختيارات",
     "validation": {
       "usePurposeRequired": "غرض الاستخدام مطلوب.",
@@ -171,7 +171,7 @@
     },
     "confirmDialog": {
       "title": "تأكيد الطلب",
-      "message": "هل تريد تأكيد إرسال الطلب؟"
+      "message": "هل تريد تأكيد تنفيذ الطلب؟"
     }
   },
   "returnRequest": {
@@ -188,7 +188,7 @@
     "item": "مادة",
     "quantity": "الكمية",
     "itemNotes": "ملاحظات مادة",
-    "sendRequest": "إرسال",
+    "sendRequest": "تنفيذ",
     "selectDepartment": "اختر القسم",
     "selectRequester": "اختر المقدم (اختياري)",
     "selectRequestPurpose": "اختر الغرض من الطلب",
@@ -213,7 +213,7 @@
     },
     "confirmDialog": {
       "title": "تأكيد الطلب",
-      "message": "هل أنت متأكد أنك تريد إرسال طلب الإرجاع هذا؟"
+      "message": "هل أنت متأكد أنك تريد تنفيذ طلب الإرجاع هذا؟"
     }
   },
   "discardRequest": {
@@ -229,7 +229,7 @@
     "item": "مادة",
     "quantity": "الكمية",
     "itemNotes": "ملاحظات مادة",
-    "sendRequest": "إرسال",
+    "sendRequest": "تنفيذ",
     "selectDepartment": "اختر القسم",
     "selectRequester": "اختر المقدم (اختياري)",
     "selectRequestPurpose": "اختر الغرض من الطلب",
@@ -256,7 +256,7 @@
     },
     "confirmDialog": {
       "title": "تأكيد الطلب",
-      "message": "هل أنت متأكد أنك تريد إرسال طلب الإتلاف هذا؟"
+      "message": "هل أنت متأكد أنك تريد تنفيذ طلب الإتلاف هذا؟"
     }
   },
   "requestsManagement": {
@@ -443,7 +443,7 @@
       "loading": "جاري تحميل ملخص التوريد...",
       "orderPickupDate": "تاريخ استلام الطلب",
       "supplyPickupDate": "تاريخ الصرف",
-      "submissionStatus": "حالة الإرسال",
+      "submissionStatus": "حالة التنفيذ",
       "fulfillmentStatus": "حالة التنفيذ",
       "receiver": "المستلم",
       "receiverRank": "الرتبة",
@@ -483,9 +483,9 @@
     "awaitingDate": "في انتظار التاريخ",
     "submitSupplyReceiverInfo": "معلومات المستلم",
     "supplyNotCreated": "لم يتم إنشاء التوريد",
-    "alreadySubmitted": "تم الإرسال بالفعل",
+    "alreadySubmitted": "تم التنفيذ بالفعل",
     "supplyNotCreatedMessage": "لم يتم إنشاء طلب التوريد بعد.",
-    "alreadySubmittedMessage": "تم إرسال التوريد بالفعل.",
+    "alreadySubmittedMessage": "تم تنفيذ التوريد بالفعل.",
     "goToSupplyManagement": "الذهاب إلى إدارة التوريد",
     "receiverName": "اسم المستلم",
     "enterReceiverName": "أدخل اسم المستلم",
@@ -511,12 +511,12 @@
     "uploading": "جاري الرفع...",
     "filesUploaded": "تم رفع الملفات بنجاح",
     "fileUploadFailed": "فشل رفع الملفات",
-    "submitSupply": "إرسال التوريد",
-    "submitting": "جاري الإرسال...",
+    "submitSupply": "تنفيذ التوريد",
+    "submitting": "جاري التنفيذ...",
     "takeAction": "اتخاذ إجراء",
-    "sendToHigherApproval": "إرسال إلى موافقة أعلى",
+    "sendToHigherApproval": "تنفيذ إلى موافقة أعلى",
     "selectHigherApproval": "اختر خياراً",
-    "higherApprovalRequired": "يرجى تحديد ما إذا كنت تريد الإرسال إلى موافقة أعلى",
+    "higherApprovalRequired": "يرجى تحديد ما إذا كنت تريد التنفيذ إلى موافقة أعلى",
     "comments": "تعليقات",
     "enterComments": "أدخل تعليقاتك هنا...",
     "attachments": "المرفقات",
@@ -581,21 +581,21 @@
       "returnDepotSet": "تم تحديد مستودع الإرجاع بنجاح.",
       "returnDeliveryDateSet": "تم تحديد تاريخ التسليم بنجاح."
     },
-    "setReturnDepot": "تحديد مستودع الإرجاع",
-    "returnDepotDescription": "اختر المستودع الذي سيتم تخزين المواد المرتجعة فيه. هذا مطلوب قبل الموافقة على طلب الإرجاع.",
+    "setReturnDepot": "مستودع الإرجاع",
+    "returnDepotDescription": "المستودع الذي سيتم تخزين المواد المرتجعة فيه. لا يمكن الموافقة على طلب الإرجاع دون تحديده.",
     "returnDepot": "مستودع الإرجاع",
     "selectDepot": "اختر مستودعاً",
     "setDepot": "تحديد المستودع",
-    "setReturnDeliveryDate": "تحديد تاريخ التسليم",
-    "deliveryDateDescription": "حدد تاريخ التسليم المتوقع للأصناف المرتجعة. هذا مطلوب قبل الموافقة على طلب الإرجاع.",
+    "setReturnDeliveryDate": "تاريخ التسليم",
+    "deliveryDateDescription": "التاريخ والوقت المتوقعان لتسليم المواد المرتجعة. لا يمكن الموافقة على طلب الإرجاع دون تحديدهما.",
     "deliveryDate": "تاريخ التسليم",
     "selectDeliveryDate": "اختر تاريخ التسليم",
     "setDeliveryDate": "تحديد تاريخ التسليم",
     "valueSet": "تم التحديد",
     "update": "تحديث",
-    "processReturnItems": "معالجة أصناف الإرجاع",
-    "processReturnItemsDescription": "قم بمعالجة أصناف الإرجاع بإدخال معلومات الدفعة والرقم التسلسلي لكل صنف.",
-    "goToProcessReturnItems": "الذهاب لمعالجة أصناف الإرجاع"
+    "processReturnItems": "مراجعة وإكمال الطلب",
+    "processReturnItemsDescription": "في الشاشة التالية، أكّد الكميات المستلمة: للذخيرة والمتفجرات أدخل Lot، وللأسلحة أدخل الرقم التسلسلي وBatch Number. عند التنفيذ يُكمل الطلب وتُعتمد الموافقة.",
+    "goToProcessReturnItems": "مراجعة وإكمال الطلب"
   },
   "supplyRequestDetail": {
     "title": "طلب توريد",
@@ -748,23 +748,33 @@
     "ACTION_UNKNOWN": "إجراء آخر"
   },
   "processReturnItems": {
-    "title": "معالجة أصناف الإرجاع",
+    "title": "مراجعة وإكمال الطلب",
     "requestNo": "رقم الطلب",
-    "ammoExplosiveSection": "أصناف الذخيرة / المتفجرات",
-    "weaponSection": "أصناف الأسلحة",
-    "item": "الصنف",
+    "ammoExplosiveSection": "مواد الذخيرة / المتفجرات",
+    "weaponSection": "مواد الأسلحة",
+    "item": "المادة",
     "quantity": "الكمية",
-    "lot": "رقم الدفعة",
+    "returnedQuantity": "الكمية المرتجعة",
+    "receivedQuantity": "الكمية المستلمة",
+    "enterReceivedQuantity": "الكمية المستلمة",
+    "depotColumn": "مستودع الإرجاع",
+    "depotNotSet": "غير محدد",
+    "lot": "Lot",
     "serialNumber": "الرقم التسلسلي",
-    "batchNumber": "رقم الدفعة",
+    "batchNumber": "Batch Number",
     "addRow": "إضافة سطر",
     "enterQuantity": "أدخل الكمية",
-    "enterLot": "أدخل رقم الدفعة",
+    "enterLot": "Enter lot number",
     "enterSerialNumber": "أدخل الرقم التسلسلي",
-    "enterBatchNumber": "أدخل رقم الدفعة",
-    "noAmmoRows": "لا توجد أصناف ذخيرة/متفجرات للمعالجة.",
-    "noWeaponRows": "لا توجد أصناف أسلحة للمعالجة.",
-    "submit": "إرسال ومعالجة",
-    "success": "تمت معالجة أصناف الإرجاع والموافقة على الطلب بنجاح."
+    "enterBatchNumber": "Enter batch number",
+    "noAmmoRows": "لا توجد مواد ذخيرة/متفجرات للمراجعة.",
+    "noWeaponRows": "لا توجد مواد أسلحة للمراجعة.",
+    "submit": "تنفيذ وإكمال",
+    "success": "تمت مراجعة الطلب وإكماله بنجاح.",
+    "attachments": "المرفقات",
+    "attachmentsHint": "يمكن إرفاق ملفات اختيارية؛ تُرفع عند التنفيذ وتُخزَّن مع طلب الإرجاع (كمرفقات الطلب).",
+    "existingAttachments": "موجودة مسبقاً",
+    "pendingUpload": "ستُرفع عند التنفيذ",
+    "openFile": "فتح"
   }
 }

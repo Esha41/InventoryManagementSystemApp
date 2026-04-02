@@ -4,18 +4,23 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, ArrowLeft, ArrowRight, Package, Plus, Trash2 } from 'lucide-angular';
-import { ReturnService, ProcessReturnItemsDto, ReturnAmmoExplosiveItemDto, ReturnWeaponItemDto } from '@services/return.service';
+import { LucideAngularModule, ArrowLeft, ArrowRight, Package, Trash2, Paperclip } from 'lucide-angular';
+import { ReturnService, ProcessReturnItemsDto } from '@services/return.service';
+import { FileUploadService, FileUploadDto, FileEntityType } from '@services/file-upload.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { validateFile, showFileValidationErrors, getFileSizeFromFile, MAX_FILE_SIZE_MB } from '@utils/file.utils';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 interface AmmoExplosiveRow {
   itemId: number;
   itemName: string;
-  quantity: number | null;
+  /** Quantity in the return request (read-only in UI). */
+  returnedQuantity: number | null;
+  /** Quantity actually received / posted to inventory (editable). */
+  receivedQuantity: number | null;
   lot: string;
 }
 
@@ -44,8 +49,8 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
   readonly ArrowLeft = ArrowLeft;
   readonly ArrowRight = ArrowRight;
   readonly Package = Package;
-  readonly Plus = Plus;
   readonly Trash2 = Trash2;
+  readonly Paperclip = Paperclip;
 
   private destroy$ = new Subject<void>();
 
@@ -54,9 +59,18 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
   error: string | null = null;
   processing = false;
   requestNo = '';
+  /** Localized return depot (backend uses one depot for all ammo lines). */
+  returnDepotDisplayName = '';
 
   ammoExplosiveRows: AmmoExplosiveRow[] = [];
   weaponRows: WeaponRow[] = [];
+
+  /** New files to upload with submit (optional). */
+  attachmentFiles: File[] = [];
+  /** Files already linked to this return (same entity as order on create). */
+  existingFiles: FileUploadDto[] = [];
+
+  MAX_FILE_SIZE_MB = MAX_FILE_SIZE_MB;
 
   // Raw request items for reference
   requestItems: any[] = [];
@@ -79,7 +93,8 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
 
   get canSubmit(): boolean {
     const hasAmmoData = this.ammoExplosiveRows.length > 0 &&
-      this.ammoExplosiveRows.every(r => r.itemId && r.quantity && r.quantity > 0 && r.lot?.trim());
+      this.ammoExplosiveRows.every(r =>
+        r.itemId && r.receivedQuantity != null && r.receivedQuantity > 0 && r.lot?.trim());
     const hasWeaponData = this.weaponRows.length > 0 &&
       this.weaponRows.every(r => r.itemId && r.serialNumber?.trim() && r.batchNumber?.trim());
     return hasAmmoData || hasWeaponData;
@@ -89,6 +104,7 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private returnService: ReturnService,
+    private fileUploadService: FileUploadService,
     private toastService: ToastService,
     private translateService: TranslateService,
     public translationService: TranslationService,
@@ -118,9 +134,11 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
         next: (returnData: any) => {
           this.requestNo = returnData.requestNo || '';
           this.requestItems = returnData.requestItems || [];
+          this.returnDepotDisplayName = this.resolveReturnDepotName(returnData);
           this.initializeRows();
           this.loading = false;
           this.cdr.markForCheck();
+          this.loadExistingAttachments();
         },
         error: (err) => {
           this.error = ErrorHandler.extractErrorMessage(err, 'Failed to load return request');
@@ -130,6 +148,68 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
       });
   }
 
+  /** Return files use Order + entity id (same as create-return flow). */
+  private loadExistingAttachments(): void {
+    this.fileUploadService.getFilesByEntity(FileEntityType.Order, this.requestId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (files) => {
+          this.existingFiles = files ?? [];
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.existingFiles = [];
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  onAttachmentInputChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const list = input.files;
+    if (!list?.length) return;
+
+    const invalidErrors: string[] = [];
+    const added: File[] = [];
+    for (let i = 0; i < list.length; i++) {
+      const file = list[i];
+      const validation = validateFile(file);
+      if (!validation.isValid) {
+        invalidErrors.push(validation.errorMessage);
+      } else {
+        added.push(file);
+      }
+    }
+    if (invalidErrors.length > 0) {
+      showFileValidationErrors(this.translateService, this.toastService, invalidErrors, 'workflowApprovalDetail');
+      input.value = '';
+      return;
+    }
+    this.attachmentFiles = [...this.attachmentFiles, ...added];
+    input.value = '';
+    this.cdr.markForCheck();
+  }
+
+  removeAttachmentAt(index: number): void {
+    this.attachmentFiles.splice(index, 1);
+    this.cdr.markForCheck();
+  }
+
+  getFileSize(file: File): string {
+    return getFileSizeFromFile(file);
+  }
+
+  getAttachmentDownloadUrl(file: FileUploadDto): string {
+    return this.fileUploadService.getFileDownloadUrl(file.id);
+  }
+
+  private resolveReturnDepotName(returnData: any): string {
+    const depot = returnData?.returnToDepot;
+    if (!depot) return '';
+    const lang = getCurrentLang(this.translateService);
+    return getLocalizedName(depot, lang) || depot.nameEn || depot.nameAr || depot.code || '';
+  }
+
   private initializeRows(): void {
     for (const item of this.requestItems) {
       const type = item.itemType;
@@ -137,12 +217,15 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
       const isWeapon = type === 2 || type === 'Weapon';
       const itemName = item.itemName || item.name || 'Unknown Item';
       const itemId = item.itemId || item.id;
+      const requested = item.quantity != null ? Number(item.quantity) : null;
 
       if (isAmmoOrExplosive) {
+        const reqOk = requested != null && !isNaN(requested);
         this.ammoExplosiveRows.push({
           itemId,
           itemName,
-          quantity: item.quantity || null,
+          returnedQuantity: reqOk ? requested : null,
+          receivedQuantity: reqOk ? requested : null,
           lot: ''
         });
       } else if (isWeapon) {
@@ -159,31 +242,6 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
     }
   }
 
-  addAmmoRow(): void {
-    this.ammoExplosiveRows.push({ itemId: 0, itemName: '', quantity: null, lot: '' });
-    this.cdr.markForCheck();
-  }
-
-  removeAmmoRow(index: number): void {
-    this.ammoExplosiveRows.splice(index, 1);
-    this.cdr.markForCheck();
-  }
-
-  addWeaponRow(): void {
-    this.weaponRows.push({ itemId: 0, itemName: '', serialNumber: '', batchNumber: '' });
-    this.cdr.markForCheck();
-  }
-
-  removeWeaponRow(index: number): void {
-    this.weaponRows.splice(index, 1);
-    this.cdr.markForCheck();
-  }
-
-  getItemName(item: any): string {
-    const lang = getCurrentLang(this.translateService);
-    return getLocalizedName(item, lang) || item.itemName || item.name || '';
-  }
-
   goBack(): void {
     this.router.navigate(['/requests-management', this.requestId, 'workflow-approval']);
   }
@@ -195,10 +253,10 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
 
     const dto: ProcessReturnItemsDto = {
       ammoExplosiveItems: this.ammoExplosiveRows
-        .filter(r => r.itemId && r.quantity && r.quantity > 0 && r.lot?.trim())
+        .filter(r => r.itemId && r.receivedQuantity != null && r.receivedQuantity > 0 && r.lot?.trim())
         .map(r => ({
           itemId: r.itemId,
-          quantity: r.quantity!,
+          quantity: r.receivedQuantity!,
           lot: r.lot.trim()
         })),
       weaponItems: this.weaponRows
@@ -210,7 +268,9 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
         }))
     };
 
-    this.returnService.processReturnItems(this.requestId, dto)
+    const filesToSend = this.attachmentFiles.length > 0 ? this.attachmentFiles : undefined;
+
+    this.returnService.processReturnItems(this.requestId, dto, filesToSend)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
@@ -219,7 +279,7 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
             .pipe(takeUntil(this.destroy$))
             .subscribe(t => {
               this.toastService.success(
-                t['processReturnItems.success'] || 'Return items processed successfully',
+                t['processReturnItems.success'] || 'Request reviewed and completed successfully.',
                 t['toast.success'] || 'Success'
               );
             });
@@ -227,7 +287,7 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.processing = false;
-          const msg = ErrorHandler.extractErrorMessage(error, 'Failed to process return items');
+          const msg = ErrorHandler.extractErrorMessage(error, 'Failed to review return items');
           this.translateService.get('toast.error')
             .pipe(takeUntil(this.destroy$))
             .subscribe(title => {

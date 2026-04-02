@@ -754,4 +754,18 @@ export class WorkflowApprovalPermissionsService {
       return false;
     }
   }
+
+  /**
+   * Return requests are completed via Process Return Items (review screen), which approves the workflow.
+   * Hide the standalone Approve button once depot and delivery are set so approvers cannot bypass lot/serial capture.
+   */
+  shouldHideStandaloneApproveForReturn(requestDetail: RequestDetail | null): boolean {
+    if (!requestDetail || requestDetail.requestType !== 'Return') {
+      return false;
+    }
+    if (!hasPendingStep(requestDetail)) {
+      return false;
+    }
+    return !!requestDetail.returnToDepotId && !!requestDetail.deliveryDate;
+  }
 }

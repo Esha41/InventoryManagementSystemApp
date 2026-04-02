@@ -115,6 +115,11 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     return this.isRTL ? ArrowRight : ArrowLeft;
   }
 
+  /** Arrow for “go forward” CTAs (e.g. Review Return Items). */
+  get forwardNavIcon() {
+    return this.isRTL ? ArrowLeft : ArrowRight;
+  }
+
   readonly destroy$ = new Subject<void>();
 
 
@@ -263,6 +268,18 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
   canProcessReturnItems(): boolean {
     return this.permissionsService.canProcessReturnItems(this.requestDetail);
+  }
+
+  /**
+   * Show the Review Return Items card when the return workflow is pending and
+   * depot + delivery are set (same prerequisites as approving the return).
+   * The navigation button is shown only if {@link canProcessReturnItems} is true.
+   */
+  showReviewReturnItemsSection(): boolean {
+    if (!this.requestDetail || this.requestDetail.requestType !== 'Return' || !this.hasPendingStep()) {
+      return false;
+    }
+    return !!this.requestDetail.returnToDepotId && !!this.requestDetail.deliveryDate;
   }
 
   navigateToProcessReturnItems(): void {
