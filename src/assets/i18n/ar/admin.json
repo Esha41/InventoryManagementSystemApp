@@ -549,8 +549,8 @@
       "noDepartments": "لا توجد بيانات أقسام متاحة"
     },
     "charts": {
-      "requestTrends": "اتجاهات الطلبات",
-      "inventoryComposition": "تكوين المخزون",
+      "requestTrends": "حركة الطلبات",
+      "inventoryComposition": "انواع المخزون",
       "topRequestedItems": "المواد الأكثر طلباً",
       "weeklyActivity": "نظرة عامة على النشاط الأسبوعي",
       "monthlyActivity": "نظرة عامة على النشاط الشهري",

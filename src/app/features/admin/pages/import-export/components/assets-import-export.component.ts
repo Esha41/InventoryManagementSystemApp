@@ -476,7 +476,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
       // Add ALL ammunition fields to match template
       columns.push(
         {
-          header: this.translateService.instant('warehouseInventory.armNumber') || 'Arm Number',
+          header: this.translateService.instant('addAsset.armNumber') || 'Arm Number',
           key: 'armNumber',
           width: 15,
           format: (value: string) => value || '-'
@@ -706,7 +706,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
       // Add ALL explosive fields to match template
       columns.push(
         {
-          header: this.translateService.instant('warehouseInventory.armNumber') || 'Arm Number',
+          header: this.translateService.instant('addAsset.armNumber') || 'Arm Number',
           key: 'armNumber',
           width: 15,
           format: (value: string) => value || '-'

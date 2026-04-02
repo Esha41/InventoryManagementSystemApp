@@ -203,8 +203,12 @@ img[alt="Order QR Code"] {
   }
 
   .print-logo.emdad-logo-mark--brand {
-    height: 96px !important;
-    min-height: 72px !important;
+    /* Matches on-screen ~md:h-24 */
+    height: 6rem !important;
+    min-height: 4rem !important;
+    max-width: min(20rem, 100%) !important;
+    margin-top: 2rem !important;
+    width: 100% !important;
     object-fit: unset !important;
     background-color: var(--emdad-logo-mark) !important;
   }
