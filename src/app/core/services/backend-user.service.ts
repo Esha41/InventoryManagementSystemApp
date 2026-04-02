@@ -59,20 +59,13 @@ export class BackendUserService {
   getUsers(request?: PagedRequest): Observable<PaginatedList<BackendUserDto>> {
     this.configService.log('Fetching users', request);
 
-    // Construct query parameters
+    // Use GET /Users with query-string model binding for nested filters:
+    // Filter.Field, Filter.Operator, Filter.Value, Filter.Logic, Filter.Filters[0].Field, ...
     let params = new HttpParams()
-      .set('Page', (request?.page || 1).toString())
-      .set('PageSize', (request?.pageSize || 10).toString());
+      .set('Page', (request?.page ?? 1).toString())
+      .set('PageSize', (request?.pageSize ?? 10).toString());
 
-    if (request?.filter?.field) {
-      params = params.set('Filter.Field', request.filter.field);
-    }
-    if (request?.filter?.operator) {
-      params = params.set('Filter.Operator', request.filter.operator);
-    }
-    if (request?.filter?.value) {
-      params = params.set('Filter.Value', request.filter.value);
-    }
+    params = this.appendFilterParams(params, 'Filter', request?.filter);
 
     return this.apiService.get<PaginatedList<BackendUserDto>>(
       API_ENDPOINTS.USERS.BASE,
@@ -158,6 +151,44 @@ export class BackendUserService {
         ));
       })
     );
+  }
+
+  private appendFilterParams(params: HttpParams, prefix: string, filter: any): HttpParams {
+    if (!filter) {
+      return params;
+    }
+
+    // Leaf properties (case-insensitive on ASP.NET Core binding, but we keep exact names used elsewhere)
+    if (filter.field !== undefined && filter.field !== null && filter.field !== '') {
+      params = params.set(`${prefix}.Field`, String(filter.field));
+    }
+    if (filter.operator !== undefined && filter.operator !== null && filter.operator !== '') {
+      params = params.set(`${prefix}.Operator`, String(filter.operator));
+    }
+    if (filter.value !== undefined && filter.value !== null && filter.value !== '') {
+      params = params.set(`${prefix}.Value`, String(filter.value));
+    }
+    if (filter.logic !== undefined && filter.logic !== null && filter.logic !== '') {
+      params = params.set(`${prefix}.Logic`, String(filter.logic));
+    }
+
+    // Optional sorting
+    if (filter.sortField !== undefined && filter.sortField !== null && filter.sortField !== '') {
+      params = params.set(`${prefix}.sortField`, String(filter.sortField));
+    }
+    if (filter.sortDirection !== undefined && filter.sortDirection !== null && filter.sortDirection !== '') {
+      params = params.set(`${prefix}.sortDirection`, String(filter.sortDirection));
+    }
+
+    // Nested filters
+    const nested = filter.filters;
+    if (Array.isArray(nested)) {
+      nested.forEach((child: any, idx: number) => {
+        params = this.appendFilterParams(params, `${prefix}.Filters[${idx}]`, child);
+      });
+    }
+
+    return params;
   }
 
   /**

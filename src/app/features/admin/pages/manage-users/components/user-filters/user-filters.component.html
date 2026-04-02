@@ -25,6 +25,78 @@
     </button>
   </div>
 
+  <!-- Rank Filter -->
+  <div class="filter-group">
+    <div class="relative w-[200px]">
+      <app-dropdown class="w-full"
+        [(ngModel)]="rankFilterId"
+        (selectionChange)="onRankFilterChange($event)"
+        [options]="ranks"
+        optionValue="id"
+        [optionLabelFn]="rankOptionLabel"
+        [placeholderSelectable]="false"
+        [placeholderValue]="null"
+        placeholder="{{ 'userFormModal.rankPlaceholder' | translate }}">
+      </app-dropdown>
+
+      <button *ngIf="rankFilterId !== null && rankFilterId !== undefined" type="button"
+        (click)="clearRankFilter($event)"
+        class="absolute end-8 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-md hover:bg-[var(--color-background-hover)] active:bg-[var(--color-background-active)] transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] shadow-custom-sm z-20"
+        style="pointer-events: auto;" [attr.aria-label]="'allowance.clearFilter' | translate"
+        title="{{ 'allowance.clearFilter' | translate }}">
+        <lucide-angular [img]="X" class="h-3.5 w-3.5"></lucide-angular>
+      </button>
+    </div>
+  </div>
+
+  <!-- Department Filter -->
+  <div class="filter-group">
+    <div class="relative w-[200px]">
+      <app-dropdown class="w-full"
+        [(ngModel)]="departmentFilterId"
+        (selectionChange)="onDepartmentFilterChange($event)"
+        [options]="departments"
+        optionValue="id"
+        [optionLabelFn]="departmentOptionLabel"
+        [placeholderSelectable]="false"
+        [placeholderValue]="null"
+        placeholder="{{ 'userFormModal.departmentPlaceholder' | translate }}">
+      </app-dropdown>
+
+      <button *ngIf="departmentFilterId !== null && departmentFilterId !== undefined" type="button"
+        (click)="clearDepartmentFilter($event)"
+        class="absolute end-8 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-md hover:bg-[var(--color-background-hover)] active:bg-[var(--color-background-active)] transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] shadow-custom-sm z-20"
+        style="pointer-events: auto;" [attr.aria-label]="'allowance.clearFilter' | translate"
+        title="{{ 'allowance.clearFilter' | translate }}">
+        <lucide-angular [img]="X" class="h-3.5 w-3.5"></lucide-angular>
+      </button>
+    </div>
+  </div>
+
+  <!-- Roles Filter -->
+  <div class="filter-group">
+    <div class="relative w-[220px]">
+      <app-dropdown class="w-full"
+        [(ngModel)]="roleFilterId"
+        (selectionChange)="onRoleFilterChange($event)"
+        [options]="roles"
+        optionValue="id"
+        [optionLabelFn]="roleOptionLabel"
+        [placeholderSelectable]="false"
+        [placeholderValue]="null"
+        placeholder="{{ 'userFormModal.rolesPlaceholder' | translate }}">
+      </app-dropdown>
+
+      <button *ngIf="roleFilterId !== null && roleFilterId !== undefined" type="button"
+        (click)="clearRoleFilter($event)"
+        class="absolute end-8 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-md hover:bg-[var(--color-background-hover)] active:bg-[var(--color-background-active)] transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] shadow-custom-sm z-20"
+        style="pointer-events: auto;" [attr.aria-label]="'allowance.clearFilter' | translate"
+        title="{{ 'allowance.clearFilter' | translate }}">
+        <lucide-angular [img]="X" class="h-3.5 w-3.5"></lucide-angular>
+      </button>
+    </div>
+  </div>
+
   <!-- Status Filter Group -->
   <div class="filter-group">
     <span class="filter-label text-[var(--color-text-muted)] text-sm font-medium">{{ 'manageAdmins.status' | translate

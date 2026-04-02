@@ -52,8 +52,12 @@
 
   <!-- Filters -->
   <div class="mb-6">
-    <app-user-filters [searchTerm]="searchTerm" [statusFilter]="statusFilter" [useSearchButton]="true"
-      (searchTriggered)="onSearchChange($event)" (statusFilterChange)="onStatusFilterChange($event)">
+    <app-user-filters [searchTerm]="searchTerm" [statusFilter]="statusFilter" [useSearchButton]="true" [ranks]="ranks"
+      [departments]="departments" [roles]="roles" [selectedRankId]="rankFilterId"
+      [selectedDepartmentId]="departmentFilterId" [selectedRoleId]="roleFilterId"
+      (searchTriggered)="onSearchChange($event)" (statusFilterChange)="onStatusFilterChange($event)"
+      (rankFilterChange)="onRankFilterChange($event)" (departmentFilterChange)="onDepartmentFilterChange($event)"
+      (roleFilterChange)="onRoleFilterChange($event)">
     </app-user-filters>
   </div>
 
