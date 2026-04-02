@@ -23,7 +23,7 @@ import {
   RawRoleApiResponse
 } from '@models/backend-user.model';
 import { RoleApplicationEntityLinkDto } from '@models/backend-user.model';
-import { ApiResponse, PagedResponse, PagedRequest, PaginatedList } from '@models/api-response.model';
+import { ApiResponse, PagedResponse, PagedRequest, PaginatedList, FilterData } from '@models/api-response.model';
 import { ErrorHandler } from '@utils/error-handler.utils';
 
 export interface UserSummaryDto {
@@ -59,20 +59,13 @@ export class BackendUserService {
   getUsers(request?: PagedRequest): Observable<PaginatedList<BackendUserDto>> {
     this.configService.log('Fetching users', request);
 
-    // Construct query parameters
+    // Use GET /Users with query-string model binding for nested filters:
+    // Filter.Field, Filter.Operator, Filter.Value, Filter.Logic, Filter.Filters[0].Field, ...
     let params = new HttpParams()
-      .set('Page', (request?.page || 1).toString())
-      .set('PageSize', (request?.pageSize || 10).toString());
+      .set('Page', (request?.page ?? 1).toString())
+      .set('PageSize', (request?.pageSize ?? 10).toString());
 
-    if (request?.filter?.field) {
-      params = params.set('Filter.Field', request.filter.field);
-    }
-    if (request?.filter?.operator) {
-      params = params.set('Filter.Operator', request.filter.operator);
-    }
-    if (request?.filter?.value) {
-      params = params.set('Filter.Value', request.filter.value);
-    }
+    params = this.appendFilterParams(params, 'Filter', request?.filter);
 
     return this.apiService.get<PaginatedList<BackendUserDto>>(
       API_ENDPOINTS.USERS.BASE,
@@ -158,6 +151,32 @@ export class BackendUserService {
         ));
       })
     );
+  }
+
+  private appendFilterParams(params: HttpParams, prefix: string, filter?: FilterData): HttpParams {
+    if (!filter) return params;
+
+    const setIf = (key: string, value: unknown): void => {
+      if (value === undefined || value === null) return;
+      const str = String(value).trim();
+      if (str.length === 0) return;
+      params = params.set(key, str);
+    };
+
+    // Leaf properties (ASP.NET Core binding is case-insensitive; we match backend property names)
+    setIf(`${prefix}.Field`, filter.field);
+    setIf(`${prefix}.Operator`, filter.operator);
+    setIf(`${prefix}.Value`, filter.value);
+    setIf(`${prefix}.Logic`, filter.logic);
+
+    // Nested filters
+    if (Array.isArray(filter.filters) && filter.filters.length > 0) {
+      filter.filters.forEach((child, idx) => {
+        params = this.appendFilterParams(params, `${prefix}.Filters[${idx}]`, child);
+      });
+    }
+
+    return params;
   }
 
   /**

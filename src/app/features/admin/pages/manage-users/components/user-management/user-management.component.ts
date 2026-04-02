@@ -57,6 +57,9 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   errorMessage = '';
   searchTerm = '';
   statusFilter: 'all' | 'active' | 'inactive' | 'deleted' = 'all';
+  rankFilterId: number | null = null;
+  departmentFilterId: number | null = null;
+  roleFilterId: string | null = null;
 
   // Super admin check
   isSuperAdmin = false;
@@ -111,7 +114,15 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   loadUsers(): void {
     this.isLoading = true;
-    this.userManagementService.loadUsers(this.currentPage, this.rowsPerPage, this.searchTerm || '', this.statusFilter)
+    this.userManagementService.loadUsers(
+      this.currentPage,
+      this.rowsPerPage,
+      this.searchTerm || '',
+      this.statusFilter,
+      this.rankFilterId,
+      this.departmentFilterId,
+      this.roleFilterId ? [this.roleFilterId] : []
+    )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (users) => {
@@ -293,8 +304,25 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   onStatusFilterChange(statusFilter: 'all' | 'active' | 'inactive' | 'deleted'): void {
     this.statusFilter = statusFilter;
     this.currentPage = 1;
-    // Don't call loadUsers here - let the child component trigger search
-    this.cdr.markForCheck();
+    this.loadUsers();
+  }
+
+  onRankFilterChange(rankId: number | null): void {
+    this.rankFilterId = rankId;
+    this.currentPage = 1;
+    this.loadUsers();
+  }
+
+  onDepartmentFilterChange(departmentId: number | null): void {
+    this.departmentFilterId = departmentId;
+    this.currentPage = 1;
+    this.loadUsers();
+  }
+
+  onRoleFilterChange(roleId: string | null): void {
+    this.roleFilterId = roleId ?? null;
+    this.currentPage = 1;
+    this.loadUsers();
   }
 
   onAddUser(): void {
