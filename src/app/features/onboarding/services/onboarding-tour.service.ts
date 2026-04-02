@@ -74,6 +74,7 @@ export class OnboardingTourService implements OnDestroy {
       showProgress: true,
       animate: true,
       allowClose: true,
+      overlayClickBehavior: () => {},
       overlayColor: 'rgba(0, 0, 0, 0.6)',
       stagePadding: 8,
       stageRadius: 8,
@@ -82,6 +83,11 @@ export class OnboardingTourService implements OnDestroy {
       prevBtnText: this.translateService.instant('onboarding.btnPrev'),
       doneBtnText: this.translateService.instant('onboarding.btnDone'),
       progressText: '{{current}} / {{total}}',
+      onPopoverRender: popover => {
+        const rtl = this.translationService.isRTL();
+        popover.wrapper.setAttribute('dir', rtl ? 'rtl' : 'ltr');
+        popover.wrapper.setAttribute('lang', this.translationService.getCurrentLanguage());
+      },
       steps: steps,
       onDestroyStarted: () => {
         if (!this.isRestartingForLangSwitch) {
@@ -124,13 +130,16 @@ export class OnboardingTourService implements OnDestroy {
     const user = this.authService.getCurrentUser();
     if (!user?.id) return;
 
-    const cacheKey = PAGE_TOUR_CACHE_PREFIX + user.id + '_' + pageKey;
-    if (this.storageService.get<boolean>(cacheKey)) return;
+    const completedCacheKey = `${PAGE_TOUR_CACHE_PREFIX}${String(user.id)}_${pageKey}`;
+    if (this.storageService.get<boolean>(completedCacheKey) === true) return;
 
-    this.startPageTour(pageKey);
+    this.startPageTour(pageKey, completedCacheKey);
   }
 
-  private startPageTour(pageKey: string): void {
+  /**
+   * @param completedCacheKey Built when starting; reused when saving (driver.js onDestroyStarted must not re-read user).
+   */
+  private startPageTour(pageKey: string, completedCacheKey: string): void {
     if (this.pageTourInProgress) return;
     this.pageTourInProgress = true;
 
@@ -141,13 +150,11 @@ export class OnboardingTourService implements OnDestroy {
       return;
     }
 
-    const user = this.authService.getCurrentUser();
-    const cacheKey = PAGE_TOUR_CACHE_PREFIX + (user?.id ?? '') + '_' + pageKey;
-
     this.pageTourDriverInstance = driver({
       showProgress: false,
       animate: true,
       allowClose: true,
+      overlayClickBehavior: () => {},
       overlayColor: 'rgba(0, 0, 0, 0.5)',
       stagePadding: 8,
       stageRadius: 8,
@@ -155,12 +162,17 @@ export class OnboardingTourService implements OnDestroy {
       nextBtnText: this.translateService.instant('onboarding.btnNext'),
       prevBtnText: this.translateService.instant('onboarding.btnPrev'),
       doneBtnText: this.translateService.instant('onboarding.btnDone'),
+      onPopoverRender: popover => {
+        const rtl = this.translationService.isRTL();
+        popover.wrapper.setAttribute('dir', rtl ? 'rtl' : 'ltr');
+        popover.wrapper.setAttribute('lang', this.translationService.getCurrentLanguage());
+      },
       steps: steps,
       onDestroyStarted: () => {
-        this.storageService.set(cacheKey, true);
         this.pageTourDriverInstance?.destroy();
       },
       onDestroyed: () => {
+        this.storageService.set(completedCacheKey, true);
         this.pageTourInProgress = false;
         this.pageTourDriverInstance = null;
       },

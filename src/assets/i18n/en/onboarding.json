@@ -51,7 +51,7 @@
       "issueRequest": {
         "intro": {
           "title": "Issue New Request",
-          "description": "This wizard guides you through 5 steps to create a new issue request."
+          "description": "Create an issue request in five steps: choose your allowance, select items and quantities, enter usage details, review everything, then submit. The stepper shows where you are in the process."
         },
         "stepper": {
           "title": "Request Steps",

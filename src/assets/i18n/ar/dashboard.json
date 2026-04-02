@@ -83,11 +83,11 @@
       "belowThreshold": "أقل من الحد الأدنى"
     },
     "expiringLots": {
-      "title": "لوتات علي وشك الانتهاء",
-      "subtitle": "اللوتات التي ستنتهي صلاحيتها خلال الـ 30 يوم القادمة",
+      "title": "lots علي وشك الانتهاء",
+      "subtitle": "lots التي ستنتهي صلاحيتها خلال الـ 30 يوم القادمة",
       "itemName": "اسم المادة",
       "itemNo": "رقم المادة",
-      "lot": "اللوت",
+      "lot": "lot",
       "batchNo": "Batch No",
       "expiryDate": "تاريخ الانتهاء",
       "daysUntilExpiry": "الأيام حتى الانتهاء",
@@ -96,7 +96,7 @@
       "depot": "المستودع",
       "supplier": "المورد",
       "manufacturer": "الشركة المصنعة",
-      "noLots": "لا توجد لوتات ستنتهي صلاحيتها خلال الـ 30 يوم القادمة"
+      "noLots": "لا توجد lots ستنتهي صلاحيتها خلال الـ 30 يوم القادمة"
     },
     "lowStock": {
       "title": "المخزون المنخفض",
@@ -116,7 +116,7 @@
   },
   "inventorySummary": {
     "title": "ملخص المخزون",
-    "subtitle": "نظرة عامة على جميع المواد مع تفاصيل اللوتات",
+    "subtitle": "نظرة عامة على جميع المواد مع تفاصيل lots",
     "itemName": "اسم مادة",
     "itemNo": "رقم المادة",
     "type": "النوع",
@@ -126,11 +126,11 @@
     "usedQty": "الكمية المصروفة سابقا",
     "reservedQty": "الكمية المحجوزة",
     "remainingQty": "الكمية المتبقية",
-    "totalLots": "إجمالي اللوتات",
+    "totalLots": "إجمالي lots",
     "totalAssets": "إجمالي الأصول",
-    "lotDetails": "تفاصيل اللوت",
+    "lotDetails": "تفاصيل lot",
     "assetDetails": "تفاصيل الأصول",
-    "lotNumber": "رقم اللوت",
+    "lotNumber": "lot number",
     "depot": "المستودع",
     "supplier": "المورد",
     "manufacturer": "الشركة المصنعة",
@@ -139,13 +139,13 @@
     "expiryDate": "تاريخ الانتهاء",
     "originalQty": "الكمية الأصلية",
     "status": "الحالة",
-    "noLots": "لا يوجد لوت متاح لهذه المادة",
+    "noLots": "لا يوجد lot متاح لهذه المادة",
     "noAssets": "لا توجد أصول متاحة لهذه المادة",
     "noItems": "لا توجد مواد مخزون متاحة",
     "searchPlaceholder": "البحث باسم مادة، رقم مادة، NSN، أو رقم القطعة...",
     "noResults": "لا توجد مواد تطابق معايير البحث",
-    "exportWithDetails": "تصدير مع تفاصيل اللوتات",
-    "exportingWithDetails": "جارٍ تحميل تفاصيل اللوتات للتصدير. الرجاء الانتظار..."
+    "exportWithDetails": "تصدير مع تفاصيل lots",
+    "exportingWithDetails": "جارٍ تحميل تفاصيل lots للتصدير. الرجاء الانتظار..."
   },
   "forecast": {
     "title": "التوقعات",

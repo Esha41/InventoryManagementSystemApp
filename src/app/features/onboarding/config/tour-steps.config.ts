@@ -26,6 +26,9 @@ export function getTourSteps(
         align: 'center',
         onPopoverRender: onLanguageSwitch
           ? (popover: any) => {
+              const wrapper = popover.wrapper as HTMLElement;
+              wrapper.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
+              wrapper.setAttribute('lang', isRTL ? 'ar' : 'en');
               const footer = popover.footer as HTMLElement;
               if (!footer) return;
               const langBtn = document.createElement('button');
@@ -34,7 +37,11 @@ export function getTourSteps(
               langBtn.addEventListener('click', (e: Event) => { e.preventDefault(); onLanguageSwitch(); });
               footer.prepend(langBtn);
             }
-          : undefined,
+          : (popover: any) => {
+              const wrapper = popover.wrapper as HTMLElement;
+              wrapper.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
+              wrapper.setAttribute('lang', isRTL ? 'ar' : 'en');
+            },
       },
     },
     {

@@ -658,6 +658,7 @@ tr.action-required-highlight {
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-xl);
   max-width: 360px;
+  text-align: start;
 }
 
 .driver-popover.ettad-tour-popover .driver-popover-title {
@@ -681,6 +682,10 @@ tr.action-required-highlight {
 
 .driver-popover.ettad-tour-popover .driver-popover-navigation-btns {
   gap: 0.5rem;
+}
+
+.driver-popover.ettad-tour-popover .driver-popover-navigation-btns button + button {
+  margin-left: 0;
 }
 
 .driver-popover.ettad-tour-popover .driver-popover-next-btn {
@@ -716,6 +721,10 @@ tr.action-required-highlight {
 
 .driver-popover.ettad-tour-popover .driver-popover-close-btn {
   color: var(--color-text-muted);
+  right: auto;
+  left: auto;
+  inset-inline-end: 0;
+  inset-inline-start: auto;
 }
 
 .driver-popover.ettad-tour-popover .driver-popover-close-btn:hover {
@@ -729,16 +738,8 @@ tr.action-required-highlight {
   border-color: var(--color-background);
 }
 
-[dir="rtl"] .driver-popover.ettad-tour-popover .driver-popover-navigation-btns {
-  flex-direction: row-reverse;
-}
-
-[dir="rtl"] .driver-popover.ettad-tour-popover {
-  text-align: right;
-}
-
-[dir="rtl"] .driver-popover.ettad-tour-popover .driver-popover-footer {
-  flex-direction: row-reverse;
+.driver-popover.ettad-tour-popover .driver-popover-footer {
+  text-align: start;
 }
 
 .driver-popover.ettad-tour-welcome {

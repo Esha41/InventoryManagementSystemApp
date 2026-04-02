@@ -342,16 +342,44 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   getStatusBadgeClass(status: string): string {
     switch (status) {
       case 'new-issue':
-      case 'new': return 'bg-blue-100 text-blue-800';
-      case 'on-progress': return 'bg-[var(--color-warning)]/20 text-[var(--color-warning)]';
-      case 'completed': return 'bg-[var(--color-success)]/20 text-[var(--color-success)]';
-      case 'declined': return 'bg-[var(--color-error)]/20 text-[var(--color-error)]';
-      default: return 'bg-[var(--color-background-active)] text-[var(--color-text-muted)]';
+      case 'new':
+        return 'bg-blue-100 text-blue-800';
+      case 'on-progress':
+      case 'action-required':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'declined':
+        return 'bg-red-100 text-red-800';
+      case 'returned':
+        return 'bg-purple-100 text-purple-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   }
 
+  /**
+   * Card status comes from mapRequestStatusToCardStatus (new | on-progress | completed | declined | returned | action-required).
+   * Must map each explicitly — a ternary defaulting to 4 made "returned" show as rejected.
+   */
   getStatusTranslationKey(status: string): string {
-    return getRequestStatusTranslationKey(status === 'new' || status === 'new-issue' ? 1 : status === 'on-progress' ? 2 : status === 'completed' ? 3 : 4);
+    switch (status) {
+      case 'new-issue':
+      case 'new':
+        return 'dashboard.statusLabels.new';
+      case 'on-progress':
+        return 'dashboard.onProgress';
+      case 'completed':
+        return 'dashboard.completed';
+      case 'declined':
+        return 'dashboard.statusLabels.rejected';
+      case 'returned':
+        return 'dashboard.statusLabels.returnedForReview';
+      case 'action-required':
+        return 'requestsManagement.actionRequired';
+      default:
+        return 'dashboard.statusLabels.new';
+    }
   }
 
   // Formatting helpers

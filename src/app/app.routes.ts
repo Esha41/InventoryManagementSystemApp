@@ -34,8 +34,9 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'dashboard',
-        pathMatch: 'full'
+        pathMatch: 'full',
+        loadComponent: () =>
+          import('@core/components/default-landing/default-landing.component').then(m => m.DefaultLandingComponent)
       },
       {
         path: 'dashboard',

@@ -12,6 +12,34 @@ const SESSION_STORAGE_KEYS = new Set([
 ]);
 
 /**
+ * Prefixes whose keys survive {@link StorageService.clear} (e.g. logout).
+ * Onboarding/page-tour flags are non-sensitive and should persist across logout on this device
+ * so users are not forced through tours again after signing back in.
+ */
+const PRESERVE_ON_CLEAR_PREFIXES = ['page_tour_completed_', 'onboarding_completed_'];
+
+function snapshotPrefixedKeys(storage: Storage): Array<[string, string]> {
+  const out: Array<[string, string]> = [];
+  for (let i = 0; i < storage.length; i++) {
+    const key = storage.key(i);
+    if (!key) continue;
+    if (PRESERVE_ON_CLEAR_PREFIXES.some(prefix => key.startsWith(prefix))) {
+      const value = storage.getItem(key);
+      if (value !== null) {
+        out.push([key, value]);
+      }
+    }
+  }
+  return out;
+}
+
+function restorePrefixedSnapshot(storage: Storage, entries: Array<[string, string]>): void {
+  for (const [key, value] of entries) {
+    storage.setItem(key, value);
+  }
+}
+
+/**
  * Service for managing storage operations.
  * Uses sessionStorage for sensitive auth/profile data (Angular security best practice).
  * Uses localStorage for non-sensitive preferences (theme, language).
@@ -65,11 +93,16 @@ export class StorageService {
   /**
    * Clear all storage (localStorage and sessionStorage).
    * Used on logout to remove auth data and preferences.
+   * Preserves onboarding / page-tour completion keys so tours do not repeat after re-login.
    */
   clear(): void {
     try {
+      const preservedLocal = snapshotPrefixedKeys(localStorage);
+      const preservedSession = snapshotPrefixedKeys(sessionStorage);
       localStorage.clear();
       sessionStorage.clear();
+      restorePrefixedSnapshot(localStorage, preservedLocal);
+      restorePrefixedSnapshot(sessionStorage, preservedSession);
     } catch (error) {
       // Silently fail
     }

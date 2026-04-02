@@ -190,18 +190,18 @@
         <tbody class="divide-y divide-[var(--color-border)]">
           <tr *ngFor="let user of paginatedUsers" class="hover:bg-[var(--color-background-muted)] transition-colors"
             [class.opacity-60]="!user.isActive">
-            <td class="px-6 py-4 text-center align-middle">
-              <div class="inline-flex items-center gap-3">
+            <td class="user-management__user-col px-6 py-4 align-middle">
+              <div class="flex items-center gap-3 min-w-0">
                 <div
                   class="w-10 h-10 rounded-full bg-[var(--color-accent)] text-white flex items-center justify-center font-semibold text-sm flex-shrink-0"
                   [class.bg-gray-400]="!user.isActive">
                   {{ getUserInitials(user) }}
                 </div>
-                <div class="font-medium text-[var(--color-text)]">{{ getUserName(user) }}</div>
+                <div class="user-management__cell-wrap font-medium text-[var(--color-text)] min-w-0">{{ getUserName(user) }}</div>
               </div>
             </td>
-            <td class="px-6 py-4">
-              <div class="text-sm text-[var(--color-text)]">{{ getFullName(user) }}</div>
+            <td class="user-management__name-col px-6 py-4 align-top">
+              <div class="user-management__cell-wrap text-sm text-[var(--color-text)]">{{ getFullName(user) }}</div>
             </td>
             <td class="px-6 py-4">
               <div class="text-sm text-[var(--color-text)]">{{ getRankName(user) }}</div>
