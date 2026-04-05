@@ -19,6 +19,14 @@
       </th>
       <th scope="col"
         class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+        <button type="button" (click)="toggleSort('manufacturer')"
+          class="inline-flex items-center gap-1 max-w-full cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
+          {{ 'warehouseInventory.manufacturer' | translate }}
+          <lucide-angular [img]="sortIcon('manufacturer')" class="h-3.5 w-3.5 shrink-0 text-[var(--color-text-muted)]"></lucide-angular>
+        </button>
+      </th>
+      <th scope="col"
+        class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
         <button type="button" (click)="toggleSort('lot')"
           class="inline-flex items-center gap-1 max-w-full cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
           {{ 'warehouseInventory.lot' | translate }}
@@ -65,7 +73,7 @@
   <tbody class="divide-y divide-[var(--color-border)] bg-[var(--color-background)]">
     <!-- Empty State -->
     <tr *ngIf="items.length === 0">
-      <td colspan="8" class="px-6 py-12 text-center bg-[var(--color-background)]">
+      <td colspan="9" class="px-6 py-12 text-center bg-[var(--color-background)]">
         <p class="text-[var(--color-text-muted)]">{{ 'warehouseInventory.noItems' | translate }}</p>
       </td>
     </tr>
@@ -77,6 +85,9 @@
       </td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
         {{ getSupplierName(detail) }}
+      </td>
+      <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
+        {{ getManufacturerName(detail) }}
       </td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
         {{ detail.lot }}

@@ -115,8 +115,14 @@
         </div>
       </div>
 
-      <!-- Search Bar -->
-      <app-inventory-filters [searchControl]="searchControl" (searchTriggered)="onSearch()">
+      <!-- Filters: search + supplier / manufacturer (inventory tabs only) -->
+      <app-inventory-filters [searchControl]="searchControl"
+        [searchPlaceholderKey]="activeTab === 'batch' ? 'warehouseInventory.searchPlaceholderBatch' : 'warehouseInventory.searchPlaceholder'"
+        [showSupplierManufacturerFilters]="activeTab !== 'batch'"
+        [supplierFilterControl]="supplierFilterControl" [manufacturerFilterControl]="manufacturerFilterControl"
+        [suppliers]="suppliers" [manufacturers]="manufacturers"
+        [supplierOptionLabelFn]="supplierLookupLabel" [manufacturerOptionLabelFn]="manufacturerLookupLabel"
+        (searchTriggered)="onSearch()" (clearFilters)="onClearInventoryFilters()">
       </app-inventory-filters>
 
       <!-- Loading State -->
@@ -219,6 +225,7 @@
           <!-- Inventory Items Table (Ammunition & Explosives) -->
           <app-inventory-table *ngIf="activeTab !== 'batch'" [items]="paginatedItems"
             [isStaticItem]="isStaticItem.bind(this)" [getItemName]="getItemName" [getSupplierName]="getSupplierName"
+            [getManufacturerName]="getManufacturerName"
             [formatNumber]="formatNumber" [formatDate]="formatDate"
             [sortColumn]="inventorySortColumn" [sortDirection]="inventorySortDirection"
             (editItem)="onEditItem($event)"

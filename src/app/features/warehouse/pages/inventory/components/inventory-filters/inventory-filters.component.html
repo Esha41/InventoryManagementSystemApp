@@ -1,34 +1,65 @@
-<div class="mb-6 flex flex-col md:flex-row gap-4">
-  <!-- Search Input -->
-  <div
-    class="relative flex items-center flex-1 max-w-[600px] group border border-[var(--color-border)] rounded-xl bg-[var(--color-background)] transition-all duration-200 ease-in-out shadow-sm hover:border-[var(--color-brand)] hover:shadow-md focus-within:border-[var(--color-brand)] focus-within:shadow-[0_0_0_4px_var(--color-brand-soft),0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.1)] overflow-hidden">
+<div class="mb-6">
+  <app-card [shadow]="true">
+    <div class="p-6">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+        <h3 class="text-lg font-semibold text-[var(--color-text)]">
+          {{ 'warehouseInventory.filtersSection' | translate }}
+        </h3>
+        <button type="button" (click)="onClearFilters()"
+          class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors w-full sm:w-auto justify-center">
+          <lucide-angular [img]="FunnelX" class="h-4 w-4"></lucide-angular>
+          <span>{{ 'warehouseInventory.clearFilters' | translate }}</span>
+        </button>
+      </div>
 
-    <!-- Search Icon -->
-    <div
-      class="absolute start-3 pointer-events-none transition-colors duration-200 text-[var(--color-text-muted)] group-focus-within:text-[var(--color-brand)]">
-      <lucide-angular [img]="Search" class="w-5 h-5"></lucide-angular>
+      <div class="flex flex-wrap items-end gap-4">
+        <!-- Search -->
+        <div class="relative flex-1 min-w-0 w-full sm:min-w-[200px]">
+          <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            {{ 'warehouseInventory.filtersSearch' | translate }}
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none">
+              <lucide-angular [img]="Search" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+            </div>
+            <input type="text"
+              class="w-full ps-10 pe-24 py-2.5 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] focus:bg-[var(--color-background)] outline-none transition-all"
+              [placeholder]="searchPlaceholderKey | translate" [formControl]="searchControl"
+              (keydown.enter)="onSearchClick()" />
+            <div class="absolute inset-y-0 end-0 pe-2 flex items-center gap-1">
+              <button *ngIf="searchControl.value" type="button" (click)="clearSearch()"
+                class="p-1 text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors">
+                <lucide-angular [img]="X" class="w-4 h-4"></lucide-angular>
+              </button>
+              <button type="button" (click)="onSearchClick()"
+                class="px-3 py-1 bg-[var(--color-brand)] text-white text-[10px] font-bold uppercase tracking-wider rounded-md hover:bg-[var(--color-brand-hover)] transition-all active:scale-95 shadow-soft">
+                {{ 'common.search' | translate }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Supplier & manufacturer -->
+        <div *ngIf="showSupplierManufacturerFilters" class="w-full sm:w-[180px]">
+          <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            {{ 'warehouseInventory.supplier' | translate }}
+          </label>
+          <app-dropdown class="w-full" [formControl]="supplierFilterControl" [options]="suppliers" optionValue="id"
+            [optionLabelFn]="supplierOptionLabelFn" [placeholderSelectable]="true" [placeholderValue]="null"
+            placeholder="{{ 'common.all' | translate }}">
+          </app-dropdown>
+        </div>
+
+        <div *ngIf="showSupplierManufacturerFilters" class="w-full sm:w-[180px]">
+          <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            {{ 'warehouseInventory.manufacturer' | translate }}
+          </label>
+          <app-dropdown class="w-full" [formControl]="manufacturerFilterControl" [options]="manufacturers" optionValue="id"
+            [optionLabelFn]="manufacturerOptionLabelFn" [placeholderSelectable]="true" [placeholderValue]="null"
+            placeholder="{{ 'common.all' | translate }}">
+          </app-dropdown>
+        </div>
+      </div>
     </div>
-
-    <!-- Input -->
-    <input type="search"
-      class="flex-1 w-full bg-transparent border-none py-2.5 ps-10 pe-28 text-sm font-normal text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none [&::-webkit-search-cancel-button]:hidden"
-      [placeholder]="'warehouseInventory.searchPlaceholder' | translate" [formControl]="searchControl"
-      (keydown.enter)="onSearchClick()" />
-
-    <!-- Actions -->
-    <div class="absolute end-2 flex items-center gap-2">
-      <button *ngIf="searchControl.value" (click)="clearSearch()"
-        class="p-1 text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors"
-        [title]="'common.clear' | translate">
-        <lucide-angular [img]="X" class="w-4 h-4"></lucide-angular>
-      </button>
-
-      <button (click)="onSearchClick()"
-        class="px-4 py-1.5 bg-[var(--color-brand)] text-white text-sm font-medium rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors shadow-sm">
-        {{ 'common.search' | translate }}
-      </button>
-    </div>
-
-  </div>
-
+  </app-card>
 </div>
