@@ -63,6 +63,7 @@ export interface AssetDto {
     warrantyExpiryDate?: Date | string;
     condition?: string;
     purchasePrice?: number;
+    deliveryReceipt?: string;
     notes?: string;
     isDeleted: boolean;
 
@@ -88,6 +89,7 @@ export interface CreateAssetDto {
     warrantyExpiryDate?: Date | string;
     condition?: string;
     purchasePrice?: number;
+    deliveryReceipt?: string;
     notes?: string;
 }
 
@@ -103,6 +105,7 @@ export interface UpdateAssetDto {
     warrantyExpiryDate?: Date | string;
     condition?: string;
     purchasePrice?: number;
+    deliveryReceipt?: string;
     notes?: string;
 }
 

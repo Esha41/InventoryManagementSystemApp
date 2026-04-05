@@ -1,0 +1,108 @@
+<app-modal [isOpen]="isOpen" [title]="'editAsset.title' | translate" (closed)="close()">
+  <form [formGroup]="assetForm" (ngSubmit)="onSubmit()" class="space-y-6">
+    <!-- Identification Details -->
+    <div class="p-4 bg-[var(--color-background-active)] rounded-lg border-2 border-[var(--color-border)]">
+      <h3 class="text-sm font-semibold text-[var(--color-text)] mb-4">
+        {{ 'addWeaponAsset.identificationDetails' | translate }}
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            {{ 'addWeaponAsset.serialNumber' | translate }}
+          </label>
+          <input type="text" formControlName="serialNumber"
+                 class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
+                 [placeholder]="'addWeaponAsset.enterSerialNumber' | translate" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            {{ 'addWeaponAsset.rfidTag' | translate }}
+          </label>
+          <input type="text" formControlName="rfid"
+                 class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
+                 [placeholder]="'addWeaponAsset.enterRfidTag' | translate" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            {{ 'addWeaponAsset.assetTag' | translate }}
+          </label>
+          <input type="text" formControlName="assetTag"
+                 class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
+                 [placeholder]="'addWeaponAsset.enterAssetTag' | translate" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Delivery Receipt Information -->
+    <div class="p-4 bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)]">
+      <h3 class="text-sm font-semibold text-[var(--color-text)] mb-4">
+        {{ 'addWeaponAsset.deliveryReceiptInformation' | translate }}
+      </h3>
+      <div>
+        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+          {{ 'addWeaponAsset.deliveryReceipt' | translate }}
+        </label>
+        <input type="text" formControlName="deliveryReceipt"
+               class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
+               [placeholder]="'addWeaponAsset.enterDeliveryReceipt' | translate" />
+      </div>
+    </div>
+
+    <!-- Additional Details -->
+    <div class="p-4 bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)]">
+      <h3 class="text-sm font-semibold text-[var(--color-text)] mb-4">
+        {{ 'addWeaponAsset.additionalDetails' | translate }}
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            {{ 'addWeaponAsset.condition' | translate }}
+          </label>
+          <input type="text" formControlName="condition"
+                 class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
+                 [placeholder]="'addWeaponAsset.enterCondition' | translate" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            {{ 'addWeaponAsset.purchaseDate' | translate }}
+          </label>
+          <input type="date" formControlName="purchaseDate" [max]="new Date().toISOString().split('T')[0]"
+                 class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            {{ 'addWeaponAsset.warrantyExpiryDate' | translate }}
+          </label>
+          <input type="date" formControlName="warrantyExpiryDate"
+                 class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            {{ 'addWeaponAsset.purchasePrice' | translate }}
+          </label>
+          <input type="number" formControlName="purchasePrice" min="0" step="0.01"
+                 class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all" />
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            {{ 'addWeaponAsset.notes' | translate }}
+          </label>
+          <textarea formControlName="notes" rows="3"
+                    class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all resize-none"
+                    [placeholder]="'addWeaponAsset.notesPlaceholder' | translate"></textarea>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <!-- Footer -->
+  <div modal-footer class="flex gap-3 justify-end">
+    <app-button variant="outline" (clicked)="close()">
+      {{ 'common.cancel' | translate }}
+    </app-button>
+    <app-button variant="primary" (clicked)="onSubmit()" [disabled]="isLoading">
+      {{ isLoading ? ('addWeaponAsset.saving' | translate) : ('editAsset.saveChanges' | translate) }}
+    </app-button>
+  </div>
+</app-modal>
+

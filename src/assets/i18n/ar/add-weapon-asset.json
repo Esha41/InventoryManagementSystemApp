@@ -43,6 +43,9 @@
         "assetTagTaken": "هذه علامة الأصل مستخدمة بالفعل لأصل آخر",
         "identificationDetails": "تفاصيل التعريف",
         "additionalDetails": "تفاصيل إضافية",
+        "deliveryReceipt": "إيصال التسليم",
+        "deliveryReceiptInformation": "معلومات إيصال التسليم",
+        "enterDeliveryReceipt": "أدخل مرجع إيصال التسليم",
         "mode": {
             "single": "إدخال فردي",
             "bulk": "إدخال جماعي"

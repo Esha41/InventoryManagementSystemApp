@@ -41,6 +41,7 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
   editForm!: FormGroup;
   saving = false;
   submitted = false;
+  private selectedFiles: File[] = [];
 
   private destroy$ = new Subject<void>();
 
@@ -86,6 +87,7 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
       purchaseDate: [null],
       warrantyExpiryDate: [null],
       purchasePrice: [null, [Validators.min(0)]],
+      deliveryReceipt: [''],
       notes: ['']
     });
   }
@@ -105,6 +107,7 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
       purchaseDate: formatDate(asset.purchaseDate),
       warrantyExpiryDate: formatDate(asset.warrantyExpiryDate),
       purchasePrice: asset.purchasePrice || null,
+      deliveryReceipt: asset.deliveryReceipt || '',
       notes: asset.notes || ''
     });
   }
@@ -156,22 +159,15 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
       purchaseDate: formValue.purchaseDate ? new Date(formValue.purchaseDate) : undefined,
       warrantyExpiryDate: formValue.warrantyExpiryDate ? new Date(formValue.warrantyExpiryDate) : undefined,
       purchasePrice: formValue.purchasePrice || undefined,
+      deliveryReceipt: formValue.deliveryReceipt?.trim() || undefined,
       notes: formValue.notes?.trim() || undefined
     };
 
-    this.assetService.update(this.asset.id, updateDto)
+    this.assetService.update(this.asset.id, updateDto, this.selectedFiles)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.saving = false;
-          this.translateService.get(['toast.success', 'common.savedSuccessfully']).subscribe(translations => {
-            this.toastService.success(
-              translations['common.savedSuccessfully'] || 'Saved successfully',
-              translations['toast.success']
-            );
-          });
-          this.saved.emit();
-          this.close();
+          this.finishSuccess();
         },
         error: (error) => {
           console.error('Error updating asset:', error);
@@ -185,6 +181,38 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
           });
         }
       });
+  }
+
+  private finishSuccess(): void {
+    this.saving = false;
+    this.translateService.get(['toast.success', 'common.savedSuccessfully']).subscribe(translations => {
+      this.toastService.success(
+        translations['common.savedSuccessfully'] || 'Saved successfully',
+        translations['toast.success']
+      );
+    });
+    this.saved.emit();
+    this.close();
+  }
+
+  onAttachmentChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.selectedFiles = input.files ? Array.from(input.files) : [];
+  }
+
+  removeAttachment(index: number): void {
+    if (index >= 0 && index < this.selectedFiles.length) {
+      this.selectedFiles.splice(index, 1);
+    }
+  }
+
+  getFileSize(file: File): string {
+    const bytes = file.size;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    if (bytes === 0) return '0 Bytes';
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    const value = (bytes / Math.pow(1024, i)).toFixed(2);
+    return `${value} ${sizes[i]}`;
   }
 
   getMaxDate(): string {

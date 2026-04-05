@@ -43,6 +43,9 @@
         "assetTagTaken": "This asset tag is already assigned to another asset",
         "identificationDetails": "Identification Details",
         "additionalDetails": "Additional Details",
+        "deliveryReceipt": "Delivery Receipt",
+        "deliveryReceiptInformation": "Delivery Receipt Information",
+        "enterDeliveryReceipt": "Enter delivery receipt reference",
         "mode": {
             "single": "Single Entry",
             "bulk": "Bulk Entry"

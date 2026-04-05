@@ -84,6 +84,14 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+                {{ 'addWeaponAsset.deliveryReceipt' | translate }}
+              </label>
+              <p class="text-sm font-medium text-[var(--color-text)]">
+                {{ asset.deliveryReceipt || '-' }}
+              </p>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
                 {{ 'assetDetails.condition' | translate }}
               </label>
               <p class="text-sm font-medium text-[var(--color-text)]">
