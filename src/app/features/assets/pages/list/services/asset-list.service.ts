@@ -202,6 +202,7 @@ export class AssetListService {
         partNo: 'PartNo',
         nsn: 'Nsn',
         weaponType: 'Type.NameEn',
+        primaryPurpose: 'BaseItemPrimaryPurposes.Min(PrimaryPurpos.NameEn)',
         caliber: 'Caliber',
         price: 'Price',
         minimumQuantity: 'MinimumQuantity'
@@ -463,6 +464,7 @@ export class AssetListService {
         partNo: 'PartNo',
         nsn: 'Nsn',
         weaponType: 'Type.NameEn',
+        primaryPurpose: 'BaseItemPrimaryPurposes.Min(PrimaryPurpos.NameEn)',
         caliber: 'Caliber',
         price: 'Price',
         minimumQuantity: 'MinimumQuantity'

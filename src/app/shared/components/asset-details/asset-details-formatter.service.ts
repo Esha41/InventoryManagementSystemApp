@@ -45,8 +45,8 @@ export class AssetDetailsFormatterService {
           : '-'
       ),
       primaryPurpose: computed(() =>
-        isAmmunition()
-          ? this.propertyAccessor.getPrimaryPurpose(asset() as AmmunitionReadDto) || '-'
+        isAmmunition() || isWeapon() || isExplosive()
+          ? this.propertyAccessor.getPrimaryPurpose(asset()) || '-'
           : '-'
       ),
       projectileColor: computed(() =>

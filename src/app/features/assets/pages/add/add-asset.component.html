@@ -424,6 +424,18 @@
                   </app-dropdown>
                 </div>
 
+                <!-- Primary Purpose -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.primaryPurpose' | translate
+                    }}</label>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.primaryPurposIds" name="weaponPrimaryPurposIds"
+                    [options]="primaryPurposes" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [multiple]="true"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectPrimaryPurpose' | translate">
+                  </app-dropdown>
+                </div>
+
                 <!-- Type -->
                 <div>
                   <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.type' | translate

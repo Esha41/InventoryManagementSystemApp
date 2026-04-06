@@ -7,7 +7,7 @@ import { formatDateShort } from './format.utils';
 import { getExplosiveTypeName } from './explosive.utils';
 import { TranslateService } from '@ngx-translate/core';
 
-/** Primary purpose(s) for catalog items (ammunition / explosive) from API. */
+/** Primary purpose(s) for catalog items (ammunition / weapon / explosive) from API. */
 function formatCatalogPrimaryPurposes(
   dto: { primaryPurposes?: LookupDto[]; primaryPurpos?: LookupDto },
   currentLang: string
@@ -74,6 +74,7 @@ export function mapWeaponToAsset(dto: WeaponDto, currentLang: string): Asset {
     batchNo: dto.batchNo || '-',
     nsn: dto.nsn || '-',
     weaponType: dto.type ? getLocalizedName(dto.type, currentLang) : '-',
+    primaryPurpose: formatCatalogPrimaryPurposes(dto, currentLang),
     caliber: dto.caliber,
     expiryDate: dto.expiryDate ? (formatDateShort(dto.expiryDate) || '-') : '-',
     readyForIssue: dto.readyForIssue ?? true,

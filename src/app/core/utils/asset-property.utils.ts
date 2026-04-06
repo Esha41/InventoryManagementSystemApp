@@ -378,8 +378,11 @@ export class AssetPropertyAccessor {
     if (isAmmunition(asset)) {
       return fromPurposesOrLegacy(asset.primaryPurposes, asset.primaryPurpos);
     }
+    if (isWeapon(asset)) {
+      return fromPurposesOrLegacy(asset.primaryPurposes, asset.primaryPurpos);
+    }
     if ('originalData' in asset && (asset as Asset).originalData) {
-      const od = (asset as Asset).originalData as AmmunitionReadDto | ExplosiveDto;
+      const od = (asset as Asset).originalData as AmmunitionReadDto | ExplosiveDto | WeaponDto;
       return fromPurposesOrLegacy(od?.primaryPurposes, od?.primaryPurpos);
     }
     if ('primaryPurpose' in asset && typeof (asset as Asset).primaryPurpose === 'string') {
