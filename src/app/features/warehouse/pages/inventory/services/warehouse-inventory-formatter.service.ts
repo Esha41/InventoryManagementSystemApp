@@ -38,6 +38,14 @@ export class WarehouseInventoryFormatterService {
   }
 
   /**
+   * Get manufacturer name
+   */
+  getManufacturerName(detail: InventoryDetailDto): string {
+    const lang = getCurrentLang(this.translateService);
+    return getLocalizedName(detail.manufacturer, lang) || '-';
+  }
+
+  /**
    * Get HCC name
    */
   getHccName(detail: InventoryDetailDto): string {

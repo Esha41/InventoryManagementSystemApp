@@ -10,6 +10,7 @@ import { trackById } from '@utils/trackby.utils';
 export type WarehouseInventoryTableSortColumn =
   | 'itemName'
   | 'supplier'
+  | 'manufacturer'
   | 'lot'
   | 'quantity'
   | 'readyForIssue'
@@ -34,6 +35,7 @@ export class InventoryTableComponent {
   @Input() isStaticItem: (detail: InventoryDetailDto) => boolean = () => false;
   @Input() getItemName: (detail: InventoryDetailDto) => string = () => '';
   @Input() getSupplierName: (detail: InventoryDetailDto) => string = () => '';
+  @Input() getManufacturerName: (detail: InventoryDetailDto) => string = () => '';
   @Input() formatNumber: (num: number) => string = () => '';
   @Input() formatDate: (date?: Date | string) => string = () => '';
 

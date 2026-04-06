@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subject, takeUntil, forkJoin } from 'rxjs';
+import { Subject, takeUntil, forkJoin, merge, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { debounceTime, startWith } from 'rxjs/operators';
 import { LucideAngularModule, ArrowLeft, ArrowRight, X, Eye, Edit, Trash2 } from 'lucide-angular';
 import { InventoryService } from '@services/inventory.service';
@@ -34,6 +35,7 @@ import { BatchTableComponent, BatchTableSortColumn } from './components/batch-ta
 import { InventoryFiltersComponent } from './components/inventory-filters/inventory-filters.component';
 import { trackById } from '@utils/trackby.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { DropdownOption } from '@components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-warehouse-inventory',
@@ -108,7 +110,21 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
   // Search
   searchControl = new FormControl<string>('', { nonNullable: true });
+  supplierFilterControl = new FormControl<number | null>(null);
+  manufacturerFilterControl = new FormControl<number | null>(null);
+  suppliers: LookupItem[] = [];
+  manufacturers: LookupItem[] = [];
   invoiceFilter: string | null = null; // Track specific invoice filter
+
+  readonly supplierLookupLabel = (option: DropdownOption<LookupItem> | LookupItem | null) => {
+    const item = this.unwrapLookupOption(option);
+    return item ? getLocalizedName(item, getCurrentLang(this.translateService)) || '' : '';
+  };
+
+  readonly manufacturerLookupLabel = (option: DropdownOption<LookupItem> | LookupItem | null) => {
+    const item = this.unwrapLookupOption(option);
+    return item ? getLocalizedName(item, getCurrentLang(this.translateService)) || '' : '';
+  };
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;
@@ -208,6 +224,18 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         }
       });
+
+    merge(this.supplierFilterControl.valueChanges, this.manufacturerFilterControl.valueChanges)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (this.activeTab === 'batch') {
+          return;
+        }
+        this.currentPage = 1;
+        this.updatePageInUrl();
+        this.loadTabContent();
+        this.cdr.markForCheck();
+      });
   }
 
   onSearch(): void {
@@ -215,6 +243,21 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.invoiceFilter = null;
     this.currentPage = 1; // Reset to first page
     this.applyFilters();
+    this.cdr.markForCheck();
+  }
+
+  onClearInventoryFilters(): void {
+    this.searchControl.setValue('', { emitEvent: false });
+    this.supplierFilterControl.setValue(null, { emitEvent: false });
+    this.manufacturerFilterControl.setValue(null, { emitEvent: false });
+    this.invoiceFilter = null;
+    this.currentPage = 1;
+    this.updatePageInUrl();
+    if (this.activeTab !== 'batch') {
+      this.loadTabContent();
+    } else {
+      this.applyFilters();
+    }
     this.cdr.markForCheck();
   }
 
@@ -257,11 +300,16 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.error = null;
 
-    // Only load depot info initially. Data will be loaded based on active tab.
-    this.lookupService.getDepots()
+    forkJoin({
+      depots: this.lookupService.getDepots(),
+      suppliers: this.lookupService.getSuppliers().pipe(catchError(() => of([] as LookupItem[]))),
+      manufacturers: this.lookupService.getManufacturers().pipe(catchError(() => of([] as LookupItem[])))
+    })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (depots) => {
+        next: ({ depots, suppliers, manufacturers }) => {
+          this.suppliers = suppliers ?? [];
+          this.manufacturers = manufacturers ?? [];
           this.currentDepot = depots.find((d: LookupItem) => d.id === this.depoId) || null;
           this.depoName = this.currentDepot
             ? getLocalizedName(this.currentDepot, getCurrentLang(this.translateService)) || `Depot ${this.depoId}`
@@ -280,7 +328,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           this.loading = false;
           this.cdr.markForCheck();
         },
-        error: (error) => {
+        error: () => {
           this.error = 'Failed to load depot data';
           this.loading = false;
           this.cdr.markForCheck();
@@ -386,6 +434,15 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
         { field: 'Item.ItemType', operator: 'eq', value: itemType.toString() }
       ];
 
+      const supplierId = this.supplierFilterControl.value;
+      if (supplierId != null) {
+        filters.push({ field: 'SupplierId', operator: 'eq', value: String(supplierId) });
+      }
+      const manufacturerId = this.manufacturerFilterControl.value;
+      if (manufacturerId != null) {
+        filters.push({ field: 'ManufacturerId', operator: 'eq', value: String(manufacturerId) });
+      }
+
       // If filtering by specific invoice number, use exact match
       if (this.invoiceFilter) {
         filters.push({
@@ -431,9 +488,11 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   private resolveInventoryBackendSortField(column: WarehouseInventoryTableSortColumn): string {
     const lang = getCurrentLang(this.translateService);
     const supplierField = lang === 'ar' ? 'Supplier.NameAr' : 'Supplier.NameEn';
+    const manufacturerField = lang === 'ar' ? 'Manufacturer.NameAr' : 'Manufacturer.NameEn';
     const map: Record<WarehouseInventoryTableSortColumn, string> = {
       itemName: 'Item.Name',
       supplier: supplierField,
+      manufacturer: manufacturerField,
       lot: 'Lot',
       quantity: 'ItemQuantity',
       readyForIssue: 'ReadyForIssue',
@@ -631,6 +690,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   getItemName = (detail: InventoryDetailDto | null | undefined) => this.formatterService.getItemName(detail);
   getItemNo = (detail: InventoryDetailDto) => this.formatterService.getItemNo(detail);
   getSupplierName = (detail: InventoryDetailDto) => this.formatterService.getSupplierName(detail);
+  getManufacturerName = (detail: InventoryDetailDto) => this.formatterService.getManufacturerName(detail);
   getHccName = (detail: InventoryDetailDto) => this.formatterService.getHccName(detail);
   getAssetItemName = (asset: AssetDto | null | undefined) => this.formatterService.getAssetItemName(asset);
   getAssetItemNo = (asset: AssetDto) => this.formatterService.getAssetItemNo(asset);
@@ -1004,5 +1064,15 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       this.getItemName,
       this.formatDate
     );
+  }
+
+  private unwrapLookupOption<T>(option: DropdownOption<T> | T | null): T | null {
+    if (option == null) {
+      return null;
+    }
+    if (typeof option === 'object' && option !== null && 'value' in option) {
+      return (option as DropdownOption<T>).value as T;
+    }
+    return option as T;
   }
 }
