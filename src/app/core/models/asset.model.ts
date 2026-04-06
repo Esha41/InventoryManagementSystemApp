@@ -63,6 +63,7 @@ export interface AssetDto {
     warrantyExpiryDate?: Date | string;
     condition?: string;
     purchasePrice?: number;
+    deliveryReceipt?: string;
     notes?: string;
     isDeleted: boolean;
 
@@ -88,6 +89,7 @@ export interface CreateAssetDto {
     warrantyExpiryDate?: Date | string;
     condition?: string;
     purchasePrice?: number;
+    deliveryReceipt?: string;
     notes?: string;
     /** Optional: assign to this employee on intake (maps to backend AssignToEmployeeId). */
     assignToEmployeeId?: number;
@@ -109,6 +111,7 @@ export interface UpdateAssetDto {
     warrantyExpiryDate?: Date | string;
     condition?: string;
     purchasePrice?: number;
+    deliveryReceipt?: string;
     notes?: string;
 }
 

@@ -61,6 +61,9 @@
             "notesPlaceholder": "Optional notes stored on the assignment",
             "notesHint": "You can add notes only when assigning to a department or an employee."
         },
+        "deliveryReceipt": "Delivery Receipt",
+        "deliveryReceiptInformation": "Delivery Receipt Information",
+        "enterDeliveryReceipt": "Enter delivery receipt reference",
         "mode": {
             "single": "Single Entry",
             "bulk": "Bulk Entry"

@@ -3,6 +3,7 @@
  */
 
 import { SupplierDto, CountryDto, ManufacturerDto } from '@services/lookup.service';
+import { FileUploadDto } from '@models/file-upload.model';
 
 /**
  * Base Item DTO (for Ammunition, Weapons, etc.)
@@ -43,6 +44,8 @@ export interface InventoryDetailDto {
   itemId: number;
   lot: string;
   inventoryId: number;
+  files?: FileUploadDto[];
+  deliveryReceipt?: string;
   supplierId?: number;
   manufacturerId?: number;
   countryId?: number;
@@ -77,6 +80,7 @@ export interface InventoryDto {
   id: number;
   depoId: number;
   invoiceNumber?: string;
+  deliveryReceipt?: string;
   invoiceDate?: Date | string;
   recievedDate?: Date | string;
   contractNumber?: string;
@@ -100,6 +104,7 @@ export interface InventoryDto {
 export interface CreateInventoryDto {
   depoId: number;
   invoiceNumber?: string;
+  deliveryReceipt?: string;
   invoiceDate?: Date | string;
   recievedDate?: Date | string;
   contractNumber?: string;
@@ -125,6 +130,7 @@ export interface CreateInventoryDetailDto {
 export interface UpdateInventoryDto {
   depoId: number;
   invoiceNumber?: string;
+  deliveryReceipt?: string;
   invoiceDate?: Date | string;
   recievedDate?: Date | string;
   contractNumber?: string;

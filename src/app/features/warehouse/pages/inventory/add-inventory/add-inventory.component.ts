@@ -118,6 +118,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   private readonly appDatePipe = new AppDatePipe();
+  deliveryReceiptFiles: File[] = [];
 
   constructor(
     private router: Router,
@@ -177,6 +178,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
   private initializeForm(): void {
     this.inventoryForm = this.fb.group({
       invoiceNumber: [''],
+      deliveryReceipt: [''],
       invoiceDate: [''],
       receivedDate: [''],
       contractNumber: [''],
@@ -485,6 +487,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     const createDto: CreateInventoryDto = {
       depoId: this.warehouseId,
       invoiceNumber: formValue.invoiceNumber?.trim() || undefined,
+      deliveryReceipt: formValue.deliveryReceipt?.trim() || undefined,
       invoiceDate: formValue.invoiceDate && formValue.invoiceDate.trim() ? formValue.invoiceDate : undefined,
       recievedDate: formValue.receivedDate && formValue.receivedDate.trim() ? formValue.receivedDate : undefined,
       contractNumber: formValue.contractNumber?.trim() || undefined,
@@ -516,7 +519,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     this.errorMessage = null;
     this.cdr.markForCheck();
 
-    this.inventoryService.create(createDto)
+    this.inventoryService.create(createDto, this.deliveryReceiptFiles)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
@@ -563,6 +566,37 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
       queryParams: { tab: this.activeTab },
       queryParamsHandling: 'merge'
     });
+  }
+
+  onDeliveryAttachmentChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const newlySelected = input.files ? Array.from(input.files) : [];
+    if (newlySelected.length) {
+      const combined = [...this.deliveryReceiptFiles, ...newlySelected];
+      const seen = new Set<string>();
+      this.deliveryReceiptFiles = combined.filter(f => {
+        const key = `${f.name}::${f.size}::${(f as any).lastModified ?? 0}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+    // Do not clear input here; allow multiple browse actions to append
+  }
+
+  removeAttachment(index: number): void {
+    if (index >= 0 && index < this.deliveryReceiptFiles.length) {
+      this.deliveryReceiptFiles.splice(index, 1);
+    }
+  }
+
+  getFileSize(file: File): string {
+    const bytes = file.size;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    if (bytes === 0) return '0 Bytes';
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    const value = (bytes / Math.pow(1024, i)).toFixed(2);
+    return `${value} ${sizes[i]}`;
   }
 
   /**

@@ -325,7 +325,10 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   private updatePageInUrl(): void {
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { page: this.currentPage > 1 ? this.currentPage : null },
+      queryParams: { 
+        page: this.currentPage > 1 ? this.currentPage : null,
+        tab: this.activeTab
+      },
       queryParamsHandling: 'merge',
       replaceUrl: true
     });
@@ -1044,7 +1047,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   /**
    * Handle edit modal save
    */
-  onEditSave(data: { detail: UpdateInventoryDetailDto; inventory: UpdateInventoryDto }): void {
+  onEditSave(data: { detail: UpdateInventoryDetailDto; inventory: UpdateInventoryDto; files?: File[] }): void {
     if (!this.currentInventory || !this.selectedDetail) return;
 
     // Store references before clearing
@@ -1057,7 +1060,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.currentInventory = undefined;
     this.cdr.markForCheck();
 
-    this.crudService.editInventoryDetail(detailToEdit, inventoryToUpdate, data.detail, data.inventory)
+    this.crudService.editInventoryDetail(detailToEdit, inventoryToUpdate, data.detail, data.inventory, data.files)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (result) => {
