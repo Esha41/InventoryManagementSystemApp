@@ -90,14 +90,14 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
         ? this.selectedAsset.originalData
         : this.selectedAsset;
       this.editForm.patchValue(source || {});
-      if (this.activeTab === 'ammunition' && source) {
-        const ammo = source as AmmunitionReadDto;
-        const fromList = ammo.primaryPurposes?.map(p => p.id).filter((id): id is number => id != null);
+      if ((this.activeTab === 'ammunition' || this.activeTab === 'explosive') && source) {
+        const catalog = source as AmmunitionReadDto | ExplosiveDto;
+        const fromList = catalog.primaryPurposes?.map(p => p.id).filter((id): id is number => id != null);
         const ids =
           fromList && fromList.length > 0
             ? fromList
-            : ammo.primaryPurpos?.id != null
-              ? [ammo.primaryPurpos.id]
+            : catalog.primaryPurpos?.id != null
+              ? [catalog.primaryPurpos.id]
               : [];
         this.editForm.patchValue({ primaryPurposIds: ids });
       }
@@ -142,8 +142,13 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
     } else if (this.activeTab === 'weapon') {
       dto = formData as CreateUpdateWeaponDto;
     } else {
-      // For explosives
-      dto = formData as CreateUpdateExplosiveDto;
+      const raw = formData as Record<string, unknown>;
+      delete raw['primaryPurposId'];
+      const primaryPurposIds = raw['primaryPurposIds'] as number[] | undefined;
+      if (!primaryPurposIds?.length) {
+        delete raw['primaryPurposIds'];
+      }
+      dto = raw as unknown as CreateUpdateExplosiveDto;
     }
 
     this.saved.emit({

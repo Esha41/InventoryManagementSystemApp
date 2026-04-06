@@ -104,6 +104,16 @@ export class AssetExportService {
     } else if (activeTab === 'explosive') {
       columns.push(
         {
+          header: this.translateService.instant('assetList.table.primaryPurpose'),
+          key: 'primaryPurpose',
+          width: 20,
+          format: (value: string | LookupDto) => {
+            if (!value) return '-';
+            if (typeof value === 'string') return value;
+            return getLookupDisplayName(value, this.translateService) || '-';
+          }
+        },
+        {
           header: this.translateService.instant('addAsset.explosiveType'),
           key: 'explosiveType',
           width: 20,
@@ -244,6 +254,7 @@ export class AssetExportService {
         { header: 'Price', key: 'price' },
         { header: 'Minimum Quantity', key: 'minimumQuantity' },
         { header: 'NSN', key: 'nsn' },
+        { header: 'Primary Purpose', key: 'primaryPurpose' },
         { header: 'Explosive Type', key: 'explosiveType' },
         { header: 'UN Number', key: 'unNumber' },
         { header: 'Net Explosive Quantity', key: 'netExplosiveQuantity' },
@@ -258,6 +269,7 @@ export class AssetExportService {
           price: 125.00,
           minimumQuantity: 5,
           nsn: '1375-00-122-2956',
+          primaryPurpose: 'Demolition',
           explosiveType: 'PlasticExplosive',
           unNumber: 'UN0056',
           netExplosiveQuantity: 1.25,

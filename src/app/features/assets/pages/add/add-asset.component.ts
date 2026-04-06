@@ -439,14 +439,20 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.assetForm.unitId) dto.unitId = parseInt(this.assetForm.unitId);
     if (this.assetForm.armNumber?.trim()) dto.armNumber = this.assetForm.armNumber.trim();
     if (this.assetForm.compatibilityId) dto.compatibilityId = parseInt(this.assetForm.compatibilityId);
+    if (this.assetForm.primaryPurposIds?.length) {
+      dto.primaryPurposIds = [...this.assetForm.primaryPurposIds];
+    }
 
     const formData = new FormData();
-    Object.keys(dto).forEach(key => {
-      const val = dto[key as keyof CreateUpdateExplosiveDto];
-      if (val !== undefined && val !== null) {
-        const capKey = key.charAt(0).toUpperCase() + key.slice(1);
-        formData.append(capKey, val.toString());
+    (Object.keys(dto) as (keyof CreateUpdateExplosiveDto)[]).forEach(key => {
+      const val = dto[key];
+      if (val === undefined || val === null) return;
+      const capKey = key.charAt(0).toUpperCase() + key.slice(1);
+      if (key === 'primaryPurposIds' && Array.isArray(val)) {
+        val.forEach(id => formData.append(capKey, id.toString()));
+        return;
       }
+      formData.append(capKey, val.toString());
     });
 
     if (this.assetForm.image) {
