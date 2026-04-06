@@ -8,7 +8,7 @@ export function createInitialFilterState(): AssetFilterState {
     searchTerm: '',
     // Ammunition filters
     selectedCaseType: null,
-    selectedPrimaryPurpose: null,
+    selectedPrimaryPurposeId: null,
     selectedCompatibility: null,
     selectedPropellant: null,
     // Weapon filters

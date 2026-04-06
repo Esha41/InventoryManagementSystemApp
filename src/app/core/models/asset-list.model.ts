@@ -75,7 +75,8 @@ export interface AssetFilterState {
   searchTerm: string;
   // Ammunition filters
   selectedCaseType: string | null;
-  selectedPrimaryPurpose: string | null;
+  /** Ammunition: single primary purpose lookup id; filtered client-side (junction / legacy scalar). */
+  selectedPrimaryPurposeId: number | null;
   selectedCompatibility: string | null;
   selectedPropellant: string | null;
   // Weapon filters

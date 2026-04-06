@@ -46,11 +46,11 @@
         </app-dropdown>
       </div>
 
-      <div *ngIf="activeTab === 'ammunition'" class="w-full sm:w-[180px]">
+      <div *ngIf="activeTab === 'ammunition'" class="w-full sm:w-[220px]">
         <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
           {{ 'assetList.filters.primaryPurpose' | translate }}
         </label>
-        <app-dropdown class="w-full" [(ngModel)]="filterState.selectedPrimaryPurpose"
+        <app-dropdown class="w-full" [(ngModel)]="filterState.selectedPrimaryPurposeId"
           (selectionChange)="onFilterChange()" [options]="filterOptions.primaryPurpose" optionLabel="label"
           optionValue="value" [placeholderSelectable]="false"
           placeholder="{{ 'assetList.filters.allPrimaryPurposes' | translate }}">

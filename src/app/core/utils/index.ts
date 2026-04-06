@@ -46,6 +46,7 @@ export {
   getLookupDisplayName,
   getUnitNameById,
   createFilterOptions,
+  assetMatchesAmmunitionPrimaryPurpose,
   filterAssets,
   sortAssets,
   paginateAssets,

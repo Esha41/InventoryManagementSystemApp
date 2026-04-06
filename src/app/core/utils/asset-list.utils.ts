@@ -1,5 +1,5 @@
 import { Asset, AssetFilterState, AssetSortState } from '../models/asset-list.model';
-import { LookupDto } from '../models/ammunition.model';
+import { AmmunitionReadDto, LookupDto } from '../models/ammunition.model';
 import { LookupItem } from '../models/lookup.model';
 import { DropdownOption } from '../../shared/components/dropdown/dropdown.component';
 import { getLocalizedName, getCurrentLang } from './localization.utils';
@@ -51,6 +51,23 @@ export function createFilterOptions(
 }
 
 /**
+ * Whether an ammunition catalog asset matches a single primary-purpose id (junction list, legacy single nav, or scalar id).
+ */
+export function assetMatchesAmmunitionPrimaryPurpose(asset: Asset, purposeId: number): boolean {
+  const originalData = asset.originalData as AmmunitionReadDto | undefined;
+  if (!originalData) return false;
+  if (originalData.primaryPurposId != null && originalData.primaryPurposId === purposeId) {
+    return true;
+  }
+  const purposes = originalData.primaryPurposes;
+  if (purposes?.length) {
+    return purposes.some(p => p.id != null && p.id === purposeId);
+  }
+  const single = originalData.primaryPurpos?.id;
+  return single != null && single === purposeId;
+}
+
+/**
  * Filters assets based on filter state
  */
 export function filterAssets(
@@ -81,19 +98,9 @@ export function filterAssets(
         }
       }
 
-      // Primary purpose filter (catalog may expose multiple purposes)
-      if (filterState.selectedPrimaryPurpose) {
-        const selectedId = parseInt(filterState.selectedPrimaryPurpose, 10);
-        const purposes = originalData?.primaryPurposes as LookupDto[] | undefined;
-        if (purposes?.length) {
-          if (!purposes.some(p => p.id === selectedId)) {
-            return false;
-          }
-        } else {
-          const assetPrimaryPurposeId = originalData?.primaryPurpos?.id;
-          if (assetPrimaryPurposeId !== selectedId) {
-            return false;
-          }
+      if (filterState.selectedPrimaryPurposeId != null) {
+        if (!assetMatchesAmmunitionPrimaryPurpose(asset, filterState.selectedPrimaryPurposeId)) {
+          return false;
         }
       }
 
