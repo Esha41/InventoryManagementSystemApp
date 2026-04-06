@@ -436,7 +436,20 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
 
     onAttachmentChange(event: Event): void {
         const input = event.target as HTMLInputElement;
-        this.deliveryReceiptFiles = input.files ? Array.from(input.files) : [];
+        const newlySelected = input.files ? Array.from(input.files) : [];
+        if (newlySelected.length) {
+            const existing = this.deliveryReceiptFiles;
+            const combined = [...existing, ...newlySelected];
+            // Deduplicate by name+size+lastModified
+            const seen = new Set<string>();
+            this.deliveryReceiptFiles = combined.filter(f => {
+                const key = `${f.name}::${f.size}::${(f as any).lastModified ?? 0}`;
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            });
+        }
+        // Do not clear on purpose here; allow multiple picks to append
     }
 
     removeAttachment(index: number): void {

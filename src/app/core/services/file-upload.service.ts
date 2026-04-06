@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ApiService } from './api.service';
@@ -21,7 +22,8 @@ export { FileUploadDto, FileEntityType };
 export class FileUploadService {
   constructor(
     private apiService: ApiService,
-    private config: ConfigService
+    private config: ConfigService,
+    private http: HttpClient
   ) { }
 
   /**
@@ -171,6 +173,15 @@ export class FileUploadService {
   getFileDownloadUrl(id: number): string {
     const baseUrl = this.config.apiUrl;
     return `${baseUrl}${API_ENDPOINTS.FILE_UPLOAD.SERVE(id)}`;
+  }
+
+  /**
+   * Fetch a file as Blob using authenticated HttpClient (so it works when opened in a new tab).
+   */
+  getFileBlob(id: number): Observable<Blob> {
+    const url = this.getFileDownloadUrl(id);
+    // AuthInterceptor will attach headers
+    return this.http.get(url, { responseType: 'blob' });
   }
 
   /**

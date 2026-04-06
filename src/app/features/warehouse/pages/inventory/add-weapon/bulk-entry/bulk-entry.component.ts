@@ -293,7 +293,18 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
 
     onAttachmentChange(event: Event): void {
         const input = event.target as HTMLInputElement;
-        this.deliveryReceiptFiles = input.files ? Array.from(input.files) : [];
+        const newlySelected = input.files ? Array.from(input.files) : [];
+        if (newlySelected.length) {
+            const combined = [...this.deliveryReceiptFiles, ...newlySelected];
+            const seen = new Set<string>();
+            this.deliveryReceiptFiles = combined.filter(f => {
+                const key = `${f.name}::${f.size}::${(f as any).lastModified ?? 0}`;
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            });
+        }
+        // Keep input value to allow further appends; not clearing here
     }
 
     removeAttachment(index: number): void {

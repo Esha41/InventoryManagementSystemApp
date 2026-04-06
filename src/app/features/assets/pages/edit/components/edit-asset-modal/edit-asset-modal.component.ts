@@ -197,7 +197,18 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
 
   onAttachmentChange(event: Event): void {
     const input = event.target as HTMLInputElement;
-    this.selectedFiles = input.files ? Array.from(input.files) : [];
+    const newlySelected = input.files ? Array.from(input.files) : [];
+    if (newlySelected.length) {
+      const combined = [...this.selectedFiles, ...newlySelected];
+      const seen = new Set<string>();
+      this.selectedFiles = combined.filter(f => {
+        const key = `${f.name}::${f.size}::${(f as any).lastModified ?? 0}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+    // Keep input value to allow further appends
   }
 
   removeAttachment(index: number): void {

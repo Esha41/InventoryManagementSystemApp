@@ -559,7 +559,18 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
 
   onDeliveryAttachmentChange(event: Event): void {
     const input = event.target as HTMLInputElement;
-    this.deliveryReceiptFiles = input.files ? Array.from(input.files) : [];
+    const newlySelected = input.files ? Array.from(input.files) : [];
+    if (newlySelected.length) {
+      const combined = [...this.deliveryReceiptFiles, ...newlySelected];
+      const seen = new Set<string>();
+      this.deliveryReceiptFiles = combined.filter(f => {
+        const key = `${f.name}::${f.size}::${(f as any).lastModified ?? 0}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+    // Do not clear input here; allow multiple browse actions to append
   }
 
   removeAttachment(index: number): void {

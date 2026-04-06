@@ -323,7 +323,17 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
 
   onAttachmentChange(event: Event): void {
     const input = event.target as HTMLInputElement;
-    this.selectedFiles = input.files ? Array.from(input.files) : [];
+    const newlySelected = input.files ? Array.from(input.files) : [];
+    if (newlySelected.length) {
+      const combined = [...this.selectedFiles, ...newlySelected];
+      const seen = new Set<string>();
+      this.selectedFiles = combined.filter(f => {
+        const key = `${f.name}::${f.size}::${(f as any).lastModified ?? 0}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
     // Clear the native input so selecting the same file again will trigger change
     if (this.fileInputRef?.nativeElement) {
       this.fileInputRef.nativeElement.value = '';
@@ -350,22 +360,23 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
     this.cdr.markForCheck();
   }
 
-  deleteExistingFile(fileId: number): void {
-    this.fileUploadService.deleteFile(fileId).subscribe({
-      next: () => {
-        // Update local lists so UI reflects immediately
-        this.existingFiles = this.existingFiles.filter(f => f.id !== fileId);
-        if (this.inventoryDetail?.files) {
-          this.inventoryDetail.files = this.inventoryDetail.files.filter(f => f.id !== fileId);
-        }
-        this.cdr.markForCheck();
-      },
-      error: () => { /* ignore */ }
-    });
-  }
-
   getDownloadUrl(file: FileUploadDto): string {
     return this.fileUploadService.getFileDownloadUrl(file.id);
+  }
+
+  openExistingFile(file: FileUploadDto): void {
+    this.fileUploadService.getFileBlob(file.id).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, '_blank', 'noopener');
+        // Revoke after a while to avoid breaking the opened tab immediately
+        setTimeout(() => window.URL.revokeObjectURL(url), 60_000);
+      },
+      error: () => {
+        // Fallback: open raw URL (may 401 if browser doesn't send token, but keeps old behavior)
+        window.open(this.getDownloadUrl(file), '_blank', 'noopener');
+      }
+    });
   }
 
   /**
