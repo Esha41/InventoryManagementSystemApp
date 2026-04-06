@@ -62,7 +62,10 @@ export interface AmmunitionReadDto {
   manufacturer?: LookupDto;
   natureOption?: LookupDto;
   bulletDiameterUnit?: LookupDto;
+  /** Legacy single navigation; prefer primaryPurposes from catalog API */
   primaryPurpos?: LookupDto;
+  /** Purposes linked to this catalog item (BaseItemPrimaryPurposes) */
+  primaryPurposes?: LookupDto[];
   projectileColor?: LookupDto;
   projectailMaterial?: LookupDto;
   caseType?: LookupDto;
@@ -95,7 +98,8 @@ export interface AmmunitionCreateDto {
   primer?: string;
   totalWeight?: number;
   nsn?: string;
-  primaryPurposId?: number;
+  /** Matches API PrimaryPurposIds (BaseItemPrimaryPurposes) */
+  primaryPurposIds?: number[];
   projectileColorId?: number;
   projectailMaterialId?: number;
   caseTypeId?: number;

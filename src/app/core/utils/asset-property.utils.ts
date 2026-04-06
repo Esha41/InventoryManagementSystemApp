@@ -360,7 +360,28 @@ export class AssetPropertyAccessor {
   }
 
   getPrimaryPurpose(asset: AssetUnion): string {
-    return isAmmunition(asset) ? this.getLookupName(asset.primaryPurpos) : '-';
+    if (!asset) return '-';
+    const fromList = (purposes: LookupDto[] | undefined): string | null => {
+      if (!purposes?.length) return null;
+      const parts = purposes.map(p => this.getLookupName(p)).filter(Boolean);
+      return parts.length > 0 ? parts.join(', ') : null;
+    };
+    if (isAmmunition(asset)) {
+      const multi = fromList(asset.primaryPurposes);
+      if (multi) return multi;
+      return this.getLookupName(asset.primaryPurpos);
+    }
+    if ('originalData' in asset && (asset as Asset).originalData) {
+      const od = (asset as Asset).originalData as AmmunitionReadDto;
+      const multi = fromList(od?.primaryPurposes);
+      if (multi) return multi;
+      return this.getLookupName(od?.primaryPurpos);
+    }
+    if ('primaryPurpose' in asset && typeof (asset as Asset).primaryPurpose === 'string') {
+      const s = (asset as Asset).primaryPurpose;
+      if (s && s !== '-') return s;
+    }
+    return '-';
   }
 
   getProjectileColor(asset: AssetUnion): string {

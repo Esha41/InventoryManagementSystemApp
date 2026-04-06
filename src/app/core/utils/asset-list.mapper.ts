@@ -3,6 +3,19 @@ import { AmmunitionReadDto } from '../models/ammunition.model';
 import { WeaponDto } from '../models/weapon.model';
 import { ExplosiveDto } from '../models/explosive.model';
 import { getLocalizedName, getCurrentLang } from './localization.utils';
+
+/** Display string for ammunition primary purpose(s) from API (list + optional legacy single). */
+function formatAmmunitionPrimaryPurposes(dto: AmmunitionReadDto, currentLang: string): string {
+  const list = dto.primaryPurposes;
+  if (list && list.length > 0) {
+    const parts = list.map(p => getLocalizedName(p, currentLang)).filter(Boolean);
+    return parts.length > 0 ? parts.join(', ') : '-';
+  }
+  if (dto.primaryPurpos) {
+    return getLocalizedName(dto.primaryPurpos, currentLang) || '-';
+  }
+  return '-';
+}
 import { formatDateShort } from './format.utils';
 import { getExplosiveTypeName } from './explosive.utils';
 import { TranslateService } from '@ngx-translate/core';
@@ -25,7 +38,7 @@ export function mapAmmunitionToAsset(
     batchNo: dto.batchNo || '-',
     nsn: dto.nsn || '-',
     caseType: getLocalizedName(dto.caseType, currentLang) || '-',
-    primaryPurpose: getLocalizedName(dto.primaryPurpos, currentLang) || '-',
+    primaryPurpose: formatAmmunitionPrimaryPurposes(dto, currentLang),
     hazardDivision: getLocalizedName(dto.hazardDivision, currentLang) || '-',
     compatibility: getLocalizedName(dto.compatibility, currentLang) || '-',
     propellant: getLocalizedName(dto.propellant, currentLang) || '-',

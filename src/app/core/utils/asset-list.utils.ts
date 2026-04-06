@@ -81,11 +81,19 @@ export function filterAssets(
         }
       }
 
-      // Primary purpose filter
+      // Primary purpose filter (catalog may expose multiple purposes)
       if (filterState.selectedPrimaryPurpose) {
-        const assetPrimaryPurposeId = originalData?.primaryPurpos?.id;
-        if (assetPrimaryPurposeId !== parseInt(filterState.selectedPrimaryPurpose)) {
-          return false;
+        const selectedId = parseInt(filterState.selectedPrimaryPurpose, 10);
+        const purposes = originalData?.primaryPurposes as LookupDto[] | undefined;
+        if (purposes?.length) {
+          if (!purposes.some(p => p.id === selectedId)) {
+            return false;
+          }
+        } else {
+          const assetPrimaryPurposeId = originalData?.primaryPurpos?.id;
+          if (assetPrimaryPurposeId !== selectedId) {
+            return false;
+          }
         }
       }
 

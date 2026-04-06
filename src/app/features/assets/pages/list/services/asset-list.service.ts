@@ -287,7 +287,8 @@ export class AssetListService {
         partNo: 'PartNo',
         nsn: 'Nsn',
         caseType: 'CaseType.NameEn',
-        primaryPurpose: 'PrimaryPurpos.NameEn',
+        // Junction table: min name approximates sort when multiple purposes exist
+        primaryPurpose: 'BaseItemPrimaryPurposes.Min(PrimaryPurpos.NameEn)',
         price: 'Price',
         minimumQuantity: 'MinimumQuantity'
       };
@@ -537,7 +538,8 @@ export class AssetListService {
         partNo: 'PartNo',
         nsn: 'Nsn',
         caseType: 'CaseType.NameEn',
-        primaryPurpose: 'PrimaryPurpos.NameEn',
+        // Junction table: min name approximates sort when multiple purposes exist
+        primaryPurpose: 'BaseItemPrimaryPurposes.Min(PrimaryPurpos.NameEn)',
         price: 'Price',
         minimumQuantity: 'MinimumQuantity'
       };

@@ -56,7 +56,7 @@ interface AssetForm {
   compatibilityId: string;
   hazardDivisionId: string;
   natureOptionId: string;
-  primaryPurposId: string;
+  primaryPurposIds: number[];
   projectileColorId: string;
   projectailMaterialId: string;
 
@@ -173,7 +173,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
       compatibilityId: '',
       hazardDivisionId: '',
       natureOptionId: '',
-      primaryPurposId: '',
+      primaryPurposIds: [],
       projectileColorId: '',
       projectailMaterialId: '',
 
@@ -345,7 +345,9 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.assetForm.compatibilityId) dto.compatibilityId = parseInt(this.assetForm.compatibilityId);
     if (this.assetForm.hazardDivisionId) dto.hazardDivisionId = parseInt(this.assetForm.hazardDivisionId);
     if (this.assetForm.natureOptionId) dto.natureOptionId = parseInt(this.assetForm.natureOptionId);
-    if (this.assetForm.primaryPurposId) dto.primaryPurposId = parseInt(this.assetForm.primaryPurposId);
+    if (this.assetForm.primaryPurposIds?.length) {
+      dto.primaryPurposIds = [...this.assetForm.primaryPurposIds];
+    }
     if (this.assetForm.projectileColorId) dto.projectileColorId = parseInt(this.assetForm.projectileColorId);
     if (this.assetForm.projectailMaterialId) dto.projectailMaterialId = parseInt(this.assetForm.projectailMaterialId);
     if (this.assetForm.distribution?.trim()) dto.distribution = this.assetForm.distribution.trim();
@@ -359,12 +361,15 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.assetForm.isLinked) dto.isLinked = this.assetForm.isLinked === 'true';
 
     const formData = new FormData();
-    Object.keys(dto).forEach(key => {
-      const val = dto[key as keyof AmmunitionCreateDto];
-      if (val !== undefined && val !== null) {
-        const capKey = key.charAt(0).toUpperCase() + key.slice(1);
-        formData.append(capKey, val.toString());
+    (Object.keys(dto) as (keyof AmmunitionCreateDto)[]).forEach(key => {
+      const val = dto[key];
+      if (val === undefined || val === null) return;
+      const capKey = key.charAt(0).toUpperCase() + key.slice(1);
+      if (key === 'primaryPurposIds' && Array.isArray(val)) {
+        val.forEach(id => formData.append(capKey, id.toString()));
+        return;
       }
+      formData.append(capKey, val.toString());
     });
 
     if (this.assetForm.image) {
