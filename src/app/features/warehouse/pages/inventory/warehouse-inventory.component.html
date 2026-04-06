@@ -162,8 +162,10 @@
         [searchPlaceholderKey]="activeTab === 'batch' ? 'warehouseInventory.searchPlaceholderBatch' : 'warehouseInventory.searchPlaceholder'"
         [showSupplierManufacturerFilters]="activeTab !== 'batch'"
         [supplierFilterControl]="supplierFilterControl" [manufacturerFilterControl]="manufacturerFilterControl"
-        [suppliers]="suppliers" [manufacturers]="manufacturers"
+        [primaryPurposeFilterControl]="primaryPurposeFilterControl"
+        [suppliers]="suppliers" [manufacturers]="manufacturers" [primaryPurposes]="primaryPurposes"
         [supplierOptionLabelFn]="supplierLookupLabel" [manufacturerOptionLabelFn]="manufacturerLookupLabel"
+        [primaryPurposeOptionLabelFn]="primaryPurposeLookupLabel"
         (searchTriggered)="onSearch()" (clearFilters)="onClearInventoryFilters()">
       </app-inventory-filters>
 

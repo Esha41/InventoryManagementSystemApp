@@ -59,6 +59,16 @@
             placeholder="{{ 'common.all' | translate }}">
           </app-dropdown>
         </div>
+
+        <div *ngIf="showSupplierManufacturerFilters" class="w-full sm:w-[180px]">
+          <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            {{ 'warehouseInventory.primaryPurpose' | translate }}
+          </label>
+          <app-dropdown class="w-full" [formControl]="primaryPurposeFilterControl" [options]="primaryPurposes" optionValue="id"
+            [optionLabelFn]="primaryPurposeOptionLabelFn" [placeholderSelectable]="true" [placeholderValue]="null"
+            placeholder="{{ 'common.all' | translate }}">
+          </app-dropdown>
+        </div>
       </div>
     </div>
   </app-card>

@@ -140,8 +140,10 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   searchControl = new FormControl<string>('', { nonNullable: true });
   supplierFilterControl = new FormControl<number | null>(null);
   manufacturerFilterControl = new FormControl<number | null>(null);
+  primaryPurposeFilterControl = new FormControl<number | null>(null);
   suppliers: LookupItem[] = [];
   manufacturers: LookupItem[] = [];
+  primaryPurposes: LookupItem[] = [];
   invoiceFilter: string | null = null; // Track specific invoice filter
 
   readonly supplierLookupLabel = (option: DropdownOption<LookupItem> | LookupItem | null) => {
@@ -150,6 +152,11 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   };
 
   readonly manufacturerLookupLabel = (option: DropdownOption<LookupItem> | LookupItem | null) => {
+    const item = this.unwrapLookupOption(option);
+    return item ? getLocalizedName(item, getCurrentLang(this.translateService)) || '' : '';
+  };
+
+  readonly primaryPurposeLookupLabel = (option: DropdownOption<LookupItem> | LookupItem | null) => {
     const item = this.unwrapLookupOption(option);
     return item ? getLocalizedName(item, getCurrentLang(this.translateService)) || '' : '';
   };
@@ -255,7 +262,11 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
         }
       });
 
-    merge(this.supplierFilterControl.valueChanges, this.manufacturerFilterControl.valueChanges)
+    merge(
+      this.supplierFilterControl.valueChanges,
+      this.manufacturerFilterControl.valueChanges,
+      this.primaryPurposeFilterControl.valueChanges
+    )
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
         if (this.activeTab === 'batch') {
@@ -280,6 +291,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.searchControl.setValue('', { emitEvent: false });
     this.supplierFilterControl.setValue(null, { emitEvent: false });
     this.manufacturerFilterControl.setValue(null, { emitEvent: false });
+    this.primaryPurposeFilterControl.setValue(null, { emitEvent: false });
     this.invoiceFilter = null;
     this.currentPage = 1;
     this.updatePageInUrl();
@@ -333,13 +345,15 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     forkJoin({
       depots: this.lookupService.getDepots(),
       suppliers: this.lookupService.getSuppliers().pipe(catchError(() => of([] as LookupItem[]))),
-      manufacturers: this.lookupService.getManufacturers().pipe(catchError(() => of([] as LookupItem[])))
+      manufacturers: this.lookupService.getManufacturers().pipe(catchError(() => of([] as LookupItem[]))),
+      primaryPurposes: this.lookupService.getPrimaryPurposes().pipe(catchError(() => of([] as LookupItem[])))
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: ({ depots, suppliers, manufacturers }) => {
+        next: ({ depots, suppliers, manufacturers, primaryPurposes }) => {
           this.suppliers = suppliers ?? [];
           this.manufacturers = manufacturers ?? [];
+          this.primaryPurposes = primaryPurposes ?? [];
           this.currentDepot = depots.find((d: LookupItem) => d.id === this.depoId) || null;
           this.depoName = this.currentDepot
             ? getLocalizedName(this.currentDepot, getCurrentLang(this.translateService)) || `Depot ${this.depoId}`
@@ -471,6 +485,10 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       const manufacturerId = this.manufacturerFilterControl.value;
       if (manufacturerId != null) {
         filters.push({ field: 'ManufacturerId', operator: 'eq', value: String(manufacturerId) });
+      }
+      const primaryPurposeId = this.primaryPurposeFilterControl.value;
+      if (primaryPurposeId != null) {
+        filters.push({ field: 'PrimaryPurposId', operator: 'eq', value: String(primaryPurposeId) });
       }
 
       // If filtering by specific invoice number, use exact match
