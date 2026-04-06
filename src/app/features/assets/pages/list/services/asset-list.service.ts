@@ -23,39 +23,63 @@ import {
 } from '@utils/asset-list.mapper';
 import { TranslateService } from '@ngx-translate/core';
 
-/** Build OR filter for search across Name, ItemNo, PartNo, NSN (ammunition, weapons) */
+/**
+ * When the whole search box value is numeric, also OR-match Price exactly (all catalogs).
+ */
+function maybeAppendExactPriceToOrGroup(orFilters: FilterData[], trimmedTerm: string): void {
+  if (!trimmedTerm) return;
+  const normalized = trimmedTerm.replace(',', '.');
+  if (!/^-?\d+(\.\d+)?$|^-?\.\d+$/.test(normalized)) return;
+  const n = Number(normalized);
+  if (!Number.isFinite(n)) return;
+  orFilters.push({ field: 'Price', operator: 'eq', value: String(n) });
+}
+
+/** Build OR filter for search across Name, ItemNo, PartNo, NSN (ammunition, explosives) */
 function buildSearchFilters(searchTerm: string): FilterData {
   const term = searchTerm.trim();
-  return {
-    logic: 'or',
-    filters: [
-      { field: 'Name', operator: 'contains', value: term },
-      { field: 'ItemNo', operator: 'contains', value: term },
-      { field: 'PartNo', operator: 'contains', value: term },
-      { field: 'Nsn', operator: 'contains', value: term }
-    ]
-  };
+  const filters: FilterData[] = [
+    { field: 'Name', operator: 'contains', value: term },
+    { field: 'ItemNo', operator: 'contains', value: term },
+    { field: 'PartNo', operator: 'contains', value: term },
+    { field: 'Nsn', operator: 'contains', value: term }
+  ];
+  maybeAppendExactPriceToOrGroup(filters, term);
+  return { logic: 'or', filters };
+}
+
+/** Weapons: buildSearchFilters + Caliber (substring) */
+function buildWeaponSearchFilters(searchTerm: string): FilterData {
+  const term = searchTerm.trim();
+  const filters: FilterData[] = [
+    { field: 'Name', operator: 'contains', value: term },
+    { field: 'ItemNo', operator: 'contains', value: term },
+    { field: 'PartNo', operator: 'contains', value: term },
+    { field: 'Nsn', operator: 'contains', value: term },
+    { field: 'Caliber', operator: 'contains', value: term }
+  ];
+  maybeAppendExactPriceToOrGroup(filters, term);
+  return { logic: 'or', filters };
 }
 
 /** Build OR filter for explosive search: Name, ItemNo, PartNo, NSN, ArmNumber, UNNumber, ExplosiveType, Compatibility */
 function buildExplosiveSearchFilters(searchTerm: string): FilterData {
   const term = searchTerm.trim();
-  return {
-    logic: 'or',
-    filters: [
-      { field: 'Name', operator: 'contains', value: term },
-      { field: 'ItemNo', operator: 'contains', value: term },
-      { field: 'PartNo', operator: 'contains', value: term },
-      { field: 'Nsn', operator: 'contains', value: term },
-      { field: 'ArmNumber', operator: 'contains', value: term },
-      { field: 'UNNumber', operator: 'contains', value: term },
-      // Lookups use NameAr / NameEn in the backend entities.
-      { field: 'Type.NameEn', operator: 'contains', value: term },
-      { field: 'Type.NameAr', operator: 'contains', value: term },
-      { field: 'Compatibility.NameEn', operator: 'contains', value: term },
-      { field: 'Compatibility.NameAr', operator: 'contains', value: term }
-    ]
-  };
+  const filters: FilterData[] = [
+    { field: 'Name', operator: 'contains', value: term },
+    { field: 'ItemNo', operator: 'contains', value: term },
+    { field: 'PartNo', operator: 'contains', value: term },
+    { field: 'Nsn', operator: 'contains', value: term },
+    { field: 'ArmNumber', operator: 'contains', value: term },
+    { field: 'UNNumber', operator: 'contains', value: term },
+    // Lookups use NameAr / NameEn in the backend entities.
+    { field: 'Type.NameEn', operator: 'contains', value: term },
+    { field: 'Type.NameAr', operator: 'contains', value: term },
+    { field: 'Compatibility.NameEn', operator: 'contains', value: term },
+    { field: 'Compatibility.NameAr', operator: 'contains', value: term }
+  ];
+  maybeAppendExactPriceToOrGroup(filters, term);
+  return { logic: 'or', filters };
 }
 
 @Injectable({
@@ -135,9 +159,9 @@ export class AssetListService {
   ): Observable<PaginatedList<Asset>> {
     const filters: FilterData[] = [];
 
-    // Search filter (Name, ItemNo, PartNo, NSN)
+    // Search filter (Name, ItemNo, PartNo, NSN, Caliber)
     if (filterState.searchTerm && filterState.searchTerm.trim()) {
-      filters.push(buildSearchFilters(filterState.searchTerm));
+      filters.push(buildWeaponSearchFilters(filterState.searchTerm));
     }
 
     // Weapon Type filter
@@ -400,7 +424,7 @@ export class AssetListService {
     const filters: FilterData[] = [];
 
     if (filterState.searchTerm && filterState.searchTerm.trim()) {
-      filters.push(buildSearchFilters(filterState.searchTerm));
+      filters.push(buildWeaponSearchFilters(filterState.searchTerm));
     }
 
     if (filterState.selectedWeaponType) {

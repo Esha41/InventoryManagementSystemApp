@@ -452,6 +452,17 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy, AfterViewIni
           return;
         }
 
+        // Same route component can be reused after a successful submit; URL then shows step 0 while
+        // in-memory wizard state still holds the previous order. Start a clean flow.
+        if (this.orderSubmissionState.orderSubmitted && params.step === 0) {
+          this.resetForm();
+          if (this.route.snapshot.queryParamMap.keys.length > 0) {
+            this.clearQueryParams();
+            this.cdr.markForCheck();
+            return;
+          }
+        }
+
         this.currentStep = params.step;
         this.fromReserve = params.fromReserve;
         this.pendingSelections = params.pendingSelections;
@@ -829,9 +840,26 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy, AfterViewIni
   private resetForm(): void {
     this.currentStep = 0;
     this.steps.forEach(s => s.completed = false);
+    this.filterState = {
+      selectedItemType: 'Ammunition',
+      selectedAmmunitionType: '',
+      selectedBulletDiameter: '',
+      selectedLinked: '',
+      selectedNature: '',
+      selectedNSN: '',
+      searchTerm: '',
+      selectedWeaponType: '',
+      selectedCaliber: '',
+      selectedExplosiveType: '',
+      selectedUNNumber: ''
+    };
     this.cartridgeState.selectedEntries = [];
     this.cartridgeState.allCartridges = [];
     this.cartridgeState.filteredCartridges = [];
+    this.cartridgeState.selectedCartridgeForView = null;
+    this.cartridgeState.showCartridgeDetails = false;
+    this.cartridgeState.loadingCartridges = false;
+    this.cartridgeState.cartridgeError = null;
     this.cartridgeState.selectedCartridgesCache.clear();
     this.fromReserve = 'Yes'; // Reset to default
     this.usageFormData = {
@@ -846,6 +874,18 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy, AfterViewIni
       orderPriority: ''
     };
     this.usageFormFiles = [];
+    this.requestPurposeState.selectedRequestPurposeId = null;
+    this.updateUsePurposeFromSelection(null);
+    this.reserveDetailsState = {
+      totalReserve: 0,
+      availableReserve: 0,
+      orderedQuantity: 0,
+      usedQuantity: 0,
+      loadingReserveDetails: false,
+      reserveDetailsByItem: []
+    };
+    this.allowanceError = null;
+    this.showConfirmDialog = false;
     // Reset order submission state
     this.orderSubmissionState = {
       submittingOrder: false,
@@ -861,5 +901,6 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy, AfterViewIni
       orderDocument: ''
     };
     this.pendingSelections = null;
+    this.syncRequesterNameFromUserDetails();
   }
 }

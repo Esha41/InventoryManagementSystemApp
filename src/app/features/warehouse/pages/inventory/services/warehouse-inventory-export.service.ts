@@ -4,6 +4,7 @@ import { ExcelExportService, ExcelColumn } from '@services/excel-export.service'
 import { ToastService } from '@services/toast.service';
 import { InventoryDetailDto } from '@models/inventory.model';
 import { AssetDto } from '@models/asset.model';
+import { BatchSummaryDto } from '@models/batch.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 @Injectable({
@@ -20,10 +21,46 @@ export class WarehouseInventoryExportService {
   /**
    * Export filtered inventory to Excel (for ammunition and explosives)
    */
+  /**
+   * Export weapon batch summary rows (batch tab list).
+   */
+  exportBatchSummariesToExcel(batches: BatchSummaryDto[], depoName: string): void {
+    if (!batches?.length) {
+      this.toastService.warning('No data available to export');
+      return;
+    }
+
+    const columns: ExcelColumn[] = [
+      {
+        header: this.translateService.instant('warehouseInventory.batchNo'),
+        key: 'batchNumber',
+        width: 20,
+        format: (value: string) => value || '-'
+      },
+      {
+        header: this.translateService.instant('warehouseInventory.quantity') || 'Quantity',
+        key: 'quantity',
+        width: 12
+      }
+    ];
+
+    this.excelExportService.exportToExcel({
+      fileName: `${depoName}_Batches`,
+      sheetName: 'Batches',
+      columns,
+      data: batches,
+      includeTimestamp: true
+    });
+
+    this.translateService.get(['common.exportSuccess', 'toast.success']).subscribe((translations) => {
+      this.toastService.success(translations['common.exportSuccess'], translations['toast.success']);
+    });
+  }
+
   exportInventoryToExcel(
     inventoryDetails: InventoryDetailDto[],
     depoName: string,
-    activeTab: 'ammunition' | 'weapon' | 'explosive',
+    activeTab: 'ammunition' | 'explosive',
     getItemName: (detail: InventoryDetailDto) => string,
     formatDate: (date?: Date | string) => string
   ): void {

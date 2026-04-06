@@ -352,7 +352,8 @@
     "addAmmunition": "Add Ammunition",
     "addWeapon": "Add Weapon",
     "addExplosive": "Add Explosive",
-    "searchPlaceholder": "Search by name, item no, part no...",
+    "searchPlaceholder": "Search by name, item no, part no, NSN, or exact price…",
+    "searchPlaceholderWeapons": "Search by name, item no, part no, NSN, caliber, or exact price…",
     "tabs": {
       "ammunition": "Ammunition",
       "weapon": "Weapons",

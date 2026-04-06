@@ -3,23 +3,42 @@
     <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ 'assetList.title' | translate }}</h1>
     <p class="text-[var(--color-text-muted)] mt-2">{{ 'assetList.subtitle' | translate }}</p>
   </div>
-  <ng-container *ngIf="showAddButton">
-    <app-button *appHasPermission="'Ammunition.Create'" variant="primary" (click)="onAddClick()"
-      class="w-full sm:w-auto">
-      <span class="flex items-center gap-2 justify-center" [class.flex-row-reverse]="isRTL">
-        <lucide-angular [img]="Plus" class="h-4 w-4 flex-shrink-0"></lucide-angular>
-        <span *ngIf="activeTab === 'ammunition'">{{ 'assetList.addAmmunition' | translate }}</span>
-        <span *ngIf="activeTab === 'weapon'">{{ 'assetList.addWeapon' | translate }}</span>
-        <span *ngIf="activeTab === 'explosive'">{{ 'assetList.addExplosive' | translate }}</span>
-      </span>
-    </app-button>
-  </ng-container>
+  <div *ngIf="showAddButton"
+    class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2 w-full sm:w-auto sm:justify-end">
+      <button type="button" *appHasPermission="assetExportPerms" appPermissionMode="any" (click)="onExportClick()"
+        class="flex items-center justify-center gap-2 px-4 py-2.5 min-h-[2.75rem] rounded-lg text-white bg-[var(--color-success)] hover:opacity-90 transition-colors shadow-sm text-sm font-medium whitespace-nowrap"
+        [class.flex-row-reverse]="isRTL">
+        <lucide-angular [img]="Upload" class="w-4 h-4 flex-shrink-0"></lucide-angular>
+        <span>{{ 'common.exportToExcel' | translate }}</span>
+      </button>
+      <button type="button" *appHasPermission="assetCreatePerms" appPermissionMode="any" (click)="onImportClick()"
+        class="flex items-center justify-center gap-2 px-4 py-2.5 min-h-[2.75rem] rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm text-sm font-medium whitespace-nowrap"
+        [class.flex-row-reverse]="isRTL">
+        <lucide-angular [img]="Download" class="w-4 h-4 flex-shrink-0"></lucide-angular>
+        <span>{{ 'common.import' | translate }}</span>
+      </button>
+      <button type="button" *appHasPermission="assetCreatePerms" appPermissionMode="any" (click)="onTemplateClick()"
+        class="flex items-center justify-center gap-2 px-4 py-2.5 min-h-[2.75rem] rounded-lg text-white bg-gray-600 hover:bg-gray-700 transition-colors shadow-sm text-sm font-medium whitespace-nowrap"
+        [class.flex-row-reverse]="isRTL">
+        <lucide-angular [img]="FileText" class="w-4 h-4 flex-shrink-0"></lucide-angular>
+        <span>{{ 'common.downloadTemplate' | translate }}</span>
+      </button>
+      <app-button *appHasPermission="assetCreatePerms" appPermissionMode="any" variant="primary" (click)="onAddClick()"
+        class="w-full sm:w-auto shrink-0">
+        <span class="flex items-center gap-2 justify-center" [class.flex-row-reverse]="isRTL">
+          <lucide-angular [img]="Plus" class="h-4 w-4 flex-shrink-0"></lucide-angular>
+          <span *ngIf="activeTab === 'ammunition'">{{ 'assetList.addAmmunition' | translate }}</span>
+          <span *ngIf="activeTab === 'weapon'">{{ 'assetList.addWeapon' | translate }}</span>
+          <span *ngIf="activeTab === 'explosive'">{{ 'assetList.addExplosive' | translate }}</span>
+        </span>
+      </app-button>
+  </div>
 </div>
 
 <app-card [shadow]="true" class="min-w-0 mb-6">
   <div class="asset-tabs-scroll overflow-x-auto overflow-y-hidden scrollbar-hide bg-gradient-to-r from-[var(--color-background)] to-[var(--color-background-hover)]">
     <nav class="asset-tabs flex gap-2 p-2 w-max min-w-full" aria-label="Tabs" [class.flex-row-reverse]="isRTL">
-      <button (click)="onTabClick('ammunition')" [ngClass]="{
+      <button type="button" *appHasPermission="tabPermsAmmunition" appPermissionMode="any" (click)="onTabClick('ammunition')" [ngClass]="{
         'bg-[var(--color-brand)] text-white shadow-md': activeTab === 'ammunition',
         'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)] border-2 border-[var(--color-border)]': activeTab !== 'ammunition'
       }"
@@ -27,7 +46,7 @@
         [class.flex-row-reverse]="isRTL">
         <span>{{ 'assetList.tabs.ammunition' | translate }}</span>
       </button>
-      <button (click)="onTabClick('explosive')" [ngClass]="{
+      <button type="button" *appHasPermission="tabPermsExplosive" appPermissionMode="any" (click)="onTabClick('explosive')" [ngClass]="{
         'bg-[var(--color-brand)] text-white shadow-md': activeTab === 'explosive',
         'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)] border-2 border-[var(--color-border)]': activeTab !== 'explosive'
       }"
@@ -35,7 +54,7 @@
         [class.flex-row-reverse]="isRTL">
         <span>{{ 'assetList.tabs.explosive' | translate }}</span>
       </button>
-      <button (click)="onTabClick('weapon')" [ngClass]="{
+      <button type="button" *appHasPermission="tabPermsWeapon" appPermissionMode="any" (click)="onTabClick('weapon')" [ngClass]="{
         'bg-[var(--color-brand)] text-white shadow-md': activeTab === 'weapon',
         'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)] border-2 border-[var(--color-border)]': activeTab !== 'weapon'
       }"

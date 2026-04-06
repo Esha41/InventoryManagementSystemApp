@@ -7,8 +7,21 @@
       [weaponsViewMode]="weaponsViewMode"
       [isRTL]="isRTL"
       (tabChange)="switchTab($event)"
-      (addClick)="navigateToAddAsset()">
+      (addClick)="navigateToAddAsset()"
+      (exportClick)="exportToExcel()"
+      (importClick)="onImportToolbarClick()"
+      (templateClick)="downloadImportTemplateFromApi()">
     </app-asset-list-header>
+
+    <app-import-dialog [isOpen]="showImportModal" [entityName]="facade.activeTab" (close)="closeImportModal()"
+      (preview)="onImportPreview($event)" (import)="onImportDirect($event)"
+      (downloadTemplate)="downloadImportTemplateFromApi()">
+    </app-import-dialog>
+
+    <app-import-preview-dialog *ngIf="showPreviewModal && previewData" [previewData]="previewData"
+      [assetType]="facade.activeTab"
+      (confirm)="onPreviewConfirmed($event)" (cancel)="onPreviewCancelled()">
+    </app-import-preview-dialog>
 
     <!-- Filters Card -->
     <div class="mb-6">

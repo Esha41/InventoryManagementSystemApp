@@ -6,8 +6,9 @@ import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, forkJoin, merge, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { debounceTime, startWith } from 'rxjs/operators';
-import { LucideAngularModule, ArrowLeft, ArrowRight, X, Eye, Edit, Trash2 } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ArrowRight, X, Eye, Edit, Trash2, Download, Upload, FileText } from 'lucide-angular';
 import { InventoryService } from '@services/inventory.service';
+import { AssetService } from '@services/asset.service';
 import { LookupService } from '@services/lookup.service';
 import { LookupItem } from '@models/lookup.model';
 import { ToastService } from '@services/toast.service';
@@ -21,7 +22,7 @@ import { CardComponent } from '@components/card/card.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { EditInventoryDetailModalComponent } from './components/edit-inventory-detail-modal/edit-inventory-detail-modal.component';
 import { EditAssetModalComponent } from '@assets/pages/edit/components/edit-asset-modal/edit-asset-modal.component';
-import { DropdownComponent } from '@components/dropdown/dropdown.component';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
@@ -35,7 +36,18 @@ import { BatchTableComponent, BatchTableSortColumn } from './components/batch-ta
 import { InventoryFiltersComponent } from './components/inventory-filters/inventory-filters.component';
 import { trackById } from '@utils/trackby.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
-import { DropdownOption } from '@components/dropdown/dropdown.component';
+import { ImportDialogComponent } from '@components/import-dialog/import-dialog.component';
+import { ImportPreviewDialogComponent, PreviewData } from '@components/import-preview-dialog/import-preview-dialog.component';
+import { ImportExportService } from '@services/import-export.service';
+import { APIOperationResponse } from '@models/api-response.model';
+import { ImportResult } from '@models/import-result.model';
+import { mapImportResultToPreviewData } from '@core/utils/asset-master-import-preview.utils';
+import { IImportableService } from '@core/interfaces/importable-service.interface';
+import {
+  WAREHOUSE_DEPOT_EXPORT_PERMISSIONS,
+  WAREHOUSE_DEPOT_INVENTORY_IMPORT_PERMISSIONS,
+  WAREHOUSE_DEPOT_ASSET_IMPORT_PERMISSIONS
+} from '@core/constants/asset-import-export-permissions';
 
 @Component({
   selector: 'app-warehouse-inventory',
@@ -58,7 +70,9 @@ import { DropdownOption } from '@components/dropdown/dropdown.component';
     ErrorStateComponent,
     InventoryTableComponent,
     BatchTableComponent,
-    InventoryFiltersComponent
+    InventoryFiltersComponent,
+    ImportDialogComponent,
+    ImportPreviewDialogComponent
   ],
   templateUrl: './warehouse-inventory.component.html',
   styleUrls: ['./warehouse-inventory.component.css'],
@@ -106,7 +120,21 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   readonly Eye = Eye;
   readonly Edit = Edit;
   readonly Trash2 = Trash2;
+  readonly Download = Download;
+  readonly Upload = Upload;
+  readonly FileText = FileText;
   readonly trackById = trackById;
+
+  readonly warehouseExportPerms = [...WAREHOUSE_DEPOT_EXPORT_PERMISSIONS];
+  readonly warehouseInventoryImportPerms = [...WAREHOUSE_DEPOT_INVENTORY_IMPORT_PERMISSIONS];
+  readonly warehouseAssetImportPerms = [...WAREHOUSE_DEPOT_ASSET_IMPORT_PERMISSIONS];
+
+  showImportModal = false;
+  showPreviewModal = false;
+  previewData: PreviewData | null = null;
+  pendingImportFile: File | null = null;
+  isPreviewInProgress = false;
+  isImportInProgress = false;
 
   // Search
   searchControl = new FormControl<string>('', { nonNullable: true });
@@ -154,6 +182,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
   constructor(
     private inventoryService: InventoryService,
+    private assetService: AssetService,
     private lookupService: LookupService,
     private batchService: BatchService,
     private toastService: ToastService,
@@ -165,6 +194,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     private formatterService: WarehouseInventoryFormatterService,
     private crudService: WarehouseInventoryCrudService,
     private exportService: WarehouseInventoryExportService,
+    private importExportService: ImportExportService,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -1051,10 +1081,11 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Export filtered inventory to Excel
+   * Export current tab (inventory lines, batch summaries, or weapon assets when a batch is expanded is not used — export is list-level).
    */
-  exportToExcel(): void {
+  exportDepotToExcel(): void {
     if (this.activeTab === 'batch') {
+      this.exportService.exportBatchSummariesToExcel(this.filteredBatches, this.depoName);
       return;
     }
     this.exportService.exportInventoryToExcel(
@@ -1074,5 +1105,209 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       return (option as DropdownOption<T>).value as T;
     }
     return option as T;
+  }
+
+  onWarehouseImportClick(): void {
+    if (!this.depoId) {
+      this.toastService.warning('Depot not loaded');
+      return;
+    }
+    this.pendingImportFile = null;
+    this.previewData = null;
+    this.showImportModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeImportModal(): void {
+    this.pendingImportFile = null;
+    this.showImportModal = false;
+    this.cdr.markForCheck();
+  }
+
+  downloadWarehouseTemplate(): void {
+    if (!this.depoId) {
+      this.toastService.warning('Depot not loaded');
+      return;
+    }
+    const lang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+    const service = this.getWarehouseImportService();
+    service
+      .generateImportTemplate(lang, this.depoId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (blob: Blob) => {
+          const fileName =
+            this.activeTab === 'batch'
+              ? `Weapon_Asset_Import_Template_Depot_${this.depoId}.xlsx`
+              : `Inventory_Import_Template_Depot_${this.depoId}.xlsx`;
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = fileName;
+          link.click();
+          window.URL.revokeObjectURL(url);
+          this.toastService.success('Template downloaded successfully');
+          this.cdr.markForCheck();
+        },
+        error: (err: unknown) => {
+          this.toastService.error(ErrorHandler.extractErrorMessage(err, 'Failed to download template'));
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  onWarehouseImportPreview(file: File): void {
+    if (!this.depoId) return;
+    if (this.isPreviewInProgress) {
+      this.toastService.warning('Preview is already in progress. Please wait...');
+      return;
+    }
+    this.previewData = null;
+    this.showPreviewModal = false;
+    this.isPreviewInProgress = true;
+    this.loading = true;
+    this.closeImportModal();
+    this.pendingImportFile = file;
+    this.cdr.markForCheck();
+
+    const lang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+    const service = this.getWarehouseImportService();
+
+    service
+      .importPreview(file, lang, this.depoId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: APIOperationResponse<ImportResult>) => {
+          this.isPreviewInProgress = false;
+          this.loading = false;
+
+          if (!res?.succeeded || !res.data) {
+            this.previewData = null;
+            this.toastService.error(res?.message || 'Preview failed');
+            this.cdr.markForCheck();
+            return;
+          }
+
+          const preview = mapImportResultToPreviewData(res.data);
+          if (preview) {
+            this.previewData = preview;
+            this.showPreviewModal = true;
+          }
+          this.cdr.markForCheck();
+        },
+        error: (error: unknown) => {
+          this.isPreviewInProgress = false;
+          this.loading = false;
+          this.previewData = null;
+          this.toastService.error(`Preview failed: ${ErrorHandler.extractErrorMessage(error, 'Unknown error')}`);
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  onWarehouseImportDirect(file: File): void {
+    if (!this.depoId) return;
+    if (this.isImportInProgress) {
+      this.toastService.warning('Import is already in progress. Please wait...');
+      return;
+    }
+    this.isImportInProgress = true;
+    this.loading = true;
+    this.closeImportModal();
+    this.cdr.markForCheck();
+
+    const lang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+    const service = this.getWarehouseImportService();
+
+    service
+      .importData(file, lang, this.depoId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: APIOperationResponse<ImportResult>) => {
+          this.isImportInProgress = false;
+          this.loading = false;
+          if (res?.succeeded && res.data) {
+            const result = res.data;
+            this.importExportService.handleImportResult({
+              successCount: result.successCount ?? result.successfulRecords?.length ?? 0,
+              failureCount: result.errors?.length ?? 0,
+              errors: result.errors || []
+            });
+            this.loadTabContent();
+          } else {
+            this.toastService.error(res?.message || 'Import failed');
+          }
+          this.cdr.markForCheck();
+        },
+        error: (error: unknown) => {
+          this.isImportInProgress = false;
+          this.loading = false;
+          this.toastService.error(`Import failed: ${ErrorHandler.extractErrorMessage(error, 'Unknown error')}`);
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  onWarehousePreviewConfirmed(_rows: unknown[]): void {
+    this.showPreviewModal = false;
+    this.previewData = null;
+    if (!this.pendingImportFile || !this.depoId) {
+      this.toastService.error('Import file not found. Please try uploading again.');
+      this.cdr.markForCheck();
+      return;
+    }
+    if (this.isImportInProgress) {
+      this.toastService.warning('Import is already in progress. Please wait...');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.isImportInProgress = true;
+    this.loading = true;
+    const file = this.pendingImportFile;
+    const lang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+    const service = this.getWarehouseImportService();
+
+    service
+      .importData(file, lang, this.depoId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: APIOperationResponse<ImportResult>) => {
+          this.isImportInProgress = false;
+          this.loading = false;
+          this.pendingImportFile = null;
+          if (res?.succeeded && res.data) {
+            const result = res.data;
+            this.importExportService.handleImportResult({
+              successCount: result.successCount ?? result.successfulRecords?.length ?? 0,
+              failureCount: result.errors?.length ?? 0,
+              errors: result.errors || []
+            });
+            this.loadTabContent();
+          } else {
+            this.toastService.error(res?.message || 'Import failed');
+          }
+          this.cdr.markForCheck();
+        },
+        error: (error: unknown) => {
+          this.isImportInProgress = false;
+          this.loading = false;
+          this.pendingImportFile = null;
+          this.toastService.error(`Import failed: ${ErrorHandler.extractErrorMessage(error, 'Unknown error')}`);
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  onWarehousePreviewCancelled(): void {
+    this.showPreviewModal = false;
+    this.previewData = null;
+    this.pendingImportFile = null;
+    this.isPreviewInProgress = false;
+    this.cdr.markForCheck();
+  }
+
+  private getWarehouseImportService(): IImportableService {
+    return this.activeTab === 'batch' ? this.assetService : this.inventoryService;
   }
 }

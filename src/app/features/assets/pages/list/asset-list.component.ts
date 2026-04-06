@@ -7,7 +7,6 @@ import { OnboardingTourService } from '@features/onboarding/services/onboarding-
 import { Subject, combineLatest } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
-import { LucideAngularModule } from 'lucide-angular';
 import { ImagePreviewTooltipComponent } from '@components/index';
 import { AmmunitionReadDto } from '@models/ammunition.model';
 import { WeaponDto } from '@models/weapon.model';
@@ -22,8 +21,20 @@ import { AssetListHeaderComponent } from './components/asset-list-header/asset-l
 import { AssetListFacade } from './services/asset-list.facade';
 import { AssetListCrudHandlerService, EditSaveEvent } from './services/asset-list-crud-handler.service';
 import { AssetModalService } from './services/asset-modal.service';
-import { AssetExportService } from './services/asset-export.service';
 import { TranslationService } from '@services/translation.service';
+import { ImportDialogComponent } from '@components/import-dialog/import-dialog.component';
+import { ImportPreviewDialogComponent, PreviewData } from '@components/import-preview-dialog/import-preview-dialog.component';
+import { AmmunitionService } from '@services/ammunition.service';
+import { WeaponService } from '@services/weapon.service';
+import { ExplosiveService } from '@services/explosive.service';
+import { ImportExportService } from '@services/import-export.service';
+import { ToastService } from '@services/toast.service';
+import { IImportableService } from '@core/interfaces/importable-service.interface';
+import { APIOperationResponse } from '@models/api-response.model';
+import { ImportResult } from '@models/import-result.model';
+import { ErrorHandler } from '@utils/error-handler.utils';
+import { mapImportResultToPreviewData } from '@core/utils/asset-master-import-preview.utils';
+import { AssetType } from '@models/asset-list.model';
 
 @Component({
   selector: 'app-asset-list',
@@ -34,12 +45,13 @@ import { TranslationService } from '@services/translation.service';
     FormsModule,
     ReactiveFormsModule,
     ConfirmDialogComponent,
-    LucideAngularModule,
     TranslateModule,
     AssetEditModalComponent,
     AssetFilterBarComponent,
     AssetTableComponent,
-    AssetListHeaderComponent
+    AssetListHeaderComponent,
+    ImportDialogComponent,
+    ImportPreviewDialogComponent
   ],
   templateUrl: './asset-list.component.html',
   styleUrls: ['./asset-list.component.css'],
@@ -50,6 +62,13 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private readonly destroy$ = new Subject<void>();
 
+  showImportModal = false;
+  showPreviewModal = false;
+  previewData: PreviewData | null = null;
+  pendingImportFile: File | null = null;
+  isPreviewInProgress = false;
+  isImportInProgress = false;
+
   constructor(
     readonly facade: AssetListFacade,
     private readonly crudHandler: AssetListCrudHandlerService,
@@ -58,7 +77,11 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
     private readonly translateService: TranslateService,
     private readonly translationService: TranslationService,
     private readonly assetModalService: AssetModalService,
-    private readonly assetExportService: AssetExportService,
+    private readonly ammunitionService: AmmunitionService,
+    private readonly weaponService: WeaponService,
+    private readonly explosiveService: ExplosiveService,
+    private readonly importExportService: ImportExportService,
+    private readonly toastService: ToastService,
     private readonly propertyAccessor: AssetPropertyAccessor,
     private readonly cdr: ChangeDetectorRef,
     private readonly onboardingTourService: OnboardingTourService
@@ -351,7 +374,202 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
     this.facade.exportToExcel();
   }
 
-  downloadImportTemplate(): void {
-    this.assetExportService.downloadImportTemplate(this.facade.activeTab);
+  onImportToolbarClick(): void {
+    this.pendingImportFile = null;
+    this.previewData = null;
+    this.showImportModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeImportModal(): void {
+    this.pendingImportFile = null;
+    this.showImportModal = false;
+    this.cdr.markForCheck();
+  }
+
+  downloadImportTemplateFromApi(): void {
+    const service = this.getAssetImportService(this.facade.activeTab);
+    const lang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+    service
+      .generateImportTemplate(lang)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (blob: Blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          const date = new Date().toISOString().split('T')[0];
+          link.download = `Import_Template_${this.facade.activeTab}_${lang}_${date}.xlsx`;
+          link.click();
+          window.URL.revokeObjectURL(url);
+          this.cdr.markForCheck();
+        },
+        error: (err: unknown) => {
+          this.toastService.error(ErrorHandler.extractErrorMessage(err, 'Failed to download template'));
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  onImportPreview(file: File): void {
+    if (this.isPreviewInProgress) {
+      this.toastService.warning('Preview is already in progress. Please wait...');
+      return;
+    }
+    this.previewData = null;
+    this.showPreviewModal = false;
+    this.isPreviewInProgress = true;
+    this.facade.setLoading(true);
+    this.closeImportModal();
+    this.pendingImportFile = file;
+    this.cdr.markForCheck();
+
+    const service = this.getAssetImportService(this.facade.activeTab);
+    const lang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+
+    service
+      .importPreview(file, lang)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: APIOperationResponse<ImportResult>) => {
+          this.isPreviewInProgress = false;
+          this.facade.setLoading(false);
+
+          if (!res?.succeeded || !res.data) {
+            this.previewData = null;
+            this.toastService.error(res?.message || 'Preview failed');
+            this.cdr.markForCheck();
+            return;
+          }
+
+          const preview = mapImportResultToPreviewData(res.data);
+          if (preview) {
+            this.previewData = preview;
+            this.showPreviewModal = true;
+          }
+          this.cdr.markForCheck();
+        },
+        error: (error: unknown) => {
+          this.isPreviewInProgress = false;
+          this.facade.setLoading(false);
+          this.previewData = null;
+          this.toastService.error(`Preview failed: ${ErrorHandler.extractErrorMessage(error, 'Unknown error')}`);
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  onImportDirect(file: File): void {
+    if (this.isImportInProgress) {
+      this.toastService.warning('Import is already in progress. Please wait...');
+      return;
+    }
+    this.isImportInProgress = true;
+    this.facade.setLoading(true);
+    this.closeImportModal();
+    this.cdr.markForCheck();
+
+    const service = this.getAssetImportService(this.facade.activeTab);
+    const lang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+
+    service
+      .importData(file, lang)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: APIOperationResponse<ImportResult>) => {
+          this.isImportInProgress = false;
+          this.facade.setLoading(false);
+          if (res?.succeeded && res.data) {
+            const result = res.data;
+            this.importExportService.handleImportResult({
+              successCount: result.successCount ?? result.successfulRecords?.length ?? 0,
+              failureCount: result.errors?.length ?? 0,
+              errors: result.errors || []
+            });
+            this.facade.loadAssets();
+          } else {
+            this.toastService.error(res?.message || 'Import failed');
+          }
+          this.cdr.markForCheck();
+        },
+        error: (error: unknown) => {
+          this.isImportInProgress = false;
+          this.facade.setLoading(false);
+          this.toastService.error(`Import failed: ${ErrorHandler.extractErrorMessage(error, 'Unknown error')}`);
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  onPreviewConfirmed(_validRows: unknown[]): void {
+    this.showPreviewModal = false;
+    this.previewData = null;
+    if (!this.pendingImportFile) {
+      this.toastService.error('Import file not found. Please try uploading again.');
+      this.cdr.markForCheck();
+      return;
+    }
+    if (this.isImportInProgress) {
+      this.toastService.warning('Import is already in progress. Please wait...');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.isImportInProgress = true;
+    this.facade.setLoading(true);
+    const file = this.pendingImportFile;
+    const service = this.getAssetImportService(this.facade.activeTab);
+    const lang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+
+    service
+      .importData(file, lang)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: APIOperationResponse<ImportResult>) => {
+          this.isImportInProgress = false;
+          this.facade.setLoading(false);
+          this.pendingImportFile = null;
+          if (res?.succeeded && res.data) {
+            const result = res.data;
+            this.importExportService.handleImportResult({
+              successCount: result.successCount ?? result.successfulRecords?.length ?? 0,
+              failureCount: result.errors?.length ?? 0,
+              errors: result.errors || []
+            });
+            this.facade.loadAssets();
+          } else {
+            this.toastService.error(res?.message || 'Import failed');
+          }
+          this.cdr.markForCheck();
+        },
+        error: (error: unknown) => {
+          this.isImportInProgress = false;
+          this.facade.setLoading(false);
+          this.pendingImportFile = null;
+          this.toastService.error(`Import failed: ${ErrorHandler.extractErrorMessage(error, 'Unknown error')}`);
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  onPreviewCancelled(): void {
+    this.showPreviewModal = false;
+    this.previewData = null;
+    this.pendingImportFile = null;
+    this.isPreviewInProgress = false;
+    this.cdr.markForCheck();
+  }
+
+  private getAssetImportService(tab: AssetType): IImportableService {
+    switch (tab) {
+      case 'ammunition':
+        return this.ammunitionService;
+      case 'weapon':
+        return this.weaponService;
+      case 'explosive':
+        return this.explosiveService;
+      default:
+        return this.ammunitionService;
+    }
   }
 }

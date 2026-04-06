@@ -55,6 +55,48 @@
               + {{ 'warehouseInventory.addWeaponAsset' | translate }}
             </button>
           </ng-container>
+
+          <button type="button" *appHasPermission="warehouseExportPerms" appPermissionMode="any"
+            (click)="exportDepotToExcel()"
+            class="flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-white bg-[var(--color-success)] hover:opacity-90 transition-colors shadow-sm w-full sm:w-auto text-sm font-medium"
+            [class.flex-row-reverse]="isRTL">
+            <lucide-angular [img]="Upload" class="w-4 h-4 flex-shrink-0"></lucide-angular>
+            <span>{{ 'common.exportToExcel' | translate }}</span>
+          </button>
+
+          <ng-container *ngIf="activeTab !== 'batch'">
+            <button type="button" *appHasPermission="warehouseInventoryImportPerms" appPermissionMode="any"
+              (click)="onWarehouseImportClick()"
+              class="flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm w-full sm:w-auto text-sm font-medium"
+              [class.flex-row-reverse]="isRTL">
+              <lucide-angular [img]="Download" class="w-4 h-4 flex-shrink-0"></lucide-angular>
+              <span>{{ 'common.import' | translate }}</span>
+            </button>
+            <button type="button" *appHasPermission="warehouseInventoryImportPerms" appPermissionMode="any"
+              (click)="downloadWarehouseTemplate()"
+              class="flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-white bg-gray-600 hover:bg-gray-700 transition-colors shadow-sm w-full sm:w-auto text-sm font-medium"
+              [class.flex-row-reverse]="isRTL">
+              <lucide-angular [img]="FileText" class="w-4 h-4 flex-shrink-0"></lucide-angular>
+              <span>{{ 'common.downloadTemplate' | translate }}</span>
+            </button>
+          </ng-container>
+
+          <ng-container *ngIf="activeTab === 'batch'">
+            <button type="button" *appHasPermission="warehouseAssetImportPerms" appPermissionMode="any"
+              (click)="onWarehouseImportClick()"
+              class="flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm w-full sm:w-auto text-sm font-medium"
+              [class.flex-row-reverse]="isRTL">
+              <lucide-angular [img]="Download" class="w-4 h-4 flex-shrink-0"></lucide-angular>
+              <span>{{ 'common.import' | translate }}</span>
+            </button>
+            <button type="button" *appHasPermission="warehouseAssetImportPerms" appPermissionMode="any"
+              (click)="downloadWarehouseTemplate()"
+              class="flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-white bg-gray-600 hover:bg-gray-700 transition-colors shadow-sm w-full sm:w-auto text-sm font-medium"
+              [class.flex-row-reverse]="isRTL">
+              <lucide-angular [img]="FileText" class="w-4 h-4 flex-shrink-0"></lucide-angular>
+              <span>{{ 'common.downloadTemplate' | translate }}</span>
+            </button>
+          </ng-container>
         </div>
       </div>
 
@@ -299,5 +341,15 @@
     [cancelText]="'common.cancel' | translate" confirmVariant="danger" (confirmed)="onDeleteAssetConfirm()"
     (cancelled)="onDeleteAssetCancel()">
   </app-confirm-dialog>
+
+  <app-import-dialog [isOpen]="showImportModal" [entityName]="'warehouse-inventory'" (close)="closeImportModal()"
+    (preview)="onWarehouseImportPreview($event)" (import)="onWarehouseImportDirect($event)"
+    (downloadTemplate)="downloadWarehouseTemplate()">
+  </app-import-dialog>
+
+  <app-import-preview-dialog *ngIf="showPreviewModal && previewData" [previewData]="previewData"
+    [assetType]="activeTab === 'batch' ? 'weapon' : activeTab === 'explosive' ? 'explosive' : 'ammunition'"
+    (confirm)="onWarehousePreviewConfirmed($event)" (cancel)="onWarehousePreviewCancelled()">
+  </app-import-preview-dialog>
 
   </ng-container>
