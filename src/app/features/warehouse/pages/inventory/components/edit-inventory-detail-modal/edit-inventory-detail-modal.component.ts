@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ModalComponent } from '@components/modal/modal.component';
@@ -10,6 +10,7 @@ import { LookupService, LookupItem } from '@services/lookup.service';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { formatDateShort } from '@core/utils/format.utils';
+import { FileUploadDto, FileUploadService, FileEntityType } from '@services/file-upload.service';
 
 @Component({
   selector: 'app-edit-inventory-detail-modal',
@@ -32,9 +33,10 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
   @Input() inventoryDetail?: InventoryDetailDto;
   @Input() inventory?: InventoryDto;
   @Input() inventoryId!: number;
+  @ViewChild('invEditFileInput') fileInputRef?: ElementRef<HTMLInputElement>;
 
   @Output() closed = new EventEmitter<void>();
-  @Output() saved = new EventEmitter<{ detail: UpdateInventoryDetailDto; inventory: UpdateInventoryDto }>();
+  @Output() saved = new EventEmitter<{ detail: UpdateInventoryDetailDto; inventory: UpdateInventoryDto; files?: File[] }>();
 
   detailForm!: FormGroup;
   suppliers: LookupItem[] = [];
@@ -45,12 +47,15 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
   showInvoiceChangeConfirmation = false;
   pendingSubmitData: { detail: UpdateInventoryDetailDto; inventory: UpdateInventoryDto } | null = null;
   readonly lookupOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null) => this.getLookupName(this.unwrapLookupOption(option));
+  selectedFiles: File[] = [];
+  existingFiles: FileUploadDto[] = [];
 
   constructor(
     private fb: FormBuilder,
     private lookupService: LookupService,
     private translateService: TranslateService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private fileUploadService: FileUploadService
   ) {
     this.initializeForm();
   }
@@ -60,12 +65,28 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['isOpen'] && changes['isOpen'].currentValue) {
-      this.initializeForm();
-      this.errorMessage = '';
+    if (changes['isOpen']) {
+      if (changes['isOpen'].currentValue) {
+        // Modal opened: reset form state and clear any unsaved file selections
+        this.initializeForm();
+        this.errorMessage = '';
+        this.selectedFiles = [];
+        this.resetFileInput();
+        // Also ensure existing files are shown even if inputs update order differs
+        this.loadFormData();
+        this.loadExistingFiles();
+      } else {
+        // Modal closed: ensure selected files are cleared
+        this.selectedFiles = [];
+        this.resetFileInput();
+      }
     }
     if ((changes['inventoryDetail'] && this.inventoryDetail) || (changes['inventory'] && this.inventory)) {
+      // Switching items while modal is open: clear any unsaved selections
+      this.selectedFiles = [];
+      this.resetFileInput();
       this.loadFormData();
+      this.loadExistingFiles();
     }
   }
 
@@ -101,6 +122,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
       manufacturerId: [this.normalizeOptionalId(this.inventoryDetail?.manufacturerId)],
       countryId: [this.normalizeOptionalId(this.inventoryDetail?.countryId)],
       // Invoice Information fields
+      deliveryReceipt: [this.inventory?.deliveryReceipt || this.inventoryDetail?.deliveryReceipt || ''],
       invoiceNumber: [this.inventoryDetail?.invoiceNumber || this.inventory?.invoiceNumber || ''],
       invoiceDate: [this.formatDateForDisplay(this.inventoryDetail?.invoiceDate || this.inventory?.invoiceDate)],
       recievedDate: [this.formatDateForDisplay(this.inventoryDetail?.recievedDate || this.inventory?.recievedDate)],
@@ -123,6 +145,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
         manufacturerId: this.normalizeOptionalId(this.inventoryDetail?.manufacturerId),
         countryId: this.normalizeOptionalId(this.inventoryDetail?.countryId),
         // Invoice Information
+        deliveryReceipt: this.inventory?.deliveryReceipt || this.inventoryDetail?.deliveryReceipt || '',
         invoiceNumber: this.inventoryDetail?.invoiceNumber || this.inventory?.invoiceNumber || '',
         invoiceDate: this.formatDateForDisplay(this.inventoryDetail?.invoiceDate || this.inventory?.invoiceDate),
         recievedDate: this.formatDateForDisplay(this.inventoryDetail?.recievedDate || this.inventory?.recievedDate),
@@ -190,6 +213,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
     // Prepare invoice information
     const updateInventoryDto: UpdateInventoryDto = {
       depoId: this.inventory?.depoId || 0,
+      deliveryReceipt: this.detailForm.value.deliveryReceipt?.trim() || undefined,
       invoiceNumber: this.detailForm.value.invoiceNumber?.trim() || undefined,
       invoiceDate: this.parseDateFromDisplay(this.detailForm.value.invoiceDate) || undefined,
       recievedDate: this.parseDateFromDisplay(this.detailForm.value.recievedDate) || undefined,
@@ -198,15 +222,18 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
       inventoryDetails: [] // Will be populated by the parent component
     };
 
-    // Check if invoice information has changed
-    if (this.hasInvoiceInfoChanged(updateInventoryDto)) {
+    // Check if invoice information or attachments change requires confirmation
+    const requiresConfirmation =
+      this.hasInvoiceInfoChanged(updateInventoryDto) || (this.selectedFiles && this.selectedFiles.length > 0);
+
+    if (requiresConfirmation) {
       // Store the data for later submission after confirmation
       this.pendingSubmitData = { detail: updateDetailDto, inventory: updateInventoryDto };
       // Show confirmation dialog
       this.showInvoiceChangeConfirmation = true;
     } else {
       // No invoice info change, proceed directly
-      this.saved.emit({ detail: updateDetailDto, inventory: updateInventoryDto });
+      this.saved.emit({ detail: updateDetailDto, inventory: updateInventoryDto, files: this.selectedFiles && this.selectedFiles.length ? this.selectedFiles : undefined });
     }
   }
 
@@ -215,12 +242,14 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
    */
   private hasInvoiceInfoChanged(updateInventoryDto: UpdateInventoryDto): boolean {
     const originalInvoiceNumber = (this.inventory?.invoiceNumber || this.inventoryDetail?.invoiceNumber || '').trim();
+    const originalDeliveryReceipt = (this.inventory?.deliveryReceipt || this.inventoryDetail?.deliveryReceipt || '').trim();
     const originalInvoiceDate = this.inventory?.invoiceDate || this.inventoryDetail?.invoiceDate;
     const originalReceivedDate = this.inventory?.recievedDate || this.inventoryDetail?.recievedDate;
     const originalContractNumber = (this.inventory?.contractNumber || this.inventoryDetail?.contractNumber || '').trim();
     const originalNotes = (this.inventory?.notes || this.inventoryDetail?.notes || '').trim();
 
     const newInvoiceNumber = (updateInventoryDto.invoiceNumber || '').trim();
+    const newDeliveryReceipt = (updateInventoryDto.deliveryReceipt || '').trim();
     const newInvoiceDate = updateInventoryDto.invoiceDate;
     const newReceivedDate = updateInventoryDto.recievedDate;
     const newContractNumber = (updateInventoryDto.contractNumber || '').trim();
@@ -228,6 +257,11 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
 
     // Compare invoice number
     if (newInvoiceNumber !== originalInvoiceNumber) {
+      return true;
+    }
+
+    // Compare delivery receipt
+    if (newDeliveryReceipt !== originalDeliveryReceipt) {
       return true;
     }
 
@@ -274,7 +308,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
   onInvoiceChangeConfirmed(): void {
     this.showInvoiceChangeConfirmation = false;
     if (this.pendingSubmitData) {
-      this.saved.emit(this.pendingSubmitData);
+      this.saved.emit({ ...this.pendingSubmitData, files: this.selectedFiles && this.selectedFiles.length ? this.selectedFiles : undefined });
       this.pendingSubmitData = null;
     }
   }
@@ -287,11 +321,75 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
     this.pendingSubmitData = null;
   }
 
+  onAttachmentChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const newlySelected = input.files ? Array.from(input.files) : [];
+    if (newlySelected.length) {
+      const combined = [...this.selectedFiles, ...newlySelected];
+      const seen = new Set<string>();
+      this.selectedFiles = combined.filter(f => {
+        const key = `${f.name}::${f.size}::${(f as any).lastModified ?? 0}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+    // Clear the native input so selecting the same file again will trigger change
+    if (this.fileInputRef?.nativeElement) {
+      this.fileInputRef.nativeElement.value = '';
+    }
+  }
+
+  removeAttachment(index: number): void {
+    if (index >= 0 && index < this.selectedFiles.length) {
+      this.selectedFiles.splice(index, 1);
+    }
+  }
+
+  getFileSize(file: File): string {
+    const bytes = file.size;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    if (bytes === 0) return '0 Bytes';
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    const value = (bytes / Math.pow(1024, i)).toFixed(2);
+    return `${value} ${sizes[i]}`;
+  }
+
+  private loadExistingFiles(): void {
+    this.existingFiles = this.inventoryDetail?.files || [];
+    this.cdr.markForCheck();
+  }
+
+  getDownloadUrl(file: FileUploadDto): string {
+    return this.fileUploadService.getFileDownloadUrl(file.id);
+  }
+
+  openExistingFile(file: FileUploadDto): void {
+    this.fileUploadService.getFileBlob(file.id).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, '_blank', 'noopener');
+        // Revoke after a while to avoid breaking the opened tab immediately
+        setTimeout(() => window.URL.revokeObjectURL(url), 60_000);
+      },
+      error: () => {
+        // Fallback: open raw URL (may 401 if browser doesn't send token, but keeps old behavior)
+        window.open(this.getDownloadUrl(file), '_blank', 'noopener');
+      }
+    });
+  }
+
   /**
    * Get the number of items in the same invoice
    */
   get itemsInSameInvoice(): number {
-    return this.inventory?.inventoryDetails?.length || 0;
+    const details = this.inventory?.inventoryDetails || [];
+    const currentType = this.inventoryDetail?.item?.itemType;
+    if (!currentType) {
+      return details.length;
+    }
+    // Show count scoped to the same item type (Ammunition vs Explosive)
+    return details.filter(d => d?.item?.itemType === currentType).length;
   }
 
   close(): void {
@@ -299,6 +397,9 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
     this.errorMessage = '';
     this.showInvoiceChangeConfirmation = false;
     this.pendingSubmitData = null;
+    // Clear any unsaved attachment selections on close
+    this.selectedFiles = [];
+    this.resetFileInput();
     this.closed.emit();
   }
 
@@ -422,6 +523,13 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
     }
 
     return undefined;
+  }
+
+  private resetFileInput(): void {
+    const el = this.fileInputRef?.nativeElement;
+    if (el) {
+      el.value = '';
+    }
   }
 }
 

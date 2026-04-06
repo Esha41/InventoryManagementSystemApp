@@ -63,6 +63,7 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
             purchaseDate: [null],
             warrantyExpiryDate: [null],
             purchasePrice: [null, [Validators.min(0)]],
+            deliveryReceipt: [''],
             notes: ['']
         });
     }
@@ -83,6 +84,7 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
             purchaseDate: formatDate(this.asset.purchaseDate),
             warrantyExpiryDate: formatDate(this.asset.warrantyExpiryDate),
             purchasePrice: this.asset.purchasePrice,
+            deliveryReceipt: this.asset.deliveryReceipt,
             notes: this.asset.notes
         });
     }
@@ -111,6 +113,7 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
             purchaseDate: formValue.purchaseDate ? new Date(formValue.purchaseDate) : undefined,
             warrantyExpiryDate: formValue.warrantyExpiryDate ? new Date(formValue.warrantyExpiryDate) : undefined,
             purchasePrice: formValue.purchasePrice,
+            deliveryReceipt: formValue.deliveryReceipt?.trim() || undefined,
             notes: formValue.notes
         };
 

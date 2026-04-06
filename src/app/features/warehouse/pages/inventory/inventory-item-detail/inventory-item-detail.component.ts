@@ -14,7 +14,7 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
 import { formatDateShort } from '@utils/format.utils';
-import { FileUploadService, FileEntityType } from '@services/file-upload.service';
+import { FileEntityType } from '@services/file-upload.service';
 import { HttpClient } from '@angular/common/http';
 import { trackByKey } from '@utils/trackby.utils';
 
@@ -55,7 +55,6 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
     private lookupService: LookupService,
     private translateService: TranslateService,
     private translationService: TranslationService,
-    private fileUploadService: FileUploadService,
     private http: HttpClient,
     private cdr: ChangeDetectorRef
   ) { }
@@ -433,61 +432,5 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
     } else {
       entityType = FileEntityType.Ammunition;
     }
-
-    // Get all files to find the latest one
-    this.fileUploadService.getFilesByEntity(entityType, itemId)
-      .pipe(
-        takeUntil(this.destroy$),
-        switchMap((files: any[]) => {
-          if (!files || files.length === 0) {
-            return of(null);
-          }
-
-          // Get main images (there might be multiple with isMain: true)
-          const mainImages = files.filter((img: any) => img.isMain);
-          let latestImage: any;
-          
-          if (mainImages.length > 0) {
-            // If multiple main images exist, get the one with highest ID (latest uploaded)
-            latestImage = mainImages.reduce((latest: any, current: any) => 
-              (current.id > latest.id) ? current : latest
-            );
-          } else {
-            // If no main image, get the image with highest ID (latest uploaded)
-            latestImage = files.reduce((latest: any, current: any) => 
-              (current.id > latest.id) ? current : latest
-            );
-          }
-          
-          if (!latestImage?.id) {
-            return of(null);
-          }
-
-          // Get the download URL for the latest image
-          const imageUrl = this.fileUploadService.getFileDownloadUrl(latestImage.id);
-          
-          // Fetch image as blob with authentication
-          return this.http.get(imageUrl, { responseType: 'blob' }).pipe(
-            switchMap((blob: Blob) => {
-              if (blob.type && blob.type.startsWith('image/')) {
-                const blobUrl = URL.createObjectURL(blob);
-                this.blobUrls.add(blobUrl);
-                this.imageUrl = blobUrl;
-                this.cdr.markForCheck();
-              }
-              return of(null);
-            }),
-            catchError((err) => {
-              console.warn('Failed to load image blob:', err);
-              return of(null);
-            })
-          );
-        }),
-        catchError((err) => {
-          console.warn('Failed to get files:', err);
-          return of(null);
-        })
-      )
-      .subscribe(() => this.cdr.markForCheck());
   }
 }
