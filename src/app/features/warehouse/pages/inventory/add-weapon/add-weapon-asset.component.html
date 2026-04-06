@@ -302,8 +302,13 @@
                                     [placeholderSelectable]="false"
                                     [addActionLabel]="'addWeaponAsset.assignment.addEmployee' | translate"
                                     (addActionClick)="openAddEmployeeModal()"
+                                    (selectionChange)="onAssignmentEmployeeChange()"
                                     placeholder="{{ 'addWeaponAsset.assignment.selectEmployee' | translate }}">
                                 </app-dropdown>
+                                <p *ngIf="selectedEmployeeCannotAssign(getAssetFormGroup(i).get('assignToEmployeeId')?.value)"
+                                    class="text-sm text-[var(--color-error)] mt-2">
+                                    {{ 'addWeaponAsset.assignment.employeeCannotAssign' | translate }}
+                                </p>
                             </div>
 
                             <div *ngIf="getAssetFormGroup(i).get('assignMode')?.value !== 'none'" class="md:col-span-2">
@@ -572,8 +577,13 @@
                             [placeholderSelectable]="false"
                             [addActionLabel]="'addWeaponAsset.assignment.addEmployee' | translate"
                             (addActionClick)="openAddEmployeeModal()"
+                            (selectionChange)="onAssignmentEmployeeChange()"
                             placeholder="{{ 'addWeaponAsset.assignment.selectEmployee' | translate }}">
                         </app-dropdown>
+                        <p *ngIf="selectedEmployeeCannotAssign(bulkForm.get('assignToEmployeeId')?.value)"
+                            class="text-sm text-[var(--color-error)] mt-2">
+                            {{ 'addWeaponAsset.assignment.employeeCannotAssign' | translate }}
+                        </p>
                     </div>
 
                     <div *ngIf="bulkForm.get('assignMode')?.value !== 'none'" class="md:col-span-2">

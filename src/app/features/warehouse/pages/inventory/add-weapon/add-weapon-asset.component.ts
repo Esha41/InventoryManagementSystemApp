@@ -273,7 +273,7 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
                 next: (list) => {
                     this.employees = (list || []).filter(e => !e.isDeleted);
                     this.refreshEmployeeDropdownOptions();
-                    this.cdr.markForCheck();
+                    this.onAssignmentEmployeeChange();
                 },
                 error: () => {
                     this.cdr.markForCheck();
@@ -295,6 +295,11 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
         } else if (mode === 'employee') {
             g.patchValue({ assignToDepartmentId: null });
         }
+        this.cdr.markForCheck();
+    }
+
+    /** For OnPush: refresh hints under employee assignment when selection changes. */
+    onAssignmentEmployeeChange(): void {
         this.cdr.markForCheck();
     }
 
@@ -421,6 +426,17 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
 
     getLocalizedName(entity: { nameAr?: string; nameEn?: string } | null | undefined): string {
         return getLocalizedName(entity, getCurrentLang(this.translateService)) || '';
+    }
+
+    /** Department shown for intake when user assigns to an employee (always the employee's own department). */
+    /** Backend requires assignable employee records; surface a simple message without emphasizing “department”. */
+    selectedEmployeeCannotAssign(employeeId: number | null | undefined): boolean {
+        if (employeeId == null || employeeId <= 0) return false;
+        const emp = this.employees.find(e => e.id === employeeId);
+        if (!emp) return true;
+        const hasDept = (emp.departmentId != null && emp.departmentId > 0)
+            || (emp.department?.id != null && emp.department.id > 0);
+        return !hasDept;
     }
 
     readonly weaponOptionLabel = (option: DropdownOption<WeaponDto> | WeaponDto | null) => {

@@ -7,6 +7,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   OnChanges,
+  OnInit,
   SimpleChanges
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -30,6 +31,8 @@ import { ErrorHandler } from '@utils/error-handler.utils';
 import { trackByIndex } from '@utils/trackby.utils';
 import { formatDateForInput } from '@utils/format.utils';
 
+export type BatchEditAssignMode = 'none' | 'department' | 'employee';
+
 @Component({
   selector: 'app-edit-batch-form',
   standalone: true,
@@ -46,7 +49,7 @@ import { formatDateForInput } from '@utils/format.utils';
   styleUrls: ['./edit-batch-form.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class EditBatchFormComponent implements OnDestroy, OnChanges {
+export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
   @Input({ required: true }) batchId!: number;
   @Input({ required: true }) warehouseId!: number;
   /** When false, hide bottom save/cancel row (e.g. modal supplies footer actions). */
@@ -74,6 +77,7 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges {
 
   departments: LookupItem[] = [];
   employees: EmployeeDto[] = [];
+  assignModeDropdownOptions: DropdownOption<BatchEditAssignMode>[] = [];
   readonly departmentOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null) =>
     this.getLookupName(this.unwrapLookupOption(option));
   readonly employeeOptionLabel = (option: DropdownOption<EmployeeDto> | EmployeeDto | null) =>
@@ -81,6 +85,16 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges {
 
   private removedAssetIds = new Set<number>();
   private destroy$ = new Subject<void>();
+
+  ngOnInit(): void {
+    this.refreshAssignModeOptions();
+    this.translateService.onLangChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.refreshAssignModeOptions();
+        this.cdr.markForCheck();
+      });
+  }
 
   constructor(
     private fb: FormBuilder,
@@ -131,6 +145,7 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges {
           this.employees = (employees || []).filter(e => !e.isDeleted);
           this.departments = (departments || []).filter(d => !d.isDeleted);
           this.buildForms(batch);
+          this.refreshAssignModeOptions();
           this.loading = false;
           this.cdr.markForCheck();
         },
@@ -149,19 +164,23 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges {
     const commonWarrantyExpiry = firstAsset?.warrantyExpiryDate ? this.formatDate(firstAsset.warrantyExpiryDate) : '';
     const commonPurchasePrice = firstAsset?.purchasePrice ?? null;
 
-    const groups = assets.map(asset => this.fb.group({
-      assetId: [asset.id],
-      itemId: [asset.itemId, Validators.required],
-      serialNumber: [asset.serialNumber || '', Validators.maxLength(500)],
-      rfid: [asset.rfid || '', Validators.maxLength(500)],
-      status: [asset.status],
-      assetTag: [asset.assetTag || '', Validators.maxLength(500)],
-      condition: [asset.condition || '', Validators.maxLength(500)],
-      notes: [asset.notes || '', Validators.maxLength(5000)],
-      assignToDepartmentId: [asset.departmentId ?? null],
-      assignToEmployeeId: [asset.custodianId ?? null],
-      assignmentNotes: ['', Validators.maxLength(2000)]
-    }));
+    const groups = assets.map(asset => {
+      const mode = this.inferAssignMode(asset);
+      return this.fb.group({
+        assetId: [asset.id],
+        itemId: [asset.itemId, Validators.required],
+        serialNumber: [asset.serialNumber || '', Validators.maxLength(500)],
+        rfid: [asset.rfid || '', Validators.maxLength(500)],
+        status: [asset.status],
+        assetTag: [asset.assetTag || '', Validators.maxLength(500)],
+        condition: [asset.condition || '', Validators.maxLength(500)],
+        notes: [asset.notes || '', Validators.maxLength(5000)],
+        assignMode: [mode],
+        assignToDepartmentId: [mode === 'department' ? (asset.departmentId ?? null) : null],
+        assignToEmployeeId: [mode === 'employee' ? (asset.custodianId ?? null) : null],
+        assignmentNotes: ['', Validators.maxLength(2000)]
+      });
+    });
     this.batchForm = this.fb.group({
       batchNumber: [batchDto.batchNumber?.trim() || '', [Validators.required, Validators.maxLength(500)]],
       commonInfo: this.fb.group({
@@ -171,6 +190,50 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges {
       }),
       assets: this.fb.array(groups)
     });
+  }
+
+  private inferAssignMode(asset: AssetDto): BatchEditAssignMode {
+    if (asset.custodianId) return 'employee';
+    if (asset.departmentId) return 'department';
+    return 'none';
+  }
+
+  private refreshAssignModeOptions(): void {
+    this.assignModeDropdownOptions = [
+      { value: 'none', label: this.translateService.instant('addWeaponAsset.assignment.modeNone') },
+      { value: 'department', label: this.translateService.instant('addWeaponAsset.assignment.modeDepartment') },
+      { value: 'employee', label: this.translateService.instant('addWeaponAsset.assignment.modeEmployee') }
+    ];
+  }
+
+  onRowAssignModeChange(index: number): void {
+    const g = this.getAssetFormGroup(index);
+    const mode = g.get('assignMode')?.value as BatchEditAssignMode;
+    if (mode === 'none') {
+      g.patchValue({
+        assignToEmployeeId: null,
+        assignToDepartmentId: null,
+        assignmentNotes: ''
+      });
+    } else if (mode === 'department') {
+      g.patchValue({ assignToEmployeeId: null });
+    } else if (mode === 'employee') {
+      g.patchValue({ assignToDepartmentId: null });
+    }
+    this.cdr.markForCheck();
+  }
+
+  onRowAssignmentEmployeeChange(): void {
+    this.cdr.markForCheck();
+  }
+
+  selectedEmployeeCannotAssign(employeeId: number | null | undefined): boolean {
+    if (employeeId == null || employeeId <= 0) return false;
+    const emp = this.employees.find(e => e.id === employeeId);
+    if (!emp) return true;
+    const hasDept = (emp.departmentId != null && emp.departmentId > 0)
+      || (emp.department?.id != null && emp.department.id > 0);
+    return !hasDept;
   }
 
   getDepotName(depot: { nameEn?: string; nameAr?: string; name?: string }): string {
@@ -268,11 +331,20 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges {
     const items: BatchAssetUpdateItem[] = (this.assetForms?.controls ?? []).map(control => {
       const val = control.value;
       const g = control as FormGroup;
+      const mode = val.assignMode as BatchEditAssignMode;
       const updateAssignment = !!(
+        g.get('assignMode')?.dirty ||
         g.get('assignToDepartmentId')?.dirty ||
         g.get('assignToEmployeeId')?.dirty ||
         g.get('assignmentNotes')?.dirty
       );
+      let assignToDepartmentId: number | null = null;
+      let assignToEmployeeId: number | null = null;
+      if (mode === 'department') {
+        assignToDepartmentId = val.assignToDepartmentId ?? null;
+      } else if (mode === 'employee') {
+        assignToEmployeeId = val.assignToEmployeeId ?? null;
+      }
       return {
         assetId: val.assetId,
         itemId: val.itemId,
@@ -286,8 +358,8 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges {
         purchasePrice: common.purchasePrice,
         notes: val.notes?.trim() || undefined,
         updateAssignment,
-        assignToDepartmentId: val.assignToDepartmentId ?? null,
-        assignToEmployeeId: val.assignToEmployeeId ?? null,
+        assignToDepartmentId,
+        assignToEmployeeId,
         assignmentNotes: val.assignmentNotes?.trim() || undefined
       };
     });

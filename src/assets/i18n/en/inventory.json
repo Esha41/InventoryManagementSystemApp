@@ -726,9 +726,13 @@
     "saveError": "Failed to update assets. Please try again.",
     "validationError": "Please fix the validation errors before saving",
     "selectStatus": "Select status",
+    "assignment": "Assignment",
+    "assignmentModeHint": "For each row: assign to a department only, or to an employee only (custodian). Do not use both for the same row.",
+    "selectDepartment": "Select department",
+    "selectEmployee": "Select employee",
     "assignmentNotes": "Assignment notes",
     "assignmentNotesPlaceholder": "Optional",
-    "assignmentNotesHint": "Applied to the assignment when you change department or assignee.",
+    "assignmentNotesHint": "Applied when you change assignment options or notes.",
     "clearAssignee": "Not assigned"
   }
 }

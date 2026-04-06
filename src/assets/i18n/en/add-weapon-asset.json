@@ -48,10 +48,11 @@
             "assignType": "Assignment type",
             "selectAssignType": "Select assignment type",
             "modeNone": "No assignment",
-            "modeDepartment": "Assign to department",
+            "modeDepartment": "Assign to department only",
             "modeEmployee": "Assign to employee",
-            "modeHint": "Choose either a department or an employee — not both.",
+            "modeHint": "Choose one: assign to a department only, or assign to an employee only (as custodian). You do not pick both.",
             "bulkModeHint": "These options apply to every asset created in this bulk operation.",
+            "employeeCannotAssign": "This employee cannot be used for assignment. Choose another or use department-only assignment.",
             "department": "Department",
             "employee": "Employee",
             "selectDepartment": "Select department",
@@ -59,7 +60,7 @@
             "addEmployee": "Add new employee",
             "notes": "Assignment notes",
             "notesPlaceholder": "Optional notes stored on the assignment",
-            "notesHint": "You can add notes only when assigning to a department or an employee."
+            "notesHint": "Optional notes are saved on the assignment when you assign to a department or to an employee."
         },
         "deliveryReceipt": "Delivery Receipt",
         "deliveryReceiptInformation": "Delivery Receipt Information",
