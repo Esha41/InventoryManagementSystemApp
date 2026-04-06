@@ -21,7 +21,7 @@ import {
   mapWeaponArrayToAssets,
   mapExplosiveArrayToAssets
 } from '@utils/asset-list.mapper';
-import { assetMatchesAmmunitionPrimaryPurpose } from '@utils/asset-list.utils';
+import { assetMatchesCatalogPrimaryPurpose } from '@utils/asset-list.utils';
 import { TranslateService } from '@ngx-translate/core';
 
 /**
@@ -148,24 +148,21 @@ export class AssetListService {
   }
 
   /**
-   * Get weapons (assets) with server-side pagination
-   * @param deletedOnly When true, returns items where IsDeleted = true
+   * Paged request for weapon list (server filters + sort). Primary purpose is not sent to the API.
    */
-  private getWeaponsPaginated(
+  private buildWeaponPagedRequest(
     page: number,
     pageSize: number,
     filterState: AssetFilterState,
     sortState: AssetSortState,
     deletedOnly?: boolean
-  ): Observable<PaginatedList<Asset>> {
+  ): PagedRequest {
     const filters: FilterData[] = [];
 
-    // Search filter (Name, ItemNo, PartNo, NSN, Caliber)
     if (filterState.searchTerm && filterState.searchTerm.trim()) {
       filters.push(buildWeaponSearchFilters(filterState.searchTerm));
     }
 
-    // Weapon Type filter
     if (filterState.selectedWeaponType) {
       filters.push({
         field: 'TypeId',
@@ -174,7 +171,6 @@ export class AssetListService {
       });
     }
 
-    // Weapon Classification filter
     if (filterState.selectedWeaponClassification) {
       filters.push({
         field: 'ClassificationId',
@@ -183,7 +179,6 @@ export class AssetListService {
       });
     }
 
-    // Country of Manufacture filter
     if (filterState.selectedCountryOfManufacture) {
       filters.push({
         field: 'CountryOfManufactureId',
@@ -192,7 +187,6 @@ export class AssetListService {
       });
     }
 
-    // Sorting
     let sortField: string | undefined;
     let sortDirection: number | undefined;
 
@@ -210,10 +204,10 @@ export class AssetListService {
       };
 
       sortField = fieldMap[sortState.column] || sortState.column;
-      sortDirection = sortState.direction === 'asc' ? 1 : 2; // 1 = asc, 2 = desc
+      sortDirection = sortState.direction === 'asc' ? 1 : 2;
     }
 
-    const request: PagedRequest = {
+    return {
       page,
       pageSize,
       ...(deletedOnly === true && { deletedOnly: true }),
@@ -224,6 +218,65 @@ export class AssetListService {
           }
         : undefined
     };
+  }
+
+  private fetchAllWeaponDtos(
+    filterState: AssetFilterState,
+    sortState: AssetSortState,
+    deletedOnly?: boolean
+  ): Observable<WeaponDto[]> {
+    const pageSize = 1000;
+    const load = (page: number, acc: WeaponDto[]): Observable<WeaponDto[]> => {
+      const request = this.buildWeaponPagedRequest(page, pageSize, filterState, sortState, deletedOnly);
+      return this.weaponService.getAllPaginated(request).pipe(
+        concatMap(res => {
+          const merged = [...acc, ...res.items];
+          if (res.items.length < pageSize || merged.length >= res.totalCount) {
+            return of(merged);
+          }
+          return load(page + 1, merged);
+        })
+      );
+    };
+    return load(1, []);
+  }
+
+  /**
+   * Get weapons (assets) with server-side pagination (primary purpose filtered on the client when selected)
+   * @param deletedOnly When true, returns items where IsDeleted = true
+   */
+  private getWeaponsPaginated(
+    page: number,
+    pageSize: number,
+    filterState: AssetFilterState,
+    sortState: AssetSortState,
+    deletedOnly?: boolean
+  ): Observable<PaginatedList<Asset>> {
+    const purposeId = filterState.selectedWeaponPrimaryPurposeId;
+
+    if (purposeId != null && !Number.isNaN(Number(purposeId))) {
+      const pid = Number(purposeId);
+      return this.fetchAllWeaponDtos(filterState, sortState, deletedOnly).pipe(
+        map(dtos => {
+          const assets = mapWeaponArrayToAssets(dtos, this.translateService);
+          const filtered = assets.filter(a => assetMatchesCatalogPrimaryPurpose(a, pid));
+          const totalCount = filtered.length;
+          const totalPages = totalCount === 0 ? 1 : Math.ceil(totalCount / pageSize);
+          const start = (page - 1) * pageSize;
+          const items = filtered.slice(start, start + pageSize);
+          return {
+            items,
+            pageIndex: page,
+            totalPages,
+            totalCount,
+            hasPreviousPage: page > 1,
+            hasNextPage: page < totalPages
+          };
+        })
+      );
+    }
+
+    const request = this.buildWeaponPagedRequest(page, pageSize, filterState, sortState, deletedOnly);
 
     return this.weaponService.getAllPaginated(request).pipe(
       map(paginatedData => ({
@@ -339,7 +392,7 @@ export class AssetListService {
       return this.fetchAllAmmunitionDtos(filterState, sortState, deletedOnly).pipe(
         map(dtos => {
           const assets = mapAmmunitionArrayToAssets(dtos, this.translateService);
-          const filtered = assets.filter(a => assetMatchesAmmunitionPrimaryPurpose(a, pid));
+          const filtered = assets.filter(a => assetMatchesCatalogPrimaryPurpose(a, pid));
           const totalCount = filtered.length;
           const totalPages = totalCount === 0 ? 1 : Math.ceil(totalCount / pageSize);
           const start = (page - 1) * pageSize;
@@ -367,24 +420,21 @@ export class AssetListService {
   }
 
   /**
-   * Get explosives with server-side pagination
-   * @param deletedOnly When true, returns items where IsDeleted = true
+   * Paged request for explosive list (server filters + sort). Primary purpose is not sent to the API.
    */
-  private getExplosivePaginated(
+  private buildExplosivePagedRequest(
     page: number,
     pageSize: number,
     filterState: AssetFilterState,
     sortState: AssetSortState,
     deletedOnly?: boolean
-  ): Observable<PaginatedList<Asset>> {
+  ): PagedRequest {
     const filters: FilterData[] = [];
 
-    // Search filter (Name, ItemNo, PartNo, NSN, ArmNumber, UNNumber, Type, Compatibility)
     if (filterState.searchTerm && filterState.searchTerm.trim()) {
       filters.push(buildExplosiveSearchFilters(filterState.searchTerm));
     }
 
-    // Explosive Type filter
     if (filterState.selectedExplosiveType) {
       filters.push({
         field: 'TypeId',
@@ -393,7 +443,6 @@ export class AssetListService {
       });
     }
 
-    // Explosive Classification filter
     if (filterState.selectedExplosiveClassification) {
       filters.push({
         field: 'ClassificationId',
@@ -402,7 +451,6 @@ export class AssetListService {
       });
     }
 
-    // Explosive Hazard Division filter
     if (filterState.selectedExplosiveHazardDivision) {
       filters.push({
         field: 'HazardDivisionId',
@@ -411,7 +459,6 @@ export class AssetListService {
       });
     }
 
-    // Explosive Compatibility filter
     if (filterState.selectedExplosiveCompatibility) {
       filters.push({
         field: 'CompatibilityId',
@@ -420,7 +467,6 @@ export class AssetListService {
       });
     }
 
-    // Sorting
     let sortField: string | undefined;
     let sortDirection: number | undefined;
 
@@ -443,7 +489,7 @@ export class AssetListService {
       sortDirection = sortState.direction === 'asc' ? 1 : 2;
     }
 
-    const request: PagedRequest = {
+    return {
       page,
       pageSize,
       ...(deletedOnly === true && { deletedOnly: true }),
@@ -454,6 +500,65 @@ export class AssetListService {
           }
         : undefined
     };
+  }
+
+  private fetchAllExplosiveDtos(
+    filterState: AssetFilterState,
+    sortState: AssetSortState,
+    deletedOnly?: boolean
+  ): Observable<ExplosiveDto[]> {
+    const pageSize = 1000;
+    const load = (page: number, acc: ExplosiveDto[]): Observable<ExplosiveDto[]> => {
+      const request = this.buildExplosivePagedRequest(page, pageSize, filterState, sortState, deletedOnly);
+      return this.explosiveService.getAllPaginated(request).pipe(
+        concatMap(res => {
+          const merged = [...acc, ...res.items];
+          if (res.items.length < pageSize || merged.length >= res.totalCount) {
+            return of(merged);
+          }
+          return load(page + 1, merged);
+        })
+      );
+    };
+    return load(1, []);
+  }
+
+  /**
+   * Get explosives with server-side pagination (primary purpose filtered on the client when selected)
+   * @param deletedOnly When true, returns items where IsDeleted = true
+   */
+  private getExplosivePaginated(
+    page: number,
+    pageSize: number,
+    filterState: AssetFilterState,
+    sortState: AssetSortState,
+    deletedOnly?: boolean
+  ): Observable<PaginatedList<Asset>> {
+    const purposeId = filterState.selectedExplosivePrimaryPurposeId;
+
+    if (purposeId != null && !Number.isNaN(Number(purposeId))) {
+      const pid = Number(purposeId);
+      return this.fetchAllExplosiveDtos(filterState, sortState, deletedOnly).pipe(
+        map(dtos => {
+          const assets = mapExplosiveArrayToAssets(dtos, this.translateService);
+          const filtered = assets.filter(a => assetMatchesCatalogPrimaryPurpose(a, pid));
+          const totalCount = filtered.length;
+          const totalPages = totalCount === 0 ? 1 : Math.ceil(totalCount / pageSize);
+          const start = (page - 1) * pageSize;
+          const items = filtered.slice(start, start + pageSize);
+          return {
+            items,
+            pageIndex: page,
+            totalPages,
+            totalCount,
+            hasPreviousPage: page > 1,
+            hasNextPage: page < totalPages
+          };
+        })
+      );
+    }
+
+    const request = this.buildExplosivePagedRequest(page, pageSize, filterState, sortState, deletedOnly);
 
     return this.explosiveService.getAllPaginated(request).pipe(
       map(paginatedData => ({
@@ -472,68 +577,19 @@ export class AssetListService {
     sortState: AssetSortState,
     deletedOnly?: boolean
   ): Observable<Asset[]> {
-    const filters: FilterData[] = [];
+    const purposeId = filterState.selectedWeaponPrimaryPurposeId;
 
-    if (filterState.searchTerm && filterState.searchTerm.trim()) {
-      filters.push(buildWeaponSearchFilters(filterState.searchTerm));
+    if (purposeId != null && !Number.isNaN(Number(purposeId))) {
+      const pid = Number(purposeId);
+      return this.fetchAllWeaponDtos(filterState, sortState, deletedOnly).pipe(
+        map(dtos => {
+          const assets = mapWeaponArrayToAssets(dtos, this.translateService);
+          return assets.filter(a => assetMatchesCatalogPrimaryPurpose(a, pid));
+        })
+      );
     }
 
-    if (filterState.selectedWeaponType) {
-      filters.push({
-        field: 'TypeId',
-        operator: 'eq',
-        value: filterState.selectedWeaponType.toString()
-      });
-    }
-
-    if (filterState.selectedWeaponClassification) {
-      filters.push({
-        field: 'ClassificationId',
-        operator: 'eq',
-        value: filterState.selectedWeaponClassification.toString()
-      });
-    }
-
-    if (filterState.selectedCountryOfManufacture) {
-      filters.push({
-        field: 'CountryOfManufactureId',
-        operator: 'eq',
-        value: filterState.selectedCountryOfManufacture.toString()
-      });
-    }
-
-    let sortField: string | undefined;
-    let sortDirection: number | undefined;
-
-    if (sortState.column) {
-      const fieldMap: Record<string, string> = {
-        name: 'Name',
-        itemNo: 'ItemNo',
-        partNo: 'PartNo',
-        nsn: 'Nsn',
-        weaponType: 'Type.NameEn',
-        primaryPurpose: 'BaseItemPrimaryPurposes.Min(PrimaryPurpos.NameEn)',
-        caliber: 'Caliber',
-        price: 'Price',
-        minimumQuantity: 'MinimumQuantity'
-      };
-
-      sortField = fieldMap[sortState.column] || sortState.column;
-      sortDirection = sortState.direction === 'asc' ? 1 : 2;
-    }
-
-    // Use a large page size to get all items
-    const request: PagedRequest = {
-      page: 1,
-      pageSize: 10000, // Large number to get all items
-      ...(deletedOnly === true && { deletedOnly: true }),
-      filter: filters.length > 0 || sortField
-        ? {
-            ...(filters.length > 0 && { logic: 'and', filters }),
-            ...(sortField && { sortField, sortDirection })
-          }
-        : undefined
-    };
+    const request = this.buildWeaponPagedRequest(1, 10000, filterState, sortState, deletedOnly);
 
     return this.weaponService.getAllPaginated(request).pipe(
       map(paginatedData => mapWeaponArrayToAssets(paginatedData.items, this.translateService))
@@ -556,7 +612,7 @@ export class AssetListService {
       return this.fetchAllAmmunitionDtos(filterState, sortState, deletedOnly).pipe(
         map(dtos => {
           const assets = mapAmmunitionArrayToAssets(dtos, this.translateService);
-          return assets.filter(a => assetMatchesAmmunitionPrimaryPurpose(a, pid));
+          return assets.filter(a => assetMatchesCatalogPrimaryPurpose(a, pid));
         })
       );
     }
@@ -577,78 +633,19 @@ export class AssetListService {
     sortState: AssetSortState,
     deletedOnly?: boolean
   ): Observable<Asset[]> {
-    const filters: FilterData[] = [];
+    const purposeId = filterState.selectedExplosivePrimaryPurposeId;
 
-    if (filterState.searchTerm && filterState.searchTerm.trim()) {
-      filters.push(buildExplosiveSearchFilters(filterState.searchTerm));
+    if (purposeId != null && !Number.isNaN(Number(purposeId))) {
+      const pid = Number(purposeId);
+      return this.fetchAllExplosiveDtos(filterState, sortState, deletedOnly).pipe(
+        map(dtos => {
+          const assets = mapExplosiveArrayToAssets(dtos, this.translateService);
+          return assets.filter(a => assetMatchesCatalogPrimaryPurpose(a, pid));
+        })
+      );
     }
 
-    if (filterState.selectedExplosiveType) {
-      filters.push({
-        field: 'TypeId',
-        operator: 'eq',
-        value: filterState.selectedExplosiveType.toString()
-      });
-    }
-
-    if (filterState.selectedExplosiveClassification) {
-      filters.push({
-        field: 'ClassificationId',
-        operator: 'eq',
-        value: filterState.selectedExplosiveClassification.toString()
-      });
-    }
-
-    if (filterState.selectedExplosiveHazardDivision) {
-      filters.push({
-        field: 'HazardDivisionId',
-        operator: 'eq',
-        value: filterState.selectedExplosiveHazardDivision.toString()
-      });
-    }
-
-    if (filterState.selectedExplosiveCompatibility) {
-      filters.push({
-        field: 'CompatibilityId',
-        operator: 'eq',
-        value: filterState.selectedExplosiveCompatibility.toString()
-      });
-    }
-
-    let sortField: string | undefined;
-    let sortDirection: number | undefined;
-
-    if (sortState.column) {
-      const fieldMap: Record<string, string> = {
-        name: 'Name',
-        itemNo: 'ItemNo',
-        partNo: 'PartNo',
-        nsn: 'Nsn',
-        armNumber: 'ArmNumber',
-        primaryPurpose: 'BaseItemPrimaryPurposes.Min(PrimaryPurpos.NameEn)',
-        explosiveType: 'Type.NameEn',
-        unNumber: 'UNNumber',
-        compatibility: 'Compatibility.NameEn',
-        price: 'Price',
-        minimumQuantity: 'MinimumQuantity'
-      };
-
-      sortField = fieldMap[sortState.column] || sortState.column;
-      sortDirection = sortState.direction === 'asc' ? 1 : 2;
-    }
-
-    // Use a large page size to get all items
-    const request: PagedRequest = {
-      page: 1,
-      pageSize: 10000,
-      ...(deletedOnly === true && { deletedOnly: true }),
-      filter: filters.length > 0 || sortField
-        ? {
-            ...(filters.length > 0 && { logic: 'and', filters }),
-            ...(sortField && { sortField, sortDirection })
-          }
-        : undefined
-    };
+    const request = this.buildExplosivePagedRequest(1, 10000, filterState, sortState, deletedOnly);
 
     return this.explosiveService.getAllPaginated(request).pipe(
       map(paginatedData => mapExplosiveArrayToAssets(paginatedData.items, this.translateService))

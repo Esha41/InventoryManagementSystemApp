@@ -83,11 +83,15 @@ export interface AssetFilterState {
   selectedWeaponType: string | null;
   selectedWeaponClassification: string | null;
   selectedCountryOfManufacture: string | null;
+  /** Weapon: primary purpose lookup id; filtered client-side (junction / legacy). */
+  selectedWeaponPrimaryPurposeId: number | null;
   // Explosive filters
   selectedExplosiveType: string | null;
   selectedExplosiveClassification: string | null;
   selectedExplosiveHazardDivision: string | null;
   selectedExplosiveCompatibility: string | null;
+  /** Explosive: primary purpose lookup id; filtered client-side (junction / legacy). */
+  selectedExplosivePrimaryPurposeId: number | null;
 }
 
 /**

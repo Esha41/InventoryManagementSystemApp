@@ -102,6 +102,17 @@
         </app-dropdown>
       </div>
 
+      <div *ngIf="activeTab === 'weapon'" class="w-full sm:w-[220px]">
+        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+          {{ 'assetList.filters.primaryPurpose' | translate }}
+        </label>
+        <app-dropdown class="w-full" [(ngModel)]="filterState.selectedWeaponPrimaryPurposeId"
+          (selectionChange)="onFilterChange()" [options]="filterOptions.primaryPurpose" optionLabel="label"
+          optionValue="value" [placeholderSelectable]="false"
+          placeholder="{{ 'assetList.filters.allPrimaryPurposes' | translate }}">
+        </app-dropdown>
+      </div>
+
       <!-- Explosive Filters -->
       <div *ngIf="activeTab === 'explosive'" class="w-full sm:w-[180px]">
         <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
@@ -144,6 +155,17 @@
           (selectionChange)="onFilterChange()" [options]="filterOptions.explosiveCompatibility" optionLabel="label"
           optionValue="value" [placeholderSelectable]="false"
           placeholder="{{ 'assetList.filters.allCompatibility' | translate }}">
+        </app-dropdown>
+      </div>
+
+      <div *ngIf="activeTab === 'explosive'" class="w-full sm:w-[220px]">
+        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+          {{ 'assetList.filters.primaryPurpose' | translate }}
+        </label>
+        <app-dropdown class="w-full" [(ngModel)]="filterState.selectedExplosivePrimaryPurposeId"
+          (selectionChange)="onFilterChange()" [options]="filterOptions.primaryPurpose" optionLabel="label"
+          optionValue="value" [placeholderSelectable]="false"
+          placeholder="{{ 'assetList.filters.allPrimaryPurposes' | translate }}">
         </app-dropdown>
       </div>
     </div>
