@@ -43,6 +43,24 @@
         "assetTagTaken": "هذه علامة الأصل مستخدمة بالفعل لأصل آخر",
         "identificationDetails": "تفاصيل التعريف",
         "additionalDetails": "تفاصيل إضافية",
+        "assignment": {
+            "section": "التعيين (اختياري)",
+            "assignType": "نوع التعيين",
+            "selectAssignType": "اختر نوع التعيين",
+            "modeNone": "بدون تعيين",
+            "modeDepartment": "تعيين للقسم",
+            "modeEmployee": "تعيين لموظف",
+            "modeHint": "اختر إما قسماً أو موظفاً — وليس الاثنين معاً.",
+            "bulkModeHint": "تنطبق هذه الخيارات على كل الأصول المُنشأة في هذه العملية الجماعية.",
+            "department": "القسم",
+            "employee": "الموظف",
+            "selectDepartment": "اختر القسم",
+            "selectEmployee": "اختر الموظف",
+            "addEmployee": "إضافة موظف جديد",
+            "notes": "ملاحظات التعيين",
+            "notesPlaceholder": "ملاحظات اختيارية تُحفظ مع التعيين",
+            "notesHint": "يمكن إضافة الملاحظات فقط عند التعيين لقسم أو لموظف."
+        },
         "mode": {
             "single": "إدخال فردي",
             "bulk": "إدخال جماعي"

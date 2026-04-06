@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { BatchDto, BatchSummaryDto, BulkUpdateBatchAssetsDto } from '@models/batch.model';
+import { BatchDto, BatchSummaryDto, BulkUpdateBatchAssetsDto, UpdateBatchDto } from '@models/batch.model';
 import { PagedListRequest, PaginatedList } from '@models/pagination.model';
 import { ConfigService } from './config.service';
 import { ApiService } from './api.service';
@@ -77,6 +77,10 @@ export class BatchService {
             params = params.set('filterByIsAssigned', String(options.filterByIsAssigned));
         const encoded = encodeURIComponent(batchNumber.trim());
         return this.apiService.get<BatchDto | null>(`${this.basePath}/by-number/${encoded}`, params);
+    }
+
+    updateBatch(batchId: number, dto: UpdateBatchDto): Observable<boolean> {
+        return this.apiService.put<boolean>(`${this.basePath}/${batchId}`, dto);
     }
 
     bulkUpdateAssets(batchId: number, dto: BulkUpdateBatchAssetsDto): Observable<boolean> {

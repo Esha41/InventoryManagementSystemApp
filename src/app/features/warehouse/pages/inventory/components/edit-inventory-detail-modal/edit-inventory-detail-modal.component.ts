@@ -46,6 +46,11 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
   pendingSubmitData: { detail: UpdateInventoryDetailDto; inventory: UpdateInventoryDto } | null = null;
   readonly lookupOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null) => this.getLookupName(this.unwrapLookupOption(option));
 
+  readonly readyForIssueOptions: DropdownOption<boolean>[] = [
+    { label: 'editInventoryDetail.readyForIssueYes', value: true },
+    { label: 'editInventoryDetail.readyForIssueNo', value: false }
+  ];
+
   constructor(
     private fb: FormBuilder,
     private lookupService: LookupService,
@@ -78,6 +83,12 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
   private coerceLotString(value: unknown): string {
     if (value === null || value === undefined) return '';
     return String(value).trim();
+  }
+
+  private coerceReadyForIssue(value: unknown): boolean {
+    if (value === true || value === 'true') return true;
+    if (value === false || value === 'false') return false;
+    return true;
   }
 
   /** Normalize optional ID: null, undefined, 0, or empty string become null for dropdowns */
@@ -184,7 +195,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
       originalQuantity: this.detailForm.value.originalQuantity,
       batchNo: this.detailForm.value.batchNo?.trim() || undefined,
       expiryDate: this.parseDateFromDisplay(this.detailForm.value.expiryDate) || undefined,
-      readyForIssue: this.detailForm.value.readyForIssue ?? true
+      readyForIssue: this.coerceReadyForIssue(this.detailForm.value.readyForIssue)
     };
 
     // Prepare invoice information

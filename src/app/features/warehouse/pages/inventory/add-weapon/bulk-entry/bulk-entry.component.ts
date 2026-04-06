@@ -22,6 +22,8 @@ import { HasPermissionDirective } from '@core/directives/has-permission.directiv
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { trackByIndex } from '@utils/trackby.utils';
 
+type BulkAssignMode = 'none' | 'department' | 'employee';
+
 interface BulkAssetData {
     warehouseId: number;
     itemId: number;
@@ -32,6 +34,10 @@ interface BulkAssetData {
     condition?: string;
     purchasePrice?: number;
     notes?: string;
+    assignMode?: BulkAssignMode;
+    assignToEmployeeId?: number;
+    assignToDepartmentId?: number;
+    assignmentNotes?: string;
 }
 
 @Component({
@@ -198,7 +204,22 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
         }
 
         const formValue = this.bulkEntryForm.value;
-        const createDtos: CreateAssetDto[] = formValue.items.map((item: any, index: number) => ({
+        const mode = this.bulkData.assignMode ?? 'none';
+        const assignmentNotes = this.bulkData.assignmentNotes?.trim();
+        const assignmentPayload: Pick<CreateAssetDto, 'assignToEmployeeId' | 'assignToDepartmentId' | 'assignmentNotes'> = {};
+        if (mode === 'employee' && this.bulkData.assignToEmployeeId != null && this.bulkData.assignToEmployeeId > 0) {
+            assignmentPayload.assignToEmployeeId = this.bulkData.assignToEmployeeId;
+            if (assignmentNotes) {
+                assignmentPayload.assignmentNotes = assignmentNotes;
+            }
+        } else if (mode === 'department' && this.bulkData.assignToDepartmentId != null && this.bulkData.assignToDepartmentId > 0) {
+            assignmentPayload.assignToDepartmentId = this.bulkData.assignToDepartmentId;
+            if (assignmentNotes) {
+                assignmentPayload.assignmentNotes = assignmentNotes;
+            }
+        }
+
+        const createDtos: CreateAssetDto[] = formValue.items.map((item: any) => ({
             itemId: this.bulkData.itemId,
             batchNumber: this.bulkData.batchNumber,
             depotId: this.warehouseId,
@@ -209,7 +230,8 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
             warrantyExpiryDate: this.bulkData.warrantyExpiryDate || undefined,
             condition: this.bulkData.condition?.trim() || undefined,
             purchasePrice: this.bulkData.purchasePrice || undefined,
-            notes: this.bulkData.notes?.trim() || undefined
+            notes: this.bulkData.notes?.trim() || undefined,
+            ...assignmentPayload
         }));
 
         if (createDtos.length === 0) return;

@@ -65,6 +65,9 @@ export class ErrorHandler {
       }
       // Case: { message: "..." } - Standard message property
       if (typeof msg === 'string') return msg;
+      // Case: { Message: "..." } - Some API envelopes use PascalCase
+      const msgPascal = obj['Message'];
+      if (typeof msgPascal === 'string') return msgPascal;
       // Case: { errors: ["..."] } - Validation errors
       const errs = obj['errors'];
       if (errs) {

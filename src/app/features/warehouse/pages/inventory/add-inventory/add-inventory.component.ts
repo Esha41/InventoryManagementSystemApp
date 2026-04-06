@@ -106,6 +106,11 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     return `${name}${itemNo}`.trim();
   };
 
+  readonly readyForIssueOptions: DropdownOption<boolean>[] = [
+    { label: 'editInventoryDetail.readyForIssueYes', value: true },
+    { label: 'editInventoryDetail.readyForIssueNo', value: false }
+  ];
+
   loading = false;
   submitting = false;
   errorMessage: string | null = null;
@@ -182,6 +187,12 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
 
   get itemsFormArray(): FormArray {
     return this.inventoryForm.get('items') as FormArray;
+  }
+
+  private coerceReadyForIssue(value: unknown): boolean {
+    if (value === true || value === 'true') return true;
+    if (value === false || value === 'false') return false;
+    return true;
   }
 
   createItemFormGroup(): FormGroup {
@@ -497,7 +508,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
         originalQuantity: item.originalQuantity,
         batchNo: item.batchNo?.trim() || undefined,
         expiryDate: item.expiryDate || undefined,
-        readyForIssue: item.readyForIssue ?? true
+        readyForIssue: this.coerceReadyForIssue(item.readyForIssue)
       }))
     };
 

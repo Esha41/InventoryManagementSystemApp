@@ -69,13 +69,14 @@
     </div>
 
     <!-- Ready For Issue -->
-    <div class="flex items-center h-full">
-      <label class="flex items-center space-x-2 cursor-pointer">
-        <input type="checkbox" formControlName="readyForIssue"
-          class="w-4 h-4 text-[var(--color-brand)] border-[var(--color-border)] rounded focus:ring-[var(--color-brand)]">
-        <span class="text-sm font-medium text-[var(--color-text)]">{{ 'editInventoryDetail.readyForIssue' | translate
-          }}</span>
+    <div>
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'editInventoryDetail.readyForIssue' | translate }}
       </label>
+      <app-dropdown class="w-full" formControlName="readyForIssue" [options]="readyForIssueOptions"
+        [translateLabels]="true" [showSearch]="false" [placeholderSelectable]="false" [placeholderValue]="null"
+        placeholder="{{ 'editInventoryDetail.readyForIssue' | translate }}">
+      </app-dropdown>
     </div>
 
     <!-- Supplier -->
