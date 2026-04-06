@@ -21,6 +21,7 @@ import { BatchService } from '@services/batch.service';
 import { CardComponent } from '@components/card/card.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { EditInventoryDetailModalComponent } from './components/edit-inventory-detail-modal/edit-inventory-detail-modal.component';
+import { EditBatchModalComponent } from './edit-batch/edit-batch-modal.component';
 import { EditAssetModalComponent } from '@assets/pages/edit/components/edit-asset-modal/edit-asset-modal.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
@@ -62,6 +63,7 @@ import {
     CardComponent,
     ConfirmDialogComponent,
     EditInventoryDetailModalComponent,
+    EditBatchModalComponent,
     EditAssetModalComponent,
     PaginationComponent,
     RowsPerPageComponent,
@@ -177,6 +179,9 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   // Batch delete
   showDeleteBatchDialog = false;
   selectedBatch: BatchSummaryDto | null = null;
+
+  showEditBatchModal = false;
+  editBatchModalTarget: BatchSummaryDto | null = null;
 
   private destroy$ = new Subject<void>();
 
@@ -727,6 +732,10 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   getHccName = (detail: InventoryDetailDto) => this.formatterService.getHccName(detail);
   getAssetItemName = (asset: AssetDto | null | undefined) => this.formatterService.getAssetItemName(asset);
   getAssetItemNo = (asset: AssetDto) => this.formatterService.getAssetItemNo(asset);
+  getAssetDepartmentLabel = (asset: AssetDto) => this.formatterService.getAssetDepartmentLabel(asset);
+  getAssetCustodianLabel = (asset: AssetDto) => this.formatterService.getAssetCustodianLabel(asset);
+  formatAssetPurchasePrice = (price?: number | null) => this.formatterService.formatAssetPurchasePrice(price);
+  truncateAssetNotes = (asset: AssetDto) => this.formatterService.truncateText(asset.notes, 80);
   getAssetStatusLabel = (asset: AssetDto) => this.formatterService.getAssetStatusLabel(asset);
   formatDate = (date?: Date | string) => this.formatterService.formatDate(date);
   formatNumber = (num: number) => this.formatterService.formatNumber(num);
@@ -794,7 +803,48 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   }
 
   onEditBatch(batch: BatchSummaryDto): void {
-    this.router.navigate(['/warehouse', this.depoId, 'batches', batch.id, 'edit']);
+    this.editBatchModalTarget = batch;
+    this.showEditBatchModal = true;
+    this.cdr.markForCheck();
+  }
+
+  onEditBatchModalClose(): void {
+    this.showEditBatchModal = false;
+    this.editBatchModalTarget = null;
+    this.cdr.markForCheck();
+  }
+
+  onEditBatchModalSaved(): void {
+    this.refreshBatchSummariesAfterEdit();
+    this.onEditBatchModalClose();
+  }
+
+  private refreshBatchSummariesAfterEdit(): void {
+    this.batchService.getSummary(this.depoId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (batches) => {
+          this.batches = batches || [];
+          this.filteredBatches = this.applyBatchSearch(this.batches);
+          this.totalItems = this.filteredBatches.length;
+          this.validateCurrentPage();
+          const expandedId = this.expandedBatchId;
+          if (expandedId != null) {
+            this.batchService.getById(expandedId)
+              .pipe(takeUntil(this.destroy$))
+              .subscribe({
+                next: (fullBatch) => {
+                  this.expandedBatchAssets = fullBatch?.assets ?? [];
+                  this.cdr.markForCheck();
+                },
+                error: () => this.cdr.markForCheck()
+              });
+          } else {
+            this.cdr.markForCheck();
+          }
+        },
+        error: () => this.cdr.markForCheck()
+      });
   }
 
   onDeleteBatch(batch: BatchSummaryDto): void {
@@ -827,11 +877,10 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           );
           this.cdr.markForCheck();
         },
-        error: () => {
-          this.toastService.error(
-            this.translateService.instant('warehouseInventory.failedToDeleteBatch'),
-            this.translateService.instant('toast.error')
-          );
+        error: (err: unknown) => {
+          const fallback = this.translateService.instant('warehouseInventory.failedToDeleteBatch');
+          const msg = ErrorHandler.extractAndTranslateErrorMessage(err, fallback, this.translateService);
+          this.toastService.error(msg, this.translateService.instant('toast.error'));
           this.cdr.markForCheck();
         }
       });

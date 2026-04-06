@@ -1,0 +1,18 @@
+<app-modal [isOpen]="isOpen" [title]="modalTitle" size="xl" [bodyMaxHeight]="'min(78vh, 820px)'" (closed)="close()">
+  <app-edit-batch-form *ngIf="isOpen && batchId && warehouseId" [batchId]="batchId" [warehouseId]="warehouseId"
+    [showInlineActions]="false" [compactLoading]="true" (saved)="onFormSaved()" (cancelled)="onFormCancelled()">
+  </app-edit-batch-form>
+
+  <div modal-footer class="flex gap-3 justify-end w-full">
+    <app-button variant="outline" (clicked)="close()" [disabled]="saving">
+      {{ 'common.cancel' | translate }}
+    </app-button>
+    <app-button variant="primary" (clicked)="saveFromFooter()" [disabled]="saving">
+      <span class="inline-flex items-center gap-2">
+        <lucide-angular *ngIf="saving" [img]="Loader2" class="w-4 h-4 animate-spin"></lucide-angular>
+        <lucide-angular *ngIf="!saving" [img]="Save" class="w-4 h-4"></lucide-angular>
+        {{ saving ? ('editBatch.saving' | translate) : ('editBatch.saveAll' | translate) }}
+      </span>
+    </app-button>
+  </div>
+</app-modal>

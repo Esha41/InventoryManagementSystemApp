@@ -1,0 +1,16 @@
+/* Comfortable layout + match dropdown trigger height to cell inputs in the assets table */
+:host {
+  display: block;
+}
+
+.edit-batch-form ::ng-deep .edit-batch-table .app-dropdown .app-dropdown-trigger {
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  line-height: 1.4;
+  min-height: 2.875rem;
+}
+
+.edit-batch-form ::ng-deep .edit-batch-table .app-dropdown .app-dropdown-icon {
+  width: 1.125rem;
+  height: 1.125rem;
+}

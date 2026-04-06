@@ -91,6 +91,12 @@ export interface CreateAssetDto {
     purchasePrice?: number;
     deliveryReceipt?: string;
     notes?: string;
+    /** Optional: assign to this employee on intake (maps to backend AssignToEmployeeId). */
+    assignToEmployeeId?: number;
+    /** Optional: assign to this department on intake (maps to backend AssignToDepartmentId). */
+    assignToDepartmentId?: number;
+    /** Optional notes on the assignment when intake assignment is created. */
+    assignmentNotes?: string;
 }
 
 /**

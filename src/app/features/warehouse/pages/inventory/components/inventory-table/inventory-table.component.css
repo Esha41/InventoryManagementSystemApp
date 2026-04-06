@@ -1,2 +1,6 @@
-/* Component-specific styles if needed */
+/* Long text columns: wrap within cell width (avoids horizontal scroll). */
+.inv-table-cell-wrap {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
 

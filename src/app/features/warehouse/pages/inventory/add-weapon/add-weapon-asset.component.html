@@ -1,29 +1,27 @@
 <div class="page-wrapper">
-    <!-- Header -->
+    <!-- Header: back (start) · title (end / top-right in LTR) -->
     <div class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
         <div class="page-container py-4">
-            <div class="flex items-center space-x-4">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <button (click)="onCancel()"
-                    class="flex items-center space-x-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
+                    class="flex items-center gap-2 shrink-0 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors self-start">
                     <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
                     <span class="font-medium">{{ 'addWeaponAsset.backToInventory' | translate }}</span>
                 </button>
+                <div class="sm:text-end sm:max-w-2xl min-w-0">
+                    <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)] mb-2 break-words">
+                        {{ 'addWeaponAsset.titlePrefix' | translate }} {{ 'addWeaponAsset.titleTo' | translate }} {{ warehouseName }}
+                    </h1>
+                    <p class="text-sm text-[var(--color-text-muted)]">
+                        {{ 'addWeaponAsset.subtitle' | translate }}
+                    </p>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Main Content -->
-    <div class="page-container">
-        <!-- Page Title -->
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-[var(--color-text)] mb-2">
-                {{ 'addWeaponAsset.titlePrefix' | translate }} {{ 'addWeaponAsset.titleTo' | translate }} {{ warehouseName }}
-            </h1>
-            <p class="text-sm text-[var(--color-text-muted)]">
-                {{ 'addWeaponAsset.subtitle' | translate }}
-            </p>
-        </div>
-
+    <div class="page-container pt-6">
         <!-- Loading State -->
         <app-loading-state *ngIf="loading" size="lg" [fullPage]="true">
         </app-loading-state>
@@ -262,6 +260,67 @@
                                     {{ getFieldError('notes', i) }}
                                 </p>
                             </div>
+
+                            <!-- Assignment (optional): employee OR department, not both -->
+                            <div class="md:col-span-2 mt-4 mb-2">
+                                <h4
+                                    class="text-sm font-semibold text-[var(--color-text)] uppercase tracking-wide border-b border-[var(--color-border)] pb-2">
+                                    {{ 'addWeaponAsset.assignment.section' | translate }}
+                                </h4>
+                                <p class="text-xs text-[var(--color-text-muted)] mt-2">{{ 'addWeaponAsset.assignment.modeHint' | translate }}</p>
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                    {{ 'addWeaponAsset.assignment.assignType' | translate }}
+                                </label>
+                                <app-dropdown class="w-full" formControlName="assignMode"
+                                    [options]="assignModeDropdownOptions" optionValue="value"
+                                    [showSearch]="false"
+                                    (selectionChange)="onSingleAssignModeChange(i)"
+                                    placeholder="{{ 'addWeaponAsset.assignment.selectAssignType' | translate }}">
+                                </app-dropdown>
+                            </div>
+
+                            <div *ngIf="getAssetFormGroup(i).get('assignMode')?.value === 'department'" class="md:col-span-2">
+                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                    {{ 'addWeaponAsset.assignment.department' | translate }} <span class="text-[var(--color-error)]">*</span>
+                                </label>
+                                <app-dropdown class="w-full" formControlName="assignToDepartmentId"
+                                    [options]="departments" optionValue="id" [optionLabelFn]="departmentOptionLabel"
+                                    [placeholderSelectable]="false"
+                                    placeholder="{{ 'addWeaponAsset.assignment.selectDepartment' | translate }}">
+                                </app-dropdown>
+                            </div>
+
+                            <div *ngIf="getAssetFormGroup(i).get('assignMode')?.value === 'employee'" class="md:col-span-2">
+                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                    {{ 'addWeaponAsset.assignment.employee' | translate }} <span class="text-[var(--color-error)]">*</span>
+                                </label>
+                                <app-dropdown class="w-full" formControlName="assignToEmployeeId"
+                                    [options]="employeeDropdownOptions" optionValue="value"
+                                    [placeholderSelectable]="false"
+                                    [addActionLabel]="'addWeaponAsset.assignment.addEmployee' | translate"
+                                    (addActionClick)="openAddEmployeeModal()"
+                                    placeholder="{{ 'addWeaponAsset.assignment.selectEmployee' | translate }}">
+                                </app-dropdown>
+                            </div>
+
+                            <div *ngIf="getAssetFormGroup(i).get('assignMode')?.value !== 'none'" class="md:col-span-2">
+                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                    {{ 'addWeaponAsset.assignment.notes' | translate }}
+                                </label>
+                                <textarea formControlName="assignmentNotes" (input)="onFieldChange('assignmentNotes', i)" rows="2"
+                                    class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
+                                    [class.border-[var(--color-error)]]="isFieldInvalid('assignmentNotes', i)"
+                                    [placeholder]="'addWeaponAsset.assignment.notesPlaceholder' | translate"></textarea>
+                                <p *ngIf="isFieldInvalid('assignmentNotes', i)" class="mt-1 text-sm text-[var(--color-error)]">
+                                    {{ getFieldError('assignmentNotes', i) }}
+                                </p>
+                                <p class="mt-1 text-xs text-[var(--color-text-muted)]">
+                                    {{ 'addWeaponAsset.assignment.notesHint' | translate }}
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -470,6 +529,64 @@
                             class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
                             [placeholder]="'addWeaponAsset.notesPlaceholder' | translate"></textarea>
                     </div>
+
+                    <!-- Assignment (optional, applies to all items): employee OR department -->
+                    <div class="md:col-span-2 mt-4 mb-2">
+                        <h4
+                            class="text-sm font-semibold text-[var(--color-text)] uppercase tracking-wide border-b border-[var(--color-border)] pb-2">
+                            {{ 'addWeaponAsset.assignment.section' | translate }}
+                        </h4>
+                        <p class="text-xs text-[var(--color-text-muted)] mt-2">{{ 'addWeaponAsset.assignment.bulkModeHint' | translate }}</p>
+                        <p class="text-xs text-[var(--color-text-muted)]">{{ 'addWeaponAsset.assignment.modeHint' | translate }}</p>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                            {{ 'addWeaponAsset.assignment.assignType' | translate }}
+                        </label>
+                        <app-dropdown class="w-full" formControlName="assignMode"
+                            [options]="assignModeDropdownOptions" optionValue="value"
+                            [showSearch]="false"
+                            (selectionChange)="onBulkAssignModeChange()"
+                            placeholder="{{ 'addWeaponAsset.assignment.selectAssignType' | translate }}">
+                        </app-dropdown>
+                    </div>
+
+                    <div *ngIf="bulkForm.get('assignMode')?.value === 'department'" class="md:col-span-2">
+                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                            {{ 'addWeaponAsset.assignment.department' | translate }} <span class="text-[var(--color-error)]">*</span>
+                        </label>
+                        <app-dropdown class="w-full" formControlName="assignToDepartmentId"
+                            [options]="departments" optionValue="id" [optionLabelFn]="departmentOptionLabel"
+                            [placeholderSelectable]="false"
+                            placeholder="{{ 'addWeaponAsset.assignment.selectDepartment' | translate }}">
+                        </app-dropdown>
+                    </div>
+
+                    <div *ngIf="bulkForm.get('assignMode')?.value === 'employee'" class="md:col-span-2">
+                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                            {{ 'addWeaponAsset.assignment.employee' | translate }} <span class="text-[var(--color-error)]">*</span>
+                        </label>
+                        <app-dropdown class="w-full" formControlName="assignToEmployeeId"
+                            [options]="employeeDropdownOptions" optionValue="value"
+                            [placeholderSelectable]="false"
+                            [addActionLabel]="'addWeaponAsset.assignment.addEmployee' | translate"
+                            (addActionClick)="openAddEmployeeModal()"
+                            placeholder="{{ 'addWeaponAsset.assignment.selectEmployee' | translate }}">
+                        </app-dropdown>
+                    </div>
+
+                    <div *ngIf="bulkForm.get('assignMode')?.value !== 'none'" class="md:col-span-2">
+                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                            {{ 'addWeaponAsset.assignment.notes' | translate }}
+                        </label>
+                        <textarea formControlName="assignmentNotes" rows="2"
+                            class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
+                            [placeholder]="'addWeaponAsset.assignment.notesPlaceholder' | translate"></textarea>
+                        <p class="mt-1 text-xs text-[var(--color-text-muted)]">
+                            {{ 'addWeaponAsset.assignment.notesHint' | translate }}
+                        </p>
+                    </div>
                 </div>
             </div>
 
@@ -556,5 +673,9 @@
                 </button>
             </div>
         </form>
+
+        <app-employee-form-modal [isOpen]="isEmployeeModalOpen" mode="create"
+            (closed)="onEmployeeModalClosed()" (saved)="onEmployeeSaved()">
+        </app-employee-form-modal>
     </div>
 </div>

@@ -29,6 +29,10 @@ export class BatchTableComponent {
     @Input() getAssetItemNo: (asset: AssetDto) => string = () => '';
     @Input() getAssetStatusLabel: (asset: AssetDto) => string = () => '';
     @Input() formatDate: (date?: Date | string) => string = () => '';
+    @Input() getAssetDepartmentLabel: (asset: AssetDto) => string = () => '-';
+    @Input() getAssetCustodianLabel: (asset: AssetDto) => string = () => '-';
+    @Input() formatAssetPurchasePrice: (price?: number | null) => string = () => '-';
+    @Input() truncateAssetNotes: (asset: AssetDto) => string = () => '-';
 
     @Output() rowClick = new EventEmitter<BatchSummaryDto>();
     @Output() editBatch = new EventEmitter<BatchSummaryDto>();
