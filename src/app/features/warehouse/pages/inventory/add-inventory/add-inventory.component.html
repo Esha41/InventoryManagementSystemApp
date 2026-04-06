@@ -73,6 +73,18 @@
                 </p>
               </div>
 
+              <!-- Primary purpose (ammunition / explosive; options from selected catalog item primaryPurposes) -->
+              <div class="md:col-span-3" *ngIf="(activeTab === 'ammunition' || activeTab === 'explosive') && getPrimaryPurposeOptions(i).length > 0">
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                  {{ 'addInventory.primaryPurpose' | translate }}
+                </label>
+                <app-dropdown class="w-full" formControlName="primaryPurposId"
+                  (selectionChange)="onFieldChange('primaryPurposId', i)" [options]="getPrimaryPurposeOptions(i)"
+                  optionValue="id" [optionLabelFn]="primaryPurposeOptionLabel" [placeholderSelectable]="false"
+                  [placeholderValue]="null" placeholder="{{ 'addInventory.selectPrimaryPurpose' | translate }}">
+                </app-dropdown>
+              </div>
+
               <!-- Lot Number -->
               <div>
                 <label class="block text-sm font-medium text-[var(--color-text)] mb-2">

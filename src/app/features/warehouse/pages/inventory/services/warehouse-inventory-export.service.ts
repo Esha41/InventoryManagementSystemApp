@@ -62,7 +62,8 @@ export class WarehouseInventoryExportService {
     depoName: string,
     activeTab: 'ammunition' | 'explosive',
     getItemName: (detail: InventoryDetailDto) => string,
-    formatDate: (date?: Date | string) => string
+    formatDate: (date?: Date | string) => string,
+    getPrimaryPurposeName?: (detail: InventoryDetailDto) => string
   ): void {
     const columns: ExcelColumn[] = [
       {
@@ -84,7 +85,19 @@ export class WarehouseInventoryExportService {
         key: 'supplier',
         width: 20,
         format: (supplier) => getLocalizedName(supplier, getCurrentLang(this.translateService)) || '-'
-      },
+      }
+    ];
+
+    if ((activeTab === 'ammunition' || activeTab === 'explosive') && getPrimaryPurposeName) {
+      columns.push({
+        header: this.translateService.instant('warehouseInventory.primaryPurpose'),
+        key: 'primaryPurposeExport',
+        width: 22,
+        format: (value) => value ?? '-'
+      });
+    }
+
+    columns.push(
       {
         header: this.translateService.instant('warehouseInventory.lot'),
         key: 'lot',
@@ -122,16 +135,24 @@ export class WarehouseInventoryExportService {
         width: 15,
         format: (date) => formatDate(date)
       }
-    ];
+    );
 
     const fileName = `${depoName}_Inventory_${activeTab}`;
     const sheetName = activeTab.charAt(0).toUpperCase() + activeTab.slice(1);
+
+    const exportRows =
+      (activeTab === 'ammunition' || activeTab === 'explosive') && getPrimaryPurposeName
+        ? inventoryDetails.map(d => ({
+            ...d,
+            primaryPurposeExport: getPrimaryPurposeName(d)
+          }))
+        : inventoryDetails;
 
     this.excelExportService.exportToExcel({
       fileName: fileName,
       sheetName: sheetName,
       columns: columns,
-      data: inventoryDetails,
+      data: exportRows,
       includeTimestamp: true
     });
 

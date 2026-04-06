@@ -6,6 +6,7 @@ import { Subject, takeUntil, switchMap, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { LucideAngularModule } from 'lucide-angular';
 import { InventoryService, LotDetailDto } from '@services/inventory.service';
+import { WarehouseInventoryFormatterService } from '../services/warehouse-inventory-formatter.service';
 import { LookupService } from '@services/lookup.service';
 import { InventoryDetailDto, ItemType } from '@models/inventory.model';
 import { AssetDetailsComponent } from '@shared/components/asset-details/asset-details.component';
@@ -57,7 +58,8 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
     private translationService: TranslationService,
     private fileUploadService: FileUploadService,
     private http: HttpClient,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private warehouseInventoryFormatter: WarehouseInventoryFormatterService
   ) { }
 
   ngOnInit(): void {
@@ -336,6 +338,27 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
    */
   getCountryNameForLot(lot: LotDetailDto): string {
     return lot.country ? getLocalizedName(lot.country, getCurrentLang(this.translateService)) || '-' : '-';
+  }
+
+  /**
+   * Primary purpose for this lot row (current detail row uses loaded inventory detail; other lots use API fields).
+   */
+  getPrimaryPurposeForLot(lot: LotDetailDto): string {
+    if (this.inventoryDetail && lot.inventoryDetailId === this.inventoryDetail.id) {
+      return this.warehouseInventoryFormatter.getPrimaryPurposeName(this.inventoryDetail);
+    }
+    const lang = getCurrentLang(this.translateService);
+    if (lot.primaryPurpos) {
+      return getLocalizedName(lot.primaryPurpos, lang) || '-';
+    }
+    const id = lot.primaryPurposId;
+    if (id != null && lot.item?.primaryPurposes?.length) {
+      const match = lot.item.primaryPurposes.find(p => p.id === id);
+      if (match) {
+        return getLocalizedName(match, lang) || '-';
+      }
+    }
+    return '-';
   }
 
   /**

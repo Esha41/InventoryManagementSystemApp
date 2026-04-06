@@ -721,6 +721,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   getItemNo = (detail: InventoryDetailDto) => this.formatterService.getItemNo(detail);
   getSupplierName = (detail: InventoryDetailDto) => this.formatterService.getSupplierName(detail);
   getManufacturerName = (detail: InventoryDetailDto) => this.formatterService.getManufacturerName(detail);
+  getPrimaryPurposeName = (detail: InventoryDetailDto) => this.formatterService.getPrimaryPurposeName(detail);
   getHccName = (detail: InventoryDetailDto) => this.formatterService.getHccName(detail);
   getAssetItemName = (asset: AssetDto | null | undefined) => this.formatterService.getAssetItemName(asset);
   getAssetItemNo = (asset: AssetDto) => this.formatterService.getAssetItemNo(asset);
@@ -1093,7 +1094,10 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       this.depoName,
       this.activeTab,
       this.getItemName,
-      this.formatDate
+      this.formatDate,
+      this.activeTab === 'ammunition' || this.activeTab === 'explosive'
+        ? this.getPrimaryPurposeName
+        : undefined
     );
   }
 

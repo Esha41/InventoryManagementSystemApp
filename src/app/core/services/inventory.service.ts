@@ -321,5 +321,16 @@ export interface LotDetailDto {
     nameAr?: string;
     nameEn?: string;
   };
+  /** Lot-level selected purpose (when returned by API) */
+  primaryPurposId?: number;
+  primaryPurpos?: {
+    id: number;
+    nameAr: string;
+    nameEn: string;
+  };
+  /** Catalog purposes for resolving id when navigation is partial */
+  item?: {
+    primaryPurposes?: Array<{ id: number; nameAr: string; nameEn: string }>;
+  };
 }
 
