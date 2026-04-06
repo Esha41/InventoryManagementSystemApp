@@ -28,6 +28,7 @@ export interface BatchAssetUpdateItem {
     warrantyExpiryDate?: Date | string;
     condition?: string;
     purchasePrice?: number;
+    deliveryReceipt?: string;
     notes?: string;
     /** When true, apply assignee fields (or clear assignment if both IDs are empty). */
     updateAssignment?: boolean;

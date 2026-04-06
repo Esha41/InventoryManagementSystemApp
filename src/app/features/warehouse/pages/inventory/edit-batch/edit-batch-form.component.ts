@@ -16,7 +16,8 @@ import { Subject, takeUntil, forkJoin, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Save, Loader2, Trash2 } from 'lucide-angular';
-
+import { CardComponent } from '@components/card/card.component';
+import { AssetService } from '@services/asset.service';
 import { BatchService } from '@services/batch.service';
 import { EmployeeService } from '@services/employee.service';
 import { LookupService, LookupItem } from '@services/lookup.service';
@@ -24,12 +25,14 @@ import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { BatchDto, BulkUpdateBatchAssetsDto, BatchAssetUpdateItem } from '@models/batch.model';
 import { AssetDto, EmployeeDto } from '@models/asset.model';
+import { UpdateAssetDto } from '@models/asset.model';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { trackByIndex } from '@utils/trackby.utils';
 import { formatDateForInput } from '@utils/format.utils';
+import { FileUploadService, FileEntityType } from '@services/file-upload.service';
 
 export type BatchEditAssignMode = 'none' | 'department' | 'employee';
 
@@ -41,6 +44,7 @@ export type BatchEditAssignMode = 'none' | 'department' | 'employee';
     ReactiveFormsModule,
     TranslateModule,
     LucideAngularModule,
+    CardComponent,
     DropdownComponent,
     LoadingStateComponent,
     ErrorStateComponent
@@ -85,6 +89,11 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
 
   private removedAssetIds = new Set<number>();
   private destroy$ = new Subject<void>();
+  deliveryReceiptFiles: File[] = [];
+
+    get existingFiles() {
+        return this.batch?.assets?.[0]?.images || [];
+    }
 
   ngOnInit(): void {
     this.refreshAssignModeOptions();
@@ -101,6 +110,8 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
     private batchService: BatchService,
     private employeeService: EmployeeService,
     private lookupService: LookupService,
+    private fileUploadService: FileUploadService,
+    private assetService: AssetService,
     private toastService: ToastService,
     private translateService: TranslateService,
     private translationService: TranslationService,
@@ -163,6 +174,7 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
     const commonPurchaseDate = firstAsset?.purchaseDate ? this.formatDate(firstAsset.purchaseDate) : '';
     const commonWarrantyExpiry = firstAsset?.warrantyExpiryDate ? this.formatDate(firstAsset.warrantyExpiryDate) : '';
     const commonPurchasePrice = firstAsset?.purchasePrice ?? null;
+    const commonDeliveryReceipt = firstAsset?.deliveryReceipt ?? '';
 
     const groups = assets.map(asset => {
       const mode = this.inferAssignMode(asset);
@@ -186,7 +198,8 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
       commonInfo: this.fb.group({
         purchaseDate: [commonPurchaseDate],
         warrantyExpiryDate: [commonWarrantyExpiry],
-        purchasePrice: [commonPurchasePrice, Validators.min(0)]
+        purchasePrice: [commonPurchasePrice, Validators.min(0)],
+        deliveryReceipt: [commonDeliveryReceipt, Validators.maxLength(200)]
       }),
       assets: this.fb.array(groups)
     });
@@ -328,6 +341,7 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
     this.cdr.markForCheck();
 
     const common = this.batchForm.get('commonInfo')?.value ?? {};
+    const deliveryReceiptValue: string | undefined = (common.deliveryReceipt?.trim && common.deliveryReceipt.trim()) || undefined;
     const items: BatchAssetUpdateItem[] = (this.assetForms?.controls ?? []).map(control => {
       const val = control.value;
       const g = control as FormGroup;
@@ -356,6 +370,7 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
         warrantyExpiryDate: common.warrantyExpiryDate || undefined,
         condition: val.condition?.trim() || undefined,
         purchasePrice: common.purchasePrice,
+        deliveryReceipt: String(common.deliveryReceipt ?? '').trim() || undefined,
         notes: val.notes?.trim() || undefined,
         updateAssignment,
         assignToDepartmentId,
@@ -387,11 +402,29 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
         }
         return this.batchService.bulkUpdateAssets(this.batchId, dto);
       }),
+      switchMap(() => {
+        // If delivery receipt or files are provided, update each asset using Asset update (multipart/form-data)
+        if (!deliveryReceiptValue && (!this.deliveryReceiptFiles || !this.deliveryReceiptFiles.length)) {
+            return of(true);
+        }
+
+        const updates = (this.assetForms?.controls ?? []).map(control => {
+            const val = control.value;
+            const updateDto: UpdateAssetDto = {
+                itemId: val.itemId,
+                deliveryReceipt: deliveryReceiptValue
+            };
+            return this.assetService.update(val.assetId, updateDto, this.deliveryReceiptFiles.length ? this.deliveryReceiptFiles : undefined);
+        });
+
+        return updates.length ? forkJoin(updates).pipe(switchMap(() => of(true))) : of(true);
+    }),
       takeUntil(this.destroy$)
     ).subscribe({
       next: () => {
         this.saving = false;
         this.removedAssetIds.clear();
+        this.deliveryReceiptFiles = [];
         this.cdr.markForCheck();
         this.toastService.success(
           this.translateService.instant('editBatch.saveSuccess'),
@@ -408,6 +441,56 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
       }
     });
   }
+  onAttachmentChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const newlySelected = input.files ? Array.from(input.files) : [];
+    if (newlySelected.length) {
+        const combined = [...this.deliveryReceiptFiles, ...newlySelected];
+        const seen = new Set<string>();
+        this.deliveryReceiptFiles = combined.filter(f => {
+            const key = `${f.name}::${f.size}::${(f as any).lastModified ?? 0}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+    }
+}
+
+removeAttachment(index: number): void {
+    if (index >= 0 && index < this.deliveryReceiptFiles.length) {
+        this.deliveryReceiptFiles.splice(index, 1);
+    }
+}
+
+getFileSize(file: File): string {
+    const bytes = file.size;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    if (bytes === 0) return '0 Bytes';
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    const value = (bytes / Math.pow(1024, i)).toFixed(2);
+    return `${value} ${sizes[i]}`;
+}
+
+openExistingFile(fileId: number): void {
+    // Same approach as Edit Inventory modal:
+    // use FileUploadService.getFileBlob() so AuthInterceptor attaches JWT,
+    // then open blob in a new tab.
+    this.fileUploadService.getFileBlob(fileId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+            next: (blob: Blob) => {
+                const objectUrl = window.URL.createObjectURL(blob);
+                window.open(objectUrl, '_blank', 'noopener');
+                setTimeout(() => window.URL.revokeObjectURL(objectUrl), 60_000);
+            },
+            error: () => {
+                this.toastService.error(
+                    this.translateService.instant('common.failedToLoadFile') || 'Failed to open file',
+                    this.translateService.instant('toast.error')
+                );
+            }
+        });
+}
 
   onCancel(): void {
     this.cancelled.emit();
