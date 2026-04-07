@@ -16,7 +16,6 @@ import { Subject, takeUntil, forkJoin, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Save, Loader2, Trash2 } from 'lucide-angular';
-import { CardComponent } from '@components/card/card.component';
 import { BatchService } from '@services/batch.service';
 import { EmployeeService } from '@services/employee.service';
 import { LookupService, LookupItem } from '@services/lookup.service';
@@ -45,7 +44,6 @@ export type BatchEditAssignMode = 'none' | 'department' | 'employee';
     ReactiveFormsModule,
     TranslateModule,
     LucideAngularModule,
-    CardComponent,
     DropdownComponent,
     LoadingStateComponent,
     ErrorStateComponent,
