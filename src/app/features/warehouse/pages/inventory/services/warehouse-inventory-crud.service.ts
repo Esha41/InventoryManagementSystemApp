@@ -74,7 +74,8 @@ export class WarehouseInventoryCrudService {
         originalQuantity: d.originalQuantity,
         batchNo: d.batchNo,
         expiryDate: d.expiryDate,
-        readyForIssue: d.readyForIssue ?? true
+        readyForIssue: d.readyForIssue ?? true,
+        primaryPurposId: d.primaryPurposId
       }
     );
 
@@ -163,7 +164,8 @@ export class WarehouseInventoryCrudService {
                 originalQuantity: d.originalQuantity,
                 batchNo: d.batchNo,
                 expiryDate: d.expiryDate,
-                readyForIssue: d.readyForIssue ?? true
+                readyForIssue: d.readyForIssue ?? true,
+                primaryPurposId: d.primaryPurposId
               }))
             };
 

@@ -161,6 +161,8 @@ export interface UpdateInventoryDetailDto {
   batchNo?: string;
   expiryDate?: Date | string;
   readyForIssue?: boolean;
+  /** Must be one of the catalog item's primaryPurposes when applicable (ammunition / explosive) */
+  primaryPurposId?: number;
 }
 
 export interface ItemInventorySummaryDto {
