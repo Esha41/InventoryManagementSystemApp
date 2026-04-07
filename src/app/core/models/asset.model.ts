@@ -100,6 +100,18 @@ export interface CreateAssetDto {
 }
 
 /**
+ * Bulk create assets from a template (common info + quantity)
+ */
+export interface CreateBulkAssetsFromTemplateDto extends CreateAssetDto {
+    quantity: number;
+}
+
+export interface BulkCreateFromTemplateResultDto {
+    createdCount: number;
+    firstAssetId?: number;
+}
+
+/**
  * Update Asset DTO
  */
 export interface UpdateAssetDto {

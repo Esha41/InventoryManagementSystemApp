@@ -15,7 +15,7 @@ import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 
 // Models
-import { CreateAssetDto, EmployeeDto } from '@models/asset.model';
+import { CreateAssetDto, EmployeeDto, CreateBulkAssetsFromTemplateDto } from '@models/asset.model';
 import { WeaponDto } from '@models/weapon.model';
 
 // Components
@@ -108,8 +108,15 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
         return this.isRTL ? ArrowRight : ArrowLeft;
     }
 
+    readonly maxQuantityForFillIdentifiers = 100;
+
     get assetsFormArray(): FormArray {
         return this.assetForm.get('assets') as FormArray;
+    }
+
+    get isBulkFillIdentifiersDisabled(): boolean {
+        const qty = this.bulkForm?.get('quantity')?.value;
+        return qty != null && qty > this.maxQuantityForFillIdentifiers;
     }
 
     ngOnInit(): void {
@@ -152,9 +159,8 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
         this.bulkForm = this.fb.group({
             itemId: [null, Validators.required],
             batchNumber: ['', [Validators.required, Validators.maxLength(500)]],
-            quantity: [null as number | null, [Validators.required, Validators.min(1), Validators.max(5000)]],
-            fillIdentifiers: [false], // Checkbox for filling RFID/Serial numbers
-            // Common
+            quantity: [null as number | null, [Validators.required, Validators.min(1), Validators.max(50000)]],
+            fillIdentifiers: [false],
             purchaseDate: [''],
             warrantyExpiryDate: [''],
             condition: ['', [Validators.maxLength(100)]],
@@ -167,6 +173,18 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
             deliveryReceipt: ['', [Validators.maxLength(200)]]
         });
         this.refreshAssignModeOptions();
+
+        this.bulkForm.get('quantity')!.valueChanges
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(qty => {
+                const ctrl = this.bulkForm.get('fillIdentifiers')!;
+                if (qty != null && qty > this.maxQuantityForFillIdentifiers) {
+                    ctrl.setValue(false, { emitEvent: false });
+                    ctrl.disable({ emitEvent: false });
+                } else {
+                    ctrl.enable({ emitEvent: false });
+                }
+            });
     }
 
     private refreshAssignModeOptions(): void {
@@ -429,7 +447,7 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
     }
 
     /** Department shown for intake when user assigns to an employee (always the employee's own department). */
-    /** Backend requires assignable employee records; surface a simple message without emphasizing “department”. */
+    /** Backend requires assignable employee records; surface a simple message without emphasizing "department". */
     selectedEmployeeCannotAssign(employeeId: number | null | undefined): boolean {
         if (employeeId == null || employeeId <= 0) return false;
         const emp = this.employees.find(e => e.id === employeeId);
@@ -479,126 +497,160 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
             }
 
             // If fillIdentifiers is checked, navigate to the bulk entry page
-            if (this.bulkForm.value.fillIdentifiers) {
+            if (this.bulkForm.getRawValue().fillIdentifiers) {
                 this.navigateToBulkEntry();
                 return;
             }
         }
 
-        let createDtos: CreateAssetDto[] = [];
         if (this.inputMode === 'single') {
-            const formValue = this.assetForm.value;
-            createDtos = formValue.assets.map((asset: any) => ({
-                itemId: asset.itemId,
-                batchNumber: asset.batchNumber?.trim(),
-                depotId: this.warehouseId,
-                serialNumber: asset.serialNumber?.trim() || undefined,
-                rfid: asset.rfid?.trim() || undefined,
-                assetTag: asset.assetTag?.trim() || undefined,
-                purchaseDate: asset.purchaseDate || undefined,
-                warrantyExpiryDate: asset.warrantyExpiryDate || undefined,
-                condition: asset.condition?.trim() || undefined,
-                purchasePrice: asset.purchasePrice || undefined,
-                deliveryReceipt: (formValue.deliveryReceipt?.trim && formValue.deliveryReceipt.trim()) || undefined,
-                notes: asset.notes?.trim() || undefined,
-                ...this.buildAssignmentFields(
-                    asset.assignMode ?? 'none',
-                    asset.assignToEmployeeId,
-                    asset.assignToDepartmentId,
-                    asset.assignmentNotes
-                )
-            }));
-        } else {
-            createDtos = this.generateBulkDtos();
+            this.submitSingleMode();
+            return;
         }
+
+        if (this.deliveryReceiptFiles.length > 0) {
+            this.submitBulkMultipart();
+        } else {
+            this.submitBulkFromTemplate();
+        }
+    }
+
+    private submitSingleMode(): void {
+        const formValue = this.assetForm.value;
+        const createDtos: CreateAssetDto[] = formValue.assets.map((asset: any) => ({
+            itemId: asset.itemId,
+            batchNumber: asset.batchNumber?.trim(),
+            depotId: this.warehouseId,
+            serialNumber: asset.serialNumber?.trim() || undefined,
+            rfid: asset.rfid?.trim() || undefined,
+            assetTag: asset.assetTag?.trim() || undefined,
+            purchaseDate: asset.purchaseDate || undefined,
+            warrantyExpiryDate: asset.warrantyExpiryDate || undefined,
+            condition: asset.condition?.trim() || undefined,
+            purchasePrice: asset.purchasePrice || undefined,
+            deliveryReceipt: (formValue.deliveryReceipt?.trim && formValue.deliveryReceipt.trim()) || undefined,
+            notes: asset.notes?.trim() || undefined,
+            ...this.buildAssignmentFields(
+                asset.assignMode ?? 'none',
+                asset.assignToEmployeeId,
+                asset.assignToDepartmentId,
+                asset.assignmentNotes
+            )
+        }));
 
         if (createDtos.length === 0) return;
 
+        this.submitting = true;
+        this.isProcessingBulk = false;
+        this.errorMessage = null;
+        this.cdr.markForCheck();
+
+        const first = createDtos[0];
+        this.assetService.create(first, this.deliveryReceiptFiles)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: () => this.onSubmitSuccess(),
+                error: (error: unknown) => this.onSubmitError(error)
+            });
+    }
+
+    /** Bulk create with delivery receipt files (multipart); expands quantity to DTO rows. */
+    private submitBulkMultipart(): void {
+        const createDtos = this.generateBulkDtos();
+        if (createDtos.length === 0) return;
 
         this.submitting = true;
-        this.isProcessingBulk = this.inputMode === 'bulk';
+        this.isProcessingBulk = true;
         this.bulkProgress = { current: 0, total: createDtos.length };
         this.errorMessage = null;
         this.cdr.markForCheck();
 
-        // Submit
-        if (this.inputMode === 'single') {
-            const first = createDtos[0];
-            this.assetService.create(first, this.deliveryReceiptFiles)
-                .pipe(takeUntil(this.destroy$))
-                .subscribe({
-                    next: () => {
-                        this.submitting = false;
-                        this.isProcessingBulk = false;
-                        this.cdr.markForCheck();
-
-                        this.translateService.get(['toast.success', 'addWeaponAsset.successMessage']).subscribe(translations => {
-                            const message = translations['addWeaponAsset.successMessage'] || 'Weapon assets created successfully!';
-                            const title = translations['toast.success'];
-                            this.toastService.success(message, title);
-                        });
-
-                        setTimeout(() => {
-                            this.router.navigate(['/warehouse', this.warehouseId, 'inventory'], {
-                                queryParams: { tab: 'weapon' },
-                                queryParamsHandling: 'merge'
-                            });
-                        }, 500);
-                    },
-                    error: (error: unknown) => {
-                        const fallbackMessage = this.translateService.instant('addWeaponAsset.createError');
-                        const errorMsg = ErrorHandler.extractErrorMessage(error, fallbackMessage);
-                        this.errorMessage = errorMsg;
-                        this.submitting = false;
-                        this.isProcessingBulk = false;
-                        this.cdr.markForCheck();
-
-                        this.translateService.get(['toast.error']).subscribe(translations => {
-                            this.toastService.error(errorMsg, translations['toast.error']);
-                        });
-                    }
-                });
-            return;
-        }
-
-        // Bulk mode: always call Bulk (multipart) with files (possibly empty)
-        const bulk$ = this.assetService.createBulk(createDtos, this.deliveryReceiptFiles);
-
-        bulk$
+        this.assetService.createBulk(createDtos, this.deliveryReceiptFiles)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
-                next: (ids: number[]) => {
-                    this.submitting = false;
-                    this.isProcessingBulk = false;
+                next: () => {
                     this.bulkProgress = { current: createDtos.length, total: createDtos.length };
-                    this.cdr.markForCheck();
-
-                    this.translateService.get(['toast.success', 'addWeaponAsset.successMessage']).subscribe(translations => {
-                        const message = translations['addWeaponAsset.successMessage'] || 'Weapon assets created successfully!';
-                        const title = translations['toast.success'];
-                        this.toastService.success(message, title);
-                    });
-                    // Redirect after a short delay - return to weapons tab
-                    setTimeout(() => {
-                        this.router.navigate(['/warehouse', this.warehouseId, 'inventory'], {
-                            queryParams: { tab: 'weapon' },
-                            queryParamsHandling: 'merge'
-                        });
-                    }, 500);
+                    this.isProcessingBulk = false;
+                    this.onSubmitSuccess();
                 },
                 error: (error: unknown) => {
-                    const fallbackMessage = this.translateService.instant('addWeaponAsset.createError');
-                    const errorMsg = ErrorHandler.extractErrorMessage(error, fallbackMessage);
-                    this.errorMessage = errorMsg;
-                    this.submitting = false;
                     this.isProcessingBulk = false;
-                    this.cdr.markForCheck();
-
-                    this.translateService.get(['toast.error']).subscribe(translations => {
-                        this.toastService.error(errorMsg, translations['toast.error']);
-                    });
+                    this.onSubmitError(error);
                 }
             });
+    }
+
+    private submitBulkFromTemplate(): void {
+        const val = this.bulkForm.getRawValue();
+        const assignment = this.buildAssignmentFields(
+            val.assignMode ?? 'none',
+            val.assignToEmployeeId,
+            val.assignToDepartmentId,
+            val.assignmentNotes
+        );
+        const dto: CreateBulkAssetsFromTemplateDto = {
+            itemId: val.itemId,
+            batchNumber: val.batchNumber?.trim(),
+            depotId: this.warehouseId,
+            quantity: val.quantity,
+            purchaseDate: val.purchaseDate || undefined,
+            warrantyExpiryDate: val.warrantyExpiryDate || undefined,
+            condition: val.condition?.trim() || undefined,
+            purchasePrice: val.purchasePrice || undefined,
+            notes: val.notes?.trim() || undefined,
+            deliveryReceipt: val.deliveryReceipt?.trim() || undefined,
+            ...assignment
+        };
+
+        this.submitting = true;
+        this.isProcessingBulk = true;
+        this.bulkProgress = { current: 0, total: dto.quantity };
+        this.errorMessage = null;
+        this.cdr.markForCheck();
+
+        this.assetService.createBulkFromTemplate(dto)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (result) => {
+                    this.bulkProgress = { current: result.createdCount, total: dto.quantity };
+                    this.isProcessingBulk = false;
+                    this.onSubmitSuccess();
+                },
+                error: (error: unknown) => {
+                    this.isProcessingBulk = false;
+                    this.onSubmitError(error);
+                }
+            });
+    }
+
+    private onSubmitSuccess(): void {
+        this.submitting = false;
+        this.cdr.markForCheck();
+
+        this.translateService.get(['toast.success', 'addWeaponAsset.successMessage']).subscribe(translations => {
+            const message = translations['addWeaponAsset.successMessage'] || 'Weapon assets created successfully!';
+            const title = translations['toast.success'];
+            this.toastService.success(message, title);
+        });
+
+        setTimeout(() => {
+            this.router.navigate(['/warehouse', this.warehouseId, 'inventory'], {
+                queryParams: { tab: 'weapon' },
+                queryParamsHandling: 'merge'
+            });
+        }, 500);
+    }
+
+    private onSubmitError(error: unknown): void {
+        const fallbackMessage = this.translateService.instant('addWeaponAsset.createError');
+        const errorMsg = ErrorHandler.extractErrorMessage(error, fallbackMessage);
+        this.errorMessage = errorMsg;
+        this.submitting = false;
+        this.cdr.markForCheck();
+
+        this.translateService.get(['toast.error']).subscribe(translations => {
+            this.toastService.error(errorMsg, translations['toast.error']);
+        });
     }
 
     onAttachmentChange(event: Event): void {
@@ -658,7 +710,7 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
     }
 
     get shouldShowNextButton(): boolean {
-        return this.inputMode === 'bulk' && this.bulkForm.get('fillIdentifiers')?.value === true;
+        return this.inputMode === 'bulk' && !!this.bulkForm.getRawValue().fillIdentifiers;
     }
 
     private generateBulkDtos(): CreateAssetDto[] {

@@ -74,6 +74,7 @@
             "quantity": "Quantity",
             "fillIdentifiers": "Fill RFID/Serial Numbers",
             "fillIdentifiersDescription": "Enable this option to fill serial numbers and RFID tags for each item individually on the next page",
+            "fillIdentifiersDisabledReason": "Assets will be created without serial numbers. Per-item serial/RFID entry is only available for quantities up to {{max}}.",
             "generationType": "Serial Number Strategy",
             "types": {
                 "none": "No Serial Numbers",
