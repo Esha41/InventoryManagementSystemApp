@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRe
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
 import { CardComponent } from '@components/card/card.component';
-import { LucideAngularModule, Plus, Edit, Trash2 } from 'lucide-angular';
+import { LucideAngularModule, Plus, Edit, Trash2, Download, Upload } from 'lucide-angular';
 import { LookupItem, LookupTableConfig, CreateUpdateLookupDto } from '@models/lookup.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
@@ -14,9 +14,15 @@ import { LookupFormModalComponent } from '@components/lookup-form-modal/lookup-f
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { PaginationComponent, RowsPerPageComponent } from '@components/index';
 import { EmployeeFormModalComponent } from '@components/employee-form-modal/employee-form-modal.component';
+import { ImportDialogComponent } from '@components/import-dialog/import-dialog.component';
+import { ImportPreviewDialogComponent, PreviewData } from '@components/import-preview-dialog/import-preview-dialog.component';
 import { EmployeeDto } from '@core/models/asset.model';
 import { EmployeeService } from '@services/employee.service';
 import { BackendAuthService } from '@services/backend-auth.service';
+import { ImportExportService } from '@services/import-export.service';
+import { mapImportResultToPreviewData } from '@core/utils/asset-master-import-preview.utils';
+import { APIOperationResponse } from '@models/api-response.model';
+import { ImportResult } from '@models/import-result.model';
 
 /**
  * Lookup Management Component
@@ -37,7 +43,9 @@ import { BackendAuthService } from '@services/backend-auth.service';
     ConfirmDialogComponent,
     PaginationComponent,
     RowsPerPageComponent,
-    EmployeeFormModalComponent
+    EmployeeFormModalComponent,
+    ImportDialogComponent,
+    ImportPreviewDialogComponent
   ],
   templateUrl: './lookup-management.component.html',
   styleUrls: ['./lookup-management.component.css'],
@@ -47,6 +55,8 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
   readonly Plus = Plus;
   readonly Edit = Edit;
   readonly Trash2 = Trash2;
+  readonly Download = Download;
+  readonly Upload = Upload;
 
   lookupTables: LookupTableConfig[] = [];
   selectedTable?: LookupTableConfig;
@@ -71,6 +81,13 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
   employeeModalMode: 'create' | 'edit' = 'create';
   selectedEmployee?: EmployeeDto | null;
 
+  // Employee import/export state
+  showImportModal = false;
+  showPreviewModal = false;
+  previewData: PreviewData | null = null;
+  pendingImportFile: File | null = null;
+  isImportInProgress = false;
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -79,7 +96,8 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
     private translateService: TranslateService,
     private cdr: ChangeDetectorRef,
     private employeeService: EmployeeService,
-    private authService: BackendAuthService
+    private authService: BackendAuthService,
+    private importExportService: ImportExportService
   ) { }
 
   ngOnInit(): void {
@@ -413,5 +431,143 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
     this.selectedEmployee = null;
     this.cdr.markForCheck();
     this.loadLookupItems();
+  }
+
+  // --- Employee Import / Export ---
+
+  get isEmployeeTable(): boolean {
+    return this.selectedTable?.name === 'Employee';
+  }
+
+  onDownloadTemplate(): void {
+    const lang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+    this.employeeService.generateImportTemplate(lang)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (blob: Blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'Employee_Import_Template.xlsx';
+          link.click();
+          window.URL.revokeObjectURL(url);
+          this.toastService.success('Template downloaded');
+          this.cdr.markForCheck();
+        },
+        error: (err: unknown) => {
+          this.toastService.error(ErrorHandler.extractErrorMessage(err, 'Failed to download template'));
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  onExportEmployees(): void {
+    const lang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+    this.employeeService.exportEmployees(lang)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (blob: Blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `Employees_${new Date().toISOString().slice(0, 10)}.xlsx`;
+          link.click();
+          window.URL.revokeObjectURL(url);
+          this.toastService.success('Export downloaded');
+          this.cdr.markForCheck();
+        },
+        error: (err: unknown) => {
+          this.toastService.error(ErrorHandler.extractErrorMessage(err, 'Export failed'));
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  onOpenImport(): void {
+    this.pendingImportFile = null;
+    this.previewData = null;
+    this.showImportModal = true;
+    this.cdr.markForCheck();
+  }
+
+  onImportDialogClose(): void {
+    this.showImportModal = false;
+    this.pendingImportFile = null;
+    this.cdr.markForCheck();
+  }
+
+  onImportPreview(file: File): void {
+    this.showImportModal = false;
+    this.pendingImportFile = file;
+    this.isImportInProgress = true;
+    this.cdr.markForCheck();
+
+    const lang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+    this.employeeService.importPreview(file, lang)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: APIOperationResponse<ImportResult>) => {
+          this.isImportInProgress = false;
+          if (!res?.succeeded || !res.data) {
+            this.toastService.error(res?.message || 'Preview failed');
+            this.cdr.markForCheck();
+            return;
+          }
+          const preview = mapImportResultToPreviewData(res.data);
+          if (preview) {
+            this.previewData = preview;
+            this.showPreviewModal = true;
+          }
+          this.cdr.markForCheck();
+        },
+        error: (err: unknown) => {
+          this.isImportInProgress = false;
+          this.toastService.error(ErrorHandler.extractErrorMessage(err, 'Preview failed'));
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  onPreviewConfirmed(): void {
+    if (!this.pendingImportFile) return;
+    this.showPreviewModal = false;
+    this.isImportInProgress = true;
+    this.cdr.markForCheck();
+
+    const lang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+    this.employeeService.importData(this.pendingImportFile, lang)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: APIOperationResponse<ImportResult>) => {
+          this.isImportInProgress = false;
+          this.pendingImportFile = null;
+          this.previewData = null;
+          if (res?.succeeded && res.data) {
+            this.importExportService.handleImportResult({
+              successCount: res.data.successCount ?? 0,
+              failureCount: res.data.failureCount ?? 0,
+              errors: res.data.errors,
+              message: res.message
+            });
+            this.loadLookupItems();
+          } else {
+            this.toastService.error(res?.message || 'Import failed');
+          }
+          this.cdr.markForCheck();
+        },
+        error: (err: unknown) => {
+          this.isImportInProgress = false;
+          this.pendingImportFile = null;
+          this.toastService.error(ErrorHandler.extractErrorMessage(err, 'Import failed'));
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  onPreviewCancelled(): void {
+    this.showPreviewModal = false;
+    this.previewData = null;
+    this.pendingImportFile = null;
+    this.cdr.markForCheck();
   }
 }

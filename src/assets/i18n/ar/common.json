@@ -73,6 +73,7 @@
     "exportError": "فشل تصدير البيانات",
     "exporting": "جاري التصدير...",
     "import": "استيراد",
+    "export": "تصدير",
     "importData": "استيراد البيانات",
     "downloadTemplate": "تحميل النموذج",
     "selectFile": "اختر ملف",
@@ -151,6 +152,7 @@
   },
   "importDialog": {
     "description": "قم بتحميل ملف Excel لاستيراد بيانات {{entityName}}. يرجى التأكد من أن ملفك يتبع التنسيق المطلوب.",
+    "requiredFieldLegend": "يشير إلى الأعمدة المطلوبة في النموذج (الاسم بالإنجليزية، الرقم العسكري، القسم، الرتبة).",
     "clickToUpload": "انقر للتحميل أو اسحب وأفلت",
     "xlsxOnly": "ملفات XLSX فقط",
     "exporting": "جاري التصدير...",
@@ -184,7 +186,13 @@
     "batchExcelPreviewHint": "أسلحة الدفعة: تخفي هذه المعاينة المعرّفات الداخلية؛ ملف Excel لا يزال يتضمن _AssetId / _ItemId المخفية. الصفوف ذات الإجراء «تحديث» تعدّل أصلًا موجودًا (أبقِ _AssetId من التصدير، أو طابق رقم التسلسل مع أصل في الدفعة). الصفوف ذات الإجراء «إنشاء» تضيف أصلًا جديدًا: أظهر العمود A واحذف قيمة _AssetId لتلك الأسطر (يمكن ترك التسلسل فارغًا). إذا كان «تحديث التخصيص» نعم، املأ عمود الوحدة أو عمود الموظف فقط—لا الاثنين معًا.",
     "batchImportActionColumn": "الإجراء",
     "batchImportActionCreate": "إنشاء",
-    "batchImportActionUpdate": "تحديث"
+    "batchImportActionUpdate": "تحديث",
+    "partialImportBannerTitle": "تم اكتشاف صفوف غير صحيحة",
+    "partialImportBannerMessage": "{{count}} صف يحتوي على أخطاء وسيتم تخطيه. يمكنك تحميل تقرير الأخطاء قبل المتابعة.",
+    "partialImportFooterHint": "سيتم استيراد {{validCount}} صف صحيح، وتخطي {{invalidCount}} صف غير صحيح",
+    "partialImportConfirmTitle": "المتابعة بالاستيراد الجزئي؟",
+    "partialImportConfirmMessage": "سيتم استيراد {{validCount}} صف صحيح. سيتم تخطي {{invalidCount}} صف غير صحيح.",
+    "partialImportConfirmDescription": "تأكد من تحميل تقرير الأخطاء للصفوف غير الصحيحة قبل المتابعة."
   },
   "nav": {
     "dashboard": "لوحة التحكم",
