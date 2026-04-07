@@ -83,8 +83,12 @@ export class BatchService {
         return this.apiService.put<boolean>(`${this.basePath}/${batchId}`, dto);
     }
 
-    bulkUpdateAssets(batchId: number, dto: BulkUpdateBatchAssetsDto): Observable<boolean> {
-        return this.apiService.put<boolean>(`${this.basePath}/${batchId}/assets`, dto);
+    bulkUpdateAssets(batchId: number, dto: BulkUpdateBatchAssetsDto, files?: File[]): Observable<boolean> {
+        // Always send multipart/form-data to keep the API consistent with other endpoints (Asset bulk, Inventory update).
+        const formData = new FormData();
+        formData.append('dtoJson', JSON.stringify(dto));
+        (files || []).forEach(f => formData.append('files', f));
+        return this.apiService.put<boolean>(`${this.basePath}/${batchId}/assets`, formData);
     }
 
     delete(id: number): Observable<void> {

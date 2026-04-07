@@ -17,7 +17,6 @@ import { switchMap } from 'rxjs/operators';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Save, Loader2, Trash2 } from 'lucide-angular';
 import { CardComponent } from '@components/card/card.component';
-import { AssetService } from '@services/asset.service';
 import { BatchService } from '@services/batch.service';
 import { EmployeeService } from '@services/employee.service';
 import { LookupService, LookupItem } from '@services/lookup.service';
@@ -25,14 +24,13 @@ import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { BatchDto, BulkUpdateBatchAssetsDto, BatchAssetUpdateItem } from '@models/batch.model';
 import { AssetDto, EmployeeDto } from '@models/asset.model';
-import { UpdateAssetDto } from '@models/asset.model';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { trackByIndex } from '@utils/trackby.utils';
 import { formatDateForInput } from '@utils/format.utils';
-import { FileUploadService, FileEntityType } from '@services/file-upload.service';
+import { FileUploadService } from '@services/file-upload.service';
 
 export type BatchEditAssignMode = 'none' | 'department' | 'employee';
 
@@ -111,7 +109,6 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
     private employeeService: EmployeeService,
     private lookupService: LookupService,
     private fileUploadService: FileUploadService,
-    private assetService: AssetService,
     private toastService: ToastService,
     private translateService: TranslateService,
     private translationService: TranslationService,
@@ -341,7 +338,6 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
     this.cdr.markForCheck();
 
     const common = this.batchForm.get('commonInfo')?.value ?? {};
-    const deliveryReceiptValue: string | undefined = (common.deliveryReceipt?.trim && common.deliveryReceipt.trim()) || undefined;
     const items: BatchAssetUpdateItem[] = (this.assetForms?.controls ?? []).map(control => {
       const val = control.value;
       const g = control as FormGroup;
@@ -400,25 +396,8 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
         if (failed) {
           throw new Error('Failed to remove some assets');
         }
-        return this.batchService.bulkUpdateAssets(this.batchId, dto);
+        return this.batchService.bulkUpdateAssets(this.batchId, dto, this.deliveryReceiptFiles);
       }),
-      switchMap(() => {
-        // If delivery receipt or files are provided, update each asset using Asset update (multipart/form-data)
-        if (!deliveryReceiptValue && (!this.deliveryReceiptFiles || !this.deliveryReceiptFiles.length)) {
-            return of(true);
-        }
-
-        const updates = (this.assetForms?.controls ?? []).map(control => {
-            const val = control.value;
-            const updateDto: UpdateAssetDto = {
-                itemId: val.itemId,
-                deliveryReceipt: deliveryReceiptValue
-            };
-            return this.assetService.update(val.assetId, updateDto, this.deliveryReceiptFiles.length ? this.deliveryReceiptFiles : undefined);
-        });
-
-        return updates.length ? forkJoin(updates).pipe(switchMap(() => of(true))) : of(true);
-    }),
       takeUntil(this.destroy$)
     ).subscribe({
       next: () => {
