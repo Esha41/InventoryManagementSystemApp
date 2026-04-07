@@ -60,12 +60,10 @@
     </div>
   </div>
 
-  <app-card [shadow]="true" [padding]="false" class="mb-0" *ngIf="batchForm">
-    <div class="p-4 md:p-6">
-      <h2 class="text-lg font-semibold text-[var(--color-text)] mb-4">
-        {{ 'addWeaponAsset.deliveryReceiptInformation' | translate }}
-      </h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end" formGroupName="commonInfo">
+  <div *ngIf="batchForm"
+    class="p-4 md:p-6 bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] shadow-custom-sm">
+    <h3 class="text-lg font-semibold text-[var(--color-text)] mb-4">{{ 'addWeaponAsset.deliveryReceiptInformation' | translate }}</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end" formGroupName="commonInfo">
         <div>
           <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
             {{ 'addWeaponAsset.deliveryReceipt' | translate }}
@@ -130,8 +128,7 @@
           </div>
         </div>
       </div>
-    </div>
-  </app-card>
+  </div>
 
   <div
     class="w-full min-w-0 p-4 md:p-6 bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] shadow-custom-sm">
