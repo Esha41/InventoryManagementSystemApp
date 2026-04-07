@@ -40,8 +40,22 @@ export class InventoryFiltersComponent {
   /** i18n key for the search input placeholder (e.g. `common.search` for weapons tab). */
   @Input() searchPlaceholderKey = 'warehouseInventory.searchPlaceholder';
 
+  /** When true, show batch-specific multi-select filters (item, supplier, manufacturer, primary purpose). */
+  @Input() showBatchFilters = false;
+  @Input() batchItems: LookupItem[] = [];
+  @Input() batchItemFilterControl: FormControl<number[]> = new FormControl<number[]>([], { nonNullable: true });
+  @Input() batchSupplierFilterControl: FormControl<number[]> = new FormControl<number[]>([], { nonNullable: true });
+  @Input() batchManufacturerFilterControl: FormControl<number[]> = new FormControl<number[]>([], { nonNullable: true });
+  @Input() batchPrimaryPurposeFilterControl: FormControl<number[]> = new FormControl<number[]>([], { nonNullable: true });
+  @Input() batchItemOptionLabelFn: (option: DropdownOption<LookupItem> | LookupItem | null) => string = () => '';
+  @Input() batchSupplierOptionLabelFn: (option: DropdownOption<LookupItem> | LookupItem | null) => string = () => '';
+  @Input() batchManufacturerOptionLabelFn: (option: DropdownOption<LookupItem> | LookupItem | null) => string = () => '';
+  @Input() batchPrimaryPurposeOptionLabelFn: (option: DropdownOption<LookupItem> | LookupItem | null) => string = () => '';
+
   @Output() searchTriggered = new EventEmitter<void>();
   @Output() clearFilters = new EventEmitter<void>();
+  /** Batch tab: explicit apply for item/supplier/manufacturer/primary-purpose filters (server request). */
+  @Output() applyBatchFilters = new EventEmitter<void>();
 
   readonly Search = Search;
   readonly X = X;
@@ -58,6 +72,10 @@ export class InventoryFiltersComponent {
 
   onClearFilters(): void {
     this.clearFilters.emit();
+  }
+
+  onApplyBatchFiltersClick(): void {
+    this.applyBatchFilters.emit();
   }
 }
 

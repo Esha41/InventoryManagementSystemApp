@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { BatchDto, BatchSummaryDto, BulkUpdateBatchAssetsDto, UpdateBatchDto } from '@models/batch.model';
+import { BatchDto, BatchSummaryDto, BulkUpdateBatchAssetsDto, UpdateBatchDto, BatchAssetFilter } from '@models/batch.model';
 import { PagedListRequest, PaginatedList } from '@models/pagination.model';
 import { APIOperationResponse } from '@models/api-response.model';
 import { ImportResult } from '@models/import-result.model';
@@ -23,8 +23,9 @@ export class BatchService {
         private apiService: ApiService
     ) { }
 
-    getSummary(depotId: number): Observable<BatchSummaryDto[]> {
-        const params = new HttpParams().set('depotId', depotId.toString());
+    getSummary(depotId: number, filters?: BatchAssetFilter): Observable<BatchSummaryDto[]> {
+        let params = new HttpParams().set('depotId', depotId.toString());
+        params = this.appendFilterParams(params, filters);
         return this.apiService.get<BatchSummaryDto[]>(`${this.basePath}/summary`, params);
     }
 
@@ -57,6 +58,7 @@ export class BatchService {
         assetsPage?: number;
         assetsPageSize?: number;
         includeAllAssets?: boolean;
+        filters?: BatchAssetFilter;
     }): Observable<BatchDto | null> {
         let params = new HttpParams();
         if (options?.serialNumberOnly != null)
@@ -69,6 +71,7 @@ export class BatchService {
             params = params.set('assetsPageSize', String(options.assetsPageSize));
         if (options?.includeAllAssets === true)
             params = params.set('includeAllAssets', 'true');
+        params = this.appendFilterParams(params, options?.filters);
         return this.apiService.get<BatchDto | null>(`${this.basePath}/${id}`, params);
     }
 
@@ -144,5 +147,23 @@ export class BatchService {
             formData,
             { params }
         );
+    }
+
+    private appendFilterParams(params: HttpParams, filters?: BatchAssetFilter): HttpParams {
+        if (!filters) return params;
+        const entries: [string, number[] | undefined][] = [
+            ['filters.ItemIds', filters.itemIds],
+            ['filters.SupplierIds', filters.supplierIds],
+            ['filters.ManufacturerIds', filters.manufacturerIds],
+            ['filters.PrimaryPurposeIds', filters.primaryPurposeIds],
+        ];
+        for (const [key, ids] of entries) {
+            if (ids?.length) {
+                for (const id of ids) {
+                    params = params.append(key, String(id));
+                }
+            }
+        }
+        return params;
     }
 }

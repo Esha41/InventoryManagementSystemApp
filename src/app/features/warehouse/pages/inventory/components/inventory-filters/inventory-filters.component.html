@@ -69,6 +69,54 @@
             placeholder="{{ 'common.all' | translate }}">
           </app-dropdown>
         </div>
+
+        <!-- Batch multi-select filters -->
+        <div *ngIf="showBatchFilters" class="w-full sm:w-[200px]">
+          <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            {{ 'warehouseInventory.filterByItem' | translate }}
+          </label>
+          <app-dropdown class="w-full" [formControl]="batchItemFilterControl" [options]="batchItems" optionValue="id"
+            [optionLabelFn]="batchItemOptionLabelFn" [multiple]="true"
+            placeholder="{{ 'common.all' | translate }}">
+          </app-dropdown>
+        </div>
+
+        <div *ngIf="showBatchFilters" class="w-full sm:w-[200px]">
+          <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            {{ 'warehouseInventory.filterBySupplier' | translate }}
+          </label>
+          <app-dropdown class="w-full" [formControl]="batchSupplierFilterControl" [options]="suppliers" optionValue="id"
+            [optionLabelFn]="batchSupplierOptionLabelFn" [multiple]="true"
+            placeholder="{{ 'common.all' | translate }}">
+          </app-dropdown>
+        </div>
+
+        <div *ngIf="showBatchFilters" class="w-full sm:w-[200px]">
+          <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            {{ 'warehouseInventory.filterByManufacturer' | translate }}
+          </label>
+          <app-dropdown class="w-full" [formControl]="batchManufacturerFilterControl" [options]="manufacturers" optionValue="id"
+            [optionLabelFn]="batchManufacturerOptionLabelFn" [multiple]="true"
+            placeholder="{{ 'common.all' | translate }}">
+          </app-dropdown>
+        </div>
+
+        <div *ngIf="showBatchFilters" class="w-full sm:w-[200px]">
+          <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            {{ 'warehouseInventory.filterByPrimaryPurpose' | translate }}
+          </label>
+          <app-dropdown class="w-full" [formControl]="batchPrimaryPurposeFilterControl" [options]="primaryPurposes" optionValue="id"
+            [optionLabelFn]="batchPrimaryPurposeOptionLabelFn" [multiple]="true"
+            placeholder="{{ 'common.all' | translate }}">
+          </app-dropdown>
+        </div>
+
+        <div *ngIf="showBatchFilters" class="basis-full w-full flex justify-end items-end pb-0.5">
+          <button type="button" (click)="onApplyBatchFiltersClick()"
+            class="shrink-0 px-4 py-2.5 bg-[var(--color-brand)] text-white text-sm font-semibold rounded-lg hover:bg-[var(--color-brand-hover)] transition-colors shadow-sm">
+            {{ 'warehouseInventory.applyBatchFilters' | translate }}
+          </button>
+        </div>
       </div>
     </div>
   </app-card>

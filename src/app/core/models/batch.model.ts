@@ -50,3 +50,10 @@ export interface BulkUpdateBatchAssetsDto {
 export interface UpdateBatchDto {
     batchNumber: string;
 }
+
+export interface BatchAssetFilter {
+    itemIds?: number[];
+    supplierIds?: number[];
+    manufacturerIds?: number[];
+    primaryPurposeIds?: number[];
+}

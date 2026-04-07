@@ -165,7 +165,18 @@
         [suppliers]="suppliers" [manufacturers]="manufacturers" [primaryPurposes]="primaryPurposes"
         [supplierOptionLabelFn]="supplierLookupLabel" [manufacturerOptionLabelFn]="manufacturerLookupLabel"
         [primaryPurposeOptionLabelFn]="primaryPurposeLookupLabel"
-        (searchTriggered)="onSearch()" (clearFilters)="onClearInventoryFilters()">
+        [showBatchFilters]="activeTab === 'batch'"
+        [batchItems]="weaponItems"
+        [batchItemFilterControl]="batchItemFilterControl"
+        [batchSupplierFilterControl]="batchSupplierFilterControl"
+        [batchManufacturerFilterControl]="batchManufacturerFilterControl"
+        [batchPrimaryPurposeFilterControl]="batchPrimaryPurposeFilterControl"
+        [batchItemOptionLabelFn]="batchLookupLabel"
+        [batchSupplierOptionLabelFn]="batchLookupLabel"
+        [batchManufacturerOptionLabelFn]="batchLookupLabel"
+        [batchPrimaryPurposeOptionLabelFn]="batchLookupLabel"
+        (searchTriggered)="onSearch()" (clearFilters)="onClearInventoryFilters()"
+        (applyBatchFilters)="onApplyBatchFilters()">
       </app-inventory-filters>
 
       <!-- Loading State -->

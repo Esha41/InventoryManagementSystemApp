@@ -16,8 +16,9 @@ import { TranslateService } from '@ngx-translate/core';
 import { InventoryDetailDto, UpdateInventoryDetailDto, UpdateInventoryDto, InventoryDto, ItemType } from '@models/inventory.model';
 import { FilterData } from '@models/pagination.model';
 import { AssetDto } from '@models/asset.model';
-import { BatchDto, BatchSummaryDto } from '@models/batch.model';
+import { BatchDto, BatchSummaryDto, BatchAssetFilter } from '@models/batch.model';
 import { BatchService } from '@services/batch.service';
+import { WeaponService } from '@services/weapon.service';
 import { CardComponent } from '@components/card/card.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { EditInventoryDetailModalComponent } from './components/edit-inventory-detail-modal/edit-inventory-detail-modal.component';
@@ -108,6 +109,8 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   expandedBatchAssetsTotalPages = 1;
   expandedBatchAssetTotalCount = 0;
   expandedBatchAssetsAllLoaded = false;
+  /** Snapshot of filters last applied to the batch summary API (Apply / initial load / clear). Expand batch uses this so it matches the table. */
+  lastAppliedBatchFilter: BatchAssetFilter | undefined;
   readonly batchAssetsPageSizeOptions = [50, 100, 200, 500];
 
   // Pagination
@@ -156,7 +159,14 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   suppliers: LookupItem[] = [];
   manufacturers: LookupItem[] = [];
   primaryPurposes: LookupItem[] = [];
+  weaponItems: LookupItem[] = [];
   invoiceFilter: string | null = null; // Track specific invoice filter
+
+  // Batch multi-select filter controls
+  batchItemFilterControl = new FormControl<number[]>([], { nonNullable: true });
+  batchSupplierFilterControl = new FormControl<number[]>([], { nonNullable: true });
+  batchManufacturerFilterControl = new FormControl<number[]>([], { nonNullable: true });
+  batchPrimaryPurposeFilterControl = new FormControl<number[]>([], { nonNullable: true });
 
   readonly supplierLookupLabel = (option: DropdownOption<LookupItem> | LookupItem | null) => {
     const item = this.unwrapLookupOption(option);
@@ -169,6 +179,11 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   };
 
   readonly primaryPurposeLookupLabel = (option: DropdownOption<LookupItem> | LookupItem | null) => {
+    const item = this.unwrapLookupOption(option);
+    return item ? getLocalizedName(item, getCurrentLang(this.translateService)) || '' : '';
+  };
+
+  readonly batchLookupLabel = (option: DropdownOption<LookupItem> | LookupItem | null) => {
     const item = this.unwrapLookupOption(option);
     return item ? getLocalizedName(item, getCurrentLang(this.translateService)) || '' : '';
   };
@@ -211,6 +226,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     private assetService: AssetService,
     private lookupService: LookupService,
     private batchService: BatchService,
+    private weaponService: WeaponService,
     private toastService: ToastService,
     private translateService: TranslateService,
     private route: ActivatedRoute,
@@ -296,6 +312,18 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
         this.loadTabContent();
         this.cdr.markForCheck();
       });
+
+  }
+
+  /** User clicks "Apply filters" — loads batch summary from API with current multi-select filters (no auto-call on change). */
+  onApplyBatchFilters(): void {
+    if (this.activeTab !== 'batch') {
+      return;
+    }
+    this.currentPage = 1;
+    this.updatePageInUrl();
+    this.loadServerSideBatches();
+    this.cdr.markForCheck();
   }
 
   onSearch(): void {
@@ -311,13 +339,17 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.supplierFilterControl.setValue(null, { emitEvent: false });
     this.manufacturerFilterControl.setValue(null, { emitEvent: false });
     this.primaryPurposeFilterControl.setValue(null, { emitEvent: false });
+    this.batchItemFilterControl.setValue([], { emitEvent: false });
+    this.batchSupplierFilterControl.setValue([], { emitEvent: false });
+    this.batchManufacturerFilterControl.setValue([], { emitEvent: false });
+    this.batchPrimaryPurposeFilterControl.setValue([], { emitEvent: false });
     this.invoiceFilter = null;
     this.currentPage = 1;
     this.updatePageInUrl();
     if (this.activeTab !== 'batch') {
       this.loadTabContent();
     } else {
-      this.applyFilters();
+      this.loadServerSideBatches();
     }
     this.cdr.markForCheck();
   }
@@ -368,14 +400,20 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       depots: this.lookupService.getDepots(),
       suppliers: this.lookupService.getSuppliers().pipe(catchError(() => of([] as LookupItem[]))),
       manufacturers: this.lookupService.getManufacturers().pipe(catchError(() => of([] as LookupItem[]))),
-      primaryPurposes: this.lookupService.getPrimaryPurposes().pipe(catchError(() => of([] as LookupItem[])))
+      primaryPurposes: this.lookupService.getPrimaryPurposes().pipe(catchError(() => of([] as LookupItem[]))),
+      weapons: this.weaponService.getAll().pipe(catchError(() => of([] as any[])))
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: ({ depots, suppliers, manufacturers, primaryPurposes }) => {
+        next: ({ depots, suppliers, manufacturers, primaryPurposes, weapons }) => {
           this.suppliers = suppliers ?? [];
           this.manufacturers = manufacturers ?? [];
           this.primaryPurposes = primaryPurposes ?? [];
+          this.weaponItems = (weapons ?? []).map((w: any) => ({
+            id: w.id,
+            nameEn: w.nameEn ?? w.name ?? '',
+            nameAr: w.nameAr ?? '',
+          } as LookupItem));
           this.currentDepot = depots.find((d: LookupItem) => d.id === this.depoId) || null;
           this.depoName = this.currentDepot
             ? getLocalizedName(this.currentDepot, getCurrentLang(this.translateService)) || `Depot ${this.depoId}`
@@ -413,6 +451,19 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     }
   }
 
+  private buildBatchAssetFilter(): BatchAssetFilter | undefined {
+    const f: BatchAssetFilter = {};
+    const items = this.batchItemFilterControl.value;
+    const suppliers = this.batchSupplierFilterControl.value;
+    const manufacturers = this.batchManufacturerFilterControl.value;
+    const purposes = this.batchPrimaryPurposeFilterControl.value;
+    if (items?.length) f.itemIds = items;
+    if (suppliers?.length) f.supplierIds = suppliers;
+    if (manufacturers?.length) f.manufacturerIds = manufacturers;
+    if (purposes?.length) f.primaryPurposeIds = purposes;
+    return f.itemIds || f.supplierIds || f.manufacturerIds || f.primaryPurposeIds ? f : undefined;
+  }
+
   private loadServerSideBatches(): void {
     this.loading = true;
     this.expandedBatchId = null;
@@ -420,10 +471,12 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.resetExpandedBatchAssetState();
     this.cdr.markForCheck();
 
-    this.batchService.getSummary(this.depoId)
+    const filters = this.buildBatchAssetFilter();
+    this.batchService.getSummary(this.depoId, filters)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (batches) => {
+          this.lastAppliedBatchFilter = filters;
           this.batches = batches || [];
           this.filteredBatches = this.applyBatchSearch(this.batches);
           this.totalItems = this.filteredBatches.length;
@@ -842,11 +895,13 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       this.cdr.markForCheck();
     }
     const id = this.expandedBatchId;
+    const filters = this.lastAppliedBatchFilter;
     const request$ = this.expandedBatchAssetsAllLoaded
-      ? this.batchService.getById(id, { includeAllAssets: true })
+      ? this.batchService.getById(id, { includeAllAssets: true, filters })
       : this.batchService.getById(id, {
           assetsPage: this.expandedBatchAssetsPage,
-          assetsPageSize: this.expandedBatchAssetsPageSize
+          assetsPageSize: this.expandedBatchAssetsPageSize,
+          filters
         });
     request$.pipe(takeUntil(this.destroy$)).subscribe({
       next: (fullBatch) => {
