@@ -7,6 +7,7 @@ interface RuntimeConfig {
   apiUrl?: string;
   notificationHubUrl?: string;
   fileBaseUrl?: string;
+  persistAuthAcrossSessions?: boolean;
 }
 
 @Injectable({
@@ -126,5 +127,8 @@ export class ConfigService {
     if (this.isLoggingEnabled) {
       console.warn(`[${this.appName}] ${message}`, ...args);
     }
+  }
+  get persistAuthAcrossSessions(): boolean {
+    return this.runtimeConfig?.persistAuthAcrossSessions ?? environment.persistAuthAcrossSessions ?? false;
   }
 }

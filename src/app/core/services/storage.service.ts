@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-
+import { ConfigService } from './config.service';
 /**
  * Keys that store sensitive auth/profile data.
  * These use sessionStorage (cleared when tab closes) to reduce XSS exposure window.
@@ -49,10 +49,16 @@ function restorePrefixedSnapshot(storage: Storage, entries: Array<[string, strin
 })
 export class StorageService {
 
+  constructor(private config: ConfigService) { }
+
   private getStorage(key: string): Storage {
+    // In some deployments we want users to stay logged in even after closing the tab/browser.
+    // When enabled, persist auth/profile keys in localStorage instead of sessionStorage.
+    if (SESSION_STORAGE_KEYS.has(key) && this.config.persistAuthAcrossSessions) {
+      return localStorage;
+    }
     return SESSION_STORAGE_KEYS.has(key) ? sessionStorage : localStorage;
   }
-
   /**
    * Get item from storage
    */

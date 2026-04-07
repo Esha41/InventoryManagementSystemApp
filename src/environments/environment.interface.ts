@@ -23,4 +23,5 @@ export interface Environment {
   idleWarningAfterMinutes?: number;
   /** Seconds shown in the modal before logout if the user takes no action. */
   idleLogoutCountdownSeconds?: number;
+  persistAuthAcrossSessions?: boolean;
 }
