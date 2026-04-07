@@ -164,41 +164,12 @@
                                 </p>
                             </div>
 
-                            <!-- Asset Tag -->
-                            <div>
-                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
-                                    {{ 'addWeaponAsset.assetTag' | translate }}
-                                </label>
-                                <input type="text" formControlName="assetTag" (input)="onFieldChange('assetTag', i)"
-                                    class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
-                                    [class.border-[var(--color-error)]]="isFieldInvalid('assetTag', i)"
-                                    [placeholder]="'addWeaponAsset.enterAssetTag' | translate">
-                                <p *ngIf="isFieldInvalid('assetTag', i)" class="mt-1 text-sm text-[var(--color-error)]">
-                                    {{ getFieldError('assetTag', i) }}
-                                </p>
-                            </div>
-
                             <!-- Additional Details Section (per-asset) -->
                             <div class="md:col-span-2 mt-4 mb-2">
                                 <h4
                                     class="text-sm font-semibold text-[var(--color-text)] uppercase tracking-wide border-b border-[var(--color-border)] pb-2">
                                     {{ 'addWeaponAsset.additionalDetails' | translate }}
                                 </h4>
-                            </div>
-
-                            <!-- Condition -->
-                            <div>
-                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
-                                    {{ 'addWeaponAsset.condition' | translate }}
-                                </label>
-                                <input type="text" formControlName="condition" (input)="onFieldChange('condition', i)"
-                                    class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
-                                    [class.border-[var(--color-error)]]="isFieldInvalid('condition', i)"
-                                    [placeholder]="'addWeaponAsset.enterCondition' | translate">
-                                <p *ngIf="isFieldInvalid('condition', i)"
-                                    class="mt-1 text-sm text-[var(--color-error)]">
-                                    {{ getFieldError('condition', i) }}
-                                </p>
                             </div>
 
                             <!-- Purchase Date -->
@@ -300,7 +271,7 @@
                                 <app-dropdown class="w-full" formControlName="assignToEmployeeId"
                                     [options]="employeeDropdownOptions" optionValue="value"
                                     [placeholderSelectable]="false"
-                                    [addActionLabel]="'addWeaponAsset.assignment.addEmployee' | translate"
+                                    [addActionLabel]="'addWeaponAsset.assignment.addPerson'"
                                     (addActionClick)="openAddEmployeeModal()"
                                     (selectionChange)="onAssignmentEmployeeChange()"
                                     placeholder="{{ 'addWeaponAsset.assignment.selectEmployee' | translate }}">
@@ -455,22 +426,27 @@
                             {{ 'addWeaponAsset.bulk.quantity' | translate }} <span
                                 class="text-[var(--color-error)]">*</span>
                         </label>
-                        <input type="number" formControlName="quantity" min="1" max="5000"
+                        <input type="number" formControlName="quantity" min="1" max="50000"
                             class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors">
                     </div>
                 </div>
 
                 <!-- Fill Identifiers Checkbox -->
                 <div class="mt-6 pt-6 border-t border-[var(--color-border)]">
-                    <label class="flex items-center space-x-3 cursor-pointer">
+                    <label class="flex items-center space-x-3"
+                        [class.cursor-pointer]="!isBulkFillIdentifiersDisabled"
+                        [class.opacity-50]="isBulkFillIdentifiersDisabled">
                         <input type="checkbox" formControlName="fillIdentifiers"
                             class="w-4 h-4 text-[var(--color-brand)] bg-[var(--color-background)] border-[var(--color-border)] rounded focus:ring-[var(--color-brand)] focus:ring-2">
                         <span class="text-sm font-medium text-[var(--color-text)]">
                             {{ 'addWeaponAsset.bulk.fillIdentifiers' | translate }}
                         </span>
                     </label>
-                    <p class="text-xs text-[var(--color-text-muted)] mt-2 ms-7">
+                    <p *ngIf="!isBulkFillIdentifiersDisabled" class="text-xs text-[var(--color-text-muted)] mt-2 ms-7">
                         {{ 'addWeaponAsset.bulk.fillIdentifiersDescription' | translate }}
+                    </p>
+                    <p *ngIf="isBulkFillIdentifiersDisabled" class="text-xs text-amber-600 mt-2 ms-7">
+                        {{ 'addWeaponAsset.bulk.fillIdentifiersDisabledReason' | translate: { max: maxQuantityForFillIdentifiers } }}
                     </p>
                 </div>
             </div>
@@ -503,16 +479,6 @@
                         </label>
                         <input type="date" formControlName="warrantyExpiryDate"
                             class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors">
-                    </div>
-
-                    <!-- Condition -->
-                    <div>
-                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
-                            {{ 'addWeaponAsset.condition' | translate }}
-                        </label>
-                        <input type="text" formControlName="condition"
-                            class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
-                            [placeholder]="'addWeaponAsset.enterCondition' | translate">
                     </div>
 
                     <!-- Purchase Price -->
@@ -575,7 +541,7 @@
                         <app-dropdown class="w-full" formControlName="assignToEmployeeId"
                             [options]="employeeDropdownOptions" optionValue="value"
                             [placeholderSelectable]="false"
-                            [addActionLabel]="'addWeaponAsset.assignment.addEmployee' | translate"
+                            [addActionLabel]="'addWeaponAsset.assignment.addPerson'"
                             (addActionClick)="openAddEmployeeModal()"
                             (selectionChange)="onAssignmentEmployeeChange()"
                             placeholder="{{ 'addWeaponAsset.assignment.selectEmployee' | translate }}">

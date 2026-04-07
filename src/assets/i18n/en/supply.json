@@ -386,7 +386,7 @@
     "scanSerialPlaceholder": "Enter or scan serial number...",
     "scanSerialHint": "Scan or type a serial number to add it to the supply",
     "scanButton": "Scan",
-    "addEmployee": "Add Employee",
+    "addEmployee": "Add Person",
     "selectedDepotsAndBatches": "Selected Depots & Batches",
     "selectedDepots": "Selected Depots",
     "selectedBatches": "Selected Batches",

@@ -137,8 +137,8 @@
     "ldapSettingsUnavailable": "تعذر استرداد إعدادات LDAP"
   },
   "employeeFormModal": {
-    "addNewEmployee": "إضافة موظف جديد",
-    "editEmployee": "تعديل موظف",
+    "addNewEmployee": "إضافة شخص",
+    "editEmployee": "تعديل شخص",
     "nameEn": "الاسم (بالإنجليزية)",
     "nameEnPlaceholder": "أدخل الاسم بالإنجليزية",
     "nameAr": "الاسم (بالعربية)",
@@ -155,14 +155,14 @@
     "emailPlaceholder": "أدخل البريد الإلكتروني",
     "notes": "ملاحظات",
     "notesPlaceholder": "أدخل ملاحظات (اختياري)",
-    "create": "إنشاء موظف",
-    "createTitle": "إنشاء موظف",
-    "createSuccess": "تم إنشاء الموظف بنجاح",
-    "createError": "فشل إنشاء الموظف",
-    "update": "تحديث الموظف",
-    "updateTitle": "تحديث الموظف",
-    "updateSuccess": "تم تحديث بيانات الموظف بنجاح",
-    "updateError": "فشل تحديث بيانات الموظف"
+    "create": "إنشاء شخص",
+    "createTitle": "إنشاء شخص",
+    "createSuccess": "تم إنشاء الشخص بنجاح",
+    "createError": "فشل إنشاء الشخص",
+    "update": "تحديث الشخص",
+    "updateTitle": "تحديث الشخص",
+    "updateSuccess": "تم تحديث بيانات الشخص بنجاح",
+    "updateError": "فشل تحديث بيانات الشخص"
   },
   "roleFormModal": {
     "roleName": "اسم الدور",

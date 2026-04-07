@@ -121,7 +121,10 @@
     "deleteBatchConfirm": "Delete batch?",
     "deleteBatchMessage": "Are you sure you want to delete this batch? All assets in the batch will be deleted. The operation will fail if any assets are assigned or in supply orders.",
     "batchDeleted": "Batch deleted successfully",
-    "failedToDeleteBatch": "Failed to delete batch"
+    "failedToDeleteBatch": "Failed to delete batch",
+    "showAllBatchAssets": "Show all",
+    "showingAllBatchAssets": "Showing all {{count}} assets",
+    "usePagedBatchAssets": "Use pages"
   },
   "assetDetails": {
     "title": "Asset Details",
@@ -717,6 +720,7 @@
     "commonInfo": "Weapons Batch Information",
     "purchaseDetails": "Purchase Details",
     "assetsTable": "Assets",
+    "assetsPaginationHint": "Assets load in pages (default 50 per page). Save updates the rows on this page and any removals you queued. Use the pager to edit other assets.",
     "removeRow": "Remove row",
     "noAssets": "No assets in this weapons batch",
     "assetCount": "Assets in Weapons Batch",
@@ -726,10 +730,10 @@
     "saveError": "Failed to update assets. Please try again.",
     "validationError": "Please fix the validation errors before saving",
     "selectStatus": "Select status",
-    "assignment": "Assignment",
-    "assignmentModeHint": "For each row: assign to a department only, or to an employee only (custodian). Do not use both for the same row.",
+    "assignment": "Custodian",
+    "assignmentModeHint": "For each row: assign to a department only, or to a person only (custodian). Do not use both for the same row.",
     "selectDepartment": "Select department",
-    "selectEmployee": "Select employee",
+    "selectEmployee": "Select custodian",
     "assignmentNotes": "Assignment notes",
     "assignmentNotesPlaceholder": "Optional",
     "assignmentNotesHint": "Applied when you change assignment options or notes.",

@@ -188,24 +188,22 @@
               </div>
               <div class="flex items-center justify-end gap-1 flex-shrink-0" (click)="$event.stopPropagation()">
                 <button (click)="onBatchRowClick(batch)" class="p-1.5 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 rounded-lg" [title]="'warehouseInventory.viewAssets' | translate"><lucide-angular [img]="Eye" class="h-4 w-4"></lucide-angular></button>
-                <button (click)="onEditBatch(batch)" class="p-1.5 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg" [title]="'warehouseInventory.edit' | translate"><lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular></button>
+                <button (click)="$event.stopPropagation(); onEditBatch(batch)" class="p-1.5 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg" [title]="'warehouseInventory.edit' | translate"><lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular></button>
                 <button (click)="onDeleteBatch(batch)" class="p-1.5 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg" [title]="'common.delete' | translate"><lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular></button>
               </div>
             </div>
             <!-- Expanded assets on mobile -->
             <div *ngIf="expandedBatchId === batch.id" class="border-t border-[var(--color-border-muted)] pt-3 mt-2">
               <div *ngIf="loadingBatchAssets" class="py-4 text-center text-[var(--color-text-muted)] text-sm">{{ 'common.loading' | translate }}</div>
-              <div *ngIf="!loadingBatchAssets && expandedBatchAssets.length === 0" class="py-2 text-[var(--color-text-muted)] text-sm">{{ 'editBatch.noAssets' | translate }}</div>
-              <div *ngIf="!loadingBatchAssets && expandedBatchAssets.length > 0" class="space-y-3">
+              <div *ngIf="!loadingBatchAssets && expandedBatchAssetTotalCount === 0" class="py-2 text-[var(--color-text-muted)] text-sm">{{ 'editBatch.noAssets' | translate }}</div>
+              <div *ngIf="!loadingBatchAssets && expandedBatchAssetTotalCount > 0" class="space-y-3">
                 <div *ngFor="let asset of expandedBatchAssets; trackBy: trackById"
                   class="text-xs py-2 border-b border-[var(--color-border-muted)] last:border-0 space-y-1">
                   <div class="font-medium text-[var(--color-text)]">{{ getAssetItemName(asset) }}</div>
                   <div class="text-[var(--color-text-muted)] space-y-0.5 break-words">
                     <div><span class="font-medium text-[var(--color-text)]">{{ 'warehouseInventory.itemNo' | translate }}:</span> {{ getAssetItemNo(asset) }}</div>
                     <div><span class="font-medium text-[var(--color-text)]">{{ 'warehouseInventory.serialNumber' | translate }}:</span> {{ asset.serialNumber || '-' }}</div>
-                    <div><span class="font-medium text-[var(--color-text)]">{{ 'warehouseInventory.assetTag' | translate }}:</span> {{ asset.assetTag || '-' }}</div>
                     <div><span class="font-medium text-[var(--color-text)]">{{ 'warehouseInventory.status' | translate }}:</span> {{ getAssetStatusLabel(asset) }}</div>
-                    <div><span class="font-medium text-[var(--color-text)]">{{ 'warehouseInventory.condition' | translate }}:</span> {{ asset.condition || '-' }}</div>
                     <div><span class="font-medium text-[var(--color-text)]">{{ 'warehouseInventory.rfidTag' | translate }}:</span> {{ asset.rfid || '-' }}</div>
                     <div><span class="font-medium text-[var(--color-text)]">{{ 'warehouseInventory.purchaseDate' | translate }}:</span> {{ formatDate(asset.purchaseDate) }}</div>
                     <div><span class="font-medium text-[var(--color-text)]">{{ 'warehouseInventory.warrantyExpiry' | translate }}:</span> {{ formatDate(asset.warrantyExpiryDate) }}</div>
@@ -214,6 +212,39 @@
                     <div><span class="font-medium text-[var(--color-text)]">{{ 'warehouseInventory.assignee' | translate }}:</span> {{ getAssetCustodianLabel(asset) }}</div>
                     <div *ngIf="asset.notes" class="pt-1"><span class="font-medium text-[var(--color-text)]">{{ 'warehouseInventory.assetNotes' | translate }}:</span> {{ asset.notes }}</div>
                   </div>
+                </div>
+              </div>
+              <div *ngIf="!loadingBatchAssets && expandedBatchAssetTotalCount > 0"
+                class="mt-3 pt-3 border-t border-[var(--color-border-muted)] flex flex-col gap-3">
+                <div *ngIf="!expandedBatchAssetsAllLoaded" class="flex flex-wrap items-center gap-2 justify-between">
+                  <app-rows-per-page
+                    [rowsPerPage]="expandedBatchAssetsPageSize"
+                    [totalItems]="expandedBatchAssetTotalCount"
+                    [visibleItems]="expandedBatchAssets.length"
+                    [optionValues]="batchAssetsPageSizeOptions"
+                    (rowsPerPageChange)="onExpandedBatchAssetsPageSizeChange($event)">
+                  </app-rows-per-page>
+                  <button type="button"
+                    class="text-xs font-medium text-[var(--color-brand)] hover:underline"
+                    (click)="$event.stopPropagation(); onExpandedBatchAssetsLoadAll()">
+                    {{ 'warehouseInventory.showAllBatchAssets' | translate }}
+                  </button>
+                </div>
+                <div *ngIf="expandedBatchAssetsAllLoaded" class="text-xs text-[var(--color-text-muted)] flex flex-wrap items-center gap-2">
+                  <span>{{ 'warehouseInventory.showingAllBatchAssets' | translate: { count: expandedBatchAssetTotalCount } }}</span>
+                  <button type="button" class="font-medium text-[var(--color-brand)] hover:underline"
+                    (click)="$event.stopPropagation(); onExpandedBatchAssetsUsePagination()">
+                    {{ 'warehouseInventory.usePagedBatchAssets' | translate }}
+                  </button>
+                </div>
+                <div *ngIf="!expandedBatchAssetsAllLoaded && expandedBatchAssetsTotalPages > 1"
+                  class="flex flex-wrap items-center justify-center gap-2">
+                  <app-pagination [currentPage]="expandedBatchAssetsPage" [totalPages]="expandedBatchAssetsTotalPages"
+                    (pageChange)="onExpandedBatchAssetsPageChange($event)">
+                  </app-pagination>
+                  <span class="text-xs text-[var(--color-text-muted)] whitespace-nowrap">
+                    {{ expandedBatchAssetsPage }} {{ 'common.of' | translate }} {{ expandedBatchAssetsTotalPages }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -271,13 +302,23 @@
           <app-batch-table *ngIf="activeTab === 'batch'" [batches]="paginatedBatches"
             [expandedBatchId]="expandedBatchId" [expandedBatchAssets]="expandedBatchAssets"
             [loadingBatchAssets]="loadingBatchAssets"
+            [batchAssetsPage]="expandedBatchAssetsPage"
+            [batchAssetsPageSize]="expandedBatchAssetsPageSize"
+            [batchAssetsTotalPages]="expandedBatchAssetsTotalPages"
+            [batchAssetsTotalCount]="expandedBatchAssetTotalCount"
+            [batchAssetsAllLoaded]="expandedBatchAssetsAllLoaded"
+            [batchAssetsPageSizeOptions]="batchAssetsPageSizeOptions"
             [getAssetItemName]="getAssetItemName" [getAssetItemNo]="getAssetItemNo"
             [getAssetStatusLabel]="getAssetStatusLabel" [formatDate]="formatDate"
             [getAssetDepartmentLabel]="getAssetDepartmentLabel" [getAssetCustodianLabel]="getAssetCustodianLabel"
             [formatAssetPurchasePrice]="formatAssetPurchasePrice" [truncateAssetNotes]="truncateAssetNotes"
             [sortColumn]="batchSortColumn" [sortDirection]="batchSortDirection"
             (rowClick)="onBatchRowClick($event)" (editBatch)="onEditBatch($event)" (deleteBatch)="onDeleteBatch($event)"
-            (sortChange)="onBatchSort($event)">
+            (sortChange)="onBatchSort($event)"
+            (batchAssetsPageChange)="onExpandedBatchAssetsPageChange($event)"
+            (batchAssetsPageSizeChange)="onExpandedBatchAssetsPageSizeChange($event)"
+            (batchAssetsLoadAll)="onExpandedBatchAssetsLoadAll()"
+            (batchAssetsUsePagination)="onExpandedBatchAssetsUsePagination()">
           </app-batch-table>
 
           <!-- Inventory Items Table (Ammunition & Explosives) -->
@@ -327,11 +368,6 @@
     [inventory]="currentInventory" [inventoryId]="selectedDetail?.inventoryId || 0" (closed)="onEditModalClose()"
     (saved)="onEditSave($event)">
   </app-edit-inventory-detail-modal>
-
-  <app-edit-batch-modal [isOpen]="showEditBatchModal" [batchId]="editBatchModalTarget?.id ?? 0"
-    [warehouseId]="depoId" [batchNumber]="editBatchModalTarget?.batchNumber ?? ''" (closed)="onEditBatchModalClose()"
-    (saved)="onEditBatchModalSaved()">
-  </app-edit-batch-modal>
 
   <!-- Delete Confirmation Dialog -->
   <app-confirm-dialog [isOpen]="showDeleteDialog" [title]="'deleteConfirmation.title' | translate"

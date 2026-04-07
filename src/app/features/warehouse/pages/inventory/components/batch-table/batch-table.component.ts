@@ -5,6 +5,8 @@ import { LucideAngularModule, Edit2, Eye, ChevronDown, ChevronRight, Trash2, Arr
 import { BatchSummaryDto } from '@models/batch.model';
 import { AssetDto } from '@models/asset.model';
 import { trackById } from '@utils/trackby.utils';
+import { PaginationComponent } from '@components/pagination/pagination.component';
+import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 
 export type BatchTableSortColumn = 'batchNumber' | 'quantity';
 
@@ -14,7 +16,9 @@ export type BatchTableSortColumn = 'batchNumber' | 'quantity';
     imports: [
         CommonModule,
         TranslateModule,
-        LucideAngularModule
+        LucideAngularModule,
+        PaginationComponent,
+        RowsPerPageComponent
     ],
     templateUrl: './batch-table.component.html',
     styles: [`.batch-row-expanded { background-color: var(--color-background-hover) !important; }`],
@@ -25,6 +29,13 @@ export class BatchTableComponent {
     @Input() expandedBatchId: number | null = null;
     @Input() expandedBatchAssets: AssetDto[] = [];
     @Input() loadingBatchAssets = false;
+    @Input() batchAssetsPage = 1;
+    @Input() batchAssetsPageSize = 50;
+    @Input() batchAssetsTotalPages = 1;
+    @Input() batchAssetsTotalCount = 0;
+    @Input() batchAssetsAllLoaded = false;
+    /** Page size choices for batch assets (default 50, 100, 200, 500). */
+    @Input() batchAssetsPageSizeOptions: number[] = [50, 100, 200, 500];
     @Input() getAssetItemName: (asset: AssetDto) => string = () => '';
     @Input() getAssetItemNo: (asset: AssetDto) => string = () => '';
     @Input() getAssetStatusLabel: (asset: AssetDto) => string = () => '';
@@ -38,6 +49,10 @@ export class BatchTableComponent {
     @Output() editBatch = new EventEmitter<BatchSummaryDto>();
     @Output() deleteBatch = new EventEmitter<BatchSummaryDto>();
     @Output() sortChange = new EventEmitter<BatchTableSortColumn>();
+    @Output() batchAssetsPageChange = new EventEmitter<number>();
+    @Output() batchAssetsPageSizeChange = new EventEmitter<number>();
+    @Output() batchAssetsLoadAll = new EventEmitter<void>();
+    @Output() batchAssetsUsePagination = new EventEmitter<void>();
 
     @Input() sortColumn: BatchTableSortColumn = 'batchNumber';
     @Input() sortDirection: 'asc' | 'desc' = 'asc';

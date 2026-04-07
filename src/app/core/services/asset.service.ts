@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { AssetDto, CreateAssetDto, UpdateAssetDto } from '@models/asset.model';
+import { AssetDto, CreateAssetDto, UpdateAssetDto, CreateBulkAssetsFromTemplateDto, BulkCreateFromTemplateResultDto } from '@models/asset.model';
 import { PagedListRequest, PaginatedList } from '@models/pagination.model';
 import { APIOperationResponse } from '@models/api-response.model';
 import { ConfigService } from './config.service';
@@ -114,6 +114,10 @@ export class AssetService implements IImportableService {
         formData.append('dtosJson', JSON.stringify(data));
         (files || []).forEach(file => formData.append('files', file, file.name));
         return this.apiService.post<T>(`${this.basePath}/Bulk`, formData);
+    }
+
+    createBulkFromTemplate(data: CreateBulkAssetsFromTemplateDto): Observable<BulkCreateFromTemplateResultDto> {
+        return this.apiService.post<BulkCreateFromTemplateResultDto>(`${this.basePath}/bulk-template`, data);
     }
 
     /**

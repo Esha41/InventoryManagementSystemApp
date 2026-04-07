@@ -53,6 +53,15 @@ export class EditBatchComponent implements OnInit {
   }
 
   onCancel(): void {
+    this.navigateToBatchInventory();
+  }
+
+  /** After successful save, return to warehouse batch tab (same as closing the old edit modal). */
+  onSaved(): void {
+    this.navigateToBatchInventory();
+  }
+
+  private navigateToBatchInventory(): void {
     this.router.navigate(['/warehouse', this.warehouseId, 'inventory'], {
       queryParams: { tab: 'batch' },
       queryParamsHandling: 'merge'

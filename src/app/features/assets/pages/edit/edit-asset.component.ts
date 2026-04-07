@@ -78,10 +78,8 @@ export class EditAssetComponent implements OnInit, OnDestroy {
       // Identification
       serialNumber: ['', [Validators.required]],
       rfid: [''],
-      assetTag: [''],
 
       // Additional Details
-      condition: [''],
       purchaseDate: [null],
       warrantyExpiryDate: [null],
       purchasePrice: [null, [Validators.min(0)]],
@@ -128,8 +126,6 @@ export class EditAssetComponent implements OnInit, OnDestroy {
     this.editForm.patchValue({
       serialNumber: asset.serialNumber,
       rfid: asset.rfid,
-      assetTag: asset.assetTag,
-      condition: asset.condition,
       purchaseDate: formatDate(asset.purchaseDate),
       warrantyExpiryDate: formatDate(asset.warrantyExpiryDate),
       purchasePrice: asset.purchasePrice,
@@ -174,8 +170,6 @@ export class EditAssetComponent implements OnInit, OnDestroy {
       itemId: this.asset.itemId,
       serialNumber: formValue.serialNumber,
       rfid: formValue.rfid,
-      assetTag: formValue.assetTag,
-      condition: formValue.condition,
       purchaseDate: formValue.purchaseDate ? new Date(formValue.purchaseDate) : undefined,
       warrantyExpiryDate: formValue.warrantyExpiryDate ? new Date(formValue.warrantyExpiryDate) : undefined,
       purchasePrice: formValue.purchasePrice,

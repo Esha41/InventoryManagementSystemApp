@@ -21,10 +21,11 @@ import { BatchService } from '@services/batch.service';
 import { CardComponent } from '@components/card/card.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { EditInventoryDetailModalComponent } from './components/edit-inventory-detail-modal/edit-inventory-detail-modal.component';
-import { EditBatchModalComponent } from './edit-batch/edit-batch-modal.component';
 import { EditAssetModalComponent } from '@assets/pages/edit/components/edit-asset-modal/edit-asset-modal.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
-import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import { PaginationComponent } from '@components/pagination/pagination.component';
+import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
+import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslationService } from '@services/translation.service';
@@ -63,7 +64,6 @@ import {
     CardComponent,
     ConfirmDialogComponent,
     EditInventoryDetailModalComponent,
-    EditBatchModalComponent,
     EditAssetModalComponent,
     PaginationComponent,
     RowsPerPageComponent,
@@ -103,6 +103,12 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   expandedBatchId: number | null = null;
   expandedBatchAssets: AssetDto[] = [];
   loadingBatchAssets = false;
+  expandedBatchAssetsPage = 1;
+  expandedBatchAssetsPageSize = 50;
+  expandedBatchAssetsTotalPages = 1;
+  expandedBatchAssetTotalCount = 0;
+  expandedBatchAssetsAllLoaded = false;
+  readonly batchAssetsPageSizeOptions = [50, 100, 200, 500];
 
   // Pagination
   currentPage = 1;
@@ -179,9 +185,6 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   // Batch delete
   showDeleteBatchDialog = false;
   selectedBatch: BatchSummaryDto | null = null;
-
-  showEditBatchModal = false;
-  editBatchModalTarget: BatchSummaryDto | null = null;
 
   private destroy$ = new Subject<void>();
 
@@ -389,6 +392,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.expandedBatchId = null;
     this.expandedBatchAssets = [];
+    this.resetExpandedBatchAssetState();
     this.cdr.markForCheck();
 
     this.batchService.getSummary(this.depoId)
@@ -778,73 +782,87 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     if (this.expandedBatchId === batch.id) {
       this.expandedBatchId = null;
       this.expandedBatchAssets = [];
+      this.resetExpandedBatchAssetState();
       this.cdr.markForCheck();
       return;
     }
     this.expandedBatchId = batch.id;
-    this.loadingBatchAssets = true;
-    this.expandedBatchAssets = [];
-    this.cdr.markForCheck();
+    this.resetExpandedBatchAssetState();
+    this.fetchExpandedBatchAssets();
+  }
 
-    this.batchService.getById(batch.id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (fullBatch) => {
-          this.expandedBatchAssets = fullBatch?.assets ?? [];
-          this.loadingBatchAssets = false;
-          this.cdr.markForCheck();
-        },
-        error: () => {
-          this.loadingBatchAssets = false;
-          this.expandedBatchId = null;
-          this.cdr.markForCheck();
+  private resetExpandedBatchAssetState(): void {
+    this.expandedBatchAssetsPage = 1;
+    this.expandedBatchAssetsPageSize = 50;
+    this.expandedBatchAssetsTotalPages = 1;
+    this.expandedBatchAssetTotalCount = 0;
+    this.expandedBatchAssetsAllLoaded = false;
+  }
+
+  /**
+   * Loads assets for the currently expanded batch using server pagination (or include-all when enabled).
+   */
+  private fetchExpandedBatchAssets(options?: { showLoading?: boolean }): void {
+    const showLoading = options?.showLoading !== false;
+    if (this.expandedBatchId == null) return;
+    if (showLoading) {
+      this.loadingBatchAssets = true;
+      this.cdr.markForCheck();
+    }
+    const id = this.expandedBatchId;
+    const request$ = this.expandedBatchAssetsAllLoaded
+      ? this.batchService.getById(id, { includeAllAssets: true })
+      : this.batchService.getById(id, {
+          assetsPage: this.expandedBatchAssetsPage,
+          assetsPageSize: this.expandedBatchAssetsPageSize
+        });
+    request$.pipe(takeUntil(this.destroy$)).subscribe({
+      next: (fullBatch) => {
+        this.expandedBatchAssets = fullBatch?.assets ?? [];
+        this.expandedBatchAssetTotalCount = fullBatch?.assetCount ?? 0;
+        this.expandedBatchAssetsTotalPages = fullBatch?.assetsTotalPages ?? 1;
+        this.expandedBatchAssetsPage = fullBatch?.assetsPageIndex ?? 1;
+        if (!this.expandedBatchAssetsAllLoaded && fullBatch?.assetsPageSize != null) {
+          this.expandedBatchAssetsPageSize = fullBatch.assetsPageSize;
         }
-      });
+        this.loadingBatchAssets = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.loadingBatchAssets = false;
+        this.expandedBatchId = null;
+        this.expandedBatchAssets = [];
+        this.resetExpandedBatchAssetState();
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  onExpandedBatchAssetsPageChange(page: number): void {
+    this.expandedBatchAssetsPage = page;
+    this.fetchExpandedBatchAssets();
+  }
+
+  onExpandedBatchAssetsPageSizeChange(size: number): void {
+    this.expandedBatchAssetsPageSize = size;
+    this.expandedBatchAssetsPage = 1;
+    this.fetchExpandedBatchAssets();
+  }
+
+  onExpandedBatchAssetsLoadAll(): void {
+    this.expandedBatchAssetsAllLoaded = true;
+    this.expandedBatchAssetsPage = 1;
+    this.fetchExpandedBatchAssets();
+  }
+
+  onExpandedBatchAssetsUsePagination(): void {
+    this.expandedBatchAssetsAllLoaded = false;
+    this.expandedBatchAssetsPage = 1;
+    this.fetchExpandedBatchAssets();
   }
 
   onEditBatch(batch: BatchSummaryDto): void {
-    this.editBatchModalTarget = batch;
-    this.showEditBatchModal = true;
-    this.cdr.markForCheck();
-  }
-
-  onEditBatchModalClose(): void {
-    this.showEditBatchModal = false;
-    this.editBatchModalTarget = null;
-    this.cdr.markForCheck();
-  }
-
-  onEditBatchModalSaved(): void {
-    this.refreshBatchSummariesAfterEdit();
-    this.onEditBatchModalClose();
-  }
-
-  private refreshBatchSummariesAfterEdit(): void {
-    this.batchService.getSummary(this.depoId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (batches) => {
-          this.batches = batches || [];
-          this.filteredBatches = this.applyBatchSearch(this.batches);
-          this.totalItems = this.filteredBatches.length;
-          this.validateCurrentPage();
-          const expandedId = this.expandedBatchId;
-          if (expandedId != null) {
-            this.batchService.getById(expandedId)
-              .pipe(takeUntil(this.destroy$))
-              .subscribe({
-                next: (fullBatch) => {
-                  this.expandedBatchAssets = fullBatch?.assets ?? [];
-                  this.cdr.markForCheck();
-                },
-                error: () => this.cdr.markForCheck()
-              });
-          } else {
-            this.cdr.markForCheck();
-          }
-        },
-        error: () => this.cdr.markForCheck()
-      });
+    this.router.navigate(['/warehouse', this.depoId, 'batches', batch.id, 'edit']);
   }
 
   onDeleteBatch(batch: BatchSummaryDto): void {
@@ -868,6 +886,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           if (this.expandedBatchId === batchToDelete.id) {
             this.expandedBatchId = null;
             this.expandedBatchAssets = [];
+            this.resetExpandedBatchAssetState();
           }
           this.batches = this.batches.filter(b => b.id !== batchToDelete.id);
           this.filteredBatches = this.applyBatchSearch(this.batches);
