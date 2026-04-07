@@ -124,6 +124,11 @@ export class ErrorHandler {
   static translateErrorMessage(message: string, translate?: TranslateService): string {
     if (!message || !translate) return message;
 
+    // API returns ngx-translate keys in Message (e.g. warehouseInventory.errors.*)
+    if (message.startsWith('warehouseInventory.errors.')) {
+      return translate.instant(message);
+    }
+
     for (const { pattern, translationKey, extractParams } of TRANSLATABLE_ERROR_PATTERNS) {
       const match = message.match(pattern);
       if (match) {

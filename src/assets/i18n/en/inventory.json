@@ -124,7 +124,10 @@
     "failedToDeleteBatch": "Failed to delete batch",
     "showAllBatchAssets": "Show all",
     "showingAllBatchAssets": "Showing all {{count}} assets",
-    "usePagedBatchAssets": "Use pages"
+    "usePagedBatchAssets": "Use pages",
+    "errors": {
+      "lotLinkedToSupplyOrder": "You cannot delete or change this lot because it is linked to a supply order."
+    }
   },
   "assetDetails": {
     "title": "Asset Details",

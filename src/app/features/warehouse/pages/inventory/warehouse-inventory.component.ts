@@ -1126,7 +1126,8 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.translateService.get(['toast.failedToDelete', 'toast.error']).subscribe(translations => {
-            this.toastService.error(translations['toast.failedToDelete'], translations['toast.error']);
+            const errorMsg = ErrorHandler.extractAndTranslateErrorMessage(error, translations['toast.failedToDelete'], this.translateService);
+            this.toastService.error(errorMsg, translations['toast.error']);
           });
         }
       });
