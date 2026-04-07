@@ -140,9 +140,16 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy, AfterViewIni
 
   filterOptions: ExtendedFilterOptions = {
     itemTypeOptions: ['Ammunition', 'Explosive', 'Weapon'],
-    ammunitionTypeOptions: ['Small', 'Medium', 'Large'], // These map to backend Enums often
+    ammunitionTypeOptions: [
+      { label: 'newIssueRequest.ammunitionTypeSmall', value: 'Small' },
+      { label: 'newIssueRequest.ammunitionTypeMedium', value: 'Medium' },
+      { label: 'newIssueRequest.ammunitionTypeLarge', value: 'Large' }
+    ],
     bulletDiameters: [],
-    linkedOptions: ['Linked', 'Not Linked'],
+    linkedOptions: [
+      { label: 'newIssueRequest.linkedOptionLinked', value: 'Linked' },
+      { label: 'newIssueRequest.linkedOptionNotLinked', value: 'Not Linked' }
+    ],
     natureOptions: [],
     orderPriorities: [],
     weaponTypeOptions: [],

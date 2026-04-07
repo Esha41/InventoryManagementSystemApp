@@ -38,12 +38,12 @@ export class IssueRequestFilterService {
 
       if (filterState.selectedItemType === 'Ammunition') {
         const diameterLabel = cartridge.bulletDiameterLabel ?? '';
-        const linkedLabel = cartridge.linkedLabel ?? '';
+        const linkedLabelForFilter = cartridge.linkedLabelEn ?? cartridge.linkedLabel ?? '';
         const natureLabel = cartridge.natureLabel ?? '';
         const nsn = cartridge.ncn ?? '';
 
         const byDiameter = !filterState.selectedBulletDiameter || filterState.selectedBulletDiameter === diameterLabel;
-        const byLinked = !filterState.selectedLinked || filterState.selectedLinked === linkedLabel;
+        const byLinked = !filterState.selectedLinked || filterState.selectedLinked === linkedLabelForFilter;
         const byNature = !filterState.selectedNature || filterState.selectedNature === natureLabel;
 
         const nsnFilterLower = filterState.selectedNSN?.toLowerCase() ?? '';

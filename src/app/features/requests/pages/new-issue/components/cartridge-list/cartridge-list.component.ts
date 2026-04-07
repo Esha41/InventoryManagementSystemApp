@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
-import { DropdownComponent } from '@components/dropdown/dropdown.component';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { OrderService } from '@services/order.service';
 import { ConfigService } from '@services/config.service';
 import { ItemTypeValidationService } from '@services/item-type-validation.service';
@@ -75,9 +75,9 @@ export class CartridgeListComponent {
   @Input() itemTypeOptions: string[] = [];
 
   // Ammunition Options
-  @Input() ammunitionTypeOptions: string[] = [];
+  @Input() ammunitionTypeOptions: Array<string | DropdownOption<string>> = [];
   @Input() bulletDiameters: string[] = [];
-  @Input() linkedOptions: string[] = [];
+  @Input() linkedOptions: Array<string | DropdownOption<string>> = [];
   @Input() natureOptions: string[] = [];
 
   // Weapon Options

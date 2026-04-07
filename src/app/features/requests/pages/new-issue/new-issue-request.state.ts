@@ -26,9 +26,9 @@ export interface FilterState {
 
 export interface FilterOptions {
   itemTypeOptions: string[];
-  ammunitionTypeOptions: string[];
+  ammunitionTypeOptions: DropdownOption<string>[] | string[];
   bulletDiameters: string[];
-  linkedOptions: string[];
+  linkedOptions: DropdownOption<string>[] | string[];
   natureOptions: string[];
   orderPriorities: DropdownOption<string>[] | string[]; // Allow objects or strings
 
