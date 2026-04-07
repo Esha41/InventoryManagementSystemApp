@@ -124,5 +124,30 @@ export class WarehouseInventoryFormatterService {
     if (!asset) return '';
     return `${this.getAssetItemName(asset)} (${asset.serialNumber || 'No Serial'})`;
   }
+
+  getAssetDepartmentLabel(asset: AssetDto | null | undefined): string {
+    if (!asset?.department) return '-';
+    const lang = getCurrentLang(this.translateService);
+    return getLocalizedName(asset.department, lang) || '-';
+  }
+
+  getAssetCustodianLabel(asset: AssetDto | null | undefined): string {
+    if (!asset?.custodian) return '-';
+    const lang = getCurrentLang(this.translateService);
+    const c = asset.custodian;
+    return (lang === 'ar' ? (c.nameAr || c.nameEn) : (c.nameEn || c.nameAr)) || c.militaryId || '-';
+  }
+
+  formatAssetPurchasePrice(price?: number | null): string {
+    if (price == null || Number.isNaN(Number(price))) return '-';
+    return formatNumberUtil(Number(price));
+  }
+
+  truncateText(text: string | null | undefined, maxLen: number): string {
+    if (!text) return '-';
+    const t = text.trim();
+    if (!t) return '-';
+    return t.length <= maxLen ? t : `${t.slice(0, maxLen)}…`;
+  }
 }
 

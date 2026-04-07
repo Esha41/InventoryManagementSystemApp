@@ -49,7 +49,8 @@ export class WarehouseInventoryCrudService {
     detail: InventoryDetailDto,
     inventory: InventoryDto,
     updateDetailDto: UpdateInventoryDetailDto,
-    updateInventoryDto?: UpdateInventoryDto
+    updateInventoryDto?: UpdateInventoryDto,
+    files?: File[]
   ): Observable<EditInventoryDetailResult> {
     // Update the inventory with modified detail and invoice information
     const finalUpdateInventoryDto: UpdateInventoryDto = updateInventoryDto || {
@@ -77,7 +78,8 @@ export class WarehouseInventoryCrudService {
       }
     );
 
-    return this.inventoryService.update(inventory.id, finalUpdateInventoryDto)
+    const filesItemId = detail.itemId;
+    return this.inventoryService.update(inventory.id, finalUpdateInventoryDto, files, filesItemId)
       .pipe(
         switchMap((updatedInventory: InventoryDto) => {
           // Show success message

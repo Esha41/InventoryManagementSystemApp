@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { BatchDto, BatchSummaryDto, BulkUpdateBatchAssetsDto } from '@models/batch.model';
+import { BatchDto, BatchSummaryDto, BulkUpdateBatchAssetsDto, UpdateBatchDto } from '@models/batch.model';
 import { PagedListRequest, PaginatedList } from '@models/pagination.model';
 import { ConfigService } from './config.service';
 import { ApiService } from './api.service';
@@ -79,8 +79,16 @@ export class BatchService {
         return this.apiService.get<BatchDto | null>(`${this.basePath}/by-number/${encoded}`, params);
     }
 
-    bulkUpdateAssets(batchId: number, dto: BulkUpdateBatchAssetsDto): Observable<boolean> {
-        return this.apiService.put<boolean>(`${this.basePath}/${batchId}/assets`, dto);
+    updateBatch(batchId: number, dto: UpdateBatchDto): Observable<boolean> {
+        return this.apiService.put<boolean>(`${this.basePath}/${batchId}`, dto);
+    }
+
+    bulkUpdateAssets(batchId: number, dto: BulkUpdateBatchAssetsDto, files?: File[]): Observable<boolean> {
+        // Always send multipart/form-data to keep the API consistent with other endpoints (Asset bulk, Inventory update).
+        const formData = new FormData();
+        formData.append('dtoJson', JSON.stringify(dto));
+        (files || []).forEach(f => formData.append('files', f));
+        return this.apiService.put<boolean>(`${this.basePath}/${batchId}/assets`, formData);
     }
 
     delete(id: number): Observable<void> {

@@ -43,6 +43,28 @@
         "assetTagTaken": "هذه علامة الأصل مستخدمة بالفعل لأصل آخر",
         "identificationDetails": "تفاصيل التعريف",
         "additionalDetails": "تفاصيل إضافية",
+        "assignment": {
+            "section": "التعيين (اختياري)",
+            "assignType": "نوع التعيين",
+            "selectAssignType": "اختر نوع التعيين",
+            "modeNone": "بدون تعيين",
+            "modeDepartment": "تعيين للقسم فقط",
+            "modeEmployee": "تعيين لموظف",
+            "modeHint": "اختر أحدهما: تعيين لقسم فقط، أو تعيين لموظف فقط (كمسؤول عن العهدة). لا يمكن اختيار الاثنين معاً.",
+            "bulkModeHint": "تنطبق هذه الخيارات على كل الأصول المُنشأة في هذه العملية الجماعية.",
+            "employeeCannotAssign": "لا يمكن استخدام هذا الموظف للتعيين. اختر موظفاً آخر أو استخدم التعيين للقسم فقط.",
+            "department": "القسم",
+            "employee": "الموظف",
+            "selectDepartment": "اختر القسم",
+            "selectEmployee": "اختر الموظف",
+            "addEmployee": "إضافة موظف جديد",
+            "notes": "ملاحظات التعيين",
+            "notesPlaceholder": "ملاحظات اختيارية تُحفظ مع التعيين",
+            "notesHint": "تُحفظ الملاحظات الاختيارية مع التعيين عند التعيين لقسم أو لموظف."
+        },
+        "deliveryReceipt": "إيصال التسليم",
+        "deliveryReceiptInformation": "معلومات إيصال التسليم",
+        "enterDeliveryReceipt": "أدخل مرجع إيصال التسليم",
         "mode": {
             "single": "إدخال فردي",
             "bulk": "إدخال جماعي"

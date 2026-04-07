@@ -1,8 +1,8 @@
-<table class="w-full">
+<table class="w-full min-w-0 table-fixed">
   <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
     <tr>
       <th scope="col"
-        class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+        class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider w-[24%] min-w-0 align-top">
         <button type="button" (click)="toggleSort('itemName')"
           class="inline-flex items-center gap-1 max-w-full cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
           {{ 'warehouseInventory.itemName' | translate }}
@@ -10,7 +10,7 @@
         </button>
       </th>
       <th scope="col"
-        class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+        class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider w-[11%] min-w-0 align-top">
         <button type="button" (click)="toggleSort('supplier')"
           class="inline-flex items-center gap-1 max-w-full cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
           {{ 'warehouseInventory.supplier' | translate }}
@@ -18,7 +18,7 @@
         </button>
       </th>
       <th scope="col"
-        class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+        class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider w-[11%] min-w-0 align-top">
         <button type="button" (click)="toggleSort('manufacturer')"
           class="inline-flex items-center gap-1 max-w-full cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
           {{ 'warehouseInventory.manufacturer' | translate }}
@@ -30,7 +30,7 @@
         {{ 'warehouseInventory.primaryPurpose' | translate }}
       </th>
       <th scope="col"
-        class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+        class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider w-[7%] min-w-0 align-top">
         <button type="button" (click)="toggleSort('lot')"
           class="inline-flex items-center gap-1 max-w-full cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
           {{ 'warehouseInventory.lot' | translate }}
@@ -38,7 +38,7 @@
         </button>
       </th>
       <th scope="col"
-        class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+        class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider w-[7%] min-w-0 align-top">
         <button type="button" (click)="toggleSort('quantity')"
           class="inline-flex items-center gap-1 max-w-full cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
           {{ 'warehouseInventory.quantity' | translate }}
@@ -46,7 +46,7 @@
         </button>
       </th>
       <th scope="col"
-        class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+        class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider w-[8%] min-w-0 align-top">
         <button type="button" (click)="toggleSort('readyForIssue')"
           class="inline-flex items-center gap-1 max-w-full cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
           {{ 'warehouseInventory.readyForIssue' | translate }}
@@ -54,7 +54,7 @@
         </button>
       </th>
       <th scope="col"
-        class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+        class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider w-[9%] min-w-0 align-top">
         <button type="button" (click)="toggleSort('expiryDate')"
           class="inline-flex items-center gap-1 max-w-full cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
           {{ 'warehouseInventory.expiryDate' | translate }}
@@ -62,14 +62,14 @@
         </button>
       </th>
       <th scope="col"
-        class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+        class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider w-[8%] min-w-0 align-top">
         <button type="button" (click)="toggleSort('invoiceNumber')"
           class="inline-flex items-center gap-1 max-w-full cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
           {{ 'warehouseInventory.invoiceNumber' | translate }}
           <lucide-angular [img]="sortIcon('invoiceNumber')" class="h-3.5 w-3.5 shrink-0 text-[var(--color-text-muted)]"></lucide-angular>
         </button>
       </th>
-      <th scope="col" class="px-6 py-3 text-end text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider w-36">
+      <th scope="col" class="px-6 py-3 text-end text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider w-36 shrink-0 align-top">
         {{ 'warehouseInventory.actions' | translate }}
       </th>
     </tr>
@@ -84,13 +84,13 @@
     <!-- Inventory Items -->
     <tr *ngFor="let detail of items; trackBy: trackById"
       class="bg-[var(--color-background)] hover:bg-[var(--color-background-hover)] transition-colors">
-      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)] text-start">
+      <td class="inv-table-cell-wrap px-6 py-4 text-sm font-medium text-[var(--color-text)] text-start align-top min-w-0 break-words">
         {{ getItemName(detail) }}
       </td>
-      <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
+      <td class="inv-table-cell-wrap px-6 py-4 text-sm text-[var(--color-text)] text-start align-top min-w-0 break-words">
         {{ getSupplierName(detail) }}
       </td>
-      <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
+      <td class="inv-table-cell-wrap px-6 py-4 text-sm text-[var(--color-text)] text-start align-top min-w-0 break-words">
         {{ getManufacturerName(detail) }}
       </td>
       <td *ngIf="showPrimaryPurposeColumn" class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
@@ -119,7 +119,7 @@
           <span class="text-[var(--color-text-muted)]">-</span>
         </ng-template>
       </td>
-      <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium w-36">
+      <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium w-36 shrink-0 align-top">
         <div class="inline-flex items-center gap-2">
           <!-- Edit Button - Only for inventory items (not static) -->
           <ng-container *ngIf="!isStaticItem(detail)">

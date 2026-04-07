@@ -28,9 +28,19 @@ export interface BatchAssetUpdateItem {
     warrantyExpiryDate?: Date | string;
     condition?: string;
     purchasePrice?: number;
+    deliveryReceipt?: string;
     notes?: string;
+    /** When true, apply assignee fields (or clear assignment if both IDs are empty). */
+    updateAssignment?: boolean;
+    assignToDepartmentId?: number | null;
+    assignToEmployeeId?: number | null;
+    assignmentNotes?: string;
 }
 
 export interface BulkUpdateBatchAssetsDto {
     items: BatchAssetUpdateItem[];
+}
+
+export interface UpdateBatchDto {
+    batchNumber: string;
 }
