@@ -65,24 +65,39 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Set LDAP mode as default in non-development environments
     if (!environment.production) {
-      this.isLdapMode = false; // Keep password login first in development
+      this.isLdapMode = false;
     } else {
-      this.isLdapMode = true; // LDAP first in production/staging
+      this.isLdapMode = true;
     }
 
     this.applyPasswordValidators();
 
-    // Check if user is already logged in
     if (this.backendAuth.isAuthenticated()) {
-      this.router.navigateByUrl(getDefaultLandingUrl(this.backendAuth));
+      this.navigateAfterSessionRestored();
       return;
     }
 
-    // Always reset captcha state on component initialization
-    // Backend handles failed attempts count reset after successful login
-    // Backend only counts failed attempts after the most recent successful login
+    this.backendAuth.restoreSessionSilently().subscribe(restored => {
+      if (restored) {
+        this.navigateAfterSessionRestored();
+        return;
+      }
+      this.initLoginFormState();
+      this.cdr.markForCheck();
+    });
+  }
+
+  private navigateAfterSessionRestored(): void {
+    const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+    const url =
+      returnUrl && returnUrl.startsWith('/') && !returnUrl.startsWith('//')
+        ? returnUrl
+        : getDefaultLandingUrl(this.backendAuth);
+    void this.router.navigateByUrl(url);
+  }
+
+  private initLoginFormState(): void {
     this.showCaptcha = false;
     this.captchaImage = '';
     this.captchaId = '';
@@ -90,12 +105,9 @@ export class LoginComponent implements OnInit {
     this.captcha?.clearValidators();
     this.captcha?.updateValueAndValidity();
 
-    // Reset failed attempts counter - backend will determine if captcha is needed
-    // Backend checks failed attempts after most recent successful login
     this.failedLoginAttempts = 0;
     sessionStorage.removeItem('loginFailedAttempts');
 
-    // Check for session conflict query parameter
     const sessionConflict = this.route.snapshot.queryParams['sessionConflict'];
     if (sessionConflict === 'true') {
       this.loginError = this.translate.instant('auth.login.errors.singleSession');
