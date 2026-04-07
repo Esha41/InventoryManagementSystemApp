@@ -18,6 +18,8 @@ import { formatDateShort } from '@utils/format.utils';
 import { FileEntityType } from '@services/file-upload.service';
 import { HttpClient } from '@angular/common/http';
 import { trackByKey } from '@utils/trackby.utils';
+import { FileUploadService } from '@services/file-upload.service';
+import { FileUploadDto } from '@models/file-upload.model';
 
 type TabType = 'overview' | 'stock';
 
@@ -57,6 +59,7 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
     private translateService: TranslateService,
     private translationService: TranslationService,
     private http: HttpClient,
+    private fileUploadService: FileUploadService,
     private cdr: ChangeDetectorRef,
     private warehouseInventoryFormatter: WarehouseInventoryFormatterService
   ) { }
@@ -97,6 +100,34 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
     this.blobUrls.clear();
   }
 
+  get deliveryReceiptFiles(): FileUploadDto[] {
+    return (this.inventoryDetail?.files ?? []) as FileUploadDto[];
+  }
+
+  openDeliveryReceiptFile(fileId: number): void {
+    if (!fileId) return;
+    this.fileUploadService.getFileBlob(fileId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (blob: Blob) => {
+          const objectUrl = window.URL.createObjectURL(blob);
+          this.blobUrls.add(objectUrl);
+          window.open(objectUrl, '_blank', 'noopener');
+          // Revoke after a minute; we also revoke all on destroy.
+          setTimeout(() => {
+            try { window.URL.revokeObjectURL(objectUrl); } catch {}
+            this.blobUrls.delete(objectUrl);
+          }, 60_000);
+        },
+        error: () => {
+          this.translateService.get(['common.failedToLoadFile', 'toast.error']).subscribe(t => {
+            // Reuse toast pattern? This component currently doesn't inject ToastService; keep it silent but log.
+            console.error(t['common.failedToLoadFile'] || 'Failed to open file');
+          });
+        }
+      });
+  }
+
   private loadItemDetails(): void {
     this.loading = true;
     this.error = null;
@@ -120,6 +151,30 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
             // Load image for stock tab
             if (this.itemId) {
               this.loadImage(this.itemId);
+            }
+
+            // Some list endpoints may omit `files` for performance; if so, re-fetch the parent inventory by ID
+            // and re-resolve this detail to ensure Delivery Receipt attachments are available.
+            const hasFiles = Array.isArray(this.inventoryDetail.files) && this.inventoryDetail.files.length > 0;
+            if (!hasFiles && this.inventoryDetail.inventoryId) {
+              this.inventoryService.getById(this.inventoryDetail.inventoryId)
+                .pipe(takeUntil(this.destroy$))
+                .subscribe({
+                  next: (inv) => {
+                    const enriched = inv?.inventoryDetails?.find(d => d.id === this.inventoryDetailId) || null;
+                    if (enriched) {
+                      // Replace with enriched detail so bindings (including `files`) are consistent with edit modal.
+                      const normalizedFiles = Array.isArray(enriched.files) ? enriched.files : [];
+                      this.inventoryDetail = {
+                        ...this.inventoryDetail!,
+                        ...enriched,
+                        files: normalizedFiles
+                      };
+                      this.cdr.markForCheck();
+                    }
+                  },
+                  error: () => { /* no-op: keep base detail */ }
+                });
             }
             // Load lots if stock tab is active
             if (this.activeTab === 'stock') {
