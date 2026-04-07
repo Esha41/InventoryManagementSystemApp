@@ -27,6 +27,10 @@
                 <p class="text-sm text-[var(--color-text-muted)]">
                     {{ 'importDialog.description' | translate: { entityName: entityName } }}
                 </p>
+                <p *ngIf="showRequiredFieldLegend" class="text-sm text-[var(--color-text)]">
+                    <span class="text-[var(--color-error)] font-semibold" aria-hidden="true">*</span>
+                    {{ 'importDialog.requiredFieldLegend' | translate }}
+                </p>
 
                 <!-- Download Template Button -->
                 <div class="flex justify-end" *ngIf="!hideTemplateDownload">

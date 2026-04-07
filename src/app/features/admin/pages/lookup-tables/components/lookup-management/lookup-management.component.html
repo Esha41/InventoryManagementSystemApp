@@ -5,8 +5,25 @@
   </app-card>
 
   <ng-container *ngIf="lookupTables.length > 0">
-  <!-- Header with Add Button -->
-  <div class="flex items-center justify-end">
+  <!-- Header with Actions -->
+  <div class="flex flex-wrap items-center justify-end gap-2">
+    <ng-container *ngIf="isEmployeeTable">
+      <button (click)="onDownloadTemplate()"
+        class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-background-muted)] transition-colors">
+        <lucide-angular [img]="Download" class="h-3.5 w-3.5"></lucide-angular>
+        {{ 'common.downloadTemplate' | translate }}
+      </button>
+      <button (click)="onExportEmployees()"
+        class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white bg-[var(--color-success)] hover:opacity-90 transition-colors">
+        <lucide-angular [img]="Download" class="h-3.5 w-3.5"></lucide-angular>
+        {{ 'common.export' | translate }}
+      </button>
+      <button *ngIf="canAdd()" (click)="onOpenImport()"
+        class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+        <lucide-angular [img]="Upload" class="h-3.5 w-3.5"></lucide-angular>
+        {{ 'common.import' | translate }}
+      </button>
+    </ng-container>
     <button *ngIf="canAdd()" (click)="onAddLookup()"
       class="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors">
       <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
@@ -53,15 +70,15 @@
         <div *ngIf="selectedTable.hasCode || selectedTable.name === 'ItemType' || selectedTable.name === 'Unit' || selectedTable.name === 'Employee'"
           class="grid grid-cols-2 gap-2 text-xs border-t border-[var(--color-border-muted)] pt-3 mt-1">
           <div *ngIf="selectedTable.hasCode">
-            <span class="text-[var(--color-text-muted)] block mb-0.5">{{ (selectedTable.name === 'Employee' ? 'lookupManagement.militaryId' : 'lookupManagement.code') | translate }}</span>
+            <span class="text-[var(--color-text-muted)] block mb-0.5 whitespace-nowrap">{{ (selectedTable.name === 'Employee' ? 'lookupManagement.militaryId' : 'lookupManagement.code') | translate }}<span *ngIf="selectedTable.name === 'Employee'" class="text-[var(--color-error)]" aria-hidden="true">&nbsp;*</span></span>
             <span class="font-medium text-[var(--color-text)] font-mono">{{ item.code || '-' }}</span>
           </div>
           <div *ngIf="selectedTable.name === 'Employee'">
-            <span class="text-[var(--color-text-muted)] block mb-0.5">{{ 'lookupManagement.department' | translate }}</span>
+            <span class="text-[var(--color-text-muted)] block mb-0.5 whitespace-nowrap">{{ 'lookupManagement.department' | translate }}<span class="text-[var(--color-error)]" aria-hidden="true">&nbsp;*</span></span>
             <span class="font-medium text-[var(--color-text)]">{{ item.departmentName || '-' }}</span>
           </div>
           <div *ngIf="selectedTable.name === 'Employee'">
-            <span class="text-[var(--color-text-muted)] block mb-0.5">{{ 'lookupManagement.rank' | translate }}</span>
+            <span class="text-[var(--color-text-muted)] block mb-0.5 whitespace-nowrap">{{ 'lookupManagement.rank' | translate }}<span class="text-[var(--color-error)]" aria-hidden="true">&nbsp;*</span></span>
             <span class="font-medium text-[var(--color-text)]">{{ item.rankName || '-' }}</span>
           </div>
           <div *ngIf="selectedTable.name === 'Employee'">
@@ -93,24 +110,24 @@
         <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
           <tr>
             <th
-              class="px-6 py-3 text-center align-middle text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-              {{ 'lookupManagement.nameEn' | translate }}
+              class="px-6 py-3 text-center align-middle text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider whitespace-nowrap">
+              {{ 'lookupManagement.nameEn' | translate }}<span *ngIf="selectedTable.name === 'Employee'" class="text-[var(--color-error)]" aria-hidden="true">&nbsp;*</span>
             </th>
             <th
               class="px-6 py-3 text-center align-middle text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
               {{ 'lookupManagement.nameAr' | translate }}
             </th>
             <th *ngIf="selectedTable.hasCode"
-              class="px-6 py-3 text-center align-middle text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-              {{ (selectedTable.name === 'Employee' ? 'lookupManagement.militaryId' : 'lookupManagement.code') | translate }}
+              class="px-6 py-3 text-center align-middle text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider whitespace-nowrap">
+              {{ (selectedTable.name === 'Employee' ? 'lookupManagement.militaryId' : 'lookupManagement.code') | translate }}<span *ngIf="selectedTable.name === 'Employee'" class="text-[var(--color-error)]" aria-hidden="true">&nbsp;*</span>
             </th>
             <th *ngIf="selectedTable.name === 'Employee'"
-              class="px-6 py-3 text-center align-middle text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-              {{ 'lookupManagement.department' | translate }}
+              class="px-6 py-3 text-center align-middle text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider whitespace-nowrap">
+              {{ 'lookupManagement.department' | translate }}<span class="text-[var(--color-error)]" aria-hidden="true">&nbsp;*</span>
             </th>
             <th *ngIf="selectedTable.name === 'Employee'"
-              class="px-6 py-3 text-center align-middle text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-              {{ 'lookupManagement.rank' | translate }}
+              class="px-6 py-3 text-center align-middle text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider whitespace-nowrap">
+              {{ 'lookupManagement.rank' | translate }}<span class="text-[var(--color-error)]" aria-hidden="true">&nbsp;*</span>
             </th>
             <th *ngIf="selectedTable.name === 'Employee'"
               class="px-6 py-3 text-center align-middle text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
@@ -239,3 +256,18 @@
   [message]="('lookupManagement.deleteConfirm' | translate) + ' ' + getLookupItemName(selectedLookupItem) + '?'"
   [confirmText]="'common.delete' | translate" confirmColor="error" (confirmed)="confirmLookupDelete()"
   (cancelled)="showLookupDeleteConfirm = false" />
+
+<!-- Employee Import Dialog -->
+<app-import-dialog [isOpen]="showImportModal" [entityName]="'employee'"
+  [title]="'common.import' | translate"
+  [showRequiredFieldLegend]="true"
+  (close)="onImportDialogClose()"
+  (preview)="onImportPreview($event)"
+  (downloadTemplate)="onDownloadTemplate()">
+</app-import-dialog>
+
+<!-- Employee Import Preview -->
+<app-import-preview-dialog *ngIf="showPreviewModal && previewData" [previewData]="previewData"
+  [assetType]="'weapon'" [importPreviewMode]="'allowSkipInvalid'"
+  (confirm)="onPreviewConfirmed()" (cancel)="onPreviewCancelled()">
+</app-import-preview-dialog>

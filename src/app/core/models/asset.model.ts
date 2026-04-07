@@ -7,7 +7,7 @@
 import { WeaponDto } from './weapon.model';
 import { DepotDto } from './depot.model';
 import { FileUploadDto } from './file-upload.model';
-import { DepartmentDto } from './lookup.model';
+import { DepartmentDto, LookupItem } from './lookup.model';
 
 /**
  * Asset Status Enum
@@ -64,12 +64,18 @@ export interface AssetDto {
     deliveryReceipt?: string;
     notes?: string;
     isDeleted: boolean;
+    supplierId?: number;
+    manufacturerId?: number;
+    primaryPurposId?: number;
 
     // Navigation properties
     item?: WeaponDto;
     depot?: DepotDto;
     department?: DepartmentDto;
     custodian?: EmployeeDto;
+    supplier?: LookupItem;
+    manufacturer?: LookupItem;
+    primaryPurpos?: LookupItem;
     images?: FileUploadDto[];
 }
 
@@ -87,6 +93,9 @@ export interface CreateAssetDto {
     purchasePrice?: number;
     deliveryReceipt?: string;
     notes?: string;
+    supplierId?: number;
+    manufacturerId?: number;
+    primaryPurposId?: number;
     /** Optional: assign to this employee on intake (maps to backend AssignToEmployeeId). */
     assignToEmployeeId?: number;
     /** Optional: assign to this department on intake (maps to backend AssignToDepartmentId). */
@@ -119,6 +128,9 @@ export interface UpdateAssetDto {
     purchasePrice?: number;
     deliveryReceipt?: string;
     notes?: string;
+    supplierId?: number | null;
+    manufacturerId?: number | null;
+    primaryPurposId?: number | null;
 }
 
 /**

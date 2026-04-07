@@ -85,13 +85,6 @@ export class WarehouseInventoryFormatterService {
   }
 
   /**
-   * Get asset item number
-   */
-  getAssetItemNo(asset: AssetDto): string {
-    return asset.item?.itemNo || '-';
-  }
-
-  /**
    * Get asset status label (translated)
    */
   getAssetStatusLabel(asset: AssetDto): string {
@@ -136,6 +129,24 @@ export class WarehouseInventoryFormatterService {
     const lang = getCurrentLang(this.translateService);
     const c = asset.custodian;
     return (lang === 'ar' ? (c.nameAr || c.nameEn) : (c.nameEn || c.nameAr)) || c.militaryId || '-';
+  }
+
+  getAssetSupplierLabel(asset: AssetDto | null | undefined): string {
+    if (!asset?.supplier) return '-';
+    const lang = getCurrentLang(this.translateService);
+    return getLocalizedName(asset.supplier, lang) || '-';
+  }
+
+  getAssetManufacturerLabel(asset: AssetDto | null | undefined): string {
+    if (!asset?.manufacturer) return '-';
+    const lang = getCurrentLang(this.translateService);
+    return getLocalizedName(asset.manufacturer, lang) || '-';
+  }
+
+  getAssetPrimaryPurposeLabel(asset: AssetDto | null | undefined): string {
+    if (!asset?.primaryPurpos) return '-';
+    const lang = getCurrentLang(this.translateService);
+    return getLocalizedName(asset.primaryPurpos, lang) || '-';
   }
 
   formatAssetPurchasePrice(price?: number | null): string {

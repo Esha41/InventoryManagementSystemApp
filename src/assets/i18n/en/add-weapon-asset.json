@@ -43,6 +43,12 @@
         "assetTagTaken": "This asset tag is already assigned to another asset",
         "identificationDetails": "Identification Details",
         "additionalDetails": "Additional Details",
+        "supplier": "Supplier",
+        "manufacturer": "Manufacturer",
+        "primaryPurpose": "Primary purpose",
+        "selectSupplier": "Select supplier (optional)",
+        "selectManufacturer": "Select manufacturer (optional)",
+        "selectPrimaryPurpose": "Select primary purpose (optional)",
         "assignment": {
             "section": "Assignment (optional)",
             "assignType": "Assignment type",

@@ -86,34 +86,38 @@
                             {{ 'editBatch.noAssets' | translate }}
                         </div>
                         <div *ngIf="expandedBatchAssets.length > 0" class="overflow-x-auto max-w-full border border-[var(--color-border)] rounded-lg bg-[var(--color-background)]">
-                        <table class="w-full min-w-[56rem] text-sm">
+                        <table class="w-full min-w-[64rem] text-sm">
                             <thead>
                                 <tr class="border-b border-[var(--color-border)] bg-[var(--color-background-muted)]">
                                     <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'warehouseInventory.itemName' | translate }}</th>
-                                    <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'warehouseInventory.itemNo' | translate }}</th>
                                     <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'warehouseInventory.serialNumber' | translate }}</th>
-                                    <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'warehouseInventory.status' | translate }}</th>
                                     <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'warehouseInventory.rfidTag' | translate }}</th>
+                                    <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'warehouseInventory.status' | translate }}</th>
                                     <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'warehouseInventory.purchaseDate' | translate }}</th>
                                     <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'warehouseInventory.warrantyExpiry' | translate }}</th>
                                     <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'warehouseInventory.purchasePrice' | translate }}</th>
                                     <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'warehouseInventory.department' | translate }}</th>
                                     <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'warehouseInventory.assignee' | translate }}</th>
+                                    <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'assetDetails.supplier' | translate }}</th>
+                                    <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'assetDetails.manufacturer' | translate }}</th>
+                                    <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'assetDetails.primaryPurpose' | translate }}</th>
                                     <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] min-w-[8rem]">{{ 'warehouseInventory.assetNotes' | translate }}</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-[var(--color-border-muted)]">
                                 <tr *ngFor="let asset of expandedBatchAssets; trackBy: trackById">
                                     <td class="px-3 py-2 align-top break-words max-w-[14rem] text-[var(--color-text)]">{{ getAssetItemName(asset) }}</td>
-                                    <td class="px-3 py-2 align-top break-words text-[var(--color-text)]">{{ getAssetItemNo(asset) }}</td>
                                     <td class="px-3 py-2 align-top break-all text-[var(--color-text)]">{{ asset.serialNumber || '-' }}</td>
-                                    <td class="px-3 py-2 align-top whitespace-nowrap text-[var(--color-text)]">{{ getAssetStatusLabel(asset) }}</td>
                                     <td class="px-3 py-2 align-top break-all text-[var(--color-text)]">{{ asset.rfid || '-' }}</td>
+                                    <td class="px-3 py-2 align-top whitespace-nowrap text-[var(--color-text)]">{{ getAssetStatusLabel(asset) }}</td>
                                     <td class="px-3 py-2 align-top whitespace-nowrap text-[var(--color-text)]">{{ formatDate(asset.purchaseDate) }}</td>
                                     <td class="px-3 py-2 align-top whitespace-nowrap text-[var(--color-text)]">{{ formatDate(asset.warrantyExpiryDate) }}</td>
                                     <td class="px-3 py-2 align-top whitespace-nowrap text-[var(--color-text)]">{{ formatAssetPurchasePrice(asset.purchasePrice) }}</td>
                                     <td class="px-3 py-2 align-top break-words max-w-[10rem] text-[var(--color-text)]">{{ getAssetDepartmentLabel(asset) }}</td>
                                     <td class="px-3 py-2 align-top break-words max-w-[10rem] text-[var(--color-text)]">{{ getAssetCustodianLabel(asset) }}</td>
+                                    <td class="px-3 py-2 align-top break-words max-w-[10rem] text-[var(--color-text)]">{{ getAssetSupplierLabel(asset) }}</td>
+                                    <td class="px-3 py-2 align-top break-words max-w-[10rem] text-[var(--color-text)]">{{ getAssetManufacturerLabel(asset) }}</td>
+                                    <td class="px-3 py-2 align-top break-words max-w-[10rem] text-[var(--color-text)]">{{ getAssetPrimaryPurposeLabel(asset) }}</td>
                                     <td class="px-3 py-2 align-top break-words text-[var(--color-text-muted)] max-w-[12rem]" [title]="asset.notes || ''">{{ truncateAssetNotes(asset) }}</td>
                                 </tr>
                             </tbody>

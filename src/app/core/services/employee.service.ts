@@ -1,20 +1,25 @@
 import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { ConfigService } from './config.service';
 import { EmployeeDto } from '@core/models/asset.model';
 import { CreateUpdateEmployeeDto } from '@core/models/employee.model';
+import { APIOperationResponse } from '@models/api-response.model';
+import { ImportResult } from '@models/import-result.model';
+import { IImportableService } from '@core/interfaces/importable-service.interface';
 
 @Injectable({
   providedIn: 'root'
 })
-export class EmployeeService {
+export class EmployeeService implements IImportableService {
   private readonly baseEndpoint = '/Employee';
 
   constructor(
     private apiService: ApiService,
-    private config: ConfigService
+    private config: ConfigService,
+    private http: HttpClient
   ) { }
 
   /**
@@ -88,6 +93,40 @@ export class EmployeeService {
         return throwError(() => error);
       })
     );
+  }
+
+  generateImportTemplate(language: string = 'en'): Observable<Blob> {
+    const url = `${this.config.apiUrl}${this.baseEndpoint}/template`;
+    const params = new HttpParams().set('language', language);
+    return this.http.get(url, { params, responseType: 'blob' });
+  }
+
+  importPreview(file: File, language: string = 'en'): Observable<APIOperationResponse<ImportResult>> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const params = new HttpParams().set('language', language);
+    return this.apiService.postRaw<ImportResult>(
+      `${this.baseEndpoint}/import-preview`,
+      formData,
+      { params }
+    );
+  }
+
+  importData(file: File, language: string = 'en'): Observable<APIOperationResponse<ImportResult>> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const params = new HttpParams().set('language', language);
+    return this.apiService.postRaw<ImportResult>(
+      `${this.baseEndpoint}/import`,
+      formData,
+      { params }
+    );
+  }
+
+  exportEmployees(language: string = 'en'): Observable<Blob> {
+    const url = `${this.config.apiUrl}${this.baseEndpoint}/export`;
+    const params = new HttpParams().set('language', language);
+    return this.http.get(url, { params, responseType: 'blob' });
   }
 }
 

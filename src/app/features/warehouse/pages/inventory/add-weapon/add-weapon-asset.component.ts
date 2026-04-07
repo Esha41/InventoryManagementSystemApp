@@ -69,6 +69,10 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
     availableWeapons: WeaponDto[] = [];
     employees: EmployeeDto[] = [];
     departments: LookupItem[] = [];
+    suppliers: LookupItem[] = [];
+    manufacturers: LookupItem[] = [];
+    /** Full list; per-row options may be filtered from the selected weapon's primaryPurposes. */
+    allPrimaryPurposes: LookupItem[] = [];
     employeeDropdownOptions: DropdownOption<number>[] = [];
     /** Assign-type choices: no assignment / department / employee (labels follow current language). */
     assignModeDropdownOptions: DropdownOption<WeaponAssignMode>[] = [];
@@ -169,7 +173,10 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
             assignToEmployeeId: [null as number | null],
             assignToDepartmentId: [null as number | null],
             assignmentNotes: ['', [Validators.maxLength(2000)]],
-            deliveryReceipt: ['', [Validators.maxLength(200)]]
+            deliveryReceipt: ['', [Validators.maxLength(200)]],
+            supplierId: [null as number | null],
+            manufacturerId: [null as number | null],
+            primaryPurposId: [null as number | null]
         });
         this.refreshAssignModeOptions();
 
@@ -203,6 +210,9 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
         return this.fb.group({
             itemId: [null, Validators.required],
             batchNumber: ['', [Validators.required, Validators.maxLength(500)]],
+            supplierId: [null as number | null],
+            manufacturerId: [null as number | null],
+            primaryPurposId: [null as number | null],
             serialNumber: ['', [Validators.maxLength(200)]],
             rfid: ['', [Validators.maxLength(500)]],
             purchaseDate: [''],
@@ -233,11 +243,14 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
             depot: this.lookupService.getDepots(),
             weapons: this.weaponService.getAll<WeaponDto>(),
             employees: this.employeeService.getEmployees(),
-            departments: this.lookupService.getDepartments()
+            departments: this.lookupService.getDepartments(),
+            suppliers: this.lookupService.getSuppliers(),
+            manufacturers: this.lookupService.getManufacturers(),
+            primaryPurposes: this.lookupService.getPrimaryPurposes()
         })
             .pipe(takeUntil(this.destroy$))
             .subscribe({
-                next: ({ depot, weapons, employees, departments }) => {
+                next: ({ depot, weapons, employees, departments, suppliers, manufacturers, primaryPurposes }) => {
                     this.currentDepot = depot.find(d => d.id === this.warehouseId) || null;
                     this.warehouseName = getLocalizedName(this.currentDepot, getCurrentLang(this.translateService)) ||
                         `${this.translateService.instant('addWeaponAsset.warehouse')} ${this.warehouseId}`;
@@ -245,6 +258,9 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
                     this.availableWeapons = weapons;
                     this.employees = (employees || []).filter(e => !e.isDeleted);
                     this.departments = (departments || []).filter(d => !d.isDeleted);
+                    this.suppliers = (suppliers || []).filter(s => !s.isDeleted);
+                    this.manufacturers = (manufacturers || []).filter(m => !m.isDeleted);
+                    this.allPrimaryPurposes = (primaryPurposes || []).filter(p => !p.isDeleted);
                     this.refreshEmployeeDropdownOptions();
                     this.refreshAssignModeOptions();
 
@@ -526,6 +542,50 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
         return !hasDept;
     }
 
+    readonly lookupOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null) => {
+        if (!option) return '';
+        const item =
+            typeof option === 'object' && option !== null && 'value' in option && (option as DropdownOption<LookupItem>).value != null
+                ? (option as DropdownOption<LookupItem>).value!
+                : (option as LookupItem);
+        return this.getLocalizedName(item);
+    };
+
+    /** Primary purpose options for a row: weapon-linked purposes when available, else full lookup list. */
+    getPrimaryPurposeOptionsForRow(index: number): LookupItem[] {
+        const itemId = this.getAssetFormGroup(index).get('itemId')?.value as number | null;
+        const weapon = itemId != null ? this.availableWeapons.find(w => w.id === itemId) : undefined;
+        const linked = weapon?.primaryPurposes;
+        if (linked?.length) {
+            return linked
+                .filter(p => p.id != null)
+                .map(p => ({ id: p.id, nameAr: p.nameAr ?? '', nameEn: p.nameEn ?? '' }));
+        }
+        return this.allPrimaryPurposes;
+    }
+
+    getPrimaryPurposeOptionsForBulk(): LookupItem[] {
+        const itemId = this.bulkForm.get('itemId')?.value as number | null;
+        const weapon = itemId != null ? this.availableWeapons.find(w => w.id === itemId) : undefined;
+        const linked = weapon?.primaryPurposes;
+        if (linked?.length) {
+            return linked
+                .filter(p => p.id != null)
+                .map(p => ({ id: p.id, nameAr: p.nameAr ?? '', nameEn: p.nameEn ?? '' }));
+        }
+        return this.allPrimaryPurposes;
+    }
+
+    onWeaponSelected(index: number): void {
+        this.getAssetFormGroup(index).patchValue({ primaryPurposId: null });
+        this.cdr.markForCheck();
+    }
+
+    onBulkWeaponSelected(): void {
+        this.bulkForm.patchValue({ primaryPurposId: null });
+        this.cdr.markForCheck();
+    }
+
     readonly weaponOptionLabel = (option: DropdownOption<WeaponDto> | WeaponDto | null) => {
         if (!option) return '';
         const weapon = 'value' in option ? option.value : option;
@@ -597,6 +657,9 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
             purchasePrice: asset.purchasePrice || undefined,
             deliveryReceipt: (formValue.deliveryReceipt?.trim && formValue.deliveryReceipt.trim()) || undefined,
             notes: asset.notes?.trim() || undefined,
+            supplierId: asset.supplierId ?? undefined,
+            manufacturerId: asset.manufacturerId ?? undefined,
+            primaryPurposId: asset.primaryPurposId ?? undefined,
             ...this.buildAssignmentFields(
                 asset.assignMode ?? 'none',
                 asset.assignToEmployeeId,
@@ -665,6 +728,9 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
             purchasePrice: val.purchasePrice || undefined,
             notes: val.notes?.trim() || undefined,
             deliveryReceipt: val.deliveryReceipt?.trim() || undefined,
+            supplierId: val.supplierId ?? undefined,
+            manufacturerId: val.manufacturerId ?? undefined,
+            primaryPurposId: val.primaryPurposId ?? undefined,
             ...assignment
         };
 
@@ -768,7 +834,10 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
             assignToEmployeeId: bulkData.assignToEmployeeId ?? undefined,
             assignToDepartmentId: bulkData.assignToDepartmentId ?? undefined,
             assignmentNotes: bulkData.assignmentNotes ?? undefined,
-            deliveryReceipt: bulkData.deliveryReceipt
+            deliveryReceipt: bulkData.deliveryReceipt,
+            supplierId: bulkData.supplierId ?? undefined,
+            manufacturerId: bulkData.manufacturerId ?? undefined,
+            primaryPurposId: bulkData.primaryPurposId ?? undefined
         }));
 
         this.router.navigate(['/warehouse', this.warehouseId, 'assets', 'add', 'bulk-entry']);
@@ -801,6 +870,9 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
                 purchasePrice: val.purchasePrice || undefined,
                 deliveryReceipt: val.deliveryReceipt?.trim() || undefined,
                 notes: val.notes?.trim() || undefined,
+                supplierId: val.supplierId ?? undefined,
+                manufacturerId: val.manufacturerId ?? undefined,
+                primaryPurposId: val.primaryPurposId ?? undefined,
                 ...assignment
             });
         }

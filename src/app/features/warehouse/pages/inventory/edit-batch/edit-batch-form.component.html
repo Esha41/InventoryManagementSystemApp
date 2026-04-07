@@ -11,7 +11,11 @@
   <div
     class="p-4 md:p-6 bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] shadow-custom-sm">
     <h3 class="text-lg font-semibold text-[var(--color-text)] mb-4">{{ 'editBatch.commonInfo' | translate }}</h3>
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
+      <div class="min-w-0">
+        <p class="text-sm text-[var(--color-text-muted)] mb-1">{{ 'editBatch.batchId' | translate }}</p>
+        <p class="text-base font-medium text-[var(--color-text)] font-mono tabular-nums">{{ batch.id }}</p>
+      </div>
       <div class="min-w-0 sm:col-span-1">
         <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="edit-batch-number">{{
           'warehouseInventory.batchNumber' | translate }}</label>
@@ -168,6 +172,15 @@
               class="px-3 py-2.5 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide min-w-[130px]">
               {{ 'editBatch.assignmentNotes' | translate }}</th>
             <th
+              class="px-3 py-2.5 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide min-w-[120px]">
+              {{ 'assetDetails.supplier' | translate }}</th>
+            <th
+              class="px-3 py-2.5 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide min-w-[120px]">
+              {{ 'assetDetails.manufacturer' | translate }}</th>
+            <th
+              class="px-3 py-2.5 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide min-w-[120px]">
+              {{ 'assetDetails.primaryPurpose' | translate }}</th>
+            <th
               class="px-3 py-2.5 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide min-w-[130px]">
               {{ 'addWeaponAsset.notes' | translate }}</th>
             <th class="px-2 py-2.5 w-12"></th>
@@ -229,6 +242,27 @@
                 [title]="'editBatch.assignmentNotesHint' | translate"
                 class="w-full min-h-[2.25rem] px-2.5 py-1.5 text-sm border rounded-md bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/30 focus:border-[var(--color-brand)] min-w-0 transition-colors border-[var(--color-border)]"
                 [placeholder]="'editBatch.assignmentNotesPlaceholder' | translate">
+            </td>
+            <td class="px-3 py-2 align-top">
+              <app-dropdown class="w-full min-w-[10rem] block text-sm" formControlName="supplierId"
+                [options]="suppliers" optionValue="id" [optionLabelFn]="supplierOrManufacturerOptionLabel"
+                [placeholderSelectable]="true" [showSearch]="true"
+                [placeholder]="'editBatch.selectSupplier' | translate">
+              </app-dropdown>
+            </td>
+            <td class="px-3 py-2 align-top">
+              <app-dropdown class="w-full min-w-[10rem] block text-sm" formControlName="manufacturerId"
+                [options]="manufacturers" optionValue="id" [optionLabelFn]="supplierOrManufacturerOptionLabel"
+                [placeholderSelectable]="true" [showSearch]="true"
+                [placeholder]="'editBatch.selectManufacturer' | translate">
+              </app-dropdown>
+            </td>
+            <td class="px-3 py-2 align-top">
+              <app-dropdown class="w-full min-w-[10rem] block text-sm" formControlName="primaryPurposId"
+                [options]="getPrimaryPurposeOptionsForRow(i)" optionValue="id" [optionLabelFn]="supplierOrManufacturerOptionLabel"
+                [placeholderSelectable]="true" [showSearch]="true"
+                [placeholder]="'editBatch.selectPrimaryPurpose' | translate">
+              </app-dropdown>
             </td>
             <td class="px-3 py-2">
               <input formControlName="notes" type="text"

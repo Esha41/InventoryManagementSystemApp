@@ -18,6 +18,8 @@ export class ImportDialogComponent implements OnChanges {
     @Input() entityName = 'Items';
     /** Hide depot-level template download (e.g. batch Excel uses export-as-template instead). */
     @Input() hideTemplateDownload = false;
+    /** When true, shows a short note that * marks required columns (e.g. employee import). */
+    @Input() showRequiredFieldLegend = false;
     @Output() close = new EventEmitter<void>();
     @Output() import = new EventEmitter<File>();
     @Output() preview = new EventEmitter<File>();  // New preview event
