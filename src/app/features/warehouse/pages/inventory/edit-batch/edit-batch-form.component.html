@@ -214,7 +214,7 @@
                   [placeholderSelectable]="false" [showSearch]="true"
                   [addActionLabel]="'addWeaponAsset.assignment.addPerson'"
                   (addActionClick)="openAddEmployeeModal()"
-                  (selectionChange)="onRowAssignmentEmployeeChange()"
+                  (selectionChange)="onRowAssignmentEmployeeChange(i, $event)"
                   placeholder="{{ 'editBatch.selectEmployee' | translate }}">
                 </app-dropdown>
                 <p *ngIf="selectedEmployeeCannotAssign(getAssetFormGroup(i).get('assignToEmployeeId')?.value)"

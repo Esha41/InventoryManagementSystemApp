@@ -63,9 +63,9 @@
             "notesPlaceholder": "ملاحظات اختيارية تُحفظ مع التعيين",
             "notesHint": "تُحفظ الملاحظات الاختيارية مع التعيين عند التعيين لقسم أو لمسؤول عهدة."
         },
-        "deliveryReceipt": "إيصال التسليم",
-        "deliveryReceiptInformation": "معلومات إيصال التسليم",
-        "enterDeliveryReceipt": "أدخل مرجع إيصال التسليم",
+        "deliveryReceipt": "سند الاستلام",
+        "deliveryReceiptInformation": "معلومات سند الاستلام",
+        "enterDeliveryReceipt": "أدخل مرجع سند الاستلام",
         "mode": {
             "single": "إدخال فردي",
             "bulk": "إدخال جماعي"

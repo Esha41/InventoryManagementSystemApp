@@ -11,6 +11,10 @@
             </button>
         </div>
 
+        <p *ngIf="assetType === 'batch' && previewData" class="batch-import-hint">
+            {{ 'import.batchExcelPreviewHint' | translate }}
+        </p>
+
         <!-- Summary Stats -->
         <div class="summary-stats" *ngIf="previewData">
             <div class="stat-card stat-total">

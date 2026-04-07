@@ -316,7 +316,34 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
     this.cdr.markForCheck();
   }
 
-  onRowAssignmentEmployeeChange(): void {
+  /** Enforce employee OR department: picking one clears the other and sets assign mode. */
+  onRowAssignmentDepartmentChange(
+    index: number,
+    value: number | LookupItem | LookupItem[] | null | undefined
+  ): void {
+    const departmentId = this.coerceLookupSelectionId(value);
+    const g = this.getAssetFormGroup(index);
+    if (departmentId != null) {
+      g.patchValue(
+        { assignMode: 'department' as const, assignToEmployeeId: null },
+        { emitEvent: false }
+      );
+    }
+    this.cdr.markForCheck();
+  }
+
+  onRowAssignmentEmployeeChange(
+    index: number,
+    value: number | EmployeeDto | EmployeeDto[] | null | undefined
+  ): void {
+    const employeeId = this.coerceEmployeeSelectionId(value);
+    const g = this.getAssetFormGroup(index);
+    if (employeeId != null) {
+      g.patchValue(
+        { assignMode: 'employee' as const, assignToDepartmentId: null },
+        { emitEvent: false }
+      );
+    }
     this.cdr.markForCheck();
   }
 
@@ -337,13 +364,32 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
       .subscribe({
         next: (list) => {
           this.employees = (list || []).filter(e => !e.isDeleted);
-          this.onRowAssignmentEmployeeChange();
           this.cdr.markForCheck();
         },
         error: () => {
           this.cdr.markForCheck();
         }
       });
+  }
+
+  private coerceLookupSelectionId(
+    value: number | LookupItem | LookupItem[] | null | undefined
+  ): number | null {
+    if (value == null) return null;
+    if (typeof value === 'number') return value > 0 ? value : null;
+    if (Array.isArray(value)) return null;
+    const id = (value as LookupItem).id;
+    return id != null && id > 0 ? id : null;
+  }
+
+  private coerceEmployeeSelectionId(
+    value: number | EmployeeDto | EmployeeDto[] | null | undefined
+  ): number | null {
+    if (value == null) return null;
+    if (typeof value === 'number') return value > 0 ? value : null;
+    if (Array.isArray(value)) return null;
+    const id = (value as EmployeeDto).id;
+    return id != null && id > 0 ? id : null;
   }
 
   selectedEmployeeCannotAssign(employeeId: number | null | undefined): boolean {

@@ -172,7 +172,11 @@
     "filterValid": "Valid Only",
     "filterInvalid": "Invalid Only",
     "cannotImportWithErrors": "Cannot import: Please fix all errors first",
-    "readyToImport": "Ready to import {{count}} valid row(s)"
+    "readyToImport": "Ready to import {{count}} valid row(s)",
+    "batchExcelPreviewHint": "Batch weapons: this preview hides internal IDs; your Excel file still includes hidden _AssetId / _ItemId for round-trip. Rows with Action \"Update\" change an existing asset (keep _AssetId from export, or match Serial Number to one already in this batch). Rows with Action \"Create\" add a new asset: unhide column A and clear _AssetId for those lines (serial can be empty). If Update Assignment is yes, fill either the Department column or the Employee column—not both.",
+    "batchImportActionColumn": "Action",
+    "batchImportActionCreate": "Create",
+    "batchImportActionUpdate": "Update"
   },
   "nav": {
     "dashboard": "Dashboard",

@@ -13,8 +13,11 @@ import { ButtonComponent } from '../button/button.component';
 })
 export class ImportDialogComponent implements OnChanges {
     @Input() isOpen = false;
-    @Input() title = 'Import Data';
+    /** When set, shown as dialog heading (use translated string from parent). */
+    @Input() title = '';
     @Input() entityName = 'Items';
+    /** Hide depot-level template download (e.g. batch Excel uses export-as-template instead). */
+    @Input() hideTemplateDownload = false;
     @Output() close = new EventEmitter<void>();
     @Output() import = new EventEmitter<File>();
     @Output() preview = new EventEmitter<File>();  // New preview event

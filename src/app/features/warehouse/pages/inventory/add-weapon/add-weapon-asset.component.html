@@ -260,6 +260,7 @@
                                 <app-dropdown class="w-full" formControlName="assignToDepartmentId"
                                     [options]="departments" optionValue="id" [optionLabelFn]="departmentOptionLabel"
                                     [placeholderSelectable]="false"
+                                    (selectionChange)="onSingleAssignmentDepartmentChange(i, $event)"
                                     placeholder="{{ 'addWeaponAsset.assignment.selectDepartment' | translate }}">
                                 </app-dropdown>
                             </div>
@@ -273,7 +274,7 @@
                                     [placeholderSelectable]="false"
                                     [addActionLabel]="'addWeaponAsset.assignment.addPerson'"
                                     (addActionClick)="openAddEmployeeModal()"
-                                    (selectionChange)="onAssignmentEmployeeChange()"
+                                    (selectionChange)="onSingleAssignmentEmployeeChange(i, $event)"
                                     placeholder="{{ 'addWeaponAsset.assignment.selectEmployee' | translate }}">
                                 </app-dropdown>
                                 <p *ngIf="selectedEmployeeCannotAssign(getAssetFormGroup(i).get('assignToEmployeeId')?.value)"
@@ -530,6 +531,7 @@
                         <app-dropdown class="w-full" formControlName="assignToDepartmentId"
                             [options]="departments" optionValue="id" [optionLabelFn]="departmentOptionLabel"
                             [placeholderSelectable]="false"
+                            (selectionChange)="onBulkAssignmentDepartmentChange($event)"
                             placeholder="{{ 'addWeaponAsset.assignment.selectDepartment' | translate }}">
                         </app-dropdown>
                     </div>
@@ -543,7 +545,7 @@
                             [placeholderSelectable]="false"
                             [addActionLabel]="'addWeaponAsset.assignment.addPerson'"
                             (addActionClick)="openAddEmployeeModal()"
-                            (selectionChange)="onAssignmentEmployeeChange()"
+                            (selectionChange)="onBulkAssignmentEmployeeChange($event)"
                             placeholder="{{ 'addWeaponAsset.assignment.selectEmployee' | translate }}">
                         </app-dropdown>
                         <p *ngIf="selectedEmployeeCannotAssign(bulkForm.get('assignToEmployeeId')?.value)"

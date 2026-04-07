@@ -52,7 +52,7 @@
       "requestId": "رقم الطلب",
       "requestDate": "تاريخ الطلب",
       "usageDate": "تاريخ الاستخدام",
-      "department": "القسم",
+      "department": "الوحدة",
       "requester": "مقدم الطلب",
       "priority": "الأولوية",
       "status": "الحالة",
