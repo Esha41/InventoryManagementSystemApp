@@ -1,10 +1,59 @@
 import { ImportResult } from '@models/import-result.model';
 import { PreviewData } from '@shared/components/import-preview-dialog/import-preview-dialog.component';
 
+export interface MapImportPreviewOptions {
+  /** Column keys (camelCase) to omit from preview table and error export (e.g. assetId, itemId). */
+  excludeColumns?: string[];
+
+  /**
+   * When true, prepends a synthetic `importAction` column (`create` | `update` | empty)
+   * from each row's `isNewRow` (batch asset Excel preview after API enrich).
+   */
+  batchImportActions?: boolean;
+}
+
+/** Synthetic column key; values are `create`, `update`, or '' (unknown / error row). */
+export const BATCH_IMPORT_ACTION_COLUMN = 'importAction';
+
+const BATCH_DUAL_ASSIGNMENT_MSG =
+  'Specify either assign to employee or assign to department, not both.';
+
+function rowHasActiveAssignment(data: Record<string, unknown>): boolean {
+  const mode = String(data['assignmentModeLabel'] ?? data['updateAssignment'] ?? '').trim().toLowerCase();
+  if (!mode || mode === 'no change' || mode === 'بدون تغيير' || mode === 'false' || mode === 'no' || mode === '0') return false;
+  return true;
+}
+
+/** True when Excel row would be rejected for both department and employee assignment targets. */
+function batchImportRowHasDualAssignment(data: Record<string, unknown>): boolean {
+  if (!rowHasActiveAssignment(data)) return false;
+  const deptLabel = String(data['assignmentDepartment'] ?? '').trim();
+  const empLabel = String(data['assignmentEmployee'] ?? '').trim();
+  if (deptLabel.length > 0 && empLabel.length > 0) return true;
+  const du = data['assignToDepartmentId'];
+  const eu = data['assignToEmployeeId'];
+  const deptId = typeof du === 'number' ? du : du != null && du !== '' ? Number(du) : NaN;
+  const empId = typeof eu === 'number' ? eu : eu != null && eu !== '' ? Number(eu) : NaN;
+  const hasDept = Number.isFinite(deptId) && deptId > 0;
+  const hasEmp = Number.isFinite(empId) && empId > 0;
+  return hasDept && hasEmp;
+}
+
+function filterPreviewColumns(columns: string[], excludeColumns: string[] | undefined): string[] {
+  if (!excludeColumns?.length) {
+    return columns;
+  }
+  const drop = new Set(excludeColumns);
+  return columns.filter((c) => !drop.has(c));
+}
+
 /**
  * Build import preview grid from API ImportResult (shared by asset catalog & admin import UI).
  */
-export function mapImportResultToPreviewData(result: ImportResult): PreviewData | null {
+export function mapImportResultToPreviewData(
+  result: ImportResult,
+  options?: MapImportPreviewOptions
+): PreviewData | null {
   if (!result) {
     return null;
   }
@@ -23,16 +72,39 @@ export function mapImportResultToPreviewData(result: ImportResult): PreviewData 
 
   const previewRows: PreviewData['rows'] = [];
 
+  const withImportAction = (
+    data: Record<string, unknown>
+  ): Record<string, unknown> => {
+    if (!options?.batchImportActions) {
+      return data;
+    }
+    const v = data['isNewRow'];
+    const action =
+      v === true ? 'create' : v === false ? 'update' : '';
+    return { ...data, [BATCH_IMPORT_ACTION_COLUMN]: action };
+  };
+
   successfulRecords.forEach((record: unknown, index: number) => {
     const rowData = record as Record<string, unknown>;
     const rowNum = (rowData['rowNumber'] as number) || index + 2;
     const errorInfo = errorsByRow.get(rowNum);
+    let dualAssignment = options?.batchImportActions === true && batchImportRowHasDualAssignment(rowData);
+    if (dualAssignment && errorInfo) {
+      dualAssignment = false;
+    }
+
+    const mergedErrors = errorInfo
+      ? [...errorInfo.errors]
+      : dualAssignment
+        ? [BATCH_DUAL_ASSIGNMENT_MSG]
+        : [];
+    const isValid = !errorInfo && !dualAssignment;
 
     previewRows.push({
       rowNumber: rowNum,
-      data: rowData,
-      isValid: !errorInfo || errorInfo.errors.length === 0,
-      errors: errorInfo ? errorInfo.errors : []
+      data: withImportAction(rowData),
+      isValid,
+      errors: mergedErrors
     });
 
     if (errorInfo) {
@@ -43,7 +115,7 @@ export function mapImportResultToPreviewData(result: ImportResult): PreviewData 
   errorsByRow.forEach((errorInfo, rowNum) => {
     previewRows.push({
       rowNumber: rowNum,
-      data: errorInfo.rowData || {},
+      data: withImportAction((errorInfo.rowData || {}) as Record<string, unknown>),
       isValid: false,
       errors: errorInfo.errors
     });
@@ -54,12 +126,20 @@ export function mapImportResultToPreviewData(result: ImportResult): PreviewData 
   const validRows = previewRows.filter((r) => r.isValid).length;
   const invalidRows = previewRows.filter((r) => !r.isValid).length;
 
-  const columns =
+  const rawColumns =
     result.importHeaders && result.importHeaders.length > 0
       ? result.importHeaders
       : previewRows.length > 0 && previewRows[0].data
         ? Object.keys(previewRows[0].data)
         : [];
+
+  let columns = filterPreviewColumns(rawColumns, options?.excludeColumns);
+  if (options?.batchImportActions) {
+    columns = [
+      BATCH_IMPORT_ACTION_COLUMN,
+      ...columns.filter((c) => c !== BATCH_IMPORT_ACTION_COLUMN)
+    ];
+  }
 
   return {
     rows: previewRows,

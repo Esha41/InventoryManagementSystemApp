@@ -73,6 +73,8 @@ export class ImportExportService {
     successCount: number;
     failureCount: number;
     errors?: any[];
+    /** Optional API message (e.g. batch import "X created, Y updated"). */
+    message?: string | null;
   }): void {
     if (result.errors && result.errors.length > 0) {
       let msg = `Imported ${result.successCount} items. ${result.failureCount} failed.`;
@@ -94,10 +96,14 @@ export class ImportExportService {
         if (hasDuplicates) msg += " (Duplicates found)";
         else msg += " Check console for details.";
       }
-      this.toastService.warning(msg);
+      const prefix = result.message?.trim() ? `${result.message.trim()} — ` : '';
+      this.toastService.warning(prefix + msg);
       console.warn('Import Validation Errors:', result.errors);
     } else {
-      this.toastService.success(`Imported ${result.successCount} items successfully.`);
+      const successMsg = result.message?.trim()?.length
+        ? result.message.trim()
+        : `Imported ${result.successCount} items successfully.`;
+      this.toastService.success(successMsg);
     }
   }
 }

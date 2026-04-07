@@ -5,6 +5,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, X, CheckCircle, AlertCircle, Upload, Download, Filter } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
+import { BATCH_IMPORT_ACTION_COLUMN } from '@core/utils/asset-master-import-preview.utils';
 import * as XLSX from 'xlsx';
 
 export interface PreviewRow {
@@ -39,7 +40,7 @@ export type RowFilter = 'all' | 'valid' | 'invalid';
 })
 export class ImportPreviewDialogComponent implements OnInit {
     @Input() previewData: PreviewData | null = null;
-    @Input() assetType: 'ammunition' | 'weapon' | 'explosive' = 'ammunition';
+    @Input() assetType: 'ammunition' | 'weapon' | 'explosive' | 'batch' = 'ammunition';
     @Output() confirm = new EventEmitter<PreviewRow[]>();
     @Output() cancel = new EventEmitter<void>();
 
@@ -118,6 +119,16 @@ export class ImportPreviewDialogComponent implements OnInit {
 
     /** Formats ISO / Date values like the rest of the app; leaves other cells unchanged. */
     getDisplayCellValue(row: PreviewRow, column: string): string {
+        if (column === BATCH_IMPORT_ACTION_COLUMN) {
+            const raw = row.data[column];
+            if (raw === 'create') {
+                return this.translationService.getTranslation('import.batchImportActionCreate');
+            }
+            if (raw === 'update') {
+                return this.translationService.getTranslation('import.batchImportActionUpdate');
+            }
+            return '-';
+        }
         const raw = row.data[column];
         if (raw === null || raw === undefined || raw === '') {
             return '-';
@@ -197,7 +208,7 @@ export class ImportPreviewDialogComponent implements OnInit {
         ws['!cols'] = colWidths;
 
         // Generate file
-        const fileName = `Import_Errors_${this.assetType}_${new Date().toISOString().split('T')[0]}.xlsx`;
+        const fileName = `Import_Errors_${this.assetType === 'batch' ? 'batch_assets' : this.assetType}_${new Date().toISOString().split('T')[0]}.xlsx`;
         XLSX.writeFile(wb, fileName);
     }
 
@@ -226,9 +237,26 @@ export class ImportPreviewDialogComponent implements OnInit {
         }
 
         // Handle specific common overrides (match add-asset and Excel template labels)
+        if (column === BATCH_IMPORT_ACTION_COLUMN) {
+            return this.translationService.getTranslation('import.batchImportActionColumn');
+        }
+
         const commonMap: { [key: string]: string } = {
+            'assetId': 'warehouseInventory.assetId',
+            'itemId': 'warehouseInventory.itemId',
             'itemName': 'warehouseInventory.itemName',
             'itemNo': 'warehouseInventory.itemNo',
+            'statusLabel': 'warehouseInventory.status',
+            'assignmentModeLabel': 'warehouseInventory.fields.assignmentMode',
+            'assignmentDepartment': 'warehouseInventory.department',
+            'assignmentEmployee': 'warehouseInventory.employee',
+            'assignmentNotes': 'warehouseInventory.fields.assignmentNotes',
+            'purchaseDate': 'addWeaponAsset.purchaseDate',
+            'warrantyExpiryDate': 'addWeaponAsset.warrantyExpiryDate',
+            'purchasePrice': 'addWeaponAsset.purchasePrice',
+            'deliveryReceipt': 'addWeaponAsset.deliveryReceipt',
+            'serialNumber': 'addWeaponAsset.serialNumber',
+            'rfid': 'addWeaponAsset.rfidTag',
             'itemType': 'addAsset.type',
             'status': 'common.status',
             'neqUnit': 'addAsset.unit',

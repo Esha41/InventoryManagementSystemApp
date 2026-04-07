@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { BatchDto, BatchSummaryDto, BulkUpdateBatchAssetsDto, UpdateBatchDto } from '@models/batch.model';
 import { PagedListRequest, PaginatedList } from '@models/pagination.model';
+import { APIOperationResponse } from '@models/api-response.model';
+import { ImportResult } from '@models/import-result.model';
 import { ConfigService } from './config.service';
 import { ApiService } from './api.service';
 
@@ -16,6 +18,7 @@ export class BatchService {
     }
 
     constructor(
+        private http: HttpClient,
         private configService: ConfigService,
         private apiService: ApiService
     ) { }
@@ -112,5 +115,34 @@ export class BatchService {
 
     removeAssetFromBatch(batchId: number, assetId: number): Observable<boolean> {
         return this.apiService.delete<boolean>(`${this.basePath}/${batchId}/assets/${assetId}`);
+    }
+
+    /** Excel export for assets in a single batch (headers match batch import). */
+    exportAssetsExcel(batchId: number, language: string = 'en'): Observable<Blob> {
+        const url = `${this.configService.apiUrl}${this.basePath}/${batchId}/assets/export`;
+        const params = new HttpParams().set('language', language);
+        return this.http.get(url, { params, responseType: 'blob' });
+    }
+
+    importBatchAssetsPreview(file: File, language: string, batchId: number): Observable<APIOperationResponse<ImportResult>> {
+        const formData = new FormData();
+        formData.append('file', file);
+        const params = new HttpParams().set('language', language);
+        return this.apiService.postRaw<ImportResult>(
+            `${this.basePath}/${batchId}/assets/import-preview`,
+            formData,
+            { params }
+        );
+    }
+
+    importBatchAssets(file: File, language: string, batchId: number): Observable<APIOperationResponse<ImportResult>> {
+        const formData = new FormData();
+        formData.append('file', file);
+        const params = new HttpParams().set('language', language);
+        return this.apiService.postRaw<ImportResult>(
+            `${this.basePath}/${batchId}/assets/import`,
+            formData,
+            { params }
+        );
     }
 }

@@ -67,10 +67,25 @@
                     <div *ngIf="loadingBatchAssets" class="py-8 text-center text-[var(--color-text-muted)]">
                         {{ 'common.loading' | translate }}
                     </div>
-                    <div *ngIf="!loadingBatchAssets && batchAssetsTotalCount === 0" class="py-4 text-center text-[var(--color-text-muted)]">
-                        {{ 'editBatch.noAssets' | translate }}
-                    </div>
-                    <div *ngIf="!loadingBatchAssets && batchAssetsTotalCount > 0" class="overflow-x-auto max-w-full border border-[var(--color-border)] rounded-lg bg-[var(--color-background)]">
+                    <div *ngIf="!loadingBatchAssets" class="space-y-3">
+                        <div class="flex flex-wrap items-center gap-2 justify-end" (click)="$event.stopPropagation()">
+                            <button type="button" *appHasPermission="batchAssetExcelExportPerms" appPermissionMode="any"
+                                (click)="exportBatchAssetsExcel.emit(batch)"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-[var(--color-success)] hover:opacity-90 transition-colors">
+                                <lucide-angular [img]="Download" class="h-3.5 w-3.5 shrink-0"></lucide-angular>
+                                {{ 'warehouseInventory.exportBatchAssetsExcel' | translate }}
+                            </button>
+                            <button type="button" *appHasPermission="batchAssetExcelImportPerms" appPermissionMode="any"
+                                (click)="importBatchAssetsExcel.emit(batch)"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                                <lucide-angular [img]="Upload" class="h-3.5 w-3.5 shrink-0"></lucide-angular>
+                                {{ 'warehouseInventory.importBatchAssetsExcel' | translate }}
+                            </button>
+                        </div>
+                        <div *ngIf="expandedBatchAssets.length === 0" class="py-4 text-center text-[var(--color-text-muted)]">
+                            {{ 'editBatch.noAssets' | translate }}
+                        </div>
+                        <div *ngIf="expandedBatchAssets.length > 0" class="overflow-x-auto max-w-full border border-[var(--color-border)] rounded-lg bg-[var(--color-background)]">
                         <table class="w-full min-w-[56rem] text-sm">
                             <thead>
                                 <tr class="border-b border-[var(--color-border)] bg-[var(--color-background-muted)]">
@@ -103,39 +118,40 @@
                                 </tr>
                             </tbody>
                         </table>
-                        <div *ngIf="batchAssetsTotalCount > 0"
-                            class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-3 py-3 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-                            <div *ngIf="!batchAssetsAllLoaded" class="flex flex-wrap items-center gap-3 justify-between md:justify-start">
-                                <app-rows-per-page
-                                    [rowsPerPage]="batchAssetsPageSize"
-                                    [totalItems]="batchAssetsTotalCount"
-                                    [visibleItems]="expandedBatchAssets.length"
-                                    [optionValues]="batchAssetsPageSizeOptions"
-                                    (rowsPerPageChange)="batchAssetsPageSizeChange.emit($event)">
-                                </app-rows-per-page>
-                                <button type="button"
-                                    class="text-sm font-medium text-[var(--color-brand)] hover:underline whitespace-nowrap"
-                                    (click)="$event.stopPropagation(); batchAssetsLoadAll.emit()">
-                                    {{ 'warehouseInventory.showAllBatchAssets' | translate }}
-                                </button>
-                            </div>
-                            <div *ngIf="batchAssetsAllLoaded" class="flex flex-wrap items-center gap-2 text-sm text-[var(--color-text-muted)]">
-                                <span>{{ 'warehouseInventory.showingAllBatchAssets' | translate: { count: batchAssetsTotalCount } }}</span>
-                                <button type="button"
-                                    class="text-sm font-medium text-[var(--color-brand)] hover:underline whitespace-nowrap"
-                                    (click)="$event.stopPropagation(); batchAssetsUsePagination.emit()">
-                                    {{ 'warehouseInventory.usePagedBatchAssets' | translate }}
-                                </button>
-                            </div>
-                            <div *ngIf="!batchAssetsAllLoaded && batchAssetsTotalPages > 1"
-                                class="flex flex-col sm:flex-row items-center gap-2 justify-center md:justify-end">
-                                <app-pagination [currentPage]="batchAssetsPage" [totalPages]="batchAssetsTotalPages"
-                                    (pageChange)="batchAssetsPageChange.emit($event)">
-                                </app-pagination>
-                                <span class="text-xs text-[var(--color-text-muted)] whitespace-nowrap">
-                                    {{ batchAssetsPage }} {{ 'common.of' | translate }} {{ batchAssetsTotalPages }}
-                                </span>
-                            </div>
+<div *ngIf="batchAssetsTotalCount > 0"
+    class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-3 py-3 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+    <div *ngIf="!batchAssetsAllLoaded" class="flex flex-wrap items-center gap-3 justify-between md:justify-start">
+        <app-rows-per-page
+            [rowsPerPage]="batchAssetsPageSize"
+            [totalItems]="batchAssetsTotalCount"
+            [visibleItems]="expandedBatchAssets.length"
+            [optionValues]="batchAssetsPageSizeOptions"
+            (rowsPerPageChange)="batchAssetsPageSizeChange.emit($event)">
+        </app-rows-per-page>
+        <button type="button"
+            class="text-sm font-medium text-[var(--color-brand)] hover:underline whitespace-nowrap"
+            (click)="$event.stopPropagation(); batchAssetsLoadAll.emit()">
+            {{ 'warehouseInventory.showAllBatchAssets' | translate }}
+        </button>
+    </div>
+    <div *ngIf="batchAssetsAllLoaded" class="flex flex-wrap items-center gap-2 text-sm text-[var(--color-text-muted)]">
+        <span>{{ 'warehouseInventory.showingAllBatchAssets' | translate: { count: batchAssetsTotalCount } }}</span>
+        <button type="button"
+            class="text-sm font-medium text-[var(--color-brand)] hover:underline whitespace-nowrap"
+            (click)="$event.stopPropagation(); batchAssetsUsePagination.emit()">
+            {{ 'warehouseInventory.usePagedBatchAssets' | translate }}
+        </button>
+    </div>
+    <div *ngIf="!batchAssetsAllLoaded && batchAssetsTotalPages > 1"
+        class="flex flex-col sm:flex-row items-center gap-2 justify-center md:justify-end">
+        <app-pagination [currentPage]="batchAssetsPage" [totalPages]="batchAssetsTotalPages"
+            (pageChange)="batchAssetsPageChange.emit($event)">
+        </app-pagination>
+        <span class="text-xs text-[var(--color-text-muted)] whitespace-nowrap">
+            {{ batchAssetsPage }} {{ 'common.of' | translate }} {{ batchAssetsTotalPages }}
+        </span>
+    </div>
+</div>
                         </div>
                     </div>
                 </td>

@@ -288,7 +288,7 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
                 next: (list) => {
                     this.employees = (list || []).filter(e => !e.isDeleted);
                     this.refreshEmployeeDropdownOptions();
-                    this.onAssignmentEmployeeChange();
+                    this.cdr.markForCheck();
                 },
                 error: () => {
                     this.cdr.markForCheck();
@@ -313,9 +313,81 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
     }
 
-    /** For OnPush: refresh hints under employee assignment when selection changes. */
-    onAssignmentEmployeeChange(): void {
+    onSingleAssignmentDepartmentChange(
+        index: number,
+        value: number | LookupItem | LookupItem[] | null | undefined
+    ): void {
+        const departmentId = this.coerceLookupSelectionId(value);
+        const g = this.getAssetFormGroup(index);
+        if (departmentId != null) {
+            g.patchValue(
+                { assignMode: 'department' as const, assignToEmployeeId: null },
+                { emitEvent: false }
+            );
+        }
         this.cdr.markForCheck();
+    }
+
+    onSingleAssignmentEmployeeChange(
+        index: number,
+        value: number | DropdownOption<number> | DropdownOption<number>[] | null | undefined
+    ): void {
+        const employeeId = this.coerceEmployeeOptionSelectionId(value);
+        const g = this.getAssetFormGroup(index);
+        if (employeeId != null) {
+            g.patchValue(
+                { assignMode: 'employee' as const, assignToDepartmentId: null },
+                { emitEvent: false }
+            );
+        }
+        this.cdr.markForCheck();
+    }
+
+    onBulkAssignmentDepartmentChange(value: number | LookupItem | LookupItem[] | null | undefined): void {
+        const departmentId = this.coerceLookupSelectionId(value);
+        if (departmentId != null) {
+            this.bulkForm.patchValue(
+                { assignMode: 'department' as const, assignToEmployeeId: null },
+                { emitEvent: false }
+            );
+        }
+        this.cdr.markForCheck();
+    }
+
+    onBulkAssignmentEmployeeChange(
+        value: number | DropdownOption<number> | DropdownOption<number>[] | null | undefined
+    ): void {
+        const employeeId = this.coerceEmployeeOptionSelectionId(value);
+        if (employeeId != null) {
+            this.bulkForm.patchValue(
+                { assignMode: 'employee' as const, assignToDepartmentId: null },
+                { emitEvent: false }
+            );
+        }
+        this.cdr.markForCheck();
+    }
+
+    private coerceLookupSelectionId(
+        value: number | LookupItem | LookupItem[] | null | undefined
+    ): number | null {
+        if (value == null) return null;
+        if (typeof value === 'number') return value > 0 ? value : null;
+        if (Array.isArray(value)) return null;
+        const id = (value as LookupItem).id;
+        return id != null && id > 0 ? id : null;
+    }
+
+    private coerceEmployeeOptionSelectionId(
+        value: number | DropdownOption<number> | DropdownOption<number>[] | null | undefined
+    ): number | null {
+        if (value == null) return null;
+        if (typeof value === 'number') return value > 0 ? value : null;
+        if (Array.isArray(value)) return null;
+        if (typeof value === 'object' && 'value' in value) {
+            const v = (value as DropdownOption<number>).value;
+            return typeof v === 'number' && v > 0 ? v : null;
+        }
+        return null;
     }
 
     onBulkAssignModeChange(): void {

@@ -197,8 +197,24 @@
             <!-- Expanded assets on mobile -->
             <div *ngIf="expandedBatchId === batch.id" class="border-t border-[var(--color-border-muted)] pt-3 mt-2">
               <div *ngIf="loadingBatchAssets" class="py-4 text-center text-[var(--color-text-muted)] text-sm">{{ 'common.loading' | translate }}</div>
-              <div *ngIf="!loadingBatchAssets && expandedBatchAssetTotalCount === 0" class="py-2 text-[var(--color-text-muted)] text-sm">{{ 'editBatch.noAssets' | translate }}</div>
-              <div *ngIf="!loadingBatchAssets && expandedBatchAssetTotalCount > 0" class="space-y-3">
+              <div *ngIf="!loadingBatchAssets" class="space-y-3">
+                <div class="flex flex-wrap gap-2 justify-end" (click)="$event.stopPropagation()">
+                  <button type="button" *appHasPermission="warehouseExportPerms" appPermissionMode="any"
+                    (click)="onExportBatchAssetsExcel(batch)"
+                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white bg-[var(--color-success)] hover:opacity-90 transition-colors">
+                    <lucide-angular [img]="Download" class="h-3.5 w-3.5 shrink-0"></lucide-angular>
+                    {{ 'warehouseInventory.exportBatchAssetsExcel' | translate }}
+                  </button>
+                  <button type="button" *appHasPermission="warehouseAssetImportPerms" appPermissionMode="any"
+                    (click)="onImportBatchAssetsExcel(batch)"
+                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                    <lucide-angular [img]="Upload" class="h-3.5 w-3.5 shrink-0"></lucide-angular>
+                    {{ 'warehouseInventory.importBatchAssetsExcel' | translate }}
+                  </button>
+                </div>
+                <div *ngIf="expandedBatchAssetTotalCount === 0" class="py-2 text-[var(--color-text-muted)] text-sm">
+                  {{ 'editBatch.noAssets' | translate }}
+                </div>
                 <div *ngFor="let asset of expandedBatchAssets; trackBy: trackById"
                   class="text-xs py-2 border-b border-[var(--color-border-muted)] last:border-0 space-y-1">
                   <div class="font-medium text-[var(--color-text)]">{{ getAssetItemName(asset) }}</div>
@@ -318,8 +334,12 @@
             [getAssetStatusLabel]="getAssetStatusLabel" [formatDate]="formatDate"
             [getAssetDepartmentLabel]="getAssetDepartmentLabel" [getAssetCustodianLabel]="getAssetCustodianLabel"
             [formatAssetPurchasePrice]="formatAssetPurchasePrice" [truncateAssetNotes]="truncateAssetNotes"
+            [batchAssetExcelExportPerms]="warehouseExportPerms"
+            [batchAssetExcelImportPerms]="warehouseAssetImportPerms"
             [sortColumn]="batchSortColumn" [sortDirection]="batchSortDirection"
             (rowClick)="onBatchRowClick($event)" (editBatch)="onEditBatch($event)" (deleteBatch)="onDeleteBatch($event)"
+            (exportBatchAssetsExcel)="onExportBatchAssetsExcel($event)"
+            (importBatchAssetsExcel)="onImportBatchAssetsExcel($event)"
             (sortChange)="onBatchSort($event)"
             (batchAssetsPageChange)="onExpandedBatchAssetsPageChange($event)"
             (batchAssetsPageSizeChange)="onExpandedBatchAssetsPageSizeChange($event)"
@@ -407,13 +427,16 @@
     (cancelled)="onDeleteAssetCancel()">
   </app-confirm-dialog>
 
-  <app-import-dialog [isOpen]="showImportModal" [entityName]="'warehouse-inventory'" (close)="closeImportModal()"
+  <app-import-dialog [isOpen]="showImportModal" [entityName]="'warehouse-inventory'"
+    [title]="(batchExcelImportMode ? 'warehouseInventory.importBatchAssetsTitle' : 'common.import') | translate"
+    [hideTemplateDownload]="batchExcelImportMode"
+    (close)="onImportDialogClose()"
     (preview)="onWarehouseImportPreview($event)" (import)="onWarehouseImportDirect($event)"
     (downloadTemplate)="downloadWarehouseTemplate()">
   </app-import-dialog>
 
   <app-import-preview-dialog *ngIf="showPreviewModal && previewData" [previewData]="previewData"
-    [assetType]="activeTab === 'batch' ? 'weapon' : activeTab === 'explosive' ? 'explosive' : 'ammunition'"
+    [assetType]="previewImportAssetType"
     (confirm)="onWarehousePreviewConfirmed($event)" (cancel)="onWarehousePreviewCancelled()">
   </app-import-preview-dialog>
 

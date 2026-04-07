@@ -1,12 +1,13 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, Edit2, Eye, ChevronDown, ChevronRight, Trash2, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-angular';
+import { LucideAngularModule, Edit2, Eye, ChevronDown, ChevronRight, Trash2, ArrowUp, ArrowDown, ArrowUpDown, Download, Upload } from 'lucide-angular';
 import { BatchSummaryDto } from '@models/batch.model';
 import { AssetDto } from '@models/asset.model';
 import { trackById } from '@utils/trackby.utils';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
+import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 
 export type BatchTableSortColumn = 'batchNumber' | 'quantity';
 
@@ -18,7 +19,8 @@ export type BatchTableSortColumn = 'batchNumber' | 'quantity';
         TranslateModule,
         LucideAngularModule,
         PaginationComponent,
-        RowsPerPageComponent
+        RowsPerPageComponent,
+        HasPermissionDirective
     ],
     templateUrl: './batch-table.component.html',
     styles: [`.batch-row-expanded { background-color: var(--color-background-hover) !important; }`],
@@ -45,9 +47,15 @@ export class BatchTableComponent {
     @Input() formatAssetPurchasePrice: (price?: number | null) => string = () => '-';
     @Input() truncateAssetNotes: (asset: AssetDto) => string = () => '-';
 
+    /** When set, enables Export / Import Excel for expanded batch (uses warehouse permissions). */
+    @Input() batchAssetExcelExportPerms: string[] = [];
+    @Input() batchAssetExcelImportPerms: string[] = [];
+
     @Output() rowClick = new EventEmitter<BatchSummaryDto>();
     @Output() editBatch = new EventEmitter<BatchSummaryDto>();
     @Output() deleteBatch = new EventEmitter<BatchSummaryDto>();
+    @Output() exportBatchAssetsExcel = new EventEmitter<BatchSummaryDto>();
+    @Output() importBatchAssetsExcel = new EventEmitter<BatchSummaryDto>();
     @Output() sortChange = new EventEmitter<BatchTableSortColumn>();
     @Output() batchAssetsPageChange = new EventEmitter<number>();
     @Output() batchAssetsPageSizeChange = new EventEmitter<number>();
@@ -65,6 +73,8 @@ export class BatchTableComponent {
     readonly ArrowUp = ArrowUp;
     readonly ArrowDown = ArrowDown;
     readonly ArrowUpDown = ArrowUpDown;
+    readonly Download = Download;
+    readonly Upload = Upload;
     readonly trackById = trackById;
 
     toggleSort(column: BatchTableSortColumn): void {

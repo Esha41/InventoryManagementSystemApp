@@ -144,6 +144,10 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   isPreviewInProgress = false;
   isImportInProgress = false;
 
+  /** When true, import/preview uses POST /Batch/{id}/assets/import*. */
+  batchExcelImportMode = false;
+  batchImportTargetId: number | null = null;
+
   // Search
   searchControl = new FormControl<string>('', { nonNullable: true });
   supplierFilterControl = new FormControl<number | null>(null);
@@ -175,6 +179,13 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
   get backIcon() {
     return this.isRTL ? ArrowRight : ArrowLeft;
+  }
+
+  get previewImportAssetType(): 'ammunition' | 'weapon' | 'explosive' | 'batch' {
+    if (this.batchExcelImportMode) return 'batch';
+    if (this.activeTab === 'explosive') return 'explosive';
+    if (this.activeTab === 'batch') return 'weapon';
+    return 'ammunition';
   }
 
   // Modal states
@@ -1206,16 +1217,69 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       this.toastService.warning('Depot not loaded');
       return;
     }
+    this.batchExcelImportMode = false;
+    this.batchImportTargetId = null;
     this.pendingImportFile = null;
     this.previewData = null;
     this.showImportModal = true;
     this.cdr.markForCheck();
   }
 
-  closeImportModal(): void {
+  onExportBatchAssetsExcel(batch: BatchSummaryDto): void {
+    const lang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+    this.batchService.exportAssetsExcel(batch.id, lang)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (blob: Blob) => {
+          const nameSafe = (batch.batchNumber || `batch_${batch.id}`).replace(/[^\w.-]+/g, '_');
+          const fileName = `${nameSafe}_BatchAssets_${new Date().toISOString().slice(0, 10)}.xlsx`;
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = fileName;
+          link.click();
+          window.URL.revokeObjectURL(url);
+          this.translateService.get(['common.exportSuccess', 'toast.success']).pipe(takeUntil(this.destroy$))
+            .subscribe(t => this.toastService.success(t['common.exportSuccess'], t['toast.success']));
+          this.cdr.markForCheck();
+        },
+        error: (err: unknown) => {
+          this.toastService.error(ErrorHandler.extractErrorMessage(err, 'Export failed'));
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  onImportBatchAssetsExcel(batch: BatchSummaryDto): void {
+    if (!this.depoId) {
+      this.toastService.warning('Depot not loaded');
+      return;
+    }
+    this.batchExcelImportMode = true;
+    this.batchImportTargetId = batch.id;
+    this.pendingImportFile = null;
+    this.previewData = null;
+    this.showImportModal = true;
+    this.cdr.markForCheck();
+  }
+
+  /** User dismissed import dialog — clear batch-scoped import context too. */
+  onImportDialogClose(): void {
     this.pendingImportFile = null;
     this.showImportModal = false;
+    this.batchExcelImportMode = false;
+    this.batchImportTargetId = null;
     this.cdr.markForCheck();
+  }
+
+  private hideImportModal(): void {
+    this.showImportModal = false;
+    this.cdr.markForCheck();
+  }
+
+  private clearBatchImportContext(): void {
+    this.batchExcelImportMode = false;
+    this.batchImportTargetId = null;
   }
 
   downloadWarehouseTemplate(): void {
@@ -1256,19 +1320,24 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       this.toastService.warning('Preview is already in progress. Please wait...');
       return;
     }
+    const useBatchExcel =
+      this.batchExcelImportMode && this.batchImportTargetId != null && this.activeTab === 'batch';
+    const batchImportId = this.batchImportTargetId;
+
     this.previewData = null;
     this.showPreviewModal = false;
     this.isPreviewInProgress = true;
     this.loading = true;
-    this.closeImportModal();
+    this.hideImportModal();
     this.pendingImportFile = file;
     this.cdr.markForCheck();
 
     const lang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
-    const service = this.getWarehouseImportService();
+    const preview$ = useBatchExcel && batchImportId != null
+      ? this.batchService.importBatchAssetsPreview(file, lang, batchImportId)
+      : this.getWarehouseImportService().importPreview(file, lang, this.depoId);
 
-    service
-      .importPreview(file, lang, this.depoId)
+    preview$
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: APIOperationResponse<ImportResult>) => {
@@ -1278,11 +1347,17 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           if (!res?.succeeded || !res.data) {
             this.previewData = null;
             this.toastService.error(res?.message || 'Preview failed');
+            this.clearBatchImportContext();
             this.cdr.markForCheck();
             return;
           }
 
-          const preview = mapImportResultToPreviewData(res.data);
+          const preview = mapImportResultToPreviewData(
+            res.data,
+            useBatchExcel && batchImportId != null
+              ? { excludeColumns: ['assetId', 'itemId'], batchImportActions: true }
+              : undefined
+          );
           if (preview) {
             this.previewData = preview;
             this.showPreviewModal = true;
@@ -1293,6 +1368,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           this.isPreviewInProgress = false;
           this.loading = false;
           this.previewData = null;
+          this.clearBatchImportContext();
           this.toastService.error(`Preview failed: ${ErrorHandler.extractErrorMessage(error, 'Unknown error')}`);
           this.cdr.markForCheck();
         }
@@ -1305,27 +1381,34 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       this.toastService.warning('Import is already in progress. Please wait...');
       return;
     }
+    const useBatchExcel =
+      this.batchExcelImportMode && this.batchImportTargetId != null && this.activeTab === 'batch';
+    const batchImportId = this.batchImportTargetId;
+
     this.isImportInProgress = true;
     this.loading = true;
-    this.closeImportModal();
+    this.hideImportModal();
     this.cdr.markForCheck();
 
     const lang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
-    const service = this.getWarehouseImportService();
+    const import$ = useBatchExcel && batchImportId != null
+      ? this.batchService.importBatchAssets(file, lang, batchImportId)
+      : this.getWarehouseImportService().importData(file, lang, this.depoId);
 
-    service
-      .importData(file, lang, this.depoId)
+    import$
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: APIOperationResponse<ImportResult>) => {
           this.isImportInProgress = false;
           this.loading = false;
+          this.clearBatchImportContext();
           if (res?.succeeded && res.data) {
             const result = res.data;
             this.importExportService.handleImportResult({
               successCount: result.successCount ?? result.successfulRecords?.length ?? 0,
               failureCount: result.errors?.length ?? 0,
-              errors: result.errors || []
+              errors: result.errors || [],
+              message: res?.message
             });
             this.loadTabContent();
           } else {
@@ -1336,6 +1419,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
         error: (error: unknown) => {
           this.isImportInProgress = false;
           this.loading = false;
+          this.clearBatchImportContext();
           this.toastService.error(`Import failed: ${ErrorHandler.extractErrorMessage(error, 'Unknown error')}`);
           this.cdr.markForCheck();
         }
@@ -1347,6 +1431,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.previewData = null;
     if (!this.pendingImportFile || !this.depoId) {
       this.toastService.error('Import file not found. Please try uploading again.');
+      this.clearBatchImportContext();
       this.cdr.markForCheck();
       return;
     }
@@ -1356,26 +1441,33 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const useBatchExcel =
+      this.batchExcelImportMode && this.batchImportTargetId != null && this.activeTab === 'batch';
+    const batchImportId = this.batchImportTargetId;
+
     this.isImportInProgress = true;
     this.loading = true;
     const file = this.pendingImportFile;
     const lang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
-    const service = this.getWarehouseImportService();
+    const import$ = useBatchExcel && batchImportId != null
+      ? this.batchService.importBatchAssets(file, lang, batchImportId)
+      : this.getWarehouseImportService().importData(file, lang, this.depoId);
 
-    service
-      .importData(file, lang, this.depoId)
+    import$
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res: APIOperationResponse<ImportResult>) => {
           this.isImportInProgress = false;
           this.loading = false;
           this.pendingImportFile = null;
+          this.clearBatchImportContext();
           if (res?.succeeded && res.data) {
             const result = res.data;
             this.importExportService.handleImportResult({
               successCount: result.successCount ?? result.successfulRecords?.length ?? 0,
               failureCount: result.errors?.length ?? 0,
-              errors: result.errors || []
+              errors: result.errors || [],
+              message: res?.message
             });
             this.loadTabContent();
           } else {
@@ -1387,6 +1479,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           this.isImportInProgress = false;
           this.loading = false;
           this.pendingImportFile = null;
+          this.clearBatchImportContext();
           this.toastService.error(`Import failed: ${ErrorHandler.extractErrorMessage(error, 'Unknown error')}`);
           this.cdr.markForCheck();
         }
@@ -1398,6 +1491,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.previewData = null;
     this.pendingImportFile = null;
     this.isPreviewInProgress = false;
+    this.clearBatchImportContext();
     this.cdr.markForCheck();
   }
 
