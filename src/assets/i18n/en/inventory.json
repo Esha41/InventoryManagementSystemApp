@@ -151,6 +151,9 @@
     "warrantyExpiryDate": "Warranty Expiry Date",
     "purchasePrice": "Purchase Price",
     "notes": "Notes",
+    "supplier": "Supplier",
+    "manufacturer": "Manufacturer",
+    "primaryPurpose": "Primary purpose",
     "deleteConfirm": "Are you sure you want to delete this asset?",
     "deleteWarning": "This action cannot be undone.",
     "deleted": "Asset deleted successfully",
@@ -725,6 +728,7 @@
     "cacheCleared": "Offline map cache cleared."
   },
   "editBatch": {
+    "batchId": "Batch ID",
     "invalidBatchId": "Invalid batch or warehouse. Go back and try again.",
     "batchNumberPlaceholder": "Enter batch number",
     "batchNumberRequired": "Batch number is required.",
@@ -743,6 +747,9 @@
     "saveError": "Failed to update assets. Please try again.",
     "validationError": "Please fix the validation errors before saving",
     "selectStatus": "Select status",
+    "selectSupplier": "Select supplier",
+    "selectManufacturer": "Select manufacturer",
+    "selectPrimaryPurpose": "Select primary purpose",
     "assignment": "Custodian",
     "assignmentModeHint": "For each row: assign to a department only, or to a person only (custodian). Do not use both for the same row.",
     "selectDepartment": "Select department",

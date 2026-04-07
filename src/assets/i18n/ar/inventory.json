@@ -146,6 +146,9 @@
     "warrantyExpiryDate": "تاريخ انتهاء الضمان",
     "purchasePrice": "سعر الشراء",
     "notes": "ملاحظات",
+    "supplier": "المورد",
+    "manufacturer": "الشركة المصنعة",
+    "primaryPurpose": "الغرض الأساسي",
     "deleteConfirm": "هل أنت متأكد من حذف هذا الأصل؟",
     "deleteWarning": "لا يمكن التراجع عن هذا الإجراء.",
     "deleted": "تم حذف الأصل بنجاح",
@@ -720,6 +723,7 @@
     "cacheCleared": "تم مسح ذاكرة التخزين المؤقت للخريطة."
   },
   "editBatch": {
+    "batchId": "معرّف الدفعة",
     "title": "تعديل دفعة الأسلحة",
     "backToBatches": "العودة إلى الأسلحة",
     "commonInfo": "معلومات دفعة الأسلحة",
@@ -735,6 +739,9 @@
     "saveError": "فشل في تحديث الأصول. يرجى المحاولة مرة أخرى.",
     "validationError": "يرجى إصلاح أخطاء التحقق قبل الحفظ",
     "selectStatus": "اختر الحالة",
+    "selectSupplier": "اختر المورد",
+    "selectManufacturer": "اختر الشركة المصنعة",
+    "selectPrimaryPurpose": "اختر الغرض الأساسي",
     "assignment": "مسؤول العهدة",
     "assignmentModeHint": "لكل صف: تعيين للقسم فقط، أو لشخص فقط (مسؤول عهدة). لا تجمع بينهما في نفس الصف.",
     "selectDepartment": "اختر القسم",

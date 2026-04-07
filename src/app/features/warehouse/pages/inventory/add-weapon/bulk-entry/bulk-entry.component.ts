@@ -34,6 +34,9 @@ interface BulkAssetData {
     purchasePrice?: number;
     deliveryReceipt?: string;
     notes?: string;
+    supplierId?: number;
+    manufacturerId?: number;
+    primaryPurposId?: number;
     assignMode?: BulkAssignMode;
     assignToEmployeeId?: number;
     assignToDepartmentId?: number;
@@ -231,6 +234,9 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
             deliveryReceipt: (formValue.deliveryReceipt?.trim && formValue.deliveryReceipt.trim()) || undefined,
             purchasePrice: this.bulkData.purchasePrice || undefined,
             notes: this.bulkData.notes?.trim() || undefined,
+            supplierId: this.bulkData.supplierId,
+            manufacturerId: this.bulkData.manufacturerId,
+            primaryPurposId: this.bulkData.primaryPurposId,
             ...assignmentPayload
         }));
 

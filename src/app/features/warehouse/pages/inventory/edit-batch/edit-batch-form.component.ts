@@ -91,8 +91,14 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
 
   departments: LookupItem[] = [];
   employees: EmployeeDto[] = [];
+  /** Full supplier/manufacturer lists; primary purpose row options prefer item.primaryPurposes when present. */
+  suppliers: LookupItem[] = [];
+  manufacturers: LookupItem[] = [];
+  primaryPurposesAll: LookupItem[] = [];
   assignModeDropdownOptions: DropdownOption<BatchEditAssignMode>[] = [];
   readonly departmentOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null) =>
+    this.getLookupName(this.unwrapLookupOption(option));
+  readonly supplierOrManufacturerOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null) =>
     this.getLookupName(this.unwrapLookupOption(option));
   readonly employeeOptionLabel = (option: DropdownOption<EmployeeDto> | EmployeeDto | null) =>
     this.getEmployeeLabel(this.unwrapEmployeeOption(option));
@@ -153,11 +159,14 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
         assetsPageSize: this.assetsPageSize
       }),
       employees: this.employeeService.getEmployees(),
-      departments: this.lookupService.getDepartments()
+      departments: this.lookupService.getDepartments(),
+      suppliers: this.lookupService.getSuppliers(),
+      manufacturers: this.lookupService.getManufacturers(),
+      primaryPurposes: this.lookupService.getPrimaryPurposes()
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: ({ batch, employees, departments }) => {
+        next: ({ batch, employees, departments, suppliers, manufacturers, primaryPurposes }) => {
           if (!batch) {
             this.error = 'Failed to load batch';
             this.loading = false;
@@ -169,6 +178,9 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
           this.removedAssetIds.clear();
           this.employees = (employees || []).filter(e => !e.isDeleted);
           this.departments = (departments || []).filter(d => !d.isDeleted);
+          this.suppliers = (suppliers || []).filter(s => !s.isDeleted);
+          this.manufacturers = (manufacturers || []).filter(m => !m.isDeleted);
+          this.primaryPurposesAll = (primaryPurposes || []).filter(p => !p.isDeleted);
           this.buildForms(batch);
           this.refreshAssignModeOptions();
           this.loading = false;
@@ -276,6 +288,9 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
       itemId: [asset.itemId, Validators.required],
       serialNumber: [asset.serialNumber || '', Validators.maxLength(500)],
       rfid: [asset.rfid || '', Validators.maxLength(500)],
+      supplierId: [asset.supplierId ?? null],
+      manufacturerId: [asset.manufacturerId ?? null],
+      primaryPurposId: [asset.primaryPurposId ?? null],
       status: [asset.status],
       notes: [asset.notes || '', Validators.maxLength(5000)],
       assignMode: [mode],
@@ -453,6 +468,19 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
     return `Asset #${asset.id}`;
   }
 
+  /** Prefer catalog-linked purposes for the weapon; otherwise full lookup list (server validates). */
+  getPrimaryPurposeOptionsForRow(index: number): LookupItem[] {
+    const purposes = this.batch?.assets[index]?.item?.primaryPurposes;
+    if (purposes?.length) {
+      return purposes.map(p => ({
+        id: p.id,
+        nameAr: p.nameAr ?? '',
+        nameEn: p.nameEn ?? ''
+      }));
+    }
+    return this.primaryPurposesAll;
+  }
+
   isFieldInvalid(index: number, fieldName: string): boolean {
     const control = this.getAssetFormGroup(index).get(fieldName);
     return !!(control && control.invalid && (control.dirty || control.touched));
@@ -528,6 +556,9 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
         itemId: val.itemId,
         serialNumber: val.serialNumber?.trim() || undefined,
         rfid: val.rfid?.trim() || undefined,
+        supplierId: val.supplierId ?? null,
+        manufacturerId: val.manufacturerId ?? null,
+        primaryPurposId: val.primaryPurposId ?? null,
         status: val.status,
         purchaseDate: common.purchaseDate || undefined,
         warrantyExpiryDate: common.warrantyExpiryDate || undefined,

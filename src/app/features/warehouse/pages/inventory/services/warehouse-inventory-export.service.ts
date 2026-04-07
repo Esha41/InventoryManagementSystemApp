@@ -181,12 +181,6 @@ export class WarehouseInventoryExportService {
         }
       },
       {
-        header: this.translateService.instant('warehouseInventory.itemNo'),
-        key: 'item.itemNo',
-        width: 15,
-        format: (value) => value || '-'
-      },
-      {
         header: this.translateService.instant('warehouseInventory.serialNumber'),
         key: 'serialNumber',
         width: 18,

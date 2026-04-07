@@ -8,9 +8,12 @@ import { AssetService } from '@services/asset.service';
 import { ToastService } from '@services/toast.service';
 import { AssetDto, UpdateAssetDto } from '@models/asset.model';
 import { ButtonComponent } from '@components/button/button.component';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
+import { LookupService } from '@services/lookup.service';
+import { LookupItem } from '@models/lookup.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { formatDateForInput } from '@utils/format.utils';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-edit-asset-modal',
@@ -20,7 +23,8 @@ import { Subject, takeUntil } from 'rxjs';
     ReactiveFormsModule,
     TranslateModule,
     LucideAngularModule,
-    ButtonComponent
+    ButtonComponent,
+    DropdownComponent
   ],
   templateUrl: './edit-asset-modal.component.html',
   styleUrls: ['./edit-asset-modal.component.css'],
@@ -42,12 +46,26 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
   saving = false;
   submitted = false;
   private selectedFiles: File[] = [];
+  suppliers: LookupItem[] = [];
+  manufacturers: LookupItem[] = [];
+  allPrimaryPurposes: LookupItem[] = [];
+  primaryPurposeOptions: LookupItem[] = [];
+
+  readonly lookupOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null): string => {
+    if (!option) return '';
+    const item =
+      typeof option === 'object' && option !== null && 'value' in option && (option as DropdownOption<LookupItem>).value != null
+        ? (option as DropdownOption<LookupItem>).value!
+        : (option as LookupItem);
+    return getLocalizedName(item, getCurrentLang(this.translateService)) || '';
+  };
 
   private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
     private assetService: AssetService,
+    private lookupService: LookupService,
     private toastService: ToastService,
     private translateService: TranslateService,
     private cdr: ChangeDetectorRef
@@ -58,16 +76,43 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
   ngOnInit(): void { }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['asset'] && this.asset && this.editForm) {
-      this.patchForm(this.asset);
-      this.cdr.markForCheck();
-    }
     if (changes['isOpen'] && !this.isOpen && this.editForm) {
-      // Reset form when modal closes
       this.editForm.reset();
       this.submitted = false;
       this.saving = false;
+      return;
     }
+    if (!this.isOpen || !this.asset || !this.editForm) {
+      return;
+    }
+    if (changes['isOpen']?.currentValue === true || changes['asset']) {
+      forkJoin({
+        suppliers: this.lookupService.getSuppliers(),
+        manufacturers: this.lookupService.getManufacturers(),
+        primaryPurposes: this.lookupService.getPrimaryPurposes()
+      })
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: ({ suppliers, manufacturers, primaryPurposes }) => {
+            this.suppliers = (suppliers || []).filter(s => !s.isDeleted);
+            this.manufacturers = (manufacturers || []).filter(m => !m.isDeleted);
+            this.allPrimaryPurposes = (primaryPurposes || []).filter(p => !p.isDeleted);
+            this.primaryPurposeOptions = this.buildPrimaryPurposeOptions(this.asset!);
+            this.patchForm(this.asset!);
+            this.cdr.markForCheck();
+          }
+        });
+    }
+  }
+
+  private buildPrimaryPurposeOptions(asset: AssetDto): LookupItem[] {
+    const linked = asset.item?.primaryPurposes;
+    if (linked?.length) {
+      return linked
+        .filter(p => p.id != null)
+        .map(p => ({ id: p.id, nameAr: p.nameAr ?? '', nameEn: p.nameEn ?? '' }));
+    }
+    return this.allPrimaryPurposes;
   }
 
   ngOnDestroy(): void {
@@ -86,7 +131,10 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
       warrantyExpiryDate: [null],
       purchasePrice: [null, [Validators.min(0)]],
       deliveryReceipt: [''],
-      notes: ['']
+      notes: [''],
+      supplierId: [null as number | null],
+      manufacturerId: [null as number | null],
+      primaryPurposId: [null as number | null]
     });
   }
 
@@ -104,7 +152,10 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
       warrantyExpiryDate: formatDate(asset.warrantyExpiryDate),
       purchasePrice: asset.purchasePrice || null,
       deliveryReceipt: asset.deliveryReceipt || '',
-      notes: asset.notes || ''
+      notes: asset.notes || '',
+      supplierId: asset.supplierId ?? null,
+      manufacturerId: asset.manufacturerId ?? null,
+      primaryPurposId: asset.primaryPurposId ?? null
     });
   }
 
@@ -154,7 +205,10 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
       warrantyExpiryDate: formValue.warrantyExpiryDate ? new Date(formValue.warrantyExpiryDate) : undefined,
       purchasePrice: formValue.purchasePrice || undefined,
       deliveryReceipt: formValue.deliveryReceipt?.trim() || undefined,
-      notes: formValue.notes?.trim() || undefined
+      notes: formValue.notes?.trim() || undefined,
+      supplierId: formValue.supplierId ?? null,
+      manufacturerId: formValue.manufacturerId ?? null,
+      primaryPurposId: formValue.primaryPurposId ?? null
     };
 
     this.assetService.update(this.asset.id, updateDto, this.selectedFiles)

@@ -39,11 +39,13 @@ export class BatchTableComponent {
     /** Page size choices for batch assets (default 50, 100, 200, 500). */
     @Input() batchAssetsPageSizeOptions: number[] = [50, 100, 200, 500];
     @Input() getAssetItemName: (asset: AssetDto) => string = () => '';
-    @Input() getAssetItemNo: (asset: AssetDto) => string = () => '';
     @Input() getAssetStatusLabel: (asset: AssetDto) => string = () => '';
     @Input() formatDate: (date?: Date | string) => string = () => '';
     @Input() getAssetDepartmentLabel: (asset: AssetDto) => string = () => '-';
     @Input() getAssetCustodianLabel: (asset: AssetDto) => string = () => '-';
+    @Input() getAssetSupplierLabel: (asset: AssetDto) => string = () => '-';
+    @Input() getAssetManufacturerLabel: (asset: AssetDto) => string = () => '-';
+    @Input() getAssetPrimaryPurposeLabel: (asset: AssetDto) => string = () => '-';
     @Input() formatAssetPurchasePrice: (price?: number | null) => string = () => '-';
     @Input() truncateAssetNotes: (asset: AssetDto) => string = () => '-';
 

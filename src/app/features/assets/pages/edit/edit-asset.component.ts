@@ -2,26 +2,30 @@ import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRe
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, Save, Loader2 } from 'lucide-angular';
 
 import { AssetService } from '@services/asset.service';
 import { ToastService } from '@services/toast.service';
 import { AssetDto, UpdateAssetDto } from '@models/asset.model';
+import { LookupService } from '@services/lookup.service';
+import { LookupItem } from '@models/lookup.model';
 import { CardComponent } from '@components/card/card.component';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { formatDateForInput } from '@utils/format.utils';
 
 @Component({
   selector: 'app-edit-asset',
   standalone: true,
-  imports: [
+    imports: [
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
     LucideAngularModule,
-    CardComponent
+    CardComponent,
+    DropdownComponent
   ],
   templateUrl: './edit-asset.component.html',
   styleUrl: './edit-asset.component.css',
@@ -40,6 +44,10 @@ export class EditAssetComponent implements OnInit, OnDestroy {
   submitted = false;
   asset: AssetDto | null = null;
   error: string | null = null;
+  suppliers: LookupItem[] = [];
+  manufacturers: LookupItem[] = [];
+  allPrimaryPurposes: LookupItem[] = [];
+  primaryPurposeOptions: LookupItem[] = [];
 
   private destroy$ = new Subject<void>();
 
@@ -48,6 +56,7 @@ export class EditAssetComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private assetService: AssetService,
+    private lookupService: LookupService,
     private toastService: ToastService,
     private translateService: TranslateService,
     private cdr: ChangeDetectorRef
@@ -83,19 +92,40 @@ export class EditAssetComponent implements OnInit, OnDestroy {
       purchaseDate: [null],
       warrantyExpiryDate: [null],
       purchasePrice: [null, [Validators.min(0)]],
-      notes: ['']
+      notes: [''],
+      supplierId: [null as number | null],
+      manufacturerId: [null as number | null],
+      primaryPurposId: [null as number | null]
     });
   }
+
+  readonly lookupOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null): string => {
+    if (!option) return '';
+    const item =
+      typeof option === 'object' && option !== null && 'value' in option && (option as DropdownOption<LookupItem>).value != null
+        ? (option as DropdownOption<LookupItem>).value!
+        : (option as LookupItem);
+    return getLocalizedName(item, getCurrentLang(this.translateService)) || '';
+  };
 
   private loadAsset(id: number): void {
     this.loading = true;
     this.cdr.markForCheck();
-    this.assetService.getById<AssetDto>(id)
+    forkJoin({
+      asset: this.assetService.getById<AssetDto>(id),
+      suppliers: this.lookupService.getSuppliers(),
+      manufacturers: this.lookupService.getManufacturers(),
+      primaryPurposes: this.lookupService.getPrimaryPurposes()
+    })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (asset) => {
+        next: ({ asset, suppliers, manufacturers, primaryPurposes }) => {
           this.asset = asset;
+          this.suppliers = (suppliers || []).filter(s => !s.isDeleted);
+          this.manufacturers = (manufacturers || []).filter(m => !m.isDeleted);
+          this.allPrimaryPurposes = (primaryPurposes || []).filter(p => !p.isDeleted);
           if (asset) {
+            this.primaryPurposeOptions = this.buildPrimaryPurposeOptions(asset);
             this.patchForm(asset);
           }
           this.loading = false;
@@ -129,8 +159,21 @@ export class EditAssetComponent implements OnInit, OnDestroy {
       purchaseDate: formatDate(asset.purchaseDate),
       warrantyExpiryDate: formatDate(asset.warrantyExpiryDate),
       purchasePrice: asset.purchasePrice,
-      notes: asset.notes
+      notes: asset.notes,
+      supplierId: asset.supplierId ?? null,
+      manufacturerId: asset.manufacturerId ?? null,
+      primaryPurposId: asset.primaryPurposId ?? null
     });
+  }
+
+  private buildPrimaryPurposeOptions(asset: AssetDto): LookupItem[] {
+    const linked = asset.item?.primaryPurposes;
+    if (linked?.length) {
+      return linked
+        .filter(p => p.id != null)
+        .map(p => ({ id: p.id, nameAr: p.nameAr ?? '', nameEn: p.nameEn ?? '' }));
+    }
+    return this.allPrimaryPurposes;
   }
 
   getItemName(): string {
@@ -173,7 +216,10 @@ export class EditAssetComponent implements OnInit, OnDestroy {
       purchaseDate: formValue.purchaseDate ? new Date(formValue.purchaseDate) : undefined,
       warrantyExpiryDate: formValue.warrantyExpiryDate ? new Date(formValue.warrantyExpiryDate) : undefined,
       purchasePrice: formValue.purchasePrice,
-      notes: formValue.notes
+      notes: formValue.notes,
+      supplierId: formValue.supplierId ?? null,
+      manufacturerId: formValue.manufacturerId ?? null,
+      primaryPurposId: formValue.primaryPurposId ?? null
     };
 
     this.assetService.update(this.assetId, updateDto)

@@ -38,6 +38,9 @@ export interface BatchAssetUpdateItem {
     assignToDepartmentId?: number | null;
     assignToEmployeeId?: number | null;
     assignmentNotes?: string;
+    supplierId?: number | null;
+    manufacturerId?: number | null;
+    primaryPurposId?: number | null;
 }
 
 export interface BulkUpdateBatchAssetsDto {

@@ -765,9 +765,11 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   getPrimaryPurposeName = (detail: InventoryDetailDto) => this.formatterService.getPrimaryPurposeName(detail);
   getHccName = (detail: InventoryDetailDto) => this.formatterService.getHccName(detail);
   getAssetItemName = (asset: AssetDto | null | undefined) => this.formatterService.getAssetItemName(asset);
-  getAssetItemNo = (asset: AssetDto) => this.formatterService.getAssetItemNo(asset);
   getAssetDepartmentLabel = (asset: AssetDto) => this.formatterService.getAssetDepartmentLabel(asset);
   getAssetCustodianLabel = (asset: AssetDto) => this.formatterService.getAssetCustodianLabel(asset);
+  getAssetSupplierLabel = (asset: AssetDto) => this.formatterService.getAssetSupplierLabel(asset);
+  getAssetManufacturerLabel = (asset: AssetDto) => this.formatterService.getAssetManufacturerLabel(asset);
+  getAssetPrimaryPurposeLabel = (asset: AssetDto) => this.formatterService.getAssetPrimaryPurposeLabel(asset);
   formatAssetPurchasePrice = (price?: number | null) => this.formatterService.formatAssetPurchasePrice(price);
   truncateAssetNotes = (asset: AssetDto) => this.formatterService.truncateText(asset.notes, 80);
   getAssetStatusLabel = (asset: AssetDto) => this.formatterService.getAssetStatusLabel(asset);

@@ -106,6 +106,30 @@
                 {{ asset.purchasePrice ?? '-' }}
               </p>
             </div>
+            <div>
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+                {{ 'assetDetails.supplier' | translate }}
+              </label>
+              <p class="text-sm font-medium text-[var(--color-text)]">
+                {{ getLookupLabel(asset.supplier) }}
+              </p>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+                {{ 'assetDetails.manufacturer' | translate }}
+              </label>
+              <p class="text-sm font-medium text-[var(--color-text)]">
+                {{ getLookupLabel(asset.manufacturer) }}
+              </p>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+                {{ 'assetDetails.primaryPurpose' | translate }}
+              </label>
+              <p class="text-sm font-medium text-[var(--color-text)]">
+                {{ getLookupLabel(asset.primaryPurpos) }}
+              </p>
+            </div>
             <div *ngIf="asset.notes" class="md:col-span-2">
               <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
                 {{ 'assetDetails.notes' | translate }}
