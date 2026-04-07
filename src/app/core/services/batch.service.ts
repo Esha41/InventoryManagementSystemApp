@@ -70,13 +70,16 @@ export class BatchService {
     }
 
     getByBatchNumber(batchNumber: string, options?: {
+        depotId?: number;
         serialNumberOnly?: boolean;
         filterByIsAssigned?: boolean;
         assetsPage?: number;
         assetsPageSize?: number;
         includeAllAssets?: boolean;
-    }): Observable<BatchDto | null> {
+    }): Observable<BatchDto[]> {
         let params = new HttpParams();
+        if (options?.depotId != null)
+            params = params.set('depotId', String(options.depotId));
         if (options?.serialNumberOnly != null)
             params = params.set('serialNumberOnly', String(options.serialNumberOnly));
         if (options?.filterByIsAssigned != null)
@@ -88,7 +91,7 @@ export class BatchService {
         if (options?.includeAllAssets === true)
             params = params.set('includeAllAssets', 'true');
         const encoded = encodeURIComponent(batchNumber.trim());
-        return this.apiService.get<BatchDto | null>(`${this.basePath}/by-number/${encoded}`, params);
+        return this.apiService.get<BatchDto[]>(`${this.basePath}/by-number/${encoded}`, params);
     }
 
     updateBatch(batchId: number, dto: UpdateBatchDto): Observable<boolean> {
