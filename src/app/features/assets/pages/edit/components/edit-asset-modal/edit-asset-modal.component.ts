@@ -80,10 +80,8 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
       // Identification
       serialNumber: [''],
       rfid: [''],
-      assetTag: [''],
 
       // Additional Details
-      condition: [''],
       purchaseDate: [null],
       warrantyExpiryDate: [null],
       purchasePrice: [null, [Validators.min(0)]],
@@ -102,8 +100,6 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
     this.editForm.patchValue({
       serialNumber: asset.serialNumber || '',
       rfid: asset.rfid || '',
-      assetTag: asset.assetTag || '',
-      condition: asset.condition || '',
       purchaseDate: formatDate(asset.purchaseDate),
       warrantyExpiryDate: formatDate(asset.warrantyExpiryDate),
       purchasePrice: asset.purchasePrice || null,
@@ -154,8 +150,6 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
       itemId: this.asset.itemId,
       serialNumber: formValue.serialNumber?.trim() || undefined,
       rfid: formValue.rfid?.trim() || undefined,
-      assetTag: formValue.assetTag?.trim() || undefined,
-      condition: formValue.condition?.trim() || undefined,
       purchaseDate: formValue.purchaseDate ? new Date(formValue.purchaseDate) : undefined,
       warrantyExpiryDate: formValue.warrantyExpiryDate ? new Date(formValue.warrantyExpiryDate) : undefined,
       purchasePrice: formValue.purchasePrice || undefined,

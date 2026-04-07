@@ -178,18 +178,6 @@ export class WarehouseInventoryExportService {
         format: (value) => value || '-'
       },
       {
-        header: this.translateService.instant('warehouseInventory.assetTag'),
-        key: 'assetTag',
-        width: 15,
-        format: (value) => value || '-'
-      },
-      {
-        header: this.translateService.instant('warehouseInventory.condition'),
-        key: 'condition',
-        width: 15,
-        format: (value) => value || '-'
-      },
-      {
         header: this.translateService.instant('warehouseInventory.purchaseDate'),
         key: 'purchaseDate',
         width: 15,

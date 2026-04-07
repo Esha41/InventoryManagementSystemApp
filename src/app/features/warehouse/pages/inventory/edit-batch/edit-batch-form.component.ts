@@ -28,6 +28,9 @@ import { AssetDto, EmployeeDto } from '@models/asset.model';
 import { UpdateAssetDto } from '@models/asset.model';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import { PaginationComponent } from '@components/pagination/pagination.component';
+import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
+import { EmployeeFormModalComponent } from '@components/employee-form-modal/employee-form-modal.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { trackByIndex } from '@utils/trackby.utils';
@@ -47,7 +50,10 @@ export type BatchEditAssignMode = 'none' | 'department' | 'employee';
     CardComponent,
     DropdownComponent,
     LoadingStateComponent,
-    ErrorStateComponent
+    ErrorStateComponent,
+    PaginationComponent,
+    RowsPerPageComponent,
+    EmployeeFormModalComponent
   ],
   templateUrl: './edit-batch-form.component.html',
   styleUrls: ['./edit-batch-form.component.css'],
@@ -71,8 +77,16 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
 
   batch: BatchDto | null = null;
   loading = true;
+  /** True while swapping asset page (keeps header + batch fields visible). */
+  pagingAssets = false;
   saving = false;
   error: string | null = null;
+
+  /** Server-side pagination for the assets table (aligned with warehouse batch expand). */
+  assetsPage = 1;
+  assetsPageSize = 50;
+  assetsTotalPages = 1;
+  readonly assetsPageSizeOptions = [50, 100, 200, 500];
 
   batchForm!: FormGroup;
   get assetForms(): FormArray {
@@ -90,6 +104,7 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
   private removedAssetIds = new Set<number>();
   private destroy$ = new Subject<void>();
   deliveryReceiptFiles: File[] = [];
+  isEmployeeModalOpen = false;
 
     get existingFiles() {
         return this.batch?.assets?.[0]?.images || [];
@@ -130,7 +145,7 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
     this.destroy$.complete();
   }
 
-  /** Public so parent modal can refresh when opened. */
+  /** Public so parent can refresh when route reopens. */
   loadBatch(): void {
     if (!this.batchId) return;
     this.loading = true;
@@ -138,7 +153,10 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
     this.cdr.markForCheck();
 
     forkJoin({
-      batch: this.batchService.getById(this.batchId),
+      batch: this.batchService.getById(this.batchId, {
+        assetsPage: this.assetsPage,
+        assetsPageSize: this.assetsPageSize
+      }),
       employees: this.employeeService.getEmployees(),
       departments: this.lookupService.getDepartments()
     })
@@ -152,6 +170,7 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
             return;
           }
           this.batch = batch;
+          this.syncPaginationFromBatch(batch);
           this.removedAssetIds.clear();
           this.employees = (employees || []).filter(e => !e.isDeleted);
           this.departments = (departments || []).filter(d => !d.isDeleted);
@@ -168,6 +187,72 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
       });
   }
 
+  onEditAssetsPageChange(page: number): void {
+    this.assetsPage = page;
+    this.reloadAssetPage();
+  }
+
+  onEditAssetsPageSizeChange(size: number): void {
+    this.assetsPageSize = size;
+    this.assetsPage = 1;
+    this.reloadAssetPage();
+  }
+
+  /** Reloads only the current assets slice; preserves batch number and common purchase fields. */
+  private reloadAssetPage(): void {
+    if (!this.batchId || !this.batchForm) return;
+    this.pagingAssets = true;
+    this.cdr.markForCheck();
+    this.batchService
+      .getById(this.batchId, { assetsPage: this.assetsPage, assetsPageSize: this.assetsPageSize })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (batch) => {
+          this.pagingAssets = false;
+          if (!batch) {
+            this.cdr.markForCheck();
+            return;
+          }
+          this.batch = batch;
+          this.syncPaginationFromBatch(batch);
+          const totalPages = batch.assetsTotalPages ?? 1;
+          if (this.assetsPage > totalPages && totalPages >= 1) {
+            this.assetsPage = totalPages;
+            this.reloadAssetPage();
+            return;
+          }
+          const emptyPage =
+            (batch.assets?.length ?? 0) === 0 && (batch.assetCount ?? 0) > 0 && this.assetsPage > 1;
+          if (emptyPage) {
+            this.assetsPage--;
+            this.reloadAssetPage();
+            return;
+          }
+          this.applyBatchPageResponse(batch);
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.pagingAssets = false;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  private syncPaginationFromBatch(batchDto: BatchDto): void {
+    if (batchDto.assetsPageIndex != null) this.assetsPage = batchDto.assetsPageIndex;
+    if (batchDto.assetsPageSize != null) this.assetsPageSize = batchDto.assetsPageSize;
+    this.assetsTotalPages = batchDto.assetsTotalPages ?? 1;
+  }
+
+  private applyBatchPageResponse(batchDto: BatchDto): void {
+    const groups = (batchDto.assets ?? []).map(asset => this.createAssetFormGroup(asset));
+    this.batchForm.setControl('assets', this.fb.array(groups));
+    this.batchForm.patchValue(
+      { batchNumber: batchDto.batchNumber?.trim() || '' },
+      { emitEvent: false }
+    );
+  }
+
   private buildForms(batchDto: BatchDto): void {
     const assets = batchDto.assets ?? [];
     const firstAsset = assets[0];
@@ -176,23 +261,7 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
     const commonPurchasePrice = firstAsset?.purchasePrice ?? null;
     const commonDeliveryReceipt = firstAsset?.deliveryReceipt ?? '';
 
-    const groups = assets.map(asset => {
-      const mode = this.inferAssignMode(asset);
-      return this.fb.group({
-        assetId: [asset.id],
-        itemId: [asset.itemId, Validators.required],
-        serialNumber: [asset.serialNumber || '', Validators.maxLength(500)],
-        rfid: [asset.rfid || '', Validators.maxLength(500)],
-        status: [asset.status],
-        assetTag: [asset.assetTag || '', Validators.maxLength(500)],
-        condition: [asset.condition || '', Validators.maxLength(500)],
-        notes: [asset.notes || '', Validators.maxLength(5000)],
-        assignMode: [mode],
-        assignToDepartmentId: [mode === 'department' ? (asset.departmentId ?? null) : null],
-        assignToEmployeeId: [mode === 'employee' ? (asset.custodianId ?? null) : null],
-        assignmentNotes: ['', Validators.maxLength(2000)]
-      });
-    });
+    const groups = assets.map(asset => this.createAssetFormGroup(asset));
     this.batchForm = this.fb.group({
       batchNumber: [batchDto.batchNumber?.trim() || '', [Validators.required, Validators.maxLength(500)]],
       commonInfo: this.fb.group({
@@ -202,6 +271,22 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
         deliveryReceipt: [commonDeliveryReceipt, Validators.maxLength(200)]
       }),
       assets: this.fb.array(groups)
+    });
+  }
+
+  private createAssetFormGroup(asset: AssetDto): FormGroup {
+    const mode = this.inferAssignMode(asset);
+    return this.fb.group({
+      assetId: [asset.id],
+      itemId: [asset.itemId, Validators.required],
+      serialNumber: [asset.serialNumber || '', Validators.maxLength(500)],
+      rfid: [asset.rfid || '', Validators.maxLength(500)],
+      status: [asset.status],
+      notes: [asset.notes || '', Validators.maxLength(5000)],
+      assignMode: [mode],
+      assignToDepartmentId: [mode === 'department' ? (asset.departmentId ?? null) : null],
+      assignToEmployeeId: [mode === 'employee' ? (asset.custodianId ?? null) : null],
+      assignmentNotes: ['', Validators.maxLength(2000)]
     });
   }
 
@@ -238,6 +323,32 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
 
   onRowAssignmentEmployeeChange(): void {
     this.cdr.markForCheck();
+  }
+
+  openAddEmployeeModal(): void {
+    this.isEmployeeModalOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  onEmployeeModalClosed(): void {
+    this.isEmployeeModalOpen = false;
+    this.cdr.markForCheck();
+  }
+
+  onEmployeeSaved(): void {
+    this.employeeService
+      .getEmployees()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (list) => {
+          this.employees = (list || []).filter(e => !e.isDeleted);
+          this.onRowAssignmentEmployeeChange();
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   selectedEmployeeCannotAssign(employeeId: number | null | undefined): boolean {
@@ -301,12 +412,6 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
     return `Asset #${asset.id}`;
   }
 
-  getAssetItemNo(index: number): string {
-    if (!this.batch?.assets[index]) return '';
-    const asset = this.batch.assets[index];
-    return asset.item?.itemNo || '';
-  }
-
   isFieldInvalid(index: number, fieldName: string): boolean {
     const control = this.getAssetFormGroup(index).get(fieldName);
     return !!(control && control.invalid && (control.dirty || control.touched));
@@ -317,9 +422,28 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
     return !!(c && c.invalid && (c.dirty || c.touched));
   }
 
+  /** Hide the whole Assignment notes column when every row is "No assignment". */
+  get showAssignmentNotesColumn(): boolean {
+    const fa = this.assetForms;
+    if (!fa?.length) return false;
+    return fa.controls.some(
+      c => (c as FormGroup).get('assignMode')?.value !== 'none'
+    );
+  }
+
+  /** 1-based row label in the full batch (not just the current page). */
+  assetRowDisplayIndex(i: number): number {
+    return (this.assetsPage - 1) * this.assetsPageSize + i + 1;
+  }
+
+  get showSaveToolbar(): boolean {
+    return !!this.batch && !!this.batchForm && !this.loading;
+  }
+
   removeRow(index: number): void {
+    const totalInBatch = this.batch?.assetCount ?? 0;
+    if (totalInBatch <= 1) return;
     const assetId = this.getAssetFormGroup(index).get('assetId')?.value;
-    if (this.assetForms.length <= 1) return;
     this.assetForms.removeAt(index);
     if (assetId) this.removedAssetIds.add(assetId);
     this.cdr.markForCheck();
@@ -365,10 +489,8 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
         serialNumber: val.serialNumber?.trim() || undefined,
         rfid: val.rfid?.trim() || undefined,
         status: val.status,
-        assetTag: val.assetTag?.trim() || undefined,
         purchaseDate: common.purchaseDate || undefined,
         warrantyExpiryDate: common.warrantyExpiryDate || undefined,
-        condition: val.condition?.trim() || undefined,
         purchasePrice: common.purchasePrice,
         deliveryReceipt: String(common.deliveryReceipt ?? '').trim() || undefined,
         notes: val.notes?.trim() || undefined,
@@ -430,7 +552,7 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
           this.translateService.instant('editBatch.saveSuccess'),
           this.translateService.instant('toast.success')
         );
-        this.loadBatch();
+        this.reloadAssetPage();
         this.saved.emit();
       },
       error: (err) => {

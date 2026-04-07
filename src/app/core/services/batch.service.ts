@@ -50,31 +50,43 @@ export class BatchService {
 
     getById(id: number, options?: {
         serialNumberOnly?: boolean;
-        quantity?: number;
         filterByIsAssigned?: boolean;
+        assetsPage?: number;
+        assetsPageSize?: number;
+        includeAllAssets?: boolean;
     }): Observable<BatchDto | null> {
         let params = new HttpParams();
         if (options?.serialNumberOnly != null)
             params = params.set('serialNumberOnly', String(options.serialNumberOnly));
-        if (options?.quantity != null)
-            params = params.set('quantity', String(options.quantity));
         if (options?.filterByIsAssigned != null)
             params = params.set('filterByIsAssigned', String(options.filterByIsAssigned));
+        if (options?.assetsPage != null)
+            params = params.set('assetsPage', String(options.assetsPage));
+        if (options?.assetsPageSize != null)
+            params = params.set('assetsPageSize', String(options.assetsPageSize));
+        if (options?.includeAllAssets === true)
+            params = params.set('includeAllAssets', 'true');
         return this.apiService.get<BatchDto | null>(`${this.basePath}/${id}`, params);
     }
 
     getByBatchNumber(batchNumber: string, options?: {
         serialNumberOnly?: boolean;
-        quantity?: number;
         filterByIsAssigned?: boolean;
+        assetsPage?: number;
+        assetsPageSize?: number;
+        includeAllAssets?: boolean;
     }): Observable<BatchDto | null> {
         let params = new HttpParams();
         if (options?.serialNumberOnly != null)
             params = params.set('serialNumberOnly', String(options.serialNumberOnly));
-        if (options?.quantity != null)
-            params = params.set('quantity', String(options.quantity));
         if (options?.filterByIsAssigned != null)
             params = params.set('filterByIsAssigned', String(options.filterByIsAssigned));
+        if (options?.assetsPage != null)
+            params = params.set('assetsPage', String(options.assetsPage));
+        if (options?.assetsPageSize != null)
+            params = params.set('assetsPageSize', String(options.assetsPageSize));
+        if (options?.includeAllAssets === true)
+            params = params.set('includeAllAssets', 'true');
         const encoded = encodeURIComponent(batchNumber.trim());
         return this.apiService.get<BatchDto | null>(`${this.basePath}/by-number/${encoded}`, params);
     }

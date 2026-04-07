@@ -31,7 +31,6 @@ interface BulkAssetData {
     quantity: number;
     purchaseDate?: string;
     warrantyExpiryDate?: string;
-    condition?: string;
     purchasePrice?: number;
     deliveryReceipt?: string;
     notes?: string;
@@ -154,8 +153,7 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
     private createItemFormGroup(index: number): FormGroup {
         return this.fb.group({
             serialNumber: ['', [Validators.maxLength(200)]],
-            rfid: ['', [Validators.maxLength(500)]],
-            assetTag: ['', [Validators.maxLength(100)]]
+            rfid: ['', [Validators.maxLength(500)]]
         });
     }
 
@@ -228,10 +226,8 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
             depotId: this.warehouseId,
             serialNumber: item.serialNumber?.trim() || undefined,
             rfid: item.rfid?.trim() || undefined,
-            assetTag: item.assetTag?.trim() || undefined,
             purchaseDate: this.bulkData.purchaseDate || undefined,
             warrantyExpiryDate: this.bulkData.warrantyExpiryDate || undefined,
-            condition: this.bulkData.condition?.trim() || undefined,
             deliveryReceipt: (formValue.deliveryReceipt?.trim && formValue.deliveryReceipt.trim()) || undefined,
             purchasePrice: this.bulkData.purchasePrice || undefined,
             notes: this.bulkData.notes?.trim() || undefined,

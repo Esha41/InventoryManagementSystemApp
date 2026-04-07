@@ -164,41 +164,12 @@
                                 </p>
                             </div>
 
-                            <!-- Asset Tag -->
-                            <div>
-                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
-                                    {{ 'addWeaponAsset.assetTag' | translate }}
-                                </label>
-                                <input type="text" formControlName="assetTag" (input)="onFieldChange('assetTag', i)"
-                                    class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
-                                    [class.border-[var(--color-error)]]="isFieldInvalid('assetTag', i)"
-                                    [placeholder]="'addWeaponAsset.enterAssetTag' | translate">
-                                <p *ngIf="isFieldInvalid('assetTag', i)" class="mt-1 text-sm text-[var(--color-error)]">
-                                    {{ getFieldError('assetTag', i) }}
-                                </p>
-                            </div>
-
                             <!-- Additional Details Section (per-asset) -->
                             <div class="md:col-span-2 mt-4 mb-2">
                                 <h4
                                     class="text-sm font-semibold text-[var(--color-text)] uppercase tracking-wide border-b border-[var(--color-border)] pb-2">
                                     {{ 'addWeaponAsset.additionalDetails' | translate }}
                                 </h4>
-                            </div>
-
-                            <!-- Condition -->
-                            <div>
-                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
-                                    {{ 'addWeaponAsset.condition' | translate }}
-                                </label>
-                                <input type="text" formControlName="condition" (input)="onFieldChange('condition', i)"
-                                    class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
-                                    [class.border-[var(--color-error)]]="isFieldInvalid('condition', i)"
-                                    [placeholder]="'addWeaponAsset.enterCondition' | translate">
-                                <p *ngIf="isFieldInvalid('condition', i)"
-                                    class="mt-1 text-sm text-[var(--color-error)]">
-                                    {{ getFieldError('condition', i) }}
-                                </p>
                             </div>
 
                             <!-- Purchase Date -->
@@ -300,7 +271,7 @@
                                 <app-dropdown class="w-full" formControlName="assignToEmployeeId"
                                     [options]="employeeDropdownOptions" optionValue="value"
                                     [placeholderSelectable]="false"
-                                    [addActionLabel]="'addWeaponAsset.assignment.addEmployee' | translate"
+                                    [addActionLabel]="'addWeaponAsset.assignment.addPerson'"
                                     (addActionClick)="openAddEmployeeModal()"
                                     (selectionChange)="onAssignmentEmployeeChange()"
                                     placeholder="{{ 'addWeaponAsset.assignment.selectEmployee' | translate }}">
@@ -510,16 +481,6 @@
                             class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors">
                     </div>
 
-                    <!-- Condition -->
-                    <div>
-                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
-                            {{ 'addWeaponAsset.condition' | translate }}
-                        </label>
-                        <input type="text" formControlName="condition"
-                            class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
-                            [placeholder]="'addWeaponAsset.enterCondition' | translate">
-                    </div>
-
                     <!-- Purchase Price -->
                     <div>
                         <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
@@ -580,7 +541,7 @@
                         <app-dropdown class="w-full" formControlName="assignToEmployeeId"
                             [options]="employeeDropdownOptions" optionValue="value"
                             [placeholderSelectable]="false"
-                            [addActionLabel]="'addWeaponAsset.assignment.addEmployee' | translate"
+                            [addActionLabel]="'addWeaponAsset.assignment.addPerson'"
                             (addActionClick)="openAddEmployeeModal()"
                             (selectionChange)="onAssignmentEmployeeChange()"
                             placeholder="{{ 'addWeaponAsset.assignment.selectEmployee' | translate }}">

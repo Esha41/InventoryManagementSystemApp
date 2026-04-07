@@ -298,7 +298,7 @@
                                       [ngModel]="getCustodianId(batch, asset.id)"
                                       (ngModelChange)="onCustodianChange(batch.id, asset.id, $event)"
                                       [placeholder]="'weaponSupplyReview.selectAssignee' | translate"
-                                      [addActionLabel]="'weaponSupplyReview.addEmployee' | translate"
+                                      [addActionLabel]="'weaponSupplyReview.addEmployee'"
                                       (addActionClick)="openAddEmployeeModal()"
                                       optionValue="value" optionLabel="label"
                                       class="assets-table-dropdown">

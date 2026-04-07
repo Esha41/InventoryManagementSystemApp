@@ -58,10 +58,8 @@ export interface AssetDto {
     custodianId?: number;
     location?: string;
     status?: AssetStatus;
-    assetTag?: string;
     purchaseDate?: Date | string;
     warrantyExpiryDate?: Date | string;
-    condition?: string;
     purchasePrice?: number;
     deliveryReceipt?: string;
     notes?: string;
@@ -84,10 +82,8 @@ export interface CreateAssetDto {
     serialNumber?: string;
     rfid?: string;
     depotId: number;
-    assetTag?: string;
     purchaseDate?: Date | string;
     warrantyExpiryDate?: Date | string;
-    condition?: string;
     purchasePrice?: number;
     deliveryReceipt?: string;
     notes?: string;
@@ -118,10 +114,8 @@ export interface UpdateAssetDto {
     itemId: number;
     serialNumber?: string;
     rfid?: string;
-    assetTag?: string;
     purchaseDate?: Date | string;
     warrantyExpiryDate?: Date | string;
-    condition?: string;
     purchasePrice?: number;
     deliveryReceipt?: string;
     notes?: string;

@@ -12,7 +12,12 @@ export interface BatchDto {
     id: number;
     batchNumber: string;
     depotId: number;
+    /** Total assets matching filters (not the current page length). */
     assetCount: number;
+    /** 1-based page index for the assets slice. */
+    assetsPageIndex?: number;
+    assetsPageSize?: number;
+    assetsTotalPages?: number;
     depot?: DepotDto;
     assets: AssetDto[];
 }
@@ -23,10 +28,8 @@ export interface BatchAssetUpdateItem {
     serialNumber?: string;
     rfid?: string;
     status?: AssetStatus;
-    assetTag?: string;
     purchaseDate?: Date | string;
     warrantyExpiryDate?: Date | string;
-    condition?: string;
     purchasePrice?: number;
     deliveryReceipt?: string;
     notes?: string;

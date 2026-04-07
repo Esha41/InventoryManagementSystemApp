@@ -1,14 +1,18 @@
 <div class="page-wrapper">
   <div class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
     <div class="page-container py-4">
-      <div class="flex items-center gap-4 mb-4">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <button type="button" (click)="onCancel()"
-          class="flex items-center gap-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
+          class="flex items-center gap-2 shrink-0 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors self-start">
           <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
           <span class="font-medium">{{ 'editBatch.backToBatches' | translate }}</span>
         </button>
+        <div class="sm:text-start sm:max-w-2xl min-w-0">
+          <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)] mb-0 break-words">
+            {{ 'editBatch.title' | translate }}
+          </h1>
+        </div>
       </div>
-      <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'editBatch.title' | translate }}</h1>
     </div>
   </div>
 
@@ -16,9 +20,10 @@
     <p class="text-sm text-[var(--color-error)]">{{ 'editBatch.invalidBatchId' | translate }}</p>
   </div>
 
-  <div *ngIf="!invalid" class="page-container py-6">
+  <div *ngIf="!invalid" class="page-container pt-6 pb-8">
     <app-edit-batch-form [batchId]="batchId" [warehouseId]="warehouseId" [showInlineActions]="true"
-      (cancelled)="onCancel()">
+      (cancelled)="onCancel()"
+      (saved)="onSaved()">
     </app-edit-batch-form>
   </div>
 </div>

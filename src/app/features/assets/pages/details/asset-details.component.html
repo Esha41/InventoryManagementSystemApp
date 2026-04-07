@@ -45,14 +45,6 @@
             </div>
             <div>
               <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
-                {{ 'assetDetails.assetTag' | translate }}
-              </label>
-              <p class="text-sm font-medium text-[var(--color-text)]">
-                {{ asset.assetTag || '-' }}
-              </p>
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
                 {{ 'assetDetails.status' | translate }}
               </label>
               <span *ngIf="asset.status" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium" [ngClass]="getStatusColorClass()">
@@ -88,14 +80,6 @@
               </label>
               <p class="text-sm font-medium text-[var(--color-text)]">
                 {{ asset.deliveryReceipt || '-' }}
-              </p>
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
-                {{ 'assetDetails.condition' | translate }}
-              </label>
-              <p class="text-sm font-medium text-[var(--color-text)]">
-                {{ asset.condition || '-' }}
               </p>
             </div>
             <div>

@@ -119,12 +119,10 @@ export class WarehouseInventoryFilterService {
       const itemName = getAssetItemName(asset).toLowerCase();
       const serialNumber = asset.serialNumber?.toLowerCase() || '';
       const rfid = asset.rfid?.toLowerCase() || '';
-      const assetTag = asset.assetTag?.toLowerCase() || '';
 
       return itemName.includes(term) ||
         serialNumber.includes(term) ||
-        rfid.includes(term) ||
-        assetTag.includes(term);
+        rfid.includes(term);
     });
   }
 

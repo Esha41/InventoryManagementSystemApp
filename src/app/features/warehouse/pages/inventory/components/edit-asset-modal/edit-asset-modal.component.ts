@@ -58,8 +58,6 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
         this.assetForm = this.fb.group({
             serialNumber: [''],
             rfid: [''],
-            assetTag: [''],
-            condition: [''],
             purchaseDate: [null],
             warrantyExpiryDate: [null],
             purchasePrice: [null, [Validators.min(0)]],
@@ -79,8 +77,6 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
         this.assetForm.patchValue({
             serialNumber: this.asset.serialNumber,
             rfid: this.asset.rfid,
-            assetTag: this.asset.assetTag,
-            condition: this.asset.condition,
             purchaseDate: formatDate(this.asset.purchaseDate),
             warrantyExpiryDate: formatDate(this.asset.warrantyExpiryDate),
             purchasePrice: this.asset.purchasePrice,
@@ -108,8 +104,6 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
             itemId: this.asset.itemId,
             serialNumber: formValue.serialNumber,
             rfid: formValue.rfid,
-            assetTag: formValue.assetTag,
-            condition: formValue.condition,
             purchaseDate: formValue.purchaseDate ? new Date(formValue.purchaseDate) : undefined,
             warrantyExpiryDate: formValue.warrantyExpiryDate ? new Date(formValue.warrantyExpiryDate) : undefined,
             purchasePrice: formValue.purchasePrice,

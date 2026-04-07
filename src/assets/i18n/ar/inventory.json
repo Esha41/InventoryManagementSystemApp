@@ -115,7 +115,10 @@
     "deleteBatchConfirm": "حذف الدفعة؟",
     "deleteBatchMessage": "هل أنت متأكد من حذف هذه الدفعة؟ سيتم حذف جميع الأصول في الدفعة. ستفشل العملية إذا كانت أي أصول معينة أو في أوامر التوريد.",
     "batchDeleted": "تم حذف الدفعة بنجاح",
-    "failedToDeleteBatch": "فشل حذف الدفعة"
+    "failedToDeleteBatch": "فشل حذف الدفعة",
+    "showAllBatchAssets": "عرض الكل",
+    "showingAllBatchAssets": "عرض جميع الأصول ({{count}})",
+    "usePagedBatchAssets": "استخدام الصفحات"
   },
   "assetDetails": {
     "title": "تفاصيل الأصل",
@@ -708,6 +711,7 @@
     "commonInfo": "معلومات دفعة الأسلحة",
     "purchaseDetails": "تفاصيل الشراء",
     "assetsTable": "الأصول",
+    "assetsPaginationHint": "يتم تحميل الأصول على صفحات (افتراضيًا 50 لكل صفحة). يطبق الحفظ على الصفوف في هذه الصفحة والأصول التي أزلتها. استخدم التصفح لتعديل أصول أخرى.",
     "removeRow": "إزالة الصف",
     "noAssets": "لا توجد أصول في دفعة الأسلحة هذه",
     "assetCount": "الأصول في دفعة الأسلحة",
@@ -716,6 +720,17 @@
     "saveSuccess": "تم تحديث جميع الأصول بنجاح",
     "saveError": "فشل في تحديث الأصول. يرجى المحاولة مرة أخرى.",
     "validationError": "يرجى إصلاح أخطاء التحقق قبل الحفظ",
-    "selectStatus": "اختر الحالة"
+    "selectStatus": "اختر الحالة",
+    "assignment": "مسؤول العهدة",
+    "assignmentModeHint": "لكل صف: تعيين للقسم فقط، أو لشخص فقط (مسؤول عهدة). لا تجمع بينهما في نفس الصف.",
+    "selectDepartment": "اختر القسم",
+    "selectEmployee": "اختر مسؤول العهدة",
+    "assignmentNotes": "ملاحظات التعيين",
+    "assignmentNotesPlaceholder": "اختياري",
+    "assignmentNotesHint": "تُطبق عند تغيير خيارات التعيين أو الملاحظات.",
+    "clearAssignee": "غير معيّن",
+    "invalidBatchId": "معرّف الدفعة أو المستودع غير صالح. ارجع وحاول مرة أخرى.",
+    "batchNumberPlaceholder": "أدخل رقم الدفعة",
+    "batchNumberRequired": "رقم الدفعة مطلوب."
   }
 }

@@ -67,19 +67,17 @@
                     <div *ngIf="loadingBatchAssets" class="py-8 text-center text-[var(--color-text-muted)]">
                         {{ 'common.loading' | translate }}
                     </div>
-                    <div *ngIf="!loadingBatchAssets && expandedBatchAssets.length === 0" class="py-4 text-center text-[var(--color-text-muted)]">
+                    <div *ngIf="!loadingBatchAssets && batchAssetsTotalCount === 0" class="py-4 text-center text-[var(--color-text-muted)]">
                         {{ 'editBatch.noAssets' | translate }}
                     </div>
-                    <div *ngIf="!loadingBatchAssets && expandedBatchAssets.length > 0" class="overflow-x-auto max-w-full border border-[var(--color-border)] rounded-lg bg-[var(--color-background)]">
+                    <div *ngIf="!loadingBatchAssets && batchAssetsTotalCount > 0" class="overflow-x-auto max-w-full border border-[var(--color-border)] rounded-lg bg-[var(--color-background)]">
                         <table class="w-full min-w-[56rem] text-sm">
                             <thead>
                                 <tr class="border-b border-[var(--color-border)] bg-[var(--color-background-muted)]">
                                     <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'warehouseInventory.itemName' | translate }}</th>
                                     <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'warehouseInventory.itemNo' | translate }}</th>
                                     <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'warehouseInventory.serialNumber' | translate }}</th>
-                                    <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'warehouseInventory.assetTag' | translate }}</th>
                                     <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'warehouseInventory.status' | translate }}</th>
-                                    <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'warehouseInventory.condition' | translate }}</th>
                                     <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'warehouseInventory.rfidTag' | translate }}</th>
                                     <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'warehouseInventory.purchaseDate' | translate }}</th>
                                     <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'warehouseInventory.warrantyExpiry' | translate }}</th>
@@ -94,9 +92,7 @@
                                     <td class="px-3 py-2 align-top break-words max-w-[14rem] text-[var(--color-text)]">{{ getAssetItemName(asset) }}</td>
                                     <td class="px-3 py-2 align-top break-words text-[var(--color-text)]">{{ getAssetItemNo(asset) }}</td>
                                     <td class="px-3 py-2 align-top break-all text-[var(--color-text)]">{{ asset.serialNumber || '-' }}</td>
-                                    <td class="px-3 py-2 align-top break-all text-[var(--color-text)]">{{ asset.assetTag || '-' }}</td>
                                     <td class="px-3 py-2 align-top whitespace-nowrap text-[var(--color-text)]">{{ getAssetStatusLabel(asset) }}</td>
-                                    <td class="px-3 py-2 align-top break-words text-[var(--color-text)]">{{ asset.condition || '-' }}</td>
                                     <td class="px-3 py-2 align-top break-all text-[var(--color-text)]">{{ asset.rfid || '-' }}</td>
                                     <td class="px-3 py-2 align-top whitespace-nowrap text-[var(--color-text)]">{{ formatDate(asset.purchaseDate) }}</td>
                                     <td class="px-3 py-2 align-top whitespace-nowrap text-[var(--color-text)]">{{ formatDate(asset.warrantyExpiryDate) }}</td>
@@ -107,6 +103,40 @@
                                 </tr>
                             </tbody>
                         </table>
+                        <div *ngIf="batchAssetsTotalCount > 0"
+                            class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-3 py-3 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                            <div *ngIf="!batchAssetsAllLoaded" class="flex flex-wrap items-center gap-3 justify-between md:justify-start">
+                                <app-rows-per-page
+                                    [rowsPerPage]="batchAssetsPageSize"
+                                    [totalItems]="batchAssetsTotalCount"
+                                    [visibleItems]="expandedBatchAssets.length"
+                                    [optionValues]="batchAssetsPageSizeOptions"
+                                    (rowsPerPageChange)="batchAssetsPageSizeChange.emit($event)">
+                                </app-rows-per-page>
+                                <button type="button"
+                                    class="text-sm font-medium text-[var(--color-brand)] hover:underline whitespace-nowrap"
+                                    (click)="$event.stopPropagation(); batchAssetsLoadAll.emit()">
+                                    {{ 'warehouseInventory.showAllBatchAssets' | translate }}
+                                </button>
+                            </div>
+                            <div *ngIf="batchAssetsAllLoaded" class="flex flex-wrap items-center gap-2 text-sm text-[var(--color-text-muted)]">
+                                <span>{{ 'warehouseInventory.showingAllBatchAssets' | translate: { count: batchAssetsTotalCount } }}</span>
+                                <button type="button"
+                                    class="text-sm font-medium text-[var(--color-brand)] hover:underline whitespace-nowrap"
+                                    (click)="$event.stopPropagation(); batchAssetsUsePagination.emit()">
+                                    {{ 'warehouseInventory.usePagedBatchAssets' | translate }}
+                                </button>
+                            </div>
+                            <div *ngIf="!batchAssetsAllLoaded && batchAssetsTotalPages > 1"
+                                class="flex flex-col sm:flex-row items-center gap-2 justify-center md:justify-end">
+                                <app-pagination [currentPage]="batchAssetsPage" [totalPages]="batchAssetsTotalPages"
+                                    (pageChange)="batchAssetsPageChange.emit($event)">
+                                </app-pagination>
+                                <span class="text-xs text-[var(--color-text-muted)] whitespace-nowrap">
+                                    {{ batchAssetsPage }} {{ 'common.of' | translate }} {{ batchAssetsTotalPages }}
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </td>
             </tr>
