@@ -25,6 +25,11 @@ export interface ExplosiveDto extends BaseItemDto {
   typeId?: number;
   unitId?: number; // Unit lookup ID
 
+  /** Linked catalog purposes (BaseItemPrimaryPurposes) */
+  primaryPurposes?: LookupDto[];
+  /** Legacy single navigation when list not populated */
+  primaryPurpos?: LookupDto;
+
   // Navigation properties
   netExplosiveQuantityUnit?: LookupDto;
   totalWeightUnit?: LookupDto;
@@ -76,4 +81,6 @@ export interface CreateUpdateExplosiveDto {
   classificationId?: number;
   typeId?: number;
   unitId?: number; // Unit lookup ID
+  /** Matches API PrimaryPurposIds (BaseItemPrimaryPurposes) */
+  primaryPurposIds?: number[];
 }

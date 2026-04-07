@@ -176,6 +176,15 @@
                   </app-dropdown>
                 </div>
                 <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.primaryPurpose' |
+                    translate }}</label>
+                  <app-dropdown class="w-full" formControlName="primaryPurposIds" [options]="primaryPurposes"
+                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [multiple]="true"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectPrimaryPurpose' | translate">
+                  </app-dropdown>
+                </div>
+                <div>
                   <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.primer' |
                     translate }}</label>
                   <input type="text" formControlName="primer"
@@ -358,6 +367,17 @@
                   </app-dropdown>
                 </div>
 
+                <!-- Primary Purpose -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.primaryPurpose' |
+                    translate }}</label>
+                  <app-dropdown class="w-full" formControlName="primaryPurposIds" [options]="primaryPurposes"
+                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [multiple]="true"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectPrimaryPurpose' | translate">
+                  </app-dropdown>
+                </div>
+
                 <!-- Type (Right Column) -->
                 <div>
                   <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.type' | translate
@@ -499,6 +519,17 @@
                   <app-dropdown class="w-full" formControlName="classificationId" [options]="classifications"
                     optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholder]="'addAsset.selectClassification' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Primary Purpose -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.primaryPurpose' |
+                    translate }}</label>
+                  <app-dropdown class="w-full" formControlName="primaryPurposIds" [options]="primaryPurposes"
+                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [multiple]="true"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectPrimaryPurpose' | translate">
                   </app-dropdown>
                 </div>
 

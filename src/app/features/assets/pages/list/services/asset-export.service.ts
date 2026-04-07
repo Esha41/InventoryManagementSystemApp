@@ -95,6 +95,16 @@ export class AssetExportService {
           format: (value: string) => value || '-'
         },
         {
+          header: this.translateService.instant('assetList.table.primaryPurpose'),
+          key: 'primaryPurpose',
+          width: 20,
+          format: (value: string | LookupDto) => {
+            if (!value) return '-';
+            if (typeof value === 'string') return value;
+            return getLookupDisplayName(value, this.translateService) || '-';
+          }
+        },
+        {
           header: this.translateService.instant('addAsset.caliber'),
           key: 'caliber',
           width: 15,
@@ -103,6 +113,16 @@ export class AssetExportService {
       );
     } else if (activeTab === 'explosive') {
       columns.push(
+        {
+          header: this.translateService.instant('assetList.table.primaryPurpose'),
+          key: 'primaryPurpose',
+          width: 20,
+          format: (value: string | LookupDto) => {
+            if (!value) return '-';
+            if (typeof value === 'string') return value;
+            return getLookupDisplayName(value, this.translateService) || '-';
+          }
+        },
         {
           header: this.translateService.instant('addAsset.explosiveType'),
           key: 'explosiveType',
@@ -211,6 +231,7 @@ export class AssetExportService {
         { header: 'Minimum Quantity', key: 'minimumQuantity' },
         { header: 'NSN', key: 'nsn' },
         { header: 'Weapon Type', key: 'weaponType' },
+        { header: 'Primary Purpose', key: 'primaryPurpose' },
         { header: 'Caliber', key: 'caliber' },
         { header: 'Action Type', key: 'actionType' },
         { header: 'Barrel Length', key: 'barrelLength' },
@@ -228,6 +249,7 @@ export class AssetExportService {
           minimumQuantity: 10,
           nsn: '1005-01-231-0973',
           weaponType: 'Rifle',
+          primaryPurpose: 'Infantry',
           caliber: '5.56×45mm NATO',
           actionType: 'SemiAutomatic',
           barrelLength: 14.5,
@@ -244,6 +266,7 @@ export class AssetExportService {
         { header: 'Price', key: 'price' },
         { header: 'Minimum Quantity', key: 'minimumQuantity' },
         { header: 'NSN', key: 'nsn' },
+        { header: 'Primary Purpose', key: 'primaryPurpose' },
         { header: 'Explosive Type', key: 'explosiveType' },
         { header: 'UN Number', key: 'unNumber' },
         { header: 'Net Explosive Quantity', key: 'netExplosiveQuantity' },
@@ -258,6 +281,7 @@ export class AssetExportService {
           price: 125.00,
           minimumQuantity: 5,
           nsn: '1375-00-122-2956',
+          primaryPurpose: 'Demolition',
           explosiveType: 'PlasticExplosive',
           unNumber: 'UN0056',
           netExplosiveQuantity: 1.25,

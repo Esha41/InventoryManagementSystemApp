@@ -8,18 +8,20 @@ export function createInitialFilterState(): AssetFilterState {
     searchTerm: '',
     // Ammunition filters
     selectedCaseType: null,
-    selectedPrimaryPurpose: null,
+    selectedPrimaryPurposeId: null,
     selectedCompatibility: null,
     selectedPropellant: null,
     // Weapon filters
     selectedWeaponType: null,
     selectedWeaponClassification: null,
     selectedCountryOfManufacture: null,
+    selectedWeaponPrimaryPurposeId: null,
     // Explosive filters
     selectedExplosiveType: null,
     selectedExplosiveClassification: null,
     selectedExplosiveHazardDivision: null,
-    selectedExplosiveCompatibility: null
+    selectedExplosiveCompatibility: null,
+    selectedExplosivePrimaryPurposeId: null
   };
 }
 

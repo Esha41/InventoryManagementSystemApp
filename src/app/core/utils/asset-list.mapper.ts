@@ -1,11 +1,27 @@
 import { Asset } from '../models/asset-list.model';
-import { AmmunitionReadDto } from '../models/ammunition.model';
+import { AmmunitionReadDto, LookupDto } from '../models/ammunition.model';
 import { WeaponDto } from '../models/weapon.model';
 import { ExplosiveDto } from '../models/explosive.model';
 import { getLocalizedName, getCurrentLang } from './localization.utils';
 import { formatDateShort } from './format.utils';
 import { getExplosiveTypeName } from './explosive.utils';
 import { TranslateService } from '@ngx-translate/core';
+
+/** Primary purpose(s) for catalog items (ammunition / weapon / explosive) from API. */
+function formatCatalogPrimaryPurposes(
+  dto: { primaryPurposes?: LookupDto[]; primaryPurpos?: LookupDto },
+  currentLang: string
+): string {
+  const list = dto.primaryPurposes;
+  if (list && list.length > 0) {
+    const parts = list.map(p => getLocalizedName(p, currentLang)).filter(Boolean);
+    return parts.length > 0 ? parts.join(', ') : '-';
+  }
+  if (dto.primaryPurpos) {
+    return getLocalizedName(dto.primaryPurpos, currentLang) || '-';
+  }
+  return '-';
+}
 
 /**
  * Maps AmmunitionReadDto to Asset
@@ -25,7 +41,7 @@ export function mapAmmunitionToAsset(
     batchNo: dto.batchNo || '-',
     nsn: dto.nsn || '-',
     caseType: getLocalizedName(dto.caseType, currentLang) || '-',
-    primaryPurpose: getLocalizedName(dto.primaryPurpos, currentLang) || '-',
+    primaryPurpose: formatCatalogPrimaryPurposes(dto, currentLang),
     hazardDivision: getLocalizedName(dto.hazardDivision, currentLang) || '-',
     compatibility: getLocalizedName(dto.compatibility, currentLang) || '-',
     propellant: getLocalizedName(dto.propellant, currentLang) || '-',
@@ -58,6 +74,7 @@ export function mapWeaponToAsset(dto: WeaponDto, currentLang: string): Asset {
     batchNo: dto.batchNo || '-',
     nsn: dto.nsn || '-',
     weaponType: dto.type ? getLocalizedName(dto.type, currentLang) : '-',
+    primaryPurpose: formatCatalogPrimaryPurposes(dto, currentLang),
     caliber: dto.caliber,
     expiryDate: dto.expiryDate ? (formatDateShort(dto.expiryDate) || '-') : '-',
     readyForIssue: dto.readyForIssue ?? true,
@@ -93,6 +110,7 @@ export function mapExplosiveToAsset(dto: ExplosiveDto, currentLang: string): Ass
     batchNo: dto.batchNo || '-',
     nsn: dto.nsn || '-',
     armNumber: dto.armNumber || '-',
+    primaryPurpose: formatCatalogPrimaryPurposes(dto, currentLang),
     explosiveType: explosiveTypeDisplay,
     unNumber: dto.unNumber,
     netExplosiveQuantity: dto.netExplosiveQuantity,

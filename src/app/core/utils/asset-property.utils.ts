@@ -360,7 +360,36 @@ export class AssetPropertyAccessor {
   }
 
   getPrimaryPurpose(asset: AssetUnion): string {
-    return isAmmunition(asset) ? this.getLookupName(asset.primaryPurpos) : '-';
+    if (!asset) return '-';
+    const fromList = (purposes: LookupDto[] | undefined): string | null => {
+      if (!purposes?.length) return null;
+      const parts = purposes.map(p => this.getLookupName(p)).filter(Boolean);
+      return parts.length > 0 ? parts.join(', ') : null;
+    };
+    const fromPurposesOrLegacy = (purposes: LookupDto[] | undefined, legacy: LookupDto | undefined): string => {
+      const multi = fromList(purposes);
+      if (multi) return multi;
+      return this.getLookupName(legacy);
+    };
+    // Explosive before ammunition: both may have armNumber (isAmmunition is broad)
+    if (isExplosive(asset)) {
+      return fromPurposesOrLegacy(asset.primaryPurposes, asset.primaryPurpos);
+    }
+    if (isAmmunition(asset)) {
+      return fromPurposesOrLegacy(asset.primaryPurposes, asset.primaryPurpos);
+    }
+    if (isWeapon(asset)) {
+      return fromPurposesOrLegacy(asset.primaryPurposes, asset.primaryPurpos);
+    }
+    if ('originalData' in asset && (asset as Asset).originalData) {
+      const od = (asset as Asset).originalData as AmmunitionReadDto | ExplosiveDto | WeaponDto;
+      return fromPurposesOrLegacy(od?.primaryPurposes, od?.primaryPurpos);
+    }
+    if ('primaryPurpose' in asset && typeof (asset as Asset).primaryPurpose === 'string') {
+      const s = (asset as Asset).primaryPurpose;
+      if (s && s !== '-') return s;
+    }
+    return '-';
   }
 
   getProjectileColor(asset: AssetUnion): string {
