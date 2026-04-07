@@ -76,6 +76,12 @@ export class AssetExportService {
           format: (value: string) => value || '-'
         },
         {
+          header: this.translateService.instant('addAsset.caliber'),
+          key: 'caliber',
+          width: 15,
+          format: (value: string) => value || '-'
+        },
+        {
           header: this.translateService.instant('assetList.table.primaryPurpose'),
           key: 'primaryPurpose',
           width: 20,
@@ -185,6 +191,7 @@ export class AssetExportService {
         { header: 'Item No', key: 'itemNo' },
         { header: 'Part No', key: 'partNo' },
         { header: 'Arm Number', key: 'armNumber' },
+        { header: 'Caliber', key: 'caliber' },
         { header: 'Price', key: 'price' },
         { header: 'Minimum Quantity', key: 'minimumQuantity' },
         { header: 'Bullet Diameter', key: 'bulletDiameter' },
@@ -200,6 +207,7 @@ export class AssetExportService {
           itemNo: 'AMM-111',
           partNo: 'P-65-55',
           armNumber: 'ARM-111',
+          caliber: '6.5×55mm',
           price: 4.8,
           minimumQuantity: 100,
           bulletDiameter: 6.5,
@@ -213,6 +221,7 @@ export class AssetExportService {
           itemNo: 'AMM-112',
           partNo: 'P-762-NATO',
           armNumber: 'ARM-112',
+          caliber: '7.62×51mm NATO',
           price: 5.2,
           minimumQuantity: 200,
           bulletDiameter: 7.62,

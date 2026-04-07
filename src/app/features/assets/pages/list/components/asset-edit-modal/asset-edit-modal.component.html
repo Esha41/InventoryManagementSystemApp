@@ -128,6 +128,13 @@
                     [placeholder]="'addAsset.enterArmNumber' | translate" maxlength="100" />
                 </div>
                 <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.caliber' |
+                    translate }}</label>
+                  <input type="text" formControlName="caliber"
+                    class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                    [placeholder]="'addAsset.enterCaliber' | translate" maxlength="100" />
+                </div>
+                <div>
                   <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.bulletDiameter' |
                     translate }}</label>
                   <input type="number" formControlName="bulletDiameter"

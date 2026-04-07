@@ -44,7 +44,7 @@ export interface Asset {
   hazardDivision?: string | LookupDto;
   compatibility?: string | LookupDto;
 
-  // Weapon specific
+  // Weapon specific (caliber is shared with Ammunition)
   weaponType?: string;
   caliber?: string;
   actionType?: string;

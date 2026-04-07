@@ -43,7 +43,8 @@ function buildSearchFilters(searchTerm: string): FilterData {
     { field: 'Name', operator: 'contains', value: term },
     { field: 'ItemNo', operator: 'contains', value: term },
     { field: 'PartNo', operator: 'contains', value: term },
-    { field: 'Nsn', operator: 'contains', value: term }
+    { field: 'Nsn', operator: 'contains', value: term },
+    { field: 'Caliber', operator: 'contains', value: term }
   ];
   maybeAppendExactPriceToOrGroup(filters, term);
   return { logic: 'or', filters };
@@ -329,6 +330,7 @@ export class AssetListService {
         nsn: 'Nsn',
         caseType: 'CaseType.NameEn',
         primaryPurpose: 'BaseItemPrimaryPurposes.Min(PrimaryPurpos.NameEn)',
+        caliber: 'Caliber',
         price: 'Price',
         minimumQuantity: 'MinimumQuantity'
       };

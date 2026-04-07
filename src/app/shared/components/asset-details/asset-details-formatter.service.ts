@@ -54,6 +54,11 @@ export class AssetDetailsFormatterService {
           ? this.propertyAccessor.getProjectileColor(asset() as AmmunitionReadDto) || '-'
           : '-'
       ),
+      ammunitionCaliber: computed(() =>
+        isAmmunition()
+          ? this.propertyAccessor.getAmmunitionCaliber(asset() as AmmunitionReadDto) || '-'
+          : '-'
+      ),
       bulletDiameter: computed(() =>
         isAmmunition()
           ? this.propertyAccessor.getBulletDiameter(asset() as AmmunitionReadDto) || '-'

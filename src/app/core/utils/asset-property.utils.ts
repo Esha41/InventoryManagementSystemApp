@@ -126,6 +126,10 @@ export class AssetPropertyAccessor {
     return this._activeTab;
   }
 
+  getAmmunitionCaliber(asset: AssetUnion): string {
+    return isAmmunition(asset) ? ((asset as AmmunitionReadDto).caliber || '-') : '-';
+  }
+
   // Weapon properties
   getCaliber(asset: AssetUnion): string {
     return isWeapon(asset) ? (asset.caliber || '-') : '-';

@@ -514,6 +514,10 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
     return this.fields.weaponType();
   }
 
+  getAmmunitionCaliber(): string {
+    return this.fields.ammunitionCaliber();
+  }
+
   getCaliber(): string {
     return this.fields.caliber();
   }

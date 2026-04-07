@@ -183,6 +183,7 @@
               <!-- Ammunition Specific Columns -->
               <ng-container *ngIf="activeTab === 'ammunition'">
                 <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'caseType', labelKey: 'assetList.table.caseType' }"></ng-container>
+                <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'caliber', labelKey: 'addAsset.caliber' }"></ng-container>
                 <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'primaryPurpose', labelKey: 'assetList.table.primaryPurpose' }"></ng-container>
               </ng-container>
 
@@ -236,6 +237,8 @@
               <!-- Ammunition Columns -->
               <td *ngIf="activeTab === 'ammunition'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
                 asset.caseType }}</td>
+              <td *ngIf="activeTab === 'ammunition'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
+                asset.caliber }}</td>
               <td *ngIf="activeTab === 'ammunition'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
                 asset.primaryPurpose }}</td>
 

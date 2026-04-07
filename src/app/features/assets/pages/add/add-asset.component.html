@@ -303,6 +303,15 @@
                     [placeholder]="'addAsset.enterArmNumber' | translate" />
                 </div>
 
+                <!-- Caliber -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.caliber' | translate
+                    }}</label>
+                  <input type="text" [(ngModel)]="assetForm.caliber" name="ammunitionCaliber"
+                    class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.enterCaliber' | translate" maxlength="100" />
+                </div>
+
                 <!-- Bullet Diameter -->
                 <div>
                   <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.bulletDiameter' | translate

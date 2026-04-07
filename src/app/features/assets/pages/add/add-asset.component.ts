@@ -334,6 +334,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
 
     if (this.assetForm.partNo?.trim()) dto.partNo = this.assetForm.partNo.trim();
     if (this.assetForm.armNumber?.trim()) dto.armNumber = this.assetForm.armNumber.trim();
+    if (this.assetForm.caliber?.trim()) dto.caliber = this.assetForm.caliber.trim();
     if (this.assetForm.primer?.trim()) dto.primer = this.assetForm.primer.trim();
     if (this.assetForm.nsn?.trim()) dto.nsn = this.assetForm.nsn.trim();
 

@@ -40,6 +40,8 @@ export function mapAmmunitionToAsset(
     partNo: dto.partNo || '-',
     batchNo: dto.batchNo || '-',
     nsn: dto.nsn || '-',
+    armNumber: dto.armNumber || '-',
+    caliber: dto.caliber || '-',
     caseType: getLocalizedName(dto.caseType, currentLang) || '-',
     primaryPurpose: formatCatalogPrimaryPurposes(dto, currentLang),
     hazardDivision: getLocalizedName(dto.hazardDivision, currentLang) || '-',

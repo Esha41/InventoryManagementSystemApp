@@ -461,7 +461,7 @@
     "manufacturer": "المصنع",
     "country": "البلد",
     "primaryPurpose": "الغرض الأساسي",
-    "batchNo": "رقم البوليصة",
+    "batchNo": "Batch No",
     "expiryDate": "تاريخ الانتهاء",
     "originalQty": "الكمية الأصلية",
     "usedQty": "الكمية المستخدمة",

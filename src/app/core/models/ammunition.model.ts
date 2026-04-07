@@ -31,6 +31,7 @@ export interface AmmunitionReadDto {
   bulletDiameter?: number;
   bulletDiameterUnitId?: number;
   armNumber?: string;
+  caliber?: string;
   isLinked: boolean;
   primer?: string;
   totalWeight?: number;
@@ -85,6 +86,7 @@ export interface AmmunitionCreateDto {
   // All other fields are optional - only Name and ItemNo are required
   partNo?: string;
   armNumber?: string;
+  caliber?: string;
   // Note: batchNo, readyForIssue, and expiryDate are NOT in backend CreateUpdateAmmunitionDto
   // These fields are managed at the lot/inventory level, not the ammunition catalog level
   hccId?: number;
@@ -131,6 +133,7 @@ export interface AmmunitionUpdateDto {
   bulletDiameter?: number;
   bulletDiameterUnitId?: number;
   armNumber?: string;
+  caliber?: string;
   isLinked: boolean;
   primer?: string;
   totalWeight?: number;
