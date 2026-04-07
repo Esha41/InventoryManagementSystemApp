@@ -139,6 +139,7 @@
     "supplier": "Supplier",
     "manufacturer": "Manufacturer",
     "country": "Country",
+    "primaryPurpose": "Primary purpose",
     "batchNo": "Batch No",
     "expiryDate": "Expiry Date",
     "originalQty": "Original Qty",

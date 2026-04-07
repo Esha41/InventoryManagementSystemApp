@@ -227,6 +227,9 @@
                     {{ 'inventorySummary.country' | translate }}
                   </th>
                   <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                    {{ 'inventorySummary.primaryPurpose' | translate }}
+                  </th>
+                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                     {{ 'inventorySummary.batchNo' | translate }}
                   </th>
                   <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
@@ -262,6 +265,9 @@
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
                     {{ getCountryNameForLot(lot) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                    {{ getPrimaryPurposeForLot(lot) }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
                     {{ lot.batchNo || '-' }}

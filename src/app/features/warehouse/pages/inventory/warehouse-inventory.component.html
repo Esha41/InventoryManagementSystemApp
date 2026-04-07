@@ -161,8 +161,10 @@
         [searchPlaceholderKey]="activeTab === 'batch' ? 'warehouseInventory.searchPlaceholderBatch' : 'warehouseInventory.searchPlaceholder'"
         [showSupplierManufacturerFilters]="activeTab !== 'batch'"
         [supplierFilterControl]="supplierFilterControl" [manufacturerFilterControl]="manufacturerFilterControl"
-        [suppliers]="suppliers" [manufacturers]="manufacturers"
+        [primaryPurposeFilterControl]="primaryPurposeFilterControl"
+        [suppliers]="suppliers" [manufacturers]="manufacturers" [primaryPurposes]="primaryPurposes"
         [supplierOptionLabelFn]="supplierLookupLabel" [manufacturerOptionLabelFn]="manufacturerLookupLabel"
+        [primaryPurposeOptionLabelFn]="primaryPurposeLookupLabel"
         (searchTriggered)="onSearch()" (clearFilters)="onClearInventoryFilters()">
       </app-inventory-filters>
 
@@ -281,6 +283,10 @@
             </div>
 
             <div class="grid grid-cols-2 gap-2 text-xs border-t border-[var(--color-border-muted)] pt-3">
+              <div *ngIf="activeTab === 'ammunition' || activeTab === 'explosive'" class="col-span-2">
+                <span class="text-[var(--color-text-muted)] block mb-1 text-xs md:text-sm">{{ 'warehouseInventory.primaryPurpose' | translate }}</span>
+                <span class="font-medium text-[var(--color-text)] text-sm md:text-base block truncate">{{ getPrimaryPurposeName(item) }}</span>
+              </div>
               <div>
                 <span class="text-[var(--color-text-muted)] block mb-1 text-xs md:text-sm">{{ 'addInventory.quantity' |
                   translate }}</span>
@@ -325,6 +331,8 @@
           <app-inventory-table *ngIf="activeTab !== 'batch'" [items]="paginatedItems"
             [isStaticItem]="isStaticItem.bind(this)" [getItemName]="getItemName" [getSupplierName]="getSupplierName"
             [getManufacturerName]="getManufacturerName"
+            [showPrimaryPurposeColumn]="activeTab === 'ammunition' || activeTab === 'explosive'"
+            [getPrimaryPurposeName]="getPrimaryPurposeName"
             [formatNumber]="formatNumber" [formatDate]="formatDate"
             [sortColumn]="inventorySortColumn" [sortDirection]="inventorySortDirection"
             (editItem)="onEditItem($event)"

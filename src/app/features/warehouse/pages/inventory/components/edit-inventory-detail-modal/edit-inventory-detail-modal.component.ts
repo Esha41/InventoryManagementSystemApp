@@ -1,16 +1,19 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, OnDestroy, SimpleChanges, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ModalComponent } from '@components/modal/modal.component';
 import { ButtonComponent } from '@components/button/button.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { InventoryDetailDto, UpdateInventoryDetailDto, InventoryDto, UpdateInventoryDto } from '@models/inventory.model';
+import { InventoryDetailDto, UpdateInventoryDetailDto, InventoryDto, UpdateInventoryDto, ItemType } from '@models/inventory.model';
 import { LookupService, LookupItem } from '@services/lookup.service';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { formatDateShort } from '@core/utils/format.utils';
-import { FileUploadDto, FileUploadService, FileEntityType } from '@services/file-upload.service';
+import { FileUploadDto, FileUploadService } from '@services/file-upload.service';
+import { AmmunitionService } from '@services/ammunition.service';
+import { ExplosiveService } from '@services/explosive.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-edit-inventory-detail-modal',
@@ -28,7 +31,7 @@ import { FileUploadDto, FileUploadService, FileEntityType } from '@services/file
   styleUrls: ['./edit-inventory-detail-modal.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
+export class EditInventoryDetailModalComponent implements OnInit, OnChanges, OnDestroy {
   @Input() isOpen = false;
   @Input() inventoryDetail?: InventoryDetailDto;
   @Input() inventory?: InventoryDto;
@@ -42,6 +45,9 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
   suppliers: LookupItem[] = [];
   manufacturers: LookupItem[] = [];
   countries: LookupItem[] = [];
+  /** From GET /Ammunition/:id or GET /Explosive/:id when inventory payload omits `item.primaryPurposes`. */
+  catalogItemPrimaryPurposes: Array<{ id: number; nameAr: string; nameEn: string }> = [];
+  private catalogPurposesSub?: Subscription;
   isLoading = false;
   errorMessage = '';
   showInvoiceChangeConfirmation = false;
@@ -55,18 +61,31 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
     { label: 'editInventoryDetail.readyForIssueNo', value: false }
   ];
 
+  readonly primaryPurposeOptionLabel = (
+    option: DropdownOption<{ id: number; nameAr: string; nameEn: string }> | { id: number; nameAr: string; nameEn: string } | null
+  ) => {
+    const o = this.unwrapPrimaryPurposeOption(option);
+    return o ? getLocalizedName(o, getCurrentLang(this.translateService)) : '';
+  };
+
   constructor(
     private fb: FormBuilder,
     private lookupService: LookupService,
     private translateService: TranslateService,
     private cdr: ChangeDetectorRef,
-    private fileUploadService: FileUploadService
+    private fileUploadService: FileUploadService,
+    private ammunitionService: AmmunitionService,
+    private explosiveService: ExplosiveService
   ) {
     this.initializeForm();
   }
 
   ngOnInit(): void {
     this.loadLookupData();
+  }
+
+  ngOnDestroy(): void {
+    this.catalogPurposesSub?.unsubscribe();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -84,6 +103,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
         // Modal closed: ensure selected files are cleared
         this.selectedFiles = [];
         this.resetFileInput();
+        this.clearCatalogPrimaryPurposesState();
       }
     }
     if ((changes['inventoryDetail'] && this.inventoryDetail) || (changes['inventory'] && this.inventory)) {
@@ -92,6 +112,80 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
       this.resetFileInput();
       this.loadFormData();
       this.loadExistingFiles();
+    }
+    if (this.isOpen && this.inventoryDetail) {
+      this.loadCatalogPrimaryPurposesIfNeeded();
+    }
+  }
+
+  private clearCatalogPrimaryPurposesState(): void {
+    this.catalogPurposesSub?.unsubscribe();
+    this.catalogPurposesSub = undefined;
+    this.catalogItemPrimaryPurposes = [];
+  }
+
+  /**
+   * Same resolution as add-inventory: prefer `primaryPurposes`, else legacy `primaryPurpos`.
+   */
+  private primaryPurposesFromCatalogRow(
+    selected: { primaryPurposes?: Array<{ id: number; nameAr: string; nameEn: string }>; primaryPurpos?: { id: number; nameAr: string; nameEn: string } } | null | undefined
+  ): Array<{ id: number; nameAr: string; nameEn: string }> {
+    if (!selected) {
+      return [];
+    }
+    const list = selected.primaryPurposes ?? [];
+    if (list.length > 0) {
+      return list;
+    }
+    if (selected.primaryPurpos?.id != null) {
+      return [selected.primaryPurpos];
+    }
+    return [];
+  }
+
+  /**
+   * Loads item-scoped purposes from catalog API when inventory line does not include them inline.
+   */
+  private loadCatalogPrimaryPurposesIfNeeded(): void {
+    this.catalogPurposesSub?.unsubscribe();
+    this.catalogPurposesSub = undefined;
+    this.catalogItemPrimaryPurposes = [];
+
+    const detail = this.inventoryDetail;
+    if (!detail?.item || !detail.itemId) {
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const item = detail.item;
+    const t = this.normalizeItemType(item.itemType);
+    if (t !== ItemType.Ammunition && t !== ItemType.Explosive) {
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if ((item.primaryPurposes?.length ?? 0) > 0) {
+      this.cdr.markForCheck();
+      return;
+    }
+    if (detail.primaryPurpos?.id != null) {
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const onRow = (row: { primaryPurposes?: Array<{ id: number; nameAr: string; nameEn: string }>; primaryPurpos?: { id: number; nameAr: string; nameEn: string } }) => {
+      this.catalogItemPrimaryPurposes = this.primaryPurposesFromCatalogRow(row);
+      this.cdr.markForCheck();
+    };
+    const onErr = () => {
+      this.catalogItemPrimaryPurposes = [];
+      this.cdr.markForCheck();
+    };
+
+    if (t === ItemType.Ammunition) {
+      this.catalogPurposesSub = this.ammunitionService.getById(detail.itemId).subscribe({ next: onRow, error: onErr });
+    } else {
+      this.catalogPurposesSub = this.explosiveService.getById(detail.itemId).subscribe({ next: onRow, error: onErr });
     }
   }
 
@@ -119,6 +213,32 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
     return !isNaN(n) && n > 0 ? n : null;
   }
 
+  /**
+   * API may send itemType as number, string ("1"), or enum name — align with warehouse filter behavior.
+   */
+  private normalizeItemType(itemType: ItemType | string | number | undefined | null): number | undefined {
+    if (itemType === undefined || itemType === null) {
+      return undefined;
+    }
+    if (typeof itemType === 'number') {
+      return itemType;
+    }
+    if (typeof itemType === 'string') {
+      const enumMap: Record<string, number> = {
+        Ammunition: ItemType.Ammunition,
+        Weapon: ItemType.Weapon,
+        Explosive: ItemType.Explosive,
+        Accessory: ItemType.Accessory
+      };
+      if (enumMap[itemType] !== undefined) {
+        return enumMap[itemType];
+      }
+      const parsed = parseInt(itemType, 10);
+      return isNaN(parsed) ? undefined : parsed;
+    }
+    return Number(itemType);
+  }
+
   private initializeForm(): void {
     const lot = this.coerceLotString(this.inventoryDetail?.lot);
     const originalQuantity = this.coerceToNumber(this.inventoryDetail?.originalQuantity, 1000);
@@ -132,6 +252,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
       supplierId: [this.normalizeOptionalId(this.inventoryDetail?.supplierId)],
       manufacturerId: [this.normalizeOptionalId(this.inventoryDetail?.manufacturerId)],
       countryId: [this.normalizeOptionalId(this.inventoryDetail?.countryId)],
+      primaryPurposId: [this.normalizeOptionalId(this.inventoryDetail?.primaryPurposId)],
       // Invoice Information fields
       deliveryReceipt: [this.inventory?.deliveryReceipt || this.inventoryDetail?.deliveryReceipt || ''],
       invoiceNumber: [this.inventoryDetail?.invoiceNumber || this.inventory?.invoiceNumber || ''],
@@ -155,6 +276,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
         supplierId: this.normalizeOptionalId(this.inventoryDetail?.supplierId),
         manufacturerId: this.normalizeOptionalId(this.inventoryDetail?.manufacturerId),
         countryId: this.normalizeOptionalId(this.inventoryDetail?.countryId),
+        primaryPurposId: this.normalizeOptionalId(this.inventoryDetail?.primaryPurposId),
         // Invoice Information
         deliveryReceipt: this.inventory?.deliveryReceipt || this.inventoryDetail?.deliveryReceipt || '',
         invoiceNumber: this.inventoryDetail?.invoiceNumber || this.inventory?.invoiceNumber || '',
@@ -166,6 +288,51 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
     }
   }
 
+  /**
+   * Item-scoped only: embedded inventory `item.primaryPurposes`, line `primaryPurpos`, or catalog GET by itemId.
+   */
+  getPrimaryPurposeOptions(): Array<{ id: number; nameAr: string; nameEn: string }> {
+    const item = this.inventoryDetail?.item;
+    if (!item) {
+      return [];
+    }
+    const list = item.primaryPurposes ?? [];
+    if (list.length > 0) {
+      return list;
+    }
+    if (this.inventoryDetail?.primaryPurpos?.id != null) {
+      return [this.inventoryDetail.primaryPurpos];
+    }
+    const t = this.normalizeItemType(item.itemType);
+    if (t === ItemType.Ammunition || t === ItemType.Explosive) {
+      return this.catalogItemPrimaryPurposes;
+    }
+    return [];
+  }
+
+  get showPrimaryPurposeSection(): boolean {
+    const item = this.inventoryDetail?.item;
+    if (!item) {
+      return false;
+    }
+    const t = this.normalizeItemType(item.itemType);
+    if (t !== ItemType.Ammunition && t !== ItemType.Explosive) {
+      return false;
+    }
+    return this.getPrimaryPurposeOptions().length > 0;
+  }
+
+  private unwrapPrimaryPurposeOption(
+    option: DropdownOption<{ id: number; nameAr: string; nameEn: string }> | { id: number; nameAr: string; nameEn: string } | null
+  ): { id: number; nameAr: string; nameEn: string } | null {
+    if (!option) {
+      return null;
+    }
+    if (typeof option === 'object' && 'value' in option) {
+      return option.value as { id: number; nameAr: string; nameEn: string };
+    }
+    return option as { id: number; nameAr: string; nameEn: string };
+  }
 
   private loadLookupData(): void {
     this.lookupService.getSuppliers().subscribe({
@@ -220,6 +387,13 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
       expiryDate: this.parseDateFromDisplay(this.detailForm.value.expiryDate) || undefined,
       readyForIssue: this.coerceReadyForIssue(this.detailForm.value.readyForIssue)
     };
+
+    if (this.showPrimaryPurposeSection) {
+      const ppid = this.normalizeOptionalId(this.detailForm.value.primaryPurposId);
+      updateDetailDto.primaryPurposId = ppid ?? undefined;
+    } else if (this.inventoryDetail?.primaryPurposId != null && this.inventoryDetail.primaryPurposId > 0) {
+      updateDetailDto.primaryPurposId = this.inventoryDetail.primaryPurposId;
+    }
 
     // Prepare invoice information
     const updateInventoryDto: UpdateInventoryDto = {
@@ -443,6 +617,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges {
       supplierId: 'Supplier',
       manufacturerId: 'Manufacturer',
       countryId: 'Country',
+      primaryPurposId: 'Primary purpose',
       invoiceNumber: 'Invoice Number',
       invoiceDate: 'Invoice Date',
       recievedDate: 'Received Date',

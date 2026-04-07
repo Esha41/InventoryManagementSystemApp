@@ -27,6 +27,8 @@ export interface BaseItemDto {
     nameAr: string;
     nameEn: string;
   };
+  /** Catalog-linked purposes; used to resolve lot primary purpose label when line navigation is partial */
+  primaryPurposes?: Array<{ id: number; nameAr: string; nameEn: string }>;
 }
 
 export enum ItemType {
@@ -65,6 +67,14 @@ export interface InventoryDetailDto {
   recievedDate?: Date | string;
   contractNumber?: string;
   notes?: string;
+
+  /** Selected primary purpose for this lot (inventory line) */
+  primaryPurposId?: number;
+  primaryPurpos?: {
+    id: number;
+    nameAr: string;
+    nameEn: string;
+  };
 
   // Navigation properties
   item?: BaseItemDto;
@@ -122,6 +132,8 @@ export interface CreateInventoryDetailDto {
   batchNo?: string;
   expiryDate?: Date | string;
   readyForIssue?: boolean;
+  /** Must be one of the selected catalog item's primaryPurposes (when provided) */
+  primaryPurposId?: number;
 }
 
 /**
@@ -149,6 +161,8 @@ export interface UpdateInventoryDetailDto {
   batchNo?: string;
   expiryDate?: Date | string;
   readyForIssue?: boolean;
+  /** Must be one of the catalog item's primaryPurposes when applicable (ammunition / explosive) */
+  primaryPurposId?: number;
 }
 
 export interface ItemInventorySummaryDto {

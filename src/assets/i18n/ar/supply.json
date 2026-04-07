@@ -460,6 +460,7 @@
     "supplier": "المورد",
     "manufacturer": "المصنع",
     "country": "البلد",
+    "primaryPurpose": "الغرض الأساسي",
     "batchNo": "Batch No",
     "expiryDate": "تاريخ الانتهاء",
     "originalQty": "الكمية الأصلية",

@@ -112,6 +112,17 @@
       </app-dropdown>
     </div>
 
+    <!-- Primary purpose (ammunition / explosive; options from catalog item) -->
+    <div *ngIf="showPrimaryPurposeSection">
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        {{ 'addInventory.primaryPurpose' | translate }}
+      </label>
+      <app-dropdown class="w-full" formControlName="primaryPurposId" [options]="getPrimaryPurposeOptions()"
+        optionValue="id" [optionLabelFn]="primaryPurposeOptionLabel" [placeholderSelectable]="false" [placeholderValue]="null"
+        placeholder="{{ 'addInventory.selectPrimaryPurpose' | translate }}">
+      </app-dropdown>
+    </div>
+
     <!-- Delivery Receipt (no heading) -->
     <div class="mb-4">
       <div class="grid grid-cols-1 gap-4 items-start">
