@@ -39,7 +39,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges, OnD
   @ViewChild('invEditFileInput') fileInputRef?: ElementRef<HTMLInputElement>;
 
   @Output() closed = new EventEmitter<void>();
-  @Output() saved = new EventEmitter<{ detail: UpdateInventoryDetailDto; inventory: UpdateInventoryDto; files?: File[] }>();
+  @Output() saved = new EventEmitter<{ detail: UpdateInventoryDetailDto; inventory: UpdateInventoryDto; files?: File[]; removedFileIds?: number[] }>();
 
   detailForm!: FormGroup;
   suppliers: LookupItem[] = [];
@@ -55,6 +55,8 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges, OnD
   readonly lookupOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null) => this.getLookupName(this.unwrapLookupOption(option));
   selectedFiles: File[] = [];
   existingFiles: FileUploadDto[] = [];
+  /** Existing uploaded file ids the user removed in UI; deleted on Save by backend. */
+  removedExistingFileIds: number[] = [];
 
   readonly readyForIssueOptions: DropdownOption<boolean>[] = [
     { label: 'editInventoryDetail.readyForIssueYes', value: true },
@@ -95,6 +97,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges, OnD
         this.initializeForm();
         this.errorMessage = '';
         this.selectedFiles = [];
+        this.removedExistingFileIds = [];
         this.resetFileInput();
         // Also ensure existing files are shown even if inputs update order differs
         this.loadFormData();
@@ -102,6 +105,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges, OnD
       } else {
         // Modal closed: ensure selected files are cleared
         this.selectedFiles = [];
+        this.removedExistingFileIds = [];
         this.resetFileInput();
         this.clearCatalogPrimaryPurposesState();
       }
@@ -109,6 +113,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges, OnD
     if ((changes['inventoryDetail'] && this.inventoryDetail) || (changes['inventory'] && this.inventory)) {
       // Switching items while modal is open: clear any unsaved selections
       this.selectedFiles = [];
+      this.removedExistingFileIds = [];
       this.resetFileInput();
       this.loadFormData();
       this.loadExistingFiles();
@@ -409,7 +414,9 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges, OnD
 
     // Check if invoice information or attachments change requires confirmation
     const requiresConfirmation =
-      this.hasInvoiceInfoChanged(updateInventoryDto) || (this.selectedFiles && this.selectedFiles.length > 0);
+      this.hasInvoiceInfoChanged(updateInventoryDto) ||
+      (this.selectedFiles && this.selectedFiles.length > 0) ||
+      (this.removedExistingFileIds && this.removedExistingFileIds.length > 0);
 
     if (requiresConfirmation) {
       // Store the data for later submission after confirmation
@@ -418,7 +425,12 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges, OnD
       this.showInvoiceChangeConfirmation = true;
     } else {
       // No invoice info change, proceed directly
-      this.saved.emit({ detail: updateDetailDto, inventory: updateInventoryDto, files: this.selectedFiles && this.selectedFiles.length ? this.selectedFiles : undefined });
+      this.saved.emit({
+        detail: updateDetailDto,
+        inventory: updateInventoryDto,
+        files: this.selectedFiles && this.selectedFiles.length ? this.selectedFiles : undefined,
+        removedFileIds: this.removedExistingFileIds && this.removedExistingFileIds.length ? this.removedExistingFileIds : undefined
+      });
     }
   }
 
@@ -493,7 +505,11 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges, OnD
   onInvoiceChangeConfirmed(): void {
     this.showInvoiceChangeConfirmation = false;
     if (this.pendingSubmitData) {
-      this.saved.emit({ ...this.pendingSubmitData, files: this.selectedFiles && this.selectedFiles.length ? this.selectedFiles : undefined });
+      this.saved.emit({
+        ...this.pendingSubmitData,
+        files: this.selectedFiles && this.selectedFiles.length ? this.selectedFiles : undefined,
+        removedFileIds: this.removedExistingFileIds && this.removedExistingFileIds.length ? this.removedExistingFileIds : undefined
+      });
       this.pendingSubmitData = null;
     }
   }
@@ -562,6 +578,17 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges, OnD
         window.open(this.getDownloadUrl(file), '_blank', 'noopener');
       }
     });
+  }
+
+  removeExistingFile(file: FileUploadDto): void {
+    const fileId = file?.id;
+    if (!fileId) return;
+    if (!this.removedExistingFileIds.includes(fileId)) {
+      this.removedExistingFileIds = [...this.removedExistingFileIds, fileId];
+    }
+    // Hide immediately in UI; actual deletion will happen on Save by backend.
+    this.existingFiles = (this.existingFiles || []).filter(f => f.id !== fileId);
+    this.cdr.markForCheck();
   }
 
   /**

@@ -175,10 +175,19 @@
       </div>
 
       <!-- Existing Files -->
-      <div *ngIf="inventoryDetail?.files?.length" class="mt-3 grid grid-cols-1 gap-2">
-        <div *ngFor="let f of inventoryDetail?.files" class="flex items-center justify-between p-3 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)]">
-          <button type="button" (click)="openExistingFile(f)" class="text-left text-sm text-[var(--color-brand)] truncate hover:underline">
+      <div *ngIf="existingFiles?.length" class="mt-3 grid grid-cols-1 gap-2">
+        <div *ngFor="let f of existingFiles"
+          class="flex items-center justify-between gap-3 p-3 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)]">
+          <button type="button" (click)="openExistingFile(f)"
+            class="flex-1 min-w-0 text-left text-sm text-[var(--color-brand)] truncate hover:underline">
             {{ f.originalName || f.fileName }}
+          </button>
+          <button type="button" (click)="removeExistingFile(f)"
+            class="p-1 text-[var(--color-error)] hover:text-red-700 transition-colors"
+            [title]="'common.remove' | translate">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
           </button>
         </div>
       </div>
