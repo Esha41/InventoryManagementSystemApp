@@ -106,11 +106,16 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
   private removedAssetIds = new Set<number>();
   private destroy$ = new Subject<void>();
   deliveryReceiptFiles: File[] = [];
+  /** Existing uploaded file ids the user removed in UI; deleted on Save by backend. */
+  removedExistingFileIds: number[] = [];
   isEmployeeModalOpen = false;
 
-    get existingFiles() {
-        return this.batch?.assets?.[0]?.images || [];
-    }
+  get existingFiles() {
+    const files = this.batch?.assets?.[0]?.images || [];
+    if (!this.removedExistingFileIds.length) return files;
+    const removed = new Set(this.removedExistingFileIds);
+    return files.filter(f => !removed.has(f.id));
+  }
 
   ngOnInit(): void {
     this.refreshAssignModeOptions();
@@ -176,6 +181,7 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
           this.batch = batch;
           this.syncPaginationFromBatch(batch);
           this.removedAssetIds.clear();
+          this.removedExistingFileIds = [];
           this.employees = (employees || []).filter(e => !e.isDeleted);
           this.departments = (departments || []).filter(d => !d.isDeleted);
           this.suppliers = (suppliers || []).filter(s => !s.isDeleted);
@@ -572,7 +578,10 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
       };
     });
 
-    const dto: BulkUpdateBatchAssetsDto = { items };
+    const dto: BulkUpdateBatchAssetsDto = {
+      items,
+      removedFileIds: this.removedExistingFileIds.length ? this.removedExistingFileIds : undefined
+    };
     const removedIds = Array.from(this.removedAssetIds);
 
     const removeOps = removedIds.length > 0
@@ -601,6 +610,7 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
         this.saving = false;
         this.removedAssetIds.clear();
         this.deliveryReceiptFiles = [];
+        this.removedExistingFileIds = [];
         this.cdr.markForCheck();
         this.toastService.success(
           this.translateService.instant('editBatch.saveSuccess'),
@@ -670,6 +680,14 @@ openExistingFile(fileId: number): void {
 
   onCancel(): void {
     this.cancelled.emit();
+  }
+
+  removeExistingFile(fileId: number): void {
+    if (!fileId) return;
+    if (!this.removedExistingFileIds.includes(fileId)) {
+      this.removedExistingFileIds = [...this.removedExistingFileIds, fileId];
+    }
+    this.cdr.markForCheck();
   }
 
   readonly assetStatuses = [

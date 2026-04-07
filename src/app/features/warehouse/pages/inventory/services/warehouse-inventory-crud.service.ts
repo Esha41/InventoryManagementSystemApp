@@ -50,7 +50,8 @@ export class WarehouseInventoryCrudService {
     inventory: InventoryDto,
     updateDetailDto: UpdateInventoryDetailDto,
     updateInventoryDto?: UpdateInventoryDto,
-    files?: File[]
+    files?: File[],
+    removedFileIds?: number[]
   ): Observable<EditInventoryDetailResult> {
     // Update the inventory with modified detail and invoice information
     const finalUpdateInventoryDto: UpdateInventoryDto = updateInventoryDto || {
@@ -78,6 +79,9 @@ export class WarehouseInventoryCrudService {
         primaryPurposId: d.primaryPurposId
       }
     );
+
+    // Pass removed file ids to backend (deleted during Inventory update)
+    (finalUpdateInventoryDto as any).removedFileIds = removedFileIds && removedFileIds.length ? removedFileIds : undefined;
 
     const filesItemId = detail.itemId;
     return this.inventoryService.update(inventory.id, finalUpdateInventoryDto, files, filesItemId)

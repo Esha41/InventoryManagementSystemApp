@@ -148,6 +148,8 @@ export interface UpdateInventoryDto {
   contractNumber?: string;
   notes?: string;
   inventoryDetails: UpdateInventoryDetailDto[];
+  /** Existing uploaded file ids removed in UI; backend deletes them during update. */
+  removedFileIds?: number[];
 }
 
 export interface UpdateInventoryDetailDto {

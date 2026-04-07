@@ -1153,7 +1153,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   /**
    * Handle edit modal save
    */
-  onEditSave(data: { detail: UpdateInventoryDetailDto; inventory: UpdateInventoryDto; files?: File[] }): void {
+  onEditSave(data: { detail: UpdateInventoryDetailDto; inventory: UpdateInventoryDto; files?: File[]; removedFileIds?: number[] }): void {
     if (!this.currentInventory || !this.selectedDetail) return;
 
     // Store references before clearing
@@ -1166,7 +1166,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.currentInventory = undefined;
     this.cdr.markForCheck();
 
-    this.crudService.editInventoryDetail(detailToEdit, inventoryToUpdate, data.detail, data.inventory, data.files)
+    this.crudService.editInventoryDetail(detailToEdit, inventoryToUpdate, data.detail, data.inventory, data.files, data.removedFileIds)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (result) => {

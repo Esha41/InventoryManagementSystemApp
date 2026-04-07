@@ -166,7 +166,8 @@
           </button>
         </label>
         <app-dropdown class="w-full" [ngModel]="selectedAmmunitionType" (ngModelChange)="onAmmunitionTypeChange($event)"
-          [options]="ammunitionTypeOptions" [placeholderSelectable]="false" [placeholderValue]="''"
+          [options]="ammunitionTypeOptions" optionLabel="label" optionValue="value" [translateLabels]="true"
+          [placeholderSelectable]="false" [placeholderValue]="''"
           placeholder="{{ 'newIssueRequest.selectAmmunitionType' | translate }}">
         </app-dropdown>
       </div>
@@ -202,7 +203,8 @@
           </button>
         </label>
         <app-dropdown class="w-full" [ngModel]="selectedLinked" (ngModelChange)="onLinkedChange($event)"
-          [options]="linkedOptions" [placeholderSelectable]="false" [placeholderValue]="''"
+          [options]="linkedOptions" optionLabel="label" optionValue="value" [translateLabels]="true"
+          [placeholderSelectable]="false" [placeholderValue]="''"
           placeholder="{{ 'newIssueRequest.linkedNotLinked' | translate }}">
         </app-dropdown>
       </div>
