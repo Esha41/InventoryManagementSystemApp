@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output, signal, ViewChild, ElementRef, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, Upload, FileText, AlertCircle, Check, X } from 'lucide-angular';
+import { LucideAngularModule, Download, Upload, FileText, AlertCircle, Check, X } from 'lucide-angular';
 import { ButtonComponent } from '../button/button.component';
 
 @Component({
@@ -27,6 +27,7 @@ export class ImportDialogComponent implements OnChanges {
     dragOver = signal(false);
 
     readonly Upload = Upload;
+    readonly Download = Download;
     readonly FileText = FileText;
     readonly AlertCircle = AlertCircle;
     readonly Check = Check;

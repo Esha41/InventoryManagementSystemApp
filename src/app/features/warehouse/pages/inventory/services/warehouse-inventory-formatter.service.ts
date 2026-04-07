@@ -46,6 +46,27 @@ export class WarehouseInventoryFormatterService {
   }
 
   /**
+   * Lot-level primary purpose (from API navigation or resolved via item.primaryPurposes).
+   */
+  getPrimaryPurposeName(detail: InventoryDetailDto): string {
+    const lang = getCurrentLang(this.translateService);
+    if (detail.primaryPurpos) {
+      const label = getLocalizedName(detail.primaryPurpos, lang);
+      if (label) {
+        return label;
+      }
+    }
+    const id = detail.primaryPurposId;
+    if (id != null && detail.item?.primaryPurposes?.length) {
+      const match = detail.item.primaryPurposes.find(p => p.id === id);
+      if (match) {
+        return getLocalizedName(match, lang) || '-';
+      }
+    }
+    return '-';
+  }
+
+  /**
    * Get HCC name
    */
   getHccName(detail: InventoryDetailDto): string {

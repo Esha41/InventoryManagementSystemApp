@@ -109,13 +109,33 @@
         </div>
         <div class="p-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="md:col-span-2">
+            <div>
               <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
                 {{ 'addInventory.deliveryReceipt' | translate }}
               </label>
               <p class="text-sm font-medium text-[var(--color-text)]">
                 {{ inventoryDetail?.deliveryReceipt || '-' }}
               </p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+                {{ 'common.attachments' | translate }}
+              </label>
+
+              <div *ngIf="deliveryReceiptFiles?.length; else noDeliveryReceiptFiles" class="space-y-2">
+                <div *ngFor="let f of deliveryReceiptFiles"
+                  class="flex items-center gap-2 px-3 py-2 bg-[var(--color-background-active)] rounded-lg border border-[var(--color-border)]">
+                  <button type="button" (click)="openDeliveryReceiptFile(f.id)"
+                    class="flex-1 min-w-0 text-left text-sm text-[var(--color-brand)] truncate hover:underline">
+                    {{ f.originalName || f.fileName }}
+                  </button>
+                </div>
+              </div>
+
+              <ng-template #noDeliveryReceiptFiles>
+                <p class="text-sm text-[var(--color-text-muted)]">-</p>
+              </ng-template>
             </div>
           </div>
         </div>
@@ -227,6 +247,9 @@
                     {{ 'inventorySummary.country' | translate }}
                   </th>
                   <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                    {{ 'inventorySummary.primaryPurpose' | translate }}
+                  </th>
+                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
                     {{ 'inventorySummary.batchNo' | translate }}
                   </th>
                   <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
@@ -262,6 +285,9 @@
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
                     {{ getCountryNameForLot(lot) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                    {{ getPrimaryPurposeForLot(lot) }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
                     {{ lot.batchNo || '-' }}

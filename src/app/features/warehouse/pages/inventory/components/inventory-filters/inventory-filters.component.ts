@@ -29,10 +29,14 @@ export class InventoryFiltersComponent {
   @Input() showSupplierManufacturerFilters = false;
   @Input() supplierFilterControl: FormControl<number | null> = new FormControl<number | null>(null);
   @Input() manufacturerFilterControl: FormControl<number | null> = new FormControl<number | null>(null);
+  /** Shown with supplier/manufacturer on ammunition & explosives depot inventory. */
+  @Input() primaryPurposeFilterControl: FormControl<number | null> = new FormControl<number | null>(null);
   @Input() suppliers: LookupItem[] = [];
   @Input() manufacturers: LookupItem[] = [];
+  @Input() primaryPurposes: LookupItem[] = [];
   @Input() supplierOptionLabelFn: (option: DropdownOption<LookupItem> | LookupItem | null) => string = () => '';
   @Input() manufacturerOptionLabelFn: (option: DropdownOption<LookupItem> | LookupItem | null) => string = () => '';
+  @Input() primaryPurposeOptionLabelFn: (option: DropdownOption<LookupItem> | LookupItem | null) => string = () => '';
   /** i18n key for the search input placeholder (e.g. `common.search` for weapons tab). */
   @Input() searchPlaceholderKey = 'warehouseInventory.searchPlaceholder';
 
