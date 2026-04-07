@@ -1239,24 +1239,43 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  /**
-   * Export current tab (inventory lines, batch summaries, or weapon assets when a batch is expanded is not used — export is list-level).
-   */
   exportDepotToExcel(): void {
     if (this.activeTab === 'batch') {
       this.exportService.exportBatchSummariesToExcel(this.filteredBatches, this.depoName);
       return;
     }
-    this.exportService.exportInventoryToExcel(
-      this.filteredInventoryDetails,
-      this.depoName,
-      this.activeTab,
-      this.getItemName,
-      this.formatDate,
-      this.activeTab === 'ammunition' || this.activeTab === 'explosive'
-        ? this.getPrimaryPurposeName
-        : undefined
-    );
+
+    if (!this.depoId) return;
+
+    const itemType = this.activeTab === 'ammunition' ? ItemType.Ammunition : ItemType.Explosive;
+
+    this.loading = true;
+    this.cdr.markForCheck();
+
+    this.inventoryService.getWarehouseInventoryDetailsForExport(this.depoId, itemType as 1 | 3)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (allDetails) => {
+          this.loading = false;
+          this.cdr.markForCheck();
+
+          this.exportService.exportInventoryToExcel(
+            allDetails,
+            this.depoName,
+            this.activeTab as 'ammunition' | 'explosive',
+            this.getItemName,
+            this.formatDate,
+            this.activeTab === 'ammunition' || this.activeTab === 'explosive'
+              ? this.getPrimaryPurposeName
+              : undefined
+          );
+        },
+        error: () => {
+          this.loading = false;
+          this.cdr.markForCheck();
+          this.toastService.error('Failed to fetch data for export');
+        }
+      });
   }
 
   private unwrapLookupOption<T>(option: DropdownOption<T> | T | null): T | null {

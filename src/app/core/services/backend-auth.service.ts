@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, throwError, of, timer, Subscription } from 'rxjs';
-import { map, tap, catchError, switchMap, finalize, shareReplay } from 'rxjs/operators';
+import { map, tap, catchError, switchMap, exhaustMap, finalize, shareReplay } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { StorageService } from './storage.service';
 import { ConfigService } from './config.service';
@@ -897,11 +897,23 @@ export class BackendAuthService {
    */
   private startSessionHeartbeat(): void {
     this.stopSessionHeartbeat();
-    // timer(0, interval): first check immediately, then every 15s - detects Take over within 15 seconds
     this.sessionHeartbeatSubscription = timer(0, this.SESSION_HEARTBEAT_INTERVAL_MS).pipe(
-      switchMap(() => this.apiService.get<any>(API_ENDPOINTS.AUTH.USER_CLAIMS)),
-      catchError(() => of(null)) // Interceptor handles 401 (clearSession, redirect); we just avoid unhandled errors
+      exhaustMap(() =>
+        this.apiService.get<any>(API_ENDPOINTS.AUTH.USER_CLAIMS).pipe(
+          catchError(() => of(null))
+        )
+      )
     ).subscribe();
+  }
+
+  pauseSessionHeartbeat(): void {
+    this.stopSessionHeartbeat();
+  }
+
+  resumeSessionHeartbeat(): void {
+    if (this.isAuthenticated()) {
+      this.startSessionHeartbeat();
+    }
   }
 
   /**
