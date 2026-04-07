@@ -45,6 +45,8 @@ export interface BatchAssetUpdateItem {
 
 export interface BulkUpdateBatchAssetsDto {
     items: BatchAssetUpdateItem[];
+    /** Existing uploaded file ids removed in UI; backend deletes them during bulk update. */
+    removedFileIds?: number[];
 }
 
 export interface UpdateBatchDto {
