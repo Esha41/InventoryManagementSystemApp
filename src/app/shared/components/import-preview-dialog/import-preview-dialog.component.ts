@@ -1,11 +1,15 @@
 import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, X, CheckCircle, AlertCircle, Upload, Download, Filter } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
+import { BATCH_IMPORT_ACTION_COLUMN } from '@core/utils/asset-master-import-preview.utils';
 import * as XLSX from 'xlsx';
+
+export type ImportPreviewMode = 'strict' | 'allowSkipInvalid';
 
 export interface PreviewRow {
     rowNumber: number;
@@ -31,7 +35,8 @@ export type RowFilter = 'all' | 'valid' | 'invalid';
         CommonModule,
         FormsModule,
         TranslateModule,
-        LucideAngularModule
+        LucideAngularModule,
+        ConfirmDialogComponent
     ],
     providers: [AppDateTimePipe],
     templateUrl: './import-preview-dialog.component.html',
@@ -39,7 +44,8 @@ export type RowFilter = 'all' | 'valid' | 'invalid';
 })
 export class ImportPreviewDialogComponent implements OnInit {
     @Input() previewData: PreviewData | null = null;
-    @Input() assetType: 'ammunition' | 'weapon' | 'explosive' = 'ammunition';
+    @Input() assetType: 'ammunition' | 'weapon' | 'explosive' | 'batch' = 'ammunition';
+    @Input() importPreviewMode: ImportPreviewMode = 'strict';
     @Output() confirm = new EventEmitter<PreviewRow[]>();
     @Output() cancel = new EventEmitter<void>();
 
@@ -53,8 +59,12 @@ export class ImportPreviewDialogComponent implements OnInit {
     // Filter state
     activeFilter: RowFilter = 'all';
 
+    // Partial-import confirmation dialog state
+    showSkipConfirm = false;
+
     constructor(
         private translationService: TranslationService,
+        private translateService: TranslateService,
         private cdr: ChangeDetectorRef,
         private appDateTimePipe: AppDateTimePipe
     ) { }
@@ -71,19 +81,66 @@ export class ImportPreviewDialogComponent implements OnInit {
         this.cancel.emit();
     }
 
-    onConfirm(): void {
+    onConfirmClick(): void {
         if (!this.previewData) return;
 
-        // Only send valid rows for import
+        if (this.importPreviewMode === 'allowSkipInvalid' && this.hasInvalidRows()) {
+            this.showSkipConfirm = true;
+            this.cdr.markForCheck();
+            return;
+        }
+
+        this.emitConfirm();
+    }
+
+    onSkipConfirmAccepted(): void {
+        this.showSkipConfirm = false;
+        this.emitConfirm();
+    }
+
+    onSkipConfirmCancelled(): void {
+        this.showSkipConfirm = false;
+        this.cdr.markForCheck();
+    }
+
+    /** The original confirm: emits valid rows only. */
+    private emitConfirm(): void {
+        if (!this.previewData) return;
         const validRows = this.previewData.rows.filter(row => row.isValid);
         this.confirm.emit(validRows);
     }
 
+    /** Kept for backward compatibility — old template binding name. */
+    onConfirm(): void {
+        this.onConfirmClick();
+    }
+
     canConfirm(): boolean {
-        // Block import if there are any invalid rows
-        return this.previewData !== null &&
-            this.previewData.validRows > 0 &&
-            this.previewData.invalidRows === 0;
+        if (!this.previewData || this.previewData.validRows === 0) return false;
+
+        if (this.importPreviewMode === 'allowSkipInvalid') {
+            return true;
+        }
+        return this.previewData.invalidRows === 0;
+    }
+
+    get isAllowSkipMode(): boolean {
+        return this.importPreviewMode === 'allowSkipInvalid';
+    }
+
+    get skipConfirmTitle(): string {
+        return this.translateService.instant('import.partialImportConfirmTitle');
+    }
+
+    get skipConfirmMessage(): string {
+        return this.translateService.instant('import.partialImportConfirmMessage', {
+            validCount: this.previewData?.validRows ?? 0,
+            invalidCount: this.previewData?.invalidRows ?? 0
+        });
+    }
+
+    get skipConfirmDescription(): string {
+        return this.translateService.instant('import.partialImportConfirmDescription');
     }
 
     hasInvalidRows(): boolean {
@@ -118,6 +175,16 @@ export class ImportPreviewDialogComponent implements OnInit {
 
     /** Formats ISO / Date values like the rest of the app; leaves other cells unchanged. */
     getDisplayCellValue(row: PreviewRow, column: string): string {
+        if (column === BATCH_IMPORT_ACTION_COLUMN) {
+            const raw = row.data[column];
+            if (raw === 'create') {
+                return this.translationService.getTranslation('import.batchImportActionCreate');
+            }
+            if (raw === 'update') {
+                return this.translationService.getTranslation('import.batchImportActionUpdate');
+            }
+            return '-';
+        }
         const raw = row.data[column];
         if (raw === null || raw === undefined || raw === '') {
             return '-';
@@ -197,7 +264,7 @@ export class ImportPreviewDialogComponent implements OnInit {
         ws['!cols'] = colWidths;
 
         // Generate file
-        const fileName = `Import_Errors_${this.assetType}_${new Date().toISOString().split('T')[0]}.xlsx`;
+        const fileName = `Import_Errors_${this.assetType === 'batch' ? 'batch_assets' : this.assetType}_${new Date().toISOString().split('T')[0]}.xlsx`;
         XLSX.writeFile(wb, fileName);
     }
 
@@ -226,15 +293,32 @@ export class ImportPreviewDialogComponent implements OnInit {
         }
 
         // Handle specific common overrides (match add-asset and Excel template labels)
+        if (column === BATCH_IMPORT_ACTION_COLUMN) {
+            return this.translationService.getTranslation('import.batchImportActionColumn');
+        }
+
         const commonMap: { [key: string]: string } = {
+            'assetId': 'warehouseInventory.assetId',
+            'itemId': 'warehouseInventory.itemId',
             'itemName': 'warehouseInventory.itemName',
             'itemNo': 'warehouseInventory.itemNo',
+            'statusLabel': 'warehouseInventory.status',
+            'assignmentModeLabel': 'warehouseInventory.fields.assignmentMode',
+            'assignmentDepartment': 'warehouseInventory.department',
+            'assignmentEmployee': 'warehouseInventory.employee',
+            'assignmentNotes': 'warehouseInventory.fields.assignmentNotes',
+            'purchaseDate': 'addWeaponAsset.purchaseDate',
+            'warrantyExpiryDate': 'addWeaponAsset.warrantyExpiryDate',
+            'purchasePrice': 'addWeaponAsset.purchasePrice',
+            'deliveryReceipt': 'addWeaponAsset.deliveryReceipt',
+            'serialNumber': 'addWeaponAsset.serialNumber',
+            'rfid': 'addWeaponAsset.rfidTag',
             'itemType': 'addAsset.type',
             'status': 'common.status',
             'neqUnit': 'addAsset.unit',
             'hazardDivision': 'assetList.table.hazardDivision',
-            'armNumber': 'warehouseInventory.armNumber',
-            'compatibility': 'warehouseInventory.compatibility',
+            'armNumber': 'addAsset.armNumber',
+            'compatibility': 'addAsset.compatibility',
             'bulletDiameter': 'warehouseInventory.bulletDiameter',
             'bulletDiameterUnit': 'warehouseInventory.caliberUnit',
             'caliberUnit': 'warehouseInventory.caliberUnit',

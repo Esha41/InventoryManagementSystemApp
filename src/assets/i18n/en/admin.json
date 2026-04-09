@@ -137,8 +137,8 @@
     "ldapSettingsUnavailable": "Unable to retrieve LDAP settings"
   },
   "employeeFormModal": {
-    "addNewEmployee": "Add New Employee",
-    "editEmployee": "Edit Employee",
+    "addNewEmployee": "Add Person",
+    "editEmployee": "Edit Person",
     "nameEn": "Name (EN)",
     "nameEnPlaceholder": "Enter English name",
     "nameAr": "Name (AR)",
@@ -155,14 +155,14 @@
     "emailPlaceholder": "Enter email address",
     "notes": "Notes",
     "notesPlaceholder": "Enter notes (optional)",
-    "create": "Create Employee",
-    "createTitle": "Create Employee",
-    "createSuccess": "Employee created successfully",
-    "createError": "Failed to create employee",
-    "update": "Update Employee",
-    "updateTitle": "Update Employee",
-    "updateSuccess": "Employee updated successfully",
-    "updateError": "Failed to update employee"
+    "create": "Create Person",
+    "createTitle": "Create Person",
+    "createSuccess": "Person created successfully",
+    "createError": "Failed to create person",
+    "update": "Update Person",
+    "updateTitle": "Update Person",
+    "updateSuccess": "Person updated successfully",
+    "updateError": "Failed to update person"
   },
   "roleFormModal": {
     "roleName": "Role Name",

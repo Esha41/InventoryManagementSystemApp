@@ -85,6 +85,7 @@ export class IdleService implements OnDestroy {
   dismissWarning(): void {
     this.stopCountdown();
     this.stateSubject.next({ isWarning: false, secondsRemaining: 0 });
+    this.backendAuth.resumeSessionHeartbeat();
     this.resetIdleTimer();
   }
 
@@ -120,6 +121,8 @@ export class IdleService implements OnDestroy {
 
   private startCountdown(): void {
     this.configService.log('User idle - starting logout countdown');
+    this.backendAuth.pauseSessionHeartbeat();
+
     let remaining = this.countdownSeconds;
     this.stateSubject.next({ isWarning: true, secondsRemaining: remaining });
 

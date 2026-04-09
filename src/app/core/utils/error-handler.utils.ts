@@ -65,6 +65,9 @@ export class ErrorHandler {
       }
       // Case: { message: "..." } - Standard message property
       if (typeof msg === 'string') return msg;
+      // Case: { Message: "..." } - Some API envelopes use PascalCase
+      const msgPascal = obj['Message'];
+      if (typeof msgPascal === 'string') return msgPascal;
       // Case: { errors: ["..."] } - Validation errors
       const errs = obj['errors'];
       if (errs) {
@@ -120,6 +123,11 @@ export class ErrorHandler {
    */
   static translateErrorMessage(message: string, translate?: TranslateService): string {
     if (!message || !translate) return message;
+
+    // API returns ngx-translate keys in Message (e.g. warehouseInventory.errors.*)
+    if (message.startsWith('warehouseInventory.errors.')) {
+      return translate.instant(message);
+    }
 
     for (const { pattern, translationKey, extractParams } of TRANSLATABLE_ERROR_PATTERNS) {
       const match = message.match(pattern);

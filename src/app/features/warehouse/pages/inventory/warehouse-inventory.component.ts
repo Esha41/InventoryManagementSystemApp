@@ -3,10 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subject, takeUntil, forkJoin } from 'rxjs';
+import { Subject, takeUntil, forkJoin, merge, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { debounceTime, startWith } from 'rxjs/operators';
-import { LucideAngularModule, ArrowLeft, ArrowRight, X, Eye, Edit, Trash2 } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ArrowRight, X, Eye, Edit, Trash2, Download, Upload, FileText } from 'lucide-angular';
 import { InventoryService } from '@services/inventory.service';
+import { AssetService } from '@services/asset.service';
 import { LookupService } from '@services/lookup.service';
 import { LookupItem } from '@models/lookup.model';
 import { ToastService } from '@services/toast.service';
@@ -14,14 +16,17 @@ import { TranslateService } from '@ngx-translate/core';
 import { InventoryDetailDto, UpdateInventoryDetailDto, UpdateInventoryDto, InventoryDto, ItemType } from '@models/inventory.model';
 import { FilterData } from '@models/pagination.model';
 import { AssetDto } from '@models/asset.model';
-import { BatchDto, BatchSummaryDto } from '@models/batch.model';
+import { BatchDto, BatchSummaryDto, BatchAssetFilter } from '@models/batch.model';
 import { BatchService } from '@services/batch.service';
+import { WeaponService } from '@services/weapon.service';
 import { CardComponent } from '@components/card/card.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { EditInventoryDetailModalComponent } from './components/edit-inventory-detail-modal/edit-inventory-detail-modal.component';
 import { EditAssetModalComponent } from '@assets/pages/edit/components/edit-asset-modal/edit-asset-modal.component';
-import { DropdownComponent } from '@components/dropdown/dropdown.component';
-import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
+import { PaginationComponent } from '@components/pagination/pagination.component';
+import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
+import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslationService } from '@services/translation.service';
@@ -34,6 +39,18 @@ import { BatchTableComponent, BatchTableSortColumn } from './components/batch-ta
 import { InventoryFiltersComponent } from './components/inventory-filters/inventory-filters.component';
 import { trackById } from '@utils/trackby.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { ImportDialogComponent } from '@components/import-dialog/import-dialog.component';
+import { ImportPreviewDialogComponent, PreviewData } from '@components/import-preview-dialog/import-preview-dialog.component';
+import { ImportExportService } from '@services/import-export.service';
+import { APIOperationResponse } from '@models/api-response.model';
+import { ImportResult } from '@models/import-result.model';
+import { mapImportResultToPreviewData } from '@core/utils/asset-master-import-preview.utils';
+import { IImportableService } from '@core/interfaces/importable-service.interface';
+import {
+  WAREHOUSE_DEPOT_EXPORT_PERMISSIONS,
+  WAREHOUSE_DEPOT_INVENTORY_IMPORT_PERMISSIONS,
+  WAREHOUSE_DEPOT_ASSET_IMPORT_PERMISSIONS
+} from '@core/constants/asset-import-export-permissions';
 
 @Component({
   selector: 'app-warehouse-inventory',
@@ -56,7 +73,9 @@ import { ErrorHandler } from '@utils/error-handler.utils';
     ErrorStateComponent,
     InventoryTableComponent,
     BatchTableComponent,
-    InventoryFiltersComponent
+    InventoryFiltersComponent,
+    ImportDialogComponent,
+    ImportPreviewDialogComponent
   ],
   templateUrl: './warehouse-inventory.component.html',
   styleUrls: ['./warehouse-inventory.component.css'],
@@ -85,6 +104,14 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   expandedBatchId: number | null = null;
   expandedBatchAssets: AssetDto[] = [];
   loadingBatchAssets = false;
+  expandedBatchAssetsPage = 1;
+  expandedBatchAssetsPageSize = 50;
+  expandedBatchAssetsTotalPages = 1;
+  expandedBatchAssetTotalCount = 0;
+  expandedBatchAssetsAllLoaded = false;
+  /** Snapshot of filters last applied to the batch summary API (Apply / initial load / clear). Expand batch uses this so it matches the table. */
+  lastAppliedBatchFilter: BatchAssetFilter | undefined;
+  readonly batchAssetsPageSizeOptions = [50, 100, 200, 500];
 
   // Pagination
   currentPage = 1;
@@ -104,11 +131,62 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   readonly Eye = Eye;
   readonly Edit = Edit;
   readonly Trash2 = Trash2;
+  readonly Download = Download;
+  readonly Upload = Upload;
+  readonly FileText = FileText;
   readonly trackById = trackById;
+
+  readonly warehouseExportPerms = [...WAREHOUSE_DEPOT_EXPORT_PERMISSIONS];
+  readonly warehouseInventoryImportPerms = [...WAREHOUSE_DEPOT_INVENTORY_IMPORT_PERMISSIONS];
+  readonly warehouseAssetImportPerms = [...WAREHOUSE_DEPOT_ASSET_IMPORT_PERMISSIONS];
+
+  showImportModal = false;
+  showPreviewModal = false;
+  previewData: PreviewData | null = null;
+  pendingImportFile: File | null = null;
+  isPreviewInProgress = false;
+  isImportInProgress = false;
+
+  /** When true, import/preview uses POST /Batch/{id}/assets/import*. */
+  batchExcelImportMode = false;
+  batchImportTargetId: number | null = null;
 
   // Search
   searchControl = new FormControl<string>('', { nonNullable: true });
+  supplierFilterControl = new FormControl<number | null>(null);
+  manufacturerFilterControl = new FormControl<number | null>(null);
+  primaryPurposeFilterControl = new FormControl<number | null>(null);
+  suppliers: LookupItem[] = [];
+  manufacturers: LookupItem[] = [];
+  primaryPurposes: LookupItem[] = [];
+  weaponItems: LookupItem[] = [];
   invoiceFilter: string | null = null; // Track specific invoice filter
+
+  // Batch multi-select filter controls
+  batchItemFilterControl = new FormControl<number[]>([], { nonNullable: true });
+  batchSupplierFilterControl = new FormControl<number[]>([], { nonNullable: true });
+  batchManufacturerFilterControl = new FormControl<number[]>([], { nonNullable: true });
+  batchPrimaryPurposeFilterControl = new FormControl<number[]>([], { nonNullable: true });
+
+  readonly supplierLookupLabel = (option: DropdownOption<LookupItem> | LookupItem | null) => {
+    const item = this.unwrapLookupOption(option);
+    return item ? getLocalizedName(item, getCurrentLang(this.translateService)) || '' : '';
+  };
+
+  readonly manufacturerLookupLabel = (option: DropdownOption<LookupItem> | LookupItem | null) => {
+    const item = this.unwrapLookupOption(option);
+    return item ? getLocalizedName(item, getCurrentLang(this.translateService)) || '' : '';
+  };
+
+  readonly primaryPurposeLookupLabel = (option: DropdownOption<LookupItem> | LookupItem | null) => {
+    const item = this.unwrapLookupOption(option);
+    return item ? getLocalizedName(item, getCurrentLang(this.translateService)) || '' : '';
+  };
+
+  readonly batchLookupLabel = (option: DropdownOption<LookupItem> | LookupItem | null) => {
+    const item = this.unwrapLookupOption(option);
+    return item ? getLocalizedName(item, getCurrentLang(this.translateService)) || '' : '';
+  };
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;
@@ -116,6 +194,13 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
   get backIcon() {
     return this.isRTL ? ArrowRight : ArrowLeft;
+  }
+
+  get previewImportAssetType(): 'ammunition' | 'weapon' | 'explosive' | 'batch' {
+    if (this.batchExcelImportMode) return 'batch';
+    if (this.activeTab === 'explosive') return 'explosive';
+    if (this.activeTab === 'batch') return 'weapon';
+    return 'ammunition';
   }
 
   // Modal states
@@ -138,8 +223,10 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
   constructor(
     private inventoryService: InventoryService,
+    private assetService: AssetService,
     private lookupService: LookupService,
     private batchService: BatchService,
+    private weaponService: WeaponService,
     private toastService: ToastService,
     private translateService: TranslateService,
     private route: ActivatedRoute,
@@ -149,6 +236,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     private formatterService: WarehouseInventoryFormatterService,
     private crudService: WarehouseInventoryCrudService,
     private exportService: WarehouseInventoryExportService,
+    private importExportService: ImportExportService,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -208,6 +296,34 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         }
       });
+
+    merge(
+      this.supplierFilterControl.valueChanges,
+      this.manufacturerFilterControl.valueChanges,
+      this.primaryPurposeFilterControl.valueChanges
+    )
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (this.activeTab === 'batch') {
+          return;
+        }
+        this.currentPage = 1;
+        this.updatePageInUrl();
+        this.loadTabContent();
+        this.cdr.markForCheck();
+      });
+
+  }
+
+  /** User clicks "Apply filters" — loads batch summary from API with current multi-select filters (no auto-call on change). */
+  onApplyBatchFilters(): void {
+    if (this.activeTab !== 'batch') {
+      return;
+    }
+    this.currentPage = 1;
+    this.updatePageInUrl();
+    this.loadServerSideBatches();
+    this.cdr.markForCheck();
   }
 
   onSearch(): void {
@@ -215,6 +331,26 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.invoiceFilter = null;
     this.currentPage = 1; // Reset to first page
     this.applyFilters();
+    this.cdr.markForCheck();
+  }
+
+  onClearInventoryFilters(): void {
+    this.searchControl.setValue('', { emitEvent: false });
+    this.supplierFilterControl.setValue(null, { emitEvent: false });
+    this.manufacturerFilterControl.setValue(null, { emitEvent: false });
+    this.primaryPurposeFilterControl.setValue(null, { emitEvent: false });
+    this.batchItemFilterControl.setValue([], { emitEvent: false });
+    this.batchSupplierFilterControl.setValue([], { emitEvent: false });
+    this.batchManufacturerFilterControl.setValue([], { emitEvent: false });
+    this.batchPrimaryPurposeFilterControl.setValue([], { emitEvent: false });
+    this.invoiceFilter = null;
+    this.currentPage = 1;
+    this.updatePageInUrl();
+    if (this.activeTab !== 'batch') {
+      this.loadTabContent();
+    } else {
+      this.loadServerSideBatches();
+    }
     this.cdr.markForCheck();
   }
 
@@ -247,7 +383,10 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   private updatePageInUrl(): void {
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { page: this.currentPage > 1 ? this.currentPage : null },
+      queryParams: { 
+        page: this.currentPage > 1 ? this.currentPage : null,
+        tab: this.activeTab
+      },
       queryParamsHandling: 'merge',
       replaceUrl: true
     });
@@ -257,11 +396,24 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.error = null;
 
-    // Only load depot info initially. Data will be loaded based on active tab.
-    this.lookupService.getDepots()
+    forkJoin({
+      depots: this.lookupService.getDepots(),
+      suppliers: this.lookupService.getSuppliers().pipe(catchError(() => of([] as LookupItem[]))),
+      manufacturers: this.lookupService.getManufacturers().pipe(catchError(() => of([] as LookupItem[]))),
+      primaryPurposes: this.lookupService.getPrimaryPurposes().pipe(catchError(() => of([] as LookupItem[]))),
+      weapons: this.weaponService.getAll().pipe(catchError(() => of([] as any[])))
+    })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (depots) => {
+        next: ({ depots, suppliers, manufacturers, primaryPurposes, weapons }) => {
+          this.suppliers = suppliers ?? [];
+          this.manufacturers = manufacturers ?? [];
+          this.primaryPurposes = primaryPurposes ?? [];
+          this.weaponItems = (weapons ?? []).map((w: any) => ({
+            id: w.id,
+            nameEn: w.nameEn ?? w.name ?? '',
+            nameAr: w.nameAr ?? '',
+          } as LookupItem));
           this.currentDepot = depots.find((d: LookupItem) => d.id === this.depoId) || null;
           this.depoName = this.currentDepot
             ? getLocalizedName(this.currentDepot, getCurrentLang(this.translateService)) || `Depot ${this.depoId}`
@@ -280,7 +432,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           this.loading = false;
           this.cdr.markForCheck();
         },
-        error: (error) => {
+        error: () => {
           this.error = 'Failed to load depot data';
           this.loading = false;
           this.cdr.markForCheck();
@@ -299,16 +451,32 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     }
   }
 
+  private buildBatchAssetFilter(): BatchAssetFilter | undefined {
+    const f: BatchAssetFilter = {};
+    const items = this.batchItemFilterControl.value;
+    const suppliers = this.batchSupplierFilterControl.value;
+    const manufacturers = this.batchManufacturerFilterControl.value;
+    const purposes = this.batchPrimaryPurposeFilterControl.value;
+    if (items?.length) f.itemIds = items;
+    if (suppliers?.length) f.supplierIds = suppliers;
+    if (manufacturers?.length) f.manufacturerIds = manufacturers;
+    if (purposes?.length) f.primaryPurposeIds = purposes;
+    return f.itemIds || f.supplierIds || f.manufacturerIds || f.primaryPurposeIds ? f : undefined;
+  }
+
   private loadServerSideBatches(): void {
     this.loading = true;
     this.expandedBatchId = null;
     this.expandedBatchAssets = [];
+    this.resetExpandedBatchAssetState();
     this.cdr.markForCheck();
 
-    this.batchService.getSummary(this.depoId)
+    const filters = this.buildBatchAssetFilter();
+    this.batchService.getSummary(this.depoId, filters)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (batches) => {
+          this.lastAppliedBatchFilter = filters;
           this.batches = batches || [];
           this.filteredBatches = this.applyBatchSearch(this.batches);
           this.totalItems = this.filteredBatches.length;
@@ -386,6 +554,19 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
         { field: 'Item.ItemType', operator: 'eq', value: itemType.toString() }
       ];
 
+      const supplierId = this.supplierFilterControl.value;
+      if (supplierId != null) {
+        filters.push({ field: 'SupplierId', operator: 'eq', value: String(supplierId) });
+      }
+      const manufacturerId = this.manufacturerFilterControl.value;
+      if (manufacturerId != null) {
+        filters.push({ field: 'ManufacturerId', operator: 'eq', value: String(manufacturerId) });
+      }
+      const primaryPurposeId = this.primaryPurposeFilterControl.value;
+      if (primaryPurposeId != null) {
+        filters.push({ field: 'PrimaryPurposId', operator: 'eq', value: String(primaryPurposeId) });
+      }
+
       // If filtering by specific invoice number, use exact match
       if (this.invoiceFilter) {
         filters.push({
@@ -431,9 +612,11 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   private resolveInventoryBackendSortField(column: WarehouseInventoryTableSortColumn): string {
     const lang = getCurrentLang(this.translateService);
     const supplierField = lang === 'ar' ? 'Supplier.NameAr' : 'Supplier.NameEn';
+    const manufacturerField = lang === 'ar' ? 'Manufacturer.NameAr' : 'Manufacturer.NameEn';
     const map: Record<WarehouseInventoryTableSortColumn, string> = {
       itemName: 'Item.Name',
       supplier: supplierField,
+      manufacturer: manufacturerField,
       lot: 'Lot',
       quantity: 'ItemQuantity',
       readyForIssue: 'ReadyForIssue',
@@ -631,9 +814,17 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   getItemName = (detail: InventoryDetailDto | null | undefined) => this.formatterService.getItemName(detail);
   getItemNo = (detail: InventoryDetailDto) => this.formatterService.getItemNo(detail);
   getSupplierName = (detail: InventoryDetailDto) => this.formatterService.getSupplierName(detail);
+  getManufacturerName = (detail: InventoryDetailDto) => this.formatterService.getManufacturerName(detail);
+  getPrimaryPurposeName = (detail: InventoryDetailDto) => this.formatterService.getPrimaryPurposeName(detail);
   getHccName = (detail: InventoryDetailDto) => this.formatterService.getHccName(detail);
   getAssetItemName = (asset: AssetDto | null | undefined) => this.formatterService.getAssetItemName(asset);
-  getAssetItemNo = (asset: AssetDto) => this.formatterService.getAssetItemNo(asset);
+  getAssetDepartmentLabel = (asset: AssetDto) => this.formatterService.getAssetDepartmentLabel(asset);
+  getAssetCustodianLabel = (asset: AssetDto) => this.formatterService.getAssetCustodianLabel(asset);
+  getAssetSupplierLabel = (asset: AssetDto) => this.formatterService.getAssetSupplierLabel(asset);
+  getAssetManufacturerLabel = (asset: AssetDto) => this.formatterService.getAssetManufacturerLabel(asset);
+  getAssetPrimaryPurposeLabel = (asset: AssetDto) => this.formatterService.getAssetPrimaryPurposeLabel(asset);
+  formatAssetPurchasePrice = (price?: number | null) => this.formatterService.formatAssetPurchasePrice(price);
+  truncateAssetNotes = (asset: AssetDto) => this.formatterService.truncateText(asset.notes, 80);
   getAssetStatusLabel = (asset: AssetDto) => this.formatterService.getAssetStatusLabel(asset);
   formatDate = (date?: Date | string) => this.formatterService.formatDate(date);
   formatNumber = (num: number) => this.formatterService.formatNumber(num);
@@ -676,28 +867,85 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     if (this.expandedBatchId === batch.id) {
       this.expandedBatchId = null;
       this.expandedBatchAssets = [];
+      this.resetExpandedBatchAssetState();
       this.cdr.markForCheck();
       return;
     }
     this.expandedBatchId = batch.id;
-    this.loadingBatchAssets = true;
-    this.expandedBatchAssets = [];
-    this.cdr.markForCheck();
+    this.resetExpandedBatchAssetState();
+    this.fetchExpandedBatchAssets();
+  }
 
-    this.batchService.getById(batch.id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (fullBatch) => {
-          this.expandedBatchAssets = fullBatch?.assets ?? [];
-          this.loadingBatchAssets = false;
-          this.cdr.markForCheck();
-        },
-        error: () => {
-          this.loadingBatchAssets = false;
-          this.expandedBatchId = null;
-          this.cdr.markForCheck();
+  private resetExpandedBatchAssetState(): void {
+    this.expandedBatchAssetsPage = 1;
+    this.expandedBatchAssetsPageSize = 50;
+    this.expandedBatchAssetsTotalPages = 1;
+    this.expandedBatchAssetTotalCount = 0;
+    this.expandedBatchAssetsAllLoaded = false;
+  }
+
+  /**
+   * Loads assets for the currently expanded batch using server pagination (or include-all when enabled).
+   */
+  private fetchExpandedBatchAssets(options?: { showLoading?: boolean }): void {
+    const showLoading = options?.showLoading !== false;
+    if (this.expandedBatchId == null) return;
+    if (showLoading) {
+      this.loadingBatchAssets = true;
+      this.cdr.markForCheck();
+    }
+    const id = this.expandedBatchId;
+    const filters = this.lastAppliedBatchFilter;
+    const request$ = this.expandedBatchAssetsAllLoaded
+      ? this.batchService.getById(id, { includeAllAssets: true, filters })
+      : this.batchService.getById(id, {
+          assetsPage: this.expandedBatchAssetsPage,
+          assetsPageSize: this.expandedBatchAssetsPageSize,
+          filters
+        });
+    request$.pipe(takeUntil(this.destroy$)).subscribe({
+      next: (fullBatch) => {
+        this.expandedBatchAssets = fullBatch?.assets ?? [];
+        this.expandedBatchAssetTotalCount = fullBatch?.assetCount ?? 0;
+        this.expandedBatchAssetsTotalPages = fullBatch?.assetsTotalPages ?? 1;
+        this.expandedBatchAssetsPage = fullBatch?.assetsPageIndex ?? 1;
+        if (!this.expandedBatchAssetsAllLoaded && fullBatch?.assetsPageSize != null) {
+          this.expandedBatchAssetsPageSize = fullBatch.assetsPageSize;
         }
-      });
+        this.loadingBatchAssets = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.loadingBatchAssets = false;
+        this.expandedBatchId = null;
+        this.expandedBatchAssets = [];
+        this.resetExpandedBatchAssetState();
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  onExpandedBatchAssetsPageChange(page: number): void {
+    this.expandedBatchAssetsPage = page;
+    this.fetchExpandedBatchAssets();
+  }
+
+  onExpandedBatchAssetsPageSizeChange(size: number): void {
+    this.expandedBatchAssetsPageSize = size;
+    this.expandedBatchAssetsPage = 1;
+    this.fetchExpandedBatchAssets();
+  }
+
+  onExpandedBatchAssetsLoadAll(): void {
+    this.expandedBatchAssetsAllLoaded = true;
+    this.expandedBatchAssetsPage = 1;
+    this.fetchExpandedBatchAssets();
+  }
+
+  onExpandedBatchAssetsUsePagination(): void {
+    this.expandedBatchAssetsAllLoaded = false;
+    this.expandedBatchAssetsPage = 1;
+    this.fetchExpandedBatchAssets();
   }
 
   onEditBatch(batch: BatchSummaryDto): void {
@@ -725,6 +973,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           if (this.expandedBatchId === batchToDelete.id) {
             this.expandedBatchId = null;
             this.expandedBatchAssets = [];
+            this.resetExpandedBatchAssetState();
           }
           this.batches = this.batches.filter(b => b.id !== batchToDelete.id);
           this.filteredBatches = this.applyBatchSearch(this.batches);
@@ -734,11 +983,10 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           );
           this.cdr.markForCheck();
         },
-        error: () => {
-          this.toastService.error(
-            this.translateService.instant('warehouseInventory.failedToDeleteBatch'),
-            this.translateService.instant('toast.error')
-          );
+        error: (err: unknown) => {
+          const fallback = this.translateService.instant('warehouseInventory.failedToDeleteBatch');
+          const msg = ErrorHandler.extractAndTranslateErrorMessage(err, fallback, this.translateService);
+          this.toastService.error(msg, this.translateService.instant('toast.error'));
           this.cdr.markForCheck();
         }
       });
@@ -905,7 +1153,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   /**
    * Handle edit modal save
    */
-  onEditSave(data: { detail: UpdateInventoryDetailDto; inventory: UpdateInventoryDto }): void {
+  onEditSave(data: { detail: UpdateInventoryDetailDto; inventory: UpdateInventoryDto; files?: File[]; removedFileIds?: number[] }): void {
     if (!this.currentInventory || !this.selectedDetail) return;
 
     // Store references before clearing
@@ -918,7 +1166,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.currentInventory = undefined;
     this.cdr.markForCheck();
 
-    this.crudService.editInventoryDetail(detailToEdit, inventoryToUpdate, data.detail, data.inventory)
+    this.crudService.editInventoryDetail(detailToEdit, inventoryToUpdate, data.detail, data.inventory, data.files, data.removedFileIds)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (result) => {
@@ -965,7 +1213,8 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.translateService.get(['toast.failedToDelete', 'toast.error']).subscribe(translations => {
-            this.toastService.error(translations['toast.failedToDelete'], translations['toast.error']);
+            const errorMsg = ErrorHandler.extractAndTranslateErrorMessage(error, translations['toast.failedToDelete'], this.translateService);
+            this.toastService.error(errorMsg, translations['toast.error']);
           });
         }
       });
@@ -990,19 +1239,339 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  /**
-   * Export filtered inventory to Excel
-   */
-  exportToExcel(): void {
+  exportDepotToExcel(): void {
     if (this.activeTab === 'batch') {
+      this.exportService.exportBatchSummariesToExcel(this.filteredBatches, this.depoName);
       return;
     }
-    this.exportService.exportInventoryToExcel(
-      this.filteredInventoryDetails,
-      this.depoName,
-      this.activeTab,
-      this.getItemName,
-      this.formatDate
-    );
+
+    if (!this.depoId) return;
+
+    const itemType = this.activeTab === 'ammunition' ? ItemType.Ammunition : ItemType.Explosive;
+
+    this.loading = true;
+    this.cdr.markForCheck();
+
+    this.inventoryService.getWarehouseInventoryDetailsForExport(this.depoId, itemType as 1 | 3)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (allDetails) => {
+          this.loading = false;
+          this.cdr.markForCheck();
+
+          this.exportService.exportInventoryToExcel(
+            allDetails,
+            this.depoName,
+            this.activeTab as 'ammunition' | 'explosive',
+            this.getItemName,
+            this.formatDate,
+            this.activeTab === 'ammunition' || this.activeTab === 'explosive'
+              ? this.getPrimaryPurposeName
+              : undefined
+          );
+        },
+        error: () => {
+          this.loading = false;
+          this.cdr.markForCheck();
+          this.toastService.error('Failed to fetch data for export');
+        }
+      });
+  }
+
+  private unwrapLookupOption<T>(option: DropdownOption<T> | T | null): T | null {
+    if (option == null) {
+      return null;
+    }
+    if (typeof option === 'object' && option !== null && 'value' in option) {
+      return (option as DropdownOption<T>).value as T;
+    }
+    return option as T;
+  }
+
+  onWarehouseImportClick(): void {
+    if (!this.depoId) {
+      this.toastService.warning('Depot not loaded');
+      return;
+    }
+    this.batchExcelImportMode = false;
+    this.batchImportTargetId = null;
+    this.pendingImportFile = null;
+    this.previewData = null;
+    this.showImportModal = true;
+    this.cdr.markForCheck();
+  }
+
+  onExportBatchAssetsExcel(batch: BatchSummaryDto): void {
+    const lang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+    this.batchService.exportAssetsExcel(batch.id, lang)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (blob: Blob) => {
+          const nameSafe = (batch.batchNumber || `batch_${batch.id}`).replace(/[^\w.-]+/g, '_');
+          const fileName = `${nameSafe}_BatchAssets_${new Date().toISOString().slice(0, 10)}.xlsx`;
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = fileName;
+          link.click();
+          window.URL.revokeObjectURL(url);
+          this.translateService.get(['common.exportSuccess', 'toast.success']).pipe(takeUntil(this.destroy$))
+            .subscribe(t => this.toastService.success(t['common.exportSuccess'], t['toast.success']));
+          this.cdr.markForCheck();
+        },
+        error: (err: unknown) => {
+          this.toastService.error(ErrorHandler.extractErrorMessage(err, 'Export failed'));
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  onImportBatchAssetsExcel(batch: BatchSummaryDto): void {
+    if (!this.depoId) {
+      this.toastService.warning('Depot not loaded');
+      return;
+    }
+    this.batchExcelImportMode = true;
+    this.batchImportTargetId = batch.id;
+    this.pendingImportFile = null;
+    this.previewData = null;
+    this.showImportModal = true;
+    this.cdr.markForCheck();
+  }
+
+  /** User dismissed import dialog — clear batch-scoped import context too. */
+  onImportDialogClose(): void {
+    this.pendingImportFile = null;
+    this.showImportModal = false;
+    this.batchExcelImportMode = false;
+    this.batchImportTargetId = null;
+    this.cdr.markForCheck();
+  }
+
+  private hideImportModal(): void {
+    this.showImportModal = false;
+    this.cdr.markForCheck();
+  }
+
+  private clearBatchImportContext(): void {
+    this.batchExcelImportMode = false;
+    this.batchImportTargetId = null;
+  }
+
+  downloadWarehouseTemplate(): void {
+    if (!this.depoId) {
+      this.toastService.warning('Depot not loaded');
+      return;
+    }
+    const lang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+    const service = this.getWarehouseImportService();
+    service
+      .generateImportTemplate(lang, this.depoId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (blob: Blob) => {
+          const fileName =
+            this.activeTab === 'batch'
+              ? `Weapon_Asset_Import_Template_Depot_${this.depoId}.xlsx`
+              : `Inventory_Import_Template_Depot_${this.depoId}.xlsx`;
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = fileName;
+          link.click();
+          window.URL.revokeObjectURL(url);
+          this.toastService.success('Template downloaded successfully');
+          this.cdr.markForCheck();
+        },
+        error: (err: unknown) => {
+          this.toastService.error(ErrorHandler.extractErrorMessage(err, 'Failed to download template'));
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  onWarehouseImportPreview(file: File): void {
+    if (!this.depoId) return;
+    if (this.isPreviewInProgress) {
+      this.toastService.warning('Preview is already in progress. Please wait...');
+      return;
+    }
+    const useBatchExcel =
+      this.batchExcelImportMode && this.batchImportTargetId != null && this.activeTab === 'batch';
+    const batchImportId = this.batchImportTargetId;
+
+    this.previewData = null;
+    this.showPreviewModal = false;
+    this.isPreviewInProgress = true;
+    this.loading = true;
+    this.hideImportModal();
+    this.pendingImportFile = file;
+    this.cdr.markForCheck();
+
+    const lang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+    const preview$ = useBatchExcel && batchImportId != null
+      ? this.batchService.importBatchAssetsPreview(file, lang, batchImportId)
+      : this.getWarehouseImportService().importPreview(file, lang, this.depoId);
+
+    preview$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: APIOperationResponse<ImportResult>) => {
+          this.isPreviewInProgress = false;
+          this.loading = false;
+
+          if (!res?.succeeded || !res.data) {
+            this.previewData = null;
+            this.toastService.error(res?.message || 'Preview failed');
+            this.clearBatchImportContext();
+            this.cdr.markForCheck();
+            return;
+          }
+
+          const preview = mapImportResultToPreviewData(
+            res.data,
+            useBatchExcel && batchImportId != null
+              ? { excludeColumns: ['assetId', 'itemId'], batchImportActions: true }
+              : undefined
+          );
+          if (preview) {
+            this.previewData = preview;
+            this.showPreviewModal = true;
+          }
+          this.cdr.markForCheck();
+        },
+        error: (error: unknown) => {
+          this.isPreviewInProgress = false;
+          this.loading = false;
+          this.previewData = null;
+          this.clearBatchImportContext();
+          this.toastService.error(`Preview failed: ${ErrorHandler.extractErrorMessage(error, 'Unknown error')}`);
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  onWarehouseImportDirect(file: File): void {
+    if (!this.depoId) return;
+    if (this.isImportInProgress) {
+      this.toastService.warning('Import is already in progress. Please wait...');
+      return;
+    }
+    const useBatchExcel =
+      this.batchExcelImportMode && this.batchImportTargetId != null && this.activeTab === 'batch';
+    const batchImportId = this.batchImportTargetId;
+
+    this.isImportInProgress = true;
+    this.loading = true;
+    this.hideImportModal();
+    this.cdr.markForCheck();
+
+    const lang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+    const import$ = useBatchExcel && batchImportId != null
+      ? this.batchService.importBatchAssets(file, lang, batchImportId)
+      : this.getWarehouseImportService().importData(file, lang, this.depoId);
+
+    import$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: APIOperationResponse<ImportResult>) => {
+          this.isImportInProgress = false;
+          this.loading = false;
+          this.clearBatchImportContext();
+          if (res?.succeeded && res.data) {
+            const result = res.data;
+            this.importExportService.handleImportResult({
+              successCount: result.successCount ?? result.successfulRecords?.length ?? 0,
+              failureCount: result.errors?.length ?? 0,
+              errors: result.errors || [],
+              message: res?.message
+            });
+            this.loadTabContent();
+          } else {
+            this.toastService.error(res?.message || 'Import failed');
+          }
+          this.cdr.markForCheck();
+        },
+        error: (error: unknown) => {
+          this.isImportInProgress = false;
+          this.loading = false;
+          this.clearBatchImportContext();
+          this.toastService.error(`Import failed: ${ErrorHandler.extractErrorMessage(error, 'Unknown error')}`);
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  onWarehousePreviewConfirmed(_rows: unknown[]): void {
+    this.showPreviewModal = false;
+    this.previewData = null;
+    if (!this.pendingImportFile || !this.depoId) {
+      this.toastService.error('Import file not found. Please try uploading again.');
+      this.clearBatchImportContext();
+      this.cdr.markForCheck();
+      return;
+    }
+    if (this.isImportInProgress) {
+      this.toastService.warning('Import is already in progress. Please wait...');
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const useBatchExcel =
+      this.batchExcelImportMode && this.batchImportTargetId != null && this.activeTab === 'batch';
+    const batchImportId = this.batchImportTargetId;
+
+    this.isImportInProgress = true;
+    this.loading = true;
+    const file = this.pendingImportFile;
+    const lang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
+    const import$ = useBatchExcel && batchImportId != null
+      ? this.batchService.importBatchAssets(file, lang, batchImportId)
+      : this.getWarehouseImportService().importData(file, lang, this.depoId);
+
+    import$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res: APIOperationResponse<ImportResult>) => {
+          this.isImportInProgress = false;
+          this.loading = false;
+          this.pendingImportFile = null;
+          this.clearBatchImportContext();
+          if (res?.succeeded && res.data) {
+            const result = res.data;
+            this.importExportService.handleImportResult({
+              successCount: result.successCount ?? result.successfulRecords?.length ?? 0,
+              failureCount: result.errors?.length ?? 0,
+              errors: result.errors || [],
+              message: res?.message
+            });
+            this.loadTabContent();
+          } else {
+            this.toastService.error(res?.message || 'Import failed');
+          }
+          this.cdr.markForCheck();
+        },
+        error: (error: unknown) => {
+          this.isImportInProgress = false;
+          this.loading = false;
+          this.pendingImportFile = null;
+          this.clearBatchImportContext();
+          this.toastService.error(`Import failed: ${ErrorHandler.extractErrorMessage(error, 'Unknown error')}`);
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  onWarehousePreviewCancelled(): void {
+    this.showPreviewModal = false;
+    this.previewData = null;
+    this.pendingImportFile = null;
+    this.isPreviewInProgress = false;
+    this.clearBatchImportContext();
+    this.cdr.markForCheck();
+  }
+
+  private getWarehouseImportService(): IImportableService {
+    return this.activeTab === 'batch' ? this.assetService : this.inventoryService;
   }
 }

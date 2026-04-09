@@ -40,3 +40,14 @@
   border-bottom-color: var(--color-brand) !important;
   font-weight: 600;
 }
+
+/* Desktop name column: wrap long labels without changing overall table layout. */
+.asset-table__name-col {
+  max-width: min(40rem, 55vw);
+  min-width: 0;
+}
+
+.asset-table__name-text {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}

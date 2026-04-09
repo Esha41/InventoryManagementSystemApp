@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output, signal, ViewChild, ElementRef, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, Upload, FileText, AlertCircle, Check, X } from 'lucide-angular';
+import { LucideAngularModule, Download, Upload, FileText, AlertCircle, Check, X } from 'lucide-angular';
 import { ButtonComponent } from '../button/button.component';
 
 @Component({
@@ -13,8 +13,13 @@ import { ButtonComponent } from '../button/button.component';
 })
 export class ImportDialogComponent implements OnChanges {
     @Input() isOpen = false;
-    @Input() title = 'Import Data';
+    /** When set, shown as dialog heading (use translated string from parent). */
+    @Input() title = '';
     @Input() entityName = 'Items';
+    /** Hide depot-level template download (e.g. batch Excel uses export-as-template instead). */
+    @Input() hideTemplateDownload = false;
+    /** When true, shows a short note that * marks required columns (e.g. employee import). */
+    @Input() showRequiredFieldLegend = false;
     @Output() close = new EventEmitter<void>();
     @Output() import = new EventEmitter<File>();
     @Output() preview = new EventEmitter<File>();  // New preview event
@@ -27,6 +32,7 @@ export class ImportDialogComponent implements OnChanges {
     dragOver = signal(false);
 
     readonly Upload = Upload;
+    readonly Download = Download;
     readonly FileText = FileText;
     readonly AlertCircle = AlertCircle;
     readonly Check = Check;

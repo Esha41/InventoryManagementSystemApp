@@ -261,6 +261,33 @@
       <app-delegation-list></app-delegation-list>
     </div>
 
+    <!-- Onboarding Tour Section -->
+    <div *ngIf="!loading && currentUser"
+      class="bg-[var(--color-background)] rounded-xl shadow-custom-lg border-2 border-[var(--color-border)] overflow-hidden">
+      <div class="px-6 py-4 border-b border-[var(--color-border)] bg-gradient-to-r from-[var(--color-accent)]/5 to-transparent">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-[var(--color-accent)]/10 flex items-center justify-center">
+            <lucide-angular [img]="RotateCcw" class="h-5 w-5 text-[var(--color-accent)]"></lucide-angular>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-[var(--color-text)]">
+              {{ 'onboarding.replay' | translate }}
+            </h3>
+            <p class="text-sm text-[var(--color-text-muted)]">
+              {{ 'onboarding.replayDescription' | translate }}
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="px-6 py-6">
+        <button (click)="replayTour()"
+          class="flex items-center gap-3 px-4 py-3 bg-[var(--color-background-active)] hover:bg-[var(--color-background-hover)] text-[var(--color-text)] rounded-lg transition-all border border-[var(--color-border)] shadow-custom-sm hover:shadow-custom-md">
+          <lucide-angular [img]="RotateCcw" class="h-5 w-5"></lucide-angular>
+          <span class="font-semibold">{{ 'onboarding.replay' | translate }}</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Security Section -->
     <div *ngIf="!loading && currentUser && !currentUser.isLdapUser"
       class="bg-[var(--color-background)] rounded-xl shadow-custom-lg border-2 border-[var(--color-border)] overflow-hidden">

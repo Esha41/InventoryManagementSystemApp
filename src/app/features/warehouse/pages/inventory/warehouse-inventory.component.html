@@ -28,8 +28,7 @@
     </div>
 
     <div class="page-container">
-      <!-- Page Title -->
-      <!-- Page Title -->
+      <!-- Page Title + actions -->
       <div class="mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0">
         <div>
           <h1 class="text-3xl font-bold text-[var(--color-text)] mb-2">
@@ -39,19 +38,61 @@
             {{ 'warehouseInventory.totalItems' | translate }}: {{ activeTab === 'batch' ? filteredBatches.length : filteredInventoryDetails.length }}
           </p>
         </div>
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
-          <!-- Add Inventory Button (for Ammunition & Explosives) -->
+        <div
+          class="flex flex-col sm:flex-row sm:flex-wrap sm:justify-end items-stretch sm:items-center gap-3 w-full md:w-auto md:shrink-0">
+          <button type="button" *appHasPermission="warehouseExportPerms" appPermissionMode="any"
+            (click)="exportDepotToExcel()"
+            class="flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-white bg-[var(--color-success)] hover:opacity-90 transition-colors shadow-sm w-full sm:w-auto text-sm font-medium"
+            [class.flex-row-reverse]="isRTL">
+            <lucide-angular [img]="Upload" class="w-4 h-4 flex-shrink-0"></lucide-angular>
+            <span>{{ 'common.exportToExcel' | translate }}</span>
+          </button>
+
+          <ng-container *ngIf="activeTab !== 'batch'">
+            <button type="button" *appHasPermission="warehouseInventoryImportPerms" appPermissionMode="any"
+              (click)="onWarehouseImportClick()"
+              class="flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm w-full sm:w-auto text-sm font-medium"
+              [class.flex-row-reverse]="isRTL">
+              <lucide-angular [img]="Download" class="w-4 h-4 flex-shrink-0"></lucide-angular>
+              <span>{{ 'common.import' | translate }}</span>
+            </button>
+            <button type="button" *appHasPermission="warehouseInventoryImportPerms" appPermissionMode="any"
+              (click)="downloadWarehouseTemplate()"
+              class="flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-white bg-gray-600 hover:bg-gray-700 transition-colors shadow-sm w-full sm:w-auto text-sm font-medium"
+              [class.flex-row-reverse]="isRTL">
+              <lucide-angular [img]="FileText" class="w-4 h-4 flex-shrink-0"></lucide-angular>
+              <span>{{ 'common.downloadTemplate' | translate }}</span>
+            </button>
+          </ng-container>
+
+          <ng-container *ngIf="activeTab === 'batch'">
+            <button type="button" *appHasPermission="warehouseAssetImportPerms" appPermissionMode="any"
+              (click)="onWarehouseImportClick()"
+              class="flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm w-full sm:w-auto text-sm font-medium"
+              [class.flex-row-reverse]="isRTL">
+              <lucide-angular [img]="Download" class="w-4 h-4 flex-shrink-0"></lucide-angular>
+              <span>{{ 'common.import' | translate }}</span>
+            </button>
+            <button type="button" *appHasPermission="warehouseAssetImportPerms" appPermissionMode="any"
+              (click)="downloadWarehouseTemplate()"
+              class="flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-white bg-gray-600 hover:bg-gray-700 transition-colors shadow-sm w-full sm:w-auto text-sm font-medium"
+              [class.flex-row-reverse]="isRTL">
+              <lucide-angular [img]="FileText" class="w-4 h-4 flex-shrink-0"></lucide-angular>
+              <span>{{ 'common.downloadTemplate' | translate }}</span>
+            </button>
+          </ng-container>
+
+          <!-- Primary: Add Inventory / Add Weapon — top-right on desktop, first on stacked mobile -->
           <ng-container *ngIf="activeTab !== 'batch'">
             <button *appHasPermission="'Inventory.Create'" (click)="onAddInventory()"
-              class="px-6 py-3 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors shadow-sm w-full sm:w-auto justify-center flex">
+              class="order-first sm:order-last px-6 py-3 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors shadow-sm w-full sm:w-auto justify-center flex">
               + {{ 'warehouseInventory.addInventory' | translate }}
             </button>
           </ng-container>
 
-          <!-- Add Weapon Asset Button (for Weapons) -->
           <ng-container *ngIf="activeTab === 'batch'">
             <button *appHasPermission="'Asset.Create'" (click)="onAddWeaponAsset()"
-              class="px-6 py-3 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors shadow-sm w-full sm:w-auto justify-center flex">
+              class="order-first sm:order-last px-6 py-3 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors shadow-sm w-full sm:w-auto justify-center flex">
               + {{ 'warehouseInventory.addWeaponAsset' | translate }}
             </button>
           </ng-container>
@@ -115,8 +156,27 @@
         </div>
       </div>
 
-      <!-- Search Bar -->
-      <app-inventory-filters [searchControl]="searchControl" (searchTriggered)="onSearch()">
+      <!-- Filters: search + supplier / manufacturer (inventory tabs only) -->
+      <app-inventory-filters [searchControl]="searchControl"
+        [searchPlaceholderKey]="activeTab === 'batch' ? 'warehouseInventory.searchPlaceholderBatch' : 'warehouseInventory.searchPlaceholder'"
+        [showSupplierManufacturerFilters]="activeTab !== 'batch'"
+        [supplierFilterControl]="supplierFilterControl" [manufacturerFilterControl]="manufacturerFilterControl"
+        [primaryPurposeFilterControl]="primaryPurposeFilterControl"
+        [suppliers]="suppliers" [manufacturers]="manufacturers" [primaryPurposes]="primaryPurposes"
+        [supplierOptionLabelFn]="supplierLookupLabel" [manufacturerOptionLabelFn]="manufacturerLookupLabel"
+        [primaryPurposeOptionLabelFn]="primaryPurposeLookupLabel"
+        [showBatchFilters]="activeTab === 'batch'"
+        [batchItems]="weaponItems"
+        [batchItemFilterControl]="batchItemFilterControl"
+        [batchSupplierFilterControl]="batchSupplierFilterControl"
+        [batchManufacturerFilterControl]="batchManufacturerFilterControl"
+        [batchPrimaryPurposeFilterControl]="batchPrimaryPurposeFilterControl"
+        [batchItemOptionLabelFn]="batchLookupLabel"
+        [batchSupplierOptionLabelFn]="batchLookupLabel"
+        [batchManufacturerOptionLabelFn]="batchLookupLabel"
+        [batchPrimaryPurposeOptionLabelFn]="batchLookupLabel"
+        (searchTriggered)="onSearch()" (clearFilters)="onClearInventoryFilters()"
+        (applyBatchFilters)="onApplyBatchFilters()">
       </app-inventory-filters>
 
       <!-- Loading State -->
@@ -141,17 +201,81 @@
               </div>
               <div class="flex items-center justify-end gap-1 flex-shrink-0" (click)="$event.stopPropagation()">
                 <button (click)="onBatchRowClick(batch)" class="p-1.5 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 rounded-lg" [title]="'warehouseInventory.viewAssets' | translate"><lucide-angular [img]="Eye" class="h-4 w-4"></lucide-angular></button>
-                <button (click)="onEditBatch(batch)" class="p-1.5 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg" [title]="'warehouseInventory.edit' | translate"><lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular></button>
+                <button (click)="$event.stopPropagation(); onEditBatch(batch)" class="p-1.5 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg" [title]="'warehouseInventory.edit' | translate"><lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular></button>
                 <button (click)="onDeleteBatch(batch)" class="p-1.5 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg" [title]="'common.delete' | translate"><lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular></button>
               </div>
             </div>
             <!-- Expanded assets on mobile -->
             <div *ngIf="expandedBatchId === batch.id" class="border-t border-[var(--color-border-muted)] pt-3 mt-2">
               <div *ngIf="loadingBatchAssets" class="py-4 text-center text-[var(--color-text-muted)] text-sm">{{ 'common.loading' | translate }}</div>
-              <div *ngIf="!loadingBatchAssets && expandedBatchAssets.length === 0" class="py-2 text-[var(--color-text-muted)] text-sm">{{ 'warehouseInventory.editBatch.noAssets' | translate }}</div>
-              <div *ngIf="!loadingBatchAssets && expandedBatchAssets.length > 0" class="space-y-2">
-                <div *ngFor="let asset of expandedBatchAssets; trackBy: trackById" class="text-xs py-1 border-b border-[var(--color-border-muted)] last:border-0">
-                  {{ getAssetItemName(asset) }} · {{ asset.serialNumber || '-' }}
+              <div *ngIf="!loadingBatchAssets" class="space-y-3">
+                <div class="flex flex-wrap gap-2 justify-end" (click)="$event.stopPropagation()">
+                  <button type="button" *appHasPermission="warehouseExportPerms" appPermissionMode="any"
+                    (click)="onExportBatchAssetsExcel(batch)"
+                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white bg-[var(--color-success)] hover:opacity-90 transition-colors">
+                    <lucide-angular [img]="Download" class="h-3.5 w-3.5 shrink-0"></lucide-angular>
+                    {{ 'warehouseInventory.exportBatchAssetsExcel' | translate }}
+                  </button>
+                  <button type="button" *appHasPermission="warehouseAssetImportPerms" appPermissionMode="any"
+                    (click)="onImportBatchAssetsExcel(batch)"
+                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                    <lucide-angular [img]="Upload" class="h-3.5 w-3.5 shrink-0"></lucide-angular>
+                    {{ 'warehouseInventory.importBatchAssetsExcel' | translate }}
+                  </button>
+                </div>
+                <div *ngIf="expandedBatchAssetTotalCount === 0" class="py-2 text-[var(--color-text-muted)] text-sm">
+                  {{ 'editBatch.noAssets' | translate }}
+                </div>
+                <div *ngFor="let asset of expandedBatchAssets; trackBy: trackById"
+                  class="text-xs py-2 border-b border-[var(--color-border-muted)] last:border-0 space-y-1">
+                  <div class="font-medium text-[var(--color-text)]">{{ getAssetItemName(asset) }}</div>
+                  <div class="text-[var(--color-text-muted)] space-y-0.5 break-words">
+                    <div><span class="font-medium text-[var(--color-text)]">{{ 'warehouseInventory.serialNumber' | translate }}:</span> {{ asset.serialNumber || '-' }}</div>
+                    <div><span class="font-medium text-[var(--color-text)]">{{ 'warehouseInventory.rfidTag' | translate }}:</span> {{ asset.rfid || '-' }}</div>
+                    <div><span class="font-medium text-[var(--color-text)]">{{ 'warehouseInventory.status' | translate }}:</span> {{ getAssetStatusLabel(asset) }}</div>
+                    <div><span class="font-medium text-[var(--color-text)]">{{ 'warehouseInventory.purchaseDate' | translate }}:</span> {{ formatDate(asset.purchaseDate) }}</div>
+                    <div><span class="font-medium text-[var(--color-text)]">{{ 'warehouseInventory.warrantyExpiry' | translate }}:</span> {{ formatDate(asset.warrantyExpiryDate) }}</div>
+                    <div><span class="font-medium text-[var(--color-text)]">{{ 'warehouseInventory.purchasePrice' | translate }}:</span> {{ formatAssetPurchasePrice(asset.purchasePrice) }}</div>
+                    <div><span class="font-medium text-[var(--color-text)]">{{ 'warehouseInventory.department' | translate }}:</span> {{ getAssetDepartmentLabel(asset) }}</div>
+                    <div><span class="font-medium text-[var(--color-text)]">{{ 'warehouseInventory.assignee' | translate }}:</span> {{ getAssetCustodianLabel(asset) }}</div>
+                    <div><span class="font-medium text-[var(--color-text)]">{{ 'assetDetails.supplier' | translate }}:</span> {{ getAssetSupplierLabel(asset) }}</div>
+                    <div><span class="font-medium text-[var(--color-text)]">{{ 'assetDetails.manufacturer' | translate }}:</span> {{ getAssetManufacturerLabel(asset) }}</div>
+                    <div><span class="font-medium text-[var(--color-text)]">{{ 'assetDetails.primaryPurpose' | translate }}:</span> {{ getAssetPrimaryPurposeLabel(asset) }}</div>
+                    <div *ngIf="asset.notes" class="pt-1"><span class="font-medium text-[var(--color-text)]">{{ 'warehouseInventory.assetNotes' | translate }}:</span> {{ asset.notes }}</div>
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="!loadingBatchAssets && expandedBatchAssetTotalCount > 0"
+                class="mt-3 pt-3 border-t border-[var(--color-border-muted)] flex flex-col gap-3">
+                <div *ngIf="!expandedBatchAssetsAllLoaded" class="flex flex-wrap items-center gap-2 justify-between">
+                  <app-rows-per-page
+                    [rowsPerPage]="expandedBatchAssetsPageSize"
+                    [totalItems]="expandedBatchAssetTotalCount"
+                    [visibleItems]="expandedBatchAssets.length"
+                    [optionValues]="batchAssetsPageSizeOptions"
+                    (rowsPerPageChange)="onExpandedBatchAssetsPageSizeChange($event)">
+                  </app-rows-per-page>
+                  <button type="button"
+                    class="text-xs font-medium text-[var(--color-brand)] hover:underline"
+                    (click)="$event.stopPropagation(); onExpandedBatchAssetsLoadAll()">
+                    {{ 'warehouseInventory.showAllBatchAssets' | translate }}
+                  </button>
+                </div>
+                <div *ngIf="expandedBatchAssetsAllLoaded" class="text-xs text-[var(--color-text-muted)] flex flex-wrap items-center gap-2">
+                  <span>{{ 'warehouseInventory.showingAllBatchAssets' | translate: { count: expandedBatchAssetTotalCount } }}</span>
+                  <button type="button" class="font-medium text-[var(--color-brand)] hover:underline"
+                    (click)="$event.stopPropagation(); onExpandedBatchAssetsUsePagination()">
+                    {{ 'warehouseInventory.usePagedBatchAssets' | translate }}
+                  </button>
+                </div>
+                <div *ngIf="!expandedBatchAssetsAllLoaded && expandedBatchAssetsTotalPages > 1"
+                  class="flex flex-wrap items-center justify-center gap-2">
+                  <app-pagination [currentPage]="expandedBatchAssetsPage" [totalPages]="expandedBatchAssetsTotalPages"
+                    (pageChange)="onExpandedBatchAssetsPageChange($event)">
+                  </app-pagination>
+                  <span class="text-xs text-[var(--color-text-muted)] whitespace-nowrap">
+                    {{ expandedBatchAssetsPage }} {{ 'common.of' | translate }} {{ expandedBatchAssetsTotalPages }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -164,7 +288,7 @@
             class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] flex flex-col gap-3 hover:shadow-md transition-all">
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0 flex-1">
-                <h4 class="font-bold text-[var(--color-text)] text-sm md:text-base mb-1">{{ getItemName(item) }}</h4>
+                <h4 class="font-bold text-[var(--color-text)] text-sm md:text-base mb-1 break-words min-w-0">{{ getItemName(item) }}</h4>
                 <span
                   class="inline-flex px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-600 border border-gray-200 gap-1">
                   <span class="font-semibold">{{ 'warehouseInventory.lot' | translate }}:</span>
@@ -188,6 +312,10 @@
             </div>
 
             <div class="grid grid-cols-2 gap-2 text-xs border-t border-[var(--color-border-muted)] pt-3">
+              <div *ngIf="activeTab === 'ammunition' || activeTab === 'explosive'" class="col-span-2">
+                <span class="text-[var(--color-text-muted)] block mb-1 text-xs md:text-sm">{{ 'warehouseInventory.primaryPurpose' | translate }}</span>
+                <span class="font-medium text-[var(--color-text)] text-sm md:text-base block truncate">{{ getPrimaryPurposeName(item) }}</span>
+              </div>
               <div>
                 <span class="text-[var(--color-text-muted)] block mb-1 text-xs md:text-sm">{{ 'addInventory.quantity' |
                   translate }}</span>
@@ -209,16 +337,37 @@
           <app-batch-table *ngIf="activeTab === 'batch'" [batches]="paginatedBatches"
             [expandedBatchId]="expandedBatchId" [expandedBatchAssets]="expandedBatchAssets"
             [loadingBatchAssets]="loadingBatchAssets"
-            [getAssetItemName]="getAssetItemName" [getAssetItemNo]="getAssetItemNo"
+            [batchAssetsPage]="expandedBatchAssetsPage"
+            [batchAssetsPageSize]="expandedBatchAssetsPageSize"
+            [batchAssetsTotalPages]="expandedBatchAssetsTotalPages"
+            [batchAssetsTotalCount]="expandedBatchAssetTotalCount"
+            [batchAssetsAllLoaded]="expandedBatchAssetsAllLoaded"
+            [batchAssetsPageSizeOptions]="batchAssetsPageSizeOptions"
+            [getAssetItemName]="getAssetItemName"
             [getAssetStatusLabel]="getAssetStatusLabel" [formatDate]="formatDate"
+            [getAssetDepartmentLabel]="getAssetDepartmentLabel" [getAssetCustodianLabel]="getAssetCustodianLabel"
+            [getAssetSupplierLabel]="getAssetSupplierLabel" [getAssetManufacturerLabel]="getAssetManufacturerLabel"
+            [getAssetPrimaryPurposeLabel]="getAssetPrimaryPurposeLabel"
+            [formatAssetPurchasePrice]="formatAssetPurchasePrice" [truncateAssetNotes]="truncateAssetNotes"
+            [batchAssetExcelExportPerms]="warehouseExportPerms"
+            [batchAssetExcelImportPerms]="warehouseAssetImportPerms"
             [sortColumn]="batchSortColumn" [sortDirection]="batchSortDirection"
             (rowClick)="onBatchRowClick($event)" (editBatch)="onEditBatch($event)" (deleteBatch)="onDeleteBatch($event)"
-            (sortChange)="onBatchSort($event)">
+            (exportBatchAssetsExcel)="onExportBatchAssetsExcel($event)"
+            (importBatchAssetsExcel)="onImportBatchAssetsExcel($event)"
+            (sortChange)="onBatchSort($event)"
+            (batchAssetsPageChange)="onExpandedBatchAssetsPageChange($event)"
+            (batchAssetsPageSizeChange)="onExpandedBatchAssetsPageSizeChange($event)"
+            (batchAssetsLoadAll)="onExpandedBatchAssetsLoadAll()"
+            (batchAssetsUsePagination)="onExpandedBatchAssetsUsePagination()">
           </app-batch-table>
 
           <!-- Inventory Items Table (Ammunition & Explosives) -->
           <app-inventory-table *ngIf="activeTab !== 'batch'" [items]="paginatedItems"
             [isStaticItem]="isStaticItem.bind(this)" [getItemName]="getItemName" [getSupplierName]="getSupplierName"
+            [getManufacturerName]="getManufacturerName"
+            [showPrimaryPurposeColumn]="activeTab === 'ammunition' || activeTab === 'explosive'"
+            [getPrimaryPurposeName]="getPrimaryPurposeName"
             [formatNumber]="formatNumber" [formatDate]="formatDate"
             [sortColumn]="inventorySortColumn" [sortDirection]="inventorySortDirection"
             (editItem)="onEditItem($event)"
@@ -292,5 +441,18 @@
     [cancelText]="'common.cancel' | translate" confirmVariant="danger" (confirmed)="onDeleteAssetConfirm()"
     (cancelled)="onDeleteAssetCancel()">
   </app-confirm-dialog>
+
+  <app-import-dialog [isOpen]="showImportModal" [entityName]="'warehouse-inventory'"
+    [title]="(batchExcelImportMode ? 'warehouseInventory.importBatchAssetsTitle' : 'common.import') | translate"
+    [hideTemplateDownload]="batchExcelImportMode"
+    (close)="onImportDialogClose()"
+    (preview)="onWarehouseImportPreview($event)" (import)="onWarehouseImportDirect($event)"
+    (downloadTemplate)="downloadWarehouseTemplate()">
+  </app-import-dialog>
+
+  <app-import-preview-dialog *ngIf="showPreviewModal && previewData" [previewData]="previewData"
+    [assetType]="previewImportAssetType"
+    (confirm)="onWarehousePreviewConfirmed($event)" (cancel)="onWarehousePreviewCancelled()">
+  </app-import-preview-dialog>
 
   </ng-container>

@@ -44,7 +44,11 @@ import { LucideAngularModule, X } from 'lucide-angular';
           </div>
 
           <!-- Body -->
-          <div class="p-6" [class.max-h-[60vh]]="scrollable" [class.overflow-y-auto]="scrollable">
+          <div
+            class="p-6"
+            [class.overflow-y-auto]="scrollable"
+            [style.max-height]="scrollable ? (bodyMaxHeight || '60vh') : null"
+          >
             <ng-content></ng-content>
           </div>
 
@@ -65,6 +69,8 @@ export class ModalComponent {
   @Input() showCloseButton = true;
   @Input() showFooter = true;
   @Input() scrollable = true;
+  /** When scrollable, cap body height (e.g. min(78vh, 820px)). Defaults to 60vh. */
+  @Input() bodyMaxHeight: string | null = null;
   @Input() closeOnBackdrop = true;
   
   @Output() closed = new EventEmitter<void>();

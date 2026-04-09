@@ -38,6 +38,35 @@ export class WarehouseInventoryFormatterService {
   }
 
   /**
+   * Get manufacturer name
+   */
+  getManufacturerName(detail: InventoryDetailDto): string {
+    const lang = getCurrentLang(this.translateService);
+    return getLocalizedName(detail.manufacturer, lang) || '-';
+  }
+
+  /**
+   * Lot-level primary purpose (from API navigation or resolved via item.primaryPurposes).
+   */
+  getPrimaryPurposeName(detail: InventoryDetailDto): string {
+    const lang = getCurrentLang(this.translateService);
+    if (detail.primaryPurpos) {
+      const label = getLocalizedName(detail.primaryPurpos, lang);
+      if (label) {
+        return label;
+      }
+    }
+    const id = detail.primaryPurposId;
+    if (id != null && detail.item?.primaryPurposes?.length) {
+      const match = detail.item.primaryPurposes.find(p => p.id === id);
+      if (match) {
+        return getLocalizedName(match, lang) || '-';
+      }
+    }
+    return '-';
+  }
+
+  /**
    * Get HCC name
    */
   getHccName(detail: InventoryDetailDto): string {
@@ -53,13 +82,6 @@ export class WarehouseInventoryFormatterService {
     const lang = getCurrentLang(this.translateService);
     const localized = getLocalizedName(asset.item, lang);
     return localized || asset.item?.name || 'Unknown Item';
-  }
-
-  /**
-   * Get asset item number
-   */
-  getAssetItemNo(asset: AssetDto): string {
-    return asset.item?.itemNo || '-';
   }
 
   /**
@@ -94,6 +116,49 @@ export class WarehouseInventoryFormatterService {
   getDeleteAssetMessage(asset: AssetDto | null | undefined): string {
     if (!asset) return '';
     return `${this.getAssetItemName(asset)} (${asset.serialNumber || 'No Serial'})`;
+  }
+
+  getAssetDepartmentLabel(asset: AssetDto | null | undefined): string {
+    if (!asset?.department) return '-';
+    const lang = getCurrentLang(this.translateService);
+    return getLocalizedName(asset.department, lang) || '-';
+  }
+
+  getAssetCustodianLabel(asset: AssetDto | null | undefined): string {
+    if (!asset?.custodian) return '-';
+    const lang = getCurrentLang(this.translateService);
+    const c = asset.custodian;
+    return (lang === 'ar' ? (c.nameAr || c.nameEn) : (c.nameEn || c.nameAr)) || c.militaryId || '-';
+  }
+
+  getAssetSupplierLabel(asset: AssetDto | null | undefined): string {
+    if (!asset?.supplier) return '-';
+    const lang = getCurrentLang(this.translateService);
+    return getLocalizedName(asset.supplier, lang) || '-';
+  }
+
+  getAssetManufacturerLabel(asset: AssetDto | null | undefined): string {
+    if (!asset?.manufacturer) return '-';
+    const lang = getCurrentLang(this.translateService);
+    return getLocalizedName(asset.manufacturer, lang) || '-';
+  }
+
+  getAssetPrimaryPurposeLabel(asset: AssetDto | null | undefined): string {
+    if (!asset?.primaryPurpos) return '-';
+    const lang = getCurrentLang(this.translateService);
+    return getLocalizedName(asset.primaryPurpos, lang) || '-';
+  }
+
+  formatAssetPurchasePrice(price?: number | null): string {
+    if (price == null || Number.isNaN(Number(price))) return '-';
+    return formatNumberUtil(Number(price));
+  }
+
+  truncateText(text: string | null | undefined, maxLen: number): string {
+    if (!text) return '-';
+    const t = text.trim();
+    if (!t) return '-';
+    return t.length <= maxLen ? t : `${t.slice(0, maxLen)}…`;
   }
 }
 

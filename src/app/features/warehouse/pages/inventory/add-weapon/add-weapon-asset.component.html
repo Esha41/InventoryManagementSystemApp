@@ -1,29 +1,27 @@
 <div class="page-wrapper">
-    <!-- Header -->
+    <!-- Header: back (start) · title (end / top-right in LTR) -->
     <div class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
         <div class="page-container py-4">
-            <div class="flex items-center space-x-4">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <button (click)="onCancel()"
-                    class="flex items-center space-x-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
+                    class="flex items-center gap-2 shrink-0 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors self-start">
                     <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
                     <span class="font-medium">{{ 'addWeaponAsset.backToInventory' | translate }}</span>
                 </button>
+                <div class="sm:text-end sm:max-w-2xl min-w-0">
+                    <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)] mb-2 break-words">
+                        {{ 'addWeaponAsset.titlePrefix' | translate }} {{ 'addWeaponAsset.titleTo' | translate }} {{ warehouseName }}
+                    </h1>
+                    <p class="text-sm text-[var(--color-text-muted)]">
+                        {{ 'addWeaponAsset.subtitle' | translate }}
+                    </p>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Main Content -->
-    <div class="page-container">
-        <!-- Page Title -->
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-[var(--color-text)] mb-2">
-                {{ 'addWeaponAsset.titlePrefix' | translate }} {{ 'addWeaponAsset.titleTo' | translate }} {{ warehouseName }}
-            </h1>
-            <p class="text-sm text-[var(--color-text-muted)]">
-                {{ 'addWeaponAsset.subtitle' | translate }}
-            </p>
-        </div>
-
+    <div class="page-container pt-6">
         <!-- Loading State -->
         <app-loading-state *ngIf="loading" size="lg" [fullPage]="true">
         </app-loading-state>
@@ -67,6 +65,7 @@
 
         <form *ngIf="!loading && inputMode === 'single'" [formGroup]="assetForm" (ngSubmit)="onSubmit()"
             class="space-y-6">
+
             <!-- Weapon Assets Card -->
             <div
                 class="bg-[var(--color-background)] rounded-lg shadow-custom-sm border-2 border-[var(--color-border)] p-6">
@@ -101,7 +100,7 @@
                                         class="text-[var(--color-error)]">*</span>
                                 </label>
                                 <app-dropdown class="w-full" formControlName="itemId"
-                                    (selectionChange)="onFieldChange('itemId', i)" [options]="availableWeapons"
+                                    (selectionChange)="onWeaponSelected(i); onFieldChange('itemId', i)" [options]="availableWeapons"
                                     optionValue="id" [optionLabelFn]="weaponOptionLabel" [placeholderSelectable]="false"
                                     [placeholderValue]="null" [error]="isFieldInvalid('itemId', i)"
                                     placeholder="{{ 'addWeaponAsset.selectWeapon' | translate }}">
@@ -125,6 +124,41 @@
                                 <p *ngIf="isFieldInvalid('batchNumber', i)" class="mt-1 text-sm text-[var(--color-error)]">
                                     {{ getFieldError('batchNumber', i) || ('addWeaponAsset.required' | translate) }}
                                 </p>
+                            </div>
+
+                            <!-- Supplier / manufacturer / primary purpose (optional) -->
+                            <div>
+                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                    {{ 'addWeaponAsset.supplier' | translate }}
+                                </label>
+                                <app-dropdown class="w-full" formControlName="supplierId"
+                                    [options]="suppliers" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                                    [placeholderSelectable]="true"
+                                    (selectionChange)="onFieldChange('supplierId', i)"
+                                    placeholder="{{ 'addWeaponAsset.selectSupplier' | translate }}">
+                                </app-dropdown>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                    {{ 'addWeaponAsset.manufacturer' | translate }}
+                                </label>
+                                <app-dropdown class="w-full" formControlName="manufacturerId"
+                                    [options]="manufacturers" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                                    [placeholderSelectable]="true"
+                                    (selectionChange)="onFieldChange('manufacturerId', i)"
+                                    placeholder="{{ 'addWeaponAsset.selectManufacturer' | translate }}">
+                                </app-dropdown>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                    {{ 'addWeaponAsset.primaryPurpose' | translate }}
+                                </label>
+                                <app-dropdown class="w-full" formControlName="primaryPurposId"
+                                    [options]="getPrimaryPurposeOptionsForRow(i)" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                                    [placeholderSelectable]="true"
+                                    (selectionChange)="onFieldChange('primaryPurposId', i)"
+                                    placeholder="{{ 'addWeaponAsset.selectPrimaryPurpose' | translate }}">
+                                </app-dropdown>
                             </div>
 
                             <!-- Identification Details Section -->
@@ -165,41 +199,12 @@
                                 </p>
                             </div>
 
-                            <!-- Asset Tag -->
-                            <div>
-                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
-                                    {{ 'addWeaponAsset.assetTag' | translate }}
-                                </label>
-                                <input type="text" formControlName="assetTag" (input)="onFieldChange('assetTag', i)"
-                                    class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
-                                    [class.border-[var(--color-error)]]="isFieldInvalid('assetTag', i)"
-                                    [placeholder]="'addWeaponAsset.enterAssetTag' | translate">
-                                <p *ngIf="isFieldInvalid('assetTag', i)" class="mt-1 text-sm text-[var(--color-error)]">
-                                    {{ getFieldError('assetTag', i) }}
-                                </p>
-                            </div>
-
-                            <!-- Additional Details Section -->
+                            <!-- Additional Details Section (per-asset) -->
                             <div class="md:col-span-2 mt-4 mb-2">
                                 <h4
                                     class="text-sm font-semibold text-[var(--color-text)] uppercase tracking-wide border-b border-[var(--color-border)] pb-2">
                                     {{ 'addWeaponAsset.additionalDetails' | translate }}
                                 </h4>
-                            </div>
-
-                            <!-- Condition -->
-                            <div>
-                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
-                                    {{ 'addWeaponAsset.condition' | translate }}
-                                </label>
-                                <input type="text" formControlName="condition" (input)="onFieldChange('condition', i)"
-                                    class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
-                                    [class.border-[var(--color-error)]]="isFieldInvalid('condition', i)"
-                                    [placeholder]="'addWeaponAsset.enterCondition' | translate">
-                                <p *ngIf="isFieldInvalid('condition', i)"
-                                    class="mt-1 text-sm text-[var(--color-error)]">
-                                    {{ getFieldError('condition', i) }}
-                                </p>
                             </div>
 
                             <!-- Purchase Date -->
@@ -261,6 +266,138 @@
                                     {{ getFieldError('notes', i) }}
                                 </p>
                             </div>
+
+                            <!-- Assignment (optional): employee OR department, not both -->
+                            <div class="md:col-span-2 mt-4 mb-2">
+                                <h4
+                                    class="text-sm font-semibold text-[var(--color-text)] uppercase tracking-wide border-b border-[var(--color-border)] pb-2">
+                                    {{ 'addWeaponAsset.assignment.section' | translate }}
+                                </h4>
+                                <p class="text-xs text-[var(--color-text-muted)] mt-2">{{ 'addWeaponAsset.assignment.modeHint' | translate }}</p>
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                    {{ 'addWeaponAsset.assignment.assignType' | translate }}
+                                </label>
+                                <app-dropdown class="w-full" formControlName="assignMode"
+                                    [options]="assignModeDropdownOptions" optionValue="value"
+                                    [showSearch]="false"
+                                    (selectionChange)="onSingleAssignModeChange(i)"
+                                    placeholder="{{ 'addWeaponAsset.assignment.selectAssignType' | translate }}">
+                                </app-dropdown>
+                            </div>
+
+                            <div *ngIf="getAssetFormGroup(i).get('assignMode')?.value === 'department'" class="md:col-span-2">
+                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                    {{ 'addWeaponAsset.assignment.department' | translate }} <span class="text-[var(--color-error)]">*</span>
+                                </label>
+                                <app-dropdown class="w-full" formControlName="assignToDepartmentId"
+                                    [options]="departments" optionValue="id" [optionLabelFn]="departmentOptionLabel"
+                                    [placeholderSelectable]="false"
+                                    (selectionChange)="onSingleAssignmentDepartmentChange(i, $event)"
+                                    placeholder="{{ 'addWeaponAsset.assignment.selectDepartment' | translate }}">
+                                </app-dropdown>
+                            </div>
+
+                            <div *ngIf="getAssetFormGroup(i).get('assignMode')?.value === 'employee'" class="md:col-span-2">
+                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                    {{ 'addWeaponAsset.assignment.employee' | translate }} <span class="text-[var(--color-error)]">*</span>
+                                </label>
+                                <app-dropdown class="w-full" formControlName="assignToEmployeeId"
+                                    [options]="employeeDropdownOptions" optionValue="value"
+                                    [placeholderSelectable]="false"
+                                    [addActionLabel]="'addWeaponAsset.assignment.addPerson'"
+                                    (addActionClick)="openAddEmployeeModal()"
+                                    (selectionChange)="onSingleAssignmentEmployeeChange(i, $event)"
+                                    placeholder="{{ 'addWeaponAsset.assignment.selectEmployee' | translate }}">
+                                </app-dropdown>
+                                <p *ngIf="selectedEmployeeCannotAssign(getAssetFormGroup(i).get('assignToEmployeeId')?.value)"
+                                    class="text-sm text-[var(--color-error)] mt-2">
+                                    {{ 'addWeaponAsset.assignment.employeeCannotAssign' | translate }}
+                                </p>
+                            </div>
+
+                            <div *ngIf="getAssetFormGroup(i).get('assignMode')?.value !== 'none'" class="md:col-span-2">
+                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                    {{ 'addWeaponAsset.assignment.notes' | translate }}
+                                </label>
+                                <textarea formControlName="assignmentNotes" (input)="onFieldChange('assignmentNotes', i)" rows="2"
+                                    class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
+                                    [class.border-[var(--color-error)]]="isFieldInvalid('assignmentNotes', i)"
+                                    [placeholder]="'addWeaponAsset.assignment.notesPlaceholder' | translate"></textarea>
+                                <p *ngIf="isFieldInvalid('assignmentNotes', i)" class="mt-1 text-sm text-[var(--color-error)]">
+                                    {{ getFieldError('assignmentNotes', i) }}
+                                </p>
+                                <p class="mt-1 text-xs text-[var(--color-text-muted)]">
+                                    {{ 'addWeaponAsset.assignment.notesHint' | translate }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivery Receipt Card (applies to all assets in this session) - moved to last section -->
+            <div
+                class="bg-[var(--color-background)] rounded-lg shadow-custom-sm border-2 border-[var(--color-border)] p-6">
+                <h2 class="text-lg font-semibold text-[var(--color-text)] mb-4">{{ 'addWeaponAsset.deliveryReceiptInformation' |
+                    translate }}</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                    <div>
+                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                            {{ 'addWeaponAsset.deliveryReceipt' | translate }}
+                        </label>
+                        <input type="text" formControlName="deliveryReceipt"
+                            class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
+                            [class.border-[var(--color-error)]]="isFieldInvalid('deliveryReceipt')"
+                            [placeholder]="'addWeaponAsset.enterDeliveryReceipt' | translate">
+                        <p *ngIf="isFieldInvalid('deliveryReceipt')" class="mt-1 text-sm text-[var(--color-error)]">
+                            {{ getFieldError('deliveryReceipt') }}
+                        </p>
+                    </div>
+                    <!-- Attachments (Optional) -->
+                    <div>
+                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                            {{ 'common.attachments' | translate }} <span class="text-[var(--color-text-muted)] font-normal">({{ 'common.optional' | translate }})</span>
+                        </label>
+                        <div class="space-y-3">
+                            <div class="relative flex items-center gap-2">
+                                <input type="file" #weaponAddFileInput (change)="onAttachmentChange($event)" multiple
+                                    accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" class="hidden">
+                                <label (click)="weaponAddFileInput.click()"
+                                    class="px-4 py-2 rounded-lg border-0 text-sm font-semibold bg-[var(--color-brand)]/10 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20 cursor-pointer transition-all">
+                                    {{ 'common.chooseFiles' | translate }}
+                                </label>
+                                <span class="text-sm text-[var(--color-text-muted)] flex-1">
+                                    <span *ngIf="!deliveryReceiptFiles.length">{{ 'common.noFileChosen' | translate }}</span>
+                                    <span *ngIf="deliveryReceiptFiles.length">{{ deliveryReceiptFiles.length }} {{ deliveryReceiptFiles.length === 1 ? ('common.file' | translate) : ('common.files' | translate) }}</span>
+                                </span>
+                            </div>
+
+                            <div *ngIf="deliveryReceiptFiles.length" class="space-y-2">
+                                <div *ngFor="let file of deliveryReceiptFiles; let i = index"
+                                    class="flex items-center justify-between p-3 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-[var(--color-text)] truncate">{{ file.name }}</p>
+                                        <p class="text-xs text-[var(--color-text-muted)]">{{ getFileSize(file) }}</p>
+                                    </div>
+                                    <button type="button" (click)="removeAttachment(i)"
+                                        class="ms-3 p-1 text-[var(--color-error)] hover:text-red-700 transition-colors">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <p class="text-xs text-[var(--color-text-muted)]">
+                                {{ 'common.attachmentsHintOptional' | translate }}
+                            </p>
+                            <p class="text-xs text-[var(--color-text-muted)] font-medium">
+                                {{ 'common.maximumFileSize' | translate: { size: 30 } }}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -304,6 +441,7 @@
                         </label>
                         <app-dropdown class="w-full" formControlName="itemId" [options]="availableWeapons"
                             optionValue="id" [optionLabelFn]="weaponOptionLabel"
+                            (selectionChange)="onBulkWeaponSelected()"
                             [error]="!!(bulkForm.get('itemId')?.errors?.['required'] && bulkForm.get('itemId')?.touched)"
                             placeholder="{{ 'addWeaponAsset.selectWeapon' | translate }}">
                         </app-dropdown>
@@ -325,22 +463,27 @@
                             {{ 'addWeaponAsset.bulk.quantity' | translate }} <span
                                 class="text-[var(--color-error)]">*</span>
                         </label>
-                        <input type="number" formControlName="quantity" min="1" max="5000"
+                        <input type="number" formControlName="quantity" min="1" max="50000"
                             class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors">
                     </div>
                 </div>
 
                 <!-- Fill Identifiers Checkbox -->
                 <div class="mt-6 pt-6 border-t border-[var(--color-border)]">
-                    <label class="flex items-center space-x-3 cursor-pointer">
+                    <label class="flex items-center space-x-3"
+                        [class.cursor-pointer]="!isBulkFillIdentifiersDisabled"
+                        [class.opacity-50]="isBulkFillIdentifiersDisabled">
                         <input type="checkbox" formControlName="fillIdentifiers"
                             class="w-4 h-4 text-[var(--color-brand)] bg-[var(--color-background)] border-[var(--color-border)] rounded focus:ring-[var(--color-brand)] focus:ring-2">
                         <span class="text-sm font-medium text-[var(--color-text)]">
                             {{ 'addWeaponAsset.bulk.fillIdentifiers' | translate }}
                         </span>
                     </label>
-                    <p class="text-xs text-[var(--color-text-muted)] mt-2 ms-7">
+                    <p *ngIf="!isBulkFillIdentifiersDisabled" class="text-xs text-[var(--color-text-muted)] mt-2 ms-7">
                         {{ 'addWeaponAsset.bulk.fillIdentifiersDescription' | translate }}
+                    </p>
+                    <p *ngIf="isBulkFillIdentifiersDisabled" class="text-xs text-amber-600 mt-2 ms-7">
+                        {{ 'addWeaponAsset.bulk.fillIdentifiersDisabledReason' | translate: { max: maxQuantityForFillIdentifiers } }}
                     </p>
                 </div>
             </div>
@@ -355,6 +498,8 @@
                     </h4>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- (Delivery Receipt moved to its own section below) -->
+
                     <!-- Purchase Date -->
                     <div>
                         <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
@@ -371,16 +516,6 @@
                         </label>
                         <input type="date" formControlName="warrantyExpiryDate"
                             class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors">
-                    </div>
-
-                    <!-- Condition -->
-                    <div>
-                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
-                            {{ 'addWeaponAsset.condition' | translate }}
-                        </label>
-                        <input type="text" formControlName="condition"
-                            class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
-                            [placeholder]="'addWeaponAsset.enterCondition' | translate">
                     </div>
 
                     <!-- Purchase Price -->
@@ -401,6 +536,164 @@
                         <textarea formControlName="notes" rows="3"
                             class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
                             [placeholder]="'addWeaponAsset.notesPlaceholder' | translate"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                            {{ 'addWeaponAsset.supplier' | translate }}
+                        </label>
+                        <app-dropdown class="w-full" formControlName="supplierId"
+                            [options]="suppliers" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                            [placeholderSelectable]="true"
+                            placeholder="{{ 'addWeaponAsset.selectSupplier' | translate }}">
+                        </app-dropdown>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                            {{ 'addWeaponAsset.manufacturer' | translate }}
+                        </label>
+                        <app-dropdown class="w-full" formControlName="manufacturerId"
+                            [options]="manufacturers" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                            [placeholderSelectable]="true"
+                            placeholder="{{ 'addWeaponAsset.selectManufacturer' | translate }}">
+                        </app-dropdown>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                            {{ 'addWeaponAsset.primaryPurpose' | translate }}
+                        </label>
+                        <app-dropdown class="w-full" formControlName="primaryPurposId"
+                            [options]="getPrimaryPurposeOptionsForBulk()" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                            [placeholderSelectable]="true"
+                            placeholder="{{ 'addWeaponAsset.selectPrimaryPurpose' | translate }}">
+                        </app-dropdown>
+                    </div>
+
+                    <!-- Assignment (optional, applies to all items): employee OR department -->
+                    <div class="md:col-span-2 mt-4 mb-2">
+                        <h4
+                            class="text-sm font-semibold text-[var(--color-text)] uppercase tracking-wide border-b border-[var(--color-border)] pb-2">
+                            {{ 'addWeaponAsset.assignment.section' | translate }}
+                        </h4>
+                        <p class="text-xs text-[var(--color-text-muted)] mt-2">{{ 'addWeaponAsset.assignment.bulkModeHint' | translate }}</p>
+                        <p class="text-xs text-[var(--color-text-muted)]">{{ 'addWeaponAsset.assignment.modeHint' | translate }}</p>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                            {{ 'addWeaponAsset.assignment.assignType' | translate }}
+                        </label>
+                        <app-dropdown class="w-full" formControlName="assignMode"
+                            [options]="assignModeDropdownOptions" optionValue="value"
+                            [showSearch]="false"
+                            (selectionChange)="onBulkAssignModeChange()"
+                            placeholder="{{ 'addWeaponAsset.assignment.selectAssignType' | translate }}">
+                        </app-dropdown>
+                    </div>
+
+                    <div *ngIf="bulkForm.get('assignMode')?.value === 'department'" class="md:col-span-2">
+                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                            {{ 'addWeaponAsset.assignment.department' | translate }} <span class="text-[var(--color-error)]">*</span>
+                        </label>
+                        <app-dropdown class="w-full" formControlName="assignToDepartmentId"
+                            [options]="departments" optionValue="id" [optionLabelFn]="departmentOptionLabel"
+                            [placeholderSelectable]="false"
+                            (selectionChange)="onBulkAssignmentDepartmentChange($event)"
+                            placeholder="{{ 'addWeaponAsset.assignment.selectDepartment' | translate }}">
+                        </app-dropdown>
+                    </div>
+
+                    <div *ngIf="bulkForm.get('assignMode')?.value === 'employee'" class="md:col-span-2">
+                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                            {{ 'addWeaponAsset.assignment.employee' | translate }} <span class="text-[var(--color-error)]">*</span>
+                        </label>
+                        <app-dropdown class="w-full" formControlName="assignToEmployeeId"
+                            [options]="employeeDropdownOptions" optionValue="value"
+                            [placeholderSelectable]="false"
+                            [addActionLabel]="'addWeaponAsset.assignment.addPerson'"
+                            (addActionClick)="openAddEmployeeModal()"
+                            (selectionChange)="onBulkAssignmentEmployeeChange($event)"
+                            placeholder="{{ 'addWeaponAsset.assignment.selectEmployee' | translate }}">
+                        </app-dropdown>
+                        <p *ngIf="selectedEmployeeCannotAssign(bulkForm.get('assignToEmployeeId')?.value)"
+                            class="text-sm text-[var(--color-error)] mt-2">
+                            {{ 'addWeaponAsset.assignment.employeeCannotAssign' | translate }}
+                        </p>
+                    </div>
+
+                    <div *ngIf="bulkForm.get('assignMode')?.value !== 'none'" class="md:col-span-2">
+                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                            {{ 'addWeaponAsset.assignment.notes' | translate }}
+                        </label>
+                        <textarea formControlName="assignmentNotes" rows="2"
+                            class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
+                            [placeholder]="'addWeaponAsset.assignment.notesPlaceholder' | translate"></textarea>
+                        <p class="mt-1 text-xs text-[var(--color-text-muted)]">
+                            {{ 'addWeaponAsset.assignment.notesHint' | translate }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivery Receipt Information (Bulk Mode) -->
+            <div
+                class="bg-[var(--color-background)] rounded-lg shadow-custom-sm border-2 border-[var(--color-border)] p-6">
+                <h2 class="text-lg font-semibold text-[var(--color-text)] mb-4">{{ 'addWeaponAsset.deliveryReceiptInformation' |
+                    translate }}</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                    <!-- Delivery Receipt -->
+                    <div>
+                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                            {{ 'addWeaponAsset.deliveryReceipt' | translate }}
+                        </label>
+                        <input type="text" formControlName="deliveryReceipt"
+                            class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
+                            [placeholder]="'addWeaponAsset.enterDeliveryReceipt' | translate">
+                    </div>
+
+                    <!-- Attachments (Optional) -->
+                    <div>
+                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                            {{ 'common.attachments' | translate }} <span class="text-[var(--color-text-muted)] font-normal">({{ 'common.optional' | translate }})</span>
+                        </label>
+                        <div class="space-y-3">
+                            <div class="relative flex items-center gap-2">
+                                <input type="file" #bulkCommonFileInput (change)="onAttachmentChange($event)" multiple
+                                    accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" class="hidden">
+                                <label (click)="bulkCommonFileInput.click()"
+                                    class="px-4 py-2 rounded-lg border-0 text-sm font-semibold bg-[var(--color-brand)]/10 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20 cursor-pointer transition-all">
+                                    {{ 'common.chooseFiles' | translate }}
+                                </label>
+                                <span class="text-sm text-[var(--color-text-muted)] flex-1">
+                                    <span *ngIf="!deliveryReceiptFiles.length">{{ 'common.noFileChosen' | translate }}</span>
+                                    <span *ngIf="deliveryReceiptFiles.length">{{ deliveryReceiptFiles.length }} {{ deliveryReceiptFiles.length === 1 ? ('common.file' | translate) : ('common.files' | translate) }}</span>
+                                </span>
+                            </div>
+
+                            <div *ngIf="deliveryReceiptFiles.length" class="space-y-2">
+                                <div *ngFor="let file of deliveryReceiptFiles; let i = index"
+                                    class="flex items-center justify-between p-3 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-[var(--color-text)] truncate">{{ file.name }}</p>
+                                        <p class="text-xs text-[var(--color-text-muted)]">{{ getFileSize(file) }}</p>
+                                    </div>
+                                    <button type="button" (click)="removeAttachment(i)"
+                                        class="ms-3 p-1 text-[var(--color-error)] hover:text-red-700 transition-colors">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <p class="text-xs text-[var(--color-text-muted)]">
+                                {{ 'common.attachmentsHintOptional' | translate }}
+                            </p>
+                            <p class="text-xs text-[var(--color-text-muted)] font-medium">
+                                {{ 'common.maximumFileSize' | translate: { size: 30 } }}
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -425,5 +718,9 @@
                 </button>
             </div>
         </form>
+
+        <app-employee-form-modal [isOpen]="isEmployeeModalOpen" mode="create"
+            (closed)="onEmployeeModalClosed()" (saved)="onEmployeeSaved()">
+        </app-employee-form-modal>
     </div>
 </div>

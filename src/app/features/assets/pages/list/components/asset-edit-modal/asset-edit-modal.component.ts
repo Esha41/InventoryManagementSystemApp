@@ -90,6 +90,17 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
         ? this.selectedAsset.originalData
         : this.selectedAsset;
       this.editForm.patchValue(source || {});
+      if ((this.activeTab === 'ammunition' || this.activeTab === 'explosive' || this.activeTab === 'weapon') && source) {
+        const catalog = source as AmmunitionReadDto | ExplosiveDto | WeaponDto;
+        const fromList = catalog.primaryPurposes?.map(p => p.id).filter((id): id is number => id != null);
+        const ids =
+          fromList && fromList.length > 0
+            ? fromList
+            : catalog.primaryPurpos?.id != null
+              ? [catalog.primaryPurpos.id]
+              : [];
+        this.editForm.patchValue({ primaryPurposIds: ids });
+      }
       this.cdr.markForCheck();
     }
     if (changes['imageState'] && this.imageState) {
@@ -121,12 +132,29 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
     let dto: AmmunitionCreateDto | CreateUpdateWeaponDto | CreateUpdateExplosiveDto;
 
     if (this.activeTab === 'ammunition') {
-      dto = formData as AmmunitionCreateDto;
+      const raw = formData as Record<string, unknown>;
+      delete raw['primaryPurposId'];
+      const primaryPurposIds = raw['primaryPurposIds'] as number[] | undefined;
+      if (!primaryPurposIds?.length) {
+        delete raw['primaryPurposIds'];
+      }
+      dto = raw as unknown as AmmunitionCreateDto;
     } else if (this.activeTab === 'weapon') {
-      dto = formData as CreateUpdateWeaponDto;
+      const raw = formData as Record<string, unknown>;
+      delete raw['primaryPurposId'];
+      const primaryPurposIds = raw['primaryPurposIds'] as number[] | undefined;
+      if (!primaryPurposIds?.length) {
+        delete raw['primaryPurposIds'];
+      }
+      dto = raw as unknown as CreateUpdateWeaponDto;
     } else {
-      // For explosives
-      dto = formData as CreateUpdateExplosiveDto;
+      const raw = formData as Record<string, unknown>;
+      delete raw['primaryPurposId'];
+      const primaryPurposIds = raw['primaryPurposIds'] as number[] | undefined;
+      if (!primaryPurposIds?.length) {
+        delete raw['primaryPurposIds'];
+      }
+      dto = raw as unknown as CreateUpdateExplosiveDto;
     }
 
     this.saved.emit({

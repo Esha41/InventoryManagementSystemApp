@@ -7,7 +7,7 @@
 import { WeaponDto } from './weapon.model';
 import { DepotDto } from './depot.model';
 import { FileUploadDto } from './file-upload.model';
-import { DepartmentDto } from './lookup.model';
+import { DepartmentDto, LookupItem } from './lookup.model';
 
 /**
  * Asset Status Enum
@@ -58,19 +58,24 @@ export interface AssetDto {
     custodianId?: number;
     location?: string;
     status?: AssetStatus;
-    assetTag?: string;
     purchaseDate?: Date | string;
     warrantyExpiryDate?: Date | string;
-    condition?: string;
     purchasePrice?: number;
+    deliveryReceipt?: string;
     notes?: string;
     isDeleted: boolean;
+    supplierId?: number;
+    manufacturerId?: number;
+    primaryPurposId?: number;
 
     // Navigation properties
     item?: WeaponDto;
     depot?: DepotDto;
     department?: DepartmentDto;
     custodian?: EmployeeDto;
+    supplier?: LookupItem;
+    manufacturer?: LookupItem;
+    primaryPurpos?: LookupItem;
     images?: FileUploadDto[];
 }
 
@@ -83,12 +88,32 @@ export interface CreateAssetDto {
     serialNumber?: string;
     rfid?: string;
     depotId: number;
-    assetTag?: string;
     purchaseDate?: Date | string;
     warrantyExpiryDate?: Date | string;
-    condition?: string;
     purchasePrice?: number;
+    deliveryReceipt?: string;
     notes?: string;
+    supplierId?: number;
+    manufacturerId?: number;
+    primaryPurposId?: number;
+    /** Optional: assign to this employee on intake (maps to backend AssignToEmployeeId). */
+    assignToEmployeeId?: number;
+    /** Optional: assign to this department on intake (maps to backend AssignToDepartmentId). */
+    assignToDepartmentId?: number;
+    /** Optional notes on the assignment when intake assignment is created. */
+    assignmentNotes?: string;
+}
+
+/**
+ * Bulk create assets from a template (common info + quantity)
+ */
+export interface CreateBulkAssetsFromTemplateDto extends CreateAssetDto {
+    quantity: number;
+}
+
+export interface BulkCreateFromTemplateResultDto {
+    createdCount: number;
+    firstAssetId?: number;
 }
 
 /**
@@ -98,12 +123,14 @@ export interface UpdateAssetDto {
     itemId: number;
     serialNumber?: string;
     rfid?: string;
-    assetTag?: string;
     purchaseDate?: Date | string;
     warrantyExpiryDate?: Date | string;
-    condition?: string;
     purchasePrice?: number;
+    deliveryReceipt?: string;
     notes?: string;
+    supplierId?: number | null;
+    manufacturerId?: number | null;
+    primaryPurposId?: number | null;
 }
 
 /**

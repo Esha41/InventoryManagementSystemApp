@@ -19,9 +19,15 @@ export class RowsPerPageComponent {
   @Input() rowsPerPage: number = 5;
   @Input() totalItems: number = 20;
   @Input() visibleItems?: number;
+  /** When set (non-empty), replaces the default [5, 10, 20, 50] page-size choices. */
+  @Input() optionValues: number[] | null = null;
   @Output() rowsPerPageChange = new EventEmitter<number>();
 
-  options: number[] = [5, 10, 20, 50];
+  private readonly defaultOptions: number[] = [5, 10, 20, 50];
+
+  get options(): number[] {
+    return this.optionValues && this.optionValues.length > 0 ? this.optionValues : this.defaultOptions;
+  }
 
   onRowsPerPageChange(value: number | null): void {
     if (!value) {

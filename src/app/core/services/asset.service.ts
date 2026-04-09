@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { AssetDto, CreateAssetDto, UpdateAssetDto } from '@models/asset.model';
+import { AssetDto, CreateAssetDto, UpdateAssetDto, CreateBulkAssetsFromTemplateDto, BulkCreateFromTemplateResultDto } from '@models/asset.model';
 import { PagedListRequest, PaginatedList } from '@models/pagination.model';
 import { APIOperationResponse } from '@models/api-response.model';
 import { ConfigService } from './config.service';
@@ -109,15 +109,34 @@ export class AssetService implements IImportableService {
     /**
      * Create bulk assets
      */
-    createBulk<T = number[]>(data: CreateAssetDto[]): Observable<T> {
-        return this.apiService.post<T>(`${this.basePath}/Bulk`, data);
+    createBulk<T = number[]>(data: CreateAssetDto[], files?: File[]): Observable<T> {
+        const formData = new FormData();
+        formData.append('dtosJson', JSON.stringify(data));
+        (files || []).forEach(file => formData.append('files', file, file.name));
+        return this.apiService.post<T>(`${this.basePath}/Bulk`, formData);
+    }
+
+    createBulkFromTemplate(data: CreateBulkAssetsFromTemplateDto): Observable<BulkCreateFromTemplateResultDto> {
+        return this.apiService.post<BulkCreateFromTemplateResultDto>(`${this.basePath}/bulk-template`, data);
     }
 
     /**
      * Update existing asset
      */
-    update<T = AssetDto>(id: number, data: UpdateAssetDto): Observable<T> {
-        return this.apiService.put<T>(`${this.basePath}/${id}`, data);
+    update<T = AssetDto>(id: number, data: UpdateAssetDto, files?: File[]): Observable<T> {
+        const formData = new FormData();
+        Object.keys(data).forEach(key => {
+            const value = (data as unknown as Record<string, unknown>)[key];
+            if (value !== null && value !== undefined) {
+                if (value instanceof Date) {
+                    formData.append(key, value.toISOString());
+                } else {
+                    formData.append(key, String(value));
+                }
+            }
+        });
+        (files || []).forEach(file => formData.append('files', file, file.name));
+        return this.apiService.put<T>(`${this.basePath}/${id}`, formData);
     }
 
     /**

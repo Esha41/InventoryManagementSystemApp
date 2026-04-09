@@ -21,6 +21,11 @@ export interface WeaponDto extends BaseItemDto {
   classificationId?: number;
   typeId?: number;
 
+  /** Linked catalog purposes (BaseItemPrimaryPurposes) */
+  primaryPurposes?: LookupDto[];
+  /** Legacy single navigation when list not populated */
+  primaryPurpos?: LookupDto;
+
   // Navigation properties
   caliberUnit?: LookupDto;
   countryOfManufacture?: LookupDto;
@@ -60,4 +65,6 @@ export interface CreateUpdateWeaponDto {
   yearOfManufacture?: number;
   countryOfManufactureId?: number;
   model?: string;
+  /** Matches API PrimaryPurposIds (BaseItemPrimaryPurposes) */
+  primaryPurposIds?: number[];
 }

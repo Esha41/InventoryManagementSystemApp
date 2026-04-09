@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil, catchError, of, forkJoin } from 'rxjs';
 import { map, delay, switchMap } from 'rxjs/operators';
-import { LucideAngularModule, User, Mail, Building2, Shield, Hash, Navigation2, Award, Lock } from 'lucide-angular';
+import { LucideAngularModule, User, Mail, Building2, Shield, Hash, Navigation2, Award, Lock, RotateCcw } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { AuthenticatedUser } from '@models/auth.model';
 import { ChangePasswordRequest } from '@profile/models/change-password.model';
@@ -19,6 +19,7 @@ import { ChangePasswordModalComponent } from '@components/change-password-modal/
 import { DelegationListComponent } from './delegation-list/delegation-list.component';
 import { ToastService } from '@services/toast.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { OnboardingTourService } from '@features/onboarding/services/onboarding-tour.service';
 
 @Component({
   selector: 'app-profile',
@@ -45,6 +46,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   readonly Navigation2 = Navigation2;
   readonly Award = Award;
   readonly Lock = Lock;
+  readonly RotateCcw = RotateCcw;
 
   currentUser: AuthenticatedUser | null = null;
   loading = true;
@@ -60,6 +62,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     private translateService: TranslateService,
     private translationService: TranslationService,
     private toastService: ToastService,
+    private onboardingTourService: OnboardingTourService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) { }
@@ -191,6 +194,13 @@ export class ProfileComponent implements OnInit, OnDestroy {
   /**
    * Handle password change submission
    */
+  replayTour(): void {
+    this.onboardingTourService.resetTour();
+    this.router.navigate(['/dashboard']).then(() => {
+      setTimeout(() => this.onboardingTourService.startTour(), 500);
+    });
+  }
+
   onChangePassword(request: ChangePasswordRequest): void {
     this.changingPassword = true;
     this.cdr.markForCheck();

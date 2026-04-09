@@ -1,182 +1,29 @@
 <div class="page-wrapper">
-    <!-- Header -->
-    <div class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
-        <div class="page-container py-4">
-            <div class="flex items-center gap-4 mb-4">
-                <button (click)="onCancel()"
-                    class="flex items-center gap-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
-                    <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
-                    <span class="font-medium">{{ 'editBatch.backToBatches' | translate }}</span>
-                </button>
-            </div>
-            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                <div>
-                    <h1 class="text-3xl font-bold text-[var(--color-text)]">
-                        {{ 'editBatch.title' | translate }}
-                    </h1>
-                </div>
-                <div class="flex items-center gap-3">
-                    <button (click)="onCancel()"
-                        class="px-6 py-3 border border-[var(--color-border)] text-[var(--color-text)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors">
-                        {{ 'common.cancel' | translate }}
-                    </button>
-                    <button (click)="onSaveAll()" [disabled]="saving"
-                        class="px-6 py-3 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2">
-                        <lucide-angular *ngIf="saving" [img]="Loader2" class="w-4 h-4 animate-spin"></lucide-angular>
-                        <lucide-angular *ngIf="!saving" [img]="Save" class="w-4 h-4"></lucide-angular>
-                        {{ saving ? ('editBatch.saving' | translate) : ('editBatch.saveAll' | translate) }}
-                    </button>
-                </div>
-            </div>
+  <div class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
+    <div class="page-container py-4">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <button type="button" (click)="onCancel()"
+          class="flex items-center gap-2 shrink-0 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors self-start">
+          <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
+          <span class="font-medium">{{ 'editBatch.backToBatches' | translate }}</span>
+        </button>
+        <div class="sm:text-start sm:max-w-2xl min-w-0">
+          <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)] mb-0 break-words">
+            {{ 'editBatch.title' | translate }}
+          </h1>
         </div>
+      </div>
     </div>
+  </div>
 
-    <!-- Loading -->
-    <app-loading-state *ngIf="loading" size="lg" [fullPage]="true"></app-loading-state>
+  <div *ngIf="invalid" class="page-container py-6">
+    <p class="text-sm text-[var(--color-error)]">{{ 'editBatch.invalidBatchId' | translate }}</p>
+  </div>
 
-    <!-- Error -->
-    <app-error-state *ngIf="error && !loading" [error]="error" variant="inline" title="common.error"
-        containerClass="mb-8">
-    </app-error-state>
-
-    <!-- Content -->
-    <div *ngIf="!loading && !error && batch" class="page-container py-6">
-        <!-- Weapons Batch Information -->
-        <app-card [shadow]="true" class="mb-6" *ngIf="batchForm">
-            <div>
-                <h2 class="text-lg font-semibold text-[var(--color-text)] mb-4">{{ 'editBatch.commonInfo' | translate }}</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div>
-                        <p class="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider mb-1">{{ 'warehouseInventory.batchNumber' | translate }}</p>
-                        <p class="text-[var(--color-text)] font-medium">{{ batch.batchNumber }}</p>
-                    </div>
-                    <div>
-                        <p class="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider mb-1">{{ 'warehouseInventory.assetCount' | translate }}</p>
-                        <p class="text-[var(--color-text)] font-medium">{{ batch.assets?.length ?? 0 }}</p>
-                    </div>
-                    <div *ngIf="batch.depot">
-                        <p class="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider mb-1">{{ 'warehouseInventory.depot' | translate }}</p>
-                        <p class="text-[var(--color-text)] font-medium">{{ getDepotName(batch.depot) }}</p>
-                    </div>
-                </div>
-            </div>
-        </app-card>
-
-        <!-- Purchase Details -->
-        <div class="my-4" *ngIf="batchForm">
-            <app-card [shadow]="true">
-                <div [formGroup]="batchForm">
-                <h2 class="text-lg font-semibold text-[var(--color-text)] mb-4">{{ 'editBatch.purchaseDetails' | translate }}</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" formGroupName="commonInfo">
-                    <div>
-                        <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider mb-1">{{ 'addWeaponAsset.purchaseDate' | translate }}</label>
-                        <input formControlName="purchaseDate" type="date"
-                            class="w-full px-3 py-2 text-sm bg-[var(--color-background)] border border-[var(--color-border)] rounded text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider mb-1">{{ 'addWeaponAsset.warrantyExpiryDate' | translate }}</label>
-                        <input formControlName="warrantyExpiryDate" type="date"
-                            class="w-full px-3 py-2 text-sm bg-[var(--color-background)] border border-[var(--color-border)] rounded text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider mb-1">{{ 'addWeaponAsset.purchasePrice' | translate }}</label>
-                        <input formControlName="purchasePrice" type="number"
-                            class="w-full px-3 py-2 text-sm bg-[var(--color-background)] border border-[var(--color-border)] rounded text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
-                            [class.border-red-500]="batchForm.get('commonInfo')?.get('purchasePrice')?.invalid && batchForm.get('commonInfo')?.get('purchasePrice')?.touched">
-                    </div>
-                </div>
-            </div>
-            </app-card>
-        </div>
-
-        <!-- Editable Assets Table -->
-        <app-card [shadow]="true" class="mb-6" *ngIf="batchForm">
-            <div [formGroup]="batchForm">
-                <h2 class="text-lg font-semibold text-[var(--color-text)] mb-4">{{ 'editBatch.assetsTable' | translate }}</h2>
-                <div class="overflow-x-auto -mx-4 sm:-mx-6" formArrayName="assets">
-                    <table class="w-full min-w-[700px]">
-                        <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
-                            <tr>
-                                <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider w-12">#</th>
-                                <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider min-w-[140px]">{{ 'warehouseInventory.itemName' | translate }}</th>
-                                <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider min-w-[120px]">{{ 'addWeaponAsset.serialNumber' | translate }}</th>
-                                <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider min-w-[100px]">{{ 'addWeaponAsset.rfidTag' | translate }}</th>
-                                <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider min-w-[110px]">{{ 'warehouseInventory.status' | translate }}</th>
-                                <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider min-w-[100px]">{{ 'addWeaponAsset.assetTag' | translate }}</th>
-                                <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider min-w-[100px]">{{ 'addWeaponAsset.condition' | translate }}</th>
-                                <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider min-w-[140px]">{{ 'addWeaponAsset.notes' | translate }}</th>
-                                <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider w-16"></th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-[var(--color-border)]">
-                            <tr *ngFor="let group of assetForms.controls; trackBy: trackByIndex; let i = index" [formGroupName]="i"
-                                class="bg-[var(--color-background)] hover:bg-[var(--color-background-hover)] transition-colors">
-                                <td class="px-4 py-2 text-sm text-[var(--color-text-muted)] font-mono">{{ i + 1 }}</td>
-                                <td class="px-4 py-2 text-sm text-[var(--color-text)]">
-                                    <span class="font-medium">{{ getAssetName(i) }}</span>
-                                    <span *ngIf="getAssetItemNo(i)" class="block text-xs text-[var(--color-text-muted)]">{{ getAssetItemNo(i) }}</span>
-                                </td>
-                                <td class="px-4 py-2">
-                                    <input formControlName="serialNumber" type="text"
-                                        class="w-full px-2 py-1.5 text-sm bg-[var(--color-background)] border rounded text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent min-w-0"
-                                        [ngClass]="{'border-red-500': isFieldInvalid(i, 'serialNumber'), 'border-[var(--color-border)]': !isFieldInvalid(i, 'serialNumber')}">
-                                </td>
-                                <td class="px-4 py-2">
-                                    <input formControlName="rfid" type="text"
-                                        class="w-full px-2 py-1.5 text-sm bg-[var(--color-background)] border rounded text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent min-w-0"
-                                        [ngClass]="{'border-red-500': isFieldInvalid(i, 'rfid'), 'border-[var(--color-border)]': !isFieldInvalid(i, 'rfid')}">
-                                </td>
-                                <td class="px-4 py-2">
-                                    <app-dropdown class="w-full min-w-[10rem]" formControlName="status"
-                                        [options]="assetStatuses" optionValue="value" optionLabel="label"
-                                        [translateLabels]="true" [placeholderSelectable]="false"
-                                        [placeholder]="'editBatch.selectStatus' | translate">
-                                    </app-dropdown>
-                                </td>
-                                <td class="px-4 py-2">
-                                    <input formControlName="assetTag" type="text"
-                                        class="w-full px-2 py-1.5 text-sm bg-[var(--color-background)] border rounded text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent min-w-0"
-                                        [ngClass]="{'border-red-500': isFieldInvalid(i, 'assetTag'), 'border-[var(--color-border)]': !isFieldInvalid(i, 'assetTag')}">
-                                </td>
-                                <td class="px-4 py-2">
-                                    <input formControlName="condition" type="text"
-                                        class="w-full px-2 py-1.5 text-sm bg-[var(--color-background)] border rounded text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent min-w-0"
-                                        [ngClass]="{'border-red-500': isFieldInvalid(i, 'condition'), 'border-[var(--color-border)]': !isFieldInvalid(i, 'condition')}">
-                                </td>
-                                <td class="px-4 py-2">
-                                    <input formControlName="notes" type="text"
-                                        class="w-full px-2 py-1.5 text-sm bg-[var(--color-background)] border rounded text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent min-w-0"
-                                        [ngClass]="{'border-red-500': isFieldInvalid(i, 'notes'), 'border-[var(--color-border)]': !isFieldInvalid(i, 'notes')}">
-                                </td>
-                                <td class="px-4 py-2">
-                                    <button type="button" *ngIf="assetForms.length > 1" (click)="removeRow(i)"
-                                        class="p-1.5 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
-                                        [title]="'editBatch.removeRow' | translate">
-                                        <lucide-angular [img]="Trash2" class="w-4 h-4"></lucide-angular>
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <p *ngIf="!assetForms?.length" class="py-8 text-center text-[var(--color-text-muted)]">
-                    {{ 'editBatch.noAssets' | translate }}
-                </p>
-            </div>
-        </app-card>
-
-        <!-- Bottom Save All -->
-        <div *ngIf="(assetForms?.length ?? 0) > 0" class="mt-6 flex justify-end gap-3">
-            <button (click)="onCancel()"
-                class="px-6 py-3 border border-[var(--color-border)] text-[var(--color-text)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors">
-                {{ 'common.cancel' | translate }}
-            </button>
-            <button (click)="onSaveAll()" [disabled]="saving"
-                class="px-6 py-3 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2">
-                <lucide-angular *ngIf="saving" [img]="Loader2" class="w-4 h-4 animate-spin"></lucide-angular>
-                <lucide-angular *ngIf="!saving" [img]="Save" class="w-4 h-4"></lucide-angular>
-                {{ saving ? ('editBatch.saving' | translate) : ('editBatch.saveAll' | translate) }}
-            </button>
-        </div>
-    </div>
+  <div *ngIf="!invalid" class="page-container pt-6 pb-8">
+    <app-edit-batch-form [batchId]="batchId" [warehouseId]="warehouseId" [showInlineActions]="true"
+      (cancelled)="onCancel()"
+      (saved)="onSaved()">
+    </app-edit-batch-form>
+  </div>
 </div>

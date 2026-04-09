@@ -7,7 +7,7 @@
     </div>
 
     <!-- Stepper -->
-    <app-stepper [steps]="steps" [currentStep]="currentStep" (stepChange)="onStepChange($event)">
+    <app-stepper data-onboarding="issue-stepper" [steps]="steps" [currentStep]="currentStep" (stepChange)="onStepChange($event)">
     </app-stepper>
 
     <app-error-banner *ngIf="orderSubmissionState.orderSubmitError && currentStep === 3"

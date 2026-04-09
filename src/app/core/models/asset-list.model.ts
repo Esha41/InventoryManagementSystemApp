@@ -44,7 +44,7 @@ export interface Asset {
   hazardDivision?: string | LookupDto;
   compatibility?: string | LookupDto;
 
-  // Weapon specific
+  // Weapon specific (caliber is shared with Ammunition)
   weaponType?: string;
   caliber?: string;
   actionType?: string;
@@ -75,18 +75,23 @@ export interface AssetFilterState {
   searchTerm: string;
   // Ammunition filters
   selectedCaseType: string | null;
-  selectedPrimaryPurpose: string | null;
+  /** Ammunition: single primary purpose lookup id; filtered client-side (junction / legacy scalar). */
+  selectedPrimaryPurposeId: number | null;
   selectedCompatibility: string | null;
   selectedPropellant: string | null;
   // Weapon filters
   selectedWeaponType: string | null;
   selectedWeaponClassification: string | null;
   selectedCountryOfManufacture: string | null;
+  /** Weapon: primary purpose lookup id; filtered client-side (junction / legacy). */
+  selectedWeaponPrimaryPurposeId: number | null;
   // Explosive filters
   selectedExplosiveType: string | null;
   selectedExplosiveClassification: string | null;
   selectedExplosiveHazardDivision: string | null;
   selectedExplosiveCompatibility: string | null;
+  /** Explosive: primary purpose lookup id; filtered client-side (junction / legacy). */
+  selectedExplosivePrimaryPurposeId: number | null;
 }
 
 /**
@@ -114,7 +119,6 @@ export interface AssetModalState {
   showPermanentDeleteModal: boolean;
   showRestoreModal: boolean;
   showViewModal: boolean;
-  showImportModal: boolean;
   selectedAsset: Asset | AmmunitionReadDto | WeaponDto | ExplosiveDto | null;
 }
 
