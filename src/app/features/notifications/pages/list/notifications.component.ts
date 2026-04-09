@@ -491,13 +491,20 @@ export class NotificationsComponent implements OnInit, OnDestroy {
 
   /**
    * Get localized requester name with proper nested object support
-   * Handles both simple string and nested requester objects
+   * Prefers Arabic when current language is Arabic.
    */
-  getLocalizedRequesterName(requesterName?: string | null): string {
-    if (!requesterName) {
-      return this.translateService.instant('common.notAvailable');
-    }
-    return requesterName;
+  getLocalizedRequesterName(
+    requesterNameEn?: string | null,
+    requesterNameAr?: string | null,
+    userName?: string | null,
+    fallback?: string | null
+  ): string {
+    const lang = getCurrentLang(this.translateService);
+    const preferred = lang === 'ar'
+      ? (requesterNameAr || requesterNameEn)
+      : (requesterNameEn || requesterNameAr);
+
+    return preferred || userName || fallback || this.translateService.instant('common.notAvailable');
   }
 
   /**
@@ -542,7 +549,9 @@ export class NotificationsComponent implements OnInit, OnDestroy {
       'return approved': 'notifications.titles.returnApproved',
       'return rejected': 'notifications.titles.returnRejected',
       'discard approved': 'notifications.titles.discardApproved',
-      'discard rejected': 'notifications.titles.discardRejected'
+      'discard rejected': 'notifications.titles.discardRejected',
+      // Approval workflow notifications
+      'new approval required': 'notifications.titles.approvalRequired'
     };
 
     const translationKey = titleMap[titleLower.toLowerCase()];
@@ -627,6 +636,11 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     }
 
     // If no match, return original (might be already translated or custom)
+    // Approval workflow notifications
+    if (messageLower.includes('awaits your approval')) {
+      return this.translateService.instant('notifications.messages.requestAwaitingApproval');
+    }
+
     return messageTrimmed;
   }
 

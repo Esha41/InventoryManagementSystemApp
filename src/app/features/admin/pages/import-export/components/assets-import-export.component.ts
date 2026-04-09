@@ -24,6 +24,7 @@ import { IImportableService } from '@core/interfaces/importable-service.interfac
 import { ImportResult } from '@models/import-result.model';
 import { APIOperationResponse } from '@models/api-response.model';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { mapImportResultToPreviewData } from '@core/utils/asset-master-import-preview.utils';
 
 @Component({
   selector: 'app-assets-import-export',
@@ -185,75 +186,11 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           const result = res.data;
 
           if (result) {
-            // Ensure arrays exist
-            const successfulRecords = Array.isArray(result.successfulRecords) ? result.successfulRecords : [];
-            const errors = Array.isArray(result.errors) ? result.errors : [];
-
-            // Create a map to track which rows have errors (by row number)
-            const errorsByRow = new Map<number, { errors: string[], rowData: any }>();
-            errors.forEach((error) => {
-              const rowNum = error.rowNumber || 0;
-              if (!errorsByRow.has(rowNum)) {
-                errorsByRow.set(rowNum, { errors: [], rowData: error.rowData || {} });
-              }
-              const errorMsg = error.errorMessage || 'Unknown error';
-              errorsByRow.get(rowNum)!.errors.push(errorMsg);
-            });
-
-            // Build preview rows
-            const previewRows: any[] = [];
-
-            // Process successful records - use rowNumber from backend if available, otherwise calculate
-            successfulRecords.forEach((record: any, index: number) => {
-              // Excel rows start at 2 (row 1 is header), so rowNumber should be index + 2
-              // But if backend provides rowNumber, use that instead
-              // Note: Backend ImportResult logic might need observation, assuming standard behavior
-              const rowNum = (record as any).rowNumber || (index + 2);
-              const errorInfo = errorsByRow.get(rowNum);
-
-              previewRows.push({
-                rowNumber: rowNum,
-                data: record,
-                isValid: !errorInfo || errorInfo.errors.length === 0,
-                errors: errorInfo ? errorInfo.errors : []
-              });
-
-              // Remove from errorsByRow since we've processed it
-              if (errorInfo) {
-                errorsByRow.delete(rowNum);
-              }
-            });
-
-            // Process errors that don't have corresponding successful records
-            // (These are rows that failed validation and have rowData in the error)
-            errorsByRow.forEach((errorInfo, rowNum) => {
-              previewRows.push({
-                rowNumber: rowNum,
-                data: errorInfo.rowData || {},
-                isValid: false,
-                errors: errorInfo.errors
-              });
-            });
-
-            // Sort by row number to maintain Excel row order
-            previewRows.sort((a, b) => a.rowNumber - b.rowNumber);
-
-            // Calculate valid/invalid counts
-            const validRows = previewRows.filter(r => r.isValid).length;
-            const invalidRows = previewRows.filter(r => !r.isValid).length;
-
-            // Transform backend data to preview format
-            this.previewData = {
-              rows: previewRows,
-              totalRows: previewRows.length,
-              validRows: validRows,
-              invalidRows: invalidRows,
-              // Use headers directly from backend response for the Single Source of Truth
-              columns: result.importHeaders && result.importHeaders.length > 0
-                ? result.importHeaders
-                : (previewRows.length > 0 && previewRows[0].data ? Object.keys(previewRows[0].data) : [])
-            };
-            this.showPreviewModal = true;
+            const preview = mapImportResultToPreviewData(result);
+            if (preview) {
+              this.previewData = preview;
+              this.showPreviewModal = true;
+            }
           }
           this.cdr.markForCheck();
         },
@@ -476,7 +413,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
       // Add ALL ammunition fields to match template
       columns.push(
         {
-          header: this.translateService.instant('warehouseInventory.armNumber') || 'Arm Number',
+          header: this.translateService.instant('addAsset.armNumber') || 'Arm Number',
           key: 'armNumber',
           width: 15,
           format: (value: string) => value || '-'
@@ -706,7 +643,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
       // Add ALL explosive fields to match template
       columns.push(
         {
-          header: this.translateService.instant('warehouseInventory.armNumber') || 'Arm Number',
+          header: this.translateService.instant('addAsset.armNumber') || 'Arm Number',
           key: 'armNumber',
           width: 15,
           format: (value: string) => value || '-'

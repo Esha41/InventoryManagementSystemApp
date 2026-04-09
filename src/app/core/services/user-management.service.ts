@@ -46,7 +46,15 @@ export class UserManagementService {
   /**
    * Load users with pagination and filtering
    */
-  loadUsers(page: number = 1, pageSize: number = 10, searchTerm: string = '', status: 'all' | 'active' | 'inactive' | 'deleted' = 'all'): Observable<BackendUserDto[]> {
+  loadUsers(
+    page: number = 1,
+    pageSize: number = 10,
+    searchTerm: string = '',
+    status: 'all' | 'active' | 'inactive' | 'deleted' = 'all',
+    rankId: number | null = null,
+    departmentId: number | null = null,
+    roleIds: string[] = []
+  ): Observable<BackendUserDto[]> {
     this.currentPage = page;
     this.pageSize = pageSize;
     this.searchTerm = searchTerm;
@@ -70,6 +78,31 @@ export class UserManagementService {
         value: status === 'active' ? 'true' : 'false'
       });
       // Backend already excludes deleted users by default, so no need to add IsDeleted filter
+    }
+
+    if (rankId != null) {
+      filters.push({
+        field: 'RankId',
+        operator: 'eq',
+        value: String(rankId)
+      });
+    }
+
+    if (departmentId != null) {
+      filters.push({
+        field: 'DepartmentId',
+        operator: 'eq',
+        value: String(departmentId)
+      });
+    }
+
+    if (roleIds?.length) {
+      filters.push({
+        field: 'RoleIds',
+        operator: 'eq',
+        // Backend will interpret this as "user has ANY of these roles"
+        value: roleIds.join(',')
+      });
     }
     // When status is 'all', backend already excludes deleted users by default, so no filter needed
 

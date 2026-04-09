@@ -6,6 +6,7 @@ import { Subject, takeUntil, switchMap, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { LucideAngularModule } from 'lucide-angular';
 import { InventoryService, LotDetailDto } from '@services/inventory.service';
+import { WarehouseInventoryFormatterService } from '../services/warehouse-inventory-formatter.service';
 import { LookupService } from '@services/lookup.service';
 import { InventoryDetailDto, ItemType } from '@models/inventory.model';
 import { AssetDetailsComponent } from '@shared/components/asset-details/asset-details.component';
@@ -14,9 +15,11 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
 import { formatDateShort } from '@utils/format.utils';
-import { FileUploadService, FileEntityType } from '@services/file-upload.service';
+import { FileEntityType } from '@services/file-upload.service';
 import { HttpClient } from '@angular/common/http';
 import { trackByKey } from '@utils/trackby.utils';
+import { FileUploadService } from '@services/file-upload.service';
+import { FileUploadDto } from '@models/file-upload.model';
 
 type TabType = 'overview' | 'stock';
 
@@ -55,9 +58,10 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
     private lookupService: LookupService,
     private translateService: TranslateService,
     private translationService: TranslationService,
-    private fileUploadService: FileUploadService,
     private http: HttpClient,
-    private cdr: ChangeDetectorRef
+    private fileUploadService: FileUploadService,
+    private cdr: ChangeDetectorRef,
+    private warehouseInventoryFormatter: WarehouseInventoryFormatterService
   ) { }
 
   ngOnInit(): void {
@@ -96,6 +100,34 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
     this.blobUrls.clear();
   }
 
+  get deliveryReceiptFiles(): FileUploadDto[] {
+    return (this.inventoryDetail?.files ?? []) as FileUploadDto[];
+  }
+
+  openDeliveryReceiptFile(fileId: number): void {
+    if (!fileId) return;
+    this.fileUploadService.getFileBlob(fileId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (blob: Blob) => {
+          const objectUrl = window.URL.createObjectURL(blob);
+          this.blobUrls.add(objectUrl);
+          window.open(objectUrl, '_blank', 'noopener');
+          // Revoke after a minute; we also revoke all on destroy.
+          setTimeout(() => {
+            try { window.URL.revokeObjectURL(objectUrl); } catch {}
+            this.blobUrls.delete(objectUrl);
+          }, 60_000);
+        },
+        error: () => {
+          this.translateService.get(['common.failedToLoadFile', 'toast.error']).subscribe(t => {
+            // Reuse toast pattern? This component currently doesn't inject ToastService; keep it silent but log.
+            console.error(t['common.failedToLoadFile'] || 'Failed to open file');
+          });
+        }
+      });
+  }
+
   private loadItemDetails(): void {
     this.loading = true;
     this.error = null;
@@ -119,6 +151,30 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
             // Load image for stock tab
             if (this.itemId) {
               this.loadImage(this.itemId);
+            }
+
+            // Some list endpoints may omit `files` for performance; if so, re-fetch the parent inventory by ID
+            // and re-resolve this detail to ensure Delivery Receipt attachments are available.
+            const hasFiles = Array.isArray(this.inventoryDetail.files) && this.inventoryDetail.files.length > 0;
+            if (!hasFiles && this.inventoryDetail.inventoryId) {
+              this.inventoryService.getById(this.inventoryDetail.inventoryId)
+                .pipe(takeUntil(this.destroy$))
+                .subscribe({
+                  next: (inv) => {
+                    const enriched = inv?.inventoryDetails?.find(d => d.id === this.inventoryDetailId) || null;
+                    if (enriched) {
+                      // Replace with enriched detail so bindings (including `files`) are consistent with edit modal.
+                      const normalizedFiles = Array.isArray(enriched.files) ? enriched.files : [];
+                      this.inventoryDetail = {
+                        ...this.inventoryDetail!,
+                        ...enriched,
+                        files: normalizedFiles
+                      };
+                      this.cdr.markForCheck();
+                    }
+                  },
+                  error: () => { /* no-op: keep base detail */ }
+                });
             }
             // Load lots if stock tab is active
             if (this.activeTab === 'stock') {
@@ -339,6 +395,27 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Primary purpose for this lot row (current detail row uses loaded inventory detail; other lots use API fields).
+   */
+  getPrimaryPurposeForLot(lot: LotDetailDto): string {
+    if (this.inventoryDetail && lot.inventoryDetailId === this.inventoryDetail.id) {
+      return this.warehouseInventoryFormatter.getPrimaryPurposeName(this.inventoryDetail);
+    }
+    const lang = getCurrentLang(this.translateService);
+    if (lot.primaryPurpos) {
+      return getLocalizedName(lot.primaryPurpos, lang) || '-';
+    }
+    const id = lot.primaryPurposId;
+    if (id != null && lot.item?.primaryPurposes?.length) {
+      const match = lot.item.primaryPurposes.find(p => p.id === id);
+      if (match) {
+        return getLocalizedName(match, lang) || '-';
+      }
+    }
+    return '-';
+  }
+
+  /**
    * Get asset type from inventory detail item type or query param
    */
   getAssetType(): 'ammunition' | 'weapon' | 'explosive' | undefined {
@@ -433,61 +510,5 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
     } else {
       entityType = FileEntityType.Ammunition;
     }
-
-    // Get all files to find the latest one
-    this.fileUploadService.getFilesByEntity(entityType, itemId)
-      .pipe(
-        takeUntil(this.destroy$),
-        switchMap((files: any[]) => {
-          if (!files || files.length === 0) {
-            return of(null);
-          }
-
-          // Get main images (there might be multiple with isMain: true)
-          const mainImages = files.filter((img: any) => img.isMain);
-          let latestImage: any;
-          
-          if (mainImages.length > 0) {
-            // If multiple main images exist, get the one with highest ID (latest uploaded)
-            latestImage = mainImages.reduce((latest: any, current: any) => 
-              (current.id > latest.id) ? current : latest
-            );
-          } else {
-            // If no main image, get the image with highest ID (latest uploaded)
-            latestImage = files.reduce((latest: any, current: any) => 
-              (current.id > latest.id) ? current : latest
-            );
-          }
-          
-          if (!latestImage?.id) {
-            return of(null);
-          }
-
-          // Get the download URL for the latest image
-          const imageUrl = this.fileUploadService.getFileDownloadUrl(latestImage.id);
-          
-          // Fetch image as blob with authentication
-          return this.http.get(imageUrl, { responseType: 'blob' }).pipe(
-            switchMap((blob: Blob) => {
-              if (blob.type && blob.type.startsWith('image/')) {
-                const blobUrl = URL.createObjectURL(blob);
-                this.blobUrls.add(blobUrl);
-                this.imageUrl = blobUrl;
-                this.cdr.markForCheck();
-              }
-              return of(null);
-            }),
-            catchError((err) => {
-              console.warn('Failed to load image blob:', err);
-              return of(null);
-            })
-          );
-        }),
-        catchError((err) => {
-          console.warn('Failed to get files:', err);
-          return of(null);
-        })
-      )
-      .subscribe(() => this.cdr.markForCheck());
   }
 }

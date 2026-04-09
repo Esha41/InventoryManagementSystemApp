@@ -246,7 +246,7 @@ export class WeaponSupplyReviewService {
         const supplyDetails = this.batches.flatMap(batch =>
             batch.assets.map(a => ({
                 assetId: a.id,
-                conditionOnSupply: a.condition || undefined,
+                conditionOnSupply: undefined,
                 custodianId: batch.custodianMap.get(a.id),
                 notes: batch.notesMap.get(a.id) || undefined
             }))

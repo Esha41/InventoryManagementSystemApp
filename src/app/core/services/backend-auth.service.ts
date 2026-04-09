@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, throwError, of, timer, Subscription } from 'rxjs';
-import { map, tap, catchError, switchMap, finalize, shareReplay } from 'rxjs/operators';
+import { map, tap, catchError, switchMap, exhaustMap, finalize, shareReplay } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { StorageService } from './storage.service';
 import { ConfigService } from './config.service';
@@ -563,10 +563,9 @@ export class BackendAuthService {
   }
 
   /**
-   * Refresh access token using HttpOnly cookie.
-   * Serializes concurrent calls - only one refresh at a time.
+   * Single in-flight POST /refresh (refresh token rotates server-side; serialize callers).
    */
-  refreshToken(): Observable<LoginResponse> {
+  private getRefreshedLoginResponse(): Observable<LoginResponse> {
     if (!this.refreshInProgress) {
       this.refreshInProgress = this.apiService.postRaw<LoginResponse>(
         API_ENDPOINTS.AUTH.REFRESH,
@@ -579,14 +578,6 @@ export class BackendAuthService {
           }
           return res.data;
         }),
-        tap(data => {
-          this.storageService.set('auth_token', data.accessToken);
-          this.storageService.set('token_expires_at', new Date(data.expiresAt));
-          const user = this.getCurrentUser();
-          if (user) {
-            this.updateAuthState(user, data.accessToken, new Date(data.expiresAt));
-          }
-        }),
         finalize(() => {
           this.refreshInProgress = null;
         }),
@@ -594,6 +585,38 @@ export class BackendAuthService {
       );
     }
     return this.refreshInProgress;
+  }
+
+  /**
+   * Refresh access token using HttpOnly cookie.
+   * Serializes concurrent calls - only one refresh at a time.
+   */
+  refreshToken(): Observable<LoginResponse> {
+    return this.getRefreshedLoginResponse().pipe(
+      tap(data => {
+        this.storageService.set('auth_token', data.accessToken);
+        this.storageService.set('token_expires_at', new Date(data.expiresAt));
+        const user = this.getCurrentUser();
+        if (user) {
+          this.updateAuthState(user, data.accessToken, new Date(data.expiresAt));
+        }
+      })
+    );
+  }
+
+  /**
+   * After tab close, sessionStorage is empty but the HttpOnly refresh cookie may still be valid.
+   * Rehydrate user/permissions like a full login without showing the login page.
+   */
+  restoreSessionSilently(): Observable<boolean> {
+    if (this.isAuthenticated()) {
+      return of(true);
+    }
+    return this.getRefreshedLoginResponse().pipe(
+      switchMap(loginResponse => this.handleLoginSuccess(loginResponse)),
+      map(() => true),
+      catchError(() => of(false))
+    );
   }
 
   /**
@@ -874,11 +897,23 @@ export class BackendAuthService {
    */
   private startSessionHeartbeat(): void {
     this.stopSessionHeartbeat();
-    // timer(0, interval): first check immediately, then every 15s - detects Take over within 15 seconds
     this.sessionHeartbeatSubscription = timer(0, this.SESSION_HEARTBEAT_INTERVAL_MS).pipe(
-      switchMap(() => this.apiService.get<any>(API_ENDPOINTS.AUTH.USER_CLAIMS)),
-      catchError(() => of(null)) // Interceptor handles 401 (clearSession, redirect); we just avoid unhandled errors
+      exhaustMap(() =>
+        this.apiService.get<any>(API_ENDPOINTS.AUTH.USER_CLAIMS).pipe(
+          catchError(() => of(null))
+        )
+      )
     ).subscribe();
+  }
+
+  pauseSessionHeartbeat(): void {
+    this.stopSessionHeartbeat();
+  }
+
+  resumeSessionHeartbeat(): void {
+    if (this.isAuthenticated()) {
+      this.startSessionHeartbeat();
+    }
   }
 
   /**

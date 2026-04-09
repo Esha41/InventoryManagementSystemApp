@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnDestroy, OnInit, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Cartridge } from './components/cartridge-list/cartridge-list.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -24,6 +24,7 @@ import { IssueRequestUserContextService } from '@requests/services/issue-request
 import { IssueRequestCartridgeLoaderService } from '@requests/services/issue-request-cartridge-loader.service';
 import { IssueRequestCartridgeManagementService } from '@requests/services/issue-request-cartridge-management.service';
 import { IssueRequestSubmissionService } from '@requests/services/issue-request-submission.service';
+import { OnboardingTourService } from '@features/onboarding/services/onboarding-tour.service';
 import {
   RequestPurposeDto,
   FilterState,
@@ -91,7 +92,7 @@ interface ExtendedFilterOptions extends FilterOptions {
   styleUrls: ['./new-issue-request.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NewIssueRequestComponent implements OnInit, OnDestroy {
+export class NewIssueRequestComponent implements OnInit, OnDestroy, AfterViewInit {
   private destroy$ = new Subject<void>();
   private pendingSelections: Array<{ id: number; quantity: number }> | null = null;
   currentStep = 0;
@@ -118,7 +119,8 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     private cartridgeManagementService: IssueRequestCartridgeManagementService,
     private submissionService: IssueRequestSubmissionService,
     private toastService: ToastService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private onboardingTourService: OnboardingTourService
   ) { }
 
   // Grouped state objects
@@ -138,9 +140,16 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
 
   filterOptions: ExtendedFilterOptions = {
     itemTypeOptions: ['Ammunition', 'Explosive', 'Weapon'],
-    ammunitionTypeOptions: ['Small', 'Medium', 'Large'], // These map to backend Enums often
+    ammunitionTypeOptions: [
+      { label: 'newIssueRequest.ammunitionTypeSmall', value: 'Small' },
+      { label: 'newIssueRequest.ammunitionTypeMedium', value: 'Medium' },
+      { label: 'newIssueRequest.ammunitionTypeLarge', value: 'Large' }
+    ],
     bulletDiameters: [],
-    linkedOptions: ['Linked', 'Not Linked'],
+    linkedOptions: [
+      { label: 'newIssueRequest.linkedOptionLinked', value: 'Linked' },
+      { label: 'newIssueRequest.linkedOptionNotLinked', value: 'Not Linked' }
+    ],
     natureOptions: [],
     orderPriorities: [],
     weaponTypeOptions: [],
@@ -275,6 +284,10 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       this.userContextState.fallbackRequesterName,
       this.reviewFormData.requesterName
     );
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => this.onboardingTourService.checkAndStartPageTour('issue-request'), 300);
   }
 
   ngOnInit(): void {
@@ -444,6 +457,17 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
           this.clearQueryParams();
           this.cdr.markForCheck();
           return;
+        }
+
+        // Same route component can be reused after a successful submit; URL then shows step 0 while
+        // in-memory wizard state still holds the previous order. Start a clean flow.
+        if (this.orderSubmissionState.orderSubmitted && params.step === 0) {
+          this.resetForm();
+          if (this.route.snapshot.queryParamMap.keys.length > 0) {
+            this.clearQueryParams();
+            this.cdr.markForCheck();
+            return;
+          }
         }
 
         this.currentStep = params.step;
@@ -823,9 +847,26 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   private resetForm(): void {
     this.currentStep = 0;
     this.steps.forEach(s => s.completed = false);
+    this.filterState = {
+      selectedItemType: 'Ammunition',
+      selectedAmmunitionType: '',
+      selectedBulletDiameter: '',
+      selectedLinked: '',
+      selectedNature: '',
+      selectedNSN: '',
+      searchTerm: '',
+      selectedWeaponType: '',
+      selectedCaliber: '',
+      selectedExplosiveType: '',
+      selectedUNNumber: ''
+    };
     this.cartridgeState.selectedEntries = [];
     this.cartridgeState.allCartridges = [];
     this.cartridgeState.filteredCartridges = [];
+    this.cartridgeState.selectedCartridgeForView = null;
+    this.cartridgeState.showCartridgeDetails = false;
+    this.cartridgeState.loadingCartridges = false;
+    this.cartridgeState.cartridgeError = null;
     this.cartridgeState.selectedCartridgesCache.clear();
     this.fromReserve = 'Yes'; // Reset to default
     this.usageFormData = {
@@ -840,6 +881,18 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       orderPriority: ''
     };
     this.usageFormFiles = [];
+    this.requestPurposeState.selectedRequestPurposeId = null;
+    this.updateUsePurposeFromSelection(null);
+    this.reserveDetailsState = {
+      totalReserve: 0,
+      availableReserve: 0,
+      orderedQuantity: 0,
+      usedQuantity: 0,
+      loadingReserveDetails: false,
+      reserveDetailsByItem: []
+    };
+    this.allowanceError = null;
+    this.showConfirmDialog = false;
     // Reset order submission state
     this.orderSubmissionState = {
       submittingOrder: false,
@@ -855,5 +908,6 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       orderDocument: ''
     };
     this.pendingSelections = null;
+    this.syncRequesterNameFromUserDetails();
   }
 }

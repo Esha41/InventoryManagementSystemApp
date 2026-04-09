@@ -1,5 +1,5 @@
 import { Asset, AssetFilterState, AssetSortState } from '../models/asset-list.model';
-import { LookupDto } from '../models/ammunition.model';
+import { AmmunitionReadDto, LookupDto } from '../models/ammunition.model';
 import { LookupItem } from '../models/lookup.model';
 import { DropdownOption } from '../../shared/components/dropdown/dropdown.component';
 import { getLocalizedName, getCurrentLang } from './localization.utils';
@@ -50,6 +50,33 @@ export function createFilterOptions(
     }));
 }
 
+/** Catalog item DTO shape for primary purpose (ammunition / weapon / explosive). */
+type CatalogPrimaryPurposeDto = Pick<
+  AmmunitionReadDto,
+  'primaryPurposId' | 'primaryPurposes' | 'primaryPurpos'
+>;
+
+/**
+ * Whether a catalog asset matches a single primary-purpose id (junction list, legacy single nav, or scalar id).
+ */
+export function assetMatchesCatalogPrimaryPurpose(asset: Asset, purposeId: number): boolean {
+  const od = asset.originalData as CatalogPrimaryPurposeDto | undefined;
+  if (!od) return false;
+  if (od.primaryPurposId != null && od.primaryPurposId === purposeId) {
+    return true;
+  }
+  if (od.primaryPurposes?.length) {
+    return od.primaryPurposes.some(p => p.id != null && p.id === purposeId);
+  }
+  const single = od.primaryPurpos?.id;
+  return single != null && single === purposeId;
+}
+
+/** @deprecated Use assetMatchesCatalogPrimaryPurpose (same behavior). */
+export function assetMatchesAmmunitionPrimaryPurpose(asset: Asset, purposeId: number): boolean {
+  return assetMatchesCatalogPrimaryPurpose(asset, purposeId);
+}
+
 /**
  * Filters assets based on filter state
  */
@@ -81,10 +108,8 @@ export function filterAssets(
         }
       }
 
-      // Primary purpose filter
-      if (filterState.selectedPrimaryPurpose) {
-        const assetPrimaryPurposeId = originalData?.primaryPurpos?.id;
-        if (assetPrimaryPurposeId !== parseInt(filterState.selectedPrimaryPurpose)) {
+      if (filterState.selectedPrimaryPurposeId != null) {
+        if (!assetMatchesCatalogPrimaryPurpose(asset, filterState.selectedPrimaryPurposeId)) {
           return false;
         }
       }
@@ -123,6 +148,12 @@ export function filterAssets(
           return false;
         }
       }
+
+      if (filterState.selectedWeaponPrimaryPurposeId != null) {
+        if (!assetMatchesCatalogPrimaryPurpose(asset, filterState.selectedWeaponPrimaryPurposeId)) {
+          return false;
+        }
+      }
     } else if (activeTab === 'explosive') {
       // Access original data for filtering by IDs
       const originalData = asset.originalData as any;
@@ -155,6 +186,12 @@ export function filterAssets(
       if (filterState.selectedExplosiveCompatibility) {
         const assetCompatibilityId = originalData?.compatibility?.id;
         if (assetCompatibilityId !== parseInt(filterState.selectedExplosiveCompatibility)) {
+          return false;
+        }
+      }
+
+      if (filterState.selectedExplosivePrimaryPurposeId != null) {
+        if (!assetMatchesCatalogPrimaryPurpose(asset, filterState.selectedExplosivePrimaryPurposeId)) {
           return false;
         }
       }

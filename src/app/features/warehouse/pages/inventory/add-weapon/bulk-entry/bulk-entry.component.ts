@@ -12,7 +12,7 @@ import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 
 // Models
-import { CreateAssetDto } from '@models/asset.model';
+import { CreateAssetDto, UpdateAssetDto } from '@models/asset.model';
 
 // Components
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
@@ -22,6 +22,8 @@ import { HasPermissionDirective } from '@core/directives/has-permission.directiv
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { trackByIndex } from '@utils/trackby.utils';
 
+type BulkAssignMode = 'none' | 'department' | 'employee';
+
 interface BulkAssetData {
     warehouseId: number;
     itemId: number;
@@ -29,9 +31,16 @@ interface BulkAssetData {
     quantity: number;
     purchaseDate?: string;
     warrantyExpiryDate?: string;
-    condition?: string;
     purchasePrice?: number;
+    deliveryReceipt?: string;
     notes?: string;
+    supplierId?: number;
+    manufacturerId?: number;
+    primaryPurposId?: number;
+    assignMode?: BulkAssignMode;
+    assignToEmployeeId?: number;
+    assignToDepartmentId?: number;
+    assignmentNotes?: string;
 }
 
 @Component({
@@ -70,6 +79,7 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
     errorMessage: string | null = null;
     bulkProgress = { current: 0, total: 0 };
     isProcessingBulk = false;
+    deliveryReceiptFiles: File[] = [];
 
     private destroy$ = new Subject<void>();
 
@@ -138,6 +148,7 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
         }
 
         this.bulkEntryForm = this.fb.group({
+            deliveryReceipt: [this.bulkData.deliveryReceipt || ''],
             items: itemsArray
         });
     }
@@ -145,8 +156,7 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
     private createItemFormGroup(index: number): FormGroup {
         return this.fb.group({
             serialNumber: ['', [Validators.maxLength(200)]],
-            rfid: ['', [Validators.maxLength(500)]],
-            assetTag: ['', [Validators.maxLength(100)]]
+            rfid: ['', [Validators.maxLength(500)]]
         });
     }
 
@@ -198,18 +208,36 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
         }
 
         const formValue = this.bulkEntryForm.value;
-        const createDtos: CreateAssetDto[] = formValue.items.map((item: any, index: number) => ({
+        const mode = this.bulkData.assignMode ?? 'none';
+        const assignmentNotes = this.bulkData.assignmentNotes?.trim();
+        const assignmentPayload: Pick<CreateAssetDto, 'assignToEmployeeId' | 'assignToDepartmentId' | 'assignmentNotes'> = {};
+        if (mode === 'employee' && this.bulkData.assignToEmployeeId != null && this.bulkData.assignToEmployeeId > 0) {
+            assignmentPayload.assignToEmployeeId = this.bulkData.assignToEmployeeId;
+            if (assignmentNotes) {
+                assignmentPayload.assignmentNotes = assignmentNotes;
+            }
+        } else if (mode === 'department' && this.bulkData.assignToDepartmentId != null && this.bulkData.assignToDepartmentId > 0) {
+            assignmentPayload.assignToDepartmentId = this.bulkData.assignToDepartmentId;
+            if (assignmentNotes) {
+                assignmentPayload.assignmentNotes = assignmentNotes;
+            }
+        }
+
+        const createDtos: CreateAssetDto[] = formValue.items.map((item: any) => ({
             itemId: this.bulkData.itemId,
             batchNumber: this.bulkData.batchNumber,
             depotId: this.warehouseId,
             serialNumber: item.serialNumber?.trim() || undefined,
             rfid: item.rfid?.trim() || undefined,
-            assetTag: item.assetTag?.trim() || undefined,
             purchaseDate: this.bulkData.purchaseDate || undefined,
             warrantyExpiryDate: this.bulkData.warrantyExpiryDate || undefined,
-            condition: this.bulkData.condition?.trim() || undefined,
+            deliveryReceipt: (formValue.deliveryReceipt?.trim && formValue.deliveryReceipt.trim()) || undefined,
             purchasePrice: this.bulkData.purchasePrice || undefined,
-            notes: this.bulkData.notes?.trim() || undefined
+            notes: this.bulkData.notes?.trim() || undefined,
+            supplierId: this.bulkData.supplierId,
+            manufacturerId: this.bulkData.manufacturerId,
+            primaryPurposId: this.bulkData.primaryPurposId,
+            ...assignmentPayload
         }));
 
         if (createDtos.length === 0) return;
@@ -223,10 +251,10 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
         // Create assets in bulk
         this.bulkProgress = { current: 0, total: createDtos.length }; // Initial state
 
-        this.assetService.createBulk(createDtos)
+        this.assetService.createBulk<number[]>(createDtos)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
-                next: () => {
+                next: (ids: number[]) => {
                     this.submitting = false;
                     this.isProcessingBulk = false;
                     this.bulkProgress = { current: createDtos.length, total: createDtos.length };
@@ -240,6 +268,20 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
                         const title = translations['toast.success'];
                         this.toastService.success(message, title);
                     });
+
+                    // If attachments selected, upload to all created assets and set deliveryReceipt if provided
+                    const deliveryReceiptValue: string | undefined = (this.bulkEntryForm.value.deliveryReceipt?.trim && this.bulkEntryForm.value.deliveryReceipt.trim()) || undefined;
+                    if (Array.isArray(ids) && ids.length && (this.deliveryReceiptFiles.length || deliveryReceiptValue)) {
+                        ids.forEach(id => {
+                            const updateDto: UpdateAssetDto = {
+                                itemId: this.bulkData.itemId,
+                                deliveryReceipt: deliveryReceiptValue
+                            };
+                            this.assetService.update(id, updateDto, this.deliveryReceiptFiles.length ? this.deliveryReceiptFiles : undefined)
+                                .pipe(takeUntil(this.destroy$))
+                                .subscribe();
+                        });
+                    }
 
                     // Redirect after a short delay - return to weapons tab
                     setTimeout(() => {
@@ -271,6 +313,37 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
 
     onBack(): void {
         this.router.navigate(['/warehouse', this.warehouseId, 'assets', 'add']);
+    }
+
+    onAttachmentChange(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        const newlySelected = input.files ? Array.from(input.files) : [];
+        if (newlySelected.length) {
+            const combined = [...this.deliveryReceiptFiles, ...newlySelected];
+            const seen = new Set<string>();
+            this.deliveryReceiptFiles = combined.filter(f => {
+                const key = `${f.name}::${f.size}::${(f as any).lastModified ?? 0}`;
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            });
+        }
+        // Keep input value to allow further appends; not clearing here
+    }
+
+    removeAttachment(index: number): void {
+        if (index >= 0 && index < this.deliveryReceiptFiles.length) {
+            this.deliveryReceiptFiles.splice(index, 1);
+        }
+    }
+
+    getFileSize(file: File): string {
+        const bytes = file.size;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        if (bytes === 0) return '0 Bytes';
+        const i = Math.floor(Math.log(bytes) / Math.log(1024));
+        const value = (bytes / Math.pow(1024, i)).toFixed(2);
+        return `${value} ${sizes[i]}`;
     }
 }
 

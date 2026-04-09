@@ -129,9 +129,33 @@ export class InventoryService implements IImportableService {
   /**
    * Create a new inventory with details
    */
-  create(dto: CreateInventoryDto): Observable<InventoryDto> {
+  create(dto: CreateInventoryDto, files?: File[]): Observable<InventoryDto> {
     this.config.log('Creating inventory', { depoId: dto.depoId });
-    return this.apiService.post<InventoryDto>(this.endpoint, dto);
+    const formData = new FormData();
+    // Append root-level fields
+    Object.entries(dto).forEach(([key, value]) => {
+      if (key === 'inventoryDetails') return;
+      if (value === null || value === undefined) return;
+      if (value instanceof Date) {
+        formData.append(key, value.toISOString());
+      } else {
+        formData.append(key, String(value));
+      }
+    });
+    // Append inventoryDetails as form fields
+    dto.inventoryDetails?.forEach((detail, idx) => {
+      Object.entries(detail).forEach(([k, v]) => {
+        if (v === null || v === undefined) return;
+        const field = `inventoryDetails[${idx}].${k}`;
+        if (v instanceof Date) {
+          formData.append(field, v.toISOString());
+        } else {
+          formData.append(field, String(v));
+        }
+      });
+    });
+    (files || []).forEach(f => formData.append('files', f, f.name));
+    return this.apiService.post<InventoryDto>(this.endpoint, formData);
   }
 
   /**
@@ -166,10 +190,23 @@ export class InventoryService implements IImportableService {
 
   /**
    * Update an existing inventory and its details
+   * Always sends multipart/form-data to support optional file attachments.
    */
-  update(id: number, dto: UpdateInventoryDto): Observable<InventoryDto> {
+  // Overloads to support existing two-arg callers and new files parameter
+  update(id: number, dto: UpdateInventoryDto): Observable<InventoryDto>;
+  update(id: number, dto: UpdateInventoryDto, files?: File[], filesItemId?: number): Observable<InventoryDto>;
+  update(id: number, dto: UpdateInventoryDto, files?: File[], filesItemId?: number): Observable<InventoryDto> {
     this.config.log('Updating inventory', { id });
-    return this.apiService.put<InventoryDto>(`${this.endpoint}/${id}`, dto);
+    const formData = new FormData();
+    // Send the entire DTO as JSON string under 'dto' to match backend [FromForm] binding
+    formData.append('dto', JSON.stringify(dto));
+    // Append files if any
+    (files || []).forEach(f => formData.append('files', f, f.name));
+    if (filesItemId) {
+      formData.append('filesItemId', String(filesItemId));
+    }
+
+    return this.apiService.put<InventoryDto>(`${this.endpoint}/${id}`, formData);
   }
 
   /**
@@ -320,6 +357,17 @@ export interface LotDetailDto {
     id: number;
     nameAr?: string;
     nameEn?: string;
+  };
+  /** Lot-level selected purpose (when returned by API) */
+  primaryPurposId?: number;
+  primaryPurpos?: {
+    id: number;
+    nameAr: string;
+    nameEn: string;
+  };
+  /** Catalog purposes for resolving id when navigation is partial */
+  item?: {
+    primaryPurposes?: Array<{ id: number; nameAr: string; nameEn: string }>;
   };
 }
 

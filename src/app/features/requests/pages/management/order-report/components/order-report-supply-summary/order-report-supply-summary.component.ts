@@ -65,6 +65,12 @@ export class OrderReportSupplySummaryComponent implements OnInit, OnChanges, OnD
     return 'workflowApprovalDetail.workflowSupplySummary.fulfillmentPartial';
   }
 
+  suppliedColumnKey(): string {
+    return this.summary?.isOrderCompleted
+      ? 'requestsManagement.orderReport.table.suppliedQty'
+      : 'requestsManagement.orderReport.table.shouldBeSuppliedQty';
+  }
+
   depotDisplay(line: { depotName?: string | null; depotCode?: string | null }): string {
     const name = (line.depotName || '').trim();
     const code = (line.depotCode || '').trim();

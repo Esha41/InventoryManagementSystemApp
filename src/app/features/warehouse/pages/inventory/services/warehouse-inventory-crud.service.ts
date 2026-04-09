@@ -49,7 +49,9 @@ export class WarehouseInventoryCrudService {
     detail: InventoryDetailDto,
     inventory: InventoryDto,
     updateDetailDto: UpdateInventoryDetailDto,
-    updateInventoryDto?: UpdateInventoryDto
+    updateInventoryDto?: UpdateInventoryDto,
+    files?: File[],
+    removedFileIds?: number[]
   ): Observable<EditInventoryDetailResult> {
     // Update the inventory with modified detail and invoice information
     const finalUpdateInventoryDto: UpdateInventoryDto = updateInventoryDto || {
@@ -73,11 +75,16 @@ export class WarehouseInventoryCrudService {
         originalQuantity: d.originalQuantity,
         batchNo: d.batchNo,
         expiryDate: d.expiryDate,
-        readyForIssue: d.readyForIssue ?? true
+        readyForIssue: d.readyForIssue ?? true,
+        primaryPurposId: d.primaryPurposId
       }
     );
 
-    return this.inventoryService.update(inventory.id, finalUpdateInventoryDto)
+    // Pass removed file ids to backend (deleted during Inventory update)
+    (finalUpdateInventoryDto as any).removedFileIds = removedFileIds && removedFileIds.length ? removedFileIds : undefined;
+
+    const filesItemId = detail.itemId;
+    return this.inventoryService.update(inventory.id, finalUpdateInventoryDto, files, filesItemId)
       .pipe(
         switchMap((updatedInventory: InventoryDto) => {
           // Show success message
@@ -161,7 +168,8 @@ export class WarehouseInventoryCrudService {
                 originalQuantity: d.originalQuantity,
                 batchNo: d.batchNo,
                 expiryDate: d.expiryDate,
-                readyForIssue: d.readyForIssue ?? true
+                readyForIssue: d.readyForIssue ?? true,
+                primaryPurposId: d.primaryPurposId
               }))
             };
 

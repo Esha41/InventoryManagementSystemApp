@@ -11,8 +11,6 @@ export interface AssetToSupplyDto {
   id: number;
   serialNumber: string;
   rfid?: string;
-  assetTag?: string;
-  condition?: string;
   status?: number;
   purchaseDate?: string;
   depotId: number;

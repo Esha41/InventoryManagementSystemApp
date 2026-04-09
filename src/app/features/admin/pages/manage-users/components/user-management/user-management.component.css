@@ -1,1 +1,13 @@
 /* User Management Component Styles */
+
+/* Long usernames / display names: wrap instead of stretching the table. */
+.user-management__user-col,
+.user-management__name-col {
+  max-width: min(40rem, 55vw);
+  min-width: 0;
+}
+
+.user-management__cell-wrap {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}

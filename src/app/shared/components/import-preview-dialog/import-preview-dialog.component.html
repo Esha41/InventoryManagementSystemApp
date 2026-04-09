@@ -11,6 +11,10 @@
             </button>
         </div>
 
+        <p *ngIf="assetType === 'batch' && previewData" class="batch-import-hint">
+            {{ 'import.batchExcelPreviewHint' | translate }}
+        </p>
+
         <!-- Summary Stats -->
         <div class="summary-stats" *ngIf="previewData">
             <div class="stat-card stat-total">
@@ -38,8 +42,8 @@
             <div class="error-banner-content">
                 <lucide-icon [img]="AlertCircle" [size]="20"></lucide-icon>
                 <div class="error-banner-text">
-                    <strong>{{ 'import.errorBannerTitle' | translate }}</strong>
-                    <p>{{ 'import.errorBannerMessage' | translate: { count: previewData?.invalidRows } }}</p>
+                    <strong>{{ (isAllowSkipMode ? 'import.partialImportBannerTitle' : 'import.errorBannerTitle') | translate }}</strong>
+                    <p>{{ (isAllowSkipMode ? 'import.partialImportBannerMessage' : 'import.errorBannerMessage') | translate: { count: previewData?.invalidRows } }}</p>
                 </div>
             </div>
             <button type="button" class="btn btn-download-errors" (click)="downloadErrorReport()">
@@ -127,9 +131,13 @@
         <!-- Footer Actions -->
         <div class="modal-footer">
             <div class="footer-info">
-                <span *ngIf="hasInvalidRows()" class="error-footer-text">
+                <span *ngIf="hasInvalidRows() && !isAllowSkipMode" class="error-footer-text">
                     <lucide-icon [img]="AlertCircle" [size]="16"></lucide-icon>
                     {{ 'import.cannotImportWithErrors' | translate }}
+                </span>
+                <span *ngIf="hasInvalidRows() && isAllowSkipMode" class="error-footer-text" style="color: var(--color-warning, #d97706);">
+                    <lucide-icon [img]="AlertCircle" [size]="16"></lucide-icon>
+                    {{ 'import.partialImportFooterHint' | translate: { validCount: previewData?.validRows, invalidCount: previewData?.invalidRows } }}
                 </span>
                 <span *ngIf="!hasInvalidRows() && previewData && previewData.validRows > 0" class="success-footer-text">
                     <lucide-icon [img]="CheckCircle" [size]="16"></lucide-icon>
@@ -140,11 +148,26 @@
                 <button type="button" class="btn btn-secondary" (click)="onCancel()">
                     {{ 'common.cancel' | translate }}
                 </button>
-                <button type="button" class="btn btn-primary" [disabled]="!canConfirm()" (click)="onConfirm()">
+                <button type="button" class="btn btn-primary" [disabled]="!canConfirm()" (click)="onConfirmClick()">
                     <lucide-icon [img]="Upload" [size]="16"></lucide-icon>
                     {{ 'import.confirmImport' | translate }}
                 </button>
             </div>
         </div>
     </div>
+</div>
+
+<!-- Partial-import confirmation dialog — must sit above the preview overlay (z-1000) -->
+<div *ngIf="showSkipConfirm" class="fixed inset-0" style="z-index: 1100;">
+    <app-confirm-dialog
+        [isOpen]="showSkipConfirm"
+        [title]="skipConfirmTitle"
+        [message]="skipConfirmMessage"
+        [description]="skipConfirmDescription"
+        [confirmText]="'import.confirmImport' | translate"
+        [cancelText]="'common.cancel' | translate"
+        confirmVariant="primary"
+        (confirmed)="onSkipConfirmAccepted()"
+        (cancelled)="onSkipConfirmCancelled()">
+    </app-confirm-dialog>
 </div>

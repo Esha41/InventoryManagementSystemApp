@@ -13,12 +13,6 @@
       <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
         {{ 'warehouseInventory.rfidTag' | translate }}
       </th>
-      <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-        {{ 'warehouseInventory.assetTag' | translate }}
-      </th>
-      <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-        {{ 'warehouseInventory.condition' | translate }}
-      </th>
       <th class="px-6 py-3 text-end text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider w-36">
         {{ 'warehouseInventory.actions' | translate }}
       </th>
@@ -27,7 +21,7 @@
   <tbody class="divide-y divide-[var(--color-border)] bg-[var(--color-background)]">
     <!-- Empty State -->
     <tr *ngIf="assets.length === 0">
-      <td colspan="8" class="px-6 py-12 text-center bg-[var(--color-background)]">
+      <td colspan="6" class="px-6 py-12 text-center bg-[var(--color-background)]">
         <p class="text-[var(--color-text-muted)]">{{ 'warehouseInventory.noAssets' | translate }}</p>
       </td>
     </tr>
@@ -45,12 +39,6 @@
       </td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
         {{ asset.rfid || '-' }}
-      </td>
-      <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
-        {{ asset.assetTag || '-' }}
-      </td>
-      <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
-        {{ asset.condition || '-' }}
       </td>
       <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium w-36">
         <div class="inline-flex items-center gap-2">

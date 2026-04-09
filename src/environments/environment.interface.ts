@@ -14,11 +14,14 @@ export interface Environment {
   debugMode?: boolean;
   mockData?: boolean;
   /**
-   * Minutes without mouse/keyboard/touch before the “still there?” modal appears.
-   * Set to match backend JWT AccessTokenExpireInMinutes when you want the same policy (e.g. 15).
-   * Time until auto-logout after going idle ≈ this value in minutes + idleLogoutCountdownSeconds.
+   * Minutes without mouse/keyboard/touch before the "still there?" modal appears.
+   * MUST be less than backend JWT AccessTokenExpireInMinutes so the idle dialog
+   * appears before the access token expires; otherwise the HTTP interceptor will
+   * redirect to the login page before the countdown is shown.
+   * Time until auto-logout after going idle ≈ this value + idleLogoutCountdownSeconds.
    */
   idleWarningAfterMinutes?: number;
   /** Seconds shown in the modal before logout if the user takes no action. */
   idleLogoutCountdownSeconds?: number;
+  persistAuthAcrossSessions?: boolean;
 }

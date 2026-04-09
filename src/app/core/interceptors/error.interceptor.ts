@@ -27,8 +27,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           // Backend returned an error response
           if (typeof error.error === 'string') {
             errorMessage = error.error;
-          } else if (error.error.message) {
-            errorMessage = error.error.message;
+          } else if (error.error.message || error.error.Message) {
+            errorMessage = error.error.message ?? error.error.Message;
           } else if (error.error.errors) {
             // Handle validation errors array
             errorDetails = Array.isArray(error.error.errors) 

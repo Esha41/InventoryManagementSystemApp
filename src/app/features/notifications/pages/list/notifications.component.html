@@ -215,8 +215,10 @@
                   <div class="detail-field">
                     <span class="detail-field__label">{{ 'notifications.details.requester' | translate }}</span>
                     <span class="detail-field__value">{{ getLocalizedRequesterName(
-                      orderDetail.requester?.fullNameEN || orderDetail.requester?.fullNameAR ||
-                      orderDetail.requester?.userName || orderDetail.requesterName
+                      orderDetail.requester?.fullNameEN || orderDetail.requesterNameEn || orderDetail.requesterName,
+                      orderDetail.requester?.fullNameAR || orderDetail.requesterNameAr,
+                      orderDetail.requester?.userName,
+                      orderDetail.requesterName
                       ) }}</span>
                   </div>
                   <div class="detail-field" *ngIf="orderDetail.priority">
@@ -270,8 +272,11 @@
                   </div>
                   <div class="detail-field">
                     <span class="detail-field__label">{{ 'notifications.details.requester' | translate }}</span>
-                    <span class="detail-field__value">{{ getLocalizedRequesterName(returnDetail.requester?.fullNameEN ||
-                      returnDetail.requester?.fullNameAR || returnDetail.requester?.userName) }}</span>
+                    <span class="detail-field__value">{{ getLocalizedRequesterName(
+                      returnDetail.requester?.fullNameEN,
+                      returnDetail.requester?.fullNameAR,
+                      returnDetail.requester?.userName
+                      ) }}</span>
                   </div>
                   <div class="detail-field" *ngIf="returnDetail.priority">
                     <span class="detail-field__label">{{ 'notifications.details.priority' | translate }}</span>
@@ -329,8 +334,11 @@
                   </div>
                   <div class="detail-field">
                     <span class="detail-field__label">{{ 'notifications.details.requester' | translate }}</span>
-                    <span class="detail-field__value">{{ getLocalizedRequesterName(discardDetail.requester?.fullNameEN
-                      || discardDetail.requester?.fullNameAR || discardDetail.requester?.userName)
+                    <span class="detail-field__value">{{ getLocalizedRequesterName(
+                      discardDetail.requester?.fullNameEN,
+                      discardDetail.requester?.fullNameAR,
+                      discardDetail.requester?.userName
+                      )
                       }}</span>
                   </div>
                   <div class="detail-field" *ngIf="discardDetail.priority">

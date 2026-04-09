@@ -52,7 +52,7 @@
       "requestId": "رقم الطلب",
       "requestDate": "تاريخ الطلب",
       "usageDate": "تاريخ الاستخدام",
-      "department": "القسم",
+      "department": "الوحدة",
       "requester": "مقدم الطلب",
       "priority": "الأولوية",
       "status": "الحالة",
@@ -73,7 +73,8 @@
       "returnApproved": "تمت الموافقة على طلب الإرجاع",
       "returnRejected": "تم رفض طلب الإرجاع",
       "discardApproved": "تمت الموافقة على طلب الإتلاف",
-      "discardRejected": "تم رفض طلب الإتلاف"
+      "discardRejected": "تم رفض طلب الإتلاف",
+      "approvalRequired": "مطلوب موافقة جديدة"
     },
     "messages": {
       "orderCreated": "تم إنشاء الطلب {{requestNo}}{{fromAllowance}}.",
@@ -85,15 +86,18 @@
       "returnApproved": "تمت الموافقة على طلب الإرجاع {{requestNo}}.",
       "returnRejected": "تم رفض طلب الإرجاع {{requestNo}}.",
       "discardApproved": "تمت الموافقة على طلب الإتلاف {{requestNo}}.",
-      "discardRejected": "تم رفض طلب الإتلاف {{requestNo}}."
+      "discardRejected": "تم رفض طلب الإتلاف {{requestNo}}.",
+      "requestAwaitingApproval": "طلب بانتظار موافقتك."
     },
     "entityTypes": {
       "order": "صرف",
       "return": "إرجاع",
       "discard": "إتلاف",
+      "request": "طلب",
       "Order": "صرف",
       "Return": "إرجاع",
-      "Discard": "إتلاف"
+      "Discard": "إتلاف",
+      "Request": "طلب"
     }
   },
   "toast": {

@@ -216,8 +216,6 @@
                                         <div>
                                             <div class="font-mono text-sm font-bold text-[var(--color-brand)]">{{
                                                 asset.serialNumber || '-' }}</div>
-                                            <div class="text-xs text-[var(--color-text-muted)]">{{ asset.assetTag || '-'
-                                                }}</div>
                                         </div>
                                         <lucide-angular [img]="getExpandIcon(isAssetExpanded(asset.id))"
                                             class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
@@ -229,8 +227,6 @@
                                             asset.location || '-' }}</div>
                                         <div><span class="text-[var(--color-text-muted)] block">Assignee:</span> {{
                                             getAssetAssigneeName(asset) }}</div>
-                                        <div><span class="text-[var(--color-text-muted)] block">Cond:</span> {{
-                                            asset.condition || '-' }}</div>
                                     </div>
 
                                     <!-- Asset History Mobile -->
@@ -484,10 +480,6 @@
                                                             </th>
                                                             <th
                                                                 class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-                                                                {{ 'warehouseInventory.assetTag' | translate }}
-                                                            </th>
-                                                            <th
-                                                                class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
                                                                 {{ 'inventorySummary.depot' | translate }}
                                                             </th>
                                                             <th
@@ -497,10 +489,6 @@
                                                             <th
                                                                 class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
                                                                 {{ 'warehouseInventory.location' | translate }}
-                                                            </th>
-                                                            <th
-                                                                class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-                                                                {{ 'warehouseInventory.condition' | translate }}
                                                             </th>
                                                         </tr>
                                                     </thead>
@@ -524,10 +512,6 @@
                                                                 </td>
                                                                 <td
                                                                     class="px-4 py-3 whitespace-nowrap text-sm text-[var(--color-text)]">
-                                                                    {{ asset.assetTag || '-' }}
-                                                                </td>
-                                                                <td
-                                                                    class="px-4 py-3 whitespace-nowrap text-sm text-[var(--color-text)]">
                                                                     {{ getAssetDepotName(asset) }}
                                                                 </td>
                                                                 <td
@@ -538,16 +522,12 @@
                                                                     class="px-4 py-3 whitespace-nowrap text-sm text-[var(--color-text)]">
                                                                     {{ asset.location || '-' }}
                                                                 </td>
-                                                                <td
-                                                                    class="px-4 py-3 whitespace-nowrap text-sm text-[var(--color-text)]">
-                                                                    {{ asset.condition || '-' }}
-                                                                </td>
                                                             </tr>
 
                                                             <!-- Asset History Expansion -->
                                                             <tr *ngIf="isAssetExpanded(asset.id)"
                                                                 class="bg-[var(--color-background-muted)]/50">
-                                                                <td colspan="8" class="p-4 pl-12">
+                                                                <td colspan="6" class="p-4 pl-12">
                                                                     <div
                                                                         class="bg-white rounded-lg border border-[var(--color-border)] p-4 shadow-sm">
                                                                         <div

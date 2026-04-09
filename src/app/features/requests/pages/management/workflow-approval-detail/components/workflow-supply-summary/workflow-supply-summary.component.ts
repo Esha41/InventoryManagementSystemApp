@@ -119,6 +119,12 @@ export class WorkflowSupplySummaryComponent implements OnInit, OnChanges {
     return 'workflowApprovalDetail.workflowSupplySummary.fulfillmentPartial';
   }
 
+  suppliedColumnKey(): string {
+    return this.summary?.isOrderCompleted
+      ? 'workflowApprovalDetail.workflowSupplySummary.colSupplied'
+      : 'workflowApprovalDetail.workflowSupplySummary.colShouldBeSupplied';
+  }
+
   depotDisplay(line: { depotName?: string | null; depotCode?: string | null }): string {
     const name = (line.depotName || '').trim();
     const code = (line.depotCode || '').trim();

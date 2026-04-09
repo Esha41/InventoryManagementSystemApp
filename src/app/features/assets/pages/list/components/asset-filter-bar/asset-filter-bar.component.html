@@ -20,7 +20,7 @@
           </div>
           <input type="text" [(ngModel)]="filterState.searchTerm"
             (keyup.enter)="onSearchClick()"
-            [placeholder]="'assetList.searchPlaceholder' | translate"
+            [placeholder]="(activeTab === 'weapon' ? 'assetList.searchPlaceholderWeapons' : 'assetList.searchPlaceholder') | translate"
             class="w-full ps-10 pe-24 py-2.5 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] focus:bg-[var(--color-background)] outline-none transition-all" />
           <div class="absolute inset-y-0 end-0 pe-2 flex items-center gap-1">
             <button *ngIf="filterState.searchTerm" (click)="clearSearch()"
@@ -46,11 +46,11 @@
         </app-dropdown>
       </div>
 
-      <div *ngIf="activeTab === 'ammunition'" class="w-full sm:w-[180px]">
+      <div *ngIf="activeTab === 'ammunition'" class="w-full sm:w-[220px]">
         <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
           {{ 'assetList.filters.primaryPurpose' | translate }}
         </label>
-        <app-dropdown class="w-full" [(ngModel)]="filterState.selectedPrimaryPurpose"
+        <app-dropdown class="w-full" [(ngModel)]="filterState.selectedPrimaryPurposeId"
           (selectionChange)="onFilterChange()" [options]="filterOptions.primaryPurpose" optionLabel="label"
           optionValue="value" [placeholderSelectable]="false"
           placeholder="{{ 'assetList.filters.allPrimaryPurposes' | translate }}">
@@ -102,6 +102,17 @@
         </app-dropdown>
       </div>
 
+      <div *ngIf="activeTab === 'weapon'" class="w-full sm:w-[220px]">
+        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+          {{ 'assetList.filters.primaryPurpose' | translate }}
+        </label>
+        <app-dropdown class="w-full" [(ngModel)]="filterState.selectedWeaponPrimaryPurposeId"
+          (selectionChange)="onFilterChange()" [options]="filterOptions.primaryPurpose" optionLabel="label"
+          optionValue="value" [placeholderSelectable]="false"
+          placeholder="{{ 'assetList.filters.allPrimaryPurposes' | translate }}">
+        </app-dropdown>
+      </div>
+
       <!-- Explosive Filters -->
       <div *ngIf="activeTab === 'explosive'" class="w-full sm:w-[180px]">
         <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
@@ -144,6 +155,17 @@
           (selectionChange)="onFilterChange()" [options]="filterOptions.explosiveCompatibility" optionLabel="label"
           optionValue="value" [placeholderSelectable]="false"
           placeholder="{{ 'assetList.filters.allCompatibility' | translate }}">
+        </app-dropdown>
+      </div>
+
+      <div *ngIf="activeTab === 'explosive'" class="w-full sm:w-[220px]">
+        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+          {{ 'assetList.filters.primaryPurpose' | translate }}
+        </label>
+        <app-dropdown class="w-full" [(ngModel)]="filterState.selectedExplosivePrimaryPurposeId"
+          (selectionChange)="onFilterChange()" [options]="filterOptions.primaryPurpose" optionLabel="label"
+          optionValue="value" [placeholderSelectable]="false"
+          placeholder="{{ 'assetList.filters.allPrimaryPurposes' | translate }}">
         </app-dropdown>
       </div>
     </div>

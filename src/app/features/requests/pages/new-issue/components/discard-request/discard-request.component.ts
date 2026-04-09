@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener, ElementRef, ViewChildren, QueryList, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, HostListener, ElementRef, ViewChildren, QueryList, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -29,6 +29,7 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { getFileSizeFromFile, removeFile, validateFile, MAX_FILE_SIZE_MB, showFileValidationErrors } from '@utils/file.utils';
 import { ConfirmationDialogComponent, ConfirmationType } from '@components/confirmation-dialog/confirmation-dialog.component';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { OnboardingTourService } from '@features/onboarding/services/onboarding-tour.service';
 
 interface DiscardItemForm {
   itemId: number | null;
@@ -58,7 +59,7 @@ interface RequestPurpose {
   styleUrls: ['./discard-request.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DiscardRequestComponent implements OnInit, OnDestroy {
+export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit {
   readonly Plus = Plus;
   readonly X = X;
   readonly ChevronDown = ChevronDown;
@@ -144,8 +145,13 @@ export class DiscardRequestComponent implements OnInit, OnDestroy {
     private userContextService: UserContextService,
     private backendAuthService: BackendAuthService,
     private backendUserService: BackendUserService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private onboardingTourService: OnboardingTourService
   ) { }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => this.onboardingTourService.checkAndStartPageTour('discard-request'), 300);
+  }
 
   ngOnInit(): void {
     this.initializeUserContext();

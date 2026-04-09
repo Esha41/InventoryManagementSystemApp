@@ -1,5 +1,15 @@
-import { Directive, Input, TemplateRef, ViewContainerRef, OnInit, OnDestroy } from '@angular/core';
+import {
+  Directive,
+  Input,
+  TemplateRef,
+  ViewContainerRef,
+  OnInit,
+  OnDestroy,
+  OnChanges,
+  SimpleChanges
+} from '@angular/core';
 import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { BackendAuthService } from '@services/backend-auth.service';
 
 /**
@@ -22,10 +32,10 @@ import { BackendAuthService } from '@services/backend-auth.service';
   selector: '[appHasPermission]',
   standalone: true
 })
-export class HasPermissionDirective implements OnInit, OnDestroy {
+export class HasPermissionDirective implements OnInit, OnDestroy, OnChanges {
   @Input() appHasPermission: string | string[] = [];
   @Input() appPermissionMode: 'any' | 'all' = 'any';
-  
+
   private destroy$ = new Subject<void>();
   private hasView = false;
 
@@ -35,8 +45,14 @@ export class HasPermissionDirective implements OnInit, OnDestroy {
     private authService: BackendAuthService
   ) {}
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['appHasPermission'] || changes['appPermissionMode']) {
+      this.checkPermissions();
+    }
+  }
+
   ngOnInit(): void {
-    this.checkPermissions();
+    this.authService.currentUser$.pipe(takeUntil(this.destroy$)).subscribe(() => this.checkPermissions());
   }
 
   ngOnDestroy(): void {
