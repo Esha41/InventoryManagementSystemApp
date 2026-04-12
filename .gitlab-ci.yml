@@ -1,0 +1,57 @@
+# Frontend CI: production build + zip for manual deploy to IIS (static files).
+#
+# Runner (v1 has no unit tests — Node only, no Chromium):
+# - Docker/Kubernetes executor: keep `default.image` below; jobs need no `tags`.
+# - Shell executor (e.g. Windows host like backend): remove `default:` entirely, add
+#   `tags: [your-node-runner-tag]` to each job, and ensure Node 22 + npm are installed.
+#
+# Optional later: add a `test` stage with `ng test --no-watch --browsers=ChromeHeadless`,
+# install Chromium on the image (or set CHROME_BIN), then wire `needs` between jobs.
+
+stages:
+  - build
+  - package
+
+variables:
+  npm_config_fund: "false"
+  npm_config_audit: "false"
+  NODE_OPTIONS: "--max_old_space_size=4096"
+
+default:
+  image: node:22-bookworm
+
+before_script:
+  - node -v
+  - npm -v
+  - npm ci
+
+build:
+  stage: build
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - npm run build:prod
+  artifacts:
+    paths:
+      - dist/ettad-frontend/
+    expire_in: 1 day
+
+package:
+  stage: package
+  needs:
+    - job: build
+      artifacts: true
+  rules:
+    - if: $CI_COMMIT_TAG
+  before_script:
+    - apt-get update -qq
+    - apt-get install -y -qq zip
+  script:
+    - mkdir -p ci-output
+    - DATE=$(date +%Y%m%d)
+    - zip -r "ci-output/ettad-web-${CI_COMMIT_TAG}-${DATE}.zip" dist/ettad-frontend
+  artifacts:
+    name: ettad-web-$CI_COMMIT_TAG-$CI_PIPELINE_ID
+    paths:
+      - ci-output/*.zip
+    expire_in: 30 days
