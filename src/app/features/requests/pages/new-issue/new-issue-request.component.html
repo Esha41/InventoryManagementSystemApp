@@ -22,10 +22,14 @@
     <!-- Step 1: Selection -->
     <app-step-selection *ngIf="currentStep === 1" [cartridgeState]="cartridgeState" [filterState]="filterState"
       [filterOptions]="filterOptions" [fromReserve]="fromReserve" [canProceed]="canProceedFromSelection"
-      [selectedCartridges]="selectedCartridges" [displayedItemTypeOptions]="displayedItemTypeOptions" (next)="onNext()"
-      (previous)="onPrevious()" (retryLoad)="retryLoadCartridges()" (filterChange)="filterCartridges()"
-      (itemTypeChange)="onItemTypeChange($event)" (clearFilters)="onClearFilters()"
-      (addSelection)="onCartridgeAdded($event)" (removeSelection)="onRemoveSelectedCartridge($event)">
+      [selectedCartridges]="selectedCartridges" [displayedItemTypeOptions]="displayedItemTypeOptions"
+      [serverSideCatalog]="fromReserve === 'No'" [catalogPagination]="cartridgeState.catalogPagination"
+      [appliedSearchTerm]="filterState.searchTerm" (next)="onNext()"
+      (previous)="onPrevious()" (retryLoad)="retryLoadCartridges()" (filterChange)="onFilterSidebarChange()"
+      (applyCatalogSearch)="applyCatalogSearch($event)" (catalogPageNext)="onCatalogPageNext()"
+      (catalogPagePrev)="onCatalogPagePrev()" (itemTypeChange)="onItemTypeChange($event)"
+      (clearFilters)="onClearFilters()" (addSelection)="onCartridgeAdded($event)"
+      (removeSelection)="onRemoveSelectedCartridge($event)">
     </app-step-selection>
 
     <!-- Step 2: Usage -->

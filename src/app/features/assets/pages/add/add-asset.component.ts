@@ -139,10 +139,6 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     private onboardingTourService: OnboardingTourService
   ) { }
 
-  get isRTL(): boolean {
-    return this.translationService?.isRTL() ?? false;
-  }
-
   assetForm: AssetForm = this.getInitialForm();
 
   private getInitialForm(): AssetForm {

@@ -1,9 +1,10 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
+import { CatalogPaginationState } from '../../new-issue-request.state';
 import { OrderService } from '@services/order.service';
 import { ConfigService } from '@services/config.service';
 import { ItemTypeValidationService } from '@services/item-type-validation.service';
@@ -68,7 +69,7 @@ export interface Cartridge {
   styleUrls: ['./cartridge-list.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CartridgeListComponent {
+export class CartridgeListComponent implements OnChanges {
   @Input() cartridges: Cartridge[] = [];
 
   // Filter Options
@@ -108,6 +109,11 @@ export class CartridgeListComponent {
   @Input() canProceed: boolean = false;
   @Input() fromReserve: string = 'No'; // 'Yes' or 'No'
   @Input() selectedCartridges: Cartridge[] = []; // Currently selected cartridges for validation
+  @Input() serverSideCatalog = false;
+  @Input() catalogPagination: CatalogPaginationState | null = null;
+  @Input() appliedSearchTerm = '';
+  /** Server catalog: true while paginating or refreshing results (list shows with overlay). */
+  @Input() catalogPageLoading = false;
 
   @Output() cartridgeClick = new EventEmitter<Cartridge>();
   @Output() allowanceError = new EventEmitter<string>();
@@ -136,10 +142,14 @@ export class CartridgeListComponent {
   @Output() addSelection = new EventEmitter<{ cartridge: Cartridge; quantity: number }>();
   @Output() removeSelection = new EventEmitter<number>();
   @Output() searchChange = new EventEmitter<string>();
+  @Output() applyCatalogSearch = new EventEmitter<string>();
+  @Output() catalogPageNext = new EventEmitter<void>();
+  @Output() catalogPagePrev = new EventEmitter<void>();
 
   pendingCartridgeId: number | null = null;
   pendingQuantity: number = 1;
   searchTerm: string = '';
+  draftSearchTerm = '';
   verifyingAllowance: boolean = false;
   allowanceErrorMessage: string | null = null;
   itemTypeValidationErrorMessage: string | null = null;
@@ -148,8 +158,43 @@ export class CartridgeListComponent {
     private orderService: OrderService,
     private config: ConfigService,
     private itemTypeValidationService: ItemTypeValidationService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private cdr: ChangeDetectorRef
   ) { }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['appliedSearchTerm']) {
+      this.draftSearchTerm = this.appliedSearchTerm ?? '';
+      this.cdr.markForCheck();
+    }
+  }
+
+  trackByCartridgeId(_index: number, cartridge: Cartridge): number {
+    return cartridge.id;
+  }
+
+  get catalogRangeStart(): number {
+    const p = this.catalogPagination;
+    if (!p || p.totalCount === 0) {
+      return 0;
+    }
+    return (p.page - 1) * p.pageSize + 1;
+  }
+
+  get catalogRangeEnd(): number {
+    const p = this.catalogPagination;
+    if (!p) {
+      return 0;
+    }
+    return Math.min(p.page * p.pageSize, p.totalCount);
+  }
+
+  onApplyCatalogQuery(): void {
+    if (this.catalogPageLoading) {
+      return;
+    }
+    this.applyCatalogSearch.emit(this.draftSearchTerm.trim());
+  }
 
   onCartridgeClick(cartridge: Cartridge): void {
     this.cartridgeClick.emit(cartridge);

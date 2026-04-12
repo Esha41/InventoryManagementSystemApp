@@ -75,6 +75,33 @@ export class UserFiltersComponent implements OnInit, OnDestroy, OnChanges {
     return this.translationService?.isRTL() ?? false;
   }
 
+  get showSearchClear(): boolean {
+    return (this.searchTerm ?? '').trim().length > 0;
+  }
+
+  /**
+   * Inline padding for the search field: icon side + room for clear and/or Search button.
+   */
+  get searchInputPadding(): Record<string, string> {
+    const iconPad = '2.75rem';
+    const endNarrow = '1rem';
+    const endClearOnly = '2.75rem';
+    const endButtonOnly = '6.25rem';
+    const endButtonAndClear = '9rem';
+
+    if (this.isRTL) {
+      const start = this.useSearchButton
+        ? (this.showSearchClear ? endButtonAndClear : endButtonOnly)
+        : (this.showSearchClear ? endClearOnly : endNarrow);
+      return { 'padding-left': start, 'padding-right': iconPad };
+    }
+
+    const end = this.useSearchButton
+      ? (this.showSearchClear ? endButtonAndClear : endButtonOnly)
+      : (this.showSearchClear ? endClearOnly : endNarrow);
+    return { 'padding-left': iconPad, 'padding-right': end };
+  }
+
   ngOnInit(): void {
     this.searchSubject.pipe(
       debounceTime(300),
@@ -119,6 +146,18 @@ export class UserFiltersComponent implements OnInit, OnDestroy, OnChanges {
 
   onSearchClick(): void {
     this.searchTriggered.emit(this.searchTerm);
+  }
+
+  onClearSearch(event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.searchTerm = '';
+    if (this.useSearchButton) {
+      this.searchTriggered.emit('');
+    } else {
+      this.searchChange.emit('');
+    }
+    this.cdr.markForCheck();
   }
 
   onStatusFilterChange(status: 'all' | 'active' | 'inactive' | 'deleted'): void {

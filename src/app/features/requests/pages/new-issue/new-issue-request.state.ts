@@ -36,15 +36,28 @@ export interface FilterOptions {
   explosiveTypeOptions?: any[]; // DropdownOption[]
 }
 
+export interface CatalogPaginationState {
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
 export interface CartridgeState {
   allCartridges: Cartridge[];
   filteredCartridges: Cartridge[];
   selectedCartridgeForView: Cartridge | null;
   showCartridgeDetails: boolean;
   loadingCartridges: boolean;
+  /** True while fetching another page (full catalog only); list stays visible with overlay. */
+  catalogPageLoading: boolean;
   cartridgeError: string | null;
   selectedEntries: Array<{ id: number; quantity: number; itemType?: string }>;
   selectedCartridgesCache: Map<number, Cartridge>; // Cache to preserve full cartridge data across item type changes
+  /** Server-driven catalog (full catalog mode). Allowance mode uses client filtering only. */
+  catalogPagination: CatalogPaginationState;
 }
 
 export interface UsageFormData {

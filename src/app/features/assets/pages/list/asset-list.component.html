@@ -38,7 +38,7 @@
       [totalItems]="(facade.totalItems$ | async) ?? 0" [showEditDelete]="(activeTab !== 'ammunition' || ammunitionViewMode === 'available') && (activeTab !== 'explosive' || explosivesViewMode === 'available') && (activeTab !== 'weapon' || weaponsViewMode === 'available')"
       [showRestore]="(activeTab === 'ammunition' && ammunitionViewMode === 'deleted') || (activeTab === 'explosive' && explosivesViewMode === 'deleted') || (activeTab === 'weapon' && weaponsViewMode === 'deleted')"
       [showPermanentDelete]="(activeTab === 'ammunition' && ammunitionViewMode === 'deleted') || (activeTab === 'explosive' && explosivesViewMode === 'deleted') || (activeTab === 'weapon' && weaponsViewMode === 'deleted')"
-      [paginationState]="paginationState" [totalPages]="totalPages" [isRTL]="isRTL" [getAssetName]="getAssetName"
+      [paginationState]="paginationState" [totalPages]="totalPages" [getAssetName]="getAssetName"
       (view)="onView($event)" (edit)="onEdit($event)" (delete)="onDelete($event)" (restore)="onRestore($event)" (permanentDelete)="onPermanentDelete($event)" (sort)="sortByColumn($event)"
       (pageChange)="onPageChange($event)" (rowsPerPageChange)="onRowsPerPageChange($event)"
       (ammunitionViewModeChange)="switchAmmunitionViewMode($event)" (explosivesViewModeChange)="switchExplosivesViewMode($event)" (weaponsViewModeChange)="switchWeaponsViewMode($event)"

@@ -37,13 +37,13 @@
 
 <app-card [shadow]="true" class="min-w-0 mb-6">
   <div class="asset-tabs-scroll overflow-x-auto overflow-y-hidden scrollbar-hide bg-gradient-to-r from-[var(--color-background)] to-[var(--color-background-hover)]">
-    <nav class="asset-tabs flex gap-2 p-2 w-max min-w-full" aria-label="Tabs" [class.flex-row-reverse]="isRTL">
+    <nav class="asset-tabs flex gap-2 p-2 w-max min-w-full" aria-label="Tabs">
       <button type="button" *appHasPermission="tabPermsAmmunition" appPermissionMode="any" (click)="onTabClick('ammunition')" [ngClass]="{
         'bg-[var(--color-brand)] text-white shadow-md': activeTab === 'ammunition',
         'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)] border-2 border-[var(--color-border)]': activeTab !== 'ammunition'
       }"
         class="asset-tab flex items-center gap-2 px-3 sm:px-5 py-2.5 sm:py-3 min-h-[2.75rem] rounded-lg font-semibold text-sm transition-all duration-200 flex-shrink-0 whitespace-nowrap"
-        [class.flex-row-reverse]="isRTL">
+      >
         <span>{{ 'assetList.tabs.ammunition' | translate }}</span>
       </button>
       <button type="button" *appHasPermission="tabPermsExplosive" appPermissionMode="any" (click)="onTabClick('explosive')" [ngClass]="{
@@ -51,7 +51,7 @@
         'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)] border-2 border-[var(--color-border)]': activeTab !== 'explosive'
       }"
         class="asset-tab flex items-center gap-2 px-3 sm:px-5 py-2.5 sm:py-3 min-h-[2.75rem] rounded-lg font-semibold text-sm transition-all duration-200 flex-shrink-0 whitespace-nowrap"
-        [class.flex-row-reverse]="isRTL">
+      >
         <span>{{ 'assetList.tabs.explosive' | translate }}</span>
       </button>
       <button type="button" *appHasPermission="tabPermsWeapon" appPermissionMode="any" (click)="onTabClick('weapon')" [ngClass]="{
@@ -59,7 +59,7 @@
         'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)] border-2 border-[var(--color-border)]': activeTab !== 'weapon'
       }"
         class="asset-tab flex items-center gap-2 px-3 sm:px-5 py-2.5 sm:py-3 min-h-[2.75rem] rounded-lg font-semibold text-sm transition-all duration-200 flex-shrink-0 whitespace-nowrap"
-        [class.flex-row-reverse]="isRTL">
+      >
         <span>{{ 'assetList.tabs.weapon' | translate }}</span>
       </button>
     </nav>

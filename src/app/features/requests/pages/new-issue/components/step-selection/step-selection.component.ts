@@ -5,7 +5,7 @@ import { CartridgeListComponent, Cartridge } from '../cartridge-list/cartridge-l
 import { AssetDetailsComponent } from '@shared/components/asset-details/asset-details.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ErrorBannerComponent } from '../error-banner/error-banner.component';
-import { FilterState, FilterOptions, CartridgeState } from '../../new-issue-request.state';
+import { FilterState, FilterOptions, CartridgeState, CatalogPaginationState } from '../../new-issue-request.state';
 // Removed incorrect import
 import { IssueRequestFilterService as FilterService } from '@requests/services/issue-request-filter.service'; // Direct service
 import { IssueRequestCartridgeManagementService } from '@requests/services/issue-request-cartridge-management.service';
@@ -34,11 +34,17 @@ export class StepSelectionComponent {
     @Input() canProceed: boolean = false;
     @Input() selectedCartridges: Cartridge[] = [];
     @Input() displayedItemTypeOptions: string[] = [];
+    @Input() serverSideCatalog = false;
+    @Input() catalogPagination!: CatalogPaginationState;
+    @Input() appliedSearchTerm = '';
 
     @Output() next = new EventEmitter<void>();
     @Output() previous = new EventEmitter<void>();
     @Output() retryLoad = new EventEmitter<void>();
-    @Output() filterChange = new EventEmitter<void>(); // Tells parent to re-filter? Or we do it here?
+    @Output() filterChange = new EventEmitter<void>();
+    @Output() applyCatalogSearch = new EventEmitter<string>();
+    @Output() catalogPageNext = new EventEmitter<void>();
+    @Output() catalogPagePrev = new EventEmitter<void>();
 
     // State changes that need to propagate up or be handled
     @Output() itemTypeChange = new EventEmitter<string>();

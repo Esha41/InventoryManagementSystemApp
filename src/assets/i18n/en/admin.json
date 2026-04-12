@@ -481,7 +481,9 @@
     "warehouseInventoryDescription": "Import or export warehouse inventory data for a specific depot. Select a depot first, then choose the item type.",
     "selectDepot": "Select Depot",
     "selectDepotPlaceholder": "Choose a depot...",
-    "selectDepotMessage": "Please select a depot from the dropdown above to view and export warehouse inventory data."
+    "selectDepotMessage": "Please select a depot from the dropdown above to view and export warehouse inventory data.",
+    "noItemsFound": "No items found for this tab.",
+    "inventorySummaryTotalsHint": "Totals for the selected tab. Export to Excel for full line-item detail."
   },
   "adminDashboard": {
     "title": "Admin Dashboard",

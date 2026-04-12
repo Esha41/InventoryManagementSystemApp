@@ -291,6 +291,7 @@
     "failedToConfirmPickupDate": "فشل تأكيد تاريخ الاستلام"
   },
   "depotManagement": {
+    "search": "البحث في المستودعات بالاسم أو الرمز أو الموقع...",
     "errors": {
       "fillRequiredFields": "يرجى ملء جميع الحقول المطلوبة",
       "invalidLatitude": "يجب أن يكون خط العرض بين 90- و 90",

@@ -1,10 +1,10 @@
-<!-- Loading State -->
-<app-loading-state *ngIf="cartridgeState.loadingCartridges" message="common.loading"
+<!-- Full-step loading (first catalog load / item type change); pagination & refresh use list overlay -->
+<app-loading-state *ngIf="cartridgeState.loadingCartridges && !cartridgeState.catalogPageLoading" message="common.loading"
     containerClass="bg-[var(--color-background)] rounded-lg p-6 border border-dashed border-[var(--color-border)]">
 </app-loading-state>
 
 <!-- Error State -->
-<app-error-state *ngIf="!cartridgeState.loadingCartridges && cartridgeState.cartridgeError"
+<app-error-state *ngIf="!cartridgeState.loadingCartridges && !cartridgeState.catalogPageLoading && cartridgeState.cartridgeError"
     [error]="cartridgeState.cartridgeError || ''" variant="inline" [actionText]="'common.retry'"
     containerClass="bg-[var(--color-error)]/20 border border-[var(--color-error)]/40 rounded-lg p-4"
     messageClass="text-sm text-[var(--color-error)]" (action)="retryLoad.emit()">
@@ -22,7 +22,7 @@
 
 <!-- Cartridge List View -->
 <app-cartridge-list
-    *ngIf="!cartridgeState.loadingCartridges && !cartridgeState.cartridgeError && !cartridgeState.showCartridgeDetails"
+    *ngIf="(!cartridgeState.loadingCartridges || cartridgeState.catalogPageLoading) && !cartridgeState.cartridgeError && !cartridgeState.showCartridgeDetails"
     [cartridges]="cartridgeState.filteredCartridges" [itemTypeOptions]="displayedItemTypeOptions"
     [ammunitionTypeOptions]="filterOptions.ammunitionTypeOptions" [bulletDiameters]="filterOptions.bulletDiameters"
     [linkedOptions]="filterOptions.linkedOptions" [natureOptions]="filterOptions.natureOptions"
@@ -35,6 +35,9 @@
     [selectedExplosiveType]="filterState.selectedExplosiveType || ''"
     [selectedUNNumber]="filterState.selectedUNNumber || ''" [selectedNSN]="filterState.selectedNSN"
     [canProceed]="canProceed" [fromReserve]="fromReserve" [selectedCartridges]="selectedCartridges"
+    [serverSideCatalog]="serverSideCatalog" [catalogPagination]="catalogPagination"
+    [appliedSearchTerm]="appliedSearchTerm"
+    [catalogPageLoading]="serverSideCatalog && cartridgeState.catalogPageLoading"
     (cartridgeClick)="onCartridgeClick($event)" (allowanceError)="onAllowanceError($event)"
     (itemTypeValidationError)="onAllowanceError($event)" (addSelection)="addSelection.emit($event)"
     (filterChange)="filterChange.emit()" (clearFilters)="clearFilters.emit()" (next)="next.emit()"
@@ -43,10 +46,12 @@
     (linkedChange)="onLinkedChange($event)" (natureChange)="onNatureChange($event)"
     (weaponTypeChange)="onWeaponTypeChange($event)" (caliberChange)="onCaliberChange($event)"
     (explosiveTypeChange)="onExplosiveTypeChange($event)" (unNumberChange)="onUnNumberChange($event)"
-    (nsnChange)="onNSNChange($event)" (removeSelection)="removeSelection.emit($event)">
+    (nsnChange)="onNSNChange($event)" (removeSelection)="removeSelection.emit($event)"
+    (applyCatalogSearch)="applyCatalogSearch.emit($event)" (catalogPageNext)="catalogPageNext.emit()"
+    (catalogPagePrev)="catalogPagePrev.emit()">
 </app-cartridge-list>
 
 <!-- Allowance Error Banner -->
-<app-error-banner *ngIf="!cartridgeState.loadingCartridges && !cartridgeState.cartridgeError && allowanceError"
+<app-error-banner *ngIf="(!cartridgeState.loadingCartridges || cartridgeState.catalogPageLoading) && !cartridgeState.cartridgeError && allowanceError"
     [error]="allowanceError" class="mt-4">
 </app-error-banner>

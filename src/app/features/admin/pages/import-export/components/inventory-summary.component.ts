@@ -4,10 +4,9 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, Upload } from 'lucide-angular';
 import { CardComponent } from '@components/card/card.component';
-import { ButtonComponent } from '@components/button/button.component';
 import { InventorySummaryDataService } from '@services/inventory-summary-data.service';
 import { ToastService } from '@services/toast.service';
-import { ExcelExportService, ExcelColumn } from '@services/excel-export.service';
+import { ExcelColumn } from '@services/excel-export.service';
 import { ImportExportService } from '@services/import-export.service';
 import { ItemInventorySummaryDto } from '@models/inventory.model';
 import { InventorySummaryUtils } from '@utils/inventory-summary.utils';
@@ -42,7 +41,6 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
   constructor(
     private inventorySummaryDataService: InventorySummaryDataService,
     private toastService: ToastService,
-    private excelExportService: ExcelExportService,
     private importExportService: ImportExportService,
     private translateService: TranslateService,
     private translationService: TranslationService,
@@ -51,6 +49,34 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;
+  }
+
+  get summaryItemCount(): number {
+    return this.filteredInventoryItems.length;
+  }
+
+  /** Rolled-up totals for the current tab (no per-item table). */
+  get summaryTotalLots(): number {
+    return this.filteredInventoryItems.reduce((s, i) => s + (Number(i.totalLots) || 0), 0);
+  }
+
+  get summaryTotalQuantity(): number {
+    return this.filteredInventoryItems.reduce((s, i) => s + (Number(i.totalQuantity) || 0), 0);
+  }
+
+  get summaryUsedQuantity(): number {
+    return this.filteredInventoryItems.reduce((s, i) => s + (Number(i.usedQuantity) || 0), 0);
+  }
+
+  get summaryReservedQuantity(): number {
+    return this.filteredInventoryItems.reduce(
+      (s, i) => s + (Number(i.reservedQuantityByOrdersOnProcessing) || 0),
+      0
+    );
+  }
+
+  get summaryRemainingQuantity(): number {
+    return this.filteredInventoryItems.reduce((s, i) => s + (Number(i.remainingQuantity) || 0), 0);
   }
 
   ngOnInit(): void {

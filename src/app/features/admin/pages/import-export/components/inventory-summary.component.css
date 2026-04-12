@@ -15,22 +15,3 @@
   border-radius: 4px;
 }
 
-/* Responsive: Table on desktop, Cards on mobile - never both */
-.inventory-table-view {
-  display: none;
-}
-
-.inventory-cards-view {
-  display: grid;
-}
-
-@media (min-width: 1024px) {
-  .inventory-table-view {
-    display: block;
-  }
-
-  .inventory-cards-view {
-    display: none;
-  }
-}
-
