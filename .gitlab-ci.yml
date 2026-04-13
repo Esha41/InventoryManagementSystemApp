@@ -1,12 +1,11 @@
 # Frontend CI: production build + zip for manual deploy to IIS (static files).
 #
-# Runner (v1 has no unit tests — Node only, no Chromium):
-# - Docker/Kubernetes executor: keep `default.image` below; jobs need no `tags`.
-# - Shell executor (e.g. Windows host like backend): remove `default:` entirely, add
-#   `tags: [your-node-runner-tag]` to each job, and ensure Node 22 + npm are installed.
+# Uses the same Windows shell runner tag as the backend so jobs are picked up.
+# The runner host must have Node.js + npm on PATH (LTS 22.x recommended for Angular 21).
+# If `npm` is not found, install Node on that runner or register a dedicated runner tag
+# and replace `ettad-backend-dotnet8` below.
 #
-# Optional later: add a `test` stage with `ng test --no-watch --browsers=ChromeHeadless`,
-# install Chromium on the image (or set CHROME_BIN), then wire `needs` between jobs.
+# Optional later: add a `test` stage with `ng test` + ChromeHeadless + CHROME_BIN.
 
 stages:
   - build
@@ -17,9 +16,6 @@ variables:
   npm_config_audit: "false"
   NODE_OPTIONS: "--max_old_space_size=4096"
 
-default:
-  image: node:22-bookworm
-
 before_script:
   - node -v
   - npm -v
@@ -29,6 +25,8 @@ build:
   stage: build
   rules:
     - if: $CI_COMMIT_TAG
+  tags:
+    - ettad-backend-dotnet8
   script:
     - npm run build:prod
   artifacts:
@@ -43,13 +41,12 @@ package:
       artifacts: true
   rules:
     - if: $CI_COMMIT_TAG
+  tags:
+    - ettad-backend-dotnet8
   before_script:
-    - apt-get update -qq
-    - apt-get install -y -qq zip
+    - echo "Package from build artifacts"
   script:
-    - mkdir -p ci-output
-    - DATE=$(date +%Y%m%d)
-    - zip -r "ci-output/ettad-web-${CI_COMMIT_TAG}-${DATE}.zip" dist/ettad-frontend
+    - powershell.exe -ExecutionPolicy Bypass -Command "$d = Get-Date -Format 'yyyyMMdd'; $out = Join-Path $env:CI_PROJECT_DIR 'ci-output'; New-Item -ItemType Directory -Force -Path $out | Out-Null; $zip = Join-Path $out ('ettad-web-' + $env:CI_COMMIT_TAG + '-' + $d + '.zip'); Compress-Archive -Path (Join-Path $env:CI_PROJECT_DIR 'dist\ettad-frontend\*') -DestinationPath $zip -Force"
   artifacts:
     name: ettad-web-$CI_COMMIT_TAG-$CI_PIPELINE_ID
     paths:
