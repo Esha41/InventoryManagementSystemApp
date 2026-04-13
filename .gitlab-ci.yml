@@ -1,0 +1,54 @@
+# Frontend CI: production build + zip for manual deploy to IIS (static files).
+#
+# Uses the same Windows shell runner tag as the backend so jobs are picked up.
+# The runner host must have Node.js + npm on PATH (LTS 22.x recommended for Angular 21).
+# If `npm` is not found, install Node on that runner or register a dedicated runner tag
+# and replace `ettad-backend-dotnet8` below.
+#
+# Optional later: add a `test` stage with `ng test` + ChromeHeadless + CHROME_BIN.
+
+stages:
+  - build
+  - package
+
+variables:
+  npm_config_fund: "false"
+  npm_config_audit: "false"
+  NODE_OPTIONS: "--max_old_space_size=4096"
+
+before_script:
+  - node -v
+  - npm -v
+  - npm ci
+
+build:
+  stage: build
+  rules:
+    - if: $CI_COMMIT_TAG
+  tags:
+    - ettad-backend-dotnet8
+  script:
+    - npm run build:prod
+  artifacts:
+    paths:
+      - dist/ettad-frontend/
+    expire_in: 1 day
+
+package:
+  stage: package
+  needs:
+    - job: build
+      artifacts: true
+  rules:
+    - if: $CI_COMMIT_TAG
+  tags:
+    - ettad-backend-dotnet8
+  before_script:
+    - echo "Package from build artifacts"
+  script:
+    - powershell.exe -ExecutionPolicy Bypass -Command "$d = Get-Date -Format 'yyyyMMdd'; $out = Join-Path $env:CI_PROJECT_DIR 'ci-output'; New-Item -ItemType Directory -Force -Path $out | Out-Null; $zip = Join-Path $out ('ettad-web-' + $env:CI_COMMIT_TAG + '-' + $d + '.zip'); Compress-Archive -Path (Join-Path $env:CI_PROJECT_DIR 'dist\ettad-frontend\*') -DestinationPath $zip -Force"
+  artifacts:
+    name: ettad-web-$CI_COMMIT_TAG-$CI_PIPELINE_ID
+    paths:
+      - ci-output/*.zip
+    expire_in: 30 days
