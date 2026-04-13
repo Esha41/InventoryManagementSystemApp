@@ -48,9 +48,7 @@ export interface CreateAssetSupplyDetailDto {
 
 export interface CreateAssetSupplyDto {
   orderId: number;
-  receiverName: string;
-  receiverMilitaryId: string;
-  receiverRankId: number;
+  receiverEmployeeId: number;
   location?: string;
   expectedReturnDate?: string;
   notes?: string;
@@ -118,13 +116,19 @@ export interface AssetSupplyDto {
     fullNameEN?: string;
     fullNameAR?: string;
   };
-  receiverRank?: {
+  receiverEmployeeId?: number;
+  receiverEmployee?: {
     id: number;
     nameEn?: string;
     nameAr?: string;
+    militaryId?: string;
+    rankId?: number;
+    rank?: {
+      id: number;
+      nameEn?: string;
+      nameAr?: string;
+    };
   };
-  receiverName?: string;
-  receiverMilitaryId?: string;
   location?: string;
   expectedReturnDate?: string;
   notes?: string;
@@ -196,9 +200,7 @@ export class AssetSupplyService {
 
     // Header fields
     formData.append('OrderId', dto.orderId.toString());
-    formData.append('ReceiverName', dto.receiverName);
-    formData.append('ReceiverMilitaryId', dto.receiverMilitaryId);
-    formData.append('ReceiverRankId', dto.receiverRankId.toString());
+    formData.append('ReceiverEmployeeId', dto.receiverEmployeeId.toString());
 
     if (dto.location) {
       formData.append('Location', dto.location);

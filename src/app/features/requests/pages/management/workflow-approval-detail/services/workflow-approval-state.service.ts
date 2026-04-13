@@ -312,11 +312,8 @@ export class WorkflowApprovalStateService {
     // Backward compatibility: For old orders that may have receiver info filled
     // but submissionStatus is still 1 (Draft), check if essential receiver fields are present
     const hasReceiverInfo = !!(
-      state.supplyData.recieverName &&
-      state.supplyData.recieverName.trim() !== '' &&
-      state.supplyData.receiverRankId &&
-      state.supplyData.recieverMilitaryId &&
-      state.supplyData.recieverMilitaryId.trim() !== ''
+      state.supplyData.receiverEmployeeId &&
+      state.supplyData.receiverEmployeeId > 0
     );
 
     return hasReceiverInfo;

@@ -302,6 +302,8 @@
     "partiallySelected": "Partially Fulfilled",
     "fullySelected": "Fully Fulfilled",
     "receiverInformation": "Receiver Information",
+    "receiver": "Receiver",
+    "selectReceiver": "Select receiver (name and military ID)",
     "receiverName": "Receiver Name",
     "receiverMilitaryId": "Receiver Military ID",
     "receiverRank": "Receiver Rank",

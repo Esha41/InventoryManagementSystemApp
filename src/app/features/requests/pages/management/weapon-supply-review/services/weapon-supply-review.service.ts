@@ -10,9 +10,7 @@ import { OrderDto } from '@models/order.model';
 import { WeaponSupplyLookupService } from './weapon-supply-lookup.service';
 
 export interface ReceiverInfo {
-    receiverName: string;
-    receiverMilitaryId: string;
-    receiverRankId: number;
+    receiverEmployeeId: number;
     location?: string;
     expectedReturnDate?: string;
     notes?: string;
@@ -234,8 +232,8 @@ export class WeaponSupplyReviewService {
         return true;
     }
 
-    canSubmit(receiverName: string, receiverMilitaryId: string, receiverRankId: number | undefined, hasFiles: boolean = false): boolean {
-        if (!receiverName || !receiverMilitaryId || !receiverRankId) return false;
+    canSubmit(receiverEmployeeId: number | undefined, hasFiles: boolean = false): boolean {
+        if (!receiverEmployeeId) return false;
         if (!hasFiles) return false;
         if (this.getTotalSelectedCount() === 0) return false;
         if (this.validateQuantities() !== null) return false;
@@ -254,9 +252,7 @@ export class WeaponSupplyReviewService {
 
         return {
             orderId,
-            receiverName: receiverInfo.receiverName,
-            receiverMilitaryId: receiverInfo.receiverMilitaryId,
-            receiverRankId: receiverInfo.receiverRankId,
+            receiverEmployeeId: receiverInfo.receiverEmployeeId,
             location: receiverInfo.location || undefined,
             expectedReturnDate: receiverInfo.expectedReturnDate || undefined,
             notes: receiverInfo.notes || undefined,

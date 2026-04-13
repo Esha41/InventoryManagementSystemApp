@@ -107,9 +107,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
   loadingBatches = false;
   submitting = false;
 
-  receiverName = '';
-  receiverMilitaryId = '';
-  receiverRankId: number | undefined = undefined;
+  receiverEmployeeId: number | undefined = undefined;
   location = '';
   expectedReturnDate = '';
   notes = '';
@@ -137,10 +135,6 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
     private fileUploadService: FileUploadService,
     private cdr: ChangeDetectorRef
   ) {}
-
-  get rankDropdownOptions(): DropdownOption<number>[] {
-    return this.lookupService.rankDropdownOptions;
-  }
 
   get employeeDropdownOptions(): DropdownOption<number>[] {
     return this.lookupService.employeeDropdownOptions;
@@ -189,8 +183,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
 
     forkJoin({
       order: this.orderService.getOrderById(this.orderId),
-      employees: this.lookupService.loadEmployees(),
-      ranks: this.lookupService.loadRanks()
+      employees: this.lookupService.loadEmployees()
     }).pipe(takeUntil(this.destroy$))
       .subscribe({
         next: ({ order }) => {
@@ -421,7 +414,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
   // ==================== SUBMISSION ====================
 
   canSubmit(): boolean {
-    return this.reviewService.canSubmit(this.receiverName, this.receiverMilitaryId, this.receiverRankId, this.selectedFiles.length > 0);
+    return this.reviewService.canSubmit(this.receiverEmployeeId, this.selectedFiles.length > 0);
   }
 
   onSubmit(): void {
@@ -442,9 +435,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
     }
 
     const receiverInfo: ReceiverInfo = {
-      receiverName: this.receiverName,
-      receiverMilitaryId: this.receiverMilitaryId,
-      receiverRankId: this.receiverRankId!,
+      receiverEmployeeId: this.receiverEmployeeId!,
       location: this.location || undefined,
       expectedReturnDate: this.expectedReturnDate || undefined,
       notes: this.notes || undefined

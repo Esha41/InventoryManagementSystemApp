@@ -19,9 +19,7 @@ import { ToastService } from '@services/toast.service';
 import { validateFile, showFileValidationErrors } from '@utils/file.utils';
 
 export interface ReceiverInfo {
-  recieverName: string;
-  receiverRankId: number | null;
-  recieverMilitaryId: string;
+  receiverEmployeeId: number | null;
   notes: string;
 }
 
@@ -172,9 +170,7 @@ export class WorkflowApprovalSupplyService {
   ): Observable<void> {
     return new Observable(observer => {
       const submitDto: SubmitSupplyDto = {
-        recieverName: receiverInfo.recieverName.trim(),
-        receiverRankId: receiverInfo.receiverRankId!,
-        recieverMilitaryId: receiverInfo.recieverMilitaryId.trim(),
+        receiverEmployeeId: receiverInfo.receiverEmployeeId!,
         notes: receiverInfo.notes?.trim() || undefined
       };
 
