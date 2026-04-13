@@ -400,6 +400,7 @@ export function mapToRequestDetail(data: BaseRequestDto): RequestDetail {
     returnToDepotNameAr: data['returnToDepot']?.nameAr,
     returnToDepotNameEn: data['returnToDepot']?.nameEn,
     deliveryDate: data['deliveryDate'] ?? undefined,
+    isMyTurn: data.isMyTurn === true,
   };
 }
 

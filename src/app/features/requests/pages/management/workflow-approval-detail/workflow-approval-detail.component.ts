@@ -271,15 +271,17 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Show the Review Return Items card when the return workflow is pending and
-   * depot + delivery are set (same prerequisites as approving the return).
-   * The navigation button is shown only if {@link canProcessReturnItems} is true.
+   * Show the Review Return Items card when the return workflow is pending,
+   * depot + delivery are set, and the user may process return items.
    */
   showReviewReturnItemsSection(): boolean {
     if (!this.requestDetail || this.requestDetail.requestType !== 'Return' || !this.hasPendingStep()) {
       return false;
     }
-    return !!this.requestDetail.returnToDepotId && !!this.requestDetail.deliveryDate;
+    if (!this.requestDetail.returnToDepotId || !this.requestDetail.deliveryDate) {
+      return false;
+    }
+    return this.canProcessReturnItems();
   }
 
   navigateToProcessReturnItems(): void {

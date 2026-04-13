@@ -133,6 +133,8 @@ export interface RequestDetail {
   returnToDepotNameAr?: string;
   returnToDepotNameEn?: string;
   deliveryDate?: string | Date | null;
+  /** True when backend marks this request as the current user's action (list APIs); may be absent on some detail payloads. */
+  isMyTurn?: boolean;
 }
 
 /**

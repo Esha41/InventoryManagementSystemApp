@@ -354,7 +354,7 @@ export class WorkflowApprovalStateService {
   }
 
   /**
-   * When true, the Take Action Approve button must be hidden — return completion goes through Review & complete only.
+   * When true, the Take Action Approve button is hidden for this return (see permissions service).
    */
   shouldHideStandaloneApproveForReturn(): boolean {
     return this.permissionsService.shouldHideStandaloneApproveForReturn(this.getState().requestDetail);

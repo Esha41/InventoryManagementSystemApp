@@ -696,8 +696,10 @@ export class WorkflowApprovalPermissionsService {
   }
 
   /**
-   * Return requests are completed via Process Return Items (review screen), which approves the workflow.
-   * Hide the standalone Approve button once depot and delivery are set so approvers cannot bypass lot/serial capture.
+   * Return requests are normally completed via Process Return Items (review screen), which approves the workflow.
+   * Hide the standalone Approve once depot and delivery are set so users cannot bypass lot/serial capture.
+   * Users who pass {@link canProcessReturnItems} (ProcessReturnItems permission, or super admin) always get Approve hidden
+   * in that state, even when it is their turn. Other approvers may still see Approve when it is their turn.
    */
   shouldHideStandaloneApproveForReturn(requestDetail: RequestDetail | null): boolean {
     if (!requestDetail || requestDetail.requestType !== 'Return') {
@@ -706,6 +708,27 @@ export class WorkflowApprovalPermissionsService {
     if (!hasPendingStep(requestDetail)) {
       return false;
     }
-    return !!requestDetail.returnToDepotId && !!requestDetail.deliveryDate;
+    if (!requestDetail.returnToDepotId || !requestDetail.deliveryDate) {
+      return false;
+    }
+
+    if (this.canProcessReturnItems(requestDetail)) {
+      return true;
+    }
+
+    if (this.authService.isSuperAdmin()) {
+      return false;
+    }
+
+    const pendingStep = requestDetail.approvalHistory?.find(
+      step => step.status === 'Pending' && step.isPending === true
+    );
+    const isMyTurn =
+      requestDetail.isMyTurn === true || pendingStep?.isCurrentUserApprover === true;
+    if (isMyTurn) {
+      return false;
+    }
+
+    return true;
   }
 }

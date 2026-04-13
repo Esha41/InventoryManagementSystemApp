@@ -606,7 +606,6 @@
     "valueSet": "تم التحديد",
     "update": "تحديث",
     "processReturnItems": "مراجعة وإكمال الطلب",
-    "processReturnItemsDescription": "في الشاشة التالية، أكّد الكميات المستلمة: للذخيرة والمتفجرات أدخل Lot، وللأسلحة أدخل الرقم التسلسلي وBatch Number. عند التنفيذ يُكمل الطلب وتُعتمد الموافقة.",
     "goToProcessReturnItems": "مراجعة وإكمال الطلب"
   },
   "supplyRequestDetail": {
@@ -764,6 +763,11 @@
     "requestNo": "رقم الطلب",
     "ammoExplosiveSection": "مواد الذخيرة / المتفجرات",
     "weaponSection": "مواد الأسلحة",
+    "weaponSectionHint": "الجدول الرئيسي يعرض كل بند سلاح. انقر الصف للتوسيع وإدخال الأرقام التسلسلية والدفعة لكل وحدة مستلمة (يمكن تعديل الدفعة في القسم الموسّع).",
+    "weaponExpandSetReceived": "عيّن الكمية المستلمة أعلاه لإنشاء صفوف لإدخال التسلسل والدفعة.",
+    "weaponUnitDetails": "الأرقام التسلسلية حسب الوحدات المستلمة",
+    "weaponLineBatchPlaceholder": "الدفعة الافتراضية للصفوف الجديدة",
+    "unit": "وحدة",
     "item": "المادة",
     "quantity": "الكمية",
     "returnedQuantity": "الكمية المرتجعة",

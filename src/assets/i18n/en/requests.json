@@ -609,7 +609,6 @@
     "valueSet": "Set",
     "update": "Update",
     "processReturnItems": "Review and complete the request",
-    "processReturnItemsDescription": "On the next screen, confirm received quantities. For ammunition and explosives, enter the lot; for weapons, enter the serial number and batch number. Submit to complete this request and approve it.",
     "goToProcessReturnItems": "Review & complete the request"
   },
   "supplyRequestDetail": {
@@ -790,6 +789,11 @@
     "requestNo": "Request No",
     "ammoExplosiveSection": "Ammunition / Explosive Items",
     "weaponSection": "Weapon Items",
+    "weaponSectionHint": "Main table shows each weapon line. Click a row to expand and enter serial numbers and batch per received unit (batches are editable in the expanded section).",
+    "weaponExpandSetReceived": "Set received quantity above to create rows for serial and batch entry.",
+    "weaponUnitDetails": "Serial numbers by received unit",
+    "weaponLineBatchPlaceholder": "Default batch for new rows",
+    "unit": "Unit",
     "item": "Item",
     "quantity": "Quantity",
     "returnedQuantity": "Returned qty",
