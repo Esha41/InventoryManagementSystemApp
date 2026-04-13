@@ -1,18 +1,31 @@
 <div class="page-wrapper">
   <div class="page-container space-y-6">
-    <app-asset-list-header
+    <app-asset-list-header data-onboarding="asset-list-header"
       [activeTab]="activeTab"
       [ammunitionViewMode]="ammunitionViewMode"
       [explosivesViewMode]="explosivesViewMode"
       [weaponsViewMode]="weaponsViewMode"
       [isRTL]="isRTL"
       (tabChange)="switchTab($event)"
-      (addClick)="navigateToAddAsset()">
+      (addClick)="navigateToAddAsset()"
+      (exportClick)="exportToExcel()"
+      (importClick)="onImportToolbarClick()"
+      (templateClick)="downloadImportTemplateFromApi()">
     </app-asset-list-header>
+
+    <app-import-dialog [isOpen]="showImportModal" [entityName]="facade.activeTab" (close)="closeImportModal()"
+      (preview)="onImportPreview($event)" (import)="onImportDirect($event)"
+      (downloadTemplate)="downloadImportTemplateFromApi()">
+    </app-import-dialog>
+
+    <app-import-preview-dialog *ngIf="showPreviewModal && previewData" [previewData]="previewData"
+      [assetType]="facade.activeTab"
+      (confirm)="onPreviewConfirmed($event)" (cancel)="onPreviewCancelled()">
+    </app-import-preview-dialog>
 
     <!-- Filters Card -->
     <div class="mb-6">
-      <app-asset-filter-bar [activeTab]="activeTab" [filterState]="filterState" [isRTL]="isRTL"
+      <app-asset-filter-bar data-onboarding="asset-list-filters" [activeTab]="activeTab" [filterState]="filterState" [isRTL]="isRTL"
       [filterOptions]="filterOptions"
       (filterChange)="onFilterChange()" (searchTriggered)="onFilterChange()" (searchCleared)="onSearchCleared()" (clearFilters)="clearFilters()">
       </app-asset-filter-bar>
@@ -25,7 +38,7 @@
       [totalItems]="(facade.totalItems$ | async) ?? 0" [showEditDelete]="(activeTab !== 'ammunition' || ammunitionViewMode === 'available') && (activeTab !== 'explosive' || explosivesViewMode === 'available') && (activeTab !== 'weapon' || weaponsViewMode === 'available')"
       [showRestore]="(activeTab === 'ammunition' && ammunitionViewMode === 'deleted') || (activeTab === 'explosive' && explosivesViewMode === 'deleted') || (activeTab === 'weapon' && weaponsViewMode === 'deleted')"
       [showPermanentDelete]="(activeTab === 'ammunition' && ammunitionViewMode === 'deleted') || (activeTab === 'explosive' && explosivesViewMode === 'deleted') || (activeTab === 'weapon' && weaponsViewMode === 'deleted')"
-      [paginationState]="paginationState" [totalPages]="totalPages" [isRTL]="isRTL" [getAssetName]="getAssetName"
+      [paginationState]="paginationState" [totalPages]="totalPages" [getAssetName]="getAssetName"
       (view)="onView($event)" (edit)="onEdit($event)" (delete)="onDelete($event)" (restore)="onRestore($event)" (permanentDelete)="onPermanentDelete($event)" (sort)="sortByColumn($event)"
       (pageChange)="onPageChange($event)" (rowsPerPageChange)="onRowsPerPageChange($event)"
       (ammunitionViewModeChange)="switchAmmunitionViewMode($event)" (explosivesViewModeChange)="switchExplosivesViewMode($event)" (weaponsViewModeChange)="switchWeaponsViewMode($event)"

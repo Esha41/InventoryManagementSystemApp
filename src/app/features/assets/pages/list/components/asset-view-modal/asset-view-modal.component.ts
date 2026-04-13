@@ -50,6 +50,7 @@ export class AssetViewModalComponent implements OnChanges {
   getPrimer = () => this.propertyAccessor.getPrimer(this.selectedAsset);
   getTotalWeight = () => this.propertyAccessor.getTotalWeight(this.selectedAsset);
   getBulletDiameter = () => this.propertyAccessor.getBulletDiameter(this.selectedAsset);
+  getAmmunitionCaliber = () => this.propertyAccessor.getAmmunitionCaliber(this.selectedAsset);
   getCaliber = () => this.propertyAccessor.getCaliber(this.selectedAsset);
   getModel = () => this.propertyAccessor.getModel(this.selectedAsset);
   getYearOfManufacture = () => this.propertyAccessor.getYearOfManufacture(this.selectedAsset);

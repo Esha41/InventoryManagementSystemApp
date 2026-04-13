@@ -472,12 +472,6 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           format: (value: string) => value || '-'
         },
         {
-          header: this.translateService.instant('warehouseInventory.assetTag') || 'Asset Tag',
-          key: 'assetTag',
-          width: 15,
-          format: (value: string) => value || '-'
-        },
-        {
           header: this.translateService.instant('assetDetails.purchaseDate') || 'Purchase Date',
           key: 'purchaseDate',
           width: 15,
@@ -488,12 +482,6 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           key: 'warrantyExpiryDate',
           width: 20,
           format: (date: any) => this.importExportService.formatDate(date)
-        },
-        {
-          header: this.translateService.instant('warehouseInventory.condition') || 'Condition',
-          key: 'condition',
-          width: 15,
-          format: (value: string) => value || '-'
         },
         {
           header: this.translateService.instant('assetDetails.purchasePrice') || 'Purchase Price',

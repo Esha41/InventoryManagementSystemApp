@@ -115,6 +115,34 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
         return this.isRTL ? ArrowRight : ArrowLeft;
     }
 
+    /** Aggregates for current tab + search (`filteredItems`, not the current page). */
+    get summaryItemCount(): number {
+        return this.filteredItems.length;
+    }
+
+    get summaryTotalLots(): number {
+        return this.filteredItems.reduce((s, i) => s + (Number(i.totalLots) || 0), 0);
+    }
+
+    get summaryTotalQuantity(): number {
+        return this.filteredItems.reduce((s, i) => s + (Number(i.totalQuantity) || 0), 0);
+    }
+
+    get summaryUsedQuantity(): number {
+        return this.filteredItems.reduce((s, i) => s + (Number(i.usedQuantity) || 0), 0);
+    }
+
+    get summaryReservedQuantity(): number {
+        return this.filteredItems.reduce(
+            (s, i) => s + (Number(i.reservedQuantityByOrdersOnProcessing) || 0),
+            0
+        );
+    }
+
+    get summaryRemainingQuantity(): number {
+        return this.filteredItems.reduce((s, i) => s + (Number(i.remainingQuantity) || 0), 0);
+    }
+
     onBack(): void {
         this.router.navigate(['/inventory-dashboard']);
     }

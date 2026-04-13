@@ -9,20 +9,105 @@
         'top': '50%',
         'transform': 'translateY(-50%)'
       }"></lucide-angular>
-    <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()" (keyup.enter)="onSearchClick()"
-      [placeholder]="'manageAdmins.searchPlaceholder' | translate" 
+    <input type="text" inputmode="search" enterkeyhint="search" name="userAdminSearch" [(ngModel)]="searchTerm"
+      (ngModelChange)="onSearchChange()" (keyup.enter)="onSearchClick()"
+      [placeholder]="'manageAdmins.searchPlaceholder' | translate"
       class="search-input"
       [class.search-input-with-button]="useSearchButton"
-      [ngStyle]="{
-        'padding-left': isRTL ? (useSearchButton ? '6rem' : '1rem') : '2.75rem',
-        'padding-right': isRTL ? '2.75rem' : (useSearchButton ? '6rem' : '1rem')
-      }" />
-    <button *ngIf="useSearchButton" (click)="onSearchClick()"
-      [class.right-2]="!isRTL"
-      [class.left-2]="isRTL"
-      class="absolute top-1/2 -translate-y-1/2 px-3 py-1 bg-[var(--color-brand)] text-white text-[10px] font-bold uppercase tracking-wider rounded-md hover:bg-[var(--color-brand-hover)] transition-all active:scale-95 shadow-soft">
-      {{ 'common.search' | translate }}
+      [ngStyle]="searchInputPadding" />
+    <div *ngIf="useSearchButton"
+      class="absolute top-1/2 -translate-y-1/2 z-10 flex items-center gap-1"
+      [ngClass]="isRTL ? 'start-2' : 'end-2'">
+      <button *ngIf="showSearchClear" type="button" (click)="onClearSearch($event)"
+        class="p-1 rounded-md text-[var(--color-error)] hover:opacity-80 transition-colors shrink-0"
+        [attr.aria-label]="'common.clear' | translate"
+        [title]="'common.clear' | translate">
+        <lucide-angular [img]="X" class="h-4 w-4"></lucide-angular>
+      </button>
+      <button type="button" (click)="onSearchClick()"
+        class="px-3 py-1 bg-[var(--color-brand)] text-white text-[10px] font-bold uppercase tracking-wider rounded-md hover:bg-[var(--color-brand-hover)] transition-all active:scale-95 shadow-soft shrink-0 whitespace-nowrap">
+        {{ 'common.search' | translate }}
+      </button>
+    </div>
+    <button *ngIf="!useSearchButton && showSearchClear" type="button" (click)="onClearSearch($event)"
+      class="absolute top-1/2 -translate-y-1/2 z-10 p-1 rounded-md text-[var(--color-error)] hover:opacity-80 transition-colors"
+      [ngClass]="isRTL ? 'start-2' : 'end-2'"
+      [attr.aria-label]="'common.clear' | translate"
+      [title]="'common.clear' | translate">
+      <lucide-angular [img]="X" class="h-4 w-4"></lucide-angular>
     </button>
+  </div>
+
+  <!-- Rank Filter -->
+  <div class="filter-group">
+    <div class="relative w-[200px]">
+      <app-dropdown class="w-full"
+        [(ngModel)]="rankFilterId"
+        (selectionChange)="onRankFilterChange($event)"
+        [options]="ranks"
+        optionValue="id"
+        [optionLabelFn]="rankOptionLabel"
+        [placeholderSelectable]="false"
+        [placeholderValue]="null"
+        placeholder="{{ 'userFormModal.rankPlaceholder' | translate }}">
+      </app-dropdown>
+
+      <button *ngIf="rankFilterId !== null && rankFilterId !== undefined" type="button"
+        (click)="clearRankFilter($event)"
+        class="absolute end-8 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-md hover:bg-[var(--color-background-hover)] active:bg-[var(--color-background-active)] transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] shadow-custom-sm z-20"
+        style="pointer-events: auto;" [attr.aria-label]="'allowance.clearFilter' | translate"
+        title="{{ 'allowance.clearFilter' | translate }}">
+        <lucide-angular [img]="X" class="h-3.5 w-3.5"></lucide-angular>
+      </button>
+    </div>
+  </div>
+
+  <!-- Department Filter -->
+  <div class="filter-group">
+    <div class="relative w-[200px]">
+      <app-dropdown class="w-full"
+        [(ngModel)]="departmentFilterId"
+        (selectionChange)="onDepartmentFilterChange($event)"
+        [options]="departments"
+        optionValue="id"
+        [optionLabelFn]="departmentOptionLabel"
+        [placeholderSelectable]="false"
+        [placeholderValue]="null"
+        placeholder="{{ 'userFormModal.departmentPlaceholder' | translate }}">
+      </app-dropdown>
+
+      <button *ngIf="departmentFilterId !== null && departmentFilterId !== undefined" type="button"
+        (click)="clearDepartmentFilter($event)"
+        class="absolute end-8 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-md hover:bg-[var(--color-background-hover)] active:bg-[var(--color-background-active)] transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] shadow-custom-sm z-20"
+        style="pointer-events: auto;" [attr.aria-label]="'allowance.clearFilter' | translate"
+        title="{{ 'allowance.clearFilter' | translate }}">
+        <lucide-angular [img]="X" class="h-3.5 w-3.5"></lucide-angular>
+      </button>
+    </div>
+  </div>
+
+  <!-- Roles Filter -->
+  <div class="filter-group">
+    <div class="relative w-[220px]">
+      <app-dropdown class="w-full"
+        [(ngModel)]="roleFilterId"
+        (selectionChange)="onRoleFilterChange($event)"
+        [options]="roles"
+        optionValue="id"
+        [optionLabelFn]="roleOptionLabel"
+        [placeholderSelectable]="false"
+        [placeholderValue]="null"
+        placeholder="{{ 'userFormModal.rolesPlaceholder' | translate }}">
+      </app-dropdown>
+
+      <button *ngIf="roleFilterId !== null && roleFilterId !== undefined" type="button"
+        (click)="clearRoleFilter($event)"
+        class="absolute end-8 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-md hover:bg-[var(--color-background-hover)] active:bg-[var(--color-background-active)] transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] shadow-custom-sm z-20"
+        style="pointer-events: auto;" [attr.aria-label]="'allowance.clearFilter' | translate"
+        title="{{ 'allowance.clearFilter' | translate }}">
+        <lucide-angular [img]="X" class="h-3.5 w-3.5"></lucide-angular>
+      </button>
+    </div>
   </div>
 
   <!-- Status Filter Group -->

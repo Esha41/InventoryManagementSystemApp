@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -8,6 +8,7 @@ import { CardComponent } from '@components/card/card.component';
 import { ButtonComponent } from '@components/button/button.component';
 import { LucideAngularModule, Save, X } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
+import { OnboardingTourService } from '@features/onboarding/services/onboarding-tour.service';
 import { LookupService, NatureOptionDto } from '@services/lookup.service';
 import { LookupItem } from '@models/lookup.model';
 import { AmmunitionCreateDto, AmmunitionReadDto } from '@models/ammunition.model';
@@ -55,7 +56,7 @@ interface AssetForm {
   compatibilityId: string;
   hazardDivisionId: string;
   natureOptionId: string;
-  primaryPurposId: string;
+  primaryPurposIds: number[];
   projectileColorId: string;
   projectailMaterialId: string;
 
@@ -83,7 +84,7 @@ type AssetType = 'ammunition' | 'weapon' | 'explosive';
   styleUrls: ['./add-asset.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AddAssetComponent implements OnInit, OnDestroy {
+export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
   readonly Save = Save;
   readonly X = X;
 
@@ -134,12 +135,9 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private translateService: TranslateService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private onboardingTourService: OnboardingTourService
   ) { }
-
-  get isRTL(): boolean {
-    return this.translationService?.isRTL() ?? false;
-  }
 
   assetForm: AssetForm = this.getInitialForm();
 
@@ -171,7 +169,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       compatibilityId: '',
       hazardDivisionId: '',
       natureOptionId: '',
-      primaryPurposId: '',
+      primaryPurposIds: [],
       projectileColorId: '',
       projectailMaterialId: '',
 
@@ -188,6 +186,10 @@ export class AddAssetComponent implements OnInit, OnDestroy {
       netExplosiveQuantityUnitId: '',
       unitId: ''
     };
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => this.onboardingTourService.checkAndStartPageTour('add-asset'), 300);
   }
 
   ngOnInit(): void {
@@ -328,6 +330,7 @@ export class AddAssetComponent implements OnInit, OnDestroy {
 
     if (this.assetForm.partNo?.trim()) dto.partNo = this.assetForm.partNo.trim();
     if (this.assetForm.armNumber?.trim()) dto.armNumber = this.assetForm.armNumber.trim();
+    if (this.assetForm.caliber?.trim()) dto.caliber = this.assetForm.caliber.trim();
     if (this.assetForm.primer?.trim()) dto.primer = this.assetForm.primer.trim();
     if (this.assetForm.nsn?.trim()) dto.nsn = this.assetForm.nsn.trim();
 
@@ -339,7 +342,9 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     if (this.assetForm.compatibilityId) dto.compatibilityId = parseInt(this.assetForm.compatibilityId);
     if (this.assetForm.hazardDivisionId) dto.hazardDivisionId = parseInt(this.assetForm.hazardDivisionId);
     if (this.assetForm.natureOptionId) dto.natureOptionId = parseInt(this.assetForm.natureOptionId);
-    if (this.assetForm.primaryPurposId) dto.primaryPurposId = parseInt(this.assetForm.primaryPurposId);
+    if (this.assetForm.primaryPurposIds?.length) {
+      dto.primaryPurposIds = [...this.assetForm.primaryPurposIds];
+    }
     if (this.assetForm.projectileColorId) dto.projectileColorId = parseInt(this.assetForm.projectileColorId);
     if (this.assetForm.projectailMaterialId) dto.projectailMaterialId = parseInt(this.assetForm.projectailMaterialId);
     if (this.assetForm.distribution?.trim()) dto.distribution = this.assetForm.distribution.trim();
@@ -353,12 +358,15 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     if (this.assetForm.isLinked) dto.isLinked = this.assetForm.isLinked === 'true';
 
     const formData = new FormData();
-    Object.keys(dto).forEach(key => {
-      const val = dto[key as keyof AmmunitionCreateDto];
-      if (val !== undefined && val !== null) {
-        const capKey = key.charAt(0).toUpperCase() + key.slice(1);
-        formData.append(capKey, val.toString());
+    (Object.keys(dto) as (keyof AmmunitionCreateDto)[]).forEach(key => {
+      const val = dto[key];
+      if (val === undefined || val === null) return;
+      const capKey = key.charAt(0).toUpperCase() + key.slice(1);
+      if (key === 'primaryPurposIds' && Array.isArray(val)) {
+        val.forEach(id => formData.append(capKey, id.toString()));
+        return;
       }
+      formData.append(capKey, val.toString());
     });
 
     if (this.assetForm.image) {
@@ -390,14 +398,20 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     if (this.assetForm.model?.trim()) dto.model = this.assetForm.model.trim();
     if (this.assetForm.price) dto.price = parseFloat(this.assetForm.price);
     if (this.assetForm.minimumQuantity) dto.minimumQuantity = parseInt(this.assetForm.minimumQuantity);
+    if (this.assetForm.primaryPurposIds?.length) {
+      dto.primaryPurposIds = [...this.assetForm.primaryPurposIds];
+    }
 
     const formData = new FormData();
-    Object.keys(dto).forEach(key => {
-      const val = dto[key as keyof CreateUpdateWeaponDto];
-      if (val !== undefined && val !== null) {
-        const capKey = key.charAt(0).toUpperCase() + key.slice(1);
-        formData.append(capKey, val.toString());
+    (Object.keys(dto) as (keyof CreateUpdateWeaponDto)[]).forEach(key => {
+      const val = dto[key];
+      if (val === undefined || val === null) return;
+      const capKey = key.charAt(0).toUpperCase() + key.slice(1);
+      if (key === 'primaryPurposIds' && Array.isArray(val)) {
+        val.forEach(id => formData.append(capKey, id.toString()));
+        return;
       }
+      formData.append(capKey, val.toString());
     });
 
     if (this.assetForm.image) {
@@ -428,14 +442,20 @@ export class AddAssetComponent implements OnInit, OnDestroy {
     if (this.assetForm.unitId) dto.unitId = parseInt(this.assetForm.unitId);
     if (this.assetForm.armNumber?.trim()) dto.armNumber = this.assetForm.armNumber.trim();
     if (this.assetForm.compatibilityId) dto.compatibilityId = parseInt(this.assetForm.compatibilityId);
+    if (this.assetForm.primaryPurposIds?.length) {
+      dto.primaryPurposIds = [...this.assetForm.primaryPurposIds];
+    }
 
     const formData = new FormData();
-    Object.keys(dto).forEach(key => {
-      const val = dto[key as keyof CreateUpdateExplosiveDto];
-      if (val !== undefined && val !== null) {
-        const capKey = key.charAt(0).toUpperCase() + key.slice(1);
-        formData.append(capKey, val.toString());
+    (Object.keys(dto) as (keyof CreateUpdateExplosiveDto)[]).forEach(key => {
+      const val = dto[key];
+      if (val === undefined || val === null) return;
+      const capKey = key.charAt(0).toUpperCase() + key.slice(1);
+      if (key === 'primaryPurposIds' && Array.isArray(val)) {
+        val.forEach(id => formData.append(capKey, id.toString()));
+        return;
       }
+      formData.append(capKey, val.toString());
     });
 
     if (this.assetForm.image) {

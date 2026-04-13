@@ -32,7 +32,9 @@ export class WorkflowApprovalPermissionsService {
   constructor(private authService: BackendAuthService) { }
 
   /**
-   * Check if user can approve or reject requests
+   * Check if user can approve or reject requests.
+   * Matches backend GetCurrentApprovalStepByRequestIdAsync: SuperAdmin bypass, else exact approver/role/delegation
+   * (exposed as isCurrentUserApprover on the pending history row). No JWT role-name heuristics or permission-count bypass.
    */
   canApproveOrReject(requestDetail: RequestDetail | null, processing: boolean): boolean {
     if (!requestDetail || processing) {
@@ -58,15 +60,7 @@ export class WorkflowApprovalPermissionsService {
       }
     }
 
-    // Check if user is administrator (multiple detection methods)
-    const hasAdministratorRole = this.authService.hasRole('Administrator') || this.authService.hasRole('Admin');
-    const isAdminByUsername = currentUser?.userName?.toLowerCase().includes('administrator') ||
-      currentUser?.email?.toLowerCase().includes('administrator');
-    const hasAdminLevelPermissions = (currentUser?.permissions?.length || 0) >= 200;
-
-    const isAdministrator = hasAdministratorRole || isAdminByUsername || hasAdminLevelPermissions;
-
-    if (isAdministrator) {
+    if (this.authService.isSuperAdmin()) {
       return true;
     }
 
@@ -82,15 +76,12 @@ export class WorkflowApprovalPermissionsService {
       return false;
     }
 
-    if (currentPendingStep.isCurrentUserApprover !== undefined) {
-      if (isAdministrator) {
-        return true;
-      }
-      return currentPendingStep.isCurrentUserApprover;
+    if (currentPendingStep.isCurrentUserApprover !== true) {
+      return false;
     }
 
-    // Check if user has already acted in the current workflow step
-    if (requestDetail.approvalHistory && requestDetail.approvalHistory.length > 0) {
+    // Guard against duplicate action if history already records this user on this workflow step
+    if (requestDetail.approvalHistory?.length) {
       const hasUserAlreadyActedInCurrentStep = requestDetail.approvalHistory.some(step => {
         if (step.workflowStepId === currentPendingStep.workflowStepId) {
           if (step.status === 'Approved' || step.status === 'Rejected') {
@@ -110,57 +101,6 @@ export class WorkflowApprovalPermissionsService {
       });
 
       if (hasUserAlreadyActedInCurrentStep) {
-        return false;
-      }
-    }
-
-    // Additional check: if this is not a pending step for the current user, don't show buttons
-    const hasAnyApprovedOrRejectedByCurrentUser = requestDetail.approvalHistory?.some(step => {
-      if (step.status === 'Approved' || step.status === 'Rejected') {
-        const changedBy = step.changedBy?.toLowerCase() || '';
-        const approverName = step.approverName?.toLowerCase() || '';
-
-        const matchesUserId = currentUserId && changedBy.includes(currentUserId);
-        const matchesUserName = currentUserName && (changedBy.includes(currentUserName) || approverName.includes(currentUserName));
-        const matchesUserEmail = currentUserEmail && changedBy.includes(currentUserEmail);
-
-        return matchesUserId || matchesUserName || matchesUserEmail;
-      }
-      return false;
-    });
-
-    if (hasAnyApprovedOrRejectedByCurrentUser) {
-      const currentUserRoles = this.authService.getCurrentUser()?.roles || [];
-
-      // Helper to normalize strings for comparison
-      const normalize = (s: string) => s ? s.toLowerCase().replace(/[^a-z0-9]/g, '') : '';
-
-      const pendingRoleName = normalize(currentPendingStep.applicationRoleName || '');
-      const pendingRoleId = normalize(currentPendingStep.applicationRoleId || '');
-
-      // Check if user has a role that matches the pending step
-      const hasMatchingRole = currentUserRoles.some(userRole => {
-        const normalizedUserRole = normalize(userRole);
-        if (!normalizedUserRole) return false;
-
-        // 1. Check against Role ID (if available)
-        if (pendingRoleId) {
-          if (normalizedUserRole === pendingRoleId) return true;
-          if (normalizedUserRole.includes(pendingRoleId) || pendingRoleId.includes(normalizedUserRole)) return true;
-        }
-
-        // 2. Check against Role Name
-        if (pendingRoleName) {
-          if (normalizedUserRole === pendingRoleName) return true;
-          if (pendingRoleName.startsWith(normalizedUserRole)) return true;
-          if (normalizedUserRole.length > 10 && pendingRoleName.includes(normalizedUserRole)) return true;
-          if (pendingRoleName.length > 10 && normalizedUserRole.includes(pendingRoleName)) return true;
-        }
-
-        return false;
-      });
-
-      if (!hasMatchingRole) {
         return false;
       }
     }

@@ -1,8 +1,12 @@
 <!-- Print Header with Logo and QR Code -->
 <div class="print-header">
   <div class="print-header-content">
-    <div class="print-logo-center">
-      <div class="emdad-logo-mark--brand print-logo order-report-brand-logo" role="img" aria-label="Organization Logo"></div>
+    <div class="print-logo-center min-w-0 flex-1">
+      <!-- Header logo: between compact and login size -->
+      <div
+        class="emdad-logo-mark--brand print-logo mt-7 sm:mt-8 h-16 sm:h-20 md:h-24 w-full max-w-[min(80vw,16rem)] sm:max-w-[min(80vw,20rem)] flex-shrink-0"
+        role="img"
+        aria-label="Organization Logo"></div>
     </div>
     <div class="print-qr-container">
       <ng-container *ngIf="qrCodeDataUrl">

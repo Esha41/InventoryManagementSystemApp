@@ -154,6 +154,15 @@ export class WorkflowService {
         if (!data) {
           throw new Error('Failed to fetch workflow');
         }
+        const steps = data.workflowSteps as WorkflowStepDto[] | undefined;
+        if (steps?.length) {
+          return {
+            ...data,
+            workflowSteps: [...steps].sort(
+              (a, b) => (a.stepOrder || 0) - (b.stepOrder || 0)
+            )
+          };
+        }
         return data;
       }),
       catchError(error => {

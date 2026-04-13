@@ -104,6 +104,12 @@ export class AssetDetailsComponent implements OnInit, OnDestroy {
     return getLocalizedName(this.asset.item, lang) || this.asset.item.name || '-';
   }
 
+  getLookupLabel(entity?: { nameAr?: string; nameEn?: string } | null): string {
+    if (!entity) return '-';
+    const lang = getCurrentLang(this.translateService);
+    return getLocalizedName(entity, lang) || '-';
+  }
+
   getStatusLabel(): string {
     return getAssetStatusLabel(this.asset?.status);
   }

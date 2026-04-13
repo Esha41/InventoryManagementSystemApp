@@ -31,6 +31,7 @@ export interface AmmunitionReadDto {
   bulletDiameter?: number;
   bulletDiameterUnitId?: number;
   armNumber?: string;
+  caliber?: string;
   isLinked: boolean;
   primer?: string;
   totalWeight?: number;
@@ -62,7 +63,10 @@ export interface AmmunitionReadDto {
   manufacturer?: LookupDto;
   natureOption?: LookupDto;
   bulletDiameterUnit?: LookupDto;
+  /** Legacy single navigation; prefer primaryPurposes from catalog API */
   primaryPurpos?: LookupDto;
+  /** Purposes linked to this catalog item (BaseItemPrimaryPurposes) */
+  primaryPurposes?: LookupDto[];
   projectileColor?: LookupDto;
   projectailMaterial?: LookupDto;
   caseType?: LookupDto;
@@ -82,6 +86,7 @@ export interface AmmunitionCreateDto {
   // All other fields are optional - only Name and ItemNo are required
   partNo?: string;
   armNumber?: string;
+  caliber?: string;
   // Note: batchNo, readyForIssue, and expiryDate are NOT in backend CreateUpdateAmmunitionDto
   // These fields are managed at the lot/inventory level, not the ammunition catalog level
   hccId?: number;
@@ -95,7 +100,8 @@ export interface AmmunitionCreateDto {
   primer?: string;
   totalWeight?: number;
   nsn?: string;
-  primaryPurposId?: number;
+  /** Matches API PrimaryPurposIds (BaseItemPrimaryPurposes) */
+  primaryPurposIds?: number[];
   projectileColorId?: number;
   projectailMaterialId?: number;
   caseTypeId?: number;
@@ -127,6 +133,7 @@ export interface AmmunitionUpdateDto {
   bulletDiameter?: number;
   bulletDiameterUnitId?: number;
   armNumber?: string;
+  caliber?: string;
   isLinked: boolean;
   primer?: string;
   totalWeight?: number;

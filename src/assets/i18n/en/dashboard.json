@@ -84,11 +84,11 @@
       "belowThreshold": "Below threshold"
     },
     "expiringLots": {
-      "title": "Expiring Lots",
-      "subtitle": "Lots expiring in the next 30 days",
+      "title": "Expiring lots",
+      "subtitle": "lots expiring in the next 30 days",
       "itemName": "Item Name",
       "itemNo": "Item No",
-      "lot": "Lot",
+      "lot": "lot",
       "batchNo": "Batch No",
       "expiryDate": "Expiry Date",
       "daysUntilExpiry": "Days Until Expiry",
@@ -110,7 +110,10 @@
       "holdQuantity": "Hold Quantity",
       "suppliedQuantity": "Used Quantity",
       "remaining": "Remaining",
-      "noItems": "No items below minimum stock threshold"
+      "noItems": "No items below minimum stock threshold",
+      "depot": "Depot",
+      "stock": "Stock",
+      "noDepots": "No depot information available"
     },
     "annualSupplyActivity": "Annual Supply Activity",
     "overstock": "Overstock"
@@ -127,15 +130,16 @@
     "usedQty": "Used Qty",
     "reservedQty": "Hold Quantity",
     "remainingQty": "Remaining Qty",
-    "totalLots": "Total Lots",
+    "totalLots": "Total lots",
     "totalAssets": "Total Assets",
-    "lotDetails": "Lot Details",
+    "lotDetails": "lot details",
     "assetDetails": "Asset Details",
-    "lotNumber": "Lot Number",
+    "lotNumber": "lot number",
     "depot": "Depot",
     "supplier": "Supplier",
     "manufacturer": "Manufacturer",
     "country": "Country",
+    "primaryPurpose": "Primary purpose",
     "batchNo": "Batch No",
     "expiryDate": "Expiry Date",
     "originalQty": "Original Qty",
@@ -145,7 +149,7 @@
     "noItems": "No inventory items available",
     "searchPlaceholder": "Search by item name, item number, NSN, or part number...",
     "noResults": "No items match your search criteria",
-    "exportWithDetails": "Export with Lot Details",
+    "exportWithDetails": "Export with lot details",
     "exportingWithDetails": "Loading lot details for export. Please wait..."
   },
   "forecast": {

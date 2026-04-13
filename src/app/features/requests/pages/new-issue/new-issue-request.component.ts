@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnDestroy, OnInit, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Cartridge } from './components/cartridge-list/cartridge-list.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -12,7 +12,7 @@ import { AllowanceSelectionComponent } from './components/allowance-selection/al
 import { OrderSuccessComponent } from './components/order-success/order-success.component';
 import { StepSelectionComponent } from './components/step-selection/step-selection.component';
 import { ErrorBannerComponent } from './components/error-banner/error-banner.component';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, debounceTime } from 'rxjs';
 import { CartridgeDataService } from '@services/cartridge-data.service';
 import { OrderSubmissionService } from '@services/order-submission.service';
 import { APIOperationResponse } from '@models/api-response.model';
@@ -24,6 +24,7 @@ import { IssueRequestUserContextService } from '@requests/services/issue-request
 import { IssueRequestCartridgeLoaderService } from '@requests/services/issue-request-cartridge-loader.service';
 import { IssueRequestCartridgeManagementService } from '@requests/services/issue-request-cartridge-management.service';
 import { IssueRequestSubmissionService } from '@requests/services/issue-request-submission.service';
+import { OnboardingTourService } from '@features/onboarding/services/onboarding-tour.service';
 import {
   RequestPurposeDto,
   FilterState,
@@ -91,8 +92,11 @@ interface ExtendedFilterOptions extends FilterOptions {
   styleUrls: ['./new-issue-request.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NewIssueRequestComponent implements OnInit, OnDestroy {
+export class NewIssueRequestComponent implements OnInit, OnDestroy, AfterViewInit {
   private destroy$ = new Subject<void>();
+  /** Debounced refetch when sidebar filters change (full catalog only). */
+  private readonly serverCatalogFilterApply$ = new Subject<void>();
+  private static readonly SERVER_CATALOG_FILTER_DEBOUNCE_MS = 350;
   private pendingSelections: Array<{ id: number; quantity: number }> | null = null;
   currentStep = 0;
   steps: Step[] = [
@@ -118,7 +122,8 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     private cartridgeManagementService: IssueRequestCartridgeManagementService,
     private submissionService: IssueRequestSubmissionService,
     private toastService: ToastService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private onboardingTourService: OnboardingTourService
   ) { }
 
   // Grouped state objects
@@ -138,9 +143,16 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
 
   filterOptions: ExtendedFilterOptions = {
     itemTypeOptions: ['Ammunition', 'Explosive', 'Weapon'],
-    ammunitionTypeOptions: ['Small', 'Medium', 'Large'], // These map to backend Enums often
+    ammunitionTypeOptions: [
+      { label: 'newIssueRequest.ammunitionTypeSmall', value: 'Small' },
+      { label: 'newIssueRequest.ammunitionTypeMedium', value: 'Medium' },
+      { label: 'newIssueRequest.ammunitionTypeLarge', value: 'Large' }
+    ],
     bulletDiameters: [],
-    linkedOptions: ['Linked', 'Not Linked'],
+    linkedOptions: [
+      { label: 'newIssueRequest.linkedOptionLinked', value: 'Linked' },
+      { label: 'newIssueRequest.linkedOptionNotLinked', value: 'Not Linked' }
+    ],
     natureOptions: [],
     orderPriorities: [],
     weaponTypeOptions: [],
@@ -153,10 +165,21 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     selectedCartridgeForView: null,
     showCartridgeDetails: false,
     loadingCartridges: false,
+    catalogPageLoading: false,
     cartridgeError: null,
     selectedEntries: [],
-    selectedCartridgesCache: new Map<number, Cartridge>()
+    selectedCartridgesCache: new Map<number, Cartridge>(),
+    catalogPagination: {
+      page: 1,
+      pageSize: 10,
+      totalCount: 0,
+      totalPages: 0,
+      hasNextPage: false,
+      hasPreviousPage: false
+    }
   };
+
+  private readonly CATALOG_PAGE_SIZE = 10;
 
   usageFormData: UsageFormData = {
     usePurpose: '',
@@ -277,6 +300,10 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     );
   }
 
+  ngAfterViewInit(): void {
+    setTimeout(() => this.onboardingTourService.checkAndStartPageTour('issue-request'), 300);
+  }
+
   ngOnInit(): void {
     this.initializeUserContext();
     this.initializeStepFromQueryParams();
@@ -294,6 +321,22 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
         this.rebuildOrderPriorities();
         this.updateUsePurposeFromSelection(this.requestPurposeState.selectedRequestPurposeId);
       });
+
+    this.serverCatalogFilterApply$
+      .pipe(
+        debounceTime(NewIssueRequestComponent.SERVER_CATALOG_FILTER_DEBOUNCE_MS),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        if (!this.isServerCatalogMode()) {
+          return;
+        }
+        if (this.cartridgeState.catalogPageLoading || this.cartridgeState.loadingCartridges) {
+          return;
+        }
+        this.cartridgeState.catalogPagination.page = 1;
+        this.loadCatalogPage(1, 'overlay');
+      });
   }
 
   ngOnDestroy(): void {
@@ -309,24 +352,54 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     );
   }
 
-  private loadCartridges(): void {
-    this.cartridgeState.loadingCartridges = true;
-    this.cartridgeState.cartridgeError = null;
-    this.cdr.markForCheck();
+  private isServerCatalogMode(): boolean {
+    return this.fromReserve === 'No';
+  }
 
+  private resetCatalogPagination(): void {
+    this.cartridgeState.catalogPagination = {
+      page: 1,
+      pageSize: this.CATALOG_PAGE_SIZE,
+      totalCount: 0,
+      totalPages: 0,
+      hasNextPage: false,
+      hasPreviousPage: false
+    };
+  }
+
+  private loadCartridges(): void {
+    this.cartridgeState.cartridgeError = null;
     const type = this.filterState.selectedItemType;
     const isAllowance = this.fromReserve === 'Yes';
     const deptId = this.userContextState.currentUserDepartmentId;
+
+    if (this.isServerCatalogMode()) {
+      this.resetCatalogPagination();
+      this.loadAmmunitionFacetMetadataIfNeeded();
+      this.loadCatalogPage(1);
+      return;
+    }
+
+    this.cartridgeState.loadingCartridges = true;
+    this.cdr.markForCheck();
+
+    if (isAllowance && !deptId) {
+      this.cartridgeState.allCartridges = [];
+      this.cartridgeState.filteredCartridges = [];
+      this.cartridgeState.loadingCartridges = false;
+      this.cartridgeState.cartridgeError = 'Department not found for current user.';
+      this.cdr.markForCheck();
+      return;
+    }
 
     this.cartridgeLoaderService
       .loadCartridges(type, isAllowance, deptId)
       .subscribe({
         next: (result: any) => {
           this.cartridgeState.allCartridges = result.cartridges;
-          this.buildFilterOptions(); // rebuilds dynamic filters like Diameter/Nature
+          this.buildFilterOptions();
           this.filterCartridges();
 
-          // Load reserve details if from allowance
           if (isAllowance && deptId) {
             this.loadReserveDetails();
           }
@@ -347,6 +420,100 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         }
       });
+  }
+
+  private loadAmmunitionFacetMetadataIfNeeded(): void {
+    if (this.filterState.selectedItemType !== 'Ammunition') {
+      return;
+    }
+    this.cartridgeLoaderService.loadAmmunitionFacetSample().subscribe({
+      next: (facets) => {
+        this.filterOptions.bulletDiameters = facets.bulletDiameters;
+        this.filterOptions.natureOptions = facets.natureOptions;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private loadCatalogPage(page: number, loadMode: 'initial' | 'overlay' = 'initial'): void {
+    this.cartridgeState.cartridgeError = null;
+    if (loadMode === 'overlay') {
+      this.cartridgeState.catalogPageLoading = true;
+    } else {
+      this.cartridgeState.loadingCartridges = true;
+      this.cartridgeState.catalogPageLoading = false;
+    }
+    this.cdr.markForCheck();
+
+    const type = this.filterState.selectedItemType;
+    const size = this.cartridgeState.catalogPagination.pageSize;
+
+    this.cartridgeLoaderService
+      .loadCartridgesPaginated(type, page, size, this.filterState)
+      .subscribe({
+        next: (result) => {
+          this.cartridgeState.allCartridges = result.cartridges;
+          this.cartridgeState.catalogPagination = {
+            page: result.pageIndex,
+            pageSize: size,
+            totalCount: result.totalCount,
+            totalPages: result.totalPages,
+            hasNextPage: result.hasNextPage,
+            hasPreviousPage: result.hasPreviousPage
+          };
+          this.mergeSelectedWithList(this.cartridgeState.allCartridges);
+          this.cartridgeState.loadingCartridges = false;
+          this.cartridgeState.catalogPageLoading = false;
+          if (result.error) {
+            this.cartridgeState.cartridgeError = result.error;
+          } else {
+            this.restoreSelections();
+          }
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.cartridgeState.allCartridges = [];
+          this.cartridgeState.filteredCartridges = [];
+          this.cartridgeState.loadingCartridges = false;
+          this.cartridgeState.catalogPageLoading = false;
+          this.cartridgeState.cartridgeError = 'Failed to load items. Please try again.';
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  applyCatalogSearch(searchTerm?: string): void {
+    if (!this.isServerCatalogMode()) {
+      return;
+    }
+    if (this.cartridgeState.catalogPageLoading || this.cartridgeState.loadingCartridges) {
+      return;
+    }
+    if (searchTerm !== undefined) {
+      this.filterState.searchTerm = searchTerm;
+    }
+    this.cartridgeState.catalogPagination.page = 1;
+    this.loadCatalogPage(1, 'overlay');
+  }
+
+  onCatalogPageNext(): void {
+    if (!this.isServerCatalogMode() || !this.cartridgeState.catalogPagination.hasNextPage) {
+      return;
+    }
+    if (this.cartridgeState.catalogPageLoading || this.cartridgeState.loadingCartridges) {
+      return;
+    }
+    this.loadCatalogPage(this.cartridgeState.catalogPagination.page + 1, 'overlay');
+  }
+
+  onCatalogPagePrev(): void {
+    if (!this.isServerCatalogMode() || !this.cartridgeState.catalogPagination.hasPreviousPage) {
+      return;
+    }
+    if (this.cartridgeState.catalogPageLoading || this.cartridgeState.loadingCartridges) {
+      return;
+    }
+    this.loadCatalogPage(this.cartridgeState.catalogPagination.page - 1, 'overlay');
   }
 
   // Kept for compatibility but Refactored logic is in loadCartridges now
@@ -405,7 +572,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   }
 
   retryLoadCartridges(): void {
-    if (!this.cartridgeState.loadingCartridges) {
+    if (!this.cartridgeState.loadingCartridges && !this.cartridgeState.catalogPageLoading) {
       this.loadCartridges();
     }
   }
@@ -426,10 +593,12 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   }
 
   private buildFilterOptions(): void {
+    if (this.isServerCatalogMode()) {
+      return;
+    }
     const options = this.cartridgeDataService.buildFilterOptions(this.cartridgeState.allCartridges);
     this.filterOptions.bulletDiameters = options.bulletDiameters;
     this.filterOptions.natureOptions = options.natureOptions;
-    // Weapon/Explosive types are static/enum based loaded in OnInit
   }
 
   private initializeStepFromQueryParams(): void {
@@ -444,6 +613,17 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
           this.clearQueryParams();
           this.cdr.markForCheck();
           return;
+        }
+
+        // Same route component can be reused after a successful submit; URL then shows step 0 while
+        // in-memory wizard state still holds the previous order. Start a clean flow.
+        if (this.orderSubmissionState.orderSubmitted && params.step === 0) {
+          this.resetForm();
+          if (this.route.snapshot.queryParamMap.keys.length > 0) {
+            this.clearQueryParams();
+            this.cdr.markForCheck();
+            return;
+          }
         }
 
         this.currentStep = params.step;
@@ -489,18 +669,22 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   }
 
   filterCartridges(): void {
-    // First, get the filtered cartridges based on current filters
+    if (this.isServerCatalogMode()) {
+      this.mergeSelectedWithList(this.cartridgeState.allCartridges);
+      return;
+    }
     const filtered = this.filterService.filterCartridges(
       this.cartridgeState.allCartridges,
       this.filterState
     );
+    this.mergeSelectedWithList(filtered);
+  }
 
-    // Get selected cartridges from cache that match the current item type filter
+  private mergeSelectedWithList(filtered: Cartridge[]): void {
     const selectedCartridges: Cartridge[] = [];
     const selectedIds = new Set<number>();
     const currentItemType = this.filterState.selectedItemType;
 
-    // Helper function to infer item type from cartridge properties
     const inferItemType = (cartridge: Cartridge): string | null => {
       if (cartridge.itemType) {
         return cartridge.itemType;
@@ -517,13 +701,10 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       return null;
     };
 
-    // Collect selected cartridges from cache that match the current item type
     this.cartridgeState.selectedCartridgesCache.forEach((cachedCartridge, id) => {
       const cartridgeItemType = cachedCartridge.itemType || inferItemType(cachedCartridge);
 
-      // Only include selected items that match the current filter type
       if (cartridgeItemType === currentItemType) {
-        // Create a copy to avoid mutating the cache
         const cartridgeCopy = { ...cachedCartridge };
         cartridgeCopy.added = true;
         cartridgeCopy.selected = true;
@@ -532,10 +713,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Remove selected items from filtered list to avoid duplicates
     const filteredWithoutSelected = filtered.filter(c => !selectedIds.has(c.id));
-
-    // Prepend selected items at the top, then add filtered items
     this.cartridgeState.filteredCartridges = [...selectedCartridges, ...filteredWithoutSelected];
     this.cdr.markForCheck();
   }
@@ -549,20 +727,37 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
+  onFilterSidebarChange(): void {
+    if (!this.isServerCatalogMode()) {
+      this.filterCartridges();
+      return;
+    }
+    this.serverCatalogFilterApply$.next();
+  }
+
   onClearFilters(): void {
     this.filterService.clearFilters(this.filterState, this.filterState.selectedItemType);
-    this.filterCartridges();
+    if (this.isServerCatalogMode()) {
+      if (this.cartridgeState.catalogPageLoading || this.cartridgeState.loadingCartridges) {
+        return;
+      }
+      this.resetCatalogPagination();
+      this.loadCatalogPage(1, 'overlay');
+    } else {
+      this.filterCartridges();
+    }
   }
 
   onItemTypeChange(value: string): void {
     const prev = this.filterState.selectedItemType;
     if (prev !== value) {
       this.filterState.selectedItemType = value;
-      // Reset filters
-      this.onClearFilters();
-
-      // RELOAD data for new type
+      this.filterService.clearFilters(this.filterState, value);
       this.cartridgeState.allCartridges = [];
+      if (value !== 'Ammunition') {
+        this.filterOptions.bulletDiameters = [];
+        this.filterOptions.natureOptions = [];
+      }
       this.loadCartridges();
     }
   }
@@ -823,10 +1018,36 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
   private resetForm(): void {
     this.currentStep = 0;
     this.steps.forEach(s => s.completed = false);
+    this.filterState = {
+      selectedItemType: 'Ammunition',
+      selectedAmmunitionType: '',
+      selectedBulletDiameter: '',
+      selectedLinked: '',
+      selectedNature: '',
+      selectedNSN: '',
+      searchTerm: '',
+      selectedWeaponType: '',
+      selectedCaliber: '',
+      selectedExplosiveType: '',
+      selectedUNNumber: ''
+    };
     this.cartridgeState.selectedEntries = [];
     this.cartridgeState.allCartridges = [];
     this.cartridgeState.filteredCartridges = [];
+    this.cartridgeState.selectedCartridgeForView = null;
+    this.cartridgeState.showCartridgeDetails = false;
+    this.cartridgeState.loadingCartridges = false;
+    this.cartridgeState.catalogPageLoading = false;
+    this.cartridgeState.cartridgeError = null;
     this.cartridgeState.selectedCartridgesCache.clear();
+    this.cartridgeState.catalogPagination = {
+      page: 1,
+      pageSize: this.CATALOG_PAGE_SIZE,
+      totalCount: 0,
+      totalPages: 0,
+      hasNextPage: false,
+      hasPreviousPage: false
+    };
     this.fromReserve = 'Yes'; // Reset to default
     this.usageFormData = {
       usePurpose: '',
@@ -840,6 +1061,18 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       orderPriority: ''
     };
     this.usageFormFiles = [];
+    this.requestPurposeState.selectedRequestPurposeId = null;
+    this.updateUsePurposeFromSelection(null);
+    this.reserveDetailsState = {
+      totalReserve: 0,
+      availableReserve: 0,
+      orderedQuantity: 0,
+      usedQuantity: 0,
+      loadingReserveDetails: false,
+      reserveDetailsByItem: []
+    };
+    this.allowanceError = null;
+    this.showConfirmDialog = false;
     // Reset order submission state
     this.orderSubmissionState = {
       submittingOrder: false,
@@ -855,5 +1088,6 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy {
       orderDocument: ''
     };
     this.pendingSelections = null;
+    this.syncRequesterNameFromUserDetails();
   }
 }

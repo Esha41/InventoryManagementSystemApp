@@ -4,6 +4,7 @@ import { ExcelExportService, ExcelColumn } from '@services/excel-export.service'
 import { ToastService } from '@services/toast.service';
 import { InventoryDetailDto } from '@models/inventory.model';
 import { AssetDto } from '@models/asset.model';
+import { BatchSummaryDto } from '@models/batch.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 @Injectable({
@@ -20,34 +21,79 @@ export class WarehouseInventoryExportService {
   /**
    * Export filtered inventory to Excel (for ammunition and explosives)
    */
+  /**
+   * Export weapon batch summary rows (batch tab list).
+   */
+  exportBatchSummariesToExcel(batches: BatchSummaryDto[], depoName: string): void {
+    if (!batches?.length) {
+      this.toastService.warning('No data available to export');
+      return;
+    }
+
+    const columns: ExcelColumn[] = [
+      {
+        header: this.translateService.instant('warehouseInventory.batchNo'),
+        key: 'batchNumber',
+        width: 20,
+        format: (value: string) => value || '-'
+      },
+      {
+        header: this.translateService.instant('warehouseInventory.quantity') || 'Quantity',
+        key: 'quantity',
+        width: 12
+      }
+    ];
+
+    this.excelExportService.exportToExcel({
+      fileName: `${depoName}_Batches`,
+      sheetName: 'Batches',
+      columns,
+      data: batches,
+      includeTimestamp: true
+    });
+
+    this.translateService.get(['common.exportSuccess', 'toast.success']).subscribe((translations) => {
+      this.toastService.success(translations['common.exportSuccess'], translations['toast.success']);
+    });
+  }
+
   exportInventoryToExcel(
     inventoryDetails: InventoryDetailDto[],
     depoName: string,
-    activeTab: 'ammunition' | 'weapon' | 'explosive',
+    activeTab: 'ammunition' | 'explosive',
     getItemName: (detail: InventoryDetailDto) => string,
-    formatDate: (date?: Date | string) => string
+    formatDate: (date?: Date | string) => string,
+    getPrimaryPurposeName?: (detail: InventoryDetailDto) => string
   ): void {
+    const lang = getCurrentLang(this.translateService);
+
     const columns: ExcelColumn[] = [
       {
         header: this.translateService.instant('warehouseInventory.itemName'),
-        key: 'item',
-        width: 30,
-        format: (item) => {
-          const detail = item as InventoryDetailDto;
-          return getItemName(detail);
-        }
+        key: 'itemNameExport',
+        width: 30
       },
       {
         header: this.translateService.instant('warehouseInventory.itemNo'),
-        key: 'item.itemNo',
+        key: 'itemNoExport',
         width: 15
       },
       {
         header: this.translateService.instant('common.supplier'),
-        key: 'supplier',
-        width: 20,
-        format: (supplier) => getLocalizedName(supplier, getCurrentLang(this.translateService)) || '-'
-      },
+        key: 'supplierExport',
+        width: 20
+      }
+    ];
+
+    if ((activeTab === 'ammunition' || activeTab === 'explosive') && getPrimaryPurposeName) {
+      columns.push({
+        header: this.translateService.instant('warehouseInventory.primaryPurpose'),
+        key: 'primaryPurposeExport',
+        width: 22
+      });
+    }
+
+    columns.push(
       {
         header: this.translateService.instant('warehouseInventory.lot'),
         key: 'lot',
@@ -81,20 +127,28 @@ export class WarehouseInventoryExportService {
       },
       {
         header: this.translateService.instant('warehouseInventory.expiryDate'),
-        key: 'expiryDate',
-        width: 15,
-        format: (date) => formatDate(date)
+        key: 'expiryDateExport',
+        width: 15
       }
-    ];
+    );
 
     const fileName = `${depoName}_Inventory_${activeTab}`;
     const sheetName = activeTab.charAt(0).toUpperCase() + activeTab.slice(1);
+
+    const exportRows = inventoryDetails.map(d => ({
+      ...d,
+      itemNameExport: getItemName(d),
+      itemNoExport: d.item?.itemNo || '-',
+      supplierExport: getLocalizedName(d.supplier, lang) || '-',
+      primaryPurposeExport: getPrimaryPurposeName ? getPrimaryPurposeName(d) : '-',
+      expiryDateExport: formatDate(d.expiryDate)
+    }));
 
     this.excelExportService.exportToExcel({
       fileName: fileName,
       sheetName: sheetName,
       columns: columns,
-      data: inventoryDetails,
+      data: exportRows,
       includeTimestamp: true
     });
 
@@ -115,18 +169,8 @@ export class WarehouseInventoryExportService {
     const columns: ExcelColumn[] = [
       {
         header: this.translateService.instant('warehouseInventory.itemName'),
-        key: 'item',
-        width: 30,
-        format: (item) => {
-          const asset = item as AssetDto;
-          return getAssetItemName(asset);
-        }
-      },
-      {
-        header: this.translateService.instant('warehouseInventory.itemNo'),
-        key: 'item.itemNo',
-        width: 15,
-        format: (value) => value || '-'
+        key: 'itemNameExport',
+        width: 30
       },
       {
         header: this.translateService.instant('warehouseInventory.serialNumber'),
@@ -141,28 +185,14 @@ export class WarehouseInventoryExportService {
         format: (value) => value || '-'
       },
       {
-        header: this.translateService.instant('warehouseInventory.assetTag'),
-        key: 'assetTag',
-        width: 15,
-        format: (value) => value || '-'
-      },
-      {
-        header: this.translateService.instant('warehouseInventory.condition'),
-        key: 'condition',
-        width: 15,
-        format: (value) => value || '-'
-      },
-      {
         header: this.translateService.instant('warehouseInventory.purchaseDate'),
-        key: 'purchaseDate',
-        width: 15,
-        format: (date) => formatDate(date)
+        key: 'purchaseDateExport',
+        width: 15
       },
       {
         header: this.translateService.instant('warehouseInventory.warrantyExpiryDate'),
-        key: 'warrantyExpiryDate',
-        width: 18,
-        format: (date) => formatDate(date)
+        key: 'warrantyExpiryDateExport',
+        width: 18
       },
       {
         header: this.translateService.instant('warehouseInventory.purchasePrice'),
@@ -181,11 +211,18 @@ export class WarehouseInventoryExportService {
     const fileName = `${depoName}_Assets_Weapon`;
     const sheetName = 'Weapon';
 
+    const exportRows = assets.map(a => ({
+      ...a,
+      itemNameExport: getAssetItemName(a),
+      purchaseDateExport: formatDate(a.purchaseDate),
+      warrantyExpiryDateExport: formatDate(a.warrantyExpiryDate)
+    }));
+
     this.excelExportService.exportToExcel({
       fileName: fileName,
       sheetName: sheetName,
       columns: columns,
-      data: assets,
+      data: exportRows,
       includeTimestamp: true
     });
 

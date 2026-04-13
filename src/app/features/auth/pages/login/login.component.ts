@@ -10,6 +10,7 @@ import { ConfigService } from '@services/config.service';
 import { environment } from '@environments/environment';
 import { LoginRequest } from '@models/auth.model';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { getDefaultLandingUrl } from '@utils/default-landing-route.utils';
 
 @Component({
   selector: 'app-login',
@@ -64,37 +65,39 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Set LDAP mode as default in non-development environments
     if (!environment.production) {
-      this.isLdapMode = false; // Keep password login first in development
+      this.isLdapMode = false;
     } else {
-      this.isLdapMode = true; // LDAP first in production/staging
+      this.isLdapMode = true;
     }
 
     this.applyPasswordValidators();
 
-    // Check if user is already logged in
     if (this.backendAuth.isAuthenticated()) {
-      if (this.backendAuth.hasPermission('dashboard_view')) {
-        this.router.navigate(['/dashboard']);
-      } else if (this.backendAuth.hasPermission('Permissions.AdminDashboard.Page') || 
-                 this.backendAuth.hasPermission('admindashboard.page') ||
-                 this.backendAuth.hasPermission('Permissions.AdminDashboard.View')) {
-        // User with admin dashboard permissions - redirect to admin dashboard
-        this.router.navigate(['/admin-dashboard']);
-      } else if (this.backendAuth.hasPermission('Permissions.SystemUsers.Page') || 
-                 this.backendAuth.hasPermission('systemusers.page')) {
-        // User with only manage-admins permissions (no admin dashboard) - redirect to manage-admins page
-        this.router.navigate(['/manage-admins']);
-      } else {
-        this.router.navigate(['/dashboard']);
-      }
+      this.navigateAfterSessionRestored();
       return;
     }
 
-    // Always reset captcha state on component initialization
-    // Backend handles failed attempts count reset after successful login
-    // Backend only counts failed attempts after the most recent successful login
+    this.backendAuth.restoreSessionSilently().subscribe(restored => {
+      if (restored) {
+        this.navigateAfterSessionRestored();
+        return;
+      }
+      this.initLoginFormState();
+      this.cdr.markForCheck();
+    });
+  }
+
+  private navigateAfterSessionRestored(): void {
+    const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+    const url =
+      returnUrl && returnUrl.startsWith('/') && !returnUrl.startsWith('//')
+        ? returnUrl
+        : getDefaultLandingUrl(this.backendAuth);
+    void this.router.navigateByUrl(url);
+  }
+
+  private initLoginFormState(): void {
     this.showCaptcha = false;
     this.captchaImage = '';
     this.captchaId = '';
@@ -102,12 +105,9 @@ export class LoginComponent implements OnInit {
     this.captcha?.clearValidators();
     this.captcha?.updateValueAndValidity();
 
-    // Reset failed attempts counter - backend will determine if captcha is needed
-    // Backend checks failed attempts after most recent successful login
     this.failedLoginAttempts = 0;
     sessionStorage.removeItem('loginFailedAttempts');
 
-    // Check for session conflict query parameter
     const sessionConflict = this.route.snapshot.queryParams['sessionConflict'];
     if (sessionConflict === 'true') {
       this.loginError = this.translate.instant('auth.login.errors.singleSession');
@@ -409,22 +409,8 @@ export class LoginComponent implements OnInit {
         this.captchaId = '';
         this.loginForm.get('captcha')?.setValue('');
 
-        // Navigate to appropriate dashboard based on permissions
         setTimeout(() => {
-          if (this.backendAuth.hasPermission('dashboard_view')) {
-            this.router.navigate(['/dashboard']);
-          } else if (this.backendAuth.hasPermission('Permissions.AdminDashboard.Page') || 
-                     this.backendAuth.hasPermission('admindashboard.page') ||
-                     this.backendAuth.hasPermission('Permissions.AdminDashboard.View')) {
-            // User with admin dashboard permissions - redirect to admin dashboard
-            this.router.navigate(['/admin-dashboard']);
-          } else if (this.backendAuth.hasPermission('Permissions.SystemUsers.Page') || 
-                     this.backendAuth.hasPermission('systemusers.page')) {
-            // User with only manage-admins permissions (no admin dashboard) - redirect to manage-admins page
-            this.router.navigate(['/manage-admins']);
-          } else {
-            this.router.navigate(['/dashboard']);
-          }
+          this.router.navigateByUrl(getDefaultLandingUrl(this.backendAuth));
         }, 400);
       },
       error: (error) => {
@@ -522,18 +508,7 @@ export class LoginComponent implements OnInit {
         this.captchaId = '';
         this.loginForm.get('captcha')?.setValue('');
         setTimeout(() => {
-          if (this.backendAuth.hasPermission('dashboard_view')) {
-            this.router.navigate(['/dashboard']);
-          } else if (this.backendAuth.hasPermission('Permissions.AdminDashboard.Page') ||
-            this.backendAuth.hasPermission('admindashboard.page') ||
-            this.backendAuth.hasPermission('Permissions.AdminDashboard.View')) {
-            this.router.navigate(['/admin-dashboard']);
-          } else if (this.backendAuth.hasPermission('Permissions.SystemUsers.Page') ||
-            this.backendAuth.hasPermission('systemusers.page')) {
-            this.router.navigate(['/manage-admins']);
-          } else {
-            this.router.navigate(['/dashboard']);
-          }
+          this.router.navigateByUrl(getDefaultLandingUrl(this.backendAuth));
         }, 400);
       },
       error: (error) => {

@@ -26,14 +26,23 @@ export interface FilterState {
 
 export interface FilterOptions {
   itemTypeOptions: string[];
-  ammunitionTypeOptions: string[];
+  ammunitionTypeOptions: DropdownOption<string>[] | string[];
   bulletDiameters: string[];
-  linkedOptions: string[];
+  linkedOptions: DropdownOption<string>[] | string[];
   natureOptions: string[];
   orderPriorities: DropdownOption<string>[] | string[]; // Allow objects or strings
 
   weaponTypeOptions?: any[]; // DropdownOption[]
   explosiveTypeOptions?: any[]; // DropdownOption[]
+}
+
+export interface CatalogPaginationState {
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
 }
 
 export interface CartridgeState {
@@ -42,9 +51,13 @@ export interface CartridgeState {
   selectedCartridgeForView: Cartridge | null;
   showCartridgeDetails: boolean;
   loadingCartridges: boolean;
+  /** True while fetching another page (full catalog only); list stays visible with overlay. */
+  catalogPageLoading: boolean;
   cartridgeError: string | null;
   selectedEntries: Array<{ id: number; quantity: number; itemType?: string }>;
   selectedCartridgesCache: Map<number, Cartridge>; // Cache to preserve full cartridge data across item type changes
+  /** Server-driven catalog (full catalog mode). Allowance mode uses client filtering only. */
+  catalogPagination: CatalogPaginationState;
 }
 
 export interface UsageFormData {

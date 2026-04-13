@@ -7,8 +7,6 @@ export interface SelectedAsset {
   id: number;
   assetId: number;
   serialNumber?: string;
-  assetTag?: string;
-  condition?: string;
   selected: boolean;
   custodianId?: number;
   conditionOnSupply?: string;

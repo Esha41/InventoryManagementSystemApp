@@ -10,55 +10,49 @@
       </h2>
       <!-- Sub-tabs: Available / Deleted (inside card) -->
       <div *ngIf="activeTab === 'ammunition'" class="view-tabs-container">
-        <nav class="view-tabs" role="tablist" aria-label="Ammunition view" [class.flex-row-reverse]="isRTL">
+        <nav class="view-tabs" role="tablist" aria-label="Ammunition view">
           <button role="tab" (click)="onAmmunitionViewModeChange('available')"
             [attr.aria-selected]="ammunitionViewMode === 'available'"
             [class.view-tab-active]="ammunitionViewMode === 'available'"
-            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap"
-            [class.flex-row-reverse]="isRTL">
+            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap">
             <span>{{ 'assetList.ammunition.availableAmmunition' | translate }}</span>
           </button>
           <button role="tab" (click)="onAmmunitionViewModeChange('deleted')"
             [attr.aria-selected]="ammunitionViewMode === 'deleted'"
             [class.view-tab-active]="ammunitionViewMode === 'deleted'"
-            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap"
-            [class.flex-row-reverse]="isRTL">
+            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap">
             <span>{{ 'assetList.ammunition.deletedAmmunition' | translate }}</span>
           </button>
         </nav>
       </div>
       <div *ngIf="activeTab === 'explosive'" class="view-tabs-container">
-        <nav class="view-tabs" role="tablist" aria-label="Explosives view" [class.flex-row-reverse]="isRTL">
+        <nav class="view-tabs" role="tablist" aria-label="Explosives view">
           <button role="tab" (click)="onExplosivesViewModeChange('available')"
             [attr.aria-selected]="explosivesViewMode === 'available'"
             [class.view-tab-active]="explosivesViewMode === 'available'"
-            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap"
-            [class.flex-row-reverse]="isRTL">
+            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap">
             <span>{{ 'assetList.explosives.availableExplosives' | translate }}</span>
           </button>
           <button role="tab" (click)="onExplosivesViewModeChange('deleted')"
             [attr.aria-selected]="explosivesViewMode === 'deleted'"
             [class.view-tab-active]="explosivesViewMode === 'deleted'"
-            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap"
-            [class.flex-row-reverse]="isRTL">
+            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap">
             <span>{{ 'assetList.explosives.deletedExplosives' | translate }}</span>
           </button>
         </nav>
       </div>
       <div *ngIf="activeTab === 'weapon'" class="view-tabs-container">
-        <nav class="view-tabs" role="tablist" aria-label="Weapons view" [class.flex-row-reverse]="isRTL">
+        <nav class="view-tabs" role="tablist" aria-label="Weapons view">
           <button role="tab" (click)="onWeaponsViewModeChange('available')"
             [attr.aria-selected]="weaponsViewMode === 'available'"
             [class.view-tab-active]="weaponsViewMode === 'available'"
-            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap"
-            [class.flex-row-reverse]="isRTL">
+            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap">
             <span>{{ 'assetList.weapons.availableWeapons' | translate }}</span>
           </button>
           <button role="tab" (click)="onWeaponsViewModeChange('deleted')"
             [attr.aria-selected]="weaponsViewMode === 'deleted'"
             [class.view-tab-active]="weaponsViewMode === 'deleted'"
-            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap"
-            [class.flex-row-reverse]="isRTL">
+            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap">
             <span>{{ 'assetList.weapons.deletedWeapons' | translate }}</span>
           </button>
         </nav>
@@ -183,18 +177,21 @@
               <!-- Ammunition Specific Columns -->
               <ng-container *ngIf="activeTab === 'ammunition'">
                 <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'caseType', labelKey: 'assetList.table.caseType' }"></ng-container>
+                <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'caliber', labelKey: 'addAsset.caliber' }"></ng-container>
                 <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'primaryPurpose', labelKey: 'assetList.table.primaryPurpose' }"></ng-container>
               </ng-container>
 
               <!-- Weapon Specific Columns -->
               <ng-container *ngIf="activeTab === 'weapon'">
                 <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'weaponType', labelKey: 'addAsset.weaponType' }"></ng-container>
+                <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'primaryPurpose', labelKey: 'assetList.table.primaryPurpose' }"></ng-container>
                 <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'caliber', labelKey: 'addAsset.caliber' }"></ng-container>
               </ng-container>
 
               <!-- Explosive Specific Columns -->
               <ng-container *ngIf="activeTab === 'explosive'">
                 <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'armNumber', labelKey: 'addAsset.armNumber' }"></ng-container>
+                <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'primaryPurpose', labelKey: 'assetList.table.primaryPurpose' }"></ng-container>
                 <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'explosiveType', labelKey: 'addAsset.explosiveType' }"></ng-container>
                 <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'unNumber', labelKey: 'addAsset.unNumber' }"></ng-container>
                 <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'compatibility', labelKey: 'addAsset.compatibility' }"></ng-container>
@@ -224,8 +221,8 @@
                   </div>
                 </div>
               </td>
-              <td class="py-4 px-6">
-                <div class="font-medium text-[var(--color-text)]">{{ getAssetName(asset) }}</div>
+              <td class="asset-table__name-col py-4 px-6 align-top">
+                <div class="asset-table__name-text font-medium text-[var(--color-text)]">{{ getAssetName(asset) }}</div>
               </td>
               <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.itemNo }}</td>
               <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.partNo }}</td>
@@ -235,17 +232,23 @@
               <td *ngIf="activeTab === 'ammunition'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
                 asset.caseType }}</td>
               <td *ngIf="activeTab === 'ammunition'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
+                asset.caliber }}</td>
+              <td *ngIf="activeTab === 'ammunition'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
                 asset.primaryPurpose }}</td>
 
               <!-- Weapon Columns -->
               <td *ngIf="activeTab === 'weapon'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
                 asset.weaponType }}</td>
+              <td *ngIf="activeTab === 'weapon'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
+                asset.primaryPurpose }}</td>
               <td *ngIf="activeTab === 'weapon'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.caliber
                 }}</td>
 
               <!-- Explosive Columns -->
               <td *ngIf="activeTab === 'explosive'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
                 asset.armNumber || '-' }}</td>
+              <td *ngIf="activeTab === 'explosive'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
+                asset.primaryPurpose }}</td>
               <td *ngIf="activeTab === 'explosive'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
                 asset.explosiveType }}</td>
               <td *ngIf="activeTab === 'explosive'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{

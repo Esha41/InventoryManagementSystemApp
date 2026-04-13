@@ -83,6 +83,7 @@
     "item": "item",
     "items": "items",
     "import": "Import",
+    "export": "Export",
     "importData": "Import Data",
     "downloadTemplate": "Download Template",
     "selectFile": "Select file",
@@ -151,6 +152,7 @@
   },
   "importDialog": {
     "description": "Upload an Excel file to import {{entityName}} data. Please ensure your file follows the required format.",
+    "requiredFieldLegend": "Indicates required columns in the template (English name, Military ID, Department, Rank).",
     "clickToUpload": "Click to upload or drag and drop",
     "xlsxOnly": "XLSX files only"
   },
@@ -172,7 +174,17 @@
     "filterValid": "Valid Only",
     "filterInvalid": "Invalid Only",
     "cannotImportWithErrors": "Cannot import: Please fix all errors first",
-    "readyToImport": "Ready to import {{count}} valid row(s)"
+    "readyToImport": "Ready to import {{count}} valid row(s)",
+    "batchExcelPreviewHint": "Batch weapons: this preview hides internal IDs; your Excel file still includes hidden _AssetId / _ItemId for round-trip. Rows with Action \"Update\" change an existing asset (keep _AssetId from export, or match Serial Number to one already in this batch). Rows with Action \"Create\" add a new asset: unhide column A and clear _AssetId for those lines (serial can be empty). If Update Assignment is yes, fill either the Department column or the Employee column—not both.",
+    "batchImportActionColumn": "Action",
+    "batchImportActionCreate": "Create",
+    "batchImportActionUpdate": "Update",
+    "partialImportBannerTitle": "Invalid Rows Detected",
+    "partialImportBannerMessage": "{{count}} row(s) contain errors and will be skipped. You can download the error report before proceeding.",
+    "partialImportFooterHint": "{{validCount}} valid row(s) will be imported, {{invalidCount}} invalid row(s) will be skipped",
+    "partialImportConfirmTitle": "Continue with partial import?",
+    "partialImportConfirmMessage": "{{validCount}} valid row(s) will be imported. {{invalidCount}} invalid row(s) will be skipped.",
+    "partialImportConfirmDescription": "Make sure you have downloaded the error report for the invalid rows before continuing."
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -200,7 +212,7 @@
     "inventoryForecast": "Inventory Forecast",
     "inventorySummary": "Inventory Summary",
     "lowStock": "Low Stock",
-    "expiringLots": "Expiring Lots",
+    "expiringLots": "Expiring lots",
     "reports": "Reports",
     "inventoryReports": "Inventory Reports",
     "depotManagement": "Depot Management",
@@ -277,6 +289,7 @@
     "failedToDeleteAssignment": "Failed to delete assignment"
   },
   "depotManagement": {
+    "search": "Search depots by name, code, or location...",
     "errors": {
       "fillRequiredFields": "Please fill in all required fields",
       "invalidLatitude": "Latitude must be between -90 and 90",

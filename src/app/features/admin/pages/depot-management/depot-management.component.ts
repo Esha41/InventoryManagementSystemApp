@@ -4,6 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, Plus, Edit, Trash2, X, Users } from 'lucide-angular';
+import { PaginationComponent } from '@components/pagination/pagination.component';
+import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
+import { ButtonComponent } from '@components/button/button.component';
+import { PagedListRequest, FilterData } from '@models/pagination.model';
 import { LookupService } from '@services/lookup.service';
 import { DepotDto } from '@models/depot.model';
 import { ApiService } from '@services/api.service';
@@ -22,7 +26,19 @@ import { trackById } from '@utils/trackby.utils';
 @Component({
   selector: 'app-depot-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, ConfirmDialogComponent, HasPermissionDirective, LoadingStateComponent, DepotUserAssignmentModalComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    LucideAngularModule,
+    ConfirmDialogComponent,
+    HasPermissionDirective,
+    LoadingStateComponent,
+    DepotUserAssignmentModalComponent,
+    PaginationComponent,
+    RowsPerPageComponent,
+    ButtonComponent
+  ],
   templateUrl: './depot-management.component.html',
   styleUrls: ['./depot-management.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -39,6 +55,15 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
   loading = false;
   errorMessage: string | null = null;
   successMessage: string | null = null;
+
+  /** Value in the search box (applied only when user clicks Search or presses Enter). */
+  searchDraft = '';
+  /** Term sent to the server in `buildPagedRequest`. */
+  private appliedSearchTerm = '';
+
+  currentPage = 1;
+  rowsPerPage = 10;
+  totalCount = 0;
 
   // Modal state
   showModal = false;
@@ -92,23 +117,45 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  get totalPages(): number {
+    if (this.totalCount <= 0) {
+      return 1;
+    }
+    return Math.ceil(this.totalCount / this.rowsPerPage);
+  }
+
+  /** Show clear when there is draft text or an applied filter (so user can reset and fetch all). */
+  get showSearchClear(): boolean {
+    return !!(this.searchDraft?.trim() || this.appliedSearchTerm);
+  }
+
   loadDepots(): void {
     this.loading = true;
     this.errorMessage = null;
     this.cdr.markForCheck();
 
-    this.lookupService.getDepotList()
+    const request = this.buildPagedRequest();
+
+    this.lookupService
+      .getDepotsPaginated(request)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (depots) => {
-          this.depots = (depots ?? [])
-            .filter(depot => !depot.isDeleted)
-            .map(depot => ({
-              ...depot,
-              code: depot.code || depot.Code || '',
-              Code: depot.Code || depot.code || '',
-              location: depot.location || ''
-            }));
+        next: (page) => {
+          this.totalCount = page?.totalCount ?? 0;
+          const maxPage = this.totalCount === 0 ? 1 : Math.ceil(this.totalCount / this.rowsPerPage);
+          if (this.currentPage > maxPage) {
+            this.currentPage = maxPage;
+            this.loadDepots();
+            return;
+          }
+
+          this.depots = (page?.items ?? []).map(depot => ({
+            ...depot,
+            code: depot.code || depot.Code || '',
+            Code: depot.Code || depot.code || '',
+            location: depot.location || '',
+            displayName: getLocalizedName(depot, getCurrentLang(this.translateService))
+          }));
           this.loading = false;
           this.cdr.markForCheck();
         },
@@ -118,6 +165,54 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         }
       });
+  }
+
+  onSearchClick(): void {
+    this.appliedSearchTerm = (this.searchDraft ?? '').trim();
+    this.currentPage = 1;
+    this.loadDepots();
+  }
+
+  onClearSearch(): void {
+    this.searchDraft = '';
+    this.appliedSearchTerm = '';
+    this.currentPage = 1;
+    this.loadDepots();
+  }
+
+  private buildPagedRequest(): PagedListRequest {
+    const term = this.appliedSearchTerm;
+    let filter: FilterData | undefined;
+    if (term) {
+      filter = {
+        logic: 'or',
+        filters: [
+          { field: 'NameEn', operator: 'contains', value: term },
+          { field: 'NameAr', operator: 'contains', value: term },
+          { field: 'Code', operator: 'contains', value: term },
+          { field: 'Location', operator: 'contains', value: term }
+        ]
+      };
+    }
+
+    return {
+      page: this.currentPage,
+      pageSize: this.rowsPerPage,
+      filter
+    };
+  }
+
+  onPageChange(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.loadDepots();
+    }
+  }
+
+  onRowsPerPageChange(size: number): void {
+    this.rowsPerPage = size;
+    this.currentPage = 1;
+    this.loadDepots();
   }
 
   openAddModal(): void {

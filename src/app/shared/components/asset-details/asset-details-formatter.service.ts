@@ -45,13 +45,18 @@ export class AssetDetailsFormatterService {
           : '-'
       ),
       primaryPurpose: computed(() =>
-        isAmmunition()
-          ? this.propertyAccessor.getPrimaryPurpose(asset() as AmmunitionReadDto) || '-'
+        isAmmunition() || isWeapon() || isExplosive()
+          ? this.propertyAccessor.getPrimaryPurpose(asset()) || '-'
           : '-'
       ),
       projectileColor: computed(() =>
         isAmmunition()
           ? this.propertyAccessor.getProjectileColor(asset() as AmmunitionReadDto) || '-'
+          : '-'
+      ),
+      ammunitionCaliber: computed(() =>
+        isAmmunition()
+          ? this.propertyAccessor.getAmmunitionCaliber(asset() as AmmunitionReadDto) || '-'
           : '-'
       ),
       bulletDiameter: computed(() =>

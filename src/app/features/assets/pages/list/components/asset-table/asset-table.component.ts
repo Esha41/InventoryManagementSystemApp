@@ -44,7 +44,6 @@ export class AssetTableComponent {
   @Input() paginationState!: AssetPaginationState;
   @Input() totalPages = 1;
   @Input() totalItems = 0;
-  @Input() isRTL = false;
   @Input() ammunitionViewMode: 'available' | 'deleted' = 'available';
   @Input() explosivesViewMode: 'available' | 'deleted' = 'available';
   @Input() weaponsViewMode: 'available' | 'deleted' = 'available';

@@ -22,6 +22,28 @@
       {{ errorMessage }}
     </div>
 
+    <!-- Search -->
+    <div *ngIf="!showModal" class="mb-4 flex flex-col sm:flex-row gap-2 sm:items-center max-w-2xl">
+      <label class="sr-only" for="depot-search">{{ 'depotManagement.search' | translate }}</label>
+      <div class="relative flex-1 min-w-0">
+        <input id="depot-search" type="text" name="depotSearch" inputmode="search" enterkeyhint="search"
+          [(ngModel)]="searchDraft" (keydown.enter)="onSearchClick()"
+          class="w-full ps-4 py-2.5 bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+          [ngClass]="showSearchClear ? 'pe-11' : 'pe-4'"
+          [placeholder]="'depotManagement.search' | translate"
+          autocomplete="off" />
+        <button *ngIf="showSearchClear" type="button" (click)="onClearSearch()"
+          class="absolute end-2 top-1/2 -translate-y-1/2 p-1 rounded-md text-[var(--color-error)] hover:opacity-80 transition-colors"
+          [attr.aria-label]="'common.clear' | translate"
+          [title]="'common.clear' | translate">
+          <lucide-icon [img]="X" [size]="18"></lucide-icon>
+        </button>
+      </div>
+      <app-button variant="primary" type="button" (clicked)="onSearchClick()" [disabled]="loading" class="shrink-0">
+        {{ 'common.search' | translate }}
+      </app-button>
+    </div>
+
     <!-- Loading State -->
     <app-loading-state *ngIf="loading && !showModal" message="common.loading" size="sm"
       containerClass="flex justify-center items-center py-12">
@@ -76,15 +98,32 @@
       </div>
 
       <!-- No Depots Message for Mobile -->
-      <div *ngIf="depots.length === 0"
+      <div *ngIf="!loading && totalCount === 0"
         class="col-span-full text-center py-8 text-[var(--color-text-muted)] bg-[var(--color-background)] rounded-xl border border-[var(--color-border)]">
         {{ 'depot.noDepots' | translate }}
+      </div>
+
+      <div *ngIf="totalCount > 0 && !loading && !showModal"
+        class="col-span-full depot-pagination-footer border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 py-4 sm:px-6 rounded-xl border border-[var(--color-border)]">
+        <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 w-full">
+          <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="totalCount" [visibleItems]="depots.length"
+            (rowsPerPageChange)="onRowsPerPageChange($event)">
+          </app-rows-per-page>
+          <div *ngIf="totalPages > 1"
+            class="flex flex-col sm:flex-row items-center gap-3 justify-center md:justify-end">
+            <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
+            </app-pagination>
+            <span class="text-xs sm:text-sm text-[var(--color-text-muted)] whitespace-nowrap text-center">
+              {{ currentPage }} {{ 'common.of' | translate }} {{ totalPages }}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Depots Table -->
     <div *ngIf="!loading || showModal"
-      class="hidden lg:block bg-[var(--color-background)] rounded-xl shadow-custom-md border-2 border-[var(--color-border)] overflow-hidden">
+      class="hidden lg:flex lg:flex-col bg-[var(--color-background)] rounded-xl shadow-custom-md border-2 border-[var(--color-border)] overflow-hidden">
       <table class="w-full">
         <thead class="bg-[var(--color-background)]">
           <tr>
@@ -131,13 +170,30 @@
               </div>
             </td>
           </tr>
-          <tr *ngIf="depots.length === 0">
+          <tr *ngIf="!loading && totalCount === 0">
             <td colspan="6" class="px-6 py-12 text-center text-[var(--color-text-secondary)]">
               {{ 'depot.noDepots' | translate }}
             </td>
           </tr>
         </tbody>
       </table>
+
+      <div *ngIf="totalCount > 0 && !loading && !showModal"
+        class="depot-pagination-footer border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 py-4 sm:px-6">
+        <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 w-full">
+          <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="totalCount" [visibleItems]="depots.length"
+            (rowsPerPageChange)="onRowsPerPageChange($event)">
+          </app-rows-per-page>
+          <div *ngIf="totalPages > 1"
+            class="flex flex-col sm:flex-row items-center gap-3 justify-center md:justify-end">
+            <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
+            </app-pagination>
+            <span class="text-xs sm:text-sm text-[var(--color-text-muted)] whitespace-nowrap text-center">
+              {{ currentPage }} {{ 'common.of' | translate }} {{ totalPages }}
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Add/Edit Modal -->

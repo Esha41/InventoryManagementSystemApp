@@ -3,6 +3,7 @@
  */
 
 import { SupplierDto, CountryDto, ManufacturerDto } from '@services/lookup.service';
+import { FileUploadDto } from '@models/file-upload.model';
 
 /**
  * Base Item DTO (for Ammunition, Weapons, etc.)
@@ -26,6 +27,8 @@ export interface BaseItemDto {
     nameAr: string;
     nameEn: string;
   };
+  /** Catalog-linked purposes; used to resolve lot primary purpose label when line navigation is partial */
+  primaryPurposes?: Array<{ id: number; nameAr: string; nameEn: string }>;
 }
 
 export enum ItemType {
@@ -43,6 +46,8 @@ export interface InventoryDetailDto {
   itemId: number;
   lot: string;
   inventoryId: number;
+  files?: FileUploadDto[];
+  deliveryReceipt?: string;
   supplierId?: number;
   manufacturerId?: number;
   countryId?: number;
@@ -63,6 +68,14 @@ export interface InventoryDetailDto {
   contractNumber?: string;
   notes?: string;
 
+  /** Selected primary purpose for this lot (inventory line) */
+  primaryPurposId?: number;
+  primaryPurpos?: {
+    id: number;
+    nameAr: string;
+    nameEn: string;
+  };
+
   // Navigation properties
   item?: BaseItemDto;
   supplier?: SupplierDto;
@@ -77,6 +90,7 @@ export interface InventoryDto {
   id: number;
   depoId: number;
   invoiceNumber?: string;
+  deliveryReceipt?: string;
   invoiceDate?: Date | string;
   recievedDate?: Date | string;
   contractNumber?: string;
@@ -100,6 +114,7 @@ export interface InventoryDto {
 export interface CreateInventoryDto {
   depoId: number;
   invoiceNumber?: string;
+  deliveryReceipt?: string;
   invoiceDate?: Date | string;
   recievedDate?: Date | string;
   contractNumber?: string;
@@ -117,6 +132,8 @@ export interface CreateInventoryDetailDto {
   batchNo?: string;
   expiryDate?: Date | string;
   readyForIssue?: boolean;
+  /** Must be one of the selected catalog item's primaryPurposes (when provided) */
+  primaryPurposId?: number;
 }
 
 /**
@@ -125,11 +142,14 @@ export interface CreateInventoryDetailDto {
 export interface UpdateInventoryDto {
   depoId: number;
   invoiceNumber?: string;
+  deliveryReceipt?: string;
   invoiceDate?: Date | string;
   recievedDate?: Date | string;
   contractNumber?: string;
   notes?: string;
   inventoryDetails: UpdateInventoryDetailDto[];
+  /** Existing uploaded file ids removed in UI; backend deletes them during update. */
+  removedFileIds?: number[];
 }
 
 export interface UpdateInventoryDetailDto {
@@ -143,6 +163,8 @@ export interface UpdateInventoryDetailDto {
   batchNo?: string;
   expiryDate?: Date | string;
   readyForIssue?: boolean;
+  /** Must be one of the catalog item's primaryPurposes when applicable (ammunition / explosive) */
+  primaryPurposId?: number;
 }
 
 export interface ItemInventorySummaryDto {

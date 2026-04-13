@@ -9,107 +9,60 @@
         }}</ng-container>
     </h2>
 
-    <!-- Search Bar -->
-    <div class="mb-4 flex-shrink-0">
-      <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange($event)" [placeholder]="selectedItemType === 'Ammunition' ? ('newIssueRequest.searchCartridges' | translate) : 
-                       selectedItemType === 'Weapon' ? ('newIssueRequest.searchWeapons' | translate) : 
+    <!-- Search: allowance = live filter; full catalog = Search applies filters + text to server -->
+    <div class="mb-4 flex-shrink-0 space-y-2">
+      <ng-container *ngIf="!serverSideCatalog">
+        <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange($event)" [placeholder]="selectedItemType === 'Ammunition' ? ('newIssueRequest.searchCartridges' | translate) :
+                       selectedItemType === 'Weapon' ? ('newIssueRequest.searchWeapons' | translate) :
                        ('newIssueRequest.searchExplosives' | translate)"
-        class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent placeholder:text-[var(--color-text-muted)]">
+          class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent placeholder:text-[var(--color-text-muted)]">
+      </ng-container>
+      <ng-container *ngIf="serverSideCatalog">
+        <div class="flex flex-col sm:flex-row gap-2 sm:items-center">
+          <input type="text" [(ngModel)]="draftSearchTerm" (keydown.enter)="onApplyCatalogQuery()"
+            [placeholder]="selectedItemType === 'Ammunition' ? ('newIssueRequest.searchCartridges' | translate) :
+                       selectedItemType === 'Weapon' ? ('newIssueRequest.searchWeapons' | translate) :
+                       ('newIssueRequest.searchExplosives' | translate)"
+            class="flex-1 min-w-0 px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent placeholder:text-[var(--color-text-muted)]">
+          <app-button variant="primary" (clicked)="onApplyCatalogQuery()" [disabled]="catalogPageLoading"
+            class="shrink-0">
+            {{ 'newIssueRequest.updateCatalogResults' | translate }}
+          </app-button>
+        </div>
+      </ng-container>
     </div>
 
-    <div class="space-y-2 overflow-y-auto pe-2 flex-1 min-h-0">
-      <div *ngFor="let cartridge of cartridges" class="p-4 border rounded-lg transition-colors text-sm" [ngClass]="{
-          'border-[var(--color-accent)] bg-[var(--color-accent)]/5 shadow-sm': cartridge.selected || pendingCartridgeId === cartridge.id,
-          'border-[var(--color-border)] hover:bg-[var(--color-background-hover)]': !(cartridge.selected || pendingCartridgeId === cartridge.id)
-        }">
-        <div class="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
-          <div>
-            <p class="text-[var(--color-text)] font-medium">{{ cartridge.name }}</p>
-
-            <!-- Conditional Details based on type (inferred or explicit) -->
-            <div class="mt-1 space-y-1">
-              <!-- Common NSN -->
-              <p class="text-xs text-[var(--color-text-muted)]" *ngIf="cartridge.ncn">
-                {{ 'newIssueRequest.nsn' | translate }}: {{ cartridge.ncn }}
-              </p>
-
-              <!-- Weapon Specific -->
-              <p class="text-xs text-[var(--color-text-muted)]"
-                *ngIf="selectedItemType === 'Weapon' && cartridge.weaponType">
-                {{ 'addAsset.weaponType' | translate }}: {{ cartridge.weaponType }}
-              </p>
-              <p class="text-xs text-[var(--color-text-muted)]"
-                *ngIf="selectedItemType === 'Weapon' && cartridge.caliber">
-                {{ 'addAsset.caliber' | translate }}: {{ cartridge.caliber }}
-              </p>
-
-              <!-- Explosive Specific -->
-              <p class="text-xs text-[var(--color-text-muted)]"
-                *ngIf="selectedItemType === 'Explosive' && cartridge.explosiveType">
-                {{ 'addAsset.explosiveType' | translate }}: {{ cartridge.explosiveType }}
-              </p>
-              <p class="text-xs text-[var(--color-text-muted)]"
-                *ngIf="selectedItemType === 'Explosive' && cartridge.unNumber">
-                {{ 'addAsset.unNumber' | translate }}: {{ cartridge.unNumber }}
-              </p>
-            </div>
-
-            <div *ngIf="cartridge.added"
-              class="mt-4 inline-flex items-center gap-2 text-xs text-[var(--color-text-muted)]">
-              <span class="inline-flex items-center gap-1 px-2 py-1 bg-[var(--color-background-muted)] rounded-full">
-                <span class="w-2 h-2 rounded-full bg-[var(--color-brand)]"></span>
-                {{ 'newIssueRequest.quantity' | translate }}: {{ cartridge.quantity || 0 }}
-              </span>
-            </div>
-          </div>
-          <div class="flex gap-2 flex-wrap justify-end" *ngIf="pendingCartridgeId !== cartridge.id">
-            <app-button variant="outline" (clicked)="beginSelection(cartridge, $event)"
-              class="min-w-[130px] border-[var(--color-border)] text-[var(--color-text)]">
-              {{ cartridge.added ? ('newIssueRequest.updateQuantity' | translate) : ('newIssueRequest.selectCartridge' |
-              translate) }}
-            </app-button>
-            <app-button variant="outline" (clicked)="onCartridgeClick(cartridge)"
-              class="min-w-[130px] border-[var(--color-border)] text-[var(--color-text)]">
-              {{ 'newIssueRequest.viewDetails' | translate }}
-            </app-button>
-          </div>
-          <div *ngIf="pendingCartridgeId === cartridge.id" class="flex flex-wrap gap-3 justify-end"
-            (click)="$event.stopPropagation()">
-            <div class="flex items-center gap-2">
-              <label class="text-xs font-semibold text-[var(--color-text)] uppercase tracking-wide">
-                {{ 'newIssueRequest.quantity' | translate }}
-              </label>
-              <input type="number" min="1" [value]="pendingQuantity" (click)="$event.stopPropagation()"
-                (keydown)="$event.stopPropagation()" (input)="updatePendingQuantity($event)"
-                class="w-24 px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent">
-            </div>
-            <app-button variant="primary" (clicked)="confirmAdd(cartridge, $event)" [disabled]="verifyingAllowance"
-              class="bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand-dark)] disabled:opacity-50 disabled:cursor-not-allowed">
-              {{ verifyingAllowance ? ('common.loading' | translate) : ('common.confirm' | translate) }}
-            </app-button>
-            <app-button *ngIf="cartridge.added" variant="outline" (clicked)="removePending(cartridge, $event)"
-              class="border-[var(--color-border)] text-[var(--color-text)] hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/30">
-              {{ 'common.remove' | translate }}
-            </app-button>
-            <app-button variant="ghost" (clicked)="cancelSelection($event)" class="text-[var(--color-text-muted)]">
-              {{ 'common.cancel' | translate }}
-            </app-button>
-          </div>
-          <!-- Item Type Validation Error Message -->
-          <div *ngIf="itemTypeValidationErrorMessage && pendingCartridgeId === cartridge.id"
-            class="mt-3 bg-red-500/10 border border-red-500/20 text-red-500 text-sm rounded-lg p-3">
-            {{ itemTypeValidationErrorMessage }}
-          </div>
-          <!-- Allowance Error Message -->
-          <div *ngIf="allowanceErrorMessage && pendingCartridgeId === cartridge.id"
-            class="mt-3 bg-red-500/10 border border-red-500/20 text-red-500 text-sm rounded-lg p-3">
-            {{ allowanceErrorMessage }}
-          </div>
-          <!-- Loading indicator for allowance verification -->
-          <div *ngIf="verifyingAllowance && pendingCartridgeId === cartridge.id"
-            class="mt-3 text-sm text-[var(--color-text-muted)]">
-            {{ 'common.loading' | translate }}...
-          </div>
+    <!-- Overlay only on the scroll area so the pagination bar stays fixed and does not jump with loading -->
+    <div class="flex flex-col flex-1 min-h-[320px] overflow-hidden">
+      <div class="relative flex flex-1 min-h-0 flex-col overflow-hidden">
+        <div *ngIf="catalogPageLoading" class="catalog-loading-overlay" aria-busy="true">
+          <span class="catalog-loading-spinner" aria-hidden="true"></span>
+          <span class="text-sm text-[var(--color-text-muted)]">{{ 'common.loading' | translate }}</span>
+        </div>
+        <div class="issue-catalog-list-scroll space-y-2 overflow-y-auto pe-2 flex-1 min-h-0">
+          <ng-container *ngFor="let cartridge of cartridges; trackBy: trackByCartridgeId">
+            <ng-container *ngTemplateOutlet="cartridgeRow; context: { $implicit: cartridge }"></ng-container>
+          </ng-container>
+        </div>
+      </div>
+      <div *ngIf="serverSideCatalog && catalogPagination"
+        class="catalog-pagination-bar flex-shrink-0 flex flex-wrap items-center justify-between gap-2 pt-3 mt-2 border-t border-[var(--color-border)]/60">
+        <p *ngIf="catalogPagination.totalCount > 0" class="text-xs text-[var(--color-text-muted)] m-0 min-h-[1.25rem] flex items-center">
+          {{ 'newIssueRequest.showingResults' | translate:{ start: catalogRangeStart, end: catalogRangeEnd, total: catalogPagination.totalCount } }}
+        </p>
+        <span *ngIf="!catalogPagination.totalCount" class="text-xs text-[var(--color-text-muted)] m-0 min-h-[1.25rem] min-w-[1ch] flex items-center" aria-hidden="true"></span>
+        <div class="flex flex-wrap items-center gap-2">
+          <app-button variant="outline" (clicked)="catalogPagePrev.emit()"
+            [disabled]="!catalogPagination.hasPreviousPage || catalogPageLoading"
+            class="catalog-pagination-btn shrink-0 disabled:opacity-40">
+            {{ 'newIssueRequest.previousPage' | translate }}
+          </app-button>
+          <span class="text-xs text-[var(--color-text-muted)] tabular-nums min-w-[3.5rem] text-center">{{ catalogPagination.page }} / {{ catalogPagination.totalPages || 1 }}</span>
+          <app-button variant="outline" (clicked)="catalogPageNext.emit()"
+            [disabled]="!catalogPagination.hasNextPage || catalogPageLoading"
+            class="catalog-pagination-btn shrink-0 disabled:opacity-40">
+            {{ 'newIssueRequest.nextPage' | translate }}
+          </app-button>
         </div>
       </div>
     </div>
@@ -118,12 +71,14 @@
   <!-- Right Side - Filters -->
   <div class="bg-[var(--color-background-muted)] rounded-lg p-6 shadow-sm space-y-6">
     <!-- Filters Header -->
-    <div class="flex items-center justify-between -mt-2">
-      <h3 class="text-sm font-semibold text-[var(--color-text)]">{{ 'newIssueRequest.filters' | translate }}</h3>
-      <app-button variant="outline" (clicked)="onClear()"
-        class="border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-background-hover)]">
-        {{ 'newIssueRequest.clearFilters' | translate }}
-      </app-button>
+    <div class="flex flex-col gap-2 -mt-2">
+      <div class="flex items-center justify-between gap-2">
+        <h3 class="text-sm font-semibold text-[var(--color-text)]">{{ 'newIssueRequest.filters' | translate }}</h3>
+        <app-button variant="outline" (clicked)="onClear()"
+          class="border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-background-hover)]">
+          {{ 'newIssueRequest.clearFilters' | translate }}
+        </app-button>
+      </div>
     </div>
     <!-- Select Type Tabs -->
     <div class="mb-4">
@@ -166,7 +121,8 @@
           </button>
         </label>
         <app-dropdown class="w-full" [ngModel]="selectedAmmunitionType" (ngModelChange)="onAmmunitionTypeChange($event)"
-          [options]="ammunitionTypeOptions" [placeholderSelectable]="false" [placeholderValue]="''"
+          [options]="ammunitionTypeOptions" optionLabel="label" optionValue="value" [translateLabels]="true"
+          [placeholderSelectable]="false" [placeholderValue]="''"
           placeholder="{{ 'newIssueRequest.selectAmmunitionType' | translate }}">
         </app-dropdown>
       </div>
@@ -202,7 +158,8 @@
           </button>
         </label>
         <app-dropdown class="w-full" [ngModel]="selectedLinked" (ngModelChange)="onLinkedChange($event)"
-          [options]="linkedOptions" [placeholderSelectable]="false" [placeholderValue]="''"
+          [options]="linkedOptions" optionLabel="label" optionValue="value" [translateLabels]="true"
+          [placeholderSelectable]="false" [placeholderValue]="''"
           placeholder="{{ 'newIssueRequest.linkedNotLinked' | translate }}">
         </app-dropdown>
       </div>
@@ -335,6 +292,92 @@
 
   </div>
 </div>
+
+<ng-template #cartridgeRow let-cartridge>
+  <div class="p-4 border rounded-lg transition-colors text-sm" [ngClass]="{
+          'border-[var(--color-accent)] bg-[var(--color-accent)]/5 shadow-sm': cartridge.selected || pendingCartridgeId === cartridge.id,
+          'border-[var(--color-border)] hover:bg-[var(--color-background-hover)]': !(cartridge.selected || pendingCartridgeId === cartridge.id)
+        }">
+    <div class="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
+      <div>
+        <p class="text-[var(--color-text)] font-medium">{{ cartridge.name }}</p>
+        <div class="mt-1 space-y-1">
+          <p class="text-xs text-[var(--color-text-muted)]" *ngIf="cartridge.ncn">
+            {{ 'newIssueRequest.nsn' | translate }}: {{ cartridge.ncn }}
+          </p>
+          <p class="text-xs text-[var(--color-text-muted)]"
+            *ngIf="selectedItemType === 'Weapon' && cartridge.weaponType">
+            {{ 'addAsset.weaponType' | translate }}: {{ cartridge.weaponType }}
+          </p>
+          <p class="text-xs text-[var(--color-text-muted)]"
+            *ngIf="selectedItemType === 'Weapon' && cartridge.caliber">
+            {{ 'addAsset.caliber' | translate }}: {{ cartridge.caliber }}
+          </p>
+          <p class="text-xs text-[var(--color-text-muted)]"
+            *ngIf="selectedItemType === 'Explosive' && cartridge.explosiveType">
+            {{ 'addAsset.explosiveType' | translate }}: {{ cartridge.explosiveType }}
+          </p>
+          <p class="text-xs text-[var(--color-text-muted)]"
+            *ngIf="selectedItemType === 'Explosive' && cartridge.unNumber">
+            {{ 'addAsset.unNumber' | translate }}: {{ cartridge.unNumber }}
+          </p>
+        </div>
+        <div *ngIf="cartridge.added"
+          class="mt-4 inline-flex items-center gap-2 text-xs text-[var(--color-text-muted)]">
+          <span class="inline-flex items-center gap-1 px-2 py-1 bg-[var(--color-background-muted)] rounded-full">
+            <span class="w-2 h-2 rounded-full bg-[var(--color-brand)]"></span>
+            {{ 'newIssueRequest.quantity' | translate }}: {{ cartridge.quantity || 0 }}
+          </span>
+        </div>
+      </div>
+      <div class="flex gap-2 flex-wrap justify-end" *ngIf="pendingCartridgeId !== cartridge.id">
+        <app-button variant="outline" (clicked)="beginSelection(cartridge, $event)"
+          class="min-w-[130px] border-[var(--color-border)] text-[var(--color-text)]">
+          {{ cartridge.added ? ('newIssueRequest.updateQuantity' | translate) : ('newIssueRequest.selectCartridge' |
+          translate) }}
+        </app-button>
+        <app-button variant="outline" (clicked)="onCartridgeClick(cartridge)"
+          class="min-w-[130px] border-[var(--color-border)] text-[var(--color-text)]">
+          {{ 'newIssueRequest.viewDetails' | translate }}
+        </app-button>
+      </div>
+      <div *ngIf="pendingCartridgeId === cartridge.id" class="flex flex-wrap gap-3 justify-end"
+        (click)="$event.stopPropagation()">
+        <div class="flex items-center gap-2">
+          <label class="text-xs font-semibold text-[var(--color-text)] uppercase tracking-wide">
+            {{ 'newIssueRequest.quantity' | translate }}
+          </label>
+          <input type="number" min="1" [value]="pendingQuantity" (click)="$event.stopPropagation()"
+            (keydown)="$event.stopPropagation()" (input)="updatePendingQuantity($event)"
+            class="w-24 px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent">
+        </div>
+        <app-button variant="primary" (clicked)="confirmAdd(cartridge, $event)" [disabled]="verifyingAllowance"
+          class="bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand-dark)] disabled:opacity-50 disabled:cursor-not-allowed">
+          {{ verifyingAllowance ? ('common.loading' | translate) : ('common.confirm' | translate) }}
+        </app-button>
+        <app-button *ngIf="cartridge.added" variant="outline" (clicked)="removePending(cartridge, $event)"
+          class="border-[var(--color-border)] text-[var(--color-text)] hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/30">
+          {{ 'common.remove' | translate }}
+        </app-button>
+        <app-button variant="ghost" (clicked)="cancelSelection($event)" class="text-[var(--color-text-muted)]">
+          {{ 'common.cancel' | translate }}
+        </app-button>
+      </div>
+      <div *ngIf="itemTypeValidationErrorMessage && pendingCartridgeId === cartridge.id"
+        class="mt-3 bg-red-500/10 border border-red-500/20 text-red-500 text-sm rounded-lg p-3">
+        {{ itemTypeValidationErrorMessage }}
+      </div>
+      <div *ngIf="allowanceErrorMessage && pendingCartridgeId === cartridge.id"
+        class="mt-3 bg-red-500/10 border border-red-500/20 text-red-500 text-sm rounded-lg p-3">
+        {{ allowanceErrorMessage }}
+      </div>
+      <div *ngIf="verifyingAllowance && pendingCartridgeId === cartridge.id"
+        class="mt-3 text-sm text-[var(--color-text-muted)]">
+        {{ 'common.loading' | translate }}...
+      </div>
+    </div>
+  </div>
+</ng-template>
 
 <!-- Action Buttons -->
 <div class="flex justify-between items-center mt-6">

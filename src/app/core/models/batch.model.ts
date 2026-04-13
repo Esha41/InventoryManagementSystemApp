@@ -12,7 +12,12 @@ export interface BatchDto {
     id: number;
     batchNumber: string;
     depotId: number;
+    /** Total assets matching filters (not the current page length). */
     assetCount: number;
+    /** 1-based page index for the assets slice. */
+    assetsPageIndex?: number;
+    assetsPageSize?: number;
+    assetsTotalPages?: number;
     depot?: DepotDto;
     assets: AssetDto[];
 }
@@ -23,14 +28,34 @@ export interface BatchAssetUpdateItem {
     serialNumber?: string;
     rfid?: string;
     status?: AssetStatus;
-    assetTag?: string;
     purchaseDate?: Date | string;
     warrantyExpiryDate?: Date | string;
-    condition?: string;
     purchasePrice?: number;
+    deliveryReceipt?: string;
     notes?: string;
+    /** When true, apply assignee fields (or clear assignment if both IDs are empty). */
+    updateAssignment?: boolean;
+    assignToDepartmentId?: number | null;
+    assignToEmployeeId?: number | null;
+    assignmentNotes?: string;
+    supplierId?: number | null;
+    manufacturerId?: number | null;
+    primaryPurposId?: number | null;
 }
 
 export interface BulkUpdateBatchAssetsDto {
     items: BatchAssetUpdateItem[];
+    /** Existing uploaded file ids removed in UI; backend deletes them during bulk update. */
+    removedFileIds?: number[];
+}
+
+export interface UpdateBatchDto {
+    batchNumber: string;
+}
+
+export interface BatchAssetFilter {
+    itemIds?: number[];
+    supplierIds?: number[];
+    manufacturerIds?: number[];
+    primaryPurposeIds?: number[];
 }

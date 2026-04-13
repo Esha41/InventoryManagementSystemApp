@@ -14,7 +14,7 @@ import { CreateInventoryDto, CreateInventoryDetailDto, ItemType } from '@models/
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { ToastService } from '@services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
-import { AmmunitionReadDto } from '@models/ammunition.model';
+import { AmmunitionReadDto, LookupDto } from '@models/ammunition.model';
 import { WeaponDto } from '@models/weapon.model';
 import { ExplosiveDto } from '@models/explosive.model';
 import { ErrorHandler } from '@utils/error-handler.utils';
@@ -96,6 +96,8 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     this.getLocalizedName(this.unwrapOption(option));
   readonly countryOptionLabel = (option: DropdownOption<CountryDto> | CountryDto | null) =>
     this.getLocalizedName(this.unwrapOption(option));
+  readonly primaryPurposeOptionLabel = (option: DropdownOption<LookupDto> | LookupDto | null) =>
+    this.getLocalizedName(this.unwrapOption(option));
   readonly itemOptionLabel = (option: DropdownOption<AmmunitionReadDto | WeaponDto | ExplosiveDto> | AmmunitionReadDto | WeaponDto | ExplosiveDto | null) => {
     const item = this.unwrapOption(option);
     if (!item) {
@@ -106,6 +108,11 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     return `${name}${itemNo}`.trim();
   };
 
+  readonly readyForIssueOptions: DropdownOption<boolean>[] = [
+    { label: 'editInventoryDetail.readyForIssueYes', value: true },
+    { label: 'editInventoryDetail.readyForIssueNo', value: false }
+  ];
+
   loading = false;
   submitting = false;
   errorMessage: string | null = null;
@@ -113,6 +120,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   private readonly appDatePipe = new AppDatePipe();
+  deliveryReceiptFiles: File[] = [];
 
   constructor(
     private router: Router,
@@ -172,6 +180,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
   private initializeForm(): void {
     this.inventoryForm = this.fb.group({
       invoiceNumber: [''],
+      deliveryReceipt: [''],
       invoiceDate: [''],
       receivedDate: [''],
       contractNumber: [''],
@@ -184,9 +193,16 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     return this.inventoryForm.get('items') as FormArray;
   }
 
+  private coerceReadyForIssue(value: unknown): boolean {
+    if (value === true || value === 'true') return true;
+    if (value === false || value === 'false') return false;
+    return true;
+  }
+
   createItemFormGroup(): FormGroup {
     return this.fb.group({
       itemId: [null, [Validators.required]],
+      primaryPurposId: [null as number | null],
       lot: ['', [Validators.required, Validators.maxLength(64)]],
       originalQuantity: [0, [Validators.required, Validators.min(1)]],
       batchNo: [''],
@@ -196,6 +212,37 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
       manufacturerId: [null],
       countryId: [null]
     });
+  }
+
+  /** Options from catalog (`primaryPurposes` on the selected ammunition or explosive row). */
+  getPrimaryPurposeOptions(index: number): LookupDto[] {
+    if (this.activeTab !== 'ammunition' && this.activeTab !== 'explosive') {
+      return [];
+    }
+    const itemId = this.itemsFormArray.at(index)?.get('itemId')?.value as number | null | undefined;
+    if (!itemId) {
+      return [];
+    }
+    if (this.activeTab === 'ammunition') {
+      return this.primaryPurposesFromCatalogRow(this.availableAmmunition.find(a => a.id === itemId));
+    }
+    return this.primaryPurposesFromCatalogRow(this.availableExplosives.find(e => e.id === itemId));
+  }
+
+  private primaryPurposesFromCatalogRow(
+    selected: { primaryPurposes?: LookupDto[]; primaryPurpos?: LookupDto } | undefined
+  ): LookupDto[] {
+    if (!selected) {
+      return [];
+    }
+    const list = selected.primaryPurposes ?? [];
+    if (list.length > 0) {
+      return list;
+    }
+    if (selected.primaryPurpos?.id != null) {
+      return [selected.primaryPurpos];
+    }
+    return [];
   }
 
   ngOnDestroy(): void {
@@ -285,6 +332,21 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     if (selectedItem) {
       itemFormGroup.get('itemId')?.setErrors(null);
     }
+
+    let nextPurposeId: number | null = null;
+    if ((this.activeTab === 'ammunition' || this.activeTab === 'explosive') && selectedItem) {
+      const row = selectedItem as AmmunitionReadDto | ExplosiveDto;
+      const purposes = row.primaryPurposes?.length
+        ? row.primaryPurposes
+        : row.primaryPurpos?.id != null
+          ? [row.primaryPurpos]
+          : [];
+      if (purposes.length === 1 && purposes[0]?.id != null) {
+        nextPurposeId = purposes[0].id;
+      }
+    }
+    itemFormGroup.patchValue({ primaryPurposId: nextPurposeId }, { emitEvent: false });
+    this.cdr.markForCheck();
   }
 
   getItemFormGroup(index: number): FormGroup {
@@ -474,12 +536,14 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     const createDto: CreateInventoryDto = {
       depoId: this.warehouseId,
       invoiceNumber: formValue.invoiceNumber?.trim() || undefined,
+      deliveryReceipt: formValue.deliveryReceipt?.trim() || undefined,
       invoiceDate: formValue.invoiceDate && formValue.invoiceDate.trim() ? formValue.invoiceDate : undefined,
       recievedDate: formValue.receivedDate && formValue.receivedDate.trim() ? formValue.receivedDate : undefined,
       contractNumber: formValue.contractNumber?.trim() || undefined,
       notes: formValue.notes?.trim() || undefined,
       inventoryDetails: formValue.items.map((item: {
         itemId: number;
+        primaryPurposId?: number | null;
         lot: string;
         supplierId?: number;
         manufacturerId?: number;
@@ -497,7 +561,13 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
         originalQuantity: item.originalQuantity,
         batchNo: item.batchNo?.trim() || undefined,
         expiryDate: item.expiryDate || undefined,
-        readyForIssue: item.readyForIssue ?? true
+        readyForIssue: this.coerceReadyForIssue(item.readyForIssue),
+        primaryPurposId:
+          (this.activeTab === 'ammunition' || this.activeTab === 'explosive') &&
+          item.primaryPurposId != null &&
+          item.primaryPurposId > 0
+            ? item.primaryPurposId
+            : undefined
       }))
     };
 
@@ -505,7 +575,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     this.errorMessage = null;
     this.cdr.markForCheck();
 
-    this.inventoryService.create(createDto)
+    this.inventoryService.create(createDto, this.deliveryReceiptFiles)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
@@ -552,6 +622,37 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
       queryParams: { tab: this.activeTab },
       queryParamsHandling: 'merge'
     });
+  }
+
+  onDeliveryAttachmentChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const newlySelected = input.files ? Array.from(input.files) : [];
+    if (newlySelected.length) {
+      const combined = [...this.deliveryReceiptFiles, ...newlySelected];
+      const seen = new Set<string>();
+      this.deliveryReceiptFiles = combined.filter(f => {
+        const key = `${f.name}::${f.size}::${(f as any).lastModified ?? 0}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+    // Do not clear input here; allow multiple browse actions to append
+  }
+
+  removeAttachment(index: number): void {
+    if (index >= 0 && index < this.deliveryReceiptFiles.length) {
+      this.deliveryReceiptFiles.splice(index, 1);
+    }
+  }
+
+  getFileSize(file: File): string {
+    const bytes = file.size;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    if (bytes === 0) return '0 Bytes';
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    const value = (bytes / Math.pow(1024, i)).toFixed(2);
+    return `${value} ${sizes[i]}`;
   }
 
   /**

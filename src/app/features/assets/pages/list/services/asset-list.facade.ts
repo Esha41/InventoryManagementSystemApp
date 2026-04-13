@@ -17,7 +17,6 @@ import { AssetLookupService } from './asset-lookup.service';
 import { AssetQueryParamsService, AssetQueryParamsState } from './asset-query-params.service';
 import { AssetCrudService } from './asset-crud.service';
 import { AssetExportService } from './asset-export.service';
-import { AssetImportService, ImportResult } from './asset-import.service';
 import {
   Asset,
   AssetType,
@@ -37,7 +36,9 @@ import {
   createInitialImageState,
   resetFilterState
 } from '@utils/asset-list.state';
-import { PaginatedList, APIOperationResponse } from '@models/api-response.model';
+import { PaginatedList } from '@models/api-response.model';
+import { BackendAuthService } from '@services/backend-auth.service';
+import { resolveAccessibleAssetTab } from '@core/utils/asset-tab-access.utils';
 
 type ViewMode = 'available' | 'deleted';
 
@@ -49,12 +50,12 @@ export class AssetListFacade {
   private readonly assetQueryParamsService = inject(AssetQueryParamsService);
   private readonly assetCrudService = inject(AssetCrudService);
   private readonly assetExportService = inject(AssetExportService);
-  private readonly assetImportService = inject(AssetImportService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly translateService = inject(TranslateService);
   private readonly toastService = inject(ToastService);
   private readonly configService = inject(ConfigService);
+  private readonly backendAuth = inject(BackendAuthService);
 
   private readonly destroy$ = new Subject<void>();
 
@@ -119,12 +120,19 @@ export class AssetListFacade {
   init(options?: { onViewItemId?: (id: string) => void }): void {
     if (this.route.snapshot.queryParams) {
       const parsed = this.assetQueryParamsService.parseParams(this.route.snapshot.queryParams);
-      if (parsed.tab) this._activeTab.next(parsed.tab);
+      const safeTab = this.clampTabToPermissions(parsed.tab);
+      if (parsed.tab != null && safeTab !== parsed.tab) {
+        this.assetQueryParamsService.updateUrl(this.route, {
+          tab: safeTab,
+          page: parsed.page ?? undefined
+        });
+      }
+      this._activeTab.next(safeTab);
       if (parsed.page != null) this._paginationState.next({ ...this._paginationState.value, currentPage: parsed.page });
       if (parsed.ammunitionView) this._ammunitionViewMode.next(parsed.ammunitionView);
       if (parsed.explosivesView) this._explosivesViewMode.next(parsed.explosivesView);
       if (parsed.weaponsView) this._weaponsViewMode.next(parsed.weaponsView);
-      if (parsed.tab) this.loadUnitsForTab(parsed.tab);
+      this.loadUnitsForTab(safeTab);
     }
 
     this.loadLookups();
@@ -148,16 +156,50 @@ export class AssetListFacade {
           });
         }
       });
+
+    this.backendAuth.currentUser$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        const safe = this.clampTabToPermissions(this._activeTab.value);
+        if (safe !== this._activeTab.value) {
+          this._activeTab.next(safe);
+          this.loadUnitsForTab(safe);
+          this._paginationState.next({ ...this._paginationState.value, currentPage: 1 });
+          this._filterState.next(resetFilterState(this._filterState.value));
+          this.assetQueryParamsService.updateUrl(this.route, { tab: safe, page: 1 });
+          this.loadAssets();
+          const lookups = this._lookups.value;
+          if (lookups) {
+            this._filterOptions.next(this.assetLookupService.getFilterOptions(safe, lookups));
+          }
+        }
+      });
+  }
+
+  private clampTabToPermissions(tab: AssetType | null): AssetType {
+    return resolveAccessibleAssetTab(
+      (perms) => this.backendAuth.hasAnyPermission([...perms]),
+      tab
+    );
   }
 
   private handleQueryParams(parsed: AssetQueryParamsState): void {
-    if (parsed.tab && parsed.tab !== this._activeTab.value) {
-      this._activeTab.next(parsed.tab);
-      this.loadUnitsForTab(parsed.tab);
+    const safeTab = this.clampTabToPermissions(parsed.tab);
+    if (parsed.tab != null && safeTab !== parsed.tab) {
+      this.assetQueryParamsService.updateUrl(this.route, {
+        tab: safeTab,
+        page: parsed.page ?? undefined
+      });
+    }
+    const tabChanged = safeTab !== this._activeTab.value;
+    if (tabChanged) {
+      this._activeTab.next(safeTab);
+      this.loadUnitsForTab(safeTab);
       this._paginationState.next({ ...this._paginationState.value, currentPage: 1 });
       this._filterState.next(resetFilterState(this._filterState.value));
+      this.loadAssets();
     }
-    if (parsed.page != null && parsed.page !== this._paginationState.value.currentPage) {
+    if (!tabChanged && parsed.page != null && parsed.page !== this._paginationState.value.currentPage) {
       this._paginationState.next({ ...this._paginationState.value, currentPage: parsed.page });
       this.loadAssets();
     }
@@ -260,6 +302,10 @@ export class AssetListFacade {
   }
 
   switchTab(tab: AssetType): void {
+    const safe = this.clampTabToPermissions(tab);
+    if (safe !== tab) {
+      return;
+    }
     this._activeTab.next(tab);
     this._ammunitionViewMode.next('available');
     this._explosivesViewMode.next('available');
@@ -338,14 +384,6 @@ export class AssetListFacade {
     this.loadAssets();
   }
 
-  openImportModal(): void {
-    this._modalState.next({ ...this._modalState.value, showImportModal: true });
-  }
-
-  closeImportModal(): void {
-    this._modalState.next({ ...this._modalState.value, showImportModal: false });
-  }
-
   exportToExcel(): void {
     this._loading.next(true);
     const ammoDeleted = this._activeTab.value === 'ammunition' && this._ammunitionViewMode.value === 'deleted';
@@ -374,26 +412,6 @@ export class AssetListFacade {
         error: () => {
           this._loading.next(false);
           this.toastService.error(this.translateService.instant('assetList.errors.failedToExport'));
-        }
-      });
-  }
-
-  importFromFile(file: File): void {
-    this._loading.next(true);
-    this.closeImportModal();
-    const service = this.assetCrudService.getAssetService(this._activeTab.value);
-    const importable = service as { importData: (f: File) => import('rxjs').Observable<APIOperationResponse<ImportResult>> };
-    importable.importData(file)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (res) => {
-          this._loading.next(false);
-          this.assetImportService.handleImportResponse(res);
-          if (res.succeeded) this.loadAssets();
-        },
-        error: () => {
-          this._loading.next(false);
-          this.assetImportService.handleImportError();
         }
       });
   }

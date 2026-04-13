@@ -14,7 +14,7 @@
     "returnNumber": "رقم الإرجاع",
     "discardNumber": "رقم الإتلاف",
     "requestDate": "تاريخ الطلب",
-    "department": "القسم",
+    "department": "الوحدة",
     "requester": "المقدم",
     "items": "المواد",
     "noItems": "لا توجد مواد",
@@ -61,13 +61,13 @@
       "all": "الكل",
       "filterByStatus": "تصفية حسب الحالة"
     },
-    "searchOrders": "البحث عن الطلبات برقم الطلب أو القسم أو المقدم...",
+    "searchOrders": "البحث عن الطلبات برقم الطلب أو الوحدة أو المقدم...",
     "goToApprovalPage": "الانتقال إلى صفحة الموافقة",
     "gridView": "عرض الشبكة",
     "listView": "عرض القائمة",
     "viewAll": "عرض الكل",
     "noOrders": "لا توجد طلبات",
-    "noAccess": "ليس لديك إذن لعرض أي أقسام في لوحة التحكم",
+    "noAccess": "ليس لديك إذن لعرض أي وحدات في لوحة التحكم",
     "noCards": "لا توجد بطاقات لوحة التحكم متاحة",
     "noCardsDescription": "ليس لديك الصلاحيات أو الأدوار اللازمة لعرض أي بطاقات لوحة التحكم."
   },
@@ -83,11 +83,11 @@
       "belowThreshold": "أقل من الحد الأدنى"
     },
     "expiringLots": {
-      "title": "لوتات علي وشك الانتهاء",
-      "subtitle": "اللوتات التي ستنتهي صلاحيتها خلال الـ 30 يوم القادمة",
+      "title": "lots علي وشك الانتهاء",
+      "subtitle": "lots التي ستنتهي صلاحيتها خلال الـ 30 يوم القادمة",
       "itemName": "اسم المادة",
       "itemNo": "رقم المادة",
-      "lot": "اللوت",
+      "lot": "lot",
       "batchNo": "Batch No",
       "expiryDate": "تاريخ الانتهاء",
       "daysUntilExpiry": "الأيام حتى الانتهاء",
@@ -96,7 +96,7 @@
       "depot": "المستودع",
       "supplier": "المورد",
       "manufacturer": "الشركة المصنعة",
-      "noLots": "لا توجد لوتات ستنتهي صلاحيتها خلال الـ 30 يوم القادمة"
+      "noLots": "لا توجد lots ستنتهي صلاحيتها خلال الـ 30 يوم القادمة"
     },
     "lowStock": {
       "title": "المخزون المنخفض",
@@ -109,14 +109,17 @@
       "holdQuantity": "الكمية المحجوزة",
       "suppliedQuantity": "الكمية المستخدمة",
       "remaining": "المتبقي",
-      "noItems": "لا توجد مواد تقل عن الحد الأدنى للمخزون"
+      "noItems": "لا توجد مواد تقل عن الحد الأدنى للمخزون",
+      "depot": "المستودع",
+      "stock": "المخزون",
+      "noDepots": "لا توجد معلومات عن المستودعات"
     },
     "annualSupplyActivity": "نشاط التوريد السنوي",
     "overstock": "الفائض"
   },
   "inventorySummary": {
     "title": "ملخص المخزون",
-    "subtitle": "نظرة عامة على جميع المواد مع تفاصيل اللوتات",
+    "subtitle": "نظرة عامة على جميع المواد مع تفاصيل lots",
     "itemName": "اسم مادة",
     "itemNo": "رقم المادة",
     "type": "النوع",
@@ -126,26 +129,27 @@
     "usedQty": "الكمية المصروفة سابقا",
     "reservedQty": "الكمية المحجوزة",
     "remainingQty": "الكمية المتبقية",
-    "totalLots": "إجمالي اللوتات",
+    "totalLots": "إجمالي lots",
     "totalAssets": "إجمالي الأصول",
-    "lotDetails": "تفاصيل اللوت",
+    "lotDetails": "تفاصيل lot",
     "assetDetails": "تفاصيل الأصول",
-    "lotNumber": "رقم اللوت",
+    "lotNumber": "lot number",
     "depot": "المستودع",
     "supplier": "المورد",
     "manufacturer": "الشركة المصنعة",
     "country": "البلد",
+    "primaryPurpose": "الغرض الأساسي",
     "batchNo": "Batch No",
     "expiryDate": "تاريخ الانتهاء",
     "originalQty": "الكمية الأصلية",
     "status": "الحالة",
-    "noLots": "لا يوجد لوت متاح لهذه المادة",
+    "noLots": "لا يوجد lot متاح لهذه المادة",
     "noAssets": "لا توجد أصول متاحة لهذه المادة",
     "noItems": "لا توجد مواد مخزون متاحة",
     "searchPlaceholder": "البحث باسم مادة، رقم مادة، NSN، أو رقم القطعة...",
     "noResults": "لا توجد مواد تطابق معايير البحث",
-    "exportWithDetails": "تصدير مع تفاصيل اللوتات",
-    "exportingWithDetails": "جارٍ تحميل تفاصيل اللوتات للتصدير. الرجاء الانتظار..."
+    "exportWithDetails": "تصدير مع تفاصيل lots",
+    "exportingWithDetails": "جارٍ تحميل تفاصيل lots للتصدير. الرجاء الانتظار..."
   },
   "forecast": {
     "title": "التوقعات",

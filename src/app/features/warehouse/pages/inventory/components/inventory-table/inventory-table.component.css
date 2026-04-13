@@ -1,2 +1,16 @@
-/* Component-specific styles if needed */
+/* Long text columns: wrap within cell width (avoids horizontal scroll). */
+.inv-table-cell-wrap {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Header labels: wrap instead of overlapping adjacent columns in fixed layouts */
+.inv-table-th {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.inv-table-sort-btn {
+  width: 100%;
+}
 

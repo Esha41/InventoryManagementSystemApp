@@ -1,8 +1,8 @@
 <div class="page-wrapper flex flex-col">
   <div class="page-container flex-1 flex flex-col w-full">
-    <!-- Header -->
-    <div class="mb-6 sm:mb-8">
-      <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ 'addAsset.title' | translate }}</h1>
+    <!-- Header: title at inline start (left in LTR, right in RTL) -->
+    <div class="mb-6 sm:mb-8 flex justify-start">
+      <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)] text-start max-w-full break-words">{{ 'addAsset.title' | translate }}</h1>
     </div>
 
     <!-- Loading State -->
@@ -15,15 +15,15 @@
     </app-error-state>
 
     <!-- Tabs - scroll inside container when space is limited -->
-    <app-card [shadow]="true" class="mb-6 min-w-0">
-      <div class="asset-tabs-scroll overflow-x-auto overflow-y-hidden scrollbar-hide bg-gradient-to-r from-[var(--color-background)] to-[var(--color-background-hover)]" [ngClass]="{'flex justify-end': isRTL}">
-        <nav class="asset-tabs flex gap-2 p-2 w-max min-w-full" aria-label="Tabs" [ngClass]="{'flex-row-reverse': isRTL}">
+    <app-card data-onboarding="add-asset-tabs" [shadow]="true" class="mb-6 min-w-0">
+      <div class="asset-tabs-scroll overflow-x-auto overflow-y-hidden scrollbar-hide bg-gradient-to-r from-[var(--color-background)] to-[var(--color-background-hover)]">
+        <nav class="asset-tabs flex gap-2 p-2 w-max min-w-full" aria-label="Tabs">
           <button (click)="setActiveTab('ammunition')" [ngClass]="{
             'bg-[var(--color-brand)] text-white shadow-md': activeTab === 'ammunition',
             'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)] border-2 border-[var(--color-border)]': activeTab !== 'ammunition'
           }"
             class="asset-tab flex items-center gap-2 px-3 sm:px-5 py-2.5 sm:py-3 min-h-[2.75rem] rounded-lg font-semibold text-sm transition-all duration-200 flex-shrink-0 whitespace-nowrap"
-            [class.flex-row-reverse]="isRTL">
+          >
             <span>{{ 'assetList.tabs.ammunition' | translate }}</span>
           </button>
           <button (click)="setActiveTab('explosive')" [ngClass]="{
@@ -31,7 +31,7 @@
             'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)] border-2 border-[var(--color-border)]': activeTab !== 'explosive'
           }"
             class="asset-tab flex items-center gap-2 px-3 sm:px-5 py-2.5 sm:py-3 min-h-[2.75rem] rounded-lg font-semibold text-sm transition-all duration-200 flex-shrink-0 whitespace-nowrap"
-            [class.flex-row-reverse]="isRTL">
+          >
             <span>{{ 'assetList.tabs.explosive' | translate }}</span>
           </button>
           <button (click)="setActiveTab('weapon')" [ngClass]="{
@@ -39,7 +39,7 @@
             'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)] border-2 border-[var(--color-border)]': activeTab !== 'weapon'
           }"
             class="asset-tab flex items-center gap-2 px-3 sm:px-5 py-2.5 sm:py-3 min-h-[2.75rem] rounded-lg font-semibold text-sm transition-all duration-200 flex-shrink-0 whitespace-nowrap"
-            [class.flex-row-reverse]="isRTL">
+          >
             <span>{{ 'assetList.tabs.weapon' | translate }}</span>
           </button>
         </nav>
@@ -303,6 +303,15 @@
                     [placeholder]="'addAsset.enterArmNumber' | translate" />
                 </div>
 
+                <!-- Caliber -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.caliber' | translate
+                    }}</label>
+                  <input type="text" [(ngModel)]="assetForm.caliber" name="ammunitionCaliber"
+                    class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.enterCaliber' | translate" maxlength="100" />
+                </div>
+
                 <!-- Bullet Diameter -->
                 <div>
                   <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.bulletDiameter' | translate
@@ -424,6 +433,18 @@
                   </app-dropdown>
                 </div>
 
+                <!-- Primary Purpose -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.primaryPurpose' | translate
+                    }}</label>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.primaryPurposIds" name="weaponPrimaryPurposIds"
+                    [options]="primaryPurposes" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [multiple]="true"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectPrimaryPurpose' | translate">
+                  </app-dropdown>
+                </div>
+
                 <!-- Type -->
                 <div>
                   <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.type' | translate
@@ -502,6 +523,18 @@
                     [options]="classifications" optionValue="id" [optionLabelFn]="lookupOptionLabel"
                     [placeholderSelectable]="false" [placeholderValue]="null"
                     [placeholder]="'addAsset.selectClassification' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Primary Purpose -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.primaryPurpose' | translate
+                    }}</label>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.primaryPurposIds" name="explosivePrimaryPurposIds"
+                    [options]="primaryPurposes" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [multiple]="true"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectPrimaryPurpose' | translate">
                   </app-dropdown>
                 </div>
 
@@ -598,8 +631,9 @@
                 <div>
                   <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.primaryPurpose' | translate
                     }}</label>
-                  <app-dropdown class="w-full" [(ngModel)]="assetForm.primaryPurposId" name="primaryPurposId"
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.primaryPurposIds" name="primaryPurposIds"
                     [options]="primaryPurposes" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [multiple]="true"
                     [placeholderSelectable]="false" [placeholderValue]="null"
                     [placeholder]="'addAsset.selectPrimaryPurpose' | translate">
                   </app-dropdown>
