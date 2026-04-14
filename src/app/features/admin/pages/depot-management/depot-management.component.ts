@@ -14,7 +14,7 @@ import { ApiService } from '@services/api.service';
 import { APIOperationResponse } from '@models/api-response.model';
 import { ToastService } from '@services/toast.service';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
-import { API_ENDPOINTS } from '@constants/app.constants';
+import { API_ENDPOINTS, defaultPageSize } from '@constants/app.constants';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { LoadingStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
@@ -62,7 +62,7 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
   private appliedSearchTerm = '';
 
   currentPage = 1;
-  rowsPerPage = 10;
+  rowsPerPage = defaultPageSize;
   totalCount = 0;
 
   // Modal state

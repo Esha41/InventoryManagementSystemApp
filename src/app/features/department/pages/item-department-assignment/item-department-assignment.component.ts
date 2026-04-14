@@ -28,6 +28,7 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { ProfileDataService } from '@services/profile-data.service';
 import { TranslationMap } from '@models/common.types';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { defaultPageSize } from '@constants/app.constants';
 
 @Component({
   selector: 'app-item-department-assignment',
@@ -79,7 +80,7 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
   isSuperAdmin = false;
 
   currentPage = 1;
-  rowsPerPage = 10;
+  rowsPerPage = defaultPageSize;
 
   private destroy$ = new Subject<void>();
 
