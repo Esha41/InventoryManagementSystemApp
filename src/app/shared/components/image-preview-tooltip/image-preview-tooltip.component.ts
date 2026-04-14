@@ -234,7 +234,7 @@ export class ImagePreviewTooltipComponent implements OnInit, OnDestroy {
     this.show = true;
 
     // Sanitize URL for blob
-    this.imageUrl = this.sanitizer.bypassSecurityTrustUrl(data.imageUrl);
+    this.imageUrl = this.createSafeBlobUrl(data.imageUrl);
 
     this.altText = data.altText;
     this.left = left;
@@ -243,6 +243,13 @@ export class ImagePreviewTooltipComponent implements OnInit, OnDestroy {
     this.arrowPosition = arrowPosition;
 
     this.cdr.detectChanges();
+  }
+
+  private createSafeBlobUrl(url: string): SafeUrl {
+    if (!url.startsWith('blob:')) {
+      throw new Error(`Security violation: expected a blob URL, got: ${url.substring(0, 30)}`);
+    }
+    return this.sanitizer.bypassSecurityTrustUrl(url);
   }
 }
 

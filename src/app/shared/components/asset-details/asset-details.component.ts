@@ -331,7 +331,7 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
           this.loadingImageFor = null; // Clear loading flag
           if (blobUrl) {
             this.blobUrls.add(blobUrl);
-            const safeUrl = this.sanitizer.bypassSecurityTrustUrl(blobUrl);
+            const safeUrl = this.createSafeBlobUrl(blobUrl);
             this.imageUrl.set(safeUrl);
             this.imageLoadedFor = { assetId, assetType }; // Mark as loaded
             this.cdr.detectChanges(); // Force immediate update
@@ -388,6 +388,13 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
 
   onClose(): void {
     this.close.emit();
+  }
+
+  private createSafeBlobUrl(url: string): SafeUrl {
+    if (!url.startsWith('blob:')) {
+      throw new Error(`Security violation: expected a blob URL, got: ${url.substring(0, 30)}`);
+    }
+    return this.sanitizer.bypassSecurityTrustUrl(url);
   }
 
   ngOnDestroy(): void {

@@ -51,10 +51,13 @@ import { formatTimeToMilitary, formatDateTimeExtended } from '@utils/format.util
 export class DashboardComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
+  /** Same page size for grid and list/table views (server-side pagination). */
+  private readonly defaultPageSize = 10;
+
   // View state
   viewMode: 'grid' | 'table' = 'grid';
   currentPage = 1;
-  rowsPerPage = 8;
+  rowsPerPage = this.defaultPageSize;
 
   // Icons
   readonly Grid = Grid;
@@ -184,7 +187,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   toggleViewMode(mode: 'grid' | 'table'): void {
     this.viewMode = mode;
-    this.rowsPerPage = mode === 'table' ? 10 : 9; // Different defaults for different views
+    // Keep rowsPerPage unchanged so grid and table use the same page size (including user selection).
     this.currentPage = 1;
     this.loadAllRequests();
   }
