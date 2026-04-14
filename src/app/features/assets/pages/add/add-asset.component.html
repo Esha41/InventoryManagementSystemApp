@@ -505,13 +505,13 @@
                     [placeholder]="'addAsset.minimumQuantityPlaceholder' | translate" step="1" min="0" />
                 </div>
 
-                <!-- Item Type -->
+                <!-- Explosive Type -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.type' | translate
-                    }}</label>
+                  <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.explosiveType' |
+                    translate }}</label>
                   <app-dropdown class="w-full" [(ngModel)]="assetForm.typeId" name="typeId" [options]="explosiveItemTypes"
                     optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
-                    [placeholderValue]="null" [placeholder]="'addAsset.selectItemType' | translate">
+                    [placeholderValue]="null" [placeholder]="'addAsset.selectExplosiveType' | translate">
                   </app-dropdown>
                 </div>
 
