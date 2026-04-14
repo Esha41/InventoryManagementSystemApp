@@ -4,6 +4,7 @@ import { BehaviorSubject, Subject, Subscription, timer } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { BackendAuthService } from './backend-auth.service';
 import { ConfigService } from './config.service';
+import { StorageService } from './storage.service';
 import { environment } from '@environments/environment';
 
 export interface IdleState {
@@ -46,7 +47,8 @@ export class IdleService implements OnDestroy {
     private ngZone: NgZone,
     private backendAuth: BackendAuthService,
     private router: Router,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private storageService: StorageService
   ) {}
 
   start(): void {
@@ -151,7 +153,7 @@ export class IdleService implements OnDestroy {
     this.stop();
     this.configService.log('Auto-logout due to inactivity');
 
-    sessionStorage.setItem('sessionExpired', 'true');
+    this.storageService.set('sessionExpired', true);
 
     this.backendAuth.logout().subscribe({
       next: () => this.router.navigate(['/auth/login']),
