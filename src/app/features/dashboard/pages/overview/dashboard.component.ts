@@ -29,6 +29,7 @@ import { PaginationComponent } from '@components/pagination/pagination.component
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { RequestFilterBarComponent, StatusFilter } from '@components/request-filter-bar/request-filter-bar.component';
 import { formatTimeToMilitary, formatDateTimeExtended } from '@utils/format.utils';
+import { defaultPageSize } from '@constants/app.constants';
 
 @Component({
   selector: 'app-dashboard',
@@ -51,13 +52,11 @@ import { formatTimeToMilitary, formatDateTimeExtended } from '@utils/format.util
 export class DashboardComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
-  /** Same page size for grid and list/table views (server-side pagination). */
-  private readonly defaultPageSize = 10;
-
   // View state
   viewMode: 'grid' | 'table' = 'grid';
   currentPage = 1;
-  rowsPerPage = this.defaultPageSize;
+  /** Same page size for grid and list/table views (server-side pagination). */
+  rowsPerPage = defaultPageSize;
 
   // Icons
   readonly Grid = Grid;

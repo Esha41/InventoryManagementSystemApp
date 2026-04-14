@@ -15,6 +15,7 @@ import { HasPermissionDirective } from '@core/directives/has-permission.directiv
 import { LoadingStateComponent } from '@components/index';
 import { ProfileDataService } from '@services/profile-data.service';
 import { BackendAuthService } from '@services/backend-auth.service';
+import { defaultPageSize } from '@constants/app.constants';
 
 // ============================================================================
 // INTERFACES
@@ -89,7 +90,7 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
   isLoading = false;
   isSaving = false;
 
-  rowsPerPage = 10;
+  rowsPerPage = defaultPageSize;
 
   permissionForm: FormGroup;
   private destroy$ = new Subject<void>();

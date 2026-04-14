@@ -15,7 +15,7 @@ import { WeaponService } from '@services/weapon.service';
 import { WeaponDto } from '@models/weapon.model';
 import { ExplosiveService } from '@services/explosive.service';
 import { ExplosiveDto } from '@models/explosive.model';
-import { API_ENDPOINTS } from '@constants/app.constants';
+import { API_ENDPOINTS, defaultPageSize } from '@constants/app.constants';
 import { ButtonComponent } from '@components/button/button.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { TranslationService } from '@services/translation.service';
@@ -102,7 +102,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
 
   // Pagination
   currentPage = 1;
-  rowsPerPage = 10;
+  rowsPerPage = defaultPageSize;
   totalItems = 0;
 
   // Delete dialog state

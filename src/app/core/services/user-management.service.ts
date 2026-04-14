@@ -7,6 +7,7 @@ import { BackendUserService, UserSummaryDto } from './backend-user.service';
 import { LookupService } from './lookup.service';
 import { TranslateService } from '@ngx-translate/core';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { defaultPageSize } from '@constants/app.constants';
 
 /**
  * User Management Service
@@ -30,7 +31,7 @@ export class UserManagementService {
    */
   // Pagination state
   private currentPage = 1;
-  private pageSize = 10;
+  private pageSize = defaultPageSize;
   private totalCount = 0;
   private searchTerm = '';
 
@@ -48,7 +49,7 @@ export class UserManagementService {
    */
   loadUsers(
     page: number = 1,
-    pageSize: number = 10,
+    pageSize: number = defaultPageSize,
     searchTerm: string = '',
     status: 'all' | 'active' | 'inactive' | 'deleted' = 'all',
     rankId: number | null = null,

@@ -15,6 +15,7 @@ import { UserFormModalComponent } from '@components/user-form-modal/user-form-mo
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { ProfileDataService } from '@services/profile-data.service';
 import { BackendAuthService } from '@services/backend-auth.service';
+import { defaultPageSize } from '@constants/app.constants';
 
 /**
  * User Management Component
@@ -66,7 +67,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   // Pagination
   currentPage = 1;
-  rowsPerPage = 10;
+  rowsPerPage = defaultPageSize;
 
   // Modal states
   showUserModal = false;
