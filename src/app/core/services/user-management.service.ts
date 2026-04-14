@@ -361,7 +361,12 @@ export class UserManagementService {
 
     if (user.roles && user.roles.length > 0) {
       return user.roles
-        .map(role => getLocalizedName(role, currentLang) || role.name)
+        .map((userRole) => {
+          // Prefer canonical role data (same approach as department/rank lookups).
+          const canonicalRole = roles.find((role) => role.id === userRole.id);
+          const localizedName = getLocalizedName(canonicalRole ?? userRole, currentLang);
+          return localizedName || canonicalRole?.name || userRole.name;
+        })
         .filter((name): name is string => !!name && name.trim().length > 0);
     }
 
@@ -383,7 +388,13 @@ export class UserManagementService {
   private loadUserRolesData(userId: string): void {
     this.backendUserService.getUserRoles(userId).subscribe({
       next: (roles) => {
-        this.userRolesMap.set(userId, roles.map(r => r.name));
+        const currentLang = getCurrentLang(this.translateService);
+        this.userRolesMap.set(
+          userId,
+          roles
+            .map((role) => getLocalizedName(role, currentLang) || role.name)
+            .filter((name): name is string => !!name && name.trim().length > 0)
+        );
       },
       error: () => {
         this.userRolesMap.set(userId, []);

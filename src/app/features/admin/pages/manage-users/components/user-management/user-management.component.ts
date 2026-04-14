@@ -105,6 +105,15 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         this.users = users;
         this.cdr.markForCheck();
       });
+
+    this.translateService.onLangChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        // Role names are cached as localized strings; rebuild cache after language switch.
+        this.userManagementService.clearRolesCache();
+        this.userManagementService.updateRolesCache(this.users, this.roles);
+        this.cdr.markForCheck();
+      });
   }
 
   ngOnDestroy(): void {
