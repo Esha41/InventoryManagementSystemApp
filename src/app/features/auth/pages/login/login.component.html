@@ -37,7 +37,7 @@
     <div class="flex items-center justify-center rounded-2xl bg-[var(--color-background-muted)] p-1">
       <!-- Development: Password first, LDAP second -->
       <ng-container *ngIf="isDevelopment">
-        <button type="button" data-testid ="login-standard-login-button" (click)="setLoginMode('password')" [class]="
+        <button type="button" data-testid="login-standard-login-button" (click)="setLoginMode('password')" [class]="
             'flex-1 px-3 sm:px-4 py-2.5 min-h-[2.75rem] text-sm font-semibold rounded-xl transition-all duration-200 ' +
             (isLdapMode
               ? 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
@@ -45,7 +45,7 @@
           ">
           {{ 'auth.login.passwordLogin' | translate }}
         </button>
-        <button type="button" data-testid ="login-ldap-login-button" (click)="setLoginMode('ldap')" [class]="
+        <button type="button" data-testid="login-ldap-login-button" (click)="setLoginMode('ldap')" [class]="
             'flex-1 px-3 sm:px-4 py-2.5 min-h-[2.75rem] text-sm font-semibold rounded-xl transition-all duration-200 ' +
             (!isLdapMode
               ? 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
