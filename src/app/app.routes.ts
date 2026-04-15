@@ -280,6 +280,15 @@ export const routes: Routes = [
         data: { permissions: ['ammunition.page'] }
       },
       {
+        path: 'weapon-asset-master',
+        loadComponent: () =>
+          import('./features/assets/pages/weapon-asset-master/weapon-asset-master.component').then(
+            m => m.WeaponAssetMasterComponent
+          ),
+        canActivate: [permissionGuard],
+        data: { permissions: ['asset.page', 'asset.view'] }
+      },
+      {
         path: 'asset-list/:id',
         loadComponent: () => import('@shared/components/asset-details/asset-details.component').then(m => m.AssetDetailsComponent),
         canActivate: [permissionGuard],
