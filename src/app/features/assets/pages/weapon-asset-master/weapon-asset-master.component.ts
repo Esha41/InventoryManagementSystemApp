@@ -498,8 +498,8 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
     return this.lookupOptionLabel(asset.primaryPurpos);
   }
 
-  createdDepotName(asset: AssetDto): string {
-    const d = asset.createdDepot ?? asset.depot;
+  depotName(asset: AssetDto): string {
+    const d = asset.depot;
     if (!d) return '—';
     const lang = getCurrentLang(this.translateService);
     const name = getLocalizedName(d, lang);

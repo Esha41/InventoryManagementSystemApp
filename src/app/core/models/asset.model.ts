@@ -78,7 +78,7 @@ export interface AssetDto {
     // Navigation properties
     item?: WeaponDto;
     depot?: DepotDto;
-    /** Depot of the intake batch (where the asset was created with that batch). */
+    /** Same as `depot` when provided by the API (legacy field). */
     createdDepot?: DepotDto;
     department?: DepartmentDto;
     custodian?: EmployeeDto;

@@ -242,7 +242,7 @@
                 <td class="px-3 py-3 align-top">{{ statusLabel(asset) }}</td>
                 <td class="px-3 py-3 align-top max-w-[8rem] truncate" [title]="supplierName(asset)">{{ supplierName(asset) }}</td>
                 <td class="px-3 py-3 align-top max-w-[8rem] truncate" [title]="manufacturerName(asset)">{{ manufacturerName(asset) }}</td>
-                <td class="px-3 py-3 align-top max-w-[10rem] truncate" [title]="createdDepotName(asset)">{{ createdDepotName(asset) }}</td>
+                <td class="px-3 py-3 align-top max-w-[10rem] truncate" [title]="depotName(asset)">{{ depotName(asset) }}</td>
                 <td class="px-3 py-3 align-top whitespace-nowrap text-[var(--color-text-secondary)]">
                   <ng-container *ngIf="asset.creationDate; else noCreatedDate">{{ asset.creationDate | appDate: 'military' }}</ng-container>
                   <ng-template #noCreatedDate>—</ng-template>
