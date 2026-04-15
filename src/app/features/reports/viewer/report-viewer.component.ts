@@ -7,7 +7,7 @@ import { DxReportViewerModule } from 'devexpress-reporting-angular';
 import { TranslationService } from '@services/translation.service';
 import { ReportService } from '@services/report.service';
 import { BackendAuthService } from '@services/backend-auth.service';
-import { environment } from '@environments/environment';
+import { ConfigService } from '@services/config.service';
 import { take } from 'rxjs/operators';
 
 @Component({
@@ -37,12 +37,22 @@ export class ReportViewerComponent implements OnInit {
     private router: Router,
     private translationService: TranslationService,
     private reportService: ReportService,
-    private authService: BackendAuthService
+    private authService: BackendAuthService,
+    private configService: ConfigService
   ) {
-    // Extract base URL from environment
-    const apiUrl = environment.apiUrl;
-    // Remove /api suffix if present, as DevExpress endpoints are at root level
-    this.host = apiUrl.replace('/api', '');
+    const apiUrl = this.configService.apiUrl;
+    const normalizedApiUrl = apiUrl.trim().replace(/\/+$/, '');
+    const isRelativeApi = normalizedApiUrl.startsWith('/');
+
+    if (isRelativeApi) {
+      // When apiUrl is relative (e.g. "/api"), route DevExpress through the same proxy prefix.
+      this.host = window.location.origin;
+      this.invokeAction = `${normalizedApiUrl}/DXXRDV`;
+    } else {
+      // Absolute apiUrl -> keep the existing backend-host + root DevExpress endpoint behavior.
+      this.host = normalizedApiUrl.replace(/\/api$/i, '');
+      this.invokeAction = '/DXXRDV';
+    }
   }
 
   ngOnInit(): void {
