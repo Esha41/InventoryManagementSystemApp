@@ -47,10 +47,6 @@
                 </th>
                 <th
                   class="px-4 lg:px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
-                  {{ 'reportDashboard.table.status' | translate }}
-                </th>
-                <th
-                  class="px-4 lg:px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
                   {{ 'reportDashboard.table.createdDate' | translate }}
                 </th>
                 <th
@@ -70,12 +66,6 @@
                       {{ report.reportName }}
                     </div>
                   </div>
-                </td>
-                <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
-                  <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium border"
-                    [ngClass]="getStatusClass(report.reportStatusNameEn)">
-                    {{ getStatusDisplayName(report) }}
-                  </span>
                 </td>
                 <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-muted)] text-start">
                   {{ formatDate(report.creationDate) }}
@@ -108,10 +98,6 @@
                 {{ report.reportName }}
               </div>
             </div>
-            <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border flex-shrink-0 ml-2"
-              [ngClass]="getStatusClass(report.reportStatusNameEn)">
-              {{ getStatusDisplayName(report) }}
-            </span>
           </div>
 
           <!-- Details -->

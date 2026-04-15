@@ -196,7 +196,12 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     {
       label: 'nav.reports',
       icon: BarChart3,
-      permissions: ['inventorySummaryReportPage', 'lowStockReportPage', 'expiringLotsReportPage'],
+      permissions: [
+        'inventorySummaryReportPage',
+        'lowStockReportPage',
+        'expiringLotsReportPage',
+        'ReportDashboard'
+      ],
       children: [
         {
           label: 'nav.inventoryReports',
@@ -218,23 +223,23 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
               permissions: ['expiringLotsReportPage']
             }
           ]
+        },
+        {
+          label: 'nav.reportDashboard',
+          route: '/report-dashboard',
+          permissions: ['ReportDashboard']
         }
       ]
     },
     {
       label: 'nav.biTool',
       icon: FileText,
-      permissions: ['ReportDesigner', 'ReportDashboard', 'ScheduledReports'],
+      permissions: ['ReportDesigner', 'ScheduledReports'],
       children: [
         {
           label: 'nav.reportDesigner',
           route: '/report-designer',
           permissions: ['ReportDesigner']
-        },
-        {
-          label: 'nav.reportDashboard',
-          route: '/report-dashboard',
-          permissions: ['ReportDashboard']
         },
         {
           label: 'nav.scheduledReports',
@@ -368,9 +373,16 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     // Auto-expand reports menu if on report routes
-    if (url.startsWith('/inventory-summary') || url.startsWith('/inventory-dashboard/low-stock') || url.startsWith('/inventory-dashboard/expiring-lots')) {
+    if (
+      url.startsWith('/inventory-summary') ||
+      url.startsWith('/inventory-dashboard/low-stock') ||
+      url.startsWith('/inventory-dashboard/expiring-lots')
+    ) {
       this.expandedMenus.add('nav.reports');
       this.expandedMenus.add('nav.inventoryReports');
+    }
+    if (url.startsWith('/report-dashboard')) {
+      this.expandedMenus.add('nav.reports');
     }
 
     if (url.startsWith('/new-issue-request') || url.startsWith('/return-request') || url.startsWith('/discard-request')) {

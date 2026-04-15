@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Eye, FileText } from 'lucide-angular';
-import { TranslationService } from '@services/translation.service';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ReportService, Report } from '@services/report.service';
 import { catchError, finalize } from 'rxjs/operators';
@@ -40,7 +39,6 @@ export class ReportDashboardComponent implements OnInit {
   totalItems = 0;
 
   constructor(
-    private translationService: TranslationService,
     private translateService: TranslateService,
     private router: Router,
     private reportService: ReportService
@@ -48,10 +46,6 @@ export class ReportDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadReports();
-  }
-
-  get isRTL(): boolean {
-    return this.translationService.isRTL();
   }
 
   loadReports(): void {
@@ -103,27 +97,6 @@ export class ReportDashboardComponent implements OnInit {
     
     // Open in new tab
     window.open(url, '_blank');
-  }
-
-  getStatusClass(status: string): string {
-    // Map backend status names to CSS classes
-    const statusLower = status.toLowerCase();
-    if (statusLower.includes('published') || statusLower.includes('active')) {
-      return 'bg-[var(--color-success)]/20 text-[var(--color-success)] border-[var(--color-success)]/30';
-    }
-    if (statusLower.includes('draft') || statusLower.includes('pending')) {
-      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-    }
-    if (statusLower.includes('archived') || statusLower.includes('inactive')) {
-      return 'bg-[var(--color-background-active)] text-[var(--color-text-muted)] border-[var(--color-border)]';
-    }
-    return 'bg-[var(--color-background-active)] text-[var(--color-text-muted)] border-[var(--color-border)]';
-  }
-
-  getStatusDisplayName(report: Report): string {
-    // Use the appropriate status name based on current language
-    const isRTL = this.translationService.isRTL();
-    return isRTL && report.reportStatusNameAr ? report.reportStatusNameAr : report.reportStatusNameEn;
   }
 
   formatDate(date: Date | string): string {
