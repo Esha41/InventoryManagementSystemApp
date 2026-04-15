@@ -94,7 +94,6 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
 
   readonly statusFilterOptions: { value: AssetStatus; labelKey: string }[] = [
     { value: AssetStatus.ReadyToIssue, labelKey: 'assetStatus.readyToIssue' },
-    { value: AssetStatus.Assigned, labelKey: 'assetStatus.assigned' },
     { value: AssetStatus.InMaintenance, labelKey: 'assetStatus.inMaintenance' },
     { value: AssetStatus.UnserviceableRepairable, labelKey: 'assetStatus.unserviceableRepairable' },
     { value: AssetStatus.UnserviceableUnrepairable, labelKey: 'assetStatus.unserviceableUnrepairable' },
