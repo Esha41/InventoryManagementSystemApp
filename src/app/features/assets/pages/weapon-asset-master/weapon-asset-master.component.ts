@@ -308,14 +308,6 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
     return this.historyByAssetId.get(assetId) ?? [];
   }
 
-  getCreatedHistoryEntry(assetId: number): AssetHistoryDto | null {
-    const rows = this.getHistory(assetId).filter((e) => e.actionType === HISTORY_ACTION_CREATED);
-    if (rows.length === 0) return null;
-    return rows.reduce((earliest, e) =>
-      new Date(e.actionDate).getTime() < new Date(earliest.actionDate).getTime() ? e : earliest
-    );
-  }
-
   getAssignmentHistoryEntries(assetId: number): AssetHistoryDto[] {
     return this.getHistory(assetId).filter((e) => e.actionType !== HISTORY_ACTION_CREATED);
   }
@@ -331,16 +323,8 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
     );
   }
 
-  getCreatedDisplay(asset: AssetDto): { dateIso: string } | null {
-    const h = this.getCreatedHistoryEntry(asset.id);
-    if (h) {
-      return { dateIso: h.actionDate };
-    }
-    return null;
-  }
-
   hasExpandedHistoryContent(asset: AssetDto): boolean {
-    return this.getCreatedDisplay(asset) != null || this.getAssignmentHistoryEntries(asset.id).length > 0;
+    return this.getAssignmentHistoryEntries(asset.id).length > 0;
   }
 
   isLoadingHistory(assetId: number): boolean {
@@ -516,7 +500,7 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
   }
 
   createdDepotName(asset: AssetDto): string {
-    const d = asset.createdDepot;
+    const d = asset.createdDepot ?? asset.depot;
     if (!d) return '—';
     const lang = getCurrentLang(this.translateService);
     const name = getLocalizedName(d, lang);
