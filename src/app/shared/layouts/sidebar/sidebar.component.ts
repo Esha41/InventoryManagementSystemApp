@@ -159,6 +159,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
       route: '/asset-list',
       permissions: ['ammunition.page', 'weapon.page', 'explosive.page']
     },
+    {
+      label: 'nav.weaponAssetMaster',
+      icon: Package,
+      route: '/weapon-asset-master',
+      permissions: ['asset.page', 'asset.view']
+    },
     // Temporarily commented out - contains dummy data, will be implemented later
     // {
     //   label: 'nav.inventoryForecast',

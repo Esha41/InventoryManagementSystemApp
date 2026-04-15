@@ -18,7 +18,8 @@ export enum AssetStatus {
     UnserviceableRepairable = 3,
     UnserviceableUnrepairable = 4,
     AwaitingDisposal = 5,
-    Disposed = 6
+    Disposed = 6,
+    Assigned = 7
 }
 
 
@@ -64,6 +65,12 @@ export interface AssetDto {
     deliveryReceipt?: string;
     notes?: string;
     isDeleted: boolean;
+    /** Asset audit: when the record was created */
+    creationDate?: Date | string;
+    /** Asset audit: user id at creation */
+    createdBy?: string;
+    /** Resolved display name for createdBy (from API). */
+    createdByName?: string;
     supplierId?: number;
     manufacturerId?: number;
     primaryPurposId?: number;
@@ -71,6 +78,8 @@ export interface AssetDto {
     // Navigation properties
     item?: WeaponDto;
     depot?: DepotDto;
+    /** Depot of the intake batch (where the asset was created with that batch). */
+    createdDepot?: DepotDto;
     department?: DepartmentDto;
     custodian?: EmployeeDto;
     supplier?: LookupItem;
@@ -156,6 +165,9 @@ export function getAssetStatusLabel(status?: AssetStatus | string): string {
         case AssetStatus.Disposed:
         case 'Disposed':
             return 'assetStatus.disposed';
+        case AssetStatus.Assigned:
+        case 'Assigned':
+            return 'assetStatus.assigned';
         default:
             return 'assetStatus.unknown';
     }
@@ -169,6 +181,9 @@ export function getAssetStatusColor(status?: AssetStatus | string): string {
         case AssetStatus.ReadyToIssue:
         case 'ReadyToIssue':
             return 'success';       // Green
+        case AssetStatus.Assigned:
+        case 'Assigned':
+            return 'info';
         case AssetStatus.InMaintenance:
         case 'InMaintenance':
         case AssetStatus.UnserviceableRepairable:
