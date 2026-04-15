@@ -27,6 +27,12 @@
     <!-- Content -->
     <div *ngIf="!loading && !error">
 
+      <div *ngIf="hasAmmoExplosiveItems || hasWeaponItems"
+        class="mb-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-4 py-3 text-sm text-[var(--color-text)] shadow-sm">
+        <span class="font-semibold text-[var(--color-text-muted)]">{{ 'processReturnItems.depotColumn' | translate }}:</span>
+        <span class="ms-2">{{ getReturnDepotDisplayName() || ('processReturnItems.depotNotSet' | translate) }}</span>
+      </div>
+
       <!-- Ammo / Explosive Section -->
       <div *ngIf="hasAmmoExplosiveItems" class="bg-[var(--color-background)] rounded-xl shadow-custom-md p-6 border border-[var(--color-border)] mb-6">
         <div class="flex items-center gap-3 mb-6 pb-4 border-b border-[var(--color-border)]">
@@ -39,7 +45,7 @@
         </div>
 
         <div class="overflow-x-auto -mx-1 px-1">
-          <div class="min-w-[1040px] space-y-3">
+          <div class="min-w-[960px] space-y-3">
           <!-- Table Header -->
           <div class="hidden lg:grid lg:grid-cols-12 gap-2 gap-y-3 px-2">
             <div class="lg:col-span-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
@@ -52,15 +58,16 @@
               {{ 'processReturnItems.receivedQuantity' | translate }}
               <span class="text-[var(--color-error)] ms-0.5" aria-hidden="true">*</span>
             </div>
+            <div class="lg:col-span-1 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+              {{ 'processReturnItems.readyForIssue' | translate }}
+              <span class="text-[var(--color-error)] ms-0.5" aria-hidden="true">*</span>
+            </div>
             <div class="lg:col-span-2 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
               {{ 'processReturnItems.lot' | translate }}
               <span class="text-[var(--color-error)] ms-0.5" aria-hidden="true">*</span>
             </div>
-            <div class="lg:col-span-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+            <div class="lg:col-span-4 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
               {{ 'processReturnItems.notes' | translate }}
-            </div>
-            <div class="lg:col-span-2 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
-              {{ 'processReturnItems.depotColumn' | translate }}
             </div>
           </div>
 
@@ -92,6 +99,17 @@
                 class="w-full px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 tabular-nums"
                 [placeholder]="'processReturnItems.enterReceivedQuantity' | translate">
             </div>
+            <div class="lg:col-span-1">
+              <label class="lg:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">
+                {{ 'processReturnItems.readyForIssue' | translate }}
+                <span class="text-[var(--color-error)]" aria-hidden="true">*</span>
+              </label>
+              <app-dropdown class="w-full block text-sm min-h-[38px]" [(ngModel)]="row.readyForIssue"
+                [name]="'ammoReadyForIssue_' + i" [options]="readyForIssueDropdownOptions" optionValue="value"
+                optionLabel="label" [translateLabels]="true" [showSearch]="false" [disabled]="processing" required="true"
+                [placeholderSelectable]="true" [placeholder]="'processReturnItems.selectReadyForIssue' | translate">
+              </app-dropdown>
+            </div>
             <!-- Lot -->
             <div class="lg:col-span-2">
               <label class="lg:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">
@@ -103,32 +121,12 @@
                 [placeholder]="'processReturnItems.enterLot' | translate">
             </div>
             <!-- Notes (same row as other columns on lg+) -->
-            <div class="lg:col-span-3">
+            <div class="lg:col-span-4">
               <label class="lg:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">{{ 'processReturnItems.notes' | translate }}</label>
               <input type="text" [(ngModel)]="row.notes" [disabled]="processing"
                 class="w-full px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 min-h-[38px]"
                 [placeholder]="'processReturnItems.notesPlaceholder' | translate">
             </div>
-            <!-- Depot (same for all rows; from return) -->
-            <div class="lg:col-span-2">
-              <label class="lg:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">{{ 'processReturnItems.depotColumn' | translate }}</label>
-              <div class="px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background-active)] text-sm text-[var(--color-text)] min-h-[38px] flex items-center">
-                {{ returnDepotDisplayName || ('processReturnItems.depotNotSet' | translate) }}
-              </div>
-            </div>
-            </div>
-            <div *ngIf="attachmentFiles.length > 0" class="border-t border-[var(--color-border)] pt-3 space-y-2">
-              <p class="text-xs text-[var(--color-text-muted)]">{{ 'processReturnItems.lineAttachmentsHint' | translate }}</p>
-              <div class="flex flex-wrap gap-2">
-                <label *ngFor="let f of attachmentFiles; let fi = index"
-                  class="inline-flex items-center gap-2 px-2 py-1 rounded border border-[var(--color-border)] bg-[var(--color-background)] text-xs cursor-pointer">
-                  <input type="checkbox" class="rounded"
-                    [checked]="isFileLinkedToAmmoRow(row, fi)"
-                    (change)="toggleAmmoRowFile(row, fi)"
-                    [disabled]="processing">
-                  <span class="truncate max-w-[14rem]">{{ f.name }}</span>
-                </label>
-              </div>
             </div>
           </div>
           </div>
@@ -160,7 +158,7 @@
         </div>
 
         <div *ngIf="weaponLines.length > 0" class="overflow-x-auto rounded-lg border border-[var(--color-border)]">
-          <table class="w-full min-w-[940px] text-sm border-collapse">
+          <table class="w-full min-w-[820px] text-sm border-collapse">
             <thead>
               <tr class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
                 <th class="w-10 px-2 py-3" scope="col" aria-hidden="true"></th>
@@ -176,9 +174,6 @@
                 </th>
                 <th class="text-start px-3 py-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider min-w-[140px]" scope="col">
                   {{ 'processReturnItems.batchNumber' | translate }}
-                </th>
-                <th class="text-start px-3 py-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider min-w-[140px]" scope="col">
-                  {{ 'processReturnItems.depotColumn' | translate }}
                 </th>
               </tr>
             </thead>
@@ -210,12 +205,9 @@
                       class="w-full px-2 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50"
                       [placeholder]="'processReturnItems.weaponLineBatchPlaceholder' | translate">
                   </td>
-                  <td class="px-3 py-3 align-middle text-[var(--color-text)]">
-                    {{ returnDepotDisplayName || ('processReturnItems.depotNotSet' | translate) }}
-                  </td>
                 </tr>
                 <tr *ngIf="isWeaponLineExpanded(i)" class="bg-[var(--color-background-muted)]/60 border-b border-[var(--color-border)]">
-                  <td colspan="6" class="p-4 align-top">
+                  <td colspan="5" class="p-4 align-top">
                     <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-3">
                       {{ 'processReturnItems.weaponUnitDetails' | translate }}
                       <span class="text-[var(--color-text)] font-normal normal-case">({{ line.units.length }})</span>
@@ -223,18 +215,22 @@
                     <div *ngIf="line.units.length === 0" class="text-sm text-[var(--color-text-muted)] py-2">
                       {{ 'processReturnItems.weaponExpandSetReceived' | translate }}
                     </div>
-                    <div *ngIf="line.units.length > 0" class="space-y-2">
+                      <div *ngIf="line.units.length > 0" class="space-y-2">
                       <div class="hidden sm:grid sm:grid-cols-12 gap-2 px-1 pb-1">
                         <div class="sm:col-span-1 text-xs font-semibold text-[var(--color-text-muted)] uppercase text-center">#</div>
-                        <div class="sm:col-span-4 text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                        <div class="sm:col-span-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                           {{ 'processReturnItems.serialNumber' | translate }}
                           <span class="text-[var(--color-error)] ms-0.5" aria-hidden="true">*</span>
                         </div>
-                        <div class="sm:col-span-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                        <div class="sm:col-span-2 text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                           {{ 'processReturnItems.batchNumber' | translate }}
                           <span class="text-[var(--color-error)] ms-0.5" aria-hidden="true">*</span>
                         </div>
-                        <div class="sm:col-span-4 text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                        <div class="sm:col-span-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                          {{ 'processReturnItems.assetStatus' | translate }}
+                          <span class="text-[var(--color-error)] ms-0.5" aria-hidden="true">*</span>
+                        </div>
+                        <div class="sm:col-span-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                           {{ 'processReturnItems.notes' | translate }}
                         </div>
                       </div>
@@ -244,7 +240,7 @@
                           <span class="text-xs font-semibold text-[var(--color-text-muted)] sm:hidden me-2">{{ 'processReturnItems.unit' | translate }}</span>
                           <span class="text-sm font-medium text-[var(--color-text)] tabular-nums">{{ ui + 1 }}</span>
                         </div>
-                        <div class="sm:col-span-4">
+                        <div class="sm:col-span-3">
                           <label class="sm:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">
                             {{ 'processReturnItems.serialNumber' | translate }}<span class="text-[var(--color-error)]" aria-hidden="true">*</span>
                           </label>
@@ -252,7 +248,7 @@
                             class="w-full px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background-main)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 min-h-[38px]"
                             [placeholder]="'processReturnItems.enterSerialNumber' | translate">
                         </div>
-                        <div class="sm:col-span-3">
+                        <div class="sm:col-span-2">
                           <label class="sm:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">
                             {{ 'processReturnItems.batchNumber' | translate }}<span class="text-[var(--color-error)]" aria-hidden="true">*</span>
                           </label>
@@ -260,24 +256,22 @@
                             class="w-full px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background-main)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 min-h-[38px]"
                             [placeholder]="'processReturnItems.enterBatchNumber' | translate">
                         </div>
-                        <div class="sm:col-span-4">
+                        <div class="sm:col-span-3">
+                          <label class="sm:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">
+                            {{ 'processReturnItems.assetStatus' | translate }}<span class="text-[var(--color-error)]" aria-hidden="true">*</span>
+                          </label>
+                          <app-dropdown class="w-full min-w-[10rem] block text-sm" [(ngModel)]="unit.status"
+                            [name]="'weaponUnitStatus_' + i + '_' + ui" [options]="weaponStatusDropdownOptions"
+                            optionValue="value" optionLabel="label" [translateLabels]="true" [showSearch]="false"
+                            [disabled]="processing" required="true" [placeholderSelectable]="true"
+                            [placeholder]="'processReturnItems.selectAssetStatus' | translate">
+                          </app-dropdown>
+                        </div>
+                        <div class="sm:col-span-3">
                           <label class="sm:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">{{ 'processReturnItems.notes' | translate }}</label>
                           <input type="text" [(ngModel)]="unit.notes" [disabled]="processing"
                             class="w-full px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background-main)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 min-h-[38px]"
                             [placeholder]="'processReturnItems.notesPlaceholder' | translate">
-                        </div>
-                        <div *ngIf="attachmentFiles.length > 0" class="sm:col-span-12 mt-2 pt-2 border-t border-[var(--color-border)] space-y-2">
-                          <p class="text-xs text-[var(--color-text-muted)]">{{ 'processReturnItems.lineAttachmentsHint' | translate }}</p>
-                          <div class="flex flex-wrap gap-2">
-                            <label *ngFor="let f of attachmentFiles; let fi = index"
-                              class="inline-flex items-center gap-2 px-2 py-1 rounded border border-[var(--color-border)] bg-[var(--color-background-main)] text-xs cursor-pointer">
-                              <input type="checkbox" class="rounded"
-                                [checked]="isFileLinkedToWeaponUnit(unit, fi)"
-                                (change)="toggleWeaponUnitFile(unit, fi)"
-                                [disabled]="processing">
-                              <span class="truncate max-w-[14rem]">{{ f.name }}</span>
-                            </label>
-                          </div>
                         </div>
                       </div>
                     </div>
@@ -338,7 +332,7 @@
         </div>
       </div>
 
-      <!-- Attachments (optional; uploaded with submit, assigned per line above) -->
+      <!-- Attachments (optional; uploaded on submit to the current approval step) -->
       <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md p-6 border border-[var(--color-border)] mb-6">
         <div class="flex items-start gap-3 mb-4 pb-4 border-b border-[var(--color-border)]">
           <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center flex-shrink-0">
@@ -348,9 +342,6 @@
             <h2 class="text-lg font-semibold text-[var(--color-text)]">
               {{ 'processReturnItems.attachments' | translate }}
             </h2>
-            <p class="text-sm text-[var(--color-text-muted)] mt-1 leading-relaxed">
-              {{ 'processReturnItems.attachmentsHint' | translate }}
-            </p>
           </div>
         </div>
 
@@ -392,6 +383,17 @@
             </button>
           </div>
         </div>
+      </div>
+
+      <!-- Notes (optional; saved on the current approval step when you submit) -->
+      <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md p-6 border border-[var(--color-border)] mb-6">
+        <label for="workflow-step-comments" class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+          {{ 'processReturnItems.notes' | translate }}
+        </label>
+        <textarea id="workflow-step-comments" name="workflowStepComments" rows="4"
+          [(ngModel)]="workflowStepComments" [disabled]="processing"
+          class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-background-main)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] disabled:opacity-50"
+          [placeholder]="'common.optional' | translate"></textarea>
       </div>
 
       <!-- Submit / Cancel Buttons -->

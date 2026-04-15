@@ -32,6 +32,29 @@ export class WorkflowApprovalPermissionsService {
   constructor(private authService: BackendAuthService) { }
 
   /**
+   * Super admin or elevated platform admins (Administrator role, heuristic username/email, or very large permission set).
+   * Same criteria as return-field / pickup-date admin bypasses elsewhere in this service.
+   */
+  isElevatedWorkflowAdmin(): boolean {
+    if (this.authService.isSuperAdmin()) {
+      return true;
+    }
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) {
+      return false;
+    }
+    try {
+      const hasAdministratorRole = this.authService.hasRole('Administrator') || this.authService.hasRole('Admin');
+      const isAdminByUsername = currentUser.userName?.toLowerCase().includes('administrator') ||
+        currentUser.email?.toLowerCase().includes('administrator');
+      const hasAdminLevelPermissions = (currentUser.permissions?.length || 0) >= 200;
+      return hasAdministratorRole || isAdminByUsername || hasAdminLevelPermissions;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Check if user can approve or reject requests.
    * Matches backend GetCurrentApprovalStepByRequestIdAsync: SuperAdmin bypass, else exact approver/role/delegation
    * (exposed as isCurrentUserApprover on the pending history row). No JWT role-name heuristics or permission-count bypass.
@@ -60,7 +83,7 @@ export class WorkflowApprovalPermissionsService {
       }
     }
 
-    if (this.authService.isSuperAdmin()) {
+    if (this.isElevatedWorkflowAdmin()) {
       return true;
     }
 
@@ -712,12 +735,14 @@ export class WorkflowApprovalPermissionsService {
       return false;
     }
 
-    if (this.canProcessReturnItems(requestDetail)) {
-      return true;
+    // Elevated admins keep standalone Approve (and Return for review) even after depot + delivery are set;
+    // only non-admin users with ProcessReturnItems are steered exclusively to the process-return screen.
+    if (this.isElevatedWorkflowAdmin()) {
+      return false;
     }
 
-    if (this.authService.isSuperAdmin()) {
-      return false;
+    if (this.canProcessReturnItems(requestDetail)) {
+      return true;
     }
 
     const pendingStep = requestDetail.approvalHistory?.find(

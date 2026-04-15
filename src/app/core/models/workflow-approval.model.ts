@@ -88,6 +88,8 @@ export interface RequestItem {
   quantity: number;
   unit?: string;
   nsn?: string; // National Stock Number
+  /** 1=Ammunition, 2=Weapon, 3=Explosive — when present, drives return summary column labels. */
+  itemType?: number;
 }
 
 

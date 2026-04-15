@@ -56,6 +56,7 @@ import { WeaponReviewItemsModalComponent } from './components/weapon-review-item
 import { OrderItemTrackingModalComponent } from './components/order-item-tracking-modal/order-item-tracking-modal.component';
 import { WorkflowReturnDepotComponent } from './components/workflow-return-depot/workflow-return-depot.component';
 import { WorkflowReturnDeliveryDateComponent } from './components/workflow-return-delivery-date/workflow-return-delivery-date.component';
+import { WorkflowReturnApprovedSummaryComponent } from './components/workflow-return-approved-summary/workflow-return-approved-summary.component';
 
 @Component({
   selector: 'app-workflow-approval-detail',
@@ -79,7 +80,8 @@ import { WorkflowReturnDeliveryDateComponent } from './components/workflow-retur
     WeaponReviewItemsModalComponent,
     OrderItemTrackingModalComponent,
     WorkflowReturnDepotComponent,
-    WorkflowReturnDeliveryDateComponent
+    WorkflowReturnDeliveryDateComponent,
+    WorkflowReturnApprovedSummaryComponent
   ],
   templateUrl: './workflow-approval-detail.component.html',
   styleUrls: ['./workflow-approval-detail.component.css'],

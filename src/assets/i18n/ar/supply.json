@@ -440,6 +440,7 @@
   },
   "assetStatus": {
     "readyToIssue": "جاهز للصرف",
+    "notReadyToIssue": "غير جاهز للصرف",
     "inMaintenance": "قيد الصيانة",
     "unserviceableRepairable": "غير صالح للصرف (قابل للإصلاح)",
     "unserviceableUnrepairable": "غير صالح للصرف (غير قابل للإصلاح)",

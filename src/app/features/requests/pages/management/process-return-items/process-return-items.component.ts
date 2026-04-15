@@ -5,14 +5,16 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, ArrowLeft, ArrowRight, Package, Trash2, Paperclip, ChevronDown, ChevronRight } from 'lucide-angular';
+import { AssetStatus, ASSET_STATUS_FORM_OPTIONS_ORDER, getAssetStatusLabel as assetStatusLabelKey } from '@models/asset.model';
 import { ReturnService, ProcessReturnItemsDto } from '@services/return.service';
-import { FileUploadService, FileUploadDto, FileEntityType } from '@services/file-upload.service';
+import { FileUploadService, FileUploadDto } from '@services/file-upload.service';
 import { ReturnTrackingLineDto } from '@models/return.model';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { validateFile, showFileValidationErrors, getFileSizeFromFile, MAX_FILE_SIZE_MB } from '@utils/file.utils';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 interface AmmoExplosiveRow {
@@ -26,8 +28,16 @@ interface AmmoExplosiveRow {
   receivedQuantity: number | null;
   lot: string;
   notes: string;
-  /** Indices into {@link attachmentFiles} to upload for this row. */
-  linkedAttachmentIndexes: number[];
+  /** Maps to inventory detail ReadyForIssue; null until the user selects Yes or No. */
+  readyForIssue: boolean | null;
+}
+
+interface WeaponUnit {
+  serialNumber: string;
+  batchNumber: string;
+  notes: string;
+  /** Null until the user selects an asset status. */
+  status: AssetStatus | null;
 }
 
 /** One weapon line on the return: summary fields + one row per received unit. */
@@ -40,7 +50,7 @@ interface WeaponLine {
   receivedQuantity: number | null;
   /** Line-level batch: used as default for newly added unit rows when received qty increases. */
   lineBatch: string;
-  units: { serialNumber: string; batchNumber: string; notes: string; linkedAttachmentIndexes: number[] }[];
+  units: WeaponUnit[];
 }
 
 @Component({
@@ -52,7 +62,8 @@ interface WeaponLine {
     TranslateModule,
     LucideAngularModule,
     LoadingStateComponent,
-    ErrorStateComponent
+    ErrorStateComponent,
+    DropdownComponent
   ],
   templateUrl: './process-return-items.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -76,11 +87,14 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
   error: string | null = null;
   processing = false;
   requestNo = '';
-  /** Localized return depot (backend uses one depot for all ammo lines). */
-  returnDepotDisplayName = '';
+  /** Return destination depot from API; display name resolved with current UI language. */
+  private returnToDepot: any = null;
 
   ammoExplosiveRows: AmmoExplosiveRow[] = [];
   weaponLines: WeaponLine[] = [];
+
+  /** Optional notes saved on the current workflow approval step with submit. */
+  workflowStepComments = '';
 
   /** New files to upload with submit (optional). */
   attachmentFiles: File[] = [];
@@ -88,6 +102,15 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
   trackingLines: ReturnTrackingLineDto[] = [];
 
   MAX_FILE_SIZE_MB = MAX_FILE_SIZE_MB;
+
+  readonly readyForIssueDropdownOptions: DropdownOption<boolean>[] = [
+    { value: true, label: 'processReturnItems.readyForIssueYes' },
+    { value: false, label: 'processReturnItems.readyForIssueNo' }
+  ];
+
+  readonly weaponStatusDropdownOptions: DropdownOption<AssetStatus>[] = ASSET_STATUS_FORM_OPTIONS_ORDER.map(
+    status => ({ value: status, label: assetStatusLabelKey(status) })
+  );
 
   // Raw request items for reference
   requestItems: any[] = [];
@@ -111,7 +134,11 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
   get canSubmit(): boolean {
     const hasAmmoData = this.ammoExplosiveRows.length > 0 &&
       this.ammoExplosiveRows.every(r =>
-        r.itemId && r.receivedQuantity != null && r.receivedQuantity > 0 && r.lot?.trim());
+        r.itemId &&
+        r.receivedQuantity != null &&
+        r.receivedQuantity > 0 &&
+        r.lot?.trim() &&
+        (r.readyForIssue === true || r.readyForIssue === false));
     const hasWeaponData = this.weaponLines.length > 0 &&
       this.weaponLines.every(line =>
         line.itemId &&
@@ -119,7 +146,12 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
         line.receivedQuantity >= 1 &&
         line.receivedQuantity <= line.returnedQuantity &&
         line.units.length === line.receivedQuantity &&
-        line.units.every(u => u.serialNumber?.trim() && u.batchNumber?.trim())
+        line.units.every(u =>
+          u.serialNumber?.trim() &&
+          u.batchNumber?.trim() &&
+          u.status != null &&
+          (ASSET_STATUS_FORM_OPTIONS_ORDER as readonly AssetStatus[]).includes(u.status)
+        )
       );
     return hasAmmoData || hasWeaponData;
   }
@@ -136,6 +168,10 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.translateService.onLangChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.cdr.markForCheck());
+
     const id = parseInt(this.route.snapshot.params['id'], 10);
     if (isNaN(id)) {
       this.error = 'Invalid request ID';
@@ -158,7 +194,7 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
         next: (returnData: any) => {
           this.requestNo = returnData.requestNo || '';
           this.requestItems = returnData.requestItems || [];
-          this.returnDepotDisplayName = this.resolveReturnDepotName(returnData);
+          this.returnToDepot = returnData?.returnToDepot ?? null;
           this.initializeRows();
           this.loading = false;
           this.cdr.markForCheck();
@@ -214,53 +250,7 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
   }
 
   removeAttachmentAt(index: number): void {
-    this.reindexLinkedAttachmentIndexes(index);
     this.attachmentFiles.splice(index, 1);
-    this.cdr.markForCheck();
-  }
-
-  private reindexLinkedAttachmentIndexes(removedIndex: number): void {
-    for (const r of this.ammoExplosiveRows) {
-      r.linkedAttachmentIndexes = r.linkedAttachmentIndexes
-        .filter(i => i !== removedIndex)
-        .map(i => (i > removedIndex ? i - 1 : i));
-    }
-    for (const line of this.weaponLines) {
-      for (const u of line.units) {
-        u.linkedAttachmentIndexes = u.linkedAttachmentIndexes
-          .filter(i => i !== removedIndex)
-          .map(i => (i > removedIndex ? i - 1 : i));
-      }
-    }
-  }
-
-  isFileLinkedToAmmoRow(row: AmmoExplosiveRow, fileIndex: number): boolean {
-    return row.linkedAttachmentIndexes.includes(fileIndex);
-  }
-
-  toggleAmmoRowFile(row: AmmoExplosiveRow, fileIndex: number): void {
-    const set = new Set(row.linkedAttachmentIndexes);
-    if (set.has(fileIndex)) {
-      set.delete(fileIndex);
-    } else {
-      set.add(fileIndex);
-    }
-    row.linkedAttachmentIndexes = Array.from(set).sort((a, b) => a - b);
-    this.cdr.markForCheck();
-  }
-
-  isFileLinkedToWeaponUnit(unit: { linkedAttachmentIndexes: number[] }, fileIndex: number): boolean {
-    return unit.linkedAttachmentIndexes.includes(fileIndex);
-  }
-
-  toggleWeaponUnitFile(unit: { linkedAttachmentIndexes: number[] }, fileIndex: number): void {
-    const set = new Set(unit.linkedAttachmentIndexes);
-    if (set.has(fileIndex)) {
-      set.delete(fileIndex);
-    } else {
-      set.add(fileIndex);
-    }
-    unit.linkedAttachmentIndexes = Array.from(set).sort((a, b) => a - b);
     this.cdr.markForCheck();
   }
 
@@ -272,8 +262,9 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
     return this.fileUploadService.getFileDownloadUrl(file.id);
   }
 
-  private resolveReturnDepotName(returnData: any): string {
-    const depot = returnData?.returnToDepot;
+  /** Recomputed when language changes (see onLangChange in ngOnInit). */
+  getReturnDepotDisplayName(): string {
+    const depot = this.returnToDepot;
     if (!depot) return '';
     const lang = getCurrentLang(this.translateService);
     return getLocalizedName(depot, lang) || depot.nameEn || depot.nameAr || depot.code || '';
@@ -302,7 +293,7 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
           receivedQuantity: reqOk ? requested : null,
           lot: '',
           notes: '',
-          linkedAttachmentIndexes: []
+          readyForIssue: null
         });
       } else if (isWeapon) {
         const returned = Math.max(1, Math.floor(Number(item.quantity) || 1));
@@ -335,7 +326,12 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
     const defaultBatch = line.lineBatch ?? '';
 
     while (line.units.length < capped) {
-      line.units.push({ serialNumber: '', batchNumber: defaultBatch, notes: '', linkedAttachmentIndexes: [] });
+      line.units.push({
+        serialNumber: '',
+        batchNumber: defaultBatch,
+        notes: '',
+        status: null
+      });
     }
     if (line.units.length > capped) {
       line.units = line.units.slice(0, capped);
@@ -391,12 +387,18 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
 
     this.processing = true;
 
+    const trimmedStepComments = this.workflowStepComments?.trim();
+
     const dto: ProcessReturnItemsDto = {
       ammoExplosiveItems: this.ammoExplosiveRows
-        .filter(r => r.itemId && r.receivedQuantity != null && r.receivedQuantity > 0 && r.lot?.trim())
+        .filter(r =>
+          r.itemId &&
+          r.receivedQuantity != null &&
+          r.receivedQuantity > 0 &&
+          r.lot?.trim() &&
+          (r.readyForIssue === true || r.readyForIssue === false))
         .map(r => {
           const trimmedNotes = r.notes?.trim();
-          const idx = r.linkedAttachmentIndexes?.length ? [...r.linkedAttachmentIndexes] : undefined;
           return {
             itemId: r.itemId,
             quantity: r.receivedQuantity!,
@@ -404,25 +406,25 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
             lot: r.lot.trim(),
             notes: trimmedNotes || undefined,
             requestItemId: r.requestItemId,
-            attachmentFileIndexes: idx
+            readyForIssue: r.readyForIssue!
           };
         }),
       weaponItems: this.weaponLines.flatMap(line =>
         line.units
-          .filter(u => u.serialNumber?.trim() && u.batchNumber?.trim())
+          .filter(u => u.serialNumber?.trim() && u.batchNumber?.trim() && u.status != null)
           .map(u => {
             const trimmedNotes = u.notes?.trim();
-            const idx = u.linkedAttachmentIndexes?.length ? [...u.linkedAttachmentIndexes] : undefined;
             return {
               itemId: line.itemId,
               serialNumber: u.serialNumber.trim(),
               batchNumber: u.batchNumber.trim(),
+              status: u.status!,
               notes: trimmedNotes || undefined,
-              requestItemId: line.requestItemId,
-              attachmentFileIndexes: idx
+              requestItemId: line.requestItemId
             };
           })
-      )
+      ),
+      ...(trimmedStepComments ? { workflowStepComments: trimmedStepComments } : {})
     };
 
     const filesToSend = this.attachmentFiles.length > 0 ? this.attachmentFiles : undefined;

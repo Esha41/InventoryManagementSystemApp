@@ -19,16 +19,6 @@
             class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer">
           </div>
         </button>
-        <button (click)="onItemTypeChange('Weapon')" [ngClass]="{
-            'bg-[var(--color-brand)] text-white shadow-lg scale-105 active-tab': selectedItemType === 'Weapon',
-            'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': selectedItemType !== 'Weapon'
-          }"
-          class="flex items-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 flex-shrink-0 whitespace-nowrap relative overflow-hidden group">
-          <span class="relative z-10">{{ 'warehouseInventory.tabs.weapon' | translate }}</span>
-          <div *ngIf="selectedItemType === 'Weapon'"
-            class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer">
-          </div>
-        </button>
         <button (click)="onItemTypeChange('Explosive')" [ngClass]="{
             'bg-[var(--color-brand)] text-white shadow-lg scale-105 active-tab': selectedItemType === 'Explosive',
             'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': selectedItemType !== 'Explosive'
@@ -36,6 +26,16 @@
           class="flex items-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 flex-shrink-0 whitespace-nowrap relative overflow-hidden group">
           <span class="relative z-10">{{ 'warehouseInventory.tabs.explosive' | translate }}</span>
           <div *ngIf="selectedItemType === 'Explosive'"
+            class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer">
+          </div>
+        </button>
+        <button (click)="onItemTypeChange('Weapon')" [ngClass]="{
+            'bg-[var(--color-brand)] text-white shadow-lg scale-105 active-tab': selectedItemType === 'Weapon',
+            'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': selectedItemType !== 'Weapon'
+          }"
+          class="flex items-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 flex-shrink-0 whitespace-nowrap relative overflow-hidden group">
+          <span class="relative z-10">{{ 'warehouseInventory.tabs.weapon' | translate }}</span>
+          <div *ngIf="selectedItemType === 'Weapon'"
             class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer">
           </div>
         </button>

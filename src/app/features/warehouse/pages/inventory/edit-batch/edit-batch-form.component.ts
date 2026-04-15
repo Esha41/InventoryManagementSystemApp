@@ -692,6 +692,7 @@ openExistingFile(fileId: number): void {
 
   readonly assetStatuses = [
     { value: 'ReadyToIssue', label: 'assetStatus.readyToIssue' },
+    { value: 'NotReadyToIssue', label: 'assetStatus.notReadyToIssue' },
     { value: 'InMaintenance', label: 'assetStatus.inMaintenance' },
     { value: 'UnserviceableRepairable', label: 'assetStatus.unserviceableRepairable' },
     { value: 'UnserviceableUnrepairable', label: 'assetStatus.unserviceableUnrepairable' },

@@ -162,7 +162,7 @@
       <!-- Approve Button -->
       <div class="flex flex-col flex-1" *ngIf="shouldShowApproveButton()">
         <button (click)="approveRequest()"
-          [disabled]="processing || isProcessingAction || (canSetSupplyPickupDate() && !isPickupDateAlreadySet && !isSuperAdmin) || (canSubmitSupply() && !isSupplySubmitted() && !isSuperAdmin) || (canSelectDepots() && !isDepotSelected() && !isSuperAdmin) || (canSetReturnDepot() && !isReturnDepotSet() && !isSuperAdmin) || (canSetReturnDeliveryDate() && !isReturnDeliveryDateSet() && !isSuperAdmin)"
+          [disabled]="processing || isProcessingAction || (canSetSupplyPickupDate() && !isPickupDateAlreadySet && !isElevatedWorkflowAdmin) || (canSubmitSupply() && !isSupplySubmitted() && !isElevatedWorkflowAdmin) || (canSelectDepots() && !isDepotSelected() && !isElevatedWorkflowAdmin) || (canSetReturnDepot() && !isReturnDepotSet() && !isElevatedWorkflowAdmin) || (canSetReturnDeliveryDate() && !isReturnDeliveryDateSet() && !isElevatedWorkflowAdmin)"
           class="action-btn btn-approve w-full">
           <lucide-angular *ngIf="!processing && !isProcessingAction" [img]="CheckCircle"
             class="h-4 w-4"></lucide-angular>
@@ -172,23 +172,23 @@
             {{ 'common.processing' | translate }}...
           </span>
         </button>
-        <p *ngIf="canSetSupplyPickupDate() && !isPickupDateAlreadySet && !isSuperAdmin"
+        <p *ngIf="canSetSupplyPickupDate() && !isPickupDateAlreadySet && !isElevatedWorkflowAdmin"
           class="text-[10px] text-[var(--color-error)] mt-2 text-center font-semibold uppercase tracking-wider">
           {{ 'workflowApprovalDetail.errors.pickupDateRequired' | translate }}
         </p>
-        <p *ngIf="canSubmitSupply() && !isSupplySubmitted() && !isSuperAdmin"
+        <p *ngIf="canSubmitSupply() && !isSupplySubmitted() && !isElevatedWorkflowAdmin"
           class="text-[10px] text-[var(--color-error)] mt-2 text-center font-semibold uppercase tracking-wider">
           {{ 'workflowApprovalDetail.errors.supplySubmissionRequired' | translate }}
         </p>
-        <p *ngIf="canSelectDepots() && !isDepotSelected() && !isSuperAdmin"
+        <p *ngIf="canSelectDepots() && !isDepotSelected() && !isElevatedWorkflowAdmin"
           class="text-[10px] text-[var(--color-error)] mt-2 text-center font-semibold uppercase tracking-wider">
           {{ 'workflowApprovalDetail.errors.depotSelectionRequired' | translate }}
         </p>
-        <p *ngIf="canSetReturnDepot() && !isReturnDepotSet() && !isSuperAdmin"
+        <p *ngIf="canSetReturnDepot() && !isReturnDepotSet() && !isElevatedWorkflowAdmin"
           class="text-[10px] text-[var(--color-error)] mt-2 text-center font-semibold uppercase tracking-wider">
           {{ 'workflowApprovalDetail.errors.returnDepotRequired' | translate }}
         </p>
-        <p *ngIf="canSetReturnDeliveryDate() && !isReturnDeliveryDateSet() && !isSuperAdmin"
+        <p *ngIf="canSetReturnDeliveryDate() && !isReturnDeliveryDateSet() && !isElevatedWorkflowAdmin"
           class="text-[10px] text-[var(--color-error)] mt-2 text-center font-semibold uppercase tracking-wider">
           {{ 'workflowApprovalDetail.errors.returnDeliveryDateRequired' | translate }}
         </p>

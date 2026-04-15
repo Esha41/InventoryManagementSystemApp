@@ -9,6 +9,7 @@ import { RequestDetail } from '@models/workflow-approval.model';
 import { WorkflowApprovalActionsService } from '../../services/workflow-approval-actions.service';
 import { WorkflowApprovalDataService } from '../../services/workflow-approval-data.service';
 import { WorkflowApprovalStateService } from '../../services/workflow-approval-state.service';
+import { WorkflowApprovalPermissionsService } from '../../services/workflow-approval-permissions.service';
 import { validateFile, showFileValidationErrors, getFileSizeFromFile, MAX_FILE_SIZE_MB } from '@utils/file.utils';
 import { ToastService } from '@services/toast.service';
 import { takeUntil } from 'rxjs/operators';
@@ -104,6 +105,7 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
     private actionsService: WorkflowApprovalActionsService,
     private dataService: WorkflowApprovalDataService,
     private stateService: WorkflowApprovalStateService,
+    private permissionsService: WorkflowApprovalPermissionsService,
     private translateService: TranslateService,
     private toastService: ToastService,
     private cdr: ChangeDetectorRef
@@ -226,7 +228,7 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
     if (this.stateService.shouldHideStandaloneApproveForReturn()) {
       return false;
     }
-    if (this.isSuperAdmin) {
+    if (this.isElevatedWorkflowAdmin) {
       return true;
     }
     return !this.canSubmitSupply() && !this.canReviewWeaponSupply();
@@ -258,6 +260,11 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
 
   get isSuperAdmin(): boolean {
     return this.stateService.getState().isSuperAdmin;
+  }
+
+  /** Super admin or Administrator-style users: bypass approver-only gates and return/supply pre-approve checks. */
+  get isElevatedWorkflowAdmin(): boolean {
+    return this.permissionsService.isElevatedWorkflowAdmin();
   }
 
   /**
@@ -360,8 +367,8 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
     if (this.processing || this.isProcessingAction || !this.requestDetail) return;
 
     // Validate: Pickup date must be set if user has permission
-    // EXCEPTION: Super Admin can bypass this requirement
-    if (!this.isSuperAdmin && this.canSetSupplyPickupDate() && !this.isPickupDateAlreadySet) {
+    // EXCEPTION: Elevated admins can bypass this requirement
+    if (!this.isElevatedWorkflowAdmin && this.canSetSupplyPickupDate() && !this.isPickupDateAlreadySet) {
       this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.pickupDateRequired']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.error(
           translations['workflowApprovalDetail.errors.pickupDateRequired'] || 'Please set the supply pickup date before approving.',
@@ -372,8 +379,8 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
     }
 
     // Validate: Supply must be submitted if user has permission
-    // EXCEPTION: Super Admin can bypass this requirement
-    if (!this.isSuperAdmin && this.canSubmitSupply() && !this.isSupplySubmitted()) {
+    // EXCEPTION: Elevated admins can bypass this requirement
+    if (!this.isElevatedWorkflowAdmin && this.canSubmitSupply() && !this.isSupplySubmitted()) {
       this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.supplySubmissionRequired']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.error(
           translations['workflowApprovalDetail.errors.supplySubmissionRequired'] || 'Please submit the supply information before approving.',
@@ -384,8 +391,8 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
     }
 
     // Validate: Depot must be selected if user has permission
-    // EXCEPTION: Super Admin can bypass this requirement
-    if (!this.isSuperAdmin && this.canSelectDepots() && !this.isDepotSelected()) {
+    // EXCEPTION: Elevated admins can bypass this requirement
+    if (!this.isElevatedWorkflowAdmin && this.canSelectDepots() && !this.isDepotSelected()) {
       this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.depotSelectionRequired']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.error(
           translations['workflowApprovalDetail.errors.depotSelectionRequired'] || 'Please select at least one depot before approving.',
@@ -396,7 +403,7 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
     }
 
     // Validate: Return depot must be set if user has permission
-    if (!this.isSuperAdmin && this.canSetReturnDepot() && !this.isReturnDepotSet()) {
+    if (!this.isElevatedWorkflowAdmin && this.canSetReturnDepot() && !this.isReturnDepotSet()) {
       this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.returnDepotRequired']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.error(
           translations['workflowApprovalDetail.errors.returnDepotRequired'] || 'Please set the return depot before approving.',
@@ -407,7 +414,7 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
     }
 
     // Validate: Return delivery date must be set if user has permission
-    if (!this.isSuperAdmin && this.canSetReturnDeliveryDate() && !this.isReturnDeliveryDateSet()) {
+    if (!this.isElevatedWorkflowAdmin && this.canSetReturnDeliveryDate() && !this.isReturnDeliveryDateSet()) {
       this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.returnDeliveryDateRequired']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.error(
           translations['workflowApprovalDetail.errors.returnDeliveryDateRequired'] || 'Please set the delivery date before approving.',

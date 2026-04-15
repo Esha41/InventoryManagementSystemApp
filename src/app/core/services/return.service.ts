@@ -4,6 +4,7 @@ import { catchError } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { ConfigService } from './config.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
+import { AssetStatus } from '@models/asset.model';
 import { CreateReturnDto, ReturnDto, ReturnTrackingLineDto } from '@models/return.model';
 import { ErrorHandler } from '@utils/error-handler.utils';
 
@@ -220,6 +221,8 @@ export class ReturnService {
 export interface ProcessReturnItemsDto {
   ammoExplosiveItems: ReturnAmmoExplosiveItemDto[];
   weaponItems: ReturnWeaponItemDto[];
+  /** Completion notes (sent as approval comments on the current step). */
+  workflowStepComments?: string;
 }
 
 export interface ReturnAmmoExplosiveItemDto {
@@ -230,16 +233,16 @@ export interface ReturnAmmoExplosiveItemDto {
   lot: string;
   notes?: string;
   requestItemId?: number;
-  /** Indices into the multipart files array for this line. */
-  attachmentFileIndexes?: number[];
+  readyForIssue: boolean;
 }
 
 export interface ReturnWeaponItemDto {
   itemId: number;
   serialNumber: string;
   batchNumber: string;
+  /** Asset status after receipt. */
+  status: AssetStatus;
   notes?: string;
   requestItemId?: number;
-  attachmentFileIndexes?: number[];
 }
 

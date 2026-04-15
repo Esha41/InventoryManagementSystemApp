@@ -37,7 +37,7 @@
 
           <!-- Actions moved to right -->
           <div class="flex items-center gap-3">
-            <button (click)="openOrderHistory()"
+            <button *ngIf="requestDetail.requestType === 'Order'" type="button" (click)="openOrderHistory()"
               class="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-[var(--color-text)] bg-[var(--color-background)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]">
               <lucide-angular [img]="HistoryIcon" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
               {{ 'ORDER_TRACKING.HISTORY' | translate }}
@@ -102,6 +102,13 @@
         [destroy$]="destroy$"
         (deliveryDateSet)="onReturnDeliveryDateSet()">
       </app-workflow-return-delivery-date>
+
+      <app-workflow-return-approved-summary
+        *ngIf="requestDetail?.requestType === 'Return' && requestDetail?.status === 'Approved'"
+        [requestId]="requestId"
+        [requestItems]="requestDetail.requestItems || []"
+        [orderFiles]="orderFiles">
+      </app-workflow-return-approved-summary>
 
       <!-- Receiver Information Section (Submit Supply) -->
       <!-- Hide for weapon orders as submission is handled in weapon supply page -->

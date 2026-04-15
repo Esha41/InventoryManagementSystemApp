@@ -80,6 +80,8 @@ export interface ReturnTrackingLineDto {
     requestId: number;
     depotId: number;
     requestItemId?: number | null;
+    itemName?: string | null;
+    itemNo?: string | null;
     returnedQuantity?: number | null;
     receivedQuantity?: number | null;
     lot?: string | null;
