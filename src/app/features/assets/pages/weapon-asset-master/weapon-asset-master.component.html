@@ -1,0 +1,369 @@
+<div class="page-wrapper">
+  <div class="bg-gradient-to-r from-[var(--color-brand)]/10 via-[var(--color-brand)]/5 to-transparent border-b border-[var(--color-border)]">
+    <div class="page-container py-6">
+      <h1 class="text-3xl font-bold text-[var(--color-text)] mb-1">
+        {{ 'weaponAssetMaster.title' | translate }}
+      </h1>
+      <p class="text-[var(--color-text-muted)]">
+        {{ 'weaponAssetMaster.subtitle' | translate }}
+      </p>
+    </div>
+  </div>
+
+  <div class="page-container space-y-6 py-6">
+    <app-card [shadow]="true">
+      <div class="p-4 sm:p-6 space-y-4">
+        <h2 class="text-base font-semibold text-[var(--color-text)]">
+          {{ 'weaponAssetMaster.filters.heading' | translate }}
+        </h2>
+
+        <div>
+          <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1" for="wam-search">{{
+            'weaponAssetMaster.filters.searchLabel' | translate
+          }}</label>
+          <div class="flex flex-wrap items-end gap-2">
+            <div class="relative flex-1 min-w-[12rem]">
+              <div class="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none">
+                <lucide-angular [img]="Search" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+              </div>
+              <input
+                id="wam-search"
+                type="search"
+                [(ngModel)]="searchInput"
+                (keydown.enter)="applySearch()"
+                [placeholder]="'weaponAssetMaster.filters.searchPlaceholder' | translate"
+                autocomplete="off"
+                class="w-full ps-10 pe-4 py-2.5 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] focus:ring-2 focus:ring-[var(--color-brand)] outline-none text-sm"
+              />
+            </div>
+            <button
+              type="button"
+              (click)="applySearch()"
+              class="shrink-0 px-4 py-2.5 rounded-lg bg-[var(--color-brand)] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+            >
+              {{ 'common.search' | translate }}
+            </button>
+            <div class="flex flex-col gap-0.5 min-w-[10rem] shrink-0">
+              <label class="text-xs font-medium text-[var(--color-text-muted)]" for="wam-filter-depot">{{
+                'weaponAssetMaster.col.depot' | translate
+              }}</label>
+              <select
+                id="wam-filter-depot"
+                [(ngModel)]="selectedDepotId"
+                (ngModelChange)="onDepotChange()"
+                class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] focus:ring-2 focus:ring-[var(--color-brand)] outline-none text-sm"
+              >
+                <option [ngValue]="null">{{ 'weaponAssetMaster.filters.all' | translate }}</option>
+                <option *ngFor="let d of depots" [ngValue]="d.id">{{ depotOptionLabel(d) }}</option>
+              </select>
+            </div>
+            <div class="flex flex-col gap-0.5 min-w-[12rem] shrink-0">
+              <label class="text-xs font-medium text-[var(--color-text-muted)]" for="wam-filter-custody">{{
+                'weaponAssetMaster.filters.custodyLabel' | translate
+              }}</label>
+              <select
+                id="wam-filter-custody"
+                [(ngModel)]="filterCustody"
+                (ngModelChange)="onSelectFilterChange()"
+                class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] focus:ring-2 focus:ring-[var(--color-brand)] outline-none text-sm"
+              >
+                <option ngValue="all">{{ 'weaponAssetMaster.filters.custodyAll' | translate }}</option>
+                <option ngValue="checkout">{{ 'weaponAssetMaster.filters.custodyCheckout' | translate }}</option>
+                <option ngValue="checkin">{{ 'weaponAssetMaster.filters.custodyCheckin' | translate }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'weaponAssetMaster.col.primaryPurpose' | translate }}</label>
+            <select
+              [(ngModel)]="filterPrimaryPurposeId"
+              (ngModelChange)="onSelectFilterChange()"
+              class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] focus:ring-2 focus:ring-[var(--color-brand)] outline-none text-sm"
+            >
+              <option [ngValue]="null">{{ 'weaponAssetMaster.filters.all' | translate }}</option>
+              <option *ngFor="let p of primaryPurposes" [ngValue]="p.id">{{ lookupOptionLabel(p) }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'weaponAssetMaster.col.status' | translate }}</label>
+            <select
+              [(ngModel)]="filterStatus"
+              (ngModelChange)="onSelectFilterChange()"
+              class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] focus:ring-2 focus:ring-[var(--color-brand)] outline-none text-sm"
+            >
+              <option [ngValue]="null">{{ 'weaponAssetMaster.filters.all' | translate }}</option>
+              <option *ngFor="let s of statusFilterOptions" [ngValue]="s.value">{{ s.labelKey | translate }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'weaponAssetMaster.col.supplier' | translate }}</label>
+            <select
+              [(ngModel)]="filterSupplierId"
+              (ngModelChange)="onSelectFilterChange()"
+              class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] focus:ring-2 focus:ring-[var(--color-brand)] outline-none text-sm"
+            >
+              <option [ngValue]="null">{{ 'weaponAssetMaster.filters.all' | translate }}</option>
+              <option *ngFor="let s of suppliers" [ngValue]="s.id">{{ lookupOptionLabel(s) }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'weaponAssetMaster.col.manufacturer' | translate }}</label>
+            <select
+              [(ngModel)]="filterManufacturerId"
+              (ngModelChange)="onSelectFilterChange()"
+              class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] focus:ring-2 focus:ring-[var(--color-brand)] outline-none text-sm"
+            >
+              <option [ngValue]="null">{{ 'weaponAssetMaster.filters.all' | translate }}</option>
+              <option *ngFor="let m of manufacturers" [ngValue]="m.id">{{ lookupOptionLabel(m) }}</option>
+            </select>
+          </div>
+          <div class="flex flex-col gap-0.5">
+            <label class="block text-xs font-medium mb-1 invisible pointer-events-none select-none" aria-hidden="true">.</label>
+            <button
+              type="button"
+              (click)="clearColumnFilters()"
+              class="w-full shrink-0 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-sm font-medium text-[var(--color-brand)] hover:bg-[var(--color-background-hover)] transition-colors"
+            >
+              <lucide-angular [img]="FilterX" class="h-4 w-4 shrink-0 text-[var(--color-brand)]" aria-hidden="true"></lucide-angular>
+              <span>{{ 'weaponAssetMaster.filters.clear' | translate }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </app-card>
+
+    <app-loading-state *ngIf="loading" size="lg" [fullPage]="false"></app-loading-state>
+
+    <app-card *ngIf="hasLoadedOnce" [shadow]="true">
+      <div class="p-4 sm:p-6 border-b border-[var(--color-border)] flex flex-wrap items-center justify-between gap-3">
+        <h2 class="text-lg font-semibold text-[var(--color-text)]">
+          {{ 'weaponAssetMaster.tableTitle' | translate }}
+        </h2>
+        <span *ngIf="refreshing" class="inline-flex items-center gap-1.5 text-xs text-[var(--color-brand)]" aria-live="polite">
+          <span class="inline-block w-3.5 h-3.5 border-2 border-[var(--color-border)] border-t-[var(--color-brand)] rounded-full animate-spin"></span>
+          {{ 'weaponAssetMaster.refreshing' | translate }}
+        </span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-[1240px] text-sm">
+          <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
+            <tr>
+              <th class="w-10 px-3 py-3" scope="col">
+                <span class="sr-only">{{ 'weaponAssetMaster.expandColumn' | translate }}</span>
+              </th>
+              <th
+                class="px-3 py-3 text-start text-xs font-semibold uppercase tracking-wider text-[var(--color-text)] cursor-pointer hover:bg-[var(--color-background-hover)]"
+                (click)="setSort('name')"
+                scope="col"
+              >
+                {{ 'weaponAssetMaster.col.name' | translate }} {{ sortIndicator('name') }}
+              </th>
+              <th
+                class="px-3 py-3 text-start text-xs font-semibold uppercase tracking-wider text-[var(--color-text)] cursor-pointer hover:bg-[var(--color-background-hover)]"
+                (click)="setSort('serial')"
+                scope="col"
+              >
+                {{ 'weaponAssetMaster.col.serial' | translate }} {{ sortIndicator('serial') }}
+              </th>
+              <th class="px-3 py-3 text-start text-xs font-semibold uppercase tracking-wider text-[var(--color-text)]" scope="col">
+                {{ 'weaponAssetMaster.col.custodian' | translate }}
+              </th>
+              <th class="px-3 py-3 text-start text-xs font-semibold uppercase tracking-wider text-[var(--color-text)]" scope="col">
+                {{ 'weaponAssetMaster.col.department' | translate }}
+              </th>
+              <th class="px-3 py-3 text-start text-xs font-semibold uppercase tracking-wider text-[var(--color-text)]" scope="col">
+                {{ 'weaponAssetMaster.col.primaryPurpose' | translate }}
+              </th>
+              <th
+                class="px-3 py-3 text-start text-xs font-semibold uppercase tracking-wider text-[var(--color-text)] cursor-pointer hover:bg-[var(--color-background-hover)]"
+                (click)="setSort('status')"
+                scope="col"
+              >
+                {{ 'weaponAssetMaster.col.status' | translate }} {{ sortIndicator('status') }}
+              </th>
+              <th class="px-3 py-3 text-start text-xs font-semibold uppercase tracking-wider text-[var(--color-text)]" scope="col">
+                {{ 'weaponAssetMaster.col.supplier' | translate }}
+              </th>
+              <th class="px-3 py-3 text-start text-xs font-semibold uppercase tracking-wider text-[var(--color-text)]" scope="col">
+                {{ 'weaponAssetMaster.col.manufacturer' | translate }}
+              </th>
+              <th class="px-3 py-3 text-start text-xs font-semibold uppercase tracking-wider text-[var(--color-text)]" scope="col">
+                {{ 'weaponAssetMaster.col.createdDepot' | translate }}
+              </th>
+              <th class="px-3 py-3 text-start text-xs font-semibold uppercase tracking-wider text-[var(--color-text)]" scope="col">
+                {{ 'weaponAssetMaster.col.creationDate' | translate }}
+              </th>
+              <th class="px-3 py-3 text-start text-xs font-semibold uppercase tracking-wider text-[var(--color-text)]" scope="col">
+                {{ 'weaponAssetMaster.col.notes' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[var(--color-border)]">
+            <tr *ngIf="items.length === 0">
+              <td colspan="12" class="px-6 py-12 text-center text-[var(--color-text-muted)]">
+                {{ hasActiveFilters() ? ('weaponAssetMaster.noResults' | translate) : ('weaponAssetMaster.noItems' | translate) }}
+              </td>
+            </tr>
+            <ng-container *ngFor="let asset of items; trackBy: trackById">
+              <tr class="hover:bg-[var(--color-background-muted)] transition-colors">
+                <td class="px-3 py-3 align-top">
+                  <button
+                    type="button"
+                    class="p-1 rounded hover:bg-[var(--color-background-hover)]"
+                    (click)="toggleExpand(asset.id, $event)"
+                    [attr.aria-expanded]="isExpanded(asset.id)"
+                  >
+                    <lucide-angular [img]="getExpandIcon(isExpanded(asset.id))" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+                  </button>
+                </td>
+                <td class="px-3 py-3 align-top max-w-[14rem]">
+                  <a
+                    *ngIf="asset.itemId"
+                    [routerLink]="['/asset-list', asset.itemId]"
+                    [queryParams]="{ tab: 'weapon', returnTo: '/weapon-asset-master' }"
+                    class="font-medium text-[var(--color-brand)] hover:underline truncate block"
+                    [title]="itemName(asset)"
+                    (click)="$event.stopPropagation()"
+                  >
+                    {{ itemName(asset) }}
+                  </a>
+                  <span *ngIf="!asset.itemId" class="font-medium text-[var(--color-text)] truncate block" [title]="itemName(asset)">
+                    {{ itemName(asset) }}
+                  </span>
+                </td>
+                <td class="px-3 py-3 align-top font-mono text-[var(--color-text)]">{{ asset.serialNumber || '—' }}</td>
+                <td class="px-3 py-3 align-top max-w-[10rem] truncate" [title]="custodianName(asset)">{{ custodianName(asset) }}</td>
+                <td class="px-3 py-3 align-top max-w-[10rem] truncate" [title]="departmentName(asset)">{{ departmentName(asset) }}</td>
+                <td class="px-3 py-3 align-top max-w-[8rem] truncate" [title]="primaryPurposeName(asset)">{{ primaryPurposeName(asset) }}</td>
+                <td class="px-3 py-3 align-top">{{ statusLabel(asset) }}</td>
+                <td class="px-3 py-3 align-top max-w-[8rem] truncate" [title]="supplierName(asset)">{{ supplierName(asset) }}</td>
+                <td class="px-3 py-3 align-top max-w-[8rem] truncate" [title]="manufacturerName(asset)">{{ manufacturerName(asset) }}</td>
+                <td class="px-3 py-3 align-top max-w-[10rem] truncate" [title]="depotName(asset)">{{ depotName(asset) }}</td>
+                <td class="px-3 py-3 align-top whitespace-nowrap text-[var(--color-text-secondary)]">
+                  <ng-container *ngIf="asset.creationDate; else noCreatedDate">{{ asset.creationDate | appDate: 'military' }}</ng-container>
+                  <ng-template #noCreatedDate>—</ng-template>
+                </td>
+                <td class="px-3 py-3 align-top max-w-[12rem] truncate text-[var(--color-text-secondary)]" [title]="asset.notes || ''">
+                  {{ asset.notes || '—' }}
+                </td>
+              </tr>
+              <tr *ngIf="isExpanded(asset.id)" class="bg-[var(--color-background-muted)]/60">
+                <td colspan="12" class="p-4 ps-12">
+                  <div class="bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] p-4 shadow-sm">
+                    <div class="flex items-center gap-2 mb-4 text-[var(--color-brand)]">
+                      <lucide-angular [img]="History" class="h-5 w-5"></lucide-angular>
+                      <h3 class="font-semibold text-[var(--color-text)]">{{ 'weaponAssetMaster.historyTitle' | translate }}</h3>
+                    </div>
+
+                    <div *ngIf="isLoadingHistory(asset.id)" class="flex justify-center py-6">
+                      <div class="spinner"></div>
+                    </div>
+
+                    <div *ngIf="!isLoadingHistory(asset.id) && !hasExpandedHistoryContent(asset)" class="text-center py-4 text-[var(--color-text-muted)]">
+                      {{ 'weaponAssetMaster.noHistory' | translate }}
+                    </div>
+
+                    <div *ngIf="!isLoadingHistory(asset.id) && hasExpandedHistoryContent(asset)" class="relative">
+                      <div class="absolute start-4 top-0 bottom-0 w-0.5 bg-[var(--color-border)]"></div>
+                      <div class="space-y-6">
+                        <div *ngIf="getAssignmentHistoryEntries(asset.id).length" class="space-y-6">
+                          <h4 class="text-sm font-semibold text-[var(--color-text)] ps-10 border-b border-[var(--color-border)] pb-2">
+                            {{ 'weaponAssetMaster.assignmentDetailsSection' | translate }}
+                          </h4>
+                          <div *ngFor="let entry of getAssignmentHistoryEntries(asset.id); trackBy: trackById" class="relative ps-10">
+                            <div
+                              class="absolute start-[11px] top-1.5 w-3 h-3 rounded-full bg-[var(--color-brand)] ring-4 ring-[var(--color-background)]"
+                            ></div>
+                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1">
+                              <span class="font-medium text-[var(--color-text)]">{{
+                                entry.description?.trim() ? entry.description : entry.actionTypeName
+                              }}</span>
+                              <span class="text-xs text-[var(--color-text-muted)]">{{ entry.actionDate | appDate: 'military' }}</span>
+                            </div>
+
+                            <div *ngIf="hasAssignmentLocationFields(entry)" class="mt-2 space-y-1">
+                              <div *ngIf="entry.previousCustodianName || entry.newCustodianName || entry.previousDepartmentName || entry.newDepartmentName" class="text-xs flex flex-wrap gap-2">
+                                <span *ngIf="entry.previousCustodianName || entry.previousDepartmentName" class="text-[var(--color-text-muted)]">
+                                  {{ entry.previousCustodianName || '—' }} / {{ entry.previousDepartmentName || '—' }}
+                                </span>
+                                <span *ngIf="(entry.previousCustodianName || entry.previousDepartmentName) && (entry.newCustodianName || entry.newDepartmentName)" class="text-[var(--color-text-muted)]">→</span>
+                                <span *ngIf="entry.newCustodianName" class="inline-flex items-center gap-1 bg-blue-50 dark:bg-blue-950/30 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded border border-blue-100 dark:border-blue-900">
+                                  <lucide-angular [img]="User" class="h-3 w-3"></lucide-angular>
+                                  {{ entry.newCustodianName }}
+                                </span>
+                                <span *ngIf="entry.newDepartmentName" class="inline-flex items-center gap-1 bg-purple-50 dark:bg-purple-950/30 text-purple-800 dark:text-purple-200 px-2 py-0.5 rounded border border-purple-100 dark:border-purple-900">
+                                  <lucide-angular [img]="Building" class="h-3 w-3"></lucide-angular>
+                                  {{ entry.newDepartmentName }}
+                                </span>
+                              </div>
+                              <div *ngIf="entry.previousLocation || entry.newLocation" class="text-xs text-[var(--color-text-muted)]">
+                                <span *ngIf="entry.previousLocation">{{ entry.previousLocation }}</span>
+                                <span *ngIf="entry.previousLocation && entry.newLocation"> → </span>
+                                <span *ngIf="entry.newLocation" class="text-[var(--color-text)]">{{ entry.newLocation }}</span>
+                              </div>
+                            </div>
+
+                            <div
+                              *ngIf="!hasAssignmentLocationFields(entry) && (entry.previousStatusName || entry.newStatusName)"
+                              class="mt-2 text-xs flex flex-wrap items-center gap-2 text-[var(--color-text-muted)] bg-[var(--color-background-muted)] px-2 py-1 rounded w-fit"
+                            >
+                              <span *ngIf="entry.previousStatusName">{{ entry.previousStatusName }}</span>
+                              <lucide-angular [img]="ArrowRight" class="h-3 w-3 shrink-0"></lucide-angular>
+                              <span *ngIf="entry.newStatusName" class="font-medium text-[var(--color-text)]">{{ entry.newStatusName }}</span>
+                            </div>
+
+                            <div *ngIf="entry.orderRequestNo" class="mt-1 text-xs text-[var(--color-text-muted)]">
+                              {{ 'weaponAssetMaster.orderRef' | translate }}: {{ entry.orderRequestNo }}
+                            </div>
+
+                            <div *ngIf="entry.notes" class="mt-1 text-xs text-[var(--color-text-muted)] italic">"{{ entry.notes }}"</div>
+
+                            <div class="mt-1 text-xs text-[var(--color-text-muted)]">
+                              {{ 'weaponAssetMaster.byUser' | translate }}: {{ entry.performedByUserName || ('weaponAssetMaster.system' | translate) }}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination footer (aligned with asset list / warehouse inventory) -->
+      <div
+        *ngIf="hasLoadedOnce && !loading"
+        class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 sm:px-6 py-4"
+      >
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-start sm:justify-between gap-4">
+          <div class="flex flex-wrap items-center gap-4 text-sm text-[var(--color-text-muted)]">
+            <span>
+              {{ 'weaponAssetMaster.total' | translate }}:
+              <strong class="text-[var(--color-text)]">{{ totalCount }}</strong>
+            </span>
+            <app-rows-per-page
+              [rowsPerPage]="rowsPerPage"
+              [totalItems]="totalCount"
+              [visibleItems]="items.length"
+              (rowsPerPageChange)="onRowsPerPageChange($event)"
+            ></app-rows-per-page>
+          </div>
+
+          <div *ngIf="totalPages > 1" class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)"></app-pagination>
+            <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+              {{ currentPage }} {{ 'common.of' | translate }} {{ totalPages }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </app-card>
+  </div>
+</div>
