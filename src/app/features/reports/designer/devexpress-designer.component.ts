@@ -44,18 +44,7 @@ export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit 
     private configService: ConfigService
   ) {
     const apiUrl = this.configService.apiUrl;
-    const normalizedApiUrl = apiUrl.trim().replace(/\/+$/, '');
-    const isRelativeApi = normalizedApiUrl.startsWith('/');
-
-    if (isRelativeApi) {
-      // When apiUrl is relative (e.g. "/api"), route DevExpress through the same proxy prefix.
-      this.host = window.location.origin;
-      this.getDesignerModelAction = `${normalizedApiUrl}/DXXRD/GetDesignerModel`;
-    } else {
-      // Absolute apiUrl -> keep the existing backend-host + root DevExpress endpoint behavior.
-      this.host = normalizedApiUrl.replace(/\/api$/i, '');
-      this.getDesignerModelAction = '/DXXRD/GetDesignerModel';
-    }
+    this.host = apiUrl.replace('/api', '');
   }
 
   ngOnInit(): void {
