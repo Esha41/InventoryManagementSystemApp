@@ -4,7 +4,7 @@ import { catchError } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { ConfigService } from './config.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { CreateReturnDto, ReturnDto } from '@models/return.model';
+import { CreateReturnDto, ReturnDto, ReturnTrackingLineDto } from '@models/return.model';
 import { ErrorHandler } from '@utils/error-handler.utils';
 
 /**
@@ -167,9 +167,24 @@ export class ReturnService {
   }
 
   /**
+   * Return tracking lines for a return (empty until items have been processed).
+   */
+  getReturnTrackingLines(returnId: number): Observable<ReturnTrackingLineDto[]> {
+    this.configService.log(`Fetching return tracking lines for return ${returnId}`);
+    return this.apiService.get<ReturnTrackingLineDto[]>(API_ENDPOINTS.RETURNS.TRACKING_LINES(returnId)).pipe(
+      catchError(error => {
+        this.configService.logError('Failed to fetch return tracking lines', error);
+        const msg = ErrorHandler.extractErrorMessage(error, 'Failed to fetch return tracking lines');
+        return throwError(() => new Error(msg));
+      })
+    );
+  }
+
+  /**
    * Process return items (ammo/explosive and weapon) and approve the return.
    * With files: sends multipart/form-data (field `payload` = JSON, `files` = files). Without files: JSON body.
    */
+
   processReturnItems(returnId: number, dto: ProcessReturnItemsDto, files?: File[]): Observable<boolean> {
     this.configService.log(`Processing return items for return ${returnId}`, dto);
 
@@ -210,12 +225,21 @@ export interface ProcessReturnItemsDto {
 export interface ReturnAmmoExplosiveItemDto {
   itemId: number;
   quantity: number;
+  /** Snapshot for audit; omit to default to quantity on the server. */
+  returnedQuantity?: number;
   lot: string;
+  notes?: string;
+  requestItemId?: number;
+  /** Indices into the multipart files array for this line. */
+  attachmentFileIndexes?: number[];
 }
 
 export interface ReturnWeaponItemDto {
   itemId: number;
   serialNumber: string;
   batchNumber: string;
+  notes?: string;
+  requestItemId?: number;
+  attachmentFileIndexes?: number[];
 }
 

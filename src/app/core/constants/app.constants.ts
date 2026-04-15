@@ -109,6 +109,7 @@ export const API_ENDPOINTS = {
     SET_DEPOT: (id: number) => `/Return/${id}/set-depot`,
     SET_DELIVERY_DATE: (id: number) => `/Return/${id}/set-delivery-date`,
     PROCESS_ITEMS: (id: number) => `/Return/${id}/process-items`,
+    TRACKING_LINES: (id: number) => `/Return/${id}/tracking-lines`,
   },
 
   // Discard Requests

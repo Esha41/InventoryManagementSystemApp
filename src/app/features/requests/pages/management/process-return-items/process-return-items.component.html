@@ -39,22 +39,25 @@
         </div>
 
         <div class="overflow-x-auto -mx-1 px-1">
-          <div class="min-w-[920px] space-y-3">
+          <div class="min-w-[1040px] space-y-3">
           <!-- Table Header -->
-          <div class="hidden lg:grid lg:grid-cols-11 gap-2 gap-y-3 px-2">
+          <div class="hidden lg:grid lg:grid-cols-12 gap-2 gap-y-3 px-2">
             <div class="lg:col-span-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
               {{ 'processReturnItems.item' | translate }}
             </div>
-            <div class="lg:col-span-2 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+            <div class="lg:col-span-1 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
               {{ 'processReturnItems.returnedQuantity' | translate }}
             </div>
-            <div class="lg:col-span-2 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+            <div class="lg:col-span-1 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
               {{ 'processReturnItems.receivedQuantity' | translate }}
               <span class="text-[var(--color-error)] ms-0.5" aria-hidden="true">*</span>
             </div>
             <div class="lg:col-span-2 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
               {{ 'processReturnItems.lot' | translate }}
               <span class="text-[var(--color-error)] ms-0.5" aria-hidden="true">*</span>
+            </div>
+            <div class="lg:col-span-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
+              {{ 'processReturnItems.notes' | translate }}
             </div>
             <div class="lg:col-span-2 text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
               {{ 'processReturnItems.depotColumn' | translate }}
@@ -63,7 +66,8 @@
 
           <!-- Ammo/Explosive Rows -->
           <div *ngFor="let row of ammoExplosiveRows; let i = index"
-            class="grid grid-cols-1 lg:grid-cols-11 gap-2 gap-y-3 p-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-background-main)]">
+            class="p-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-background-main)] space-y-3">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-2 gap-y-3">
             <!-- Item Name (read-only) -->
             <div class="lg:col-span-3">
               <label class="lg:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">{{ 'processReturnItems.item' | translate }}</label>
@@ -72,14 +76,14 @@
               </div>
             </div>
             <!-- Requested qty (read-only) -->
-            <div class="lg:col-span-2">
+            <div class="lg:col-span-1">
               <label class="lg:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">{{ 'processReturnItems.returnedQuantity' | translate }}</label>
               <div class="px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background-active)] text-sm text-[var(--color-text)] min-h-[38px] flex items-center tabular-nums">
                 {{ row.returnedQuantity != null ? row.returnedQuantity : '—' }}
               </div>
             </div>
             <!-- Received qty -->
-            <div class="lg:col-span-2">
+            <div class="lg:col-span-1">
               <label class="lg:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">
                 {{ 'processReturnItems.receivedQuantity' | translate }}
                 <span class="text-[var(--color-error)]" aria-hidden="true">*</span>
@@ -98,11 +102,32 @@
                 class="w-full px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50"
                 [placeholder]="'processReturnItems.enterLot' | translate">
             </div>
+            <!-- Notes (same row as other columns on lg+) -->
+            <div class="lg:col-span-3">
+              <label class="lg:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">{{ 'processReturnItems.notes' | translate }}</label>
+              <input type="text" [(ngModel)]="row.notes" [disabled]="processing"
+                class="w-full px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 min-h-[38px]"
+                [placeholder]="'processReturnItems.notesPlaceholder' | translate">
+            </div>
             <!-- Depot (same for all rows; from return) -->
             <div class="lg:col-span-2">
               <label class="lg:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">{{ 'processReturnItems.depotColumn' | translate }}</label>
               <div class="px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background-active)] text-sm text-[var(--color-text)] min-h-[38px] flex items-center">
                 {{ returnDepotDisplayName || ('processReturnItems.depotNotSet' | translate) }}
+              </div>
+            </div>
+            </div>
+            <div *ngIf="attachmentFiles.length > 0" class="border-t border-[var(--color-border)] pt-3 space-y-2">
+              <p class="text-xs text-[var(--color-text-muted)]">{{ 'processReturnItems.lineAttachmentsHint' | translate }}</p>
+              <div class="flex flex-wrap gap-2">
+                <label *ngFor="let f of attachmentFiles; let fi = index"
+                  class="inline-flex items-center gap-2 px-2 py-1 rounded border border-[var(--color-border)] bg-[var(--color-background)] text-xs cursor-pointer">
+                  <input type="checkbox" class="rounded"
+                    [checked]="isFileLinkedToAmmoRow(row, fi)"
+                    (change)="toggleAmmoRowFile(row, fi)"
+                    [disabled]="processing">
+                  <span class="truncate max-w-[14rem]">{{ f.name }}</span>
+                </label>
               </div>
             </div>
           </div>
@@ -201,13 +226,16 @@
                     <div *ngIf="line.units.length > 0" class="space-y-2">
                       <div class="hidden sm:grid sm:grid-cols-12 gap-2 px-1 pb-1">
                         <div class="sm:col-span-1 text-xs font-semibold text-[var(--color-text-muted)] uppercase text-center">#</div>
-                        <div class="sm:col-span-5 text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                        <div class="sm:col-span-4 text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                           {{ 'processReturnItems.serialNumber' | translate }}
                           <span class="text-[var(--color-error)] ms-0.5" aria-hidden="true">*</span>
                         </div>
-                        <div class="sm:col-span-6 text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                        <div class="sm:col-span-3 text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                           {{ 'processReturnItems.batchNumber' | translate }}
                           <span class="text-[var(--color-error)] ms-0.5" aria-hidden="true">*</span>
+                        </div>
+                        <div class="sm:col-span-4 text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                          {{ 'processReturnItems.notes' | translate }}
                         </div>
                       </div>
                       <div *ngFor="let unit of line.units; let ui = index"
@@ -216,21 +244,40 @@
                           <span class="text-xs font-semibold text-[var(--color-text-muted)] sm:hidden me-2">{{ 'processReturnItems.unit' | translate }}</span>
                           <span class="text-sm font-medium text-[var(--color-text)] tabular-nums">{{ ui + 1 }}</span>
                         </div>
-                        <div class="sm:col-span-5">
+                        <div class="sm:col-span-4">
                           <label class="sm:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">
                             {{ 'processReturnItems.serialNumber' | translate }}<span class="text-[var(--color-error)]" aria-hidden="true">*</span>
                           </label>
                           <input type="text" [(ngModel)]="unit.serialNumber" [disabled]="processing" required
-                            class="w-full px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background-main)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50"
+                            class="w-full px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background-main)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 min-h-[38px]"
                             [placeholder]="'processReturnItems.enterSerialNumber' | translate">
                         </div>
-                        <div class="sm:col-span-6">
+                        <div class="sm:col-span-3">
                           <label class="sm:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">
                             {{ 'processReturnItems.batchNumber' | translate }}<span class="text-[var(--color-error)]" aria-hidden="true">*</span>
                           </label>
                           <input type="text" [(ngModel)]="unit.batchNumber" [disabled]="processing" required
-                            class="w-full px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background-main)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50"
+                            class="w-full px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background-main)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 min-h-[38px]"
                             [placeholder]="'processReturnItems.enterBatchNumber' | translate">
+                        </div>
+                        <div class="sm:col-span-4">
+                          <label class="sm:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">{{ 'processReturnItems.notes' | translate }}</label>
+                          <input type="text" [(ngModel)]="unit.notes" [disabled]="processing"
+                            class="w-full px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background-main)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 min-h-[38px]"
+                            [placeholder]="'processReturnItems.notesPlaceholder' | translate">
+                        </div>
+                        <div *ngIf="attachmentFiles.length > 0" class="sm:col-span-12 mt-2 pt-2 border-t border-[var(--color-border)] space-y-2">
+                          <p class="text-xs text-[var(--color-text-muted)]">{{ 'processReturnItems.lineAttachmentsHint' | translate }}</p>
+                          <div class="flex flex-wrap gap-2">
+                            <label *ngFor="let f of attachmentFiles; let fi = index"
+                              class="inline-flex items-center gap-2 px-2 py-1 rounded border border-[var(--color-border)] bg-[var(--color-background-main)] text-xs cursor-pointer">
+                              <input type="checkbox" class="rounded"
+                                [checked]="isFileLinkedToWeaponUnit(unit, fi)"
+                                (change)="toggleWeaponUnitFile(unit, fi)"
+                                [disabled]="processing">
+                              <span class="truncate max-w-[14rem]">{{ f.name }}</span>
+                            </label>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -242,7 +289,56 @@
         </div>
       </div>
 
-      <!-- Attachments (optional; uploaded with submit) -->
+      <!-- Receipt audit (after return was processed) -->
+      <div *ngIf="trackingLines.length > 0" class="bg-[var(--color-background)] rounded-xl shadow-custom-md p-6 border border-[var(--color-border)] mb-6">
+        <h2 class="text-lg font-semibold text-[var(--color-text)] mb-4">
+          {{ 'processReturnItems.receiptAudit' | translate }}
+        </h2>
+        <div class="overflow-x-auto -mx-1 px-1">
+          <table class="w-full min-w-[720px] text-sm border-collapse">
+            <thead>
+              <tr class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)] text-start">
+                <th class="px-3 py-2 text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'processReturnItems.receiptKind' | translate }}</th>
+                <th class="px-3 py-2 text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'processReturnItems.receiptLotSerial' | translate }}</th>
+                <th class="px-3 py-2 text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'processReturnItems.returnedQuantity' | translate }}</th>
+                <th class="px-3 py-2 text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'processReturnItems.receivedQuantity' | translate }}</th>
+                <th class="px-3 py-2 text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'processReturnItems.notes' | translate }}</th>
+                <th class="px-3 py-2 text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'processReturnItems.attachments' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let pl of trackingLines" class="border-b border-[var(--color-border)] align-top">
+                <td class="px-3 py-2 text-[var(--color-text)]">
+                  <span *ngIf="pl.assetId">{{ 'processReturnItems.receiptWeapon' | translate }}</span>
+                  <span *ngIf="pl.inventoryDetailId">{{ 'processReturnItems.receiptAmmo' | translate }}</span>
+                </td>
+                <td class="px-3 py-2 text-[var(--color-text)]">
+                  <span *ngIf="pl.serialNumber" class="block tabular-nums">{{ pl.serialNumber }}</span>
+                  <span *ngIf="pl.batchNumber" class="block text-[var(--color-text-muted)] text-xs">{{ pl.batchNumber }}</span>
+                  <span *ngIf="pl.lot" class="block">{{ pl.lot }}</span>
+                  <span *ngIf="!pl.serialNumber && !pl.batchNumber && !pl.lot">—</span>
+                </td>
+                <td class="px-3 py-2 tabular-nums">{{ pl.returnedQuantity != null ? pl.returnedQuantity : '—' }}</td>
+                <td class="px-3 py-2 tabular-nums">{{ pl.receivedQuantity != null ? pl.receivedQuantity : '—' }}</td>
+                <td class="px-3 py-2 text-[var(--color-text-muted)] max-w-xs whitespace-pre-wrap">{{ pl.notes || '—' }}</td>
+                <td class="px-3 py-2">
+                  <ul class="space-y-1" *ngIf="pl.files?.length">
+                    <li *ngFor="let f of pl.files">
+                      <a [href]="getAttachmentDownloadUrl(f)" target="_blank" rel="noopener noreferrer"
+                        class="text-[var(--color-brand)] hover:underline text-xs break-all">
+                        {{ f.originalName || f.fileName }}
+                      </a>
+                    </li>
+                  </ul>
+                  <span *ngIf="!pl.files?.length" class="text-[var(--color-text-muted)] text-xs">—</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Attachments (optional; uploaded with submit, assigned per line above) -->
       <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md p-6 border border-[var(--color-border)] mb-6">
         <div class="flex items-start gap-3 mb-4 pb-4 border-b border-[var(--color-border)]">
           <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center flex-shrink-0">
@@ -256,22 +352,6 @@
               {{ 'processReturnItems.attachmentsHint' | translate }}
             </p>
           </div>
-        </div>
-
-        <div *ngIf="existingFiles.length > 0" class="mb-4">
-          <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">
-            {{ 'processReturnItems.existingAttachments' | translate }}
-          </p>
-          <ul class="space-y-2">
-            <li *ngFor="let f of existingFiles"
-              class="flex items-center justify-between gap-2 p-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-background-main)]">
-              <span class="text-sm text-[var(--color-text)] truncate">{{ f.originalName || f.fileName }}</span>
-              <a [href]="getAttachmentDownloadUrl(f)" target="_blank" rel="noopener noreferrer"
-                class="text-sm font-medium text-[var(--color-brand)] shrink-0 hover:underline">
-                {{ 'processReturnItems.openFile' | translate }}
-              </a>
-            </li>
-          </ul>
         </div>
 
         <div class="space-y-3">

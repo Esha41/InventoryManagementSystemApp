@@ -7,6 +7,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, ArrowLeft, ArrowRight, Package, Trash2, Paperclip, ChevronDown, ChevronRight } from 'lucide-angular';
 import { ReturnService, ProcessReturnItemsDto } from '@services/return.service';
 import { FileUploadService, FileUploadDto, FileEntityType } from '@services/file-upload.service';
+import { ReturnTrackingLineDto } from '@models/return.model';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
@@ -16,24 +17,30 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 interface AmmoExplosiveRow {
   itemId: number;
+  /** RequestItem.Id when present (sent to backend for traceability). */
+  requestItemId?: number;
   itemName: string;
   /** Quantity in the return request (read-only in UI). */
   returnedQuantity: number | null;
   /** Quantity actually received / posted to inventory (editable). */
   receivedQuantity: number | null;
   lot: string;
+  notes: string;
+  /** Indices into {@link attachmentFiles} to upload for this row. */
+  linkedAttachmentIndexes: number[];
 }
 
 /** One weapon line on the return: summary fields + one row per received unit. */
 interface WeaponLine {
   itemId: number;
+  requestItemId?: number;
   itemName: string;
   returnedQuantity: number;
   /** How many units were actually received (drives number of serial/batch rows). */
   receivedQuantity: number | null;
   /** Line-level batch: used as default for newly added unit rows when received qty increases. */
   lineBatch: string;
-  units: { serialNumber: string; batchNumber: string }[];
+  units: { serialNumber: string; batchNumber: string; notes: string; linkedAttachmentIndexes: number[] }[];
 }
 
 @Component({
@@ -77,8 +84,8 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
 
   /** New files to upload with submit (optional). */
   attachmentFiles: File[] = [];
-  /** Files already linked to this return (same entity as order on create). */
-  existingFiles: FileUploadDto[] = [];
+  /** Tracking lines when this return was already processed (audit). */
+  trackingLines: ReturnTrackingLineDto[] = [];
 
   MAX_FILE_SIZE_MB = MAX_FILE_SIZE_MB;
 
@@ -155,7 +162,7 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
           this.initializeRows();
           this.loading = false;
           this.cdr.markForCheck();
-          this.loadExistingAttachments();
+          this.loadTrackingLines();
         },
         error: (err) => {
           this.error = ErrorHandler.extractErrorMessage(err, 'Failed to load return request');
@@ -165,17 +172,16 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
       });
   }
 
-  /** Return files use Order + entity id (same as create-return flow). */
-  private loadExistingAttachments(): void {
-    this.fileUploadService.getFilesByEntity(FileEntityType.Order, this.requestId)
+  private loadTrackingLines(): void {
+    this.returnService.getReturnTrackingLines(this.requestId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (files) => {
-          this.existingFiles = files ?? [];
+        next: (lines) => {
+          this.trackingLines = lines ?? [];
           this.cdr.markForCheck();
         },
         error: () => {
-          this.existingFiles = [];
+          this.trackingLines = [];
           this.cdr.markForCheck();
         }
       });
@@ -208,7 +214,53 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
   }
 
   removeAttachmentAt(index: number): void {
+    this.reindexLinkedAttachmentIndexes(index);
     this.attachmentFiles.splice(index, 1);
+    this.cdr.markForCheck();
+  }
+
+  private reindexLinkedAttachmentIndexes(removedIndex: number): void {
+    for (const r of this.ammoExplosiveRows) {
+      r.linkedAttachmentIndexes = r.linkedAttachmentIndexes
+        .filter(i => i !== removedIndex)
+        .map(i => (i > removedIndex ? i - 1 : i));
+    }
+    for (const line of this.weaponLines) {
+      for (const u of line.units) {
+        u.linkedAttachmentIndexes = u.linkedAttachmentIndexes
+          .filter(i => i !== removedIndex)
+          .map(i => (i > removedIndex ? i - 1 : i));
+      }
+    }
+  }
+
+  isFileLinkedToAmmoRow(row: AmmoExplosiveRow, fileIndex: number): boolean {
+    return row.linkedAttachmentIndexes.includes(fileIndex);
+  }
+
+  toggleAmmoRowFile(row: AmmoExplosiveRow, fileIndex: number): void {
+    const set = new Set(row.linkedAttachmentIndexes);
+    if (set.has(fileIndex)) {
+      set.delete(fileIndex);
+    } else {
+      set.add(fileIndex);
+    }
+    row.linkedAttachmentIndexes = Array.from(set).sort((a, b) => a - b);
+    this.cdr.markForCheck();
+  }
+
+  isFileLinkedToWeaponUnit(unit: { linkedAttachmentIndexes: number[] }, fileIndex: number): boolean {
+    return unit.linkedAttachmentIndexes.includes(fileIndex);
+  }
+
+  toggleWeaponUnitFile(unit: { linkedAttachmentIndexes: number[] }, fileIndex: number): void {
+    const set = new Set(unit.linkedAttachmentIndexes);
+    if (set.has(fileIndex)) {
+      set.delete(fileIndex);
+    } else {
+      set.add(fileIndex);
+    }
+    unit.linkedAttachmentIndexes = Array.from(set).sort((a, b) => a - b);
     this.cdr.markForCheck();
   }
 
@@ -241,17 +293,23 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
 
       if (isAmmoOrExplosive) {
         const reqOk = requested != null && !isNaN(requested);
+        const ammoRid = item.id != null ? Number(item.id) : NaN;
         this.ammoExplosiveRows.push({
           itemId,
+          requestItemId: Number.isFinite(ammoRid) ? ammoRid : undefined,
           itemName,
           returnedQuantity: reqOk ? requested : null,
           receivedQuantity: reqOk ? requested : null,
-          lot: ''
+          lot: '',
+          notes: '',
+          linkedAttachmentIndexes: []
         });
       } else if (isWeapon) {
         const returned = Math.max(1, Math.floor(Number(item.quantity) || 1));
+        const weaponRid = item.id != null ? Number(item.id) : NaN;
         const line: WeaponLine = {
           itemId,
+          requestItemId: Number.isFinite(weaponRid) ? weaponRid : undefined,
           itemName,
           returnedQuantity: returned,
           receivedQuantity: returned,
@@ -277,7 +335,7 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
     const defaultBatch = line.lineBatch ?? '';
 
     while (line.units.length < capped) {
-      line.units.push({ serialNumber: '', batchNumber: defaultBatch });
+      line.units.push({ serialNumber: '', batchNumber: defaultBatch, notes: '', linkedAttachmentIndexes: [] });
     }
     if (line.units.length > capped) {
       line.units = line.units.slice(0, capped);
@@ -336,19 +394,34 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
     const dto: ProcessReturnItemsDto = {
       ammoExplosiveItems: this.ammoExplosiveRows
         .filter(r => r.itemId && r.receivedQuantity != null && r.receivedQuantity > 0 && r.lot?.trim())
-        .map(r => ({
-          itemId: r.itemId,
-          quantity: r.receivedQuantity!,
-          lot: r.lot.trim()
-        })),
+        .map(r => {
+          const trimmedNotes = r.notes?.trim();
+          const idx = r.linkedAttachmentIndexes?.length ? [...r.linkedAttachmentIndexes] : undefined;
+          return {
+            itemId: r.itemId,
+            quantity: r.receivedQuantity!,
+            returnedQuantity: r.returnedQuantity != null ? r.returnedQuantity : undefined,
+            lot: r.lot.trim(),
+            notes: trimmedNotes || undefined,
+            requestItemId: r.requestItemId,
+            attachmentFileIndexes: idx
+          };
+        }),
       weaponItems: this.weaponLines.flatMap(line =>
         line.units
           .filter(u => u.serialNumber?.trim() && u.batchNumber?.trim())
-          .map(u => ({
-            itemId: line.itemId,
-            serialNumber: u.serialNumber.trim(),
-            batchNumber: u.batchNumber.trim()
-          }))
+          .map(u => {
+            const trimmedNotes = u.notes?.trim();
+            const idx = u.linkedAttachmentIndexes?.length ? [...u.linkedAttachmentIndexes] : undefined;
+            return {
+              itemId: line.itemId,
+              serialNumber: u.serialNumber.trim(),
+              batchNumber: u.batchNumber.trim(),
+              notes: trimmedNotes || undefined,
+              requestItemId: line.requestItemId,
+              attachmentFileIndexes: idx
+            };
+          })
       )
     };
 

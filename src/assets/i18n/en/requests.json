@@ -814,9 +814,17 @@
     "submit": "Submit & complete",
     "success": "Request reviewed and completed successfully.",
     "attachments": "Attachments",
-    "attachmentsHint": "Optional files are uploaded when you submit. They are stored with this return (same as request attachments).",
+    "attachmentsHint": "Add files here, then tick the files that belong to each ammunition line or weapon unit. Files upload on submit and are linked to that receipt line.",
     "existingAttachments": "Already on file",
     "pendingUpload": "Will upload on submit",
-    "openFile": "Open"
+    "openFile": "Open",
+    "notes": "Notes",
+    "notesPlaceholder": "Optional notes for this line",
+    "lineAttachmentsHint": "Link pending files to this line (optional).",
+    "receiptAudit": "Receipt records",
+    "receiptKind": "Type",
+    "receiptLotSerial": "Lot / batch / serial",
+    "receiptWeapon": "Weapon (asset)",
+    "receiptAmmo": "Ammunition / explosive"
   }
 }
