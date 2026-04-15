@@ -215,7 +215,7 @@ export const routes: Routes = [
       },
       {
         path: 'discard-request',
-        loadComponent: () => import('@requests/pages/new-issue/components/discard-request/discard-request.component').then(m => m.DiscardRequestComponent),
+        loadComponent: () => import('@requests/pages/discard/discard-request.component').then(m => m.DiscardRequestComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['discard.page', 'discard.create', 'order.create'] }
       },

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
+import { StorageService } from './storage.service';
 
 export type Language = 'en' | 'ar';
 
@@ -17,7 +18,7 @@ export class TranslationService {
   private readonly DEFAULT_LANGUAGE: Language = 'en';
   private isInitializing: boolean = true;
 
-  constructor(private translate: TranslateService) {
+  constructor(private translate: TranslateService, private storage: StorageService) {
     this.initializeLanguage();
   }
 
@@ -27,7 +28,7 @@ export class TranslationService {
    */
   private initializeLanguage(): void {
     // Get saved language or default to English
-    const savedLang = localStorage.getItem(this.STORAGE_KEY) as Language;
+    const savedLang = this.storage.get<Language>(this.STORAGE_KEY);
     const languageToUse = this.isValidLanguage(savedLang) ? savedLang : this.DEFAULT_LANGUAGE;
 
     // Configure available languages
@@ -62,7 +63,7 @@ export class TranslationService {
 
     this.currentLang = lang;
     this.translate.use(lang);
-    localStorage.setItem(this.STORAGE_KEY, lang);
+    this.storage.set(this.STORAGE_KEY, lang);
     this.updateDirection(lang);
 
 

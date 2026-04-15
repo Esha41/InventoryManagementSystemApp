@@ -1,6 +1,53 @@
 /* Role Permissions Component Styles */
 
-/* Table row hover effects */
+/* Role list: selected row — same inset bar + ring as global tr.action-required-highlight (styles.css) */
+.role-list-row {
+  cursor: pointer;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.role-list-row:hover:not(.role-list-row--selected) {
+  background-color: var(--color-background-muted);
+}
+
+.role-list-row--selected {
+  background-color: color-mix(in srgb, var(--color-brand) 12%, var(--color-background));
+  box-shadow: inset 4px 0 0 0 var(--color-brand),
+    inset 0 0 0 1px color-mix(in srgb, var(--color-brand) 20%, transparent);
+}
+
+.role-list-row--selected:hover {
+  background-color: color-mix(in srgb, var(--color-brand) 18%, var(--color-background));
+}
+
+.role-list-row__badge {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background-color: color-mix(in srgb, var(--color-brand) 14%, transparent);
+  color: var(--color-brand);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.role-list-row__badge--selected {
+  background-color: var(--color-brand);
+  color: var(--color-background);
+}
+
+.role-list-row__badge lucide-angular,
+.role-list-row__badge lucide-icon {
+  color: inherit;
+}
+
+.role-list-row__title--selected {
+  font-weight: 700;
+}
+
+/* Table row hover effects (permissions table, not role list) */
 table tbody tr {
   transition: background-color 0.15s ease;
 }

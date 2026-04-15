@@ -10,55 +10,49 @@
       </h2>
       <!-- Sub-tabs: Available / Deleted (inside card) -->
       <div *ngIf="activeTab === 'ammunition'" class="view-tabs-container">
-        <nav class="view-tabs" role="tablist" aria-label="Ammunition view" [class.flex-row-reverse]="isRTL">
+        <nav class="view-tabs" role="tablist" aria-label="Ammunition view">
           <button role="tab" (click)="onAmmunitionViewModeChange('available')"
             [attr.aria-selected]="ammunitionViewMode === 'available'"
             [class.view-tab-active]="ammunitionViewMode === 'available'"
-            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap"
-            [class.flex-row-reverse]="isRTL">
+            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap">
             <span>{{ 'assetList.ammunition.availableAmmunition' | translate }}</span>
           </button>
           <button role="tab" (click)="onAmmunitionViewModeChange('deleted')"
             [attr.aria-selected]="ammunitionViewMode === 'deleted'"
             [class.view-tab-active]="ammunitionViewMode === 'deleted'"
-            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap"
-            [class.flex-row-reverse]="isRTL">
+            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap">
             <span>{{ 'assetList.ammunition.deletedAmmunition' | translate }}</span>
           </button>
         </nav>
       </div>
       <div *ngIf="activeTab === 'explosive'" class="view-tabs-container">
-        <nav class="view-tabs" role="tablist" aria-label="Explosives view" [class.flex-row-reverse]="isRTL">
+        <nav class="view-tabs" role="tablist" aria-label="Explosives view">
           <button role="tab" (click)="onExplosivesViewModeChange('available')"
             [attr.aria-selected]="explosivesViewMode === 'available'"
             [class.view-tab-active]="explosivesViewMode === 'available'"
-            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap"
-            [class.flex-row-reverse]="isRTL">
+            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap">
             <span>{{ 'assetList.explosives.availableExplosives' | translate }}</span>
           </button>
           <button role="tab" (click)="onExplosivesViewModeChange('deleted')"
             [attr.aria-selected]="explosivesViewMode === 'deleted'"
             [class.view-tab-active]="explosivesViewMode === 'deleted'"
-            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap"
-            [class.flex-row-reverse]="isRTL">
+            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap">
             <span>{{ 'assetList.explosives.deletedExplosives' | translate }}</span>
           </button>
         </nav>
       </div>
       <div *ngIf="activeTab === 'weapon'" class="view-tabs-container">
-        <nav class="view-tabs" role="tablist" aria-label="Weapons view" [class.flex-row-reverse]="isRTL">
+        <nav class="view-tabs" role="tablist" aria-label="Weapons view">
           <button role="tab" (click)="onWeaponsViewModeChange('available')"
             [attr.aria-selected]="weaponsViewMode === 'available'"
             [class.view-tab-active]="weaponsViewMode === 'available'"
-            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap"
-            [class.flex-row-reverse]="isRTL">
+            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap">
             <span>{{ 'assetList.weapons.availableWeapons' | translate }}</span>
           </button>
           <button role="tab" (click)="onWeaponsViewModeChange('deleted')"
             [attr.aria-selected]="weaponsViewMode === 'deleted'"
             [class.view-tab-active]="weaponsViewMode === 'deleted'"
-            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap"
-            [class.flex-row-reverse]="isRTL">
+            class="view-tab flex items-center gap-2 px-4 py-3 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap">
             <span>{{ 'assetList.weapons.deletedWeapons' | translate }}</span>
           </button>
         </nav>

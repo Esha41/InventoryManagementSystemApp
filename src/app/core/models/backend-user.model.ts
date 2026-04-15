@@ -31,6 +31,8 @@ export interface RawRoleApiResponse {
   roleId?: string;
   name?: string;
   roleName?: string;
+  nameEn?: string;
+  nameAr?: string;
   isDefaultRole?: boolean;
   isDefault?: boolean;
   isSuperAdmin?: boolean;

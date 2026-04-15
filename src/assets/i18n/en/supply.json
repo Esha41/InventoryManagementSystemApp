@@ -482,6 +482,8 @@
     "department": "Department",
     "title": "Inventory Summary",
     "subtitle": "Overview of ammunition and weapon inventory",
-    "searchPlaceholder": "Search by item name, number, NSN..."
+    "searchPlaceholder": "Search by item name, number, NSN...",
+    "totalsHint": "Totals include every row matching the current tab and search. The table below is paginated.",
+    "totalItems": "Total items"
   }
 }

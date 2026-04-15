@@ -5,6 +5,7 @@ import { ApiService } from './api.service';
 import { LookupItem, CreateUpdateLookupDto, DepartmentDto, SupplierDto, ManufacturerDto, CountryDto, HccDto, NatureOptionDto } from '@models/lookup.model';
 import { DepotDto } from '@models/depot.model';
 import { APIOperationResponse } from '@models/api-response.model';
+import { PaginatedList, PagedListRequest } from '@models/pagination.model';
 import { ConfigService } from './config.service';
 
 // Export for backward compatibility
@@ -94,6 +95,15 @@ export class LookupService {
   getDepotList(): Observable<DepotDto[]> {
     const endpoint = `${this.baseUrl}/Depot`;
     return this.apiService.get<DepotDto[]>(endpoint);
+  }
+
+  /**
+   * Server-paged depot list (POST /Lookup/Depot/paginated).
+   * Same permission rules as getDepotList; supports optional FilterData (e.g. search).
+   */
+  getDepotsPaginated(request: PagedListRequest): Observable<PaginatedList<DepotDto>> {
+    const endpoint = `${this.baseUrl}/Depot/paginated`;
+    return this.apiService.post<PaginatedList<DepotDto>>(endpoint, request);
   }
 
   getHccs(): Observable<LookupItem[]> {

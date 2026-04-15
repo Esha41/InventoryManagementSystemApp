@@ -139,10 +139,6 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     private onboardingTourService: OnboardingTourService
   ) { }
 
-  get isRTL(): boolean {
-    return this.translationService?.isRTL() ?? false;
-  }
-
   assetForm: AssetForm = this.getInitialForm();
 
   private getInitialForm(): AssetForm {
@@ -201,7 +197,12 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const tab = params['tab'];
       if (tab && (tab === 'ammunition' || tab === 'weapon' || tab === 'explosive')) {
+        if (this.activeTab !== tab) {
+          this.assetForm.typeId = '';
+          this.loadUnitsForTab(tab);
+        }
         this.activeTab = tab;
+        this.cdr.markForCheck();
       }
     });
 
@@ -217,7 +218,10 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     this.activeTab = tab;
     this.formSubmitted = false;
     this.errorMessage = null;
+    // Item type options are per-tab; clear so a weapon type is not left selected on explosive (etc.)
+    this.assetForm.typeId = '';
     this.loadUnitsForTab(tab);
+    this.cdr.markForCheck();
   }
 
   loadUnitsForTab(tab: AssetType): void {

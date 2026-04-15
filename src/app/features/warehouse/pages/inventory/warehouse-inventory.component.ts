@@ -51,6 +51,7 @@ import {
   WAREHOUSE_DEPOT_INVENTORY_IMPORT_PERMISSIONS,
   WAREHOUSE_DEPOT_ASSET_IMPORT_PERMISSIONS
 } from '@core/constants/asset-import-export-permissions';
+import { defaultPageSize } from '@constants/app.constants';
 
 @Component({
   selector: 'app-warehouse-inventory',
@@ -115,7 +116,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
 
   // Pagination
   currentPage = 1;
-  rowsPerPage = 10;
+  rowsPerPage = defaultPageSize;
 
   /** Server-side sort for ammunition / explosives table */
   inventorySortColumn: WarehouseInventoryTableSortColumn = 'itemName';

@@ -8,7 +8,10 @@ const SESSION_STORAGE_KEYS = new Set([
   'auth_token',
   'token_expires_at',
   'current_user',
-  'user_profile_data'
+  'user_profile_data',
+  'sessionExpired',
+  'loginFailedAttempts',
+  'bulkAssetData'
 ]);
 
 /**

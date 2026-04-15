@@ -45,18 +45,19 @@
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-[var(--color-border)]">
-                  <tr *ngFor="let role of paginatedRoles" (click)="onRoleSelect(role)" [class]="'cursor-pointer transition-colors ' + 
-                    (selectedRole?.id === role.id 
-                      ? 'bg-[var(--color-brand)]/10 hover:bg-[var(--color-brand)]/15' 
-                      : 'hover:bg-[var(--color-background-muted)]')">
+                  <tr *ngFor="let role of paginatedRoles" (click)="onRoleSelect(role)"
+                    class="role-list-row"
+                    [class.role-list-row--selected]="selectedRole?.id === role.id"
+                    [attr.aria-selected]="selectedRole?.id === role.id">
                     <td class="px-4 py-3">
                       <div class="flex items-center gap-3">
-                        <div
-                          class="w-8 h-8 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center flex-shrink-0">
-                          <lucide-angular [img]="Badge" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+                        <div class="role-list-row__badge"
+                          [class.role-list-row__badge--selected]="selectedRole?.id === role.id">
+                          <lucide-angular [img]="Badge" class="h-4 w-4"></lucide-angular>
                         </div>
                         <div class="flex-1 min-w-0">
-                          <h4 class="font-semibold text-sm text-[var(--color-text)] break-words">{{
+                          <h4 class="role-list-row__title font-semibold text-sm text-[var(--color-text)] break-words"
+                            [class.role-list-row__title--selected]="selectedRole?.id === role.id">{{
                             getRoleDisplayName(role) }}</h4>
                         </div>
                       </div>

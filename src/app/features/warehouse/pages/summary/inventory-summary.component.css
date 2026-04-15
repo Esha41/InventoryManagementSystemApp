@@ -1,9 +1,43 @@
 /* Inventory Summary - Dark Mode Compatible */
 
+/* Main summary table: horizontal scroll + wrap long text in descriptive columns */
+.inventory-table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .inventory-table {
     border-collapse: separate;
     border-spacing: 0;
-    min-width: 100%;
+    width: 100%;
+    min-width: 52rem;
+    table-layout: auto;
+}
+
+.inventory-table th.inventory-table__cell-text,
+.inventory-table td.inventory-table__cell-text {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+    white-space: normal;
+    max-width: 12rem;
+}
+
+.inventory-table th.inventory-table__cell-text--wide,
+.inventory-table td.inventory-table__cell-text--wide {
+    max-width: 22rem;
+}
+
+.inventory-table th.inventory-table__cell-fit,
+.inventory-table td.inventory-table__cell-fit {
+    white-space: nowrap;
+    width: 3rem;
+    max-width: 3.5rem;
+}
+
+.inventory-table th.inventory-table__cell-num,
+.inventory-table td.inventory-table__cell-num {
+    white-space: nowrap;
 }
 
 .inventory-table th {

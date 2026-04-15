@@ -98,6 +98,66 @@
             </div>
         </app-card>
 
+        <!-- Totals for current tab + search (full filtered set; table is paginated) -->
+        <app-card *ngIf="!loading && !error" [shadow]="true" class="mb-6">
+            <div class="p-4 sm:p-6">
+                <p class="mb-4 text-sm text-[var(--color-text-muted)]">
+                    {{ 'inventorySummary.totalsHint' | translate }}
+                </p>
+                <div *ngIf="filteredItems.length === 0" class="text-center py-8 text-[var(--color-text-muted)] text-sm">
+                    {{ searchTerm ? ('inventorySummary.noResults' | translate) : ('inventorySummary.noItems' | translate)
+                    }}
+                </div>
+                <div *ngIf="filteredItems.length > 0"
+                    class="grid grid-cols-2 gap-3 sm:gap-4"
+                    [ngClass]="activeTab === 'weapon' ? 'lg:grid-cols-2' : 'lg:grid-cols-3'">
+                    <div
+                        class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 py-4 text-center">
+                        <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">{{
+                            'inventorySummary.totalItems' | translate }}</p>
+                        <p class="mt-2 text-2xl sm:text-3xl font-bold text-[var(--color-text)] tabular-nums">{{
+                            summaryItemCount | number }}</p>
+                    </div>
+                    <div *ngIf="activeTab !== 'weapon'"
+                        class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 py-4 text-center">
+                        <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">{{
+                            'inventorySummary.totalLots' | translate }}</p>
+                        <p class="mt-2 text-2xl sm:text-3xl font-bold text-[var(--color-text)] tabular-nums">{{
+                            summaryTotalLots | number }}</p>
+                    </div>
+                    <div
+                        class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 py-4 text-center">
+                        <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">{{
+                            (activeTab === 'weapon' ? 'inventorySummary.totalAssets' : 'inventorySummary.totalQty') |
+                            translate }}</p>
+                        <p class="mt-2 text-2xl sm:text-3xl font-bold text-[var(--color-text)] tabular-nums">{{
+                            summaryTotalQuantity | number }}</p>
+                    </div>
+                    <div *ngIf="activeTab !== 'weapon'"
+                        class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 py-4 text-center">
+                        <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">{{
+                            'inventorySummary.usedQty' | translate }}</p>
+                        <p class="mt-2 text-2xl sm:text-3xl font-bold text-[var(--color-text)] tabular-nums">{{
+                            summaryUsedQuantity | number }}</p>
+                    </div>
+                    <div *ngIf="activeTab !== 'weapon'"
+                        class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 py-4 text-center">
+                        <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">{{
+                            'inventorySummary.reservedQty' | translate }}</p>
+                        <p class="mt-2 text-2xl sm:text-3xl font-bold text-[var(--color-text)] tabular-nums">{{
+                            summaryReservedQuantity | number }}</p>
+                    </div>
+                    <div *ngIf="activeTab !== 'weapon'"
+                        class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 py-4 text-center">
+                        <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">{{
+                            'inventorySummary.remainingQty' | translate }}</p>
+                        <p class="mt-2 text-2xl sm:text-3xl font-bold text-[var(--color-success)] tabular-nums">{{
+                            summaryRemainingQuantity | number }}</p>
+                    </div>
+                </div>
+            </div>
+        </app-card>
+
         <!-- Loading State -->
         <app-loading-state *ngIf="loading" size="lg" [fullPage]="true">
         </app-loading-state>
@@ -325,52 +385,52 @@
             </div>
 
             <!-- Desktop Table View -->
-            <div class="hidden lg:block overflow-x-auto">
+            <div class="hidden lg:block inventory-table-scroll">
                 <table class="w-full inventory-table">
                     <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
                         <tr>
                             <th
-                                class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider w-12">
+                                class="inventory-table__cell-fit px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
                             </th>
                             <th
-                                class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                                class="inventory-table__cell-text inventory-table__cell-text--wide px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
                                 {{ 'inventorySummary.itemName' | translate }}
                             </th>
                             <th
-                                class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                                class="inventory-table__cell-text px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
                                 {{ 'inventorySummary.itemNo' | translate }}
                             </th>
                             <th
-                                class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                                class="inventory-table__cell-text px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
                                 {{ 'inventorySummary.type' | translate }}
                             </th>
                             <th
-                                class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                                class="inventory-table__cell-text px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
                                 {{ 'inventorySummary.nsn' | translate }}
                             </th>
                             <th
-                                class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                                class="inventory-table__cell-text px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
                                 {{ 'inventorySummary.partNo' | translate }}
                             </th>
                             <th
-                                class="px-6 py-3 text-end text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                                class="inventory-table__cell-num px-6 py-3 text-end text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
                                 {{ (activeTab === 'weapon' ? 'inventorySummary.totalAssets' :
                                 'inventorySummary.totalQty') | translate }}
                             </th>
                             <th *ngIf="activeTab !== 'weapon'"
-                                class="px-6 py-3 text-end text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                                class="inventory-table__cell-num px-6 py-3 text-end text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
                                 {{ 'inventorySummary.usedQty' | translate }}
                             </th>
                             <th *ngIf="activeTab !== 'weapon'"
-                                class="px-6 py-3 text-end text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                                class="inventory-table__cell-num px-6 py-3 text-end text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
                                 {{ 'inventorySummary.reservedQty' | translate }}
                             </th>
                             <th *ngIf="activeTab !== 'weapon'"
-                                class="px-6 py-3 text-end text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                                class="inventory-table__cell-num px-6 py-3 text-end text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
                                 {{ 'inventorySummary.remainingQty' | translate }}
                             </th>
                             <th *ngIf="activeTab !== 'weapon'"
-                                class="px-6 py-3 text-center text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                                class="inventory-table__cell-num px-6 py-3 text-center text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
                                 {{ 'inventorySummary.totalLots' | translate }}
                             </th>
                         </tr>
@@ -393,7 +453,7 @@
                             <tr class="accordion-row hover:bg-[var(--color-background-muted)] transition-colors"
                                 [class.expanded]="isExpanded(item.itemId)"
                                 (click)="toggleRow(item.itemId, item.itemType)">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                                <td class="inventory-table__cell-fit px-6 py-4 text-sm text-[var(--color-text)] align-top">
                                     <button
                                         class="expand-btn p-1 rounded hover:bg-[var(--color-background-hover)] transition-colors"
                                         type="button">
@@ -401,42 +461,39 @@
                                         </lucide-icon>
                                     </button>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)]">
+                                <td
+                                    class="inventory-table__cell-text inventory-table__cell-text--wide px-6 py-4 text-sm font-medium text-[var(--color-text)] align-top">
                                     {{ item.itemName }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                                <td class="inventory-table__cell-text px-6 py-4 text-sm text-[var(--color-text)] align-top">
                                     {{ item.itemNo }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                                <td class="inventory-table__cell-text px-6 py-4 text-sm text-[var(--color-text)] align-top">
                                     {{ getItemTypeName(item.itemType) }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+                                <td class="inventory-table__cell-text px-6 py-4 text-sm text-[var(--color-text)] align-top">
                                     {{ item.nsn }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]\">
+                                <td class="inventory-table__cell-text px-6 py-4 text-sm text-[var(--color-text)] align-top">
                                     {{ item.partNo }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
+                                <td class="inventory-table__cell-num px-6 py-4 text-sm text-[var(--color-text)] text-end align-top">
                                     {{ formatNumber(item.totalQuantity) }}
                                 </td>
                                 <td *ngIf="activeTab !== 'weapon'"
-                                    class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
+                                    class="inventory-table__cell-num px-6 py-4 text-sm text-[var(--color-text)] text-end align-top">
                                     {{ formatNumber(item.usedQuantity) }}
                                 </td>
-                                <!-- <td *ngIf="activeTab !== 'weapon'"
-                                    class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
-                                    {{ formatNumber(item.reservedQuantityByOrdersOnProcessing) }}
-                                </td> -->
                                 <td *ngIf="activeTab !== 'weapon'"
-                                    class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
+                                    class="inventory-table__cell-num px-6 py-4 text-sm text-[var(--color-text)] text-end align-top">
                                     {{ formatNumber(item.reservedQuantityByOrdersOnProcessing) }}
                                 </td>
                                 <td *ngIf="activeTab !== 'weapon'"
-                                    class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-success)] text-end">
+                                    class="inventory-table__cell-num px-6 py-4 text-sm font-medium text-[var(--color-success)] text-end align-top">
                                     {{ formatNumber(item.remainingQuantity) }}
                                 </td>
                                 <td *ngIf="activeTab !== 'weapon'"
-                                    class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-center">
+                                    class="inventory-table__cell-num px-6 py-4 text-sm text-[var(--color-text)] text-center align-top">
                                     <span
                                         class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[var(--color-background-active)] text-[var(--color-text)]">
                                         {{ item.totalLots }}

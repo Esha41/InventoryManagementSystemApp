@@ -13,6 +13,7 @@ import { EmployeeService } from '@services/employee.service';
 import { LookupService, LookupItem } from '@services/lookup.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
+import { StorageService } from '@services/storage.service';
 
 // Models
 import { CreateAssetDto, EmployeeDto, CreateBulkAssetsFromTemplateDto } from '@models/asset.model';
@@ -101,7 +102,8 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
         private toastService: ToastService,
         private translateService: TranslateService,
         private translationService: TranslationService,
-        private cdr: ChangeDetectorRef
+        private cdr: ChangeDetectorRef,
+        private storageService: StorageService
     ) { }
 
     get isRTL(): boolean {
@@ -821,7 +823,7 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
     private navigateToBulkEntry(): void {
         const bulkData = this.bulkForm.value;
         // Store bulk data in sessionStorage to pass to next page
-        sessionStorage.setItem('bulkAssetData', JSON.stringify({
+        this.storageService.set('bulkAssetData', {
             warehouseId: this.warehouseId,
             itemId: bulkData.itemId,
             batchNumber: bulkData.batchNumber,
@@ -838,7 +840,7 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
             supplierId: bulkData.supplierId ?? undefined,
             manufacturerId: bulkData.manufacturerId ?? undefined,
             primaryPurposId: bulkData.primaryPurposId ?? undefined
-        }));
+        });
 
         this.router.navigate(['/warehouse', this.warehouseId, 'assets', 'add', 'bulk-entry']);
     }
