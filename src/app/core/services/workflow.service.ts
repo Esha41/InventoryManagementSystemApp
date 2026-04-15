@@ -65,6 +65,7 @@ export class WorkflowService {
       case 'NormalOrder_Weapon': return WorkflowType.NormalOrder_Weapon;
       case 'OrderFromAllowance_Weapon': return WorkflowType.OrderFromAllowance_Weapon;
       case 'NormalOrderForTrainingPurpose_Weapon': return WorkflowType.NormalOrderForTrainingPurpose_Weapon;
+      case 'Return_Weapon': return WorkflowType.Return_Weapon;
       default:
         return 0;
     }
