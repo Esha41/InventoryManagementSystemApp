@@ -1,0 +1,21 @@
+/* Injected terms HTML — wrap long strings; scroll vertically only */
+.prose-terms {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.prose-terms ::ng-deep * {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.prose-terms ::ng-deep p {
+  margin-bottom: 0.65rem;
+}
+
+.prose-terms ::ng-deep ul,
+.prose-terms ::ng-deep ol {
+  padding-inline-start: 1.25rem;
+  margin-bottom: 0.65rem;
+}

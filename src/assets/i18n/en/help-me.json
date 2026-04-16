@@ -1,0 +1,48 @@
+{
+  "helpMe": {
+    "title": "Help Me",
+    "subtitle": "Guidance and contact",
+    "loadError": "We could not load Help Me content. Please try again later.",
+    "attachments": "Attachments",
+    "noContent": "No Help Me content has been published yet. An administrator can add it under Help Me (admin).",
+    "contact": {
+      "title": "Contact us",
+      "hint": "Send a message to the support team.",
+      "filesNote": "File attachments on messages require a backend update. You can still describe your request in the message field.",
+      "name": "Name",
+      "email": "Email",
+      "subject": "Subject (optional)",
+      "message": "Message",
+      "defaultSubject": "Help Me inquiry",
+      "submit": "Send message",
+      "successTitle": "Message sent",
+      "successBody": "Thank you. Your message has been submitted.",
+      "error": "Could not send your message. Please try again."
+    },
+    "terms": {
+      "title": "Terms and conditions",
+      "version": "Version",
+      "accept": "I accept",
+      "acceptError": "Could not record your acceptance. Please try again or contact support."
+    },
+    "admin": {
+      "title": "Help Me (admin)",
+      "subtitle": "Edit the published Help Me landing article and attachments.",
+      "pageTitle": "Page title",
+      "description": "Description (HTML supported)",
+      "published": "Published",
+      "attachments": "Attachments",
+      "pendingUpload": "{{count}} file(s) will upload after save",
+      "saved": "Saved",
+      "created": "Help Me page created",
+      "loadError": "Failed to load Help Me configuration.",
+      "saveError": "Could not save.",
+      "uploadError": "Upload failed.",
+      "fileDeleted": "File removed",
+      "fileDeleteError": "Could not delete file.",
+      "deleteFileTitle": "Remove file",
+      "deleteFileMessage": "Remove this attachment from the Help Me page?",
+      "noPermission": "You do not have permission to create this page."
+    }
+  }
+}

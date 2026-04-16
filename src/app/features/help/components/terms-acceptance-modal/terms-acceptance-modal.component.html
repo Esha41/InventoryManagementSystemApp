@@ -1,0 +1,23 @@
+@if (facade.showModal() && facade.pendingTerms(); as terms) {
+  <div class="pointer-events-auto fixed inset-0 z-[100] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="terms-gate-title">
+    <div class="absolute inset-0 bg-black/45 backdrop-blur-sm"></div>
+    <div class="relative z-[1] flex max-h-[min(92vh,960px)] w-full max-w-5xl flex-col overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-5 pb-6 text-[var(--color-text)] shadow-2xl sm:px-6">
+      <h2 id="terms-gate-title" class="m-0 mb-1 shrink-0 text-xl font-bold text-[var(--color-text)]">{{ 'helpMe.terms.title' | translate }}</h2>
+      <p class="mb-3 shrink-0 text-sm text-[var(--color-text-muted)]">
+        {{ 'helpMe.terms.version' | translate }}: <strong>{{ terms.version }}</strong>
+      </p>
+      <div
+        class="prose-terms mb-4 h-[min(60vh,calc(92vh-220px))] max-h-[720px] shrink-0 overflow-y-auto overflow-x-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-background-soft)] p-4 text-sm leading-relaxed"
+        [innerHTML]="safeContent(terms.content)"></div>
+      <div class="flex justify-end">
+        <button
+          type="button"
+          class="inline-flex min-h-11 items-center justify-center rounded-lg border-0 bg-[var(--color-brand)] px-5 py-2 text-sm font-semibold text-white transition-opacity hover:bg-[var(--color-brand-dark)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand)] disabled:cursor-not-allowed disabled:opacity-55"
+          [disabled]="facade.accepting()"
+          (click)="onAccept()">
+          {{ facade.accepting() ? ('common.pleaseWait' | translate) : ('helpMe.terms.accept' | translate) }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

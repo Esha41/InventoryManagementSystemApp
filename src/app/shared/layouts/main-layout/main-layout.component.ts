@@ -8,11 +8,22 @@ import { AnnouncementBannerComponent } from '@components/announcement-banner/ann
 import { IdleTimeoutModalComponent } from '@components/idle-timeout-modal/idle-timeout-modal.component';
 import { IdleService } from '@services/idle.service';
 import { OnboardingTourService } from '@features/onboarding/services/onboarding-tour.service';
+import { TermsAcceptanceFacade } from '@features/help-me-user/facades/terms-acceptance.facade';
+import { TermsAcceptanceModalComponent } from '@features/help/components/terms-acceptance-modal/terms-acceptance-modal.component';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent, SidebarComponent, FooterComponent, ToastComponent, AnnouncementBannerComponent, IdleTimeoutModalComponent],
+  imports: [
+    RouterOutlet,
+    NavbarComponent,
+    SidebarComponent,
+    FooterComponent,
+    ToastComponent,
+    AnnouncementBannerComponent,
+    IdleTimeoutModalComponent,
+    TermsAcceptanceModalComponent
+  ],
   templateUrl: './main-layout.component.html',
   styleUrls: ['./main-layout.component.css']
 })
@@ -22,7 +33,8 @@ export class MainLayoutComponent implements OnInit, OnDestroy, AfterViewInit {
 
   constructor(
     private idleService: IdleService,
-    private onboardingTourService: OnboardingTourService
+    private onboardingTourService: OnboardingTourService,
+    private termsAcceptance: TermsAcceptanceFacade
   ) {}
 
   ngOnInit(): void {
@@ -30,7 +42,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => this.onboardingTourService.checkAndStartTour(), 500);
+    setTimeout(() => this.termsAcceptance.beginPostLoginFlow(), 500);
   }
 
   ngOnDestroy(): void {

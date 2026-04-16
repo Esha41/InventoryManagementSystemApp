@@ -1,0 +1,127 @@
+<div class="min-h-[200px]">
+  <div class="mb-4 flex justify-end">
+    <button
+      *ngIf="canCreate()"
+      type="button"
+      class="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[var(--color-brand)] px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-[var(--color-brand-dark)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand)]"
+      (click)="openCreateArticle()">
+      <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
+      <span>{{ 'helpCenter.addArticle' | translate }}</span>
+    </button>
+  </div>
+
+  <div *ngIf="loadingArticles()" class="flex flex-col items-center justify-center gap-3 py-8">
+    <div class="h-8 w-8 animate-spin rounded-full border-[3px] border-[var(--color-border)] border-t-[var(--color-brand)]"></div>
+    <p class="text-sm text-[var(--color-text-muted)]">{{ 'common.loading' | translate }}</p>
+  </div>
+
+  <div
+    *ngIf="!loadingArticles() && articles().length === 0"
+    class="rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-background)] px-4 py-10 text-center">
+    <lucide-angular [img]="AlertCircle" class="mx-auto mb-2 h-12 w-12 text-[var(--color-text-muted)]"></lucide-angular>
+    <p class="m-0 text-[var(--color-text-muted)]">{{ 'common.noData' | translate }}</p>
+  </div>
+
+  <div *ngIf="!loadingArticles() && articles().length > 0" class="overflow-x-auto rounded-xl border border-[var(--color-border)] bg-[var(--color-background)]">
+    <table class="w-full border-collapse text-sm">
+      <thead class="bg-[var(--color-background-soft)]">
+        <tr>
+          <th class="border-b border-[var(--color-border)] px-4 py-3 text-start">{{ 'helpCenter.colTitle' | translate }}</th>
+          <th class="border-b border-[var(--color-border)] px-4 py-3 text-start">{{ 'helpCenter.colCategory' | translate }}</th>
+          <th class="border-b border-[var(--color-border)] px-4 py-3 text-start">{{ 'helpCenter.colPublished' | translate }}</th>
+          <th class="border-b border-[var(--color-border)] px-4 py-3 text-end">{{ 'common.actions' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let a of paginatedArticles()">
+          <td class="border-b border-[var(--color-border)] px-4 py-3">
+            <div class="max-w-[280px] overflow-hidden text-ellipsis whitespace-nowrap" [title]="a.title">{{ a.title }}</div>
+          </td>
+          <td class="border-b border-[var(--color-border)] px-4 py-3">{{ a.category || '—' }}</td>
+          <td class="border-b border-[var(--color-border)] px-4 py-3">
+            <span [class]="badgePositive(a.isPublished)">
+              {{ a.isPublished ? ('common.yes' | translate) : ('common.no' | translate) }}
+            </span>
+          </td>
+          <td class="border-b border-[var(--color-border)] px-4 py-3 text-end">
+            <button
+              *ngIf="canEdit()"
+              type="button"
+              class="inline-flex items-center justify-center rounded-md border-0 bg-transparent p-1.5 text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-background-hover)] hover:text-[var(--color-brand)]"
+              (click)="openEditArticle(a)"
+              [title]="'common.edit' | translate">
+              <lucide-angular [img]="Pencil" class="h-4 w-4"></lucide-angular>
+            </button>
+            <button
+              *ngIf="canDelete()"
+              type="button"
+              class="inline-flex items-center justify-center rounded-md border-0 bg-transparent p-1.5 text-[var(--color-text-muted)] transition-colors hover:bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)] hover:text-[var(--color-error)]"
+              (click)="confirmDeleteArticle(a)"
+              [title]="'common.delete' | translate">
+              <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="flex justify-center pt-4" *ngIf="totalPagesFor(articles().length) > 1">
+      <app-pagination
+        [currentPage]="effectiveArticlesPage()"
+        [totalPages]="totalPagesFor(articles().length)"
+        (pageChange)="onArticlesPageChange($event)">
+      </app-pagination>
+    </div>
+  </div>
+</div>
+
+<app-modal
+  [isOpen]="articleModalOpen"
+  [title]="editingArticle ? ('helpCenter.editArticle' | translate) : ('helpCenter.createArticle' | translate)"
+  size="lg"
+  [bodyMaxHeight]="'min(78vh, 720px)'"
+  (closed)="closeArticleModal()">
+  <form [formGroup]="articleForm" class="space-y-4">
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-[var(--color-text)]">{{ 'helpCenter.colTitle' | translate }}</label>
+      <input
+        type="text"
+        class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm text-[var(--color-text)]"
+        formControlName="title" />
+    </div>
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-[var(--color-text)]">{{ 'helpCenter.colCategory' | translate }}</label>
+      <input
+        type="text"
+        class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm text-[var(--color-text)]"
+        formControlName="category" />
+    </div>
+    <label class="flex cursor-pointer items-center gap-2 text-sm">
+      <input type="checkbox" formControlName="isPublished" />
+      {{ 'helpCenter.colPublished' | translate }}
+    </label>
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-[var(--color-text)]">{{ 'helpCenter.contentLabel' | translate }}</label>
+      <textarea
+        class="min-h-[100px] w-full resize-y rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 font-inherit text-sm text-[var(--color-text)]"
+        rows="12"
+        formControlName="content"></textarea>
+    </div>
+  </form>
+  <div modal-footer class="flex w-full justify-end gap-3">
+    <app-button variant="outline" (clicked)="closeArticleModal()">{{ 'common.cancel' | translate }}</app-button>
+    <app-button variant="primary" [disabled]="savingArticle" (clicked)="saveArticle()">
+      {{ savingArticle ? ('common.saving' | translate) : ('common.save' | translate) }}
+    </app-button>
+  </div>
+</app-modal>
+
+<app-confirm-dialog
+  [isOpen]="showDeleteArticleDialog"
+  [title]="'common.delete' | translate"
+  [message]="'helpCenter.deleteArticleConfirm' | translate"
+  [confirmText]="'common.delete' | translate"
+  [cancelText]="'common.cancel' | translate"
+  confirmVariant="danger"
+  (confirmed)="onDeleteArticleConfirm()"
+  (cancelled)="onDeleteArticleCancel()">
+</app-confirm-dialog>

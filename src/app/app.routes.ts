@@ -356,6 +356,38 @@ export const routes: Routes = [
         data: { permissions: ['stockNotificationSettingsPage'] }
       },
       {
+        path: 'help',
+        loadComponent: () =>
+          import('@features/help/pages/help-center-user/help-center-user.component').then(
+            m => m.HelpCenterUserComponent
+          )
+      },
+      {
+        path: 'help-me',
+        loadComponent: () =>
+          import('@features/help-me-user/pages/help-me-page/help-me-page.component').then(
+            m => m.HelpMePageComponent
+          )
+      },
+      {
+        path: 'admin/help-me',
+        loadComponent: () =>
+          import('@features/help-me-admin/pages/help-me-admin-page/help-me-admin-page.component').then(
+            m => m.HelpMeAdminPageComponent
+          ),
+        canActivate: [permissionGuard],
+        data: { permissions: ['Permissions.HelpCenter.View'] }
+      },
+      {
+        path: 'admin/help-center',
+        loadComponent: () =>
+          import('@admin/pages/help-center-management/help-center-management.component').then(
+            m => m.HelpCenterManagementComponent
+          ),
+        canActivate: [permissionGuard],
+        data: { permissions: ['helpcenter.page', 'helpcenter.view'] }
+      },
+      {
         path: 'admin/announcements',
         loadComponent: () => import('@admin/pages/announcements/announcements.component').then(m => m.AnnouncementsComponent),
         canActivate: [permissionGuard],

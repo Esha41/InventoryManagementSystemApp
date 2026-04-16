@@ -1,0 +1,103 @@
+<div class="help-me mx-auto max-w-4xl px-4 py-8">
+  <div class="mb-8">
+    <h1 class="text-2xl font-semibold text-[var(--color-text)]">
+      {{ 'helpMe.title' | translate }}
+    </h1>
+    <p class="mt-1 text-sm text-[var(--color-text-muted)]">{{ 'helpMe.subtitle' | translate }}</p>
+  </div>
+
+  @if (state().loading) {
+    <div class="rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] p-8 text-center text-[var(--color-text-muted)]">
+      {{ 'common.loading' | translate }}
+    </div>
+  } @else if (state().error) {
+    <div class="rounded-lg border border-[var(--color-error)]/30 bg-[var(--color-error)]/5 p-4 text-sm text-[var(--color-error)]">
+      {{ state().error | translate }}
+    </div>
+  } @else if (state().article; as article) {
+    <section class="mb-10 rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-6 shadow-sm">
+      <h2 class="text-xl font-semibold text-[var(--color-text)]">{{ article.title }}</h2>
+      <div
+        class="help-me-content mt-4 text-sm leading-relaxed text-[var(--color-text)]"
+        [innerHTML]="safeHtml(article.content)"></div>
+      @if (state().files.length) {
+        <div class="mt-6 border-t border-[var(--color-border)] pt-4">
+          <h3 class="mb-2 text-sm font-medium text-[var(--color-text)]">{{ 'helpMe.attachments' | translate }}</h3>
+          <ul class="flex flex-col gap-2">
+            @for (f of state().files; track f.id) {
+              <li>
+                <a
+                  class="text-sm font-medium text-[var(--color-brand)] underline hover:no-underline"
+                  [href]="fileUrl(f.id)"
+                  target="_blank"
+                  rel="noopener noreferrer">
+                  {{ f.originalName || f.fileName }}
+                </a>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    </section>
+  } @else {
+    <div class="rounded-lg border border-[var(--color-border)] bg-[var(--color-background-muted)] p-6 text-sm text-[var(--color-text-muted)]">
+      {{ 'helpMe.noContent' | translate }}
+    </div>
+  }
+
+  <section class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-6 shadow-sm">
+    <h2 class="text-lg font-semibold text-[var(--color-text)]">{{ 'helpMe.contact.title' | translate }}</h2>
+    <p class="mb-4 text-sm text-[var(--color-text-muted)]">{{ 'helpMe.contact.hint' | translate }}</p>
+    <p class="mb-4 rounded-md bg-[var(--color-background-muted)] p-3 text-xs text-[var(--color-text-muted)]">
+      {{ 'helpMe.contact.filesNote' | translate }}
+    </p>
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
+      <div>
+        <label class="mb-1 block text-sm font-medium text-[var(--color-text)]" for="hm-name">{{ 'helpMe.contact.name' | translate }}</label>
+        <input
+          id="hm-name"
+          class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm text-[var(--color-text)]"
+          type="text"
+          formControlName="senderName"
+          autocomplete="name" />
+      </div>
+      <div>
+        <label class="mb-1 block text-sm font-medium text-[var(--color-text)]" for="hm-email">{{ 'helpMe.contact.email' | translate }}</label>
+        <input
+          id="hm-email"
+          class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm text-[var(--color-text)]"
+          type="email"
+          formControlName="senderEmail"
+          autocomplete="email" />
+      </div>
+      <div>
+        <label class="mb-1 block text-sm font-medium text-[var(--color-text)]" for="hm-subject">{{ 'helpMe.contact.subject' | translate }}</label>
+        <input
+          id="hm-subject"
+          class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm text-[var(--color-text)]"
+          type="text"
+          formControlName="subject" />
+      </div>
+      <div>
+        <label class="mb-1 block text-sm font-medium text-[var(--color-text)]" for="hm-body">{{ 'helpMe.contact.message' | translate }}</label>
+        <textarea
+          id="hm-body"
+          class="min-h-[120px] w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm text-[var(--color-text)]"
+          formControlName="body"
+          rows="5"></textarea>
+      </div>
+      <div class="flex justify-end">
+        <app-button type="submit" variant="primary" [disabled]="submitting()">
+          {{ submitting() ? ('common.pleaseWait' | translate) : ('helpMe.contact.submit' | translate) }}
+        </app-button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<app-modal [isOpen]="successOpen()" [title]="'helpMe.contact.successTitle' | translate" [showCloseButton]="true" [closeOnBackdrop]="true" (closed)="closeSuccess()">
+  <p class="text-sm text-[var(--color-text)]">{{ 'helpMe.contact.successBody' | translate }}</p>
+  <div modal-footer class="flex justify-end">
+    <app-button variant="primary" (clicked)="closeSuccess()">{{ 'common.close' | translate }}</app-button>
+  </div>
+</app-modal>

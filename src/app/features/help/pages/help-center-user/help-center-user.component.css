@@ -1,0 +1,21 @@
+/* Rich text from API — wrap long strings; margins for injected HTML */
+.prose-help {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.prose-help ::ng-deep * {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.prose-help ::ng-deep p {
+  margin-bottom: 0.75rem;
+}
+
+.prose-help ::ng-deep ul,
+.prose-help ::ng-deep ol {
+  padding-inline-start: 1.25rem;
+  margin-bottom: 0.75rem;
+}

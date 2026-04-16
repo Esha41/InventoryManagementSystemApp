@@ -1,0 +1,120 @@
+<div class="min-h-[200px]">
+  <div *ngIf="loadingMessages" class="flex flex-col items-center justify-center gap-3 py-8">
+    <div class="h-8 w-8 animate-spin rounded-full border-[3px] border-[var(--color-border)] border-t-[var(--color-brand)]"></div>
+    <p class="text-sm text-[var(--color-text-muted)]">{{ 'common.loading' | translate }}</p>
+  </div>
+
+  <div
+    *ngIf="!loadingMessages && messages.length === 0"
+    class="rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-background)] px-4 py-10 text-center">
+    <p class="m-0 text-[var(--color-text-muted)]">{{ 'helpCenter.noMessages' | translate }}</p>
+  </div>
+
+  <div *ngIf="!loadingMessages && messages.length > 0" class="overflow-x-auto rounded-xl border border-[var(--color-border)] bg-[var(--color-background)]">
+    <table class="w-full border-collapse text-sm">
+      <thead class="bg-[var(--color-background-soft)]">
+        <tr>
+          <th class="border-b border-[var(--color-border)] px-4 py-3 text-start">{{ 'helpCenter.colFrom' | translate }}</th>
+          <th class="border-b border-[var(--color-border)] px-4 py-3 text-start">{{ 'helpCenter.colSubject' | translate }}</th>
+          <th class="border-b border-[var(--color-border)] px-4 py-3 text-start">{{ 'helpCenter.colDate' | translate }}</th>
+          <th class="border-b border-[var(--color-border)] px-4 py-3 text-start">{{ 'helpCenter.colRead' | translate }}</th>
+          <th class="border-b border-[var(--color-border)] px-4 py-3 text-end">{{ 'common.actions' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let m of paginatedMessages()"
+          class="cursor-pointer border-b border-[var(--color-border)] hover:bg-[var(--color-background-hover)] last:border-b-0"
+          (click)="openMessage(m)">
+          <td class="px-4 py-3">
+            <div class="font-medium">{{ m.senderName }}</div>
+            <div class="text-xs text-[var(--color-text-muted)]">{{ m.senderEmail }}</div>
+          </td>
+          <td class="px-4 py-3">
+            <div class="max-w-[280px] overflow-hidden text-ellipsis whitespace-nowrap" [title]="m.subject">{{ m.subject }}</div>
+          </td>
+          <td class="px-4 py-3">{{ m.creationDate | appDateTime }}</td>
+          <td class="px-4 py-3">
+            <span [class]="badgePositive(m.isRead)">
+              {{ m.isRead ? ('helpCenter.read' | translate) : ('helpCenter.unread' | translate) }}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-end" (click)="$event.stopPropagation()">
+            <button
+              *ngIf="canDelete()"
+              type="button"
+              class="inline-flex items-center justify-center rounded-md border-0 bg-transparent p-1.5 text-[var(--color-text-muted)] transition-colors hover:bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)] hover:text-[var(--color-error)]"
+              (click)="confirmDeleteMessage(m)"
+              [title]="'common.delete' | translate">
+              <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="flex justify-center pt-4" *ngIf="totalPagesFor(messages.length) > 1">
+      <app-pagination
+        [currentPage]="effectiveMessagesPage()"
+        [totalPages]="totalPagesFor(messages.length)"
+        (pageChange)="onMessagesPageChange($event)">
+      </app-pagination>
+    </div>
+  </div>
+</div>
+
+<app-modal [isOpen]="messageModalOpen" [title]="'helpCenter.messageDetail' | translate" size="lg" (closed)="closeMessageModal()">
+  <div *ngIf="loadingMessageDetail" class="flex flex-col items-center justify-center gap-3 py-8">
+    <div class="h-8 w-8 animate-spin rounded-full border-[3px] border-[var(--color-border)] border-t-[var(--color-brand)]"></div>
+  </div>
+  <div *ngIf="!loadingMessageDetail && selectedMessage as msg" class="flex flex-col gap-4">
+    <div class="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2 sm:gap-x-4">
+      <div>
+        <span class="mb-0.5 block text-xs font-semibold text-[var(--color-text-muted)]">{{ 'helpCenter.senderName' | translate }}</span> {{ msg.senderName }}
+      </div>
+      <div>
+        <span class="mb-0.5 block text-xs font-semibold text-[var(--color-text-muted)]">{{ 'helpCenter.senderEmail' | translate }}</span> {{ msg.senderEmail }}
+      </div>
+      <div class="sm:col-span-2">
+        <span class="mb-0.5 block text-xs font-semibold text-[var(--color-text-muted)]">{{ 'helpCenter.subject' | translate }}</span> {{ msg.subject }}
+      </div>
+      <div class="sm:col-span-2">
+        <span class="mb-0.5 block text-xs font-semibold text-[var(--color-text-muted)]">{{ 'helpCenter.colDate' | translate }}</span> {{ msg.creationDate | appDateTime }}
+      </div>
+    </div>
+    <div class="whitespace-pre-wrap rounded-lg bg-[var(--color-background-soft)] p-4 text-sm leading-relaxed">{{ msg.body }}</div>
+    <div *ngIf="msg.adminReply" class="rounded-lg border border-[var(--color-border)] p-4 text-sm">
+      <div class="mb-0.5 text-xs font-semibold text-[var(--color-text-muted)]">{{ 'helpCenter.adminReply' | translate }}</div>
+      <div [innerHTML]="safeHtml(msg.adminReply)"></div>
+    </div>
+    <form *ngIf="canEdit()" [formGroup]="replyForm" class="mt-2">
+      <label class="mb-1.5 block text-xs font-semibold text-[var(--color-text-muted)]">{{ 'helpCenter.replyLabel' | translate }}</label>
+      <textarea
+        class="min-h-[100px] w-full resize-y rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 font-inherit text-sm text-[var(--color-text)]"
+        rows="4"
+        formControlName="adminReply"></textarea>
+    </form>
+  </div>
+  <div modal-footer class="flex w-full flex-wrap justify-between gap-3">
+    <app-button *ngIf="selectedMessage && canDelete()" variant="danger" (clicked)="confirmDeleteMessage(selectedMessage!)">
+      {{ 'common.delete' | translate }}
+    </app-button>
+    <div class="ms-auto flex gap-3">
+      <app-button variant="outline" (clicked)="closeMessageModal()">{{ 'common.close' | translate }}</app-button>
+      <app-button *ngIf="canEdit()" variant="primary" [disabled]="savingReply" (clicked)="submitReply()">
+        <lucide-angular [img]="Send" class="h-4 w-4"></lucide-angular>
+        {{ savingReply ? ('common.saving' | translate) : ('helpCenter.sendReply' | translate) }}
+      </app-button>
+    </div>
+  </div>
+</app-modal>
+
+<app-confirm-dialog
+  [isOpen]="showDeleteMessageDialog"
+  [title]="'common.delete' | translate"
+  [message]="'helpCenter.deleteMessageConfirm' | translate"
+  [confirmText]="'common.delete' | translate"
+  [cancelText]="'common.cancel' | translate"
+  confirmVariant="danger"
+  (confirmed)="onDeleteMessageConfirm()"
+  (cancelled)="onDeleteMessageCancel()">
+</app-confirm-dialog>

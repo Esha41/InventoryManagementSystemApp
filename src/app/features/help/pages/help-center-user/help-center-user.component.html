@@ -1,0 +1,128 @@
+<div class="page-wrapper mx-auto min-h-full max-w-[1200px]">
+  <div class="page-container py-4 sm:py-6">
+    <div class="mb-5 rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-5 py-4 shadow-sm">
+      <div class="flex items-start gap-3">
+        <div class="flex shrink-0 items-center justify-center rounded-lg bg-[var(--color-background-soft)] p-2 text-[var(--color-brand)]">
+          <lucide-angular [img]="LifeBuoy" class="h-6 w-6"></lucide-angular>
+        </div>
+        <div>
+          <h1 class="m-0 text-2xl font-bold text-[var(--color-text)]">{{ 'helpCenter.userTitle' | translate }}</h1>
+          <p class="mt-1 text-sm text-[var(--color-text-muted)]">{{ 'helpCenter.userSubtitle' | translate }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-6 inline-flex flex-wrap gap-1 rounded-[0.625rem] border border-[var(--color-border)] bg-[var(--color-background-soft)] p-1" role="tablist" aria-label="Help sections">
+      <button type="button" role="tab" [class]="tabClasses(activeTab() === 'articles')" [attr.aria-selected]="activeTab() === 'articles'" (click)="setTab('articles')">
+        <lucide-angular [img]="BookOpen" class="h-4 w-4 shrink-0"></lucide-angular>
+        {{ 'helpCenter.tabArticles' | translate }}
+      </button>
+      <button type="button" role="tab" [class]="tabClasses(activeTab() === 'terms')" [attr.aria-selected]="activeTab() === 'terms'" (click)="setTab('terms')">
+        <lucide-angular [img]="FileText" class="h-4 w-4 shrink-0"></lucide-angular>
+        {{ 'helpCenter.tabTerms' | translate }}
+      </button>
+      <button type="button" role="tab" [class]="tabClasses(activeTab() === 'contact')" [attr.aria-selected]="activeTab() === 'contact'" (click)="setTab('contact')">
+        <lucide-angular [img]="Mail" class="h-4 w-4 shrink-0"></lucide-angular>
+        {{ 'helpCenter.tabContact' | translate }}
+      </button>
+    </div>
+
+    <!-- Articles -->
+    <div *ngIf="activeTab() === 'articles'" class="min-h-[200px]">
+      <div *ngIf="loadingArticles()" class="flex flex-col items-center justify-center gap-3 py-12">
+        <div class="h-8 w-8 animate-spin rounded-full border-[3px] border-[var(--color-border)] border-t-[var(--color-brand)]"></div>
+        <p class="text-sm text-[var(--color-text-muted)]">{{ 'common.loading' | translate }}</p>
+      </div>
+
+      <ng-container *ngIf="!loadingArticles()">
+        <div *ngIf="articles().length === 0" class="rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-background)] px-4 py-12 text-center">
+          <p class="m-0 text-[var(--color-text-muted)]">{{ 'helpCenter.noArticles' | translate }}</p>
+        </div>
+
+        <div *ngIf="articles().length > 0" class="grid grid-cols-1 items-start gap-5 md:grid-cols-[minmax(200px,280px)_1fr]">
+          <div>
+            <div class="mb-3" *ngIf="categoryOptions().length > 1">
+              <label class="mb-1.5 block text-xs font-semibold text-[var(--color-text-muted)]">{{ 'helpCenter.categoryFilter' | translate }}</label>
+              <app-dropdown
+                [formControl]="categoryFilter"
+                [options]="categoryOptions()"
+                [placeholder]="'helpCenter.allCategories' | translate"
+                [showSearch]="true">
+              </app-dropdown>
+            </div>
+            <div class="flex flex-col gap-3">
+              <ul class="m-0 list-none overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] p-0">
+                <li *ngFor="let a of paginatedArticles()">
+                  <button type="button" [class]="articleListItemClasses(selectedArticleId() === a.id)" (click)="selectArticle(a.id)">
+                    <span class="text-sm font-semibold">{{ a.title }}</span>
+                    <span class="text-xs text-[var(--color-text-muted)]" *ngIf="a.category">{{ a.category }}</span>
+                  </button>
+                </li>
+              </ul>
+              <div class="pt-1" *ngIf="totalArticlePages() > 1">
+                <app-pagination
+                  [currentPage]="effectiveArticlePage()"
+                  [totalPages]="totalArticlePages()"
+                  (pageChange)="onArticlePageChange($event)">
+                </app-pagination>
+              </div>
+            </div>
+          </div>
+          <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-5 shadow-sm sm:p-6" *ngIf="selectedArticle() as art">
+            <h2 class="mb-4 m-0 text-xl font-bold text-[var(--color-text)]">{{ art.title }}</h2>
+            <div class="prose-help text-[0.9375rem] leading-relaxed text-[var(--color-text)]" [innerHTML]="safeArticleHtml(art.content)"></div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- Terms -->
+    <div *ngIf="activeTab() === 'terms'" class="min-h-[200px]">
+      <div *ngIf="loadingTerms()" class="flex flex-col items-center justify-center gap-3 py-12">
+        <div class="h-8 w-8 animate-spin rounded-full border-[3px] border-[var(--color-border)] border-t-[var(--color-brand)]"></div>
+        <p class="text-sm text-[var(--color-text-muted)]">{{ 'common.loading' | translate }}</p>
+      </div>
+      <div *ngIf="!loadingTerms() && !terms()" class="rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-background)] px-4 py-12 text-center">
+        <p class="m-0 text-[var(--color-text-muted)]">{{ 'helpCenter.noTerms' | translate }}</p>
+      </div>
+      <div *ngIf="!loadingTerms() && terms() as t" class="mx-auto max-w-[900px] rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-5 shadow-sm sm:p-6">
+        <div class="mb-4 text-sm text-[var(--color-text-muted)]">
+          {{ 'helpCenter.version' | translate }}: <strong>{{ t.version }}</strong>
+          · {{ 'helpCenter.effectiveDate' | translate }}: {{ t.effectiveDate | appDate }}
+        </div>
+        <div class="prose-help text-[0.9375rem] leading-relaxed text-[var(--color-text)]" [innerHTML]="safeTermsHtml(t.content)"></div>
+      </div>
+    </div>
+
+    <!-- Contact -->
+    <div *ngIf="activeTab() === 'contact'" class="min-h-[200px]">
+      <div class="mx-auto flex w-full max-w-2xl flex-col items-center rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-5 text-center shadow-sm sm:p-6">
+        <h2 class="mb-5 m-0 text-lg font-semibold text-[var(--color-text)]">{{ 'helpCenter.contactHeading' | translate }}</h2>
+        <form [formGroup]="contactForm" (ngSubmit)="submitContact()" class="w-full text-start">
+          <div class="mb-4">
+            <label class="mb-1.5 block text-sm font-medium text-[var(--color-text)]" for="hc-name">{{ 'helpCenter.senderName' | translate }}</label>
+            <input id="hc-name" type="text" class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm text-[var(--color-text)] focus:border-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--color-brand)_25%,transparent)]" formControlName="senderName" autocomplete="name" />
+          </div>
+          <div class="mb-4">
+            <label class="mb-1.5 block text-sm font-medium text-[var(--color-text)]" for="hc-email">{{ 'helpCenter.senderEmail' | translate }}</label>
+            <input id="hc-email" type="email" class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm text-[var(--color-text)] focus:border-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--color-brand)_25%,transparent)]" formControlName="senderEmail" autocomplete="email" />
+          </div>
+          <div class="mb-4">
+            <label class="mb-1.5 block text-sm font-medium text-[var(--color-text)]" for="hc-subject">{{ 'helpCenter.subject' | translate }}</label>
+            <input id="hc-subject" type="text" class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm text-[var(--color-text)] focus:border-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--color-brand)_25%,transparent)]" formControlName="subject" />
+          </div>
+          <div class="mb-4">
+            <label class="mb-1.5 block text-sm font-medium text-[var(--color-text)]" for="hc-body">{{ 'helpCenter.messageBody' | translate }}</label>
+            <textarea id="hc-body" class="min-h-[120px] w-full resize-y rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 font-inherit text-sm text-[var(--color-text)] focus:border-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--color-brand)_25%,transparent)]" rows="6" formControlName="body"></textarea>
+          </div>
+          <div class="mt-2 flex justify-center">
+            <button type="submit" class="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[var(--color-brand)] px-5 py-2 text-sm font-semibold text-white transition-all hover:bg-[var(--color-brand-dark)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand)] disabled:cursor-not-allowed disabled:opacity-60" [disabled]="submittingContact()">
+              <lucide-angular [img]="Send" class="h-4 w-4"></lucide-angular>
+              <span>{{ submittingContact() ? ('common.pleaseWait' | translate) : ('helpCenter.sendMessage' | translate) }}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

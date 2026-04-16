@@ -230,7 +230,11 @@
     "supplyOrder": "Supply Order",
     "stockNotificationSettings": "Stock Notification Settings",
     "itemDepartmentAssignment": "Item Assignment",
-    "announcements": "Announcements"
+    "announcements": "Announcements",
+    "help": "Help",
+    "helpMe": "Help Me",
+    "helpCenterAdmin": "Help center (admin)",
+    "helpMeAdmin": "Help Me (admin)"
   },
   "footer": {
     "copyright": "Copyright © Barzan Holdings {{year}}"
