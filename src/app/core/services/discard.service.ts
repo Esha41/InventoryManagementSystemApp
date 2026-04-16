@@ -21,50 +21,37 @@ export class DiscardService {
   ) { }
 
   /**
-   * Create a new discard request
+   * Create a new discard request (always multipart/form-data to match the API).
    */
   createDiscard(dto: CreateDiscardDto, files?: File[]): Observable<number> {
     this.configService.log('Creating discard request', dto);
 
-    // If files are provided, use FormData
+    const formData = new FormData();
+
+    if (dto.reason) formData.append('Reason', dto.reason);
+    formData.append('Priority', dto.priority.toString());
+    if (dto.notes) formData.append('Notes', dto.notes);
+    formData.append('DepartmentId', dto.departmentId.toString());
+    if (dto.requesterId) formData.append('RequesterId', dto.requesterId);
+    formData.append('RequestPurposeId', dto.requestPurposeId.toString());
+
+    if (dto.discardItems && dto.discardItems.length > 0) {
+      dto.discardItems.forEach((item, index) => {
+        formData.append(`DiscardItems[${index}].ItemId`, item.itemId.toString());
+        formData.append(`DiscardItems[${index}].Quantity`, item.quantity.toString());
+        if (item.notes) {
+          formData.append(`DiscardItems[${index}].Notes`, item.notes);
+        }
+      });
+    }
+
     if (files && files.length > 0) {
-      const formData = new FormData();
-
-      // Append DTO properties
-      if (dto.reason) formData.append('Reason', dto.reason);
-      formData.append('Priority', dto.priority.toString());
-      if (dto.notes) formData.append('Notes', dto.notes);
-      formData.append('DepartmentId', dto.departmentId.toString());
-      if (dto.requesterId) formData.append('RequesterId', dto.requesterId);
-      formData.append('RequestPurposeId', dto.requestPurposeId.toString());
-
-      // Append DiscardItems array
-      if (dto.discardItems && dto.discardItems.length > 0) {
-        dto.discardItems.forEach((item, index) => {
-          formData.append(`DiscardItems[${index}].ItemId`, item.itemId.toString());
-          formData.append(`DiscardItems[${index}].Quantity`, item.quantity.toString());
-          if (item.notes) {
-            formData.append(`DiscardItems[${index}].Notes`, item.notes);
-          }
-        });
-      }
-
-      // Append files
       files.forEach(file => {
         formData.append('files', file);
       });
-
-      return this.apiService.post<number>(API_ENDPOINTS.DISCARDS.BASE, formData).pipe(
-        catchError(error => {
-          this.configService.logError('Failed to create discard request', error);
-          const msg = ErrorHandler.extractErrorMessage(error, 'Failed to create discard request');
-          return throwError(() => new Error(msg));
-        })
-      );
     }
 
-    // No files - send as JSON
-    return this.apiService.post<number>(API_ENDPOINTS.DISCARDS.BASE, dto).pipe(
+    return this.apiService.post<number>(API_ENDPOINTS.DISCARDS.BASE, formData).pipe(
       catchError(error => {
         this.configService.logError('Failed to create discard request', error);
         const msg = ErrorHandler.extractErrorMessage(error, 'Failed to create discard request');

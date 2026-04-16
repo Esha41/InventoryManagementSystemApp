@@ -22,50 +22,37 @@ export class ReturnService {
   ) { }
 
   /**
-   * Create a new return request
+   * Create a new return request (always multipart/form-data to match the API).
    */
   createReturn(dto: CreateReturnDto, files?: File[]): Observable<number> {
     this.configService.log('Creating return request', dto);
 
-    // If files are provided, use FormData
+    const formData = new FormData();
+
+    if (dto.reason) formData.append('Reason', dto.reason);
+    formData.append('Priority', dto.priority.toString());
+    if (dto.notes) formData.append('Notes', dto.notes);
+    formData.append('DepartmentId', dto.departmentId.toString());
+    if (dto.requesterId) formData.append('RequesterId', dto.requesterId);
+    formData.append('RequestPurposeId', dto.requestPurposeId.toString());
+
+    if (dto.returnItems && dto.returnItems.length > 0) {
+      dto.returnItems.forEach((item, index) => {
+        formData.append(`ReturnItems[${index}].ItemId`, item.itemId.toString());
+        formData.append(`ReturnItems[${index}].Quantity`, item.quantity.toString());
+        if (item.notes) {
+          formData.append(`ReturnItems[${index}].Notes`, item.notes);
+        }
+      });
+    }
+
     if (files && files.length > 0) {
-      const formData = new FormData();
-
-      // Append DTO properties
-      if (dto.reason) formData.append('Reason', dto.reason);
-      formData.append('Priority', dto.priority.toString());
-      if (dto.notes) formData.append('Notes', dto.notes);
-      formData.append('DepartmentId', dto.departmentId.toString());
-      if (dto.requesterId) formData.append('RequesterId', dto.requesterId);
-      formData.append('RequestPurposeId', dto.requestPurposeId.toString());
-
-      // Append ReturnItems array
-      if (dto.returnItems && dto.returnItems.length > 0) {
-        dto.returnItems.forEach((item, index) => {
-          formData.append(`ReturnItems[${index}].ItemId`, item.itemId.toString());
-          formData.append(`ReturnItems[${index}].Quantity`, item.quantity.toString());
-          if (item.notes) {
-            formData.append(`ReturnItems[${index}].Notes`, item.notes);
-          }
-        });
-      }
-
-      // Append files
       files.forEach(file => {
         formData.append('files', file);
       });
-
-      return this.apiService.post<number>(API_ENDPOINTS.RETURNS.BASE, formData).pipe(
-        catchError(error => {
-          this.configService.logError('Failed to create return request', error);
-          const msg = ErrorHandler.extractErrorMessage(error, 'Failed to create return request');
-          return throwError(() => new Error(msg));
-        })
-      );
     }
 
-    // No files - send as JSON
-    return this.apiService.post<number>(API_ENDPOINTS.RETURNS.BASE, dto).pipe(
+    return this.apiService.post<number>(API_ENDPOINTS.RETURNS.BASE, formData).pipe(
       catchError(error => {
         this.configService.logError('Failed to create return request', error);
         const msg = ErrorHandler.extractErrorMessage(error, 'Failed to create return request');
@@ -183,31 +170,21 @@ export class ReturnService {
 
   /**
    * Process return items (ammo/explosive and weapon) and approve the return.
-   * With files: sends multipart/form-data (field `payload` = JSON, `files` = files). Without files: JSON body.
+   * Always multipart/form-data (indexed DTO fields + optional files).
    */
-
   processReturnItems(returnId: number, dto: ProcessReturnItemsDto, files?: File[]): Observable<boolean> {
     this.configService.log(`Processing return items for return ${returnId}`, dto);
 
+    const formData = new FormData();
+    this.appendProcessReturnItemsToFormData(formData, dto);
+
     if (files && files.length > 0) {
-      const formData = new FormData();
-      formData.append('payload', JSON.stringify(dto));
       files.forEach(f => formData.append('files', f, f.name));
-      return this.apiService.put<boolean>(
-        API_ENDPOINTS.RETURNS.PROCESS_ITEMS(returnId),
-        formData
-      ).pipe(
-        catchError(error => {
-          this.configService.logError('Failed to review return items', error);
-          const msg = ErrorHandler.extractErrorMessage(error, 'Failed to review return items');
-          return throwError(() => new Error(msg));
-        })
-      );
     }
 
     return this.apiService.put<boolean>(
       API_ENDPOINTS.RETURNS.PROCESS_ITEMS(returnId),
-      dto
+      formData
     ).pipe(
       catchError(error => {
         this.configService.logError('Failed to review return items', error);
@@ -215,6 +192,41 @@ export class ReturnService {
         return throwError(() => new Error(msg));
       })
     );
+  }
+
+  private appendProcessReturnItemsToFormData(formData: FormData, dto: ProcessReturnItemsDto): void {
+    if (dto.workflowStepComments) {
+      formData.append('WorkflowStepComments', dto.workflowStepComments);
+    }
+
+    (dto.ammoExplosiveItems ?? []).forEach((item, index) => {
+      formData.append(`AmmoExplosiveItems[${index}].ItemId`, item.itemId.toString());
+      formData.append(`AmmoExplosiveItems[${index}].Quantity`, item.quantity.toString());
+      if (item.returnedQuantity != null) {
+        formData.append(`AmmoExplosiveItems[${index}].ReturnedQuantity`, item.returnedQuantity.toString());
+      }
+      formData.append(`AmmoExplosiveItems[${index}].Lot`, item.lot);
+      if (item.notes) {
+        formData.append(`AmmoExplosiveItems[${index}].Notes`, item.notes);
+      }
+      if (item.requestItemId != null) {
+        formData.append(`AmmoExplosiveItems[${index}].RequestItemId`, item.requestItemId.toString());
+      }
+      formData.append(`AmmoExplosiveItems[${index}].ReadyForIssue`, String(item.readyForIssue));
+    });
+
+    (dto.weaponItems ?? []).forEach((item, index) => {
+      formData.append(`WeaponItems[${index}].ItemId`, item.itemId.toString());
+      formData.append(`WeaponItems[${index}].SerialNumber`, item.serialNumber);
+      formData.append(`WeaponItems[${index}].BatchNumber`, item.batchNumber);
+      formData.append(`WeaponItems[${index}].Status`, item.status.toString());
+      if (item.notes) {
+        formData.append(`WeaponItems[${index}].Notes`, item.notes);
+      }
+      if (item.requestItemId != null) {
+        formData.append(`WeaponItems[${index}].RequestItemId`, item.requestItemId.toString());
+      }
+    });
   }
 }
 
