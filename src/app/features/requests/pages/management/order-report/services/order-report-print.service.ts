@@ -20,22 +20,20 @@ export class OrderReportPrintService {
       return;
     }
 
-    const printContents = contentElement.innerHTML;
-    const printWindow = window.open('', '', 'width=900,height=700');
-    
-    if (!printWindow) {
-      console.error('Failed to open print window. Please check popup blocker settings.');
-      return;
-    }
+    const clone = contentElement.cloneNode(true) as HTMLElement;
+    clone.querySelectorAll('script').forEach((s) => s.remove());
+    const printContents = clone.innerHTML;
 
     const printStyles = this.generatePrintStyles(isRTL);
+    // Blob documents use an opaque origin; root-relative URLs in CSS (e.g. /assets/...) need a real base URL.
+    const baseHref = new URL('./', document.baseURI).href;
 
-    printWindow.document.write(`
+    const htmlDocument = `
       <!DOCTYPE html>
       <html>
         <head>
           <meta charset="UTF-8">
-          <base href="/">
+          <base href="${baseHref}">
           <meta name="url" content="">
           <title>Request Report - ${orderSummary.orderId}</title>
           <style>
@@ -46,14 +44,24 @@ export class OrderReportPrintService {
           ${printContents}
         </body>
       </html>
-    `);
-    
-    printWindow.document.close();
+    `;
+
+    const blob = new Blob([htmlDocument], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const printWindow = window.open(url, '', 'width=900,height=700');
+
+    if (!printWindow) {
+      URL.revokeObjectURL(url);
+      console.error('Failed to open print window. Please check popup blocker settings.');
+      return;
+    }
+
     printWindow.focus();
-    
+
     setTimeout(() => {
       printWindow.print();
       printWindow.close();
+      URL.revokeObjectURL(url);
     }, 250);
   }
 

@@ -23,6 +23,7 @@ import { TranslationMap } from '@models/common.types';
 import { ProfileDataService } from '@services/profile-data.service';
 import { ConfigService } from '@services/config.service';
 import { trackById, trackByIndex } from '@utils/trackby.utils';
+import { defaultPageSize } from '@constants/app.constants';
 
 @Component({
   selector: 'app-workflow',
@@ -51,7 +52,7 @@ export class WorkflowComponent implements OnInit, OnDestroy {
   errorMessage: string | null = null;
 
   currentPage: number = 1;
-  rowsPerPage: number = 10;
+  rowsPerPage: number = defaultPageSize;
   readonly rowsPerPageOptions = [5, 10, 20, 50];
 
   showViewModal = false;

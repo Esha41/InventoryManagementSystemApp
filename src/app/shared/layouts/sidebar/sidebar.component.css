@@ -4,28 +4,36 @@ aside nav {
   -webkit-overflow-scrolling: touch;
 }
 
-/* Visible scrollbar for sidebar nav - users can tell when content is scrollable */
+/* Sidebar nav — slightly narrower than page scrollbars, same theme tokens as styles.css */
 aside nav.sidebar-nav-scroll {
+  --app-scrollbar-size: 4px;
   scrollbar-width: thin;
-  scrollbar-color: var(--color-text-muted) var(--color-background-active);
+  scrollbar-color: var(--app-scrollbar-thumb) var(--app-scrollbar-track);
 }
 
 aside nav.sidebar-nav-scroll::-webkit-scrollbar {
-  width: 6px;
+  width: var(--app-scrollbar-size);
 }
 
 aside nav.sidebar-nav-scroll::-webkit-scrollbar-track {
-  background: var(--color-background-active);
-  border-radius: var(--radius-md);
+  background: var(--app-scrollbar-track);
+  border-radius: var(--radius-full);
+  box-shadow: inset 0 0 0 1px var(--app-scrollbar-track-edge);
 }
 
 aside nav.sidebar-nav-scroll::-webkit-scrollbar-thumb {
-  background: var(--color-text-muted);
-  border-radius: var(--radius-md);
+  background: var(--app-scrollbar-thumb);
+  border-radius: var(--radius-full);
+  transition: background-color var(--transition-fast);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-background) 55%, transparent);
 }
 
 aside nav.sidebar-nav-scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text);
+  background: var(--app-scrollbar-thumb-hover);
+}
+
+aside nav.sidebar-nav-scroll::-webkit-scrollbar-thumb:active {
+  background: var(--app-scrollbar-thumb-active);
 }
 
 /* Custom tooltip for collapsed sidebar - matches website design */

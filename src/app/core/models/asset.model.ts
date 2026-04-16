@@ -19,7 +19,8 @@ export enum AssetStatus {
     UnserviceableUnrepairable = 4,
     AwaitingDisposal = 5,
     Disposed = 6,
-    NotReadyToIssue = 7
+    NotReadyToIssue = 7,
+    Assigned = 7
 }
 
 /** Status dropdown order: Ready, Not ready, then remainder (matches backend batch Excel labels). */
@@ -76,6 +77,16 @@ export interface AssetDto {
     deliveryReceipt?: string;
     notes?: string;
     isDeleted: boolean;
+    /** Asset audit: when the record was created */
+    creationDate?: Date | string;
+    /** Asset audit: user id at creation */
+    createdBy?: string;
+    /** Resolved display name for createdBy (from API). */
+    createdByName?: string;
+    /** Current assignment: expected return (checkout). */
+    expectedReturnDate?: Date | string;
+    /** Current assignment: actual return when completed. */
+    actualReturnDate?: Date | string;
     supplierId?: number;
     manufacturerId?: number;
     primaryPurposId?: number;
@@ -83,6 +94,8 @@ export interface AssetDto {
     // Navigation properties
     item?: WeaponDto;
     depot?: DepotDto;
+    /** Same as `depot` when provided by the API (legacy field). */
+    createdDepot?: DepotDto;
     department?: DepartmentDto;
     custodian?: EmployeeDto;
     supplier?: LookupItem;
@@ -171,6 +184,9 @@ export function getAssetStatusLabel(status?: AssetStatus | string): string {
         case AssetStatus.Disposed:
         case 'Disposed':
             return 'assetStatus.disposed';
+        case AssetStatus.Assigned:
+        case 'Assigned':
+            return 'assetStatus.assigned';
         default:
             return 'assetStatus.unknown';
     }
@@ -187,6 +203,9 @@ export function getAssetStatusColor(status?: AssetStatus | string): string {
         case AssetStatus.NotReadyToIssue:
         case 'NotReadyToIssue':
             return 'warning';
+        case AssetStatus.Assigned:
+        case 'Assigned':
+            return 'info';
         case AssetStatus.InMaintenance:
         case 'InMaintenance':
         case AssetStatus.UnserviceableRepairable:

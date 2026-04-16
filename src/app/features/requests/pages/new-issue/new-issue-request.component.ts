@@ -58,6 +58,7 @@ import {
   applyAuthenticatedUserContext as applyAuthenticatedUserContextUtil,
   getDepartmentIdForRequest as getDepartmentIdForRequestUtil
 } from '@utils/issue-request.utils';
+import { defaultPageSize } from '@constants/app.constants';
 
 interface ExtendedFilterState extends FilterState {
   selectedWeaponType?: string;
@@ -171,15 +172,13 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy, AfterViewIni
     selectedCartridgesCache: new Map<number, Cartridge>(),
     catalogPagination: {
       page: 1,
-      pageSize: 10,
+      pageSize: defaultPageSize,
       totalCount: 0,
       totalPages: 0,
       hasNextPage: false,
       hasPreviousPage: false
     }
   };
-
-  private readonly CATALOG_PAGE_SIZE = 10;
 
   usageFormData: UsageFormData = {
     usePurpose: '',
@@ -359,7 +358,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy, AfterViewIni
   private resetCatalogPagination(): void {
     this.cartridgeState.catalogPagination = {
       page: 1,
-      pageSize: this.CATALOG_PAGE_SIZE,
+      pageSize: defaultPageSize,
       totalCount: 0,
       totalPages: 0,
       hasNextPage: false,
@@ -1042,7 +1041,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy, AfterViewIni
     this.cartridgeState.selectedCartridgesCache.clear();
     this.cartridgeState.catalogPagination = {
       page: 1,
-      pageSize: this.CATALOG_PAGE_SIZE,
+      pageSize: defaultPageSize,
       totalCount: 0,
       totalPages: 0,
       hasNextPage: false,

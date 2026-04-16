@@ -25,7 +25,7 @@
 <div class="space-y-4 sm:space-y-6">
   <!-- Header -->
   <div class="text-center space-y-1.5 sm:space-y-2">
-    <h2 class="text-xl sm:text-2xl font-bold text-[var(--color-text)] tracking-tight">{{ 'auth.login.title' | translate }}</h2>
+    <h2 data-testid="login-title" class="text-xl sm:text-2xl font-bold text-[var(--color-text)] tracking-tight">{{ 'auth.login.title' | translate }}</h2>
     <p class="text-xs sm:text-sm text-[var(--color-text-muted)] leading-relaxed">
       {{ 'auth.login.subtitle' | translate }}
     </p>
@@ -37,7 +37,7 @@
     <div class="flex items-center justify-center rounded-2xl bg-[var(--color-background-muted)] p-1">
       <!-- Development: Password first, LDAP second -->
       <ng-container *ngIf="isDevelopment">
-        <button type="button" (click)="setLoginMode('password')" [class]="
+        <button type="button" data-testid="login-standard-login-button" (click)="setLoginMode('password')" [class]="
             'flex-1 px-3 sm:px-4 py-2.5 min-h-[2.75rem] text-sm font-semibold rounded-xl transition-all duration-200 ' +
             (isLdapMode
               ? 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
@@ -45,7 +45,7 @@
           ">
           {{ 'auth.login.passwordLogin' | translate }}
         </button>
-        <button type="button" (click)="setLoginMode('ldap')" [class]="
+        <button type="button" data-testid="login-ldap-login-button" (click)="setLoginMode('ldap')" [class]="
             'flex-1 px-3 sm:px-4 py-2.5 min-h-[2.75rem] text-sm font-semibold rounded-xl transition-all duration-200 ' +
             (!isLdapMode
               ? 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
@@ -86,7 +86,7 @@
           <lucide-angular [img]="User"
             class="h-5 w-5 text-[var(--color-text-muted)] group-focus-within:text-[var(--color-brand)] transition-colors duration-200" />
         </div>
-        <input id="username" type="text" formControlName="username" autocomplete="username" class="block w-full py-3 sm:py-3.5 text-base min-h-[2.75rem]
+        <input id="username" data-testid="login-username-input" type="text" formControlName="username" autocomplete="username" class="block w-full py-3 sm:py-3.5 text-base min-h-[2.75rem]
                  border-2 border-[var(--color-border)] rounded-xl
                  bg-[var(--color-background)] text-[var(--color-text)]
                  outline-none focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20
@@ -97,7 +97,7 @@
           [placeholder]="'auth.login.usernamePlaceholder' | translate"
           [class.border-red-500]="username?.invalid && username?.touched" style="text-align: start;" />
       </div>
-      <p *ngIf="getFieldError('username')"
+      <p data-testid="login-username-error-message" *ngIf="getFieldError('username')"
         class="mt-2 text-sm font-medium text-[var(--color-error)] flex items-center gap-1">
         <lucide-angular [img]="AlertCircle" class="h-4 w-4"></lucide-angular>
         {{ getFieldError('username') }}
@@ -115,7 +115,7 @@
           <lucide-angular [img]="Lock"
             class="h-5 w-5 text-[var(--color-text-muted)] group-focus-within:text-[var(--color-brand)] transition-colors duration-200" />
         </div>
-        <input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password"
+        <input id="password" data-testid="login-password-input" [type]="showPassword ? 'text' : 'password'" formControlName="password"
           autocomplete="current-password" class="block w-full py-3 sm:py-3.5 text-base min-h-[2.75rem]
                  border-2 border-[var(--color-border)] rounded-xl
                  bg-[var(--color-background)] text-[var(--color-text)]
@@ -126,7 +126,7 @@
           [ngClass]="{'ps-12 pe-12': !isRTL, 'pe-12 ps-12': isRTL}"
           [placeholder]="'auth.login.passwordPlaceholder' | translate"
           [class.border-red-500]="password?.invalid && password?.touched" style="text-align: start;" />
-        <button type="button" (click)="togglePasswordVisibility()" tabindex="-1"
+        <button data-testid="login-visibility-button" type="button" (click)="togglePasswordVisibility()" tabindex="-1"
           class="absolute inset-y-0 flex items-center z-10 group/toggle"
           [ngClass]="{'end-0 pe-4': !isRTL, 'start-0 ps-4': isRTL}"
           [attr.aria-label]="showPassword ? ('common.hidePassword' | translate) : ('common.showPassword' | translate)">
@@ -134,14 +134,14 @@
             class="h-5 w-5 text-[var(--color-text-muted)] group-hover/toggle:text-[var(--color-text)] transition-colors duration-200" />
         </button>
       </div>
-      <p *ngIf="getFieldError('password')"
+      <p data-testid="login-username-error-message" *ngIf="getFieldError('password')"
         class="mt-2 text-sm font-medium text-[var(--color-error)] flex items-center gap-1">
         <lucide-angular [img]="AlertCircle" class="h-4 w-4"></lucide-angular>
         {{ getFieldError('password') }}
       </p>
       <!-- Forgot Password Link (hidden for LDAP login) -->
       <div class="mt-2 text-end" *ngIf="!isLdapMode">
-        <a routerLink="/auth/forgot-password"
+        <a routerLink="/auth/forgot-password" data-testid="login-forgot-password-link"
           class="text-sm font-semibold text-[var(--color-brand)] hover:text-[var(--color-brand-dark)] transition-colors">
           {{ 'auth.login.forgotPassword' | translate }}
         </a>
@@ -213,7 +213,7 @@
 
     <!-- Submit Button -->
     <div>
-      <button type="submit" [disabled]="isLoginDisabled" class="w-full bg-[var(--color-brand)] text-white font-semibold
+      <button type="submit" data-testid="login-sign-in-button" data[disabled]="isLoginDisabled" class="w-full bg-[var(--color-brand)] text-white font-semibold
                py-3 sm:py-3.5 px-6 min-h-[2.75rem] rounded-xl
                hover:bg-[var(--color-brand-dark)] 
                focus:outline-none focus:ring-4 focus:ring-[var(--color-brand)]/20

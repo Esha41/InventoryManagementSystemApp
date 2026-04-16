@@ -32,6 +32,7 @@ import {
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { separateRequestsByType, mapToOrderDto } from '@utils/request-type-mapper.utils';
 import { formatTimeToMilitary, formatDateTimeExtended } from '@utils/format.utils';
+import { defaultPageSize } from '@constants/app.constants';
 
 @Component({
   selector: 'app-inventory-dashboard',
@@ -57,7 +58,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   // View state
   viewMode: 'table' = 'table';
   currentPage = 1;
-  rowsPerPage = 10;
+  rowsPerPage = defaultPageSize;
 
   sortState: { column: string | null; direction: 'asc' | 'desc' } = {
     column: null,

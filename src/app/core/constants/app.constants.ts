@@ -6,6 +6,8 @@ export const APP_CONSTANTS = {
   PAGE_SIZE_OPTIONS: [10, 25, 50, 100],
 } as const;
 
+export const defaultPageSize: number = APP_CONSTANTS.DEFAULT_PAGE_SIZE;
+
 // request Status Constants, Maps to backend RequestStatus enum
 export const REQUEST_STATUS = {
   NEW: 1,

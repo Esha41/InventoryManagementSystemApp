@@ -12,6 +12,7 @@ import { Request } from './models/requests-management.model';
 import { Subject, takeUntil } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { RequestStatusUpdateService } from '@services/request-status-update.service';
+import { defaultPageSize } from '@constants/app.constants';
 
 
 @Component({
@@ -37,7 +38,7 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
   selectedPriorityFilter: PriorityFilter = 'all';
 
   currentPage: number = 1;
-  rowsPerPage: number = 10;
+  rowsPerPage: number = defaultPageSize;
   totalItems: number = 0;
 
   constructor(
