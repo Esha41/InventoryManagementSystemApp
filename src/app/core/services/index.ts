@@ -35,7 +35,6 @@ export * from './logging.service';
 export * from './user-context.service';
 export * from './admin-analytics.service';
 export * from './asset-history.service';
-export * from './asset-supply.service';
 export * from './asset.service';
 export * from './dashboard-data.service';
 export * from './dashboard-filter.service';
@@ -53,6 +52,8 @@ export * from './unified-request.service';
 export * from './user-delegation.service';
 export * from './weapon.service';
 export * from './monitoring.service';
+export * from './role.service';
+export * from './report.service';
 export * from './idle.service';
 
 // Re-export commonly used types from supply.service for convenience

@@ -107,6 +107,9 @@
       ],
       "@profile/*": [
         "src/app/features/profile/*"
+      ],
+      "@reports/*": [
+        "src/app/features/reports/*"
       ]
     }
   },

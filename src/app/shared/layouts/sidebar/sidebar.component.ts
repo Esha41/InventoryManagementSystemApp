@@ -1,9 +1,9 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, filter } from 'rxjs';
-import { LucideAngularModule, House, Boxes, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Badge, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList, Package, Building2, GitBranch, Mail, Upload, BarChart3, Database, Megaphone } from 'lucide-angular';
+import { LucideAngularModule, LayoutDashboard, House, Boxes, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Badge, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList, Package, Building2, GitBranch, Mail, Upload, BarChart3, Database,Calendar, Megaphone } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { TranslationService } from '@services/translation.service';
 
@@ -16,7 +16,6 @@ interface MenuItem {
   permissions?: string[]; // Required permissions (any of these)
   requireAll?: boolean; // If true, all permissions required
 }
-
 @Component({
   selector: 'app-sidebar',
   standalone: true,
@@ -24,10 +23,11 @@ interface MenuItem {
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.css']
 })
-export class SidebarComponent implements OnInit, OnDestroy {
+export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   @Input() mobileOpen = false;
   @Output() closeMobile = new EventEmitter<void>();
   @Output() toggleSidebar = new EventEmitter<boolean>();
+  @Input() forceCollapsed: boolean = false;
 
   isCollapsed = false;
   readonly ChevronLeft = ChevronLeft;
@@ -38,9 +38,24 @@ export class SidebarComponent implements OnInit, OnDestroy {
   readonly Building2 = Building2;
   readonly GitBranch = GitBranch;
   readonly Database = Database;
+  readonly Calendar = Calendar;
   expandedMenus: Set<string> = new Set();
 
   private destroy$ = new Subject<void>();
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['forceCollapsed']) {
+      if (this.forceCollapsed && !this.isCollapsed) {
+        // Force collapse when entering designer
+        this.isCollapsed = true;
+        this.toggleSidebar.emit(this.isCollapsed);
+      } else if (!this.forceCollapsed && this.isCollapsed && changes['forceCollapsed'].previousValue === true) {
+        // Expand when navigating back from designer (forceCollapsed changes from true to false)
+        this.isCollapsed = false;
+        this.toggleSidebar.emit(this.isCollapsed);
+      }
+    }
+  }
 
   get isRTL(): boolean {
     return this.translationService.isRTL();
@@ -187,7 +202,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
     {
       label: 'nav.reports',
       icon: BarChart3,
-      permissions: ['inventorySummaryReportPage', 'lowStockReportPage', 'expiringLotsReportPage'],
+      permissions: [
+        'inventorySummaryReportPage',
+        'lowStockReportPage',
+        'expiringLotsReportPage',
+        'ReportDashboard'
+      ],
       children: [
         {
           label: 'nav.inventoryReports',
@@ -209,6 +229,28 @@ export class SidebarComponent implements OnInit, OnDestroy {
               permissions: ['expiringLotsReportPage']
             }
           ]
+        },
+        {
+          label: 'nav.reportDashboard',
+          route: '/report-dashboard',
+          permissions: ['ReportDashboard']
+        }
+      ]
+    },
+    {
+      label: 'nav.biTool',
+      icon: FileText,
+      permissions: ['ReportDesigner', 'ScheduledReports'],
+      children: [
+        {
+          label: 'nav.reportDesigner',
+          route: '/report-designer',
+          permissions: ['ReportDesigner']
+        },
+        {
+          label: 'nav.scheduledReports',
+          route: '/scheduled-reports',
+          permissions: ['ScheduledReports']
         }
       ]
     },
@@ -294,6 +336,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
+    // Check if sidebar should be force collapsed initially
+    if (this.forceCollapsed && !this.isCollapsed) {
+      this.isCollapsed = true;
+      this.toggleSidebar.emit(this.isCollapsed);
+    }
+
     // Subscribe to user changes and filter menu items
     this.authService.currentUser$
       .pipe(takeUntil(this.destroy$))
@@ -331,13 +379,25 @@ export class SidebarComponent implements OnInit, OnDestroy {
     }
 
     // Auto-expand reports menu if on report routes
-    if (url.startsWith('/inventory-summary') || url.startsWith('/inventory-dashboard/low-stock') || url.startsWith('/inventory-dashboard/expiring-lots')) {
+    if (
+      url.startsWith('/inventory-summary') ||
+      url.startsWith('/inventory-dashboard/low-stock') ||
+      url.startsWith('/inventory-dashboard/expiring-lots')
+    ) {
       this.expandedMenus.add('nav.reports');
       this.expandedMenus.add('nav.inventoryReports');
+    }
+    if (url.startsWith('/report-dashboard')) {
+      this.expandedMenus.add('nav.reports');
     }
 
     if (url.startsWith('/new-issue-request') || url.startsWith('/return-request') || url.startsWith('/discard-request')) {
       this.expandedMenus.add('nav.requestManagement');
+    }
+
+    // Auto-expand BI Tool menu if on report designer or scheduled reports route
+    if (url.startsWith('/report-designer') || url.startsWith('/scheduled-reports')) {
+      this.expandedMenus.add('nav.biTool');
     }
   }
 

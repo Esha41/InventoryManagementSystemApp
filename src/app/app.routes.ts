@@ -375,6 +375,46 @@ export const routes: Routes = [
       },
 
       {
+        path: 'report-designer',
+        loadComponent: () => import('@app/features/reports/designer-list/report-designer.component').then(m => m.ReportDesignerComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['ReportDesigner'] }
+      },
+      {
+        path: 'report-designer/designer',
+        loadComponent: () => import('@app/features/reports/designer/devexpress-designer.component').then(m => m.DevExpressReportDesignerComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['ReportDesigner'] }
+      },
+      {
+        path: 'report-dashboard',
+        loadComponent: () => import('@app/features/reports/dashboard/report-dashboard.component').then(m => m.ReportDashboardComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['ReportDashboard'] }
+      },
+      {
+        path: 'scheduled-reports',
+        loadComponent: () => import('@app/features/reports/scheduled-reports/scheduled-reports-list.component').then(m => m.ScheduledReportsListComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['ScheduledReports'] }
+      },
+      {
+        path: 'scheduled-reports/create',
+        loadComponent: () => import('@app/features/reports/scheduled-reports/scheduled-report-form/scheduled-report-form.component').then(m => m.ScheduledReportFormComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['ScheduledReports'] }
+      },
+      {
+        path: 'scheduled-reports/:id/edit',
+        loadComponent: () => import('@app/features/reports/scheduled-reports/scheduled-report-form/scheduled-report-form.component').then(m => m.ScheduledReportFormComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['ScheduledReports'] }
+      },
+      {
+        path: 'report-viewer',
+        loadComponent: () => import('@app/features/reports/viewer/report-viewer.component').then(m => m.ReportViewerComponent)
+      },
+      {
         path: 'notifications',
         loadComponent: () => import('@notifications/pages/list/notifications.component').then(m => m.NotificationsComponent),
         canActivate: [permissionGuard],

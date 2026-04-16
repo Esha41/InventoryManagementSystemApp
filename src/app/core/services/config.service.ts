@@ -75,6 +75,24 @@ export class ConfigService {
     return this.runtimeConfig?.apiUrl ?? environment.apiUrl;
   }
 
+  /**
+   * DevExpress paths on the public host (same origin as apiUrl with `/api` removed).
+   * Must stay at site root — not under `/api` — so IIS rules like
+   * `^DXXRD(.*)` → `.../api/DXXRD{R:1}` and `^DXXRDV(.*)` → `.../api/DXXRDV{R:1}` apply.
+   * REST calls continue to use {@link apiUrl} (`/api/...`).
+   */
+  get reportingHost(): string {
+    return this.apiUrl.replace('/api', '');
+  }
+
+  get reportingViewerInvokeAction(): string {
+    return '/DXXRDV';
+  }
+
+  get reportingDesignerPath(): string {
+    return '/DXXRD';
+  }
+
   get notificationHubUrl(): string {
     return (
       this.runtimeConfig?.notificationHubUrl ??
