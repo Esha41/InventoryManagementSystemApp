@@ -143,13 +143,13 @@ export class ReportService {
    * Get the DevExpress Report Designer endpoint URL
    */
   getDesignerUrl(reportUrl?: string): string {
-    const baseUrl = this.config.apiUrl.replace('/api', ''); // Remove /api to get base URL
-    const designerUrl = `${baseUrl}/DXXRD`;
-    
+    const baseUrl = this.config.reportingHost;
+    const designerUrl = `${baseUrl}${this.config.reportingDesignerPath}`;
+
     if (reportUrl) {
       return `${designerUrl}?reportUrl=${encodeURIComponent(reportUrl)}`;
     }
-    
+
     return designerUrl;
   }
 
@@ -157,8 +157,8 @@ export class ReportService {
    * Get the DevExpress Web Document Viewer endpoint URL
    */
   getViewerUrl(reportUrl: string): string {
-    const baseUrl = this.config.apiUrl.replace('/api', ''); // Remove /api to get base URL
-    return `${baseUrl}/DXXRDV?reportUrl=${encodeURIComponent(reportUrl)}`;
+    const baseUrl = this.config.reportingHost;
+    return `${baseUrl}${this.config.reportingViewerInvokeAction}?reportUrl=${encodeURIComponent(reportUrl)}`;
   }
 
   /**

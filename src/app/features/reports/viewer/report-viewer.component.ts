@@ -30,7 +30,7 @@ export class ReportViewerComponent implements OnInit {
   reportUrl: string = '';
   reportName: string = '';
   host: string = '';
-  invokeAction: string = '/DXXRDV';
+  readonly invokeAction = '/DXXRDV';
 
   constructor(
     private route: ActivatedRoute,
@@ -40,8 +40,7 @@ export class ReportViewerComponent implements OnInit {
     private authService: BackendAuthService,
     private configService: ConfigService
   ) {
-    const apiUrl = this.configService.apiUrl;
-    this.host = apiUrl.replace('/api', '');
+    this.host = this.configService.reportingHost;
   }
 
   ngOnInit(): void {

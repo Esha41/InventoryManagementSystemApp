@@ -26,8 +26,8 @@ export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit 
   readonly ArrowLeft = ArrowLeft;
   readonly ArrowRight = ArrowRight;
 
-  // Report Designer configuration
-  getDesignerModelAction = "/DXXRD/GetDesignerModel";
+  // IIS: `^DXXRD(.*)` → backend `/api/DXXRD...` — keep path at site root, not `/api/DXXRD`
+  readonly getDesignerModelAction = '/DXXRD/GetDesignerModel';
   reportName: string = "BaseReportTemplate"; // Default report name, can be passed via route params
   host: string = '';
   isLoading = true;
@@ -43,8 +43,7 @@ export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit 
     private translationService: TranslationService,
     private configService: ConfigService
   ) {
-    const apiUrl = this.configService.apiUrl;
-    this.host = apiUrl.replace('/api', '');
+    this.host = this.configService.reportingHost;
   }
 
   ngOnInit(): void {
