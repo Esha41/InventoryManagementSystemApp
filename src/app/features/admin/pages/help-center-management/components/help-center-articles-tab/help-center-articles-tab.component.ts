@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { QuillEditorComponent } from 'ngx-quill';
 import { TranslateModule } from '@ngx-translate/core';
 import {
   LucideAngularModule,
@@ -33,8 +34,12 @@ import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialo
 import { ModalComponent } from '@components/modal/modal.component';
 import { ButtonComponent } from '@components/button/button.component';
 import { PaginationComponent } from '@components/pagination/pagination.component';
-import { APP_CONSTANTS } from '@constants/app.constants';
+import { CardComponent } from '@components/card/card.component';
+import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
+import { APP_CONSTANTS, defaultPageSize } from '@constants/app.constants';
 import { adminBadgePositive, adminTotalPages } from '../../help-center-admin.utils';
+import { HELP_CENTER_ARTICLES_QUILL_MODULES } from '../../help-center-terms-quill.config';
+import { richTextRequired } from '@core/validators/rich-text-required.validator';
 
 @Component({
   selector: 'app-help-center-articles-tab',
@@ -47,9 +52,13 @@ import { adminBadgePositive, adminTotalPages } from '../../help-center-admin.uti
     ConfirmDialogComponent,
     ModalComponent,
     ButtonComponent,
-    PaginationComponent
+    PaginationComponent,
+    CardComponent,
+    RowsPerPageComponent,
+    QuillEditorComponent
   ],
   templateUrl: './help-center-articles-tab.component.html',
+  styleUrls: ['../../help-center-quill-full-width.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HelpCenterArticlesTabComponent implements OnInit, OnDestroy {
@@ -66,7 +75,11 @@ export class HelpCenterArticlesTabComponent implements OnInit, OnDestroy {
   readonly Trash2 = Trash2;
   readonly AlertCircle = AlertCircle;
 
-  readonly adminPageSize = APP_CONSTANTS.DEFAULT_PAGE_SIZE;
+  readonly articlesQuillModules = HELP_CENTER_ARTICLES_QUILL_MODULES;
+  readonly articlesEditorStyles = { minHeight: '280px' };
+
+  readonly pageSizeOptions = [...APP_CONSTANTS.PAGE_SIZE_OPTIONS];
+  rowsPerPage = signal(defaultPageSize);
   articles = signal<HelpCenterArticleDto[]>([]);
   loadingArticles = signal(false);
   articlesListPage = signal(1);
@@ -76,7 +89,7 @@ export class HelpCenterArticlesTabComponent implements OnInit, OnDestroy {
   savingArticle = false;
   articleForm = this.fb.nonNullable.group({
     title: ['', Validators.required],
-    content: ['', Validators.required],
+    content: ['', richTextRequired()],
     category: [''],
     isPublished: [true]
   });
@@ -86,6 +99,8 @@ export class HelpCenterArticlesTabComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadArticles();
+    this.articleForm.statusChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
+    this.articleForm.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
   }
 
   ngOnDestroy(): void {
@@ -94,7 +109,6 @@ export class HelpCenterArticlesTabComponent implements OnInit, OnDestroy {
   }
 
   badgePositive = adminBadgePositive;
-  totalPagesFor = adminTotalPages;
 
   canCreate(): boolean {
     return this.auth.hasPermission('helpcenter.create');
@@ -104,6 +118,16 @@ export class HelpCenterArticlesTabComponent implements OnInit, OnDestroy {
   }
   canDelete(): boolean {
     return this.auth.hasPermission('helpcenter.delete');
+  }
+
+  articleContentInvalid(): boolean {
+    const c = this.articleForm.get('content');
+    return !!c && c.invalid && c.touched;
+  }
+
+  onArticleContentBlur(): void {
+    this.articleForm.get('content')?.markAsTouched();
+    this.cdr.markForCheck();
   }
 
   loadArticles(): void {
@@ -247,23 +271,31 @@ export class HelpCenterArticlesTabComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
+  articleTotalPages(): number {
+    return adminTotalPages(this.articles().length, this.rowsPerPage());
+  }
+
   effectiveArticlesPage(): number {
-    return Math.min(
-      Math.max(1, this.articlesListPage()),
-      this.totalPagesFor(this.articles().length)
-    );
+    return Math.min(Math.max(1, this.articlesListPage()), this.articleTotalPages());
   }
 
   paginatedArticles(): HelpCenterArticleDto[] {
     const items = this.articles();
     const page = this.effectiveArticlesPage();
-    const start = (page - 1) * this.adminPageSize;
-    return items.slice(start, start + this.adminPageSize);
+    const size = this.rowsPerPage();
+    const start = (page - 1) * size;
+    return items.slice(start, start + size);
   }
 
   onArticlesPageChange(p: number): void {
-    const t = this.totalPagesFor(this.articles().length);
+    const t = this.articleTotalPages();
     this.articlesListPage.set(Math.max(1, Math.min(p, t)));
+    this.cdr.markForCheck();
+  }
+
+  onArticlesRowsPerPageChange(size: number): void {
+    this.rowsPerPage.set(size);
+    this.articlesListPage.set(1);
     this.cdr.markForCheck();
   }
 }

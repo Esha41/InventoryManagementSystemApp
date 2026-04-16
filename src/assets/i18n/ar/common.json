@@ -240,9 +240,7 @@
     "stockNotificationSettings": "إعدادات إشعار انخفاض المخزون",
     "announcements": "الإعلانات",
     "help": "المساعدة",
-    "helpMe": "ساعدني",
-    "helpCenterAdmin": "مركز المساعدة (إداري)",
-    "helpMeAdmin": "ساعدني (إداري)"
+    "helpCenterAdmin": "مركز المساعدة (إداري)"
   },
   "footer": {
     "copyright": "حقوق النشر © برزان القابضة {{year}}"

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, filter } from 'rxjs';
-import { LucideAngularModule, House, Boxes, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Badge, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList, Package, Building2, GitBranch, Mail, Upload, BarChart3, Database, Megaphone, HelpCircle, BookMarked, LifeBuoy } from 'lucide-angular';
+import { LucideAngularModule, House, Boxes, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Badge, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList, Package, Building2, GitBranch, Mail, Upload, BarChart3, Database, Megaphone, HelpCircle, BookMarked } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { TranslationService } from '@services/translation.service';
 
@@ -58,12 +58,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
       label: 'nav.help',
       icon: HelpCircle,
       route: '/help',
-      permissions: []
-    },
-    {
-      label: 'nav.helpMe',
-      icon: LifeBuoy,
-      route: '/help-me',
       permissions: []
     },
     {
@@ -294,12 +288,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
       icon: BookMarked,
       route: '/admin/help-center',
       permissions: ['helpcenter.page', 'helpcenter.view']
-    },
-    {
-      label: 'nav.helpMeAdmin',
-      icon: LifeBuoy,
-      route: '/admin/help-me',
-      permissions: ['Permissions.HelpCenter.View']
     },
     {
       label: 'nav.announcements',

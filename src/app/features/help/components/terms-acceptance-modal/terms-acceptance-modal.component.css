@@ -19,3 +19,37 @@
   padding-inline-start: 1.25rem;
   margin-bottom: 0.65rem;
 }
+
+.prose-terms ::ng-deep h1 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0 0 0.65rem;
+}
+.prose-terms ::ng-deep h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 0 0.55rem;
+}
+.prose-terms ::ng-deep h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+.prose-terms ::ng-deep a {
+  color: var(--color-brand, #2563eb);
+  text-decoration: underline;
+}
+.prose-terms ::ng-deep blockquote {
+  margin: 0 0 0.65rem;
+  padding-inline-start: 0.85rem;
+  border-inline-start: 3px solid var(--color-border);
+}
+.prose-terms ::ng-deep .ql-align-center {
+  text-align: center;
+}
+.prose-terms ::ng-deep .ql-align-right {
+  text-align: end;
+}
+.prose-terms ::ng-deep .ql-align-justify {
+  text-align: justify;
+}

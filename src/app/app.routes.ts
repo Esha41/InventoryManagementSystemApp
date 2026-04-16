@@ -362,22 +362,8 @@ export const routes: Routes = [
             m => m.HelpCenterUserComponent
           )
       },
-      {
-        path: 'help-me',
-        loadComponent: () =>
-          import('@features/help-me-user/pages/help-me-page/help-me-page.component').then(
-            m => m.HelpMePageComponent
-          )
-      },
-      {
-        path: 'admin/help-me',
-        loadComponent: () =>
-          import('@features/help-me-admin/pages/help-me-admin-page/help-me-admin-page.component').then(
-            m => m.HelpMeAdminPageComponent
-          ),
-        canActivate: [permissionGuard],
-        data: { permissions: ['Permissions.HelpCenter.View'] }
-      },
+      { path: 'help-me', redirectTo: 'help', pathMatch: 'full' },
+      { path: 'admin/help-me', redirectTo: 'admin/help-center', pathMatch: 'full' },
       {
         path: 'admin/help-center',
         loadComponent: () =>

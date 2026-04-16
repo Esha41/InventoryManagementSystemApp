@@ -35,6 +35,12 @@
         (click)="setTab('messages')">
         <lucide-angular [img]="Inbox" class="h-4 w-4 shrink-0"></lucide-angular>
         {{ 'helpCenter.tabMessages' | translate }}
+        <span
+          *ngIf="unreadMessageCount() > 0"
+          class="ms-1 inline-flex min-h-[1.25rem] min-w-[1.25rem] shrink-0 items-center justify-center rounded-full bg-[var(--color-error)] px-1.5 text-[0.625rem] font-bold leading-none text-white tabular-nums"
+          [attr.aria-label]="'helpCenter.unreadMessagesBadge' | translate: { count: unreadMessageCount() }">
+          {{ unreadMessageCount() > 99 ? '99+' : unreadMessageCount() }}
+        </span>
       </button>
       <button
         type="button"
@@ -45,10 +51,32 @@
         <lucide-angular [img]="FileText" class="h-4 w-4 shrink-0"></lucide-angular>
         {{ 'helpCenter.tabTermsAdmin' | translate }}
       </button>
+      <button
+        type="button"
+        role="tab"
+        [class]="tabClasses(activeTab() === 'manual')"
+        [attr.aria-selected]="activeTab() === 'manual'"
+        (click)="setTab('manual')">
+        <lucide-angular [img]="Download" class="h-4 w-4 shrink-0"></lucide-angular>
+        {{ 'helpCenter.tabManualAdmin' | translate }}
+      </button>
+      <button
+        type="button"
+        role="tab"
+        [class]="tabClasses(activeTab() === 'contact')"
+        [attr.aria-selected]="activeTab() === 'contact'"
+        (click)="setTab('contact')">
+        <lucide-angular [img]="Phone" class="h-4 w-4 shrink-0"></lucide-angular>
+        {{ 'helpCenter.tabContactAdmin' | translate }}
+      </button>
     </div>
 
     <app-help-center-articles-tab *ngIf="activeTab() === 'articles'"></app-help-center-articles-tab>
-    <app-help-center-messages-tab *ngIf="activeTab() === 'messages'"></app-help-center-messages-tab>
+    <app-help-center-messages-tab
+      *ngIf="activeTab() === 'messages'"
+      (unreadCountChange)="onMessagesUnreadCountChange($event)"></app-help-center-messages-tab>
     <app-help-center-terms-tab *ngIf="activeTab() === 'terms'"></app-help-center-terms-tab>
+    <app-help-center-manual-tab *ngIf="activeTab() === 'manual'"></app-help-center-manual-tab>
+    <app-help-center-contact-tab *ngIf="activeTab() === 'contact'"></app-help-center-contact-tab>
   </div>
 </div>

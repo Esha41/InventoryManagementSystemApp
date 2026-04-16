@@ -53,6 +53,17 @@ export interface ReplyContactMessageDto {
   adminReply: string;
 }
 
+/** Support email and phone shown on the user Contact tab (admin-managed). */
+export interface HelpCenterContactDisplayDto {
+  supportEmail: string;
+  supportPhone: string;
+}
+
+export interface UpdateHelpCenterContactDisplayDto {
+  supportEmail: string;
+  supportPhone: string;
+}
+
 export interface HelpCenterTermsDto {
   id: number;
   version: string;

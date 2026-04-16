@@ -7,6 +7,10 @@ export function adminBadgePositive(isPositive: boolean): string {
     : `${base} bg-[var(--color-background-soft)] text-[var(--color-text-muted)]`;
 }
 
-export function adminTotalPages(count: number): number {
-  return Math.max(1, Math.ceil(count / APP_CONSTANTS.DEFAULT_PAGE_SIZE));
+export function adminTotalPages(
+  count: number,
+  pageSize: number = APP_CONSTANTS.DEFAULT_PAGE_SIZE
+): number {
+  const ps = Math.max(1, pageSize);
+  return Math.max(1, Math.ceil(count / ps));
 }

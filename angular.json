@@ -36,6 +36,8 @@
               "src/assets"
             ],
             "styles": [
+              "node_modules/quill/dist/quill.core.css",
+              "node_modules/quill/dist/quill.snow.css",
               "src/styles.css"
             ],
             "scripts": [],
@@ -45,7 +47,10 @@
               "leaflet",
               "core-js",
               "rgbcolor",
-              "raf"]
+              "raf",
+              "dompurify",
+              "quill"
+            ]
 
           },
           "configurations": {
@@ -123,6 +128,8 @@
               "src/assets"
             ],
             "styles": [
+              "node_modules/quill/dist/quill.core.css",
+              "node_modules/quill/dist/quill.snow.css",
               "src/styles.css"
             ],
             "scripts": []

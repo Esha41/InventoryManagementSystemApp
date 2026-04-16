@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { QuillEditorComponent } from 'ngx-quill';
 import { TranslateModule } from '@ngx-translate/core';
 import {
   LucideAngularModule,
@@ -30,9 +31,13 @@ import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialo
 import { ModalComponent } from '@components/modal/modal.component';
 import { ButtonComponent } from '@components/button/button.component';
 import { PaginationComponent } from '@components/pagination/pagination.component';
-import { APP_CONSTANTS } from '@constants/app.constants';
+import { CardComponent } from '@components/card/card.component';
+import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
+import { APP_CONSTANTS, defaultPageSize } from '@constants/app.constants';
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 import { adminBadgePositive, adminTotalPages } from '../../help-center-admin.utils';
+import { HELP_CENTER_TERMS_QUILL_MODULES } from '../../help-center-terms-quill.config';
+import { richTextRequired } from '@core/validators/rich-text-required.validator';
 
 @Component({
   selector: 'app-help-center-terms-tab',
@@ -46,9 +51,13 @@ import { adminBadgePositive, adminTotalPages } from '../../help-center-admin.uti
     ModalComponent,
     ButtonComponent,
     PaginationComponent,
-    AppDateTimePipe
+    CardComponent,
+    RowsPerPageComponent,
+    AppDateTimePipe,
+    QuillEditorComponent
   ],
   templateUrl: './help-center-terms-tab.component.html',
+  styleUrls: ['../../help-center-quill-full-width.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HelpCenterTermsTabComponent implements OnInit, OnDestroy {
@@ -66,7 +75,11 @@ export class HelpCenterTermsTabComponent implements OnInit, OnDestroy {
   readonly CheckCircle2 = CheckCircle2;
   readonly Ban = Ban;
 
-  readonly adminPageSize = APP_CONSTANTS.DEFAULT_PAGE_SIZE;
+  readonly termsQuillModules = HELP_CENTER_TERMS_QUILL_MODULES;
+  readonly termsEditorStyles = { minHeight: '320px' };
+
+  readonly pageSizeOptions = [...APP_CONSTANTS.PAGE_SIZE_OPTIONS];
+  rowsPerPage = signal(defaultPageSize);
   termsVersions = signal<HelpCenterTermsDto[]>([]);
   loadingTerms = signal(false);
   termsListPage = signal(1);
@@ -75,8 +88,8 @@ export class HelpCenterTermsTabComponent implements OnInit, OnDestroy {
   savingTerms = false;
   editingTerms: HelpCenterTermsDto | null = null;
   termsForm = this.fb.nonNullable.group({
-    version: ['', Validators.required],
-    content: ['', Validators.required],
+    version: ['', [Validators.required, Validators.maxLength(50)]],
+    content: ['', richTextRequired()],
     effectiveDate: ['', Validators.required]
   });
 
@@ -85,6 +98,8 @@ export class HelpCenterTermsTabComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadTermsVersions();
+    this.termsForm.statusChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
+    this.termsForm.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
   }
 
   ngOnDestroy(): void {
@@ -93,7 +108,27 @@ export class HelpCenterTermsTabComponent implements OnInit, OnDestroy {
   }
 
   badgePositive = adminBadgePositive;
-  totalPagesFor = adminTotalPages;
+
+  termsFieldInvalid(field: 'version' | 'content' | 'effectiveDate'): boolean {
+    const c = this.termsForm.get(field);
+    return !!c && c.invalid && c.touched;
+  }
+
+  termsFieldErrorKey(field: 'version' | 'content' | 'effectiveDate'): string | null {
+    const c = this.termsForm.get(field);
+    if (!c?.errors || !c.touched) return null;
+    if (c.errors['maxlength']) return 'helpCenter.termsVersionMaxLength';
+    return 'helpCenter.termsFieldRequired';
+  }
+
+  onTermsContentBlur(): void {
+    this.termsForm.get('content')?.markAsTouched();
+    this.cdr.markForCheck();
+  }
+
+  onTermsContentChanged(): void {
+    this.cdr.markForCheck();
+  }
 
   canCreate(): boolean {
     return this.auth.hasPermission('helpcenter.create');
@@ -281,23 +316,31 @@ export class HelpCenterTermsTabComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
+  termsTableTotalPages(): number {
+    return adminTotalPages(this.termsVersions().length, this.rowsPerPage());
+  }
+
   effectiveTermsPage(): number {
-    return Math.min(
-      Math.max(1, this.termsListPage()),
-      this.totalPagesFor(this.termsVersions().length)
-    );
+    return Math.min(Math.max(1, this.termsListPage()), this.termsTableTotalPages());
   }
 
   paginatedTermsVersions(): HelpCenterTermsDto[] {
     const items = this.termsVersions();
     const page = this.effectiveTermsPage();
-    const start = (page - 1) * this.adminPageSize;
-    return items.slice(start, start + this.adminPageSize);
+    const size = this.rowsPerPage();
+    const start = (page - 1) * size;
+    return items.slice(start, start + size);
   }
 
   onTermsPageChange(p: number): void {
-    const t = this.totalPagesFor(this.termsVersions().length);
+    const t = this.termsTableTotalPages();
     this.termsListPage.set(Math.max(1, Math.min(p, t)));
+    this.cdr.markForCheck();
+  }
+
+  onTermsRowsPerPageChange(size: number): void {
+    this.rowsPerPage.set(size);
+    this.termsListPage.set(1);
     this.cdr.markForCheck();
   }
 }

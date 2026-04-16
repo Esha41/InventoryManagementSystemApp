@@ -19,6 +19,8 @@ import { TranslationService } from '@services/translation.service';
 export class PaginationComponent {
   @Input() currentPage: number = 1;
   @Input() totalPages: number = 1;
+  /** When true, show controls even for a single page (e.g. consistent layout across tabs). */
+  @Input() alwaysShow = false;
   @Output() pageChange = new EventEmitter<number>();
 
   readonly ChevronLeft = ChevronLeft;
@@ -48,6 +50,9 @@ export class PaginationComponent {
    * Checks if pagination should be displayed
    */
   get shouldDisplay(): boolean {
+    if (this.alwaysShow) {
+      return this.validatedTotalPages >= 1;
+    }
     return this.validatedTotalPages > 1;
   }
 

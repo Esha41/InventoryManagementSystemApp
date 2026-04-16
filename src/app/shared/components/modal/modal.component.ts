@@ -45,7 +45,7 @@ import { LucideAngularModule, X } from 'lucide-angular';
 
           <!-- Body -->
           <div
-            class="p-6"
+            class="p-6 min-w-0 w-full"
             [class.overflow-y-auto]="scrollable"
             [style.max-height]="scrollable ? (bodyMaxHeight || '60vh') : null"
           >

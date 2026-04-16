@@ -7,8 +7,10 @@ import {
   HelpCenterArticleDto,
   HelpCenterContactMessageDto,
   HelpCenterTermsDto,
+  HelpCenterContactDisplayDto,
   ReplyContactMessageDto,
   SubmitContactMessageDto,
+  UpdateHelpCenterContactDisplayDto,
   UpdateHelpCenterArticleDto,
   UpdateHelpCenterTermsDto,
   UpsertHelpCenterTermsDto,
@@ -72,6 +74,14 @@ export class HelpCenterService {
 
   deleteContactMessage(id: number): Observable<boolean> {
     return this.api.delete<boolean>(this.ep.CONTACT_BY_ID(id));
+  }
+
+  getContactDisplaySettings(): Observable<HelpCenterContactDisplayDto> {
+    return this.api.get<HelpCenterContactDisplayDto>(this.ep.CONTACT_DISPLAY);
+  }
+
+  updateContactDisplaySettings(dto: UpdateHelpCenterContactDisplayDto): Observable<HelpCenterContactDisplayDto> {
+    return this.api.put<HelpCenterContactDisplayDto>(this.ep.CONTACT_DISPLAY, dto);
   }
 
   // ── Terms ─────────────────────────────────────────────────────────────────

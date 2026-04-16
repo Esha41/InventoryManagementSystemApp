@@ -239,6 +239,7 @@ export const API_ENDPOINTS = {
     CONTACT: '/HelpCenter/contact',
     CONTACT_BY_ID: (id: number) => `/HelpCenter/contact/${id}`,
     CONTACT_REPLY: (id: number) => `/HelpCenter/contact/${id}/reply`,
+    CONTACT_DISPLAY: '/HelpCenter/contact/display',
     TERMS: '/HelpCenter/terms',
     TERMS_ALL: '/HelpCenter/terms/all',
     TERMS_BY_ID: (id: number) => `/HelpCenter/terms/${id}`,

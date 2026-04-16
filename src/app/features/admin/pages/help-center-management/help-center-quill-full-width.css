@@ -1,0 +1,16 @@
+/**
+ * ngx-quill sets :host { display: inline-block }, which collapses width (~toolbar width).
+ * Stretch editor to the modal / form column.
+ */
+:host quill-editor {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+:host ::ng-deep quill-editor .ql-toolbar,
+:host ::ng-deep quill-editor .ql-container {
+  width: 100%;
+  box-sizing: border-box;
+}

@@ -8,7 +8,7 @@ import { HelpCenterTermsDto, TermsAcceptanceStatusDto } from '@models/help-cente
 import { ErrorHandler } from '@utils/error-handler.utils';
 
 /**
- * Facade: terms blocking flow after login (calls Help Center API only).
+ * Terms blocking flow after login (Help Center API).
  */
 @Injectable({
   providedIn: 'root'
@@ -56,8 +56,8 @@ export class TermsAcceptanceFacade {
         },
         error: err => {
           this.accepting.set(false);
-          const msg = ErrorHandler.extractErrorMessage(err, 'helpMe.terms.acceptError');
-          this.toast.error(msg || this.i18n.getTranslation('helpMe.terms.acceptError'));
+          const msg = ErrorHandler.extractErrorMessage(err, 'helpCenter.acceptTermsError');
+          this.toast.error(msg || this.i18n.getTranslation('helpCenter.acceptTermsError'));
         }
       });
   }

@@ -4,14 +4,19 @@ import {
   Component,
   OnDestroy,
   OnInit,
+  Output,
+  EventEmitter,
   inject
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, Send, Trash2 } from 'lucide-angular';
-import { Subject, takeUntil } from 'rxjs';
+import { LucideAngularModule, Trash2 } from 'lucide-angular';
+import { Subject, merge, takeUntil } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 
 import { HelpCenterService } from '@services/help-center.service';
 import { ToastService } from '@services/toast.service';
@@ -23,7 +28,9 @@ import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialo
 import { ModalComponent } from '@components/modal/modal.component';
 import { ButtonComponent } from '@components/button/button.component';
 import { PaginationComponent } from '@components/pagination/pagination.component';
-import { APP_CONSTANTS } from '@constants/app.constants';
+import { CardComponent } from '@components/card/card.component';
+import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
+import { APP_CONSTANTS, defaultPageSize } from '@constants/app.constants';
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 import { adminBadgePositive, adminTotalPages } from '../../help-center-admin.utils';
 
@@ -35,29 +42,34 @@ import { adminBadgePositive, adminTotalPages } from '../../help-center-admin.uti
     ReactiveFormsModule,
     TranslateModule,
     LucideAngularModule,
+    DropdownComponent,
     ConfirmDialogComponent,
     ModalComponent,
     ButtonComponent,
     PaginationComponent,
+    CardComponent,
+    RowsPerPageComponent,
     AppDateTimePipe
   ],
   templateUrl: './help-center-messages-tab.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HelpCenterMessagesTabComponent implements OnInit, OnDestroy {
+  /** Emits current unread count whenever the message list changes (for tab badge in parent). */
+  @Output() unreadCountChange = new EventEmitter<number>();
+
   private readonly helpCenter = inject(HelpCenterService);
   private readonly toast = inject(ToastService);
   private readonly i18n = inject(TranslationService);
   private readonly auth = inject(BackendAuthService);
-  private readonly fb = inject(FormBuilder);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly destroy$ = new Subject<void>();
 
-  readonly Send = Send;
   readonly Trash2 = Trash2;
 
-  readonly adminPageSize = APP_CONSTANTS.DEFAULT_PAGE_SIZE;
+  readonly pageSizeOptions = [...APP_CONSTANTS.PAGE_SIZE_OPTIONS];
+  rowsPerPage = defaultPageSize;
   messages: HelpCenterContactMessageDto[] = [];
   loadingMessages = false;
   messagesListPage = 1;
@@ -65,15 +77,24 @@ export class HelpCenterMessagesTabComponent implements OnInit, OnDestroy {
   messageModalOpen = false;
   selectedMessage: HelpCenterContactMessageDto | null = null;
   loadingMessageDetail = false;
-  savingReply = false;
-  replyForm = this.fb.nonNullable.group({
-    adminReply: ['', Validators.required]
-  });
 
   showDeleteMessageDialog = false;
   messageToDelete: HelpCenterContactMessageDto | null = null;
 
+  /** Client-side filters (API returns full list). */
+  readonly statusFilter = new FormControl<string>('all', { nonNullable: true });
+  readonly searchQuery = new FormControl<string>('', { nonNullable: true });
+
   ngOnInit(): void {
+    merge(
+      this.statusFilter.valueChanges,
+      this.searchQuery.valueChanges.pipe(debounceTime(250), distinctUntilChanged())
+    )
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.messagesListPage = 1;
+        this.cdr.markForCheck();
+      });
     this.loadMessages();
   }
 
@@ -83,13 +104,43 @@ export class HelpCenterMessagesTabComponent implements OnInit, OnDestroy {
   }
 
   badgePositive = adminBadgePositive;
-  totalPagesFor = adminTotalPages;
 
-  canEdit(): boolean {
-    return this.auth.hasPermission('helpcenter.edit');
-  }
   canDelete(): boolean {
     return this.auth.hasPermission('helpcenter.delete');
+  }
+
+  private emitUnreadCount(): void {
+    const n = this.messages.filter(m => !m.isRead).length;
+    this.unreadCountChange.emit(n);
+  }
+
+  statusFilterOptions(): DropdownOption<string>[] {
+    return [
+      { label: this.i18n.getTranslation('helpCenter.messagesFilterAll'), value: 'all' },
+      { label: this.i18n.getTranslation('helpCenter.messagesFilterUnread'), value: 'unread' },
+      { label: this.i18n.getTranslation('helpCenter.messagesFilterRead'), value: 'read' }
+    ];
+  }
+
+  /** Messages after status + sender/subject search (no mutation of API list). */
+  filteredMessages(): HelpCenterContactMessageDto[] {
+    let list = this.messages;
+    const status = this.statusFilter.value ?? 'all';
+    if (status === 'read') {
+      list = list.filter(m => m.isRead);
+    } else if (status === 'unread') {
+      list = list.filter(m => !m.isRead);
+    }
+    const q = (this.searchQuery.value ?? '').trim().toLowerCase();
+    if (!q) {
+      return list;
+    }
+    return list.filter(m => {
+      const name = (m.senderName ?? '').toLowerCase();
+      const email = (m.senderEmail ?? '').toLowerCase();
+      const subj = (m.subject ?? '').toLowerCase();
+      return name.includes(q) || email.includes(q) || subj.includes(q);
+    });
   }
 
   loadMessages(): void {
@@ -102,11 +153,13 @@ export class HelpCenterMessagesTabComponent implements OnInit, OnDestroy {
           this.messages = rows;
           this.messagesListPage = 1;
           this.loadingMessages = false;
+          this.emitUnreadCount();
           this.cdr.markForCheck();
         },
         error: err => {
           this.toast.error(ErrorHandler.extractErrorMessage(err, 'helpCenter.loadMessagesError'));
           this.loadingMessages = false;
+          this.unreadCountChange.emit(0);
           this.cdr.markForCheck();
         }
       });
@@ -114,7 +167,6 @@ export class HelpCenterMessagesTabComponent implements OnInit, OnDestroy {
 
   openMessage(m: HelpCenterContactMessageDto): void {
     this.selectedMessage = m;
-    this.replyForm.reset({ adminReply: '' });
     this.messageModalOpen = true;
     this.loadingMessageDetail = true;
     this.helpCenter
@@ -123,7 +175,6 @@ export class HelpCenterMessagesTabComponent implements OnInit, OnDestroy {
       .subscribe({
         next: detail => {
           this.selectedMessage = detail;
-          this.replyForm.patchValue({ adminReply: detail.adminReply ?? '' });
           this.loadingMessageDetail = false;
           this.loadMessages();
           this.cdr.markForCheck();
@@ -140,34 +191,6 @@ export class HelpCenterMessagesTabComponent implements OnInit, OnDestroy {
     this.messageModalOpen = false;
     this.selectedMessage = null;
     this.cdr.markForCheck();
-  }
-
-  submitReply(): void {
-    const msg = this.selectedMessage;
-    if (!msg || this.replyForm.invalid) {
-      this.replyForm.markAllAsTouched();
-      return;
-    }
-    const reply = this.replyForm.getRawValue().adminReply.trim();
-    if (!reply) return;
-    this.savingReply = true;
-    this.helpCenter
-      .replyToContactMessage(msg.id, { adminReply: reply })
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.toast.success(this.i18n.getTranslation('helpCenter.replySaved'));
-          this.savingReply = false;
-          this.closeMessageModal();
-          this.loadMessages();
-          this.cdr.markForCheck();
-        },
-        error: err => {
-          this.toast.error(ErrorHandler.extractErrorMessage(err, 'helpCenter.replyError'));
-          this.savingReply = false;
-          this.cdr.markForCheck();
-        }
-      });
   }
 
   confirmDeleteMessage(m: HelpCenterContactMessageDto): void {
@@ -208,19 +231,30 @@ export class HelpCenterMessagesTabComponent implements OnInit, OnDestroy {
     return this.sanitizer.bypassSecurityTrustHtml(html);
   }
 
+  messagesTableTotalPages(): number {
+    return adminTotalPages(this.filteredMessages().length, this.rowsPerPage);
+  }
+
   effectiveMessagesPage(): number {
-    return Math.min(Math.max(1, this.messagesListPage), this.totalPagesFor(this.messages.length));
+    return Math.min(Math.max(1, this.messagesListPage), this.messagesTableTotalPages());
   }
 
   paginatedMessages(): HelpCenterContactMessageDto[] {
+    const all = this.filteredMessages();
     const page = this.effectiveMessagesPage();
-    const start = (page - 1) * this.adminPageSize;
-    return this.messages.slice(start, start + this.adminPageSize);
+    const start = (page - 1) * this.rowsPerPage;
+    return all.slice(start, start + this.rowsPerPage);
   }
 
   onMessagesPageChange(p: number): void {
-    const t = this.totalPagesFor(this.messages.length);
+    const t = this.messagesTableTotalPages();
     this.messagesListPage = Math.max(1, Math.min(p, t));
+    this.cdr.markForCheck();
+  }
+
+  onMessagesRowsPerPageChange(size: number): void {
+    this.rowsPerPage = size;
+    this.messagesListPage = 1;
     this.cdr.markForCheck();
   }
 }

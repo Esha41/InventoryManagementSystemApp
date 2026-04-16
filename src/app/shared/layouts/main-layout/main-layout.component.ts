@@ -8,7 +8,7 @@ import { AnnouncementBannerComponent } from '@components/announcement-banner/ann
 import { IdleTimeoutModalComponent } from '@components/idle-timeout-modal/idle-timeout-modal.component';
 import { IdleService } from '@services/idle.service';
 import { OnboardingTourService } from '@features/onboarding/services/onboarding-tour.service';
-import { TermsAcceptanceFacade } from '@features/help-me-user/facades/terms-acceptance.facade';
+import { TermsAcceptanceFacade } from '@features/help/facades/terms-acceptance.facade';
 import { TermsAcceptanceModalComponent } from '@features/help/components/terms-acceptance-modal/terms-acceptance-modal.component';
 
 @Component({

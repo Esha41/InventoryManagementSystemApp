@@ -8,8 +8,6 @@ interface RuntimeConfig {
   notificationHubUrl?: string;
   fileBaseUrl?: string;
   persistAuthAcrossSessions?: boolean;
-  /** Optional: pin Help Me landing to a specific published article id (overrides category match). */
-  helpMeArticleId?: number;
 }
 
 @Injectable({
@@ -132,11 +130,5 @@ export class ConfigService {
   }
   get persistAuthAcrossSessions(): boolean {
     return this.runtimeConfig?.persistAuthAcrossSessions ?? environment.persistAuthAcrossSessions ?? false;
-  }
-
-  /** When set in runtime-config.json, Help Me resolves this article id first. */
-  get helpMeArticleId(): number | undefined {
-    const v = this.runtimeConfig?.helpMeArticleId;
-    return typeof v === 'number' && !Number.isNaN(v) ? v : undefined;
   }
 }
