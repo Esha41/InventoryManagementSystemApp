@@ -24,6 +24,8 @@ export interface WorkflowApprovalState {
   supplyData: any | null;
   previousWorkflowSteps: any[];
   loadingPreviousSteps: boolean;
+  isReturnDepotSet: boolean;
+  isReturnDeliveryDateSet: boolean;
 }
 
 @Injectable({
@@ -40,7 +42,9 @@ export class WorkflowApprovalStateService {
     isSuperAdmin: false,
     supplyData: null,
     previousWorkflowSteps: [],
-    loadingPreviousSteps: false
+    loadingPreviousSteps: false,
+    isReturnDepotSet: false,
+    isReturnDeliveryDateSet: false
   });
 
   state$: Observable<WorkflowApprovalState> = this.stateSubject.asObservable();
@@ -93,7 +97,9 @@ export class WorkflowApprovalStateService {
       isSuperAdmin: false,
       supplyData: null,
       previousWorkflowSteps: [],
-      loadingPreviousSteps: false
+      loadingPreviousSteps: false,
+      isReturnDepotSet: false,
+      isReturnDeliveryDateSet: false
     });
   }
 
@@ -320,5 +326,37 @@ export class WorkflowApprovalStateService {
     );
 
     return hasReceiverInfo;
+  }
+
+  // Return-specific permission and state methods
+
+  canSetReturnDepot(): boolean {
+    const state = this.getState();
+    return this.permissionsService.canSetReturnDepot(state.requestDetail);
+  }
+
+  canSetReturnDeliveryDate(): boolean {
+    const state = this.getState();
+    return this.permissionsService.canSetReturnDeliveryDate(state.requestDetail);
+  }
+
+  canProcessReturnItems(): boolean {
+    const state = this.getState();
+    return this.permissionsService.canProcessReturnItems(state.requestDetail);
+  }
+
+  isReturnDepotSet(): boolean {
+    return this.getState().isReturnDepotSet;
+  }
+
+  isReturnDeliveryDateSet(): boolean {
+    return this.getState().isReturnDeliveryDateSet;
+  }
+
+  /**
+   * When true, the Take Action Approve button is hidden for this return (see permissions service).
+   */
+  shouldHideStandaloneApproveForReturn(): boolean {
+    return this.permissionsService.shouldHideStandaloneApproveForReturn(this.getState().requestDetail);
   }
 }

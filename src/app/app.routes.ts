@@ -232,6 +232,12 @@ export const routes: Routes = [
         data: { permissions: ['viewrequest.page', 'viewrequest.view', 'order.view'] }
       },
       {
+        path: 'requests-management/:id/process-return-items',
+        loadComponent: () => import('@requests/pages/management/process-return-items/process-return-items.component').then(m => m.ProcessReturnItemsComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['ProcessReturnItems'] }
+      },
+      {
         path: 'requests-management/:id/supply-request-detail',
         loadComponent: () => import('@requests/pages/management/supply-request-detail/supply-request-detail.component').then(m => m.SupplyRequestDetailComponent),
         canActivate: [permissionGuard],

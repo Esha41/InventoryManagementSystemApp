@@ -440,6 +440,7 @@
   },
   "assetStatus": {
     "readyToIssue": "Ready to Issue",
+    "notReadyToIssue": "Not Ready to Issue",
     "assigned": "Assigned",
     "inMaintenance": "In Maintenance",
     "unserviceableRepairable": "Unserviceable (Repairable)",

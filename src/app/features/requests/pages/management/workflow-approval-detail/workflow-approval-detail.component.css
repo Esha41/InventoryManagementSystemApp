@@ -105,8 +105,8 @@ span[class*="rounded"] {
 /* Connection line styling */
 .approval-connector-line {
   position: absolute;
-  left: 1.5rem;
-  /* 24px - aligns with circle center (w-12 = 48px, center = 24px) */
+  inset-inline-start: 1.5rem;
+  /* 24px from inline start — aligns with circle center; flips with RTL */
   width: 2px;
   background: linear-gradient(to bottom, var(--color-border) 0%, var(--color-border-muted) 50%, var(--color-border) 100%);
   z-index: 1;

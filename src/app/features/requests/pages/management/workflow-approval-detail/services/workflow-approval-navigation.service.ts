@@ -94,6 +94,14 @@ export class WorkflowApprovalNavigationService {
   }
 
   /**
+   * Navigate to process return items page
+   */
+  navigateToProcessReturnItems(requestId: number): void {
+    if (!requestId) return;
+    this.router.navigate(['/requests-management', requestId, 'process-return-items']);
+  }
+
+  /**
    * Navigate to item detail page to view item details (same view as new issue request)
    */
   navigateToItemDetails(itemId: number, requestId: number, itemType?: number | string): void {

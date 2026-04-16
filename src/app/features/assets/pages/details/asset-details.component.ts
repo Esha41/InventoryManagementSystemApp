@@ -119,6 +119,8 @@ export class AssetDetailsComponent implements OnInit, OnDestroy {
     switch (status) {
       case AssetStatus.ReadyToIssue:
       case 'ReadyToIssue': return 'bg-[var(--color-success)]/20 text-[var(--color-success)]';
+      case AssetStatus.NotReadyToIssue:
+      case 'NotReadyToIssue': return 'bg-[var(--color-warning)]/20 text-[var(--color-warning)]';
       case AssetStatus.InMaintenance:
       case 'InMaintenance':
       case AssetStatus.UnserviceableRepairable:

@@ -16,7 +16,8 @@ export enum FileEntityType {
     Weapon = 7,
     Explosive = 8,
     Asset = 9,
-    AssetSupply = 10
+    AssetSupply = 10,
+    ReturnTrackingLine = 11
 }
 
 /**

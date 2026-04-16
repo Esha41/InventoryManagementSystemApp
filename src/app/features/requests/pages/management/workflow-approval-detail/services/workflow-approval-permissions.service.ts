@@ -25,8 +25,34 @@ export class WorkflowApprovalPermissionsService {
   private readonly REVIEW_WEAPON_SUPPLY_PERMISSION = 'ReviewWeaponSupply';
   private readonly SELECT_DEPOTS_PERMISSION = 'SelectDepots';
   private readonly UPDATE_REQUEST_ITEMS_PERMISSION = 'UpdateRequestItems';
+  private readonly SET_RETURN_DEPOT_PERMISSION = 'SetReturnDepot';
+  private readonly SET_RETURN_DELIVERY_DATE_PERMISSION = 'SetReturnDeliveryDate';
+  private readonly PROCESS_RETURN_ITEMS_PERMISSION = 'ProcessReturnItems';
 
   constructor(private authService: BackendAuthService) { }
+
+  /**
+   * Super admin or elevated platform admins (Administrator role, heuristic username/email, or very large permission set).
+   * Same criteria as return-field / pickup-date admin bypasses elsewhere in this service.
+   */
+  isElevatedWorkflowAdmin(): boolean {
+    if (this.authService.isSuperAdmin()) {
+      return true;
+    }
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) {
+      return false;
+    }
+    try {
+      const hasAdministratorRole = this.authService.hasRole('Administrator') || this.authService.hasRole('Admin');
+      const isAdminByUsername = currentUser.userName?.toLowerCase().includes('administrator') ||
+        currentUser.email?.toLowerCase().includes('administrator');
+      const hasAdminLevelPermissions = (currentUser.permissions?.length || 0) >= 200;
+      return hasAdministratorRole || isAdminByUsername || hasAdminLevelPermissions;
+    } catch {
+      return false;
+    }
+  }
 
   /**
    * Check if user can approve or reject requests.
@@ -57,7 +83,7 @@ export class WorkflowApprovalPermissionsService {
       }
     }
 
-    if (this.authService.isSuperAdmin()) {
+    if (this.isElevatedWorkflowAdmin()) {
       return true;
     }
 
@@ -452,6 +478,83 @@ export class WorkflowApprovalPermissionsService {
   }
 
   /**
+   * True if the current user appears as the actor on an approval history row for approve, reject, return, or return-for-review.
+   * Used to lock return depot / delivery date updates after they acted (unless they are the active approver again).
+   */
+  private hasCurrentUserRecordedWorkflowDecision(requestDetail: RequestDetail): boolean {
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser || !requestDetail.approvalHistory?.length) {
+      return false;
+    }
+
+    const currentUserId = currentUser.id?.toLowerCase() || '';
+    const currentUserName = currentUser.userName?.toLowerCase() || '';
+    const currentUserEmail = currentUser.email?.toLowerCase() || '';
+
+    return requestDetail.approvalHistory.some(step => {
+      if (
+        step.status !== 'Approved' &&
+        step.status !== 'Rejected' &&
+        step.status !== 'Returned' &&
+        step.status !== 'ReturnedForReview'
+      ) {
+        return false;
+      }
+      const changedBy = step.changedBy?.toLowerCase() || '';
+      const approverName = step.approverName?.toLowerCase() || '';
+
+      const matchesUserId = currentUserId && changedBy.includes(currentUserId);
+      const matchesUserName = currentUserName &&
+        (changedBy.includes(currentUserName) || approverName.includes(currentUserName));
+      const matchesUserEmail = currentUserEmail && changedBy.includes(currentUserEmail);
+
+      return matchesUserId || matchesUserName || matchesUserEmail;
+    });
+  }
+
+  /**
+   * Whether the current user may change return depot / delivery date (Update, first-time set, or edit mode).
+   * Mirrors isPickupDateEditable: after approve/reject/return, lock unless user is the active approver again.
+   */
+  canUpdateReturnWorkflowFields(requestDetail: RequestDetail | null): boolean {
+    if (!requestDetail) {
+      return false;
+    }
+
+    const currentUser = this.authService.getCurrentUser();
+    try {
+      const hasAdministratorRole = this.authService.hasRole('Administrator') || this.authService.hasRole('Admin');
+      const isAdminByUsername = currentUser?.userName?.toLowerCase().includes('administrator') ||
+        currentUser?.email?.toLowerCase().includes('administrator');
+      const hasAdminLevelPermissions = (currentUser?.permissions?.length || 0) >= 200;
+      const isSuperAdmin = this.authService.isSuperAdmin();
+      const isAdministrator = hasAdministratorRole || isAdminByUsername || hasAdminLevelPermissions || isSuperAdmin;
+      if (isAdministrator) {
+        return true;
+      }
+    } catch {
+      // continue with normal checks
+    }
+
+    if (!hasPendingStep(requestDetail)) {
+      return false;
+    }
+
+    if (requestDetail.status === 'Approved' || requestDetail.status === 'Rejected') {
+      return false;
+    }
+
+    if (!this.hasCurrentUserRecordedWorkflowDecision(requestDetail)) {
+      return true;
+    }
+
+    const pendingStep = requestDetail.approvalHistory?.find(
+      step => step.status === 'Pending' && step.isPending === true
+    );
+    return pendingStep?.isCurrentUserApprover === true;
+  }
+
+  /**
    * Check if pickup date is editable
    */
   isPickupDateEditable(requestDetail: RequestDetail | null): boolean {
@@ -553,5 +656,104 @@ export class WorkflowApprovalPermissionsService {
     } catch (error) {
       return false;
     }
+  }
+
+  /**
+   * Check if user can set the return depot
+   */
+  canSetReturnDepot(requestDetail: RequestDetail | null): boolean {
+    if (!requestDetail || requestDetail.requestType !== 'Return') {
+      return false;
+    }
+    if (!hasPendingStep(requestDetail)) {
+      return false;
+    }
+    try {
+      if (this.authService.isSuperAdmin()) {
+        return true;
+      }
+      return this.authService.hasPermission(this.SET_RETURN_DEPOT_PERMISSION);
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Check if user can set the return delivery date
+   */
+  canSetReturnDeliveryDate(requestDetail: RequestDetail | null): boolean {
+    if (!requestDetail || requestDetail.requestType !== 'Return') {
+      return false;
+    }
+    if (!hasPendingStep(requestDetail)) {
+      return false;
+    }
+    try {
+      if (this.authService.isSuperAdmin()) {
+        return true;
+      }
+      return this.authService.hasPermission(this.SET_RETURN_DELIVERY_DATE_PERMISSION);
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Check if user can process return items
+   */
+  canProcessReturnItems(requestDetail: RequestDetail | null): boolean {
+    if (!requestDetail || requestDetail.requestType !== 'Return') {
+      return false;
+    }
+    if (!hasPendingStep(requestDetail)) {
+      return false;
+    }
+    try {
+      if (this.authService.isSuperAdmin()) {
+        return true;
+      }
+      return this.authService.hasPermission(this.PROCESS_RETURN_ITEMS_PERMISSION);
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Return requests are normally completed via Process Return Items (review screen), which approves the workflow.
+   * Hide the standalone Approve once depot and delivery are set so users cannot bypass lot/serial capture.
+   * Users who pass {@link canProcessReturnItems} (ProcessReturnItems permission, or super admin) always get Approve hidden
+   * in that state, even when it is their turn. Other approvers may still see Approve when it is their turn.
+   */
+  shouldHideStandaloneApproveForReturn(requestDetail: RequestDetail | null): boolean {
+    if (!requestDetail || requestDetail.requestType !== 'Return') {
+      return false;
+    }
+    if (!hasPendingStep(requestDetail)) {
+      return false;
+    }
+    if (!requestDetail.returnToDepotId || !requestDetail.deliveryDate) {
+      return false;
+    }
+
+    // Elevated admins keep standalone Approve (and Return for review) even after depot + delivery are set;
+    // only non-admin users with ProcessReturnItems are steered exclusively to the process-return screen.
+    if (this.isElevatedWorkflowAdmin()) {
+      return false;
+    }
+
+    if (this.canProcessReturnItems(requestDetail)) {
+      return true;
+    }
+
+    const pendingStep = requestDetail.approvalHistory?.find(
+      step => step.status === 'Pending' && step.isPending === true
+    );
+    const isMyTurn =
+      requestDetail.isMyTurn === true || pendingStep?.isCurrentUserApprover === true;
+    if (isMyTurn) {
+      return false;
+    }
+
+    return true;
   }
 }

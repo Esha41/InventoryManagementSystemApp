@@ -37,7 +37,7 @@
 
           <!-- Actions moved to right -->
           <div class="flex items-center gap-3">
-            <button (click)="openOrderHistory()"
+            <button *ngIf="requestDetail.requestType === 'Order'" type="button" (click)="openOrderHistory()"
               class="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-[var(--color-text)] bg-[var(--color-background)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]">
               <lucide-angular [img]="HistoryIcon" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
               {{ 'ORDER_TRACKING.HISTORY' | translate }}
@@ -75,8 +75,8 @@
       </app-workflow-approval-timeline>
     </div>
 
-    <!-- Sidebar -->
-    <div class="space-y-6">
+    <!-- Sidebar: gap-6 between cards (flex gap works reliably with Angular host elements) -->
+    <div class="mt-6 flex flex-col gap-6">
 
       <!-- Pickup Date Management -->
       <app-workflow-pickup-date *ngIf="!loading && !error && requestDetail && hasPendingStep()" [requestId]="requestId"
@@ -85,15 +85,40 @@
         (pickupDateChanged)="onPickupDateChanged()">
       </app-workflow-pickup-date>
 
+      <!-- Return Depot Selection -->
+      <app-workflow-return-depot
+        *ngIf="!loading && !error && requestDetail && requestDetail.requestType === 'Return'"
+        [requestId]="requestId"
+        [requestDetail]="requestDetail"
+        [destroy$]="destroy$"
+        (depotSet)="onReturnDepotSet()">
+      </app-workflow-return-depot>
+
+      <!-- Return Delivery Date -->
+      <app-workflow-return-delivery-date
+        *ngIf="!loading && !error && requestDetail && requestDetail.requestType === 'Return'"
+        [requestId]="requestId"
+        [requestDetail]="requestDetail"
+        [destroy$]="destroy$"
+        (deliveryDateSet)="onReturnDeliveryDateSet()">
+      </app-workflow-return-delivery-date>
+
+      <app-workflow-return-approved-summary
+        *ngIf="requestDetail?.requestType === 'Return' && requestDetail?.status === 'Approved'"
+        [requestId]="requestId"
+        [requestItems]="requestDetail.requestItems || []"
+        [orderFiles]="orderFiles">
+      </app-workflow-return-approved-summary>
+
       <!-- Receiver Information Section (Submit Supply) -->
       <!-- Hide for weapon orders as submission is handled in weapon supply page -->
-      <app-workflow-supply-submission *ngIf="!loading && !error && requestDetail && canSubmitSupply()" class="mt-6"
+      <app-workflow-supply-submission *ngIf="!loading && !error && requestDetail && canSubmitSupply()"
         [supplyId]="supplyId" [supplyData]="supplyData" [ranks]="ranks" [isLoadingRanks]="isLoadingRanks"
         [destroy$]="destroy$" (supplySubmitted)="onSupplySubmitted()" (supplyDataChanged)="loadSupplyData()">
       </app-workflow-supply-submission>
 
       <!-- Delegation Restriction Warning -->
-      <div *ngIf="isUserRestricted" class="mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
+      <div *ngIf="isUserRestricted" class="bg-red-50 border border-red-200 rounded-lg p-4">
         <div class="flex items-start">
           <div class="flex-shrink-0">
             <lucide-angular [img]="AlertTriangle" class="h-5 w-5 text-red-400"></lucide-angular>
@@ -109,9 +134,32 @@
         </div>
       </div>
 
+      <!-- Review Return Items (CTA only for users with ProcessReturnItems permission) -->
+      <div *ngIf="!loading && !error && requestDetail && showReviewReturnItemsSection()">
+        <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">
+          <div class="flex items-start gap-3 pb-4 border-b border-[var(--color-border)]">
+            <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center flex-shrink-0">
+              <lucide-angular [img]="Package" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
+            </div>
+            <div class="min-w-0 flex-1">
+              <h2 class="text-lg font-semibold text-[var(--color-text)]">
+                {{ 'workflowApprovalDetail.processReturnItems' | translate }}
+              </h2>
+            </div>
+          </div>
+          <div class="flex justify-end pt-4">
+            <button type="button" (click)="navigateToProcessReturnItems()"
+              class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[var(--color-brand)] rounded-lg hover:opacity-90 transition-opacity shadow-custom-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2">
+              <span>{{ 'workflowApprovalDetail.goToProcessReturnItems' | translate }}</span>
+              <lucide-angular [img]="forwardNavIcon" class="h-4 w-4 flex-shrink-0 opacity-90"></lucide-angular>
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Approval/Rejection Actions - At the end -->
       <app-workflow-approval-actions
-        *ngIf="!loading && !error && requestDetail && canApproveOrReject() && !isUserRestricted" class="mt-6"
+        *ngIf="!loading && !error && requestDetail && canApproveOrReject() && !isUserRestricted"
         [requestId]="requestId" [requestDetail]="requestDetail" [processing]="processing"
         [previousWorkflowSteps]="previousWorkflowSteps" [loadingPreviousSteps]="loadingPreviousSteps"
         [destroy$]="destroy$" (approved)="onActionCompleted()" (rejected)="onActionCompleted()"
