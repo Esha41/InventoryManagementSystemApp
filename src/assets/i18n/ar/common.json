@@ -245,7 +245,9 @@
     "reportDesigner": "مصمم التقارير",
     "reportDashboard": "لوحة التقارير",
     "scheduledReports": "التقارير المجدولة",
-    "announcements": "الإعلانات"
+    "announcements": "الإعلانات",
+    "help": "المساعدة",
+    "helpCenterAdmin": "مركز المساعدة (إداري)"
   },
   "footer": {
     "copyright": "حقوق النشر © برزان القابضة {{year}}"

@@ -36,6 +36,8 @@
               "src/assets"
             ],
             "styles": [
+              "node_modules/quill/dist/quill.core.css",
+              "node_modules/quill/dist/quill.snow.css",
               "src/styles.css",
               "node_modules/devextreme/dist/css/dx.light.css",
               "node_modules/devexpress-reporting/dist/css/dx-webdocumentviewer.css",
@@ -56,13 +58,13 @@
               "core-js",
               "rgbcolor",
               "raf",
-
+              "dompurify",
+              "quill",
               "file-saver",
               "jquery",
               "knockout",
               "jszip",
               "ace-builds",
-
               "@devexpress/utils",
               "devexpress-richedit",
               "devexpress-reporting",
@@ -70,7 +72,8 @@
               "@devexpress/analytics-core",
               "devexpress-diagram",
               "devexpress-gantt",
-              "devextreme-quill"]
+              "devextreme-quill"
+            ],
 
           },
           "configurations": {
@@ -148,6 +151,8 @@
               "src/assets"
             ],
             "styles": [
+              "node_modules/quill/dist/quill.core.css",
+              "node_modules/quill/dist/quill.snow.css",
               "src/styles.css"
             ],
             "scripts": []

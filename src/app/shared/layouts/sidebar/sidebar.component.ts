@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, filter } from 'rxjs';
-import { LucideAngularModule, LayoutDashboard, House, Boxes, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Badge, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList, Package, Building2, GitBranch, Mail, Upload, BarChart3, Database,Calendar, Megaphone } from 'lucide-angular';
+import { LucideAngularModule, LayoutDashboard, House, Boxes, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Badge, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList, Package, Building2, GitBranch, Mail, Upload, BarChart3, Database, Calendar, Megaphone, HelpCircle, BookMarked } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { TranslationService } from '@services/translation.service';
 
@@ -68,6 +68,12 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       icon: House,
       route: '/dashboard',
       permissions: ['dashboard_view']
+    },
+    {
+      label: 'nav.help',
+      icon: HelpCircle,
+      route: '/help',
+      permissions: []
     },
     {
       label: 'nav.inventoryDashboard',
@@ -318,6 +324,12 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       icon: Mail,
       route: '/stock-notification-settings',
       permissions: ['stockNotificationSettingsPage']
+    },
+    {
+      label: 'nav.helpCenterAdmin',
+      icon: BookMarked,
+      route: '/admin/help-center',
+      permissions: ['helpcenter.page', 'helpcenter.view']
     },
     {
       label: 'nav.announcements',

@@ -11,11 +11,23 @@ import { AnnouncementBannerComponent } from '@components/announcement-banner/ann
 import { IdleTimeoutModalComponent } from '@components/idle-timeout-modal/idle-timeout-modal.component';
 import { IdleService } from '@services/idle.service';
 import { OnboardingTourService } from '@features/onboarding/services/onboarding-tour.service';
+import { TermsAcceptanceFacade } from '@features/help/facades/terms-acceptance.facade';
+import { TermsAcceptanceModalComponent } from '@features/help/components/terms-acceptance-modal/terms-acceptance-modal.component';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, NavbarComponent, SidebarComponent, FooterComponent, ToastComponent, AnnouncementBannerComponent, IdleTimeoutModalComponent],
+  imports: [
+    CommonModule,
+    RouterOutlet,
+    NavbarComponent,
+    SidebarComponent,
+    FooterComponent,
+    ToastComponent,
+    AnnouncementBannerComponent,
+    IdleTimeoutModalComponent,
+    TermsAcceptanceModalComponent
+  ],
   templateUrl: './main-layout.component.html',
   styleUrls: ['./main-layout.component.css']
 })
@@ -25,11 +37,13 @@ export class MainLayoutComponent implements OnInit, OnDestroy, AfterViewInit {
   shouldCollapseSidebar = false;
   shouldHideSidebar = false;
 
-  constructor(private router: Router, private idleService: IdleService, private onboardingTourService: OnboardingTourService) {
-    // Check current route
+  constructor(
+    private router: Router,
+    private idleService: IdleService,
+    private onboardingTourService: OnboardingTourService,
+    private termsAcceptance: TermsAcceptanceFacade
+  ) {
     this.checkRoute();
-    
-    // Listen for route changes
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {
@@ -39,9 +53,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private checkRoute(): void {
     const url = this.router.url;
-    // Collapse sidebar when on report designer create screen
     this.shouldCollapseSidebar = url.includes('/report-designer/designer');
-    // Hide sidebar completely when on report viewer
     this.shouldHideSidebar = url.includes('/report-viewer');
   }
 
@@ -50,7 +62,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => this.onboardingTourService.checkAndStartTour(), 500);
+    setTimeout(() => this.termsAcceptance.beginPostLoginFlow(), 500);
   }
 
   ngOnDestroy(): void {
@@ -66,4 +78,3 @@ export class MainLayoutComponent implements OnInit, OnDestroy, AfterViewInit {
     this.mobileSidebarOpen = !this.mobileSidebarOpen;
   }
 }
-
