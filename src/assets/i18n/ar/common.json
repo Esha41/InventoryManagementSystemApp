@@ -374,7 +374,13 @@
       "custodyLabel": "تسليم / إيداع",
       "custodyAll": "الكل",
       "custodyCheckout": "مُسلَّم ",
-      "custodyCheckin": "مُودَع "
+      "custodyCheckin": "مُودَع ",
+      "dateFrom": "تاريخ الإنشاء من",
+      "dateTo": "تاريخ الإنشاء إلى",
+      "moreFilters": "مرشحات إضافية",
+      "hideFilters": "إخفاء المرشحات",
+      "applyFilters": "تطبيق المرشحات",
+      "employee": "الموظف"
     },
     "expandColumn": "توسيع الصف",
     "total": "الإجمالي",
@@ -405,7 +411,15 @@
     "byUser": "بواسطة",
     "system": "النظام",
     "loadError": "تعذر تحميل أصول الأسلحة.",
-    "historyLoadError": "تعذر تحميل سجل الأصل."
+    "historyLoadError": "تعذر تحميل سجل الأصل.",
+    "viewModal": {
+      "title": "تفاصيل الأصل",
+      "expectedReturn": "تاريخ العودة المتوقع",
+      "actualReturn": "تاريخ العودة الفعلي",
+      "location": "الموقع",
+      "batch": "الدفعة",
+      "openCatalog": "فتح بطاقة المادة"
+    }
   },
   "accessDenied": {
     "title": "تم رفض الوصول",

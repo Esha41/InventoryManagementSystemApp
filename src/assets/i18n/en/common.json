@@ -371,7 +371,13 @@
       "custodyLabel": "Checkout / check-in",
       "custodyAll": "All",
       "custodyCheckout": "Checked out",
-      "custodyCheckin": "Checked in"
+      "custodyCheckin": "Checked in",
+      "dateFrom": "Created from",
+      "dateTo": "Created to",
+      "moreFilters": "Additional filters",
+      "hideFilters": "Hide filters",
+      "applyFilters": "Apply filters",
+      "employee": "Employee"
     },
     "expandColumn": "Expand row",
     "total": "Total",
@@ -402,7 +408,15 @@
     "byUser": "By",
     "system": "System",
     "loadError": "Could not load weapon assets.",
-    "historyLoadError": "Could not load asset history."
+    "historyLoadError": "Could not load asset history.",
+    "viewModal": {
+      "title": "Asset details",
+      "expectedReturn": "Expected return",
+      "actualReturn": "Actual return",
+      "location": "Location",
+      "batch": "Batch",
+      "openCatalog": "Open catalog item"
+    }
   },
   "accessDenied": {
     "title": "Access denied",
