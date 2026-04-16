@@ -46,6 +46,11 @@ export class WorkflowRequestItemsComponent {
     return this.requestItems.length > 0;
   }
 
+  /** Order item tracking history applies only to issue orders, not returns/discards. */
+  get showViewHistory(): boolean {
+    return this.requestDetail?.requestType === 'Order';
+  }
+
   // Permission check methods using state service
   canReviewWeaponSupply(): boolean {
     return this.stateService.canReviewWeaponSupply();

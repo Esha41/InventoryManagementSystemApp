@@ -1,0 +1,176 @@
+<div *ngIf="loading" class="bg-[var(--color-background)] rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">
+  <p class="text-sm text-[var(--color-text-muted)] text-center">{{ 'common.loadingWithDots' | translate }}</p>
+</div>
+
+<div *ngIf="!loading && loadError"
+  class="bg-[var(--color-background)] rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">
+  <p class="text-sm text-[var(--color-error)] text-center">{{ loadError | translate }}</p>
+</div>
+
+<ng-template #linesTable let-rows="rows" let-lotHeaderKey="lotHeaderKey">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-[var(--color-background-muted)]">
+        <tr>
+          <th class="w-10 px-2 py-3"></th>
+          <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+            {{ 'workflowReturnApprovedSummary.item' | translate }}</th>
+          <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+            {{ 'workflowReturnApprovedSummary.itemNo' | translate }}</th>
+          <th class="px-4 py-3 text-end text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+            {{ 'workflowReturnApprovedSummary.returnedQty' | translate }}</th>
+          <th class="px-4 py-3 text-end text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+            {{ 'workflowReturnApprovedSummary.receivedQty' | translate }}</th>
+          <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+            {{ lotHeaderKey | translate }}</th>
+          <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+            {{ 'workflowReturnApprovedSummary.notes' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-[var(--color-border)]">
+        <ng-container *ngFor="let row of rows">
+          <tr
+            (click)="toggleExpand(row)"
+            [ngClass]="{ 'cursor-pointer hover:bg-[var(--color-background-hover)]': row.isWeapon && row.detailLines.length }"
+            class="transition-colors">
+            <td class="px-2 py-3 text-center text-[var(--color-text-muted)]">
+              <lucide-angular
+                *ngIf="row.isWeapon && row.detailLines.length"
+                [img]="expandIcon(row)"
+                class="h-4 w-4 inline-block"></lucide-angular>
+            </td>
+            <td class="px-4 py-3 text-[var(--color-text)] font-medium">{{ row.itemName }}</td>
+            <td class="px-4 py-3 text-[var(--color-text-muted)] tabular-nums">{{ row.itemNo }}</td>
+            <td class="px-4 py-3 text-end tabular-nums">{{ row.returnedQty }}</td>
+            <td class="px-4 py-3 text-end tabular-nums">{{ row.receivedQty }}</td>
+            <td class="px-4 py-3 text-[var(--color-text)] break-words max-w-[180px]">{{ row.lotOrBatch }}</td>
+            <td class="px-4 py-3 text-[var(--color-text-muted)] whitespace-pre-wrap break-words max-w-[220px]">{{ row.notes }}</td>
+          </tr>
+          <tr *ngIf="row.isWeapon && row.detailLines.length && isExpanded(row)" class="bg-[var(--color-background-main)]">
+            <td colspan="7" class="px-4 py-3">
+              <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+                {{ 'workflowReturnApprovedSummary.serialDetails' | translate }}
+              </p>
+              <div class="overflow-x-auto rounded-lg border border-[var(--color-border)]">
+                <table class="w-full text-sm">
+                  <thead class="bg-[var(--color-background-muted)]">
+                    <tr>
+                      <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)]">
+                        {{ 'workflowReturnApprovedSummary.serial' | translate }}</th>
+                      <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)]">
+                        {{ 'workflowReturnApprovedSummary.batch' | translate }}</th>
+                      <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)]">
+                        {{ 'workflowReturnApprovedSummary.notes' | translate }}</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-[var(--color-border)]">
+                    <tr *ngFor="let d of row.detailLines">
+                      <td class="px-3 py-2 font-mono text-[var(--color-text)]">{{ d.serialNumber }}</td>
+                      <td class="px-3 py-2 text-[var(--color-text)]">{{ d.batchNumber || '—' }}</td>
+                      <td class="px-3 py-2 text-[var(--color-text-muted)] whitespace-pre-wrap break-words">{{ (d.notes || '').trim() || '—' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+</ng-template>
+
+<div *ngIf="!loading && !loadError && masterRows.length > 0"
+  class="bg-[var(--color-background)] rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">
+  <div class="flex items-start gap-3 mb-6 pb-4 border-b border-[var(--color-border)]">
+    <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center flex-shrink-0">
+      <lucide-angular [img]="Package" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
+    </div>
+    <div class="min-w-0 flex-1">
+      <h2 class="text-lg font-semibold text-[var(--color-text)]">
+        {{ 'workflowReturnApprovedSummary.title' | translate }}
+      </h2>
+      <p class="text-sm text-[var(--color-text-muted)] mt-1 leading-relaxed">
+        {{ 'workflowReturnApprovedSummary.subtitle' | translate }}
+      </p>
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-6">
+    <ng-container *ngIf="weaponMasterRows.length">
+      <div>
+        <p *ngIf="ammoLotRows.length || explosiveBatchRows.length"
+          class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+          {{ 'workflowReturnApprovedSummary.sectionWeapons' | translate }}
+        </p>
+        <ng-container
+          *ngTemplateOutlet="linesTable; context: { rows: weaponMasterRows, lotHeaderKey: 'workflowReturnApprovedSummary.colBatch' }">
+        </ng-container>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="ammoLotRows.length">
+      <div>
+        <p *ngIf="weaponMasterRows.length || explosiveBatchRows.length"
+          class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+          {{ 'workflowReturnApprovedSummary.sectionAmmunition' | translate }}
+        </p>
+        <ng-container
+          *ngTemplateOutlet="linesTable; context: { rows: ammoLotRows, lotHeaderKey: 'workflowReturnApprovedSummary.colLot' }">
+        </ng-container>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="explosiveBatchRows.length">
+      <div>
+        <p *ngIf="weaponMasterRows.length || ammoLotRows.length"
+          class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+          {{ 'workflowReturnApprovedSummary.sectionExplosives' | translate }}
+        </p>
+        <ng-container
+          *ngTemplateOutlet="linesTable; context: { rows: explosiveBatchRows, lotHeaderKey: 'workflowReturnApprovedSummary.colBatch' }">
+        </ng-container>
+      </div>
+    </ng-container>
+  </div>
+
+  <div *ngIf="attachmentRows.length" class="mt-8 pt-6 border-t border-[var(--color-border)]">
+    <div class="flex items-center gap-2 mb-4">
+      <lucide-angular [img]="Paperclip" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+      <h3 class="text-base font-semibold text-[var(--color-text)]">
+        {{ 'workflowReturnApprovedSummary.attachmentsTitle' | translate }}
+      </h3>
+    </div>
+    <div class="overflow-x-auto rounded-lg border border-[var(--color-border)]">
+      <table class="w-full text-sm">
+        <thead class="bg-[var(--color-background-muted)]">
+          <tr>
+            <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+              {{ 'workflowReturnApprovedSummary.fileName' | translate }}</th>
+            <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+              {{ 'workflowReturnApprovedSummary.fileSource' | translate }}</th>
+            <th class="px-4 py-3 text-end text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide w-28">
+              {{ 'workflowReturnApprovedSummary.open' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[var(--color-border)]">
+          <tr *ngFor="let ar of attachmentRows" class="hover:bg-[var(--color-background-hover)]">
+            <td class="px-4 py-3 text-[var(--color-text)] font-medium truncate max-w-[280px]">
+              {{ ar.file.originalName || ar.file.fileName }}
+            </td>
+            <td class="px-4 py-3 text-[var(--color-text-muted)] text-xs">
+              <span *ngIf="ar.source === 'request'">{{ 'workflowReturnApprovedSummary.sourceRequest' | translate }}</span>
+              <span *ngIf="ar.source === 'line'">{{ 'workflowReturnApprovedSummary.sourceProcessing' | translate }}<ng-container *ngIf="ar.sourceDetail"> — {{ ar.sourceDetail }}</ng-container></span>
+            </td>
+            <td class="px-4 py-3 text-end">
+              <a [href]="getFileDownloadUrl(ar.file)" target="_blank" rel="noopener noreferrer"
+                class="text-sm font-medium text-[var(--color-brand)] hover:underline">
+                {{ 'workflowReturnApprovedSummary.open' | translate }}
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,70 @@
+<!-- Return Depot Selection Section -->
+<div *ngIf="canShow">
+  <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">
+    <div class="flex items-center gap-3 mb-4 pb-4 border-b border-[var(--color-border)]">
+      <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
+        <lucide-angular [img]="Warehouse" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
+      </div>
+      <div>
+        <h2 class="text-lg font-semibold text-[var(--color-text)]">
+          {{ 'workflowApprovalDetail.setReturnDepot' | translate }}
+        </h2>
+        <p class="text-sm text-[var(--color-text-muted)] mt-1">
+          {{ 'workflowApprovalDetail.returnDepotDescription' | translate }}
+        </p>
+      </div>
+    </div>
+
+    <div class="space-y-6">
+      <!-- Display Mode: depot is already set and not editing -->
+      <div *ngIf="isAlreadySet && !isEditMode">
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+          {{ 'workflowApprovalDetail.returnDepot' | translate }}
+          <span class="ms-2 text-xs font-normal text-[var(--color-success)] bg-[var(--color-success)]/20 px-2 py-1 rounded">
+            {{ 'workflowApprovalDetail.valueSet' | translate }}
+          </span>
+        </label>
+        <div class="relative min-h-[42px] rounded border border-[var(--color-border)] bg-[var(--color-background-active)] cursor-not-allowed">
+          <div class="flex items-center px-3 py-2">
+            <span class="text-sm text-[var(--color-text)] flex-1">{{ depotDisplayName }}</span>
+          </div>
+        </div>
+        <div *ngIf="canChangeReturnDepot" class="flex justify-end mt-4">
+          <button (click)="enableEdit()"
+            type="button"
+            class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--color-brand)] bg-[var(--color-brand)]/10 rounded-lg hover:bg-[var(--color-brand)]/20 transition-colors">
+            <lucide-angular [img]="Edit3" class="h-4 w-4"></lucide-angular>
+            {{ 'workflowApprovalDetail.update' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Edit Mode: depot not set or user clicked Update (only when not approved) -->
+      <div *ngIf="canChangeReturnDepot && (!isAlreadySet || isEditMode)">
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+          {{ 'workflowApprovalDetail.returnDepot' | translate }}
+          <span class="text-[var(--color-error)]">*</span>
+        </label>
+        <app-dropdown class="w-full"
+          [(ngModel)]="selectedDepotId"
+          [options]="depots"
+          optionValue="id"
+          [optionLabelFn]="depotLabelFn"
+          [disabled]="processing || loadingDepots"
+          [placeholder]="loadingDepots ? ('common.loading' | translate) : ('workflowApprovalDetail.selectDepot' | translate)">
+        </app-dropdown>
+      </div>
+
+      <!-- Set Button -->
+      <div *ngIf="canChangeReturnDepot && (!isAlreadySet || isEditMode)" class="flex justify-end">
+        <button (click)="setDepot()"
+          type="button"
+          [disabled]="processing || !selectedDepotId"
+          class="px-6 py-3 bg-[var(--color-brand)] text-white rounded-lg font-semibold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-custom-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2">
+          <span *ngIf="!processing">{{ 'workflowApprovalDetail.setDepot' | translate }}</span>
+          <span *ngIf="processing">{{ 'common.processing' | translate }}...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

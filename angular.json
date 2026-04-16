@@ -38,7 +38,17 @@
             "styles": [
               "node_modules/quill/dist/quill.core.css",
               "node_modules/quill/dist/quill.snow.css",
-              "src/styles.css"
+              "src/styles.css",
+              "node_modules/devextreme/dist/css/dx.light.css",
+              "node_modules/devexpress-reporting/dist/css/dx-webdocumentviewer.css",
+              "node_modules/devexpress-reporting/dist/css/dx-reportdesigner.css",
+              "node_modules/@devexpress/analytics-core/dist/css/dx-analytics.common.css",
+              "node_modules/@devexpress/analytics-core/dist/css/dx-analytics.light.css",
+              "node_modules/@devexpress/analytics-core/dist/css/dx-querybuilder.css",
+              "node_modules/devexpress-richedit/dist/dx.richedit.css",
+              "node_modules/ace-builds/css/ace.css",
+              "node_modules/ace-builds/css/theme/dreamweaver.css",
+              "node_modules/ace-builds/css/theme/ambiance.css"
             ],
             "scripts": [],
             "allowedCommonJsDependencies": [
@@ -49,8 +59,21 @@
               "rgbcolor",
               "raf",
               "dompurify",
-              "quill"
-            ]
+              "quill",
+              "file-saver",
+              "jquery",
+              "knockout",
+              "jszip",
+              "ace-builds",
+              "@devexpress/utils",
+              "devexpress-richedit",
+              "devexpress-reporting",
+              "devexpress-reporting-angular",
+              "@devexpress/analytics-core",
+              "devexpress-diagram",
+              "devexpress-gantt",
+              "devextreme-quill"
+            ],
 
           },
           "configurations": {

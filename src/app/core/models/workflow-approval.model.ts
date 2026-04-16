@@ -88,6 +88,8 @@ export interface RequestItem {
   quantity: number;
   unit?: string;
   nsn?: string; // National Stock Number
+  /** 1=Ammunition, 2=Weapon, 3=Explosive — when present, drives return summary column labels. */
+  itemType?: number;
 }
 
 
@@ -128,6 +130,13 @@ export interface RequestDetail {
   isFromAllowance?: boolean;
   creationDate?: string | Date;
   supplyDate?: string | Date | null;
+  // Return-specific fields
+  returnToDepotId?: number;
+  returnToDepotNameAr?: string;
+  returnToDepotNameEn?: string;
+  deliveryDate?: string | Date | null;
+  /** True when backend marks this request as the current user's action (list APIs); may be absent on some detail payloads. */
+  isMyTurn?: boolean;
 }
 
 /**

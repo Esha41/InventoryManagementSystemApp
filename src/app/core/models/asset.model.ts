@@ -19,8 +19,20 @@ export enum AssetStatus {
     UnserviceableUnrepairable = 4,
     AwaitingDisposal = 5,
     Disposed = 6,
+    NotReadyToIssue = 7,
     Assigned = 7
 }
+
+/** Status dropdown order: Ready, Not ready, then remainder (matches backend batch Excel labels). */
+export const ASSET_STATUS_FORM_OPTIONS_ORDER: readonly AssetStatus[] = [
+    AssetStatus.ReadyToIssue,
+    AssetStatus.NotReadyToIssue,
+    AssetStatus.InMaintenance,
+    AssetStatus.UnserviceableRepairable,
+    AssetStatus.UnserviceableUnrepairable,
+    AssetStatus.AwaitingDisposal,
+    AssetStatus.Disposed
+] as const;
 
 
 
@@ -71,6 +83,10 @@ export interface AssetDto {
     createdBy?: string;
     /** Resolved display name for createdBy (from API). */
     createdByName?: string;
+    /** Current assignment: expected return (checkout). */
+    expectedReturnDate?: Date | string;
+    /** Current assignment: actual return when completed. */
+    actualReturnDate?: Date | string;
     supplierId?: number;
     manufacturerId?: number;
     primaryPurposId?: number;
@@ -150,6 +166,9 @@ export function getAssetStatusLabel(status?: AssetStatus | string): string {
         case AssetStatus.ReadyToIssue:
         case 'ReadyToIssue':
             return 'assetStatus.readyToIssue';
+        case AssetStatus.NotReadyToIssue:
+        case 'NotReadyToIssue':
+            return 'assetStatus.notReadyToIssue';
         case AssetStatus.InMaintenance:
         case 'InMaintenance':
             return 'assetStatus.inMaintenance';
@@ -181,6 +200,9 @@ export function getAssetStatusColor(status?: AssetStatus | string): string {
         case AssetStatus.ReadyToIssue:
         case 'ReadyToIssue':
             return 'success';       // Green
+        case AssetStatus.NotReadyToIssue:
+        case 'NotReadyToIssue':
+            return 'warning';
         case AssetStatus.Assigned:
         case 'Assigned':
             return 'info';

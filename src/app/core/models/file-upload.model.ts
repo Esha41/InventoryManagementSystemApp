@@ -20,7 +20,8 @@ export enum FileEntityType {
     /** Help Center articles / Help Me landing attachments (backend FileEntityType.HelpCenter). */
     HelpCenter = 11,
     /** User manual downloads (singleton bundle: use entityId = 1). */
-    HelpCenterUserManual = 12
+    HelpCenterUserManual = 12,
+    ReturnTrackingLine = 13
 }
 
 /**

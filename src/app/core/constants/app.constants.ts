@@ -108,6 +108,10 @@ export const API_ENDPOINTS = {
     BASE: '/Return',
     BY_ID: (id: number) => `/Return/${id}`,
     CHANGE_PRIORITY: (id: number) => `/Return/${id}/priority`,
+    SET_DEPOT: (id: number) => `/Return/${id}/set-depot`,
+    SET_DELIVERY_DATE: (id: number) => `/Return/${id}/set-delivery-date`,
+    PROCESS_ITEMS: (id: number) => `/Return/${id}/process-items`,
+    TRACKING_LINES: (id: number) => `/Return/${id}/tracking-lines`,
   },
 
   // Discard Requests

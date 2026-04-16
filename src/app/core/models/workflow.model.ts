@@ -15,7 +15,8 @@ export enum WorkflowType {
   NormalOrderForTrainingPurpose = 5,
   NormalOrder_Weapon = 6,
   OrderFromAllowance_Weapon = 7,
-  NormalOrderForTrainingPurpose_Weapon = 8
+  NormalOrderForTrainingPurpose_Weapon = 8,
+  Return_Weapon = 9
 }
 export interface WorkflowDto {
   id: number;
@@ -87,7 +88,8 @@ export const WORKFLOW_TYPE_NAMES: { [key in WorkflowType]: { en: string; ar: str
   [WorkflowType.NormalOrderForTrainingPurpose]: { en: 'Order For Training Purpose', ar: 'طلب للغرض التدريبي' },
   [WorkflowType.NormalOrder_Weapon]: { en: 'Order (Weapon)', ar: 'طلب (سلاح)' },
   [WorkflowType.OrderFromAllowance_Weapon]: { en: 'Order From Reserved Allowance (Weapon)', ar: 'طلب من المخصص المحجوز (سلاح)' },
-  [WorkflowType.NormalOrderForTrainingPurpose_Weapon]: { en: 'Order For Training Purpose (Weapon)', ar: 'طلب للغرض التدريبي (سلاح)' }
+  [WorkflowType.NormalOrderForTrainingPurpose_Weapon]: { en: 'Order For Training Purpose (Weapon)', ar: 'طلب للغرض التدريبي (سلاح)' },
+  [WorkflowType.Return_Weapon]: { en: 'Return (Weapon)', ar: 'إرجاع (سلاح)' }
 };
 export interface BackendUpdateWorkflowDto extends BackendCreateWorkflowDto {
   id: number;

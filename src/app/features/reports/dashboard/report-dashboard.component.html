@@ -1,0 +1,154 @@
+<div class="page-wrapper">
+  <div class="page-container space-y-6">
+    <!-- Header -->
+    <div>
+      <div class="flex flex-col gap-3 mb-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ 'nav.reportDashboard' | translate }}</h1>
+          <p class="text-[var(--color-text-muted)] mt-2 text-sm sm:text-base">{{ 'reportDashboard.subtitle' | translate }}</p>
+        </div>
+
+        <!-- Search -->
+        <div class="w-full sm:max-w-sm">
+          <div
+            class="flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 focus-within:ring-2 focus-within:ring-[var(--color-primary)]/40">
+            <lucide-angular [img]="Eye" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+            <input
+              type="search"
+              class="w-full bg-transparent text-sm text-[var(--color-text)] outline-none placeholder-[var(--color-text-muted)]"
+              [placeholder]="'common.search' | translate"
+              (input)="onSearchChange($any($event.target).value)" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <app-loading-state *ngIf="loading" size="lg" [fullPage]="true">
+    </app-loading-state>
+
+    <!-- Error State -->
+    <app-error-state *ngIf="error && !loading" [error]="error || ''" variant="inline" title="common.error"
+      containerClass="mb-0">
+    </app-error-state>
+
+    <!-- Reports Table -->
+    <div *ngIf="!loading && !error"
+      class="bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg shadow-custom-sm">
+      <!-- Desktop Table View -->
+      <div class="hidden md:block overflow-hidden rounded-t-lg">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-[var(--color-border)]">
+            <thead class="bg-[var(--color-background-muted)]">
+              <tr>
+                <th
+                  class="px-4 lg:px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                  {{ 'reportDashboard.table.reportName' | translate }}
+                </th>
+                <th
+                  class="px-4 lg:px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                  {{ 'reportDashboard.table.createdDate' | translate }}
+                </th>
+                <th
+                  class="px-4 lg:px-6 py-3 text-center text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider"
+                  style="text-align: center;">
+                  {{ 'reportDashboard.table.actions' | translate }}
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-[var(--color-background)] divide-y divide-[var(--color-border)]">
+              <tr *ngFor="let report of paginatedReports"
+                class="hover:bg-[var(--color-background-hover)] transition-colors">
+                <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
+                  <div class="flex items-center gap-2">
+                    <lucide-angular [img]="FileText" class="h-4 w-4 text-[var(--color-text-muted)] flex-shrink-0"></lucide-angular>
+                    <div class="font-medium">
+                      {{ report.reportName }}
+                    </div>
+                  </div>
+                </td>
+                <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-muted)] text-start">
+                  {{ formatDate(report.creationDate) }}
+                </td>
+                <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium" style="text-align: center;">
+                  <div class="flex items-center justify-center gap-2 mx-auto w-fit">
+                    <!-- View Button -->
+                    <button type="button" (click)="onViewReport(report)"
+                      class="p-2 text-[var(--color-info)] hover:text-[var(--color-info)]/80 hover:bg-[var(--color-info)]/10 rounded-lg transition-colors"
+                      [title]="'reportDashboard.viewReport' | translate">
+                      <lucide-angular [img]="Eye" class="h-4 w-4"></lucide-angular>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Mobile Card View -->
+      <div class="md:hidden grid grid-cols-1 gap-4 p-4">
+        <div *ngFor="let report of paginatedReports"
+          class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] transition-all duration-200 hover:shadow-md">
+          <!-- Header -->
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex items-center gap-2 flex-1 min-w-0">
+              <lucide-angular [img]="FileText" class="h-4 w-4 text-[var(--color-text-muted)] flex-shrink-0"></lucide-angular>
+              <div class="font-medium text-sm text-[var(--color-text)] truncate">
+                {{ report.reportName }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Details -->
+          <div class="space-y-2 mb-4">
+            <div class="flex items-center gap-2 text-sm">
+              <span class="text-[var(--color-text-muted)] text-xs">{{ 'reportDashboard.table.createdDate' | translate }}:</span>
+              <span class="text-[var(--color-text)] font-medium">{{ formatDate(report.creationDate) }}</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center justify-end pt-3 border-t border-[var(--color-border)]">
+            <button type="button" (click)="onViewReport(report)"
+              class="flex items-center gap-2 px-4 py-2 bg-[var(--color-info)]/10 text-[var(--color-info)] hover:bg-[var(--color-info)]/20 rounded-lg transition-colors text-sm font-medium">
+              <lucide-angular [img]="Eye" class="h-4 w-4"></lucide-angular>
+              <span>{{ 'reportDashboard.viewReport' | translate }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="filteredReports.length === 0" class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-[var(--color-text-muted)]" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-[var(--color-text)]">{{ 'reportDashboard.noReports' | translate }}</h3>
+        <p class="mt-1 text-sm text-[var(--color-text-muted)]">{{ 'reportDashboard.noReportsDescription' | translate }}</p>
+      </div>
+    </div>
+
+    <!-- Pagination Footer - Outside table overflow container -->
+    <div *ngIf="filteredReports.length > 0 && !loading"
+      class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 sm:px-6 py-4">
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 w-full">
+        <!-- Rows Per Page Selector -->
+        <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="totalItems" [visibleItems]="paginatedReports.length"
+          (rowsPerPageChange)="onRowsPerPageChange($event)">
+        </app-rows-per-page>
+
+        <!-- Pagination Controls -->
+        <div *ngIf="totalPages > 1" class="flex items-center gap-3 flex-shrink-0 justify-center sm:justify-end">
+          <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
+          </app-pagination>
+          <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+            {{ currentPage }} {{ 'common.of' | translate }} {{ totalPages }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,6 +1,7 @@
 import { RankDto } from './rank.model';
 import { DepartmentDto } from './lookup.model';
 import { ReturnItemDto } from './request-item.model';
+import { FileUploadDto } from './file-upload.model';
 
 // Re-export for backward compatibility
 export { ReturnItemDto } from './request-item.model';
@@ -70,4 +71,30 @@ export interface ReturnDto {
     requestItems?: ReturnItemDto[];
     creationDate?: string | Date; // From BaseRequestDto
     isMyTurn?: boolean;
+}
+
+/** Return tracking row after items are processed (backend GET /Return/{id}/tracking-lines). */
+export interface ReturnTrackingLineDto {
+    id: number;
+    returnId: number;
+    requestId: number;
+    depotId: number;
+    requestItemId?: number | null;
+    itemName?: string | null;
+    itemNo?: string | null;
+    returnedQuantity?: number | null;
+    receivedQuantity?: number | null;
+    lot?: string | null;
+    batchNumber?: string | null;
+    serialNumber?: string | null;
+    notes?: string | null;
+    assetId?: number | null;
+    inventoryDetailId?: number | null;
+    depot?: {
+        id: number;
+        code: string;
+        nameAr: string;
+        nameEn: string;
+    } | null;
+    files: FileUploadDto[];
 }

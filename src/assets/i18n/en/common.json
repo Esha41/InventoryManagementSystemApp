@@ -1,16 +1,18 @@
-{
+{ 
   "common": {
     "all": "All",
     "save": "Save",
     "saving": "Saving...",
     "cancel": "Cancel",
     "confirm": "Confirm",
+    "select": "Select",
     "delete": "Delete",
     "edit": "Edit",
     "add": "Add",
     "search": "Search",
     "filter": "Filter",
     "clear": "Clear",
+    "clearSearch": "Clear search",
     "back": "Back",
     "goBack": "Go Back",
     "next": "Next",
@@ -32,6 +34,7 @@
     "refresh": "Refresh",
     "view": "View",
     "preview": "Preview",
+    "print": "Print",
     "showing": "Showing",
     "of": "of",
     "page": "Page",
@@ -229,6 +232,10 @@
     "integratedInventoryManagement": "Integrated Armament System",
     "supplyOrder": "Supply Order",
     "stockNotificationSettings": "Stock Notification Settings",
+    "biTool": "BI Tool",
+    "reportDesigner": "Report Designer",
+    "reportDashboard": "Report Dashboard",
+    "scheduledReports": "Scheduled Reports",
     "itemDepartmentAssignment": "Item Assignment",
     "announcements": "Announcements",
     "help": "Help",
@@ -311,7 +318,6 @@
     "itemType": "Item Type",
     "department": "Department",
     "notes": "Notes",
-    "noAssignments": "No assignments found",
     "selectItem": "Select Item",
     "selectItems": "Select Items",
     "selectAmmunition": "Select ammunition",
@@ -367,7 +373,13 @@
       "custodyLabel": "Checkout / check-in",
       "custodyAll": "All",
       "custodyCheckout": "Checked out",
-      "custodyCheckin": "Checked in"
+      "custodyCheckin": "Checked in",
+      "dateFrom": "Created from",
+      "dateTo": "Created to",
+      "moreFilters": "Additional filters",
+      "hideFilters": "Hide filters",
+      "applyFilters": "Apply filters",
+      "employee": "Employee"
     },
     "expandColumn": "Expand row",
     "total": "Total",
@@ -398,7 +410,15 @@
     "byUser": "By",
     "system": "System",
     "loadError": "Could not load weapon assets.",
-    "historyLoadError": "Could not load asset history."
+    "historyLoadError": "Could not load asset history.",
+    "viewModal": {
+      "title": "Asset details",
+      "expectedReturn": "Expected return",
+      "actualReturn": "Actual return",
+      "location": "Location",
+      "batch": "Batch",
+      "openCatalog": "Open catalog item"
+    }
   },
   "accessDenied": {
     "title": "Access denied",
@@ -409,5 +429,148 @@
   "COMMON": {
     "SAVE": "Save",
     "CANCEL": "Cancel"
+  },
+  "reportDesigner": {
+    "subtitle": "Design and manage your custom reports",
+    "createReport": "Create Report",
+    "importReport": "Import Report",
+    "noReports": "No Reports",
+    "noReportsDescription": "You haven't created any reports yet.",
+    "deleteReport": "Delete Report",
+    "deleteReportMessage": "Are you sure you want to delete this report?",
+    "deleteReportDescription": "This will permanently delete \"{{name}}\". This action cannot be undone.",
+    "makePublic": "Make Public",
+    "makePrivate": "Make Private",
+    "reportSetToPublic": "Report has been set to public and is accessible to all users.",
+    "reportSetToPublicWithRoles": "Report has been set to public and is accessible to {{count}} selected role(s).",
+    "reportSetToPrivate": "Report has been set to private (draft).",
+    "rolesUpdated": "Report roles updated. Report is now accessible to {{count}} selected role(s).",
+    "rolesCleared": "Report roles cleared. Report is now accessible to all users.",
+    "selectRolesOnlyForPublished": "You can only select roles for published reports. Please publish the report first.",
+    "selectRoles": "Select Roles",
+    "noRoles": "No roles available",
+    "noRolesFound": "No roles found matching your search",
+    "roleSelectionInfo": "Select which roles can access this report when it's published. If no roles are selected, the report will be accessible to all authenticated users.",
+    "selectTemplate": "Select Template",
+    "noTemplates": "No templates available",
+    "import": {
+      "invalidFileType": "Invalid file type. Only {{extensions}} files are allowed.",
+      "fileTooLarge": "File size exceeds maximum allowed size of {{maxSize}}."
+    },
+    "errors": {
+      "reportNameExists": "Report with this name already exists, give another."
+    },
+    "table": {
+      "reportName": "Report Name",
+      "status": "Status",
+      "roles": "Roles",
+      "createdDate": "Created Date",
+      "actions": "Actions"
+    },
+    "allUsers": "All Users",
+    "status": {
+      "published": "Published",
+      "draft": "Draft",
+      "archived": "Archived"
+    },
+    "metadataDialog": {
+      "createTitle": "Create New Report",
+      "importTitle": "Import Report",
+      "reportName": "Report Name",
+      "reportNamePlaceholder": "Enter report name",
+      "url": "URL",
+      "urlPlaceholder": "Enter URL (auto-generated from name)",
+      "urlHint": "URL can only contain letters, numbers, underscores, and hyphens",
+      "description": "Description",
+      "descriptionPlaceholder": "Enter report description (optional)",
+      "invalidUrl": "Invalid URL format. Only letters, numbers, underscores, and hyphens are allowed."
+    }
+  },
+  "reports": {
+    "designer": {
+      "title": "Report Designer Tool",
+      "subtitle": "Create and edit custom reports using the visual designer"
+    }
+  },
+  "reportDashboard": {
+    "subtitle": "Browse and view published reports",
+    "noReports": "No Public Reports",
+    "noReportsDescription": "There are no published reports available at the moment.",
+    "viewReport": "View Report",
+    "noDescription": "No description available",
+    "table": {
+      "reportName": "Report Name",
+      "status": "Status",
+      "createdDate": "Created Date",
+      "description": "Description",
+      "actions": "Actions"
+    },
+  "advancedAnalytics": {
+    "title": "Advanced Analytics Dashboard",
+    "subtitle": "Real-time KPIs and analytics for strategic decision-making",
+    "lastUpdated": "Last Updated",
+    "lastRefresh": "Last Refresh",
+    "autoRefresh": "Auto Refresh",
+    "kpis": {
+      "title": "Key Performance Indicators",
+      "missionReadiness": "Mission Readiness Rate",
+      "stockAvailability": "Stock Availability",
+      "orderCycleTime": "Order Cycle Time",
+      "consumptionForecast": "Consumption vs Forecast",
+      "totalUnits": "Total Units",
+      "missionReady": "Mission Ready",
+      "underMaintenance": "Under Maintenance",
+      "unavailable": "Unavailable",
+      "requiredItems": "Required Items",
+      "availableItems": "Available Items",
+      "days": "days",
+      "min": "Min",
+      "max": "Max",
+      "consumptionRatio": "Consumption Ratio",
+      "alerts": "Alerts",
+      "shortage": "Shortage",
+      "dataPoints": "Data Points",
+      "status": "Status",
+      "variance": "Variance",
+      "average": "Average",
+      "importExport": "Import/Export Statistics",
+      "totalImports": "Total Imports",
+      "totalExports": "Total Exports",
+      "importPercentage": "Import %",
+      "lastImport": "Last Import",
+      "operations": "Operations",
+      "active": "Active"
+    },
+    "charts": {
+      "title": "Interactive Visualizations",
+      "importExport": "Import/Export Trends",
+      "missionReadinessTrend": "Mission Readiness Trend",
+      "stockByWarehouse": "Stock Availability by Warehouse",
+      "orderCycleTimeTrend": "Order Cycle Time Trend",
+      "consumptionForecast": "Consumption vs Forecast"
+    },
+    "additionalCharts": {
+      "title": "Additional Analytics Charts",
+      "orderStatusDistribution": "Order Status Distribution",
+      "requestTrends": "Request Trends Over Time",
+      "inventoryValue": "Inventory Value by Warehouse",
+      "assetAssignmentStatus": "Asset Assignment Status",
+      "supplyFulfillmentStatus": "Supply Fulfillment Status",
+      "departmentRequestVolume": "Department Request Volume",
+      "notificationTrends": "Notification Trends Over Time",
+      "notificationByType": "Notifications by Entity Type",
+      "notificationReadStatus": "Notification Read Status by Entity",
+      "userLoginAnalytics": "User Login Analytics"
+    },
+    "customize": "Customize",
+    "customizePanel": {
+      "title": "Customize Dashboard",
+      "presets": "Dashboard Presets",
+      "visibleKpis": "Visible KPIs",
+      "visibleCharts": "Visible Charts",
+      "additionalCharts": "Additional Analytics Charts"
+    },
+    "dashboard": "Dashboard"
   }
+}
 }
