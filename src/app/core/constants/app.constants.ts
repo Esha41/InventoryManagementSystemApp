@@ -234,6 +234,29 @@ export const API_ENDPOINTS = {
     COMPLETE: '/account/complete-onboarding',
   },
 
+<<<<<<< Updated upstream
+=======
+  // Help Center (api/HelpCenter — see HelpCenterController)
+  HELP_CENTER: {
+    BASE: '/HelpCenter',
+    ARTICLES: '/HelpCenter/articles',
+    ARTICLES_ALL: '/HelpCenter/articles/all',
+    ARTICLE_BY_ID: (id: number) => `/HelpCenter/articles/${id}`,
+    CONTACT: '/HelpCenter/contact',
+    CONTACT_BY_ID: (id: number) => `/HelpCenter/contact/${id}`,
+    CONTACT_REPLY: (id: number) => `/HelpCenter/contact/${id}/reply`,
+    CONTACT_DISPLAY: '/HelpCenter/contact/display',
+    TERMS: '/HelpCenter/terms',
+    TERMS_ALL: '/HelpCenter/terms/all',
+    TERMS_BY_ID: (id: number) => `/HelpCenter/terms/${id}`,
+    TERMS_ACTIVATE: (id: number) => `/HelpCenter/terms/${id}/activate`,
+    TERMS_DEACTIVATE: (id: number) => `/HelpCenter/terms/${id}/deactivate`,
+    /** Optional: backend may expose for blocking Terms UX */
+    TERMS_ACCEPTANCE_STATUS: '/HelpCenter/terms/acceptance-status',
+    TERMS_ACCEPT: '/HelpCenter/terms/accept',
+  },
+
+>>>>>>> Stashed changes
   // File Upload Management
   FILE_UPLOAD: {
     BASE: '/FileUpload',

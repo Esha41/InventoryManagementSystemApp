@@ -36,6 +36,7 @@
               "src/assets"
             ],
             "styles": [
+<<<<<<< Updated upstream
               "src/styles.css",
               "node_modules/devextreme/dist/css/dx.light.css",
               "node_modules/devexpress-reporting/dist/css/dx-webdocumentviewer.css",
@@ -47,6 +48,11 @@
               "node_modules/ace-builds/css/ace.css",
               "node_modules/ace-builds/css/theme/dreamweaver.css",
               "node_modules/ace-builds/css/theme/ambiance.css"
+=======
+              "node_modules/quill/dist/quill.core.css",
+              "node_modules/quill/dist/quill.snow.css",
+              "src/styles.css"
+>>>>>>> Stashed changes
             ],
             "scripts": [],
             "allowedCommonJsDependencies": [
@@ -56,6 +62,7 @@
               "core-js",
               "rgbcolor",
               "raf",
+<<<<<<< Updated upstream
 
               "file-saver",
               "jquery",
@@ -71,6 +78,11 @@
               "devexpress-diagram",
               "devexpress-gantt",
               "devextreme-quill"]
+=======
+              "dompurify",
+              "quill"
+            ]
+>>>>>>> Stashed changes
 
           },
           "configurations": {
@@ -148,6 +160,8 @@
               "src/assets"
             ],
             "styles": [
+              "node_modules/quill/dist/quill.core.css",
+              "node_modules/quill/dist/quill.snow.css",
               "src/styles.css"
             ],
             "scripts": []

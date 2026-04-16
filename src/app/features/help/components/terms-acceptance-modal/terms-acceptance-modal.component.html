@@ -1,0 +1,34 @@
+@if (facade.showModal() && facade.pendingTerms(); as terms) {
+  <div class="pointer-events-auto fixed inset-0 z-[100] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="terms-gate-title">
+    <div class="absolute inset-0 bg-black/45 backdrop-blur-sm"></div>
+    <div class="relative z-[1] flex max-h-[min(92vh,960px)] w-full max-w-5xl flex-col overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-5 pb-6 text-[var(--color-text)] shadow-2xl sm:px-6">
+      <h2 id="terms-gate-title" class="m-0 mb-1 shrink-0 text-xl font-bold text-[var(--color-text)]">{{ 'helpCenter.termsAcceptTitle' | translate }}</h2>
+      <p class="mb-3 shrink-0 text-sm text-[var(--color-text-muted)]">
+        {{ 'helpCenter.version' | translate }}: <strong>{{ terms.version }}</strong>
+      </p>
+      <div
+        id="terms-gate-body"
+        class="prose-terms mb-4 h-[min(60vh,calc(92vh-220px))] max-h-[720px] shrink-0 overflow-y-auto overflow-x-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-background-soft)] p-4 text-sm leading-relaxed"
+        [innerHTML]="safeContent(terms.content)"></div>
+      <label
+        class="mb-4 flex cursor-pointer items-start gap-3 rounded-lg border border-transparent px-0 py-1 text-sm leading-snug text-[var(--color-text)] hover:bg-[var(--color-background-soft)] has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--color-brand)]">
+        <input
+          type="checkbox"
+          class="mt-0.5 h-4 w-4 shrink-0 rounded border-[var(--color-border)] text-[var(--color-brand)] focus:ring-[var(--color-brand)]"
+          [checked]="hasReadAndAgreed()"
+          (change)="onAgreedChange($event)"
+          [attr.aria-describedby]="'terms-gate-body'" />
+        <span>{{ 'helpCenter.termsAcceptCheckbox' | translate }}</span>
+      </label>
+      <div class="flex justify-end">
+        <button
+          type="button"
+          class="inline-flex min-h-11 items-center justify-center rounded-lg border-0 bg-[var(--color-brand)] px-5 py-2 text-sm font-semibold text-white transition-opacity hover:bg-[var(--color-brand-dark)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand)] disabled:cursor-not-allowed disabled:opacity-55"
+          [disabled]="!hasReadAndAgreed() || facade.accepting()"
+          (click)="onAccept()">
+          {{ facade.accepting() ? ('common.pleaseWait' | translate) : ('helpCenter.termsAcceptButton' | translate) }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

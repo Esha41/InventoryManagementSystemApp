@@ -3,7 +3,11 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, filter } from 'rxjs';
+<<<<<<< Updated upstream
 import { LucideAngularModule, LayoutDashboard, House, Boxes, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Badge, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList, Package, Building2, GitBranch, Mail, Upload, BarChart3, Database,Calendar, Megaphone } from 'lucide-angular';
+=======
+import { LucideAngularModule, House, Boxes, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Badge, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList, Package, Building2, GitBranch, Mail, Upload, BarChart3, Database, Megaphone, HelpCircle, BookMarked } from 'lucide-angular';
+>>>>>>> Stashed changes
 import { BackendAuthService } from '@services/backend-auth.service';
 import { TranslationService } from '@services/translation.service';
 
@@ -70,6 +74,15 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       permissions: ['dashboard_view']
     },
     {
+<<<<<<< Updated upstream
+=======
+      label: 'nav.help',
+      icon: HelpCircle,
+      route: '/help',
+      permissions: []
+    },
+    {
+>>>>>>> Stashed changes
       label: 'nav.inventoryDashboard',
       icon: Boxes,
       route: '/inventory-dashboard',
@@ -320,6 +333,15 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       permissions: ['stockNotificationSettingsPage']
     },
     {
+<<<<<<< Updated upstream
+=======
+      label: 'nav.helpCenterAdmin',
+      icon: BookMarked,
+      route: '/admin/help-center',
+      permissions: ['helpcenter.page', 'helpcenter.view']
+    },
+    {
+>>>>>>> Stashed changes
       label: 'nav.announcements',
       icon: Megaphone,
       route: '/admin/announcements',

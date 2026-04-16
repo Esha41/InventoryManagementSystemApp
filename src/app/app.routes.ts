@@ -362,6 +362,27 @@ export const routes: Routes = [
         data: { permissions: ['stockNotificationSettingsPage'] }
       },
       {
+<<<<<<< Updated upstream
+=======
+        path: 'help',
+        loadComponent: () =>
+          import('@features/help/pages/help-center-user/help-center-user.component').then(
+            m => m.HelpCenterUserComponent
+          )
+      },
+      { path: 'help-me', redirectTo: 'help', pathMatch: 'full' },
+      { path: 'admin/help-me', redirectTo: 'admin/help-center', pathMatch: 'full' },
+      {
+        path: 'admin/help-center',
+        loadComponent: () =>
+          import('@admin/pages/help-center-management/help-center-management.component').then(
+            m => m.HelpCenterManagementComponent
+          ),
+        canActivate: [permissionGuard],
+        data: { permissions: ['helpcenter.page', 'helpcenter.view'] }
+      },
+      {
+>>>>>>> Stashed changes
         path: 'admin/announcements',
         loadComponent: () => import('@admin/pages/announcements/announcements.component').then(m => m.AnnouncementsComponent),
         canActivate: [permissionGuard],

@@ -1,0 +1,85 @@
+<div class="min-h-[200px]">
+  <p class="mb-4 text-sm text-[var(--color-text-muted)]">{{ 'helpCenter.manualAdminIntro' | translate }}</p>
+
+  <div *ngIf="loading" class="flex flex-col items-center justify-center gap-3 py-8">
+    <div class="h-8 w-8 animate-spin rounded-full border-[3px] border-[var(--color-border)] border-t-[var(--color-brand)]"></div>
+    <p class="text-sm text-[var(--color-text-muted)]">{{ 'common.loading' | translate }}</p>
+  </div>
+
+  <app-card *ngIf="!loading">
+    <div class="mb-4 flex flex-wrap items-center gap-3">
+      <input
+        #fileInput
+        type="file"
+        multiple
+        class="hidden"
+        (change)="onFilesSelected($event)"
+        [attr.accept]="'.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip'"
+        [attr.aria-label]="'helpCenter.manualUploadFiles' | translate" />
+      <app-button
+        *ngIf="canEdit()"
+        variant="primary"
+        [disabled]="uploading"
+        (clicked)="triggerFilePick()">
+        <span class="inline-flex items-center gap-2">
+          <lucide-angular [img]="Upload" class="h-4 w-4"></lucide-angular>
+          <span>{{ uploading ? ('common.pleaseWait' | translate) : ('helpCenter.manualUploadFiles' | translate) }}</span>
+        </span>
+      </app-button>
+      <span class="text-xs text-[var(--color-text-muted)]">{{ 'helpCenter.manualUploadHint' | translate }}</span>
+    </div>
+
+    <div
+      *ngIf="files.length === 0"
+      class="rounded-lg border border-dashed border-[var(--color-border)] bg-[var(--color-background-soft)]/40 px-4 py-10 text-center">
+      <lucide-angular [img]="FileText" class="mx-auto mb-2 h-10 w-10 text-[var(--color-text-muted)]"></lucide-angular>
+      <p class="m-0 text-sm text-[var(--color-text-muted)]">{{ 'helpCenter.manualEmptyAdmin' | translate }}</p>
+    </div>
+
+    <div *ngIf="files.length > 0" class="overflow-x-auto">
+      <table class="w-full border-collapse text-sm">
+        <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
+          <tr>
+            <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+              {{ 'helpCenter.manualColFile' | translate }}
+            </th>
+            <th class="px-6 py-3 text-end text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+              {{ 'common.actions' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[var(--color-border)]">
+          <tr *ngFor="let f of files" class="hover:bg-[var(--color-background-muted)] transition-colors">
+            <td class="px-6 py-4 align-middle">
+              <div class="flex items-center gap-2 font-medium text-[var(--color-text)]">
+                <lucide-angular [img]="FileText" class="h-4 w-4 shrink-0 text-[var(--color-brand)]"></lucide-angular>
+                <span class="break-all">{{ f.originalName || f.fileName }}</span>
+              </div>
+            </td>
+            <td class="px-6 py-4 align-middle text-end">
+              <button
+                *ngIf="canDelete()"
+                type="button"
+                class="inline-flex items-center justify-center rounded-md border-0 bg-transparent p-1.5 text-[var(--color-text-muted)] transition-colors hover:bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)] hover:text-[var(--color-error)]"
+                (click)="confirmDelete(f)"
+                [title]="'common.delete' | translate">
+                <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </app-card>
+</div>
+
+<app-confirm-dialog
+  [isOpen]="showDeleteDialog"
+  [title]="'common.delete' | translate"
+  [message]="'helpCenter.manualDeleteConfirm' | translate"
+  [confirmText]="'common.delete' | translate"
+  [cancelText]="'common.cancel' | translate"
+  confirmVariant="danger"
+  (confirmed)="onDeleteConfirm()"
+  (cancelled)="onDeleteCancel()">
+</app-confirm-dialog>

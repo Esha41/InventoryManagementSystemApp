@@ -1,0 +1,174 @@
+<div class="min-h-[200px]">
+  <div class="mb-4 flex justify-end">
+    <button
+      *ngIf="canCreate()"
+      type="button"
+      class="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[var(--color-brand)] px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-[var(--color-brand-dark)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand)]"
+      (click)="openCreateArticle()">
+      <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
+      <span>{{ 'helpCenter.addArticle' | translate }}</span>
+    </button>
+  </div>
+
+  <div *ngIf="loadingArticles()" class="flex flex-col items-center justify-center gap-3 py-8">
+    <div class="h-8 w-8 animate-spin rounded-full border-[3px] border-[var(--color-border)] border-t-[var(--color-brand)]"></div>
+    <p class="text-sm text-[var(--color-text-muted)]">{{ 'common.loading' | translate }}</p>
+  </div>
+
+  <div
+    *ngIf="!loadingArticles() && articles().length === 0"
+    class="rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-background)] px-4 py-10 text-center">
+    <lucide-angular [img]="AlertCircle" class="mx-auto mb-2 h-12 w-12 text-[var(--color-text-muted)]"></lucide-angular>
+    <p class="m-0 text-[var(--color-text-muted)]">{{ 'common.noData' | translate }}</p>
+  </div>
+
+  <app-card *ngIf="!loadingArticles() && articles().length > 0">
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-sm">
+        <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
+          <tr>
+            <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+              {{ 'helpCenter.colTitle' | translate }}
+            </th>
+            <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+              {{ 'helpCenter.colCategory' | translate }}
+            </th>
+            <th class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+              {{ 'helpCenter.colPublished' | translate }}
+            </th>
+            <th class="px-6 py-3 text-end text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+              {{ 'common.actions' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[var(--color-border)]">
+          <tr *ngFor="let a of paginatedArticles()" class="hover:bg-[var(--color-background-muted)] transition-colors">
+            <td class="px-6 py-4 align-middle">
+              <div class="max-w-[280px] overflow-hidden text-ellipsis whitespace-nowrap" [title]="a.title">{{ a.title }}</div>
+            </td>
+            <td class="px-6 py-4 align-middle">{{ a.category || '—' }}</td>
+            <td class="px-6 py-4 align-middle">
+              <span [class]="badgePositive(a.isPublished)">
+                {{ a.isPublished ? ('common.yes' | translate) : ('common.no' | translate) }}
+              </span>
+            </td>
+            <td class="px-6 py-4 align-middle text-end">
+              <button
+                *ngIf="canEdit()"
+                type="button"
+                class="inline-flex items-center justify-center rounded-md border-0 bg-transparent p-1.5 text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-background-hover)] hover:text-[var(--color-brand)]"
+                (click)="openEditArticle(a)"
+                [title]="'common.edit' | translate">
+                <lucide-angular [img]="Pencil" class="h-4 w-4"></lucide-angular>
+              </button>
+              <button
+                *ngIf="canDelete()"
+                type="button"
+                class="inline-flex items-center justify-center rounded-md border-0 bg-transparent p-1.5 text-[var(--color-text-muted)] transition-colors hover:bg-[color-mix(in_srgb,var(--color-error)_12%,transparent)] hover:text-[var(--color-error)]"
+                (click)="confirmDeleteArticle(a)"
+                [title]="'common.delete' | translate">
+                <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 sm:px-6 py-4">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-start sm:justify-between gap-4">
+        <app-rows-per-page
+          [rowsPerPage]="rowsPerPage()"
+          [totalItems]="articles().length"
+          [visibleItems]="paginatedArticles().length"
+          [optionValues]="pageSizeOptions"
+          (rowsPerPageChange)="onArticlesRowsPerPageChange($event)">
+        </app-rows-per-page>
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <app-pagination
+            [currentPage]="effectiveArticlesPage()"
+            [totalPages]="articleTotalPages()"
+            [alwaysShow]="true"
+            (pageChange)="onArticlesPageChange($event)">
+          </app-pagination>
+          <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+            {{ effectiveArticlesPage() }} {{ 'common.of' | translate }} {{ articleTotalPages() }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </app-card>
+</div>
+
+<app-modal
+  [isOpen]="articleModalOpen"
+  [title]="editingArticle ? ('helpCenter.editArticle' | translate) : ('helpCenter.createArticle' | translate)"
+  size="xl"
+  [bodyMaxHeight]="'min(88vh, 900px)'"
+  (closed)="closeArticleModal()">
+  <form [formGroup]="articleForm" class="w-full min-w-0 space-y-4">
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-[var(--color-text)]">{{ 'helpCenter.colTitle' | translate }}</label>
+      <input
+        type="text"
+        class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm text-[var(--color-text)]"
+        formControlName="title" />
+    </div>
+    <div>
+      <label class="mb-1.5 block text-sm font-medium text-[var(--color-text)]">{{ 'helpCenter.colCategory' | translate }}</label>
+      <input
+        type="text"
+        class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm text-[var(--color-text)]"
+        formControlName="category" />
+    </div>
+    <label class="flex cursor-pointer items-center gap-2 text-sm">
+      <input type="checkbox" formControlName="isPublished" />
+      {{ 'helpCenter.colPublished' | translate }}
+    </label>
+    <div class="w-full min-w-0">
+      <label class="mb-1.5 flex flex-wrap items-baseline gap-1 text-sm font-medium text-[var(--color-text)]">
+        <span>{{ 'helpCenter.contentLabel' | translate }}</span>
+        <span class="font-semibold text-[var(--color-error)]" aria-hidden="true">{{ 'common.requiredSuffix' | translate }}</span>
+      </label>
+      <p class="mb-2 text-xs text-[var(--color-text-muted)]">{{ 'helpCenter.articleEditorHint' | translate }}</p>
+      <div
+        class="block w-full min-w-0 overflow-hidden rounded-lg border bg-[var(--color-background)] [&_.ql-container]:rounded-b-lg [&_.ql-toolbar]:rounded-t-lg [&_.ql-editor]:min-h-[280px] [&_.ql-editor]:text-[var(--color-text)]"
+        [ngClass]="
+          articleContentInvalid()
+            ? 'border-[var(--color-error)] [&_.ql-toolbar]:border-[var(--color-error)] [&_.ql-container]:border-[var(--color-error)]'
+            : 'border-[var(--color-border)] [&_.ql-toolbar]:border-[var(--color-border)] [&_.ql-container]:border-[var(--color-border)]'
+        ">
+        <quill-editor
+          class="block w-full min-w-0"
+          formControlName="content"
+          theme="snow"
+          format="html"
+          [sanitize]="false"
+          [modules]="articlesQuillModules"
+          [styles]="articlesEditorStyles"
+          [placeholder]="'helpCenter.articleEditorPlaceholder' | translate"
+          (onBlur)="onArticleContentBlur()">
+        </quill-editor>
+      </div>
+      <p *ngIf="articleContentInvalid()" class="mt-1 text-xs text-[var(--color-error)]">
+        {{ 'helpCenter.termsFieldRequired' | translate }}
+      </p>
+    </div>
+  </form>
+  <div modal-footer class="flex w-full justify-end gap-3">
+    <app-button variant="outline" (clicked)="closeArticleModal()">{{ 'common.cancel' | translate }}</app-button>
+    <app-button variant="primary" [disabled]="savingArticle" (clicked)="saveArticle()">
+      {{ savingArticle ? ('common.saving' | translate) : ('common.save' | translate) }}
+    </app-button>
+  </div>
+</app-modal>
+
+<app-confirm-dialog
+  [isOpen]="showDeleteArticleDialog"
+  [title]="'common.delete' | translate"
+  [message]="'helpCenter.deleteArticleConfirm' | translate"
+  [confirmText]="'common.delete' | translate"
+  [cancelText]="'common.cancel' | translate"
+  confirmVariant="danger"
+  (confirmed)="onDeleteArticleConfirm()"
+  (cancelled)="onDeleteArticleCancel()">
+</app-confirm-dialog>
