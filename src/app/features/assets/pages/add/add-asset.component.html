@@ -445,13 +445,13 @@
                   </app-dropdown>
                 </div>
 
-                <!-- Type -->
+                <!-- Weapon Type -->
                 <div>
-                  <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.type' | translate
+                  <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.weaponType' | translate
                     }}</label>
                   <app-dropdown class="w-full" [(ngModel)]="assetForm.typeId" name="typeId" [options]="weaponItemTypes"
                     optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
-                    [placeholderValue]="null" [placeholder]="'addAsset.selectItemType' | translate">
+                    [placeholderValue]="null" [placeholder]="'addAsset.selectWeaponType' | translate">
                   </app-dropdown>
                 </div>
 
