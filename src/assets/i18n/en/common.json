@@ -237,13 +237,7 @@
     "reportDashboard": "Report Dashboard",
     "scheduledReports": "Scheduled Reports",
     "itemDepartmentAssignment": "Item Assignment",
-<<<<<<< Updated upstream
     "announcements": "Announcements"
-=======
-    "announcements": "Announcements",
-    "help": "Help",
-    "helpCenterAdmin": "Help center (admin)"
->>>>>>> Stashed changes
   },
   "footer": {
     "copyright": "Copyright © Barzan Holdings {{year}}"
