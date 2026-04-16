@@ -71,6 +71,10 @@ export interface AssetDto {
     createdBy?: string;
     /** Resolved display name for createdBy (from API). */
     createdByName?: string;
+    /** Current assignment: expected return (checkout). */
+    expectedReturnDate?: Date | string;
+    /** Current assignment: actual return when completed. */
+    actualReturnDate?: Date | string;
     supplierId?: number;
     manufacturerId?: number;
     primaryPurposId?: number;

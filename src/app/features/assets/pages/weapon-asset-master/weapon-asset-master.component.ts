@@ -16,15 +16,18 @@ import {
   ChevronRight,
   History,
   ArrowRight,
+  Eye,
   User,
   Building,
   Search,
+  X,
   FilterX
 } from 'lucide-angular';
 import { AssetService } from '@services/asset.service';
 import { AssetHistoryService, AssetHistoryDto } from '@services/asset-history.service';
 import { LookupService } from '@services/lookup.service';
-import { AssetDto, AssetStatus, getAssetStatusLabel } from '@models/asset.model';
+import { EmployeeService } from '@services/employee.service';
+import { AssetDto, AssetStatus, EmployeeDto, getAssetStatusLabel } from '@models/asset.model';
 import { ItemType } from '@models/inventory.model';
 import { FilterData, PagedListRequest } from '@models/pagination.model';
 import { LookupItem } from '@models/lookup.model';
@@ -34,10 +37,12 @@ import {
   PaginationComponent,
   RowsPerPageComponent
 } from '@components/index';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { trackById } from '@utils/trackby.utils';
 import { ToastService } from '@services/toast.service';
+import { ButtonComponent } from '@components/button/button.component';
 
 /** Backend `AssetHistoryActionType.Created` */
 const HISTORY_ACTION_CREATED = 1;
@@ -58,7 +63,9 @@ type CustodyFilter = 'all' | 'checkout' | 'checkin';
     LoadingStateComponent,
     PaginationComponent,
     RowsPerPageComponent,
-    AppDatePipe
+    AppDatePipe,
+    DropdownComponent,
+    ButtonComponent
   ],
   templateUrl: './weapon-asset-master.component.html',
   styleUrls: ['./weapon-asset-master.component.css'],
@@ -77,20 +84,42 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
 
   searchInput = '';
   appliedSearchTerm = '';
-  filterPrimaryPurposeId: number | null = null;
-  filterStatus: AssetStatus | null = null;
-  filterSupplierId: number | null = null;
-  filterManufacturerId: number | null = null;
+  /** Draft values in the additional-filters panel (applied only after "Apply filters"). */
+  filterPrimaryPurposeIds: number[] = [];
+  filterStatuses: AssetStatus[] = [];
+  filterSupplierIds: number[] = [];
+  filterManufacturerIds: number[] = [];
+  /** Draft: filter by custodian (employee) id(s). */
+  filterEmployeeIds: number[] = [];
   filterCustody: CustodyFilter = 'all';
+  /** `yyyy-MM-dd` from `<input type="date">`; filters `CreationDate` on the server. */
+  filterDateFrom = '';
+  filterDateTo = '';
+
+  /** Values sent to the API (kept in sync by Apply filters, Clear, and initial load). */
+  appliedFilterDateFrom = '';
+  appliedFilterDateTo = '';
+  appliedPrimaryPurposeIds: number[] = [];
+  appliedFilterStatuses: AssetStatus[] = [];
+  appliedSupplierIds: number[] = [];
+  appliedManufacturerIds: number[] = [];
+  appliedEmployeeIds: number[] = [];
+  appliedFilterCustody: CustodyFilter = 'all';
+  appliedDepotIds: number[] = [];
+
+  /** When true, date / custody / advanced filter row is visible. */
+  showMoreFilters = false;
 
   private readonly destroy$ = new Subject<void>();
 
   depots: LookupItem[] = [];
-  selectedDepotId: number | null = null;
+  /** Draft depot selection (multi); `appliedDepotIds` drives the API. */
+  selectedDepotIds: number[] = [];
 
   primaryPurposes: LookupItem[] = [];
   suppliers: LookupItem[] = [];
   manufacturers: LookupItem[] = [];
+  employees: EmployeeDto[] = [];
 
   readonly statusFilterOptions: { value: AssetStatus; labelKey: string }[] = [
     { value: AssetStatus.ReadyToIssue, labelKey: 'assetStatus.readyToIssue' },
@@ -101,9 +130,59 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
     { value: AssetStatus.Disposed, labelKey: 'assetStatus.disposed' }
   ];
 
+  /** Checkout / check-in: include `all` as a real option so the trigger shows the same translated label as other filters. */
+  readonly custodyDropdownOptions: DropdownOption<CustodyFilter>[] = [
+    { label: 'weaponAssetMaster.filters.all', value: 'all' },
+    { label: 'weaponAssetMaster.filters.custodyCheckout', value: 'checkout' },
+    { label: 'weaponAssetMaster.filters.custodyCheckin', value: 'checkin' }
+  ];
+
+  get statusDropdownOptions(): DropdownOption<AssetStatus>[] {
+    return this.statusFilterOptions.map((o) => ({ label: o.labelKey, value: o.value }));
+  }
+
+  readonly depotDropdownLabelFn = (option: DropdownOption<LookupItem> | LookupItem | null): string => {
+    const item = this.unwrapLookupOption(option);
+    return item ? this.depotOptionLabel(item) : '';
+  };
+
+  readonly lookupDropdownLabelFn = (option: DropdownOption<LookupItem> | LookupItem | null): string => {
+    const item = this.unwrapLookupOption(option);
+    return item ? this.lookupOptionLabel(item) : '';
+  };
+
+  readonly employeeDropdownLabelFn = (option: DropdownOption<EmployeeDto> | EmployeeDto | null): string => {
+    const e = this.unwrapEmployeeOption(option);
+    if (!e) return '';
+    const lang = getCurrentLang(this.translateService);
+    const name = getLocalizedName({ nameEn: e.nameEn, nameAr: e.nameAr }, lang)?.trim();
+    if (name && e.militaryId) return `${name} (${e.militaryId})`;
+    if (name) return name;
+    return e.militaryId?.trim() || String(e.id);
+  };
+
+  private unwrapEmployeeOption(option: DropdownOption<EmployeeDto> | EmployeeDto | null): EmployeeDto | null {
+    if (option == null) return null;
+    if (typeof option === 'object' && 'value' in option && (option as DropdownOption<EmployeeDto>).value !== undefined) {
+      return (option as DropdownOption<EmployeeDto>).value as EmployeeDto;
+    }
+    return option as EmployeeDto;
+  }
+
+  private unwrapLookupOption(option: DropdownOption<LookupItem> | LookupItem | null): LookupItem | null {
+    if (option == null) return null;
+    if (typeof option === 'object' && 'value' in option && (option as DropdownOption<LookupItem>).value !== undefined) {
+      return (option as DropdownOption<LookupItem>).value as LookupItem;
+    }
+    return option as LookupItem;
+  }
+
   expandedAssetIds = new Set<number>();
   historyByAssetId = new Map<number, AssetHistoryDto[]>();
   loadingHistory = new Set<number>();
+
+  /** Quick view popup (row details + return dates + created by). */
+  viewModalAsset: AssetDto | null = null;
 
   sortColumn: SortColumn = 'serial';
   sortDirection: 'asc' | 'desc' = 'asc';
@@ -112,9 +191,11 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
   readonly ChevronRight = ChevronRight;
   readonly History = History;
   readonly ArrowRight = ArrowRight;
+  readonly Eye = Eye;
   readonly User = User;
   readonly Building = Building;
   readonly Search = Search;
+  readonly X = X;
   readonly FilterX = FilterX;
   readonly trackById = trackById;
 
@@ -122,6 +203,7 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
     private assetService: AssetService,
     private assetHistoryService: AssetHistoryService,
     private lookupService: LookupService,
+    private employeeService: EmployeeService,
     private translateService: TranslateService,
     private toastService: ToastService,
     private cdr: ChangeDetectorRef
@@ -184,6 +266,20 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
         }
       });
 
+    this.employeeService
+      .getEmployees()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (list) => {
+          this.employees = (list ?? []).filter((e) => e && !e.isDeleted);
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.employees = [];
+          this.cdr.markForCheck();
+        }
+      });
+
     this.loadAssets();
   }
 
@@ -198,25 +294,69 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
     this.loadAssets();
   }
 
-  onSelectFilterChange(): void {
-    this.currentPage = 1;
-    this.loadAssets();
+  clearSearch(): void {
+    this.searchInput = '';
+    this.applySearch();
   }
 
-  onDepotChange(): void {
+  toggleMoreFilters(): void {
+    if (!this.showMoreFilters) {
+      this.syncDraftFiltersFromApplied();
+    }
+    this.showMoreFilters = !this.showMoreFilters;
+    this.cdr.markForCheck();
+  }
+
+  /** Copies draft filter controls into applied state and reloads the list. */
+  applyAdditionalFilters(): void {
+    this.appliedFilterDateFrom = this.filterDateFrom?.trim() ?? '';
+    this.appliedFilterDateTo = this.filterDateTo?.trim() ?? '';
+    this.appliedPrimaryPurposeIds = [...this.filterPrimaryPurposeIds];
+    this.appliedFilterStatuses = [...this.filterStatuses];
+    this.appliedSupplierIds = [...this.filterSupplierIds];
+    this.appliedManufacturerIds = [...this.filterManufacturerIds];
+    this.appliedEmployeeIds = [...this.filterEmployeeIds];
+    this.appliedFilterCustody = this.filterCustody;
+    this.appliedDepotIds = [...this.selectedDepotIds];
     this.currentPage = 1;
+    this.showMoreFilters = false;
     this.loadAssets();
+    this.cdr.markForCheck();
+  }
+
+  private syncDraftFiltersFromApplied(): void {
+    this.filterDateFrom = this.appliedFilterDateFrom;
+    this.filterDateTo = this.appliedFilterDateTo;
+    this.filterPrimaryPurposeIds = [...this.appliedPrimaryPurposeIds];
+    this.filterStatuses = [...this.appliedFilterStatuses];
+    this.filterSupplierIds = [...this.appliedSupplierIds];
+    this.filterManufacturerIds = [...this.appliedManufacturerIds];
+    this.filterEmployeeIds = [...this.appliedEmployeeIds];
+    this.filterCustody = this.appliedFilterCustody;
+    this.selectedDepotIds = [...this.appliedDepotIds];
   }
 
   clearColumnFilters(): void {
     this.searchInput = '';
     this.appliedSearchTerm = '';
-    this.filterPrimaryPurposeId = null;
-    this.filterStatus = null;
-    this.filterSupplierId = null;
-    this.filterManufacturerId = null;
+    this.filterPrimaryPurposeIds = [];
+    this.filterStatuses = [];
+    this.filterSupplierIds = [];
+    this.filterManufacturerIds = [];
+    this.filterEmployeeIds = [];
     this.filterCustody = 'all';
-    this.selectedDepotId = null;
+    this.selectedDepotIds = [];
+    this.filterDateFrom = '';
+    this.filterDateTo = '';
+    this.appliedFilterDateFrom = '';
+    this.appliedFilterDateTo = '';
+    this.appliedPrimaryPurposeIds = [];
+    this.appliedFilterStatuses = [];
+    this.appliedSupplierIds = [];
+    this.appliedManufacturerIds = [];
+    this.appliedEmployeeIds = [];
+    this.appliedFilterCustody = 'all';
+    this.appliedDepotIds = [];
     this.currentPage = 1;
     this.loadAssets();
   }
@@ -224,12 +364,15 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
   hasActiveFilters(): boolean {
     return (
       !!this.appliedSearchTerm ||
-      this.filterPrimaryPurposeId != null ||
-      this.filterStatus != null ||
-      this.filterSupplierId != null ||
-      this.filterManufacturerId != null ||
-      (this.selectedDepotId != null && this.selectedDepotId > 0) ||
-      this.filterCustody !== 'all'
+      this.appliedPrimaryPurposeIds.length > 0 ||
+      this.appliedFilterStatuses.length > 0 ||
+      this.appliedSupplierIds.length > 0 ||
+      this.appliedManufacturerIds.length > 0 ||
+      this.appliedEmployeeIds.length > 0 ||
+      this.appliedDepotIds.length > 0 ||
+      this.appliedFilterCustody !== 'all' ||
+      !!this.appliedFilterDateFrom?.trim() ||
+      !!this.appliedFilterDateTo?.trim()
     );
   }
 
@@ -254,6 +397,21 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
     this.rowsPerPage = rows;
     this.currentPage = 1;
     this.loadAssets();
+  }
+
+  openViewModal(asset: AssetDto, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.viewModalAsset = asset;
+    if (!this.historyByAssetId.has(asset.id)) {
+      this.loadHistory(asset.id);
+    }
+    this.cdr.markForCheck();
+  }
+
+  closeViewModal(): void {
+    this.viewModalAsset = null;
+    this.cdr.markForCheck();
   }
 
   toggleExpand(assetId: number, event: Event): void {
@@ -370,32 +528,39 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
       });
     }
 
-    if (this.filterPrimaryPurposeId != null && this.filterPrimaryPurposeId > 0) {
-      filters.push({
-        field: 'PrimaryPurposId',
-        operator: 'eq',
-        value: String(this.filterPrimaryPurposeId)
-      });
-    }
+    this.appendOrEqNumericIds(filters, 'PrimaryPurposId', this.appliedPrimaryPurposeIds);
+    this.appendOrEqStatuses(filters, this.appliedFilterStatuses);
+    this.appendOrEqNumericIds(filters, 'SupplierId', this.appliedSupplierIds);
+    this.appendOrEqNumericIds(filters, 'ManufacturerId', this.appliedManufacturerIds);
+    this.appendOrEqNumericIds(filters, 'CurrentAssignment.CustodianId', this.appliedEmployeeIds);
 
-    if (this.filterStatus != null) {
-      filters.push({ field: 'Status', operator: 'eq', value: String(this.filterStatus) });
-    }
-
-    if (this.filterSupplierId != null && this.filterSupplierId > 0) {
-      filters.push({ field: 'SupplierId', operator: 'eq', value: String(this.filterSupplierId) });
-    }
-
-    if (this.filterManufacturerId != null && this.filterManufacturerId > 0) {
-      filters.push({ field: 'ManufacturerId', operator: 'eq', value: String(this.filterManufacturerId) });
+    // Multiple depots: OR in filter body. Single depot uses query param only (see loadAssets).
+    if (this.appliedDepotIds.length > 1) {
+      this.appendOrEqNumericIds(filters, 'DepotId', this.appliedDepotIds);
     }
 
     // Server FilterProvider only supports eq, neq, comparison, contains, etc. — not isnull/isnotnull.
     // Asset.IsAssigned is the canonical flag for checked-out vs in-depot custody.
-    if (this.filterCustody === 'checkout') {
+    if (this.appliedFilterCustody === 'checkout') {
       filters.push({ field: 'IsAssigned', operator: 'eq', value: 'true' });
-    } else if (this.filterCustody === 'checkin') {
+    } else if (this.appliedFilterCustody === 'checkin') {
       filters.push({ field: 'IsAssigned', operator: 'eq', value: 'false' });
+    }
+
+    const { from: creationFrom, to: creationTo } = this.getNormalizedCreationDateRange();
+    if (creationFrom) {
+      filters.push({
+        field: 'CreationDate',
+        operator: 'gte',
+        value: this.toUtcIsoStartOfLocalDay(creationFrom)
+      });
+    }
+    if (creationTo) {
+      filters.push({
+        field: 'CreationDate',
+        operator: 'lte',
+        value: this.toUtcIsoEndOfLocalDay(creationTo)
+      });
     }
 
     const sortField = this.resolveSortField();
@@ -418,6 +583,62 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
     return map[this.sortColumn];
   }
 
+  /** One or more `eq` on the same field combined with OR (multi-select). */
+  private appendOrEqNumericIds(filters: FilterData[], field: string, ids: number[]): void {
+    const sanitized = (ids ?? []).filter((id) => id != null && id > 0);
+    if (sanitized.length === 0) {
+      return;
+    }
+    if (sanitized.length === 1) {
+      filters.push({ field, operator: 'eq', value: String(sanitized[0]) });
+      return;
+    }
+    filters.push({
+      logic: 'or',
+      filters: sanitized.map((id) => ({ field, operator: 'eq' as const, value: String(id) }))
+    });
+  }
+
+  private appendOrEqStatuses(filters: FilterData[], statuses: AssetStatus[]): void {
+    const list = (statuses ?? []).filter((s) => s != null);
+    if (list.length === 0) {
+      return;
+    }
+    if (list.length === 1) {
+      filters.push({ field: 'Status', operator: 'eq', value: String(list[0]) });
+      return;
+    }
+    filters.push({
+      logic: 'or',
+      filters: list.map((s) => ({ field: 'Status', operator: 'eq' as const, value: String(s) }))
+    });
+  }
+
+  /** If both dates are set and from is after to, swap so the range is valid. */
+  private getNormalizedCreationDateRange(): { from?: string; to?: string } {
+    let from = this.appliedFilterDateFrom?.trim() ?? '';
+    let to = this.appliedFilterDateTo?.trim() ?? '';
+    if (!from && !to) {
+      return {};
+    }
+    if (from && to && from > to) {
+      const tmp = from;
+      from = to;
+      to = tmp;
+    }
+    return { from: from || undefined, to: to || undefined };
+  }
+
+  private toUtcIsoStartOfLocalDay(yMd: string): string {
+    const [y, m, d] = yMd.split('-').map((v) => parseInt(v, 10));
+    return new Date(y, m - 1, d, 0, 0, 0, 0).toISOString();
+  }
+
+  private toUtcIsoEndOfLocalDay(yMd: string): string {
+    const [y, m, d] = yMd.split('-').map((v) => parseInt(v, 10));
+    return new Date(y, m - 1, d, 23, 59, 59, 999).toISOString();
+  }
+
   private loadAssets(): void {
     if (!this.hasLoadedOnce) {
       this.loading = true;
@@ -432,7 +653,8 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
       filter: this.buildFilter()
     };
 
-    const depotId = this.selectedDepotId && this.selectedDepotId > 0 ? this.selectedDepotId : null;
+    const depotId =
+      this.appliedDepotIds.length === 1 && this.appliedDepotIds[0] > 0 ? this.appliedDepotIds[0] : null;
 
     this.assetService
       .getAssetsPaginated(depotId, request)
