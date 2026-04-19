@@ -1,5 +1,6 @@
+<div class="flex flex-col gap-6">
 <!-- Set Supply Pickup Date Section -->
-<div *ngIf="canSet() && hasPendingStep()" class="mt-6">
+<div *ngIf="canSet() && hasPendingStep()">
   <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">
     <div class="flex items-center gap-3 mb-6 pb-4 border-b border-[var(--color-border)]">
       <div class="w-10 h-10 rounded-lg bg-[var(--color-info)]/10 flex items-center justify-center">
@@ -66,7 +67,7 @@
 </div>
 
 <!-- Confirm Supply Pickup Date Section -->
-<div *ngIf="canConfirm() && hasPendingStep()" class="mt-6">
+<div *ngIf="canConfirm() && hasPendingStep()">
   <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md p-6 border border-[var(--color-border)]">
     <div class="flex items-center gap-3 mb-6 pb-4 border-b border-[var(--color-border)]">
       <div class="w-10 h-10 rounded-lg bg-[var(--color-success)]/10 flex items-center justify-center">
@@ -131,4 +132,5 @@
       </div>
     </div>
   </div>
+</div>
 </div>

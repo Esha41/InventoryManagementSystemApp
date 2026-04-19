@@ -384,6 +384,3 @@ Developed by the Flora development team.
 
 **Last Updated:** Sprint 1 Delivery  
 **Version:** 1.1.1
-
-=======
-# EttadFrontEnd

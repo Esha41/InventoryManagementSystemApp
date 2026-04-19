@@ -54,6 +54,9 @@ import { WorkflowRequestItemsComponent } from './components/workflow-request-ite
 import { WorkflowSupplySummaryComponent } from './components/workflow-supply-summary/workflow-supply-summary.component';
 import { WeaponReviewItemsModalComponent } from './components/weapon-review-items-modal/weapon-review-items-modal.component';
 import { OrderItemTrackingModalComponent } from './components/order-item-tracking-modal/order-item-tracking-modal.component';
+import { WorkflowReturnDepotComponent } from './components/workflow-return-depot/workflow-return-depot.component';
+import { WorkflowReturnDeliveryDateComponent } from './components/workflow-return-delivery-date/workflow-return-delivery-date.component';
+import { WorkflowReturnApprovedSummaryComponent } from './components/workflow-return-approved-summary/workflow-return-approved-summary.component';
 
 @Component({
   selector: 'app-workflow-approval-detail',
@@ -75,7 +78,10 @@ import { OrderItemTrackingModalComponent } from './components/order-item-trackin
     WorkflowRequestItemsComponent,
     WorkflowSupplySummaryComponent,
     WeaponReviewItemsModalComponent,
-    OrderItemTrackingModalComponent
+    OrderItemTrackingModalComponent,
+    WorkflowReturnDepotComponent,
+    WorkflowReturnDeliveryDateComponent,
+    WorkflowReturnApprovedSummaryComponent
   ],
   templateUrl: './workflow-approval-detail.component.html',
   styleUrls: ['./workflow-approval-detail.component.css'],
@@ -109,6 +115,11 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
   get backIcon() {
     return this.isRTL ? ArrowRight : ArrowLeft;
+  }
+
+  /** Arrow for “go forward” CTAs (e.g. Review Return Items). */
+  get forwardNavIcon() {
+    return this.isRTL ? ArrowLeft : ArrowRight;
   }
 
   readonly destroy$ = new Subject<void>();
@@ -255,6 +266,28 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
   hasPendingStep(): boolean {
     return hasPendingStepHelper(this.requestDetail);
+  }
+
+  canProcessReturnItems(): boolean {
+    return this.permissionsService.canProcessReturnItems(this.requestDetail);
+  }
+
+  /**
+   * Show the Review Return Items card when the return workflow is pending,
+   * depot + delivery are set, and the user may process return items.
+   */
+  showReviewReturnItemsSection(): boolean {
+    if (!this.requestDetail || this.requestDetail.requestType !== 'Return' || !this.hasPendingStep()) {
+      return false;
+    }
+    if (!this.requestDetail.returnToDepotId || !this.requestDetail.deliveryDate) {
+      return false;
+    }
+    return this.canProcessReturnItems();
+  }
+
+  navigateToProcessReturnItems(): void {
+    this.navigationService.navigateToProcessReturnItems(this.requestId);
   }
 
   isLastApprovalCompleted(): boolean {
@@ -604,6 +637,14 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
               }
             }
 
+            // Update return-specific state
+            if (this.requestDetail.requestType === 'Return') {
+              this.stateService.updateState({
+                isReturnDepotSet: !!this.requestDetail.returnToDepotId,
+                isReturnDeliveryDateSet: !!this.requestDetail.deliveryDate
+              });
+            }
+
             if (showLoading) {
               this.loading = false;
             }
@@ -627,6 +668,14 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
               if (this.isWeaponOrder) {
                 this.loadDepotSelectionStatus();
               }
+            }
+
+            // Update return-specific state on error path as well
+            if (this.requestDetail.requestType === 'Return') {
+              this.stateService.updateState({
+                isReturnDepotSet: !!this.requestDetail.returnToDepotId,
+                isReturnDeliveryDateSet: !!this.requestDetail.deliveryDate
+              });
             }
 
             if (showLoading) {
@@ -710,6 +759,23 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   onPickupDateChanged(): void {
     this.loadRequestDetailInternal(false);
   }
+
+  /**
+   * Handle return depot set event from child component
+   */
+  onReturnDepotSet(): void {
+    this.stateService.updateState({ isReturnDepotSet: true });
+    this.loadRequestDetailInternal(false);
+  }
+
+  /**
+   * Handle return delivery date set event from child component
+   */
+  onReturnDeliveryDateSet(): void {
+    this.stateService.updateState({ isReturnDeliveryDateSet: true });
+    this.loadRequestDetailInternal(false);
+  }
+
   /**
    * Handle supply submission event from child component
    */

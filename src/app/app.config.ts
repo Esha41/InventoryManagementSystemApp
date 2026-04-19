@@ -1,4 +1,5 @@
 import { ApplicationConfig, provideZoneChangeDetection, importProvidersFrom, APP_INITIALIZER } from '@angular/core';
+import { provideQuillConfig } from 'ngx-quill/config';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors, HttpClient } from '@angular/common/http';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
@@ -24,8 +25,10 @@ export class JsonTranslationLoader implements TranslateLoader {
       'allowance',
       'notifications',
       'add-weapon-asset',
+      'scheduledReports',
       'announcements',
-      'onboarding'
+      'onboarding',
+      'help-center'
     ];
 
     // Load all modular translation files
@@ -88,6 +91,7 @@ export function initConfig(config: ConfigService) {
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideQuillConfig({}),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(

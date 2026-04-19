@@ -21,6 +21,7 @@ import { EmployeeService } from '@services/employee.service';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { ImportExportService } from '@services/import-export.service';
 import { mapImportResultToPreviewData } from '@core/utils/asset-master-import-preview.utils';
+import { defaultPageSize } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';
 import { ImportResult } from '@models/import-result.model';
 
@@ -67,7 +68,7 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
 
   // Pagination
   currentPage = 1;
-  rowsPerPage = 10;
+  rowsPerPage = defaultPageSize;
 
   // Lookup modal states
   showLookupModal = false;

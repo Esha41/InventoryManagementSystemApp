@@ -10,6 +10,7 @@ import { LucideAngularModule, Save, X, ArrowLeft, ArrowRight } from 'lucide-angu
 import { AssetService } from '@services/asset.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
+import { StorageService } from '@services/storage.service';
 
 // Models
 import { CreateAssetDto, UpdateAssetDto } from '@models/asset.model';
@@ -91,7 +92,8 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
         private toastService: ToastService,
         private translateService: TranslateService,
         private translationService: TranslationService,
-        private cdr: ChangeDetectorRef
+        private cdr: ChangeDetectorRef,
+        private storageService: StorageService
     ) { }
 
     get isRTL(): boolean {
@@ -123,20 +125,15 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
     }
 
     private loadBulkData(): void {
-        const storedData = sessionStorage.getItem('bulkAssetData');
+        const storedData = this.storageService.get<BulkAssetData>('bulkAssetData');
         if (!storedData) {
             this.errorMessage = this.translateService.instant('addWeaponAsset.bulk.noDataFound');
             this.router.navigate(['/warehouse', this.warehouseId, 'assets', 'add']);
             return;
         }
 
-        try {
-            this.bulkData = JSON.parse(storedData);
-            this.initializeForm();
-        } catch (error) {
-            this.errorMessage = this.translateService.instant('addWeaponAsset.bulk.invalidData');
-            this.router.navigate(['/warehouse', this.warehouseId, 'assets', 'add']);
-        }
+        this.bulkData = storedData;
+        this.initializeForm();
     }
 
     private initializeForm(): void {
@@ -261,7 +258,7 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
                     this.cdr.markForCheck();
 
                     // Clear session storage
-                    sessionStorage.removeItem('bulkAssetData');
+                    this.storageService.remove('bulkAssetData');
 
                     this.translateService.get(['toast.success', 'addWeaponAsset.successMessage']).subscribe(translations => {
                         const message = translations['addWeaponAsset.successMessage'] || 'Weapon assets created successfully!';
@@ -307,7 +304,7 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
     }
 
     onCancel(): void {
-        sessionStorage.removeItem('bulkAssetData');
+        this.storageService.remove('bulkAssetData');
         this.router.navigate(['/warehouse', this.warehouseId, 'assets', 'add']);
     }
 

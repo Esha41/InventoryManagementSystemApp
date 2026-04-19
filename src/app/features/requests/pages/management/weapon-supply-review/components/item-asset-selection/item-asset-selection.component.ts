@@ -9,6 +9,7 @@ import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.co
 import { FocusOnInitDirective } from '@core/directives/focus-on-init.directive';
 import { AssetSelectionService, SelectedAsset, AssetFilterState, AssetPaginationState } from '../../services/asset-selection.service';
 import { formatNumber as formatNumberUtil } from '@utils/format.utils';
+import { defaultPageSize } from '@constants/app.constants';
 
 /**
  * Item asset selection component
@@ -68,7 +69,7 @@ export class ItemAssetSelectionComponent implements OnInit, OnChanges {
   // Pagination state
   paginationState: AssetPaginationState = {
     currentPage: 1,
-    rowsPerPage: 10,
+    rowsPerPage: defaultPageSize,
     totalPages: 1
   };
 

@@ -7,6 +7,7 @@ import { LucideAngularModule, Eye, EyeOff, Lock, User, AlertCircle, RefreshCw } 
 import { BackendAuthService } from '@services/backend-auth.service';
 import { TranslationService } from '@services/translation.service';
 import { ConfigService } from '@services/config.service';
+import { StorageService } from '@services/storage.service';
 import { environment } from '@environments/environment';
 import { LoginRequest } from '@models/auth.model';
 import { ErrorHandler } from '@utils/error-handler.utils';
@@ -55,7 +56,8 @@ export class LoginComponent implements OnInit {
     private translate: TranslateService,
     public translationService: TranslationService,
     private configService: ConfigService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private storageService: StorageService
   ) {
     this.loginForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
@@ -106,7 +108,7 @@ export class LoginComponent implements OnInit {
     this.captcha?.updateValueAndValidity();
 
     this.failedLoginAttempts = 0;
-    sessionStorage.removeItem('loginFailedAttempts');
+    this.storageService.remove('loginFailedAttempts');
 
     const sessionConflict = this.route.snapshot.queryParams['sessionConflict'];
     if (sessionConflict === 'true') {
@@ -403,7 +405,7 @@ export class LoginComponent implements OnInit {
         this.cdr.markForCheck();
         // Reset failed attempts on successful login
         this.failedLoginAttempts = 0;
-        sessionStorage.removeItem('loginFailedAttempts');
+        this.storageService.remove('loginFailedAttempts');
         this.showCaptcha = false;
         this.captchaImage = '';
         this.captchaId = '';
@@ -433,8 +435,8 @@ export class LoginComponent implements OnInit {
         const isAlreadyLoggedIn = errorCode === 'ALREADY_LOGGED_IN' || numericCode === 22;
 
         if (isAlreadyLoggedIn) {
-          const wasSessionExpired = sessionStorage.getItem('sessionExpired') === 'true';
-          sessionStorage.removeItem('sessionExpired');
+          const wasSessionExpired = this.storageService.get<boolean>('sessionExpired') === true;
+          this.storageService.remove('sessionExpired');
 
           if (wasSessionExpired) {
             this.loginError = '';
@@ -472,7 +474,7 @@ export class LoginComponent implements OnInit {
 
         // Increment failed attempts
         this.failedLoginAttempts++;
-        sessionStorage.setItem('loginFailedAttempts', this.failedLoginAttempts.toString());
+        this.storageService.set('loginFailedAttempts', this.failedLoginAttempts);
 
         if ((this.failedLoginAttempts >= 3 || isCaptchaRequired) && !this.showCaptcha) {
           this.loadCaptcha();
@@ -502,7 +504,7 @@ export class LoginComponent implements OnInit {
         this.isLoading = false;
         this.cdr.markForCheck();
         this.failedLoginAttempts = 0;
-        sessionStorage.removeItem('loginFailedAttempts');
+        this.storageService.remove('loginFailedAttempts');
         this.showCaptcha = false;
         this.captchaImage = '';
         this.captchaId = '';

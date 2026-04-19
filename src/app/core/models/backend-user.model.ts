@@ -31,6 +31,8 @@ export interface RawRoleApiResponse {
   roleId?: string;
   name?: string;
   roleName?: string;
+  nameEn?: string;
+  nameAr?: string;
   isDefaultRole?: boolean;
   isDefault?: boolean;
   isSuperAdmin?: boolean;
@@ -38,6 +40,8 @@ export interface RawRoleApiResponse {
   isAdmin?: boolean;
   admin?: boolean;
   applicationEntityIds?: number[];
+  isSelected?: boolean;
+  departmentId?: number | null;
 }
 
 /**
@@ -144,7 +148,9 @@ export interface RoleDto {
   isDefaultRole: boolean;
   isSuperAdmin: boolean;
   isAdmin: boolean;
-  applicationEntityIds?: number[]; // Optional: Array of application entity IDs associated with the role
+  applicationEntityIds?: number[];
+  isSelected?: boolean;
+  departmentId?: number | null;
 }
 
 export interface RoleApplicationEntityLinkDto {

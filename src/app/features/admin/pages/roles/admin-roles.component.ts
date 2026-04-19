@@ -17,6 +17,7 @@ import { ToastService } from '@services/toast.service';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslationMap } from '@models/common.types';
 import { formatDateShort } from '@utils/format.utils';
+import { defaultPageSize } from '@constants/app.constants';
 
 @Component({
   selector: 'app-admin-roles',
@@ -60,7 +61,7 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
 
   // Pagination
   currentPage = 1;
-  rowsPerPage = 10;
+  rowsPerPage = defaultPageSize;
 
   showRoleModal = false;
   showDeleteConfirm = false;

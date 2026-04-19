@@ -46,7 +46,7 @@
             {{ 'workflowApprovalDetail.itemCode' | translate }}</th>
           <th class="px-4 py-3 text-end text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
             {{ 'workflowApprovalDetail.quantity' | translate }}</th>
-          <th
+          <th *ngIf="showViewHistory"
             class="px-4 py-3 text-center text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide w-10">
           </th>
         </tr>
@@ -58,7 +58,7 @@
           <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">{{ item.itemNo || '-' }}</td>
           <td class="px-4 py-3 text-sm text-[var(--color-text)] text-end font-semibold">{{ item.quantity }}
           </td>
-          <td class="px-4 py-3 text-center">
+          <td *ngIf="showViewHistory" class="px-4 py-3 text-center">
             <button (click)="onHistoryClick($event, item)"
               class="p-1.5 hover:bg-[var(--color-background-muted)] rounded-lg transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
               title="{{ 'ORDER_TRACKING.VIEW_HISTORY' | translate }}">

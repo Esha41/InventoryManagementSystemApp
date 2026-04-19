@@ -39,10 +39,11 @@ export class MonitoringService {
   constructor(private apiService: ApiService) { }
 
   /**
-   * Get the count of lots that are about to expire in the next 30 days
+   * Get the count of lots expiring in the next 30 days, optionally scoped to a depot.
    */
-  getExpiringLotsCount(): Observable<number> {
-    return this.apiService.get<number>(`${this.baseEndpoint}/expiring-lots/count`);
+  getExpiringLotsCount(depotId?: number): Observable<number> {
+    const params = depotId ? `?depotId=${depotId}` : '';
+    return this.apiService.get<number>(`${this.baseEndpoint}/expiring-lots/count${params}`);
   }
 
   /**
@@ -53,10 +54,11 @@ export class MonitoringService {
   }
 
   /**
-   * Get the count of items that are below minimum stock level
+   * Get the count of items below minimum stock level, optionally scoped to a depot.
    */
-  getLowStockItemsCount(): Observable<number> {
-    return this.apiService.get<number>(`${this.baseEndpoint}/low-stock/count`);
+  getLowStockItemsCount(depotId?: number): Observable<number> {
+    const params = depotId ? `?depotId=${depotId}` : '';
+    return this.apiService.get<number>(`${this.baseEndpoint}/low-stock/count${params}`);
   }
 
   /**

@@ -10,6 +10,7 @@ import { TranslationService } from '@services/translation.service';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import { defaultPageSize } from '@constants/app.constants';
 
 export interface LowStockItemDto {
   itemId: number;
@@ -51,7 +52,7 @@ export class LowStockComponent implements OnInit, OnDestroy {
 
   // Pagination
   currentPage = 1;
-  rowsPerPage = 10;
+  rowsPerPage = defaultPageSize;
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;

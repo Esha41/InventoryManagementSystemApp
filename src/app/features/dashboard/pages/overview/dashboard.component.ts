@@ -29,6 +29,7 @@ import { PaginationComponent } from '@components/pagination/pagination.component
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { RequestFilterBarComponent, StatusFilter } from '@components/request-filter-bar/request-filter-bar.component';
 import { formatTimeToMilitary, formatDateTimeExtended } from '@utils/format.utils';
+import { defaultPageSize } from '@constants/app.constants';
 
 @Component({
   selector: 'app-dashboard',
@@ -54,7 +55,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // View state
   viewMode: 'grid' | 'table' = 'grid';
   currentPage = 1;
-  rowsPerPage = 8;
+  /** Same page size for grid and list/table views (server-side pagination). */
+  rowsPerPage = defaultPageSize;
 
   // Icons
   readonly Grid = Grid;
@@ -184,7 +186,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   toggleViewMode(mode: 'grid' | 'table'): void {
     this.viewMode = mode;
-    this.rowsPerPage = mode === 'table' ? 10 : 9; // Different defaults for different views
+    // Keep rowsPerPage unchanged so grid and table use the same page size (including user selection).
     this.currentPage = 1;
     this.loadAllRequests();
   }

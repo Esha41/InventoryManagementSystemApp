@@ -232,8 +232,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges, OnD
       const enumMap: Record<string, number> = {
         Ammunition: ItemType.Ammunition,
         Weapon: ItemType.Weapon,
-        Explosive: ItemType.Explosive,
-        Accessory: ItemType.Accessory
+        Explosive: ItemType.Explosive
       };
       if (enumMap[itemType] !== undefined) {
         return enumMap[itemType];

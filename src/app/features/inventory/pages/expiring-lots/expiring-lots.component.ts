@@ -11,6 +11,7 @@ import { PaginationComponent } from '@components/pagination/pagination.component
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { defaultPageSize } from '@constants/app.constants';
 
 @Component({
   selector: 'app-expiring-lots',
@@ -40,7 +41,7 @@ export class ExpiringLotsComponent implements OnInit, OnDestroy {
 
   // Pagination
   currentPage = 1;
-  rowsPerPage = 10;
+  rowsPerPage = defaultPageSize;
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;

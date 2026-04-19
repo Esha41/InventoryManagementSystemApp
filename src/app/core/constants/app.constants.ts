@@ -6,6 +6,8 @@ export const APP_CONSTANTS = {
   PAGE_SIZE_OPTIONS: [10, 25, 50, 100],
 } as const;
 
+export const defaultPageSize: number = APP_CONSTANTS.DEFAULT_PAGE_SIZE;
+
 // request Status Constants, Maps to backend RequestStatus enum
 export const REQUEST_STATUS = {
   NEW: 1,
@@ -106,6 +108,10 @@ export const API_ENDPOINTS = {
     BASE: '/Return',
     BY_ID: (id: number) => `/Return/${id}`,
     CHANGE_PRIORITY: (id: number) => `/Return/${id}/priority`,
+    SET_DEPOT: (id: number) => `/Return/${id}/set-depot`,
+    SET_DELIVERY_DATE: (id: number) => `/Return/${id}/set-delivery-date`,
+    PROCESS_ITEMS: (id: number) => `/Return/${id}/process-items`,
+    TRACKING_LINES: (id: number) => `/Return/${id}/tracking-lines`,
   },
 
   // Discard Requests
@@ -226,6 +232,26 @@ export const API_ENDPOINTS = {
   ONBOARDING: {
     STATUS: '/account/onboarding-status',
     COMPLETE: '/account/complete-onboarding',
+  },
+
+  // Help Center (api/HelpCenter — see HelpCenterController)
+  HELP_CENTER: {
+    BASE: '/HelpCenter',
+    ARTICLES: '/HelpCenter/articles',
+    ARTICLES_ALL: '/HelpCenter/articles/all',
+    ARTICLE_BY_ID: (id: number) => `/HelpCenter/articles/${id}`,
+    CONTACT: '/HelpCenter/contact',
+    CONTACT_BY_ID: (id: number) => `/HelpCenter/contact/${id}`,
+    CONTACT_REPLY: (id: number) => `/HelpCenter/contact/${id}/reply`,
+    CONTACT_DISPLAY: '/HelpCenter/contact/display',
+    TERMS: '/HelpCenter/terms',
+    TERMS_ALL: '/HelpCenter/terms/all',
+    TERMS_BY_ID: (id: number) => `/HelpCenter/terms/${id}`,
+    TERMS_ACTIVATE: (id: number) => `/HelpCenter/terms/${id}/activate`,
+    TERMS_DEACTIVATE: (id: number) => `/HelpCenter/terms/${id}/deactivate`,
+    /** Optional: backend may expose for blocking Terms UX */
+    TERMS_ACCEPTANCE_STATUS: '/HelpCenter/terms/acceptance-status',
+    TERMS_ACCEPT: '/HelpCenter/terms/accept',
   },
 
   // File Upload Management

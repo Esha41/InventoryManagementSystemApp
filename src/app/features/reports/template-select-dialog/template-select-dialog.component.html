@@ -1,0 +1,72 @@
+<app-modal
+  [isOpen]="isOpen"
+  [title]="'reportDesigner.selectTemplate' | translate"
+  size="lg"
+  [closeOnBackdrop]="false"
+  (closed)="onCancel()">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex items-center justify-center py-12">
+    <div class="text-center">
+      <div class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[var(--color-primary)] border-r-transparent"></div>
+      <p class="mt-4 text-sm text-[var(--color-text-muted)]">{{ 'common.loading' | translate }}</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="text-center py-8">
+    <p class="text-sm text-[var(--color-error)]">{{ error }}</p>
+  </div>
+
+  <!-- Templates Grid -->
+  <div *ngIf="!loading && !error" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <ng-container *ngFor="let template of templates">
+      <button
+        type="button"
+        (click)="onSelectTemplate(template)"
+        [ngClass]="{
+          'relative p-4 rounded-lg border-2 transition-all text-left hover:border-[var(--color-primary)] hover:shadow-md': true,
+          'border-[var(--color-primary)]': selectedTemplate?.url === template.url,
+          'bg-[var(--color-primary)]/5': selectedTemplate?.url === template.url,
+          'border-[var(--color-border)]': selectedTemplate?.url !== template.url
+        }">
+        <div class="flex items-start gap-3">
+          <div class="flex-shrink-0 mt-1">
+            <div
+              class="h-10 w-10 rounded-lg bg-[var(--color-primary)]/10 flex items-center justify-center"
+              [ngClass]="{'bg-[var(--color-primary)]/20': selectedTemplate?.url === template.url}">
+              <lucide-angular [img]="FileText" class="h-5 w-5 text-[var(--color-primary)]"></lucide-angular>
+            </div>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-base font-semibold text-[var(--color-text)] mb-1">{{ template.name }}</h3>
+            <p *ngIf="template.description" class="text-sm text-[var(--color-text-muted)] line-clamp-2">
+              {{ template.description }}
+            </p>
+          </div>
+          <div *ngIf="selectedTemplate?.url === template.url" class="flex-shrink-0">
+            <lucide-angular [img]="Check" class="h-5 w-5 text-[var(--color-primary)]"></lucide-angular>
+          </div>
+        </div>
+      </button>
+    </ng-container>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && !error && templates.length === 0" class="text-center py-12">
+    <p class="text-sm text-[var(--color-text-muted)]">{{ 'reportDesigner.noTemplates' | translate }}</p>
+  </div>
+
+  <div modal-footer class="flex gap-3 justify-end">
+    <app-button
+      variant="outline"
+      (clicked)="onCancel()">
+      {{ 'common.cancel' | translate }}
+    </app-button>
+    <app-button
+      variant="primary"
+      (clicked)="onConfirm()"
+      [disabled]="!selectedTemplate">
+      {{ 'common.select' | translate }}
+    </app-button>
+  </div>
+</app-modal>

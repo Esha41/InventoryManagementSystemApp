@@ -27,12 +27,14 @@
     </div>
     <!-- Search Input (hidden when showSearch=false, e.g. rows-per-page with few options) -->
     <div class="app-dropdown-search" *ngIf="showSearch && options && options.length > 0" (click)="onSearchClick($event)">
-      <div class="relative">
-        <lucide-angular
-          [img]="Search"
-          class="absolute top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--color-text-muted)]"
-          [ngClass]="{'start-3': !isRTL, 'end-3': isRTL}"
-        ></lucide-angular>
+      <div class="relative flex items-center">
+        <span
+          class="pointer-events-none absolute inset-y-0 z-[1] flex w-10 items-center justify-center text-[var(--color-text-muted)]"
+          [ngClass]="{'start-0': !isRTL, 'end-0': isRTL}"
+          aria-hidden="true"
+        >
+          <lucide-angular [img]="Search" class="h-4 w-4 shrink-0"></lucide-angular>
+        </span>
         <input
           type="text"
           class="app-dropdown-search-input"
@@ -41,7 +43,9 @@
           (click)="onSearchClick($event)"
           [placeholder]="'common.search' | translate"
           style="text-align: start;"
-          [ngStyle]="{'padding-left': isRTL ? '0.75rem' : '2.5rem', 'padding-right': isRTL ? '2.5rem' : '0.75rem'}"
+          [ngStyle]="isRTL
+            ? { paddingInlineStart: '0.75rem', paddingInlineEnd: '2.5rem' }
+            : { paddingInlineStart: '2.5rem', paddingInlineEnd: '0.75rem' }"
         />
       </div>
     </div>

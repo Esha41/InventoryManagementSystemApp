@@ -215,7 +215,7 @@ export const routes: Routes = [
       },
       {
         path: 'discard-request',
-        loadComponent: () => import('@requests/pages/new-issue/components/discard-request/discard-request.component').then(m => m.DiscardRequestComponent),
+        loadComponent: () => import('@requests/pages/discard/discard-request.component').then(m => m.DiscardRequestComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['discard.page', 'discard.create', 'order.create'] }
       },
@@ -230,6 +230,12 @@ export const routes: Routes = [
         loadComponent: () => import('@requests/pages/management/workflow-approval-detail/workflow-approval-detail.component').then(m => m.WorkflowApprovalDetailComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['viewrequest.page', 'viewrequest.view', 'order.view'] }
+      },
+      {
+        path: 'requests-management/:id/process-return-items',
+        loadComponent: () => import('@requests/pages/management/process-return-items/process-return-items.component').then(m => m.ProcessReturnItemsComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['ProcessReturnItems'] }
       },
       {
         path: 'requests-management/:id/supply-request-detail',
@@ -278,6 +284,15 @@ export const routes: Routes = [
         loadComponent: () => import('@assets/pages/list/asset-list.component').then(m => m.AssetListComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['ammunition.page'] }
+      },
+      {
+        path: 'weapon-asset-master',
+        loadComponent: () =>
+          import('./features/assets/pages/weapon-asset-master/weapon-asset-master.component').then(
+            m => m.WeaponAssetMasterComponent
+          ),
+        canActivate: [permissionGuard],
+        data: { permissions: ['asset.page', 'asset.view'] }
       },
       {
         path: 'asset-list/:id',
@@ -347,6 +362,24 @@ export const routes: Routes = [
         data: { permissions: ['stockNotificationSettingsPage'] }
       },
       {
+        path: 'help',
+        loadComponent: () =>
+          import('@features/help/pages/help-center-user/help-center-user.component').then(
+            m => m.HelpCenterUserComponent
+          )
+      },
+      { path: 'help-me', redirectTo: 'help', pathMatch: 'full' },
+      { path: 'admin/help-me', redirectTo: 'admin/help-center', pathMatch: 'full' },
+      {
+        path: 'admin/help-center',
+        loadComponent: () =>
+          import('@admin/pages/help-center-management/help-center-management.component').then(
+            m => m.HelpCenterManagementComponent
+          ),
+        canActivate: [permissionGuard],
+        data: { permissions: ['helpcenter.page', 'helpcenter.view'] }
+      },
+      {
         path: 'admin/announcements',
         loadComponent: () => import('@admin/pages/announcements/announcements.component').then(m => m.AnnouncementsComponent),
         canActivate: [permissionGuard],
@@ -365,6 +398,46 @@ export const routes: Routes = [
         data: { permissions: ['announcements.edit'] }
       },
 
+      {
+        path: 'report-designer',
+        loadComponent: () => import('@app/features/reports/designer-list/report-designer.component').then(m => m.ReportDesignerComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['ReportDesigner'] }
+      },
+      {
+        path: 'report-designer/designer',
+        loadComponent: () => import('@app/features/reports/designer/devexpress-designer.component').then(m => m.DevExpressReportDesignerComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['ReportDesigner'] }
+      },
+      {
+        path: 'report-dashboard',
+        loadComponent: () => import('@app/features/reports/dashboard/report-dashboard.component').then(m => m.ReportDashboardComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['ReportDashboard'] }
+      },
+      {
+        path: 'scheduled-reports',
+        loadComponent: () => import('@app/features/reports/scheduled-reports/scheduled-reports-list.component').then(m => m.ScheduledReportsListComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['ScheduledReports'] }
+      },
+      {
+        path: 'scheduled-reports/create',
+        loadComponent: () => import('@app/features/reports/scheduled-reports/scheduled-report-form/scheduled-report-form.component').then(m => m.ScheduledReportFormComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['ScheduledReports'] }
+      },
+      {
+        path: 'scheduled-reports/:id/edit',
+        loadComponent: () => import('@app/features/reports/scheduled-reports/scheduled-report-form/scheduled-report-form.component').then(m => m.ScheduledReportFormComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['ScheduledReports'] }
+      },
+      {
+        path: 'report-viewer',
+        loadComponent: () => import('@app/features/reports/viewer/report-viewer.component').then(m => m.ReportViewerComponent)
+      },
       {
         path: 'notifications',
         loadComponent: () => import('@notifications/pages/list/notifications.component').then(m => m.NotificationsComponent),

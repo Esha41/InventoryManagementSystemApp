@@ -6,7 +6,7 @@
   <!-- Content Area with Sidebar -->
   <div class="flex flex-1 min-h-0 overflow-hidden">
     <!-- Sidebar -->
-    <app-sidebar (toggleSidebar)="onSidebarToggle($event)" [mobileOpen]="mobileSidebarOpen"
+    <app-sidebar *ngIf="!shouldHideSidebar" [forceCollapsed]="shouldCollapseSidebar" (toggleSidebar)="onSidebarToggle($event)" [mobileOpen]="mobileSidebarOpen"
       (closeMobile)="mobileSidebarOpen = false"></app-sidebar>
 
     <!-- Main Content Area (banner + page content) -->
@@ -30,3 +30,6 @@
 
 <!-- Idle Timeout Warning -->
 <app-idle-timeout-modal></app-idle-timeout-modal>
+
+<!-- Terms acceptance (before onboarding tour) -->
+<app-terms-acceptance-modal></app-terms-acceptance-modal>

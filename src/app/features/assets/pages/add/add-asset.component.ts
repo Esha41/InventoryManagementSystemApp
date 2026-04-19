@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -87,6 +87,8 @@ type AssetType = 'ammunition' | 'weapon' | 'explosive';
 export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
   readonly Save = Save;
   readonly X = X;
+
+  @ViewChild('fileInput') private fileInputRef?: ElementRef<HTMLInputElement>;
 
   previewUrl: string | null = null;
   private destroy$ = new Subject<void>();
@@ -197,7 +199,14 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const tab = params['tab'];
       if (tab && (tab === 'ammunition' || tab === 'weapon' || tab === 'explosive')) {
-        this.activeTab = tab;
+        const tabTyped = tab as AssetType;
+        const tabChanged = this.activeTab !== tabTyped;
+        this.activeTab = tabTyped;
+        if (tabChanged) {
+          this.clearFormState();
+          this.loadUnitsForTab(tabTyped);
+        }
+        this.cdr.markForCheck();
       }
     });
 
@@ -209,11 +218,26 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     this.destroy$.complete();
   }
 
-  setActiveTab(tab: AssetType) {
+  setActiveTab(tab: AssetType): void {
+    if (this.activeTab === tab) {
+      return;
+    }
     this.activeTab = tab;
-    this.formSubmitted = false;
-    this.errorMessage = null;
+    this.clearFormState();
     this.loadUnitsForTab(tab);
+    this.cdr.markForCheck();
+  }
+
+  private clearFormState(): void {
+    this.assetForm = this.getInitialForm();
+    this.previewUrl = null;
+    this.errorMessage = null;
+    this.fieldErrors = {};
+    this.formSubmitted = false;
+    const el = this.fileInputRef?.nativeElement;
+    if (el) {
+      el.value = '';
+    }
   }
 
   loadUnitsForTab(tab: AssetType): void {
@@ -552,11 +576,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private resetForm(): void {
     const currentTab = this.activeTab;
-    this.assetForm = this.getInitialForm();
-    this.previewUrl = null;
-    this.errorMessage = null;
-    this.fieldErrors = {};
-    this.formSubmitted = false;
+    this.clearFormState();
     this.activeTab = currentTab;
   }
 

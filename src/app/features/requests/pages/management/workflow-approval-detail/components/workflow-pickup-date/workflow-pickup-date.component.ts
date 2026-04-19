@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnDestroy, ChangeDetectionStrategy, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnDestroy, ChangeDetectionStrategy, ViewChild, ElementRef, HostBinding } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -122,6 +122,20 @@ export class WorkflowPickupDateComponent implements OnChanges, OnDestroy {
 
   hasPendingStep(): boolean {
     return this.stateService.hasPendingStep();
+  }
+
+  /**
+   * When false, the host is hidden so the parent sidebar flex `gap` does not reserve
+   * space above the next section (e.g. Return Depot on return requests with no supply pickup UI).
+   */
+  get hasVisiblePickupContent(): boolean {
+    if (!this.hasPendingStep()) return false;
+    return this.canSet() || this.canConfirm();
+  }
+
+  @HostBinding('class')
+  get hostLayoutClass(): string {
+    return this.hasVisiblePickupContent ? 'block' : 'hidden';
   }
 
   /** Opens the native picker for the Set section (only that block has #pickupDatePicker). */

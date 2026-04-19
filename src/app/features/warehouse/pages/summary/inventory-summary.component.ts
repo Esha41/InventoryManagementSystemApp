@@ -23,6 +23,7 @@ import { ExcelExportService, ExcelColumn } from '@services/excel-export.service'
 import { ToastService } from '@services/toast.service';
 import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 import { trackById, trackByKey, trackByIndex } from '@utils/trackby.utils';
+import { defaultPageSize } from '@constants/app.constants';
 
 @Component({
     selector: 'app-inventory-summary',
@@ -71,7 +72,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
 
     // Pagination
     currentPage = 1;
-    rowsPerPage = 10;
+    rowsPerPage = defaultPageSize;
     totalPages = 1;
 
     // Icons
@@ -439,6 +440,8 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
         switch (status) {
             case AssetStatus.ReadyToIssue:
             case 'ReadyToIssue': return 'bg-green-100 text-green-800';
+            case AssetStatus.NotReadyToIssue:
+            case 'NotReadyToIssue': return 'bg-yellow-100 text-yellow-800';
             case AssetStatus.InMaintenance:
             case 'InMaintenance':
             case AssetStatus.UnserviceableRepairable:

@@ -1,0 +1,46 @@
+<div class="min-h-[200px]">
+  <p class="mb-4 text-sm text-[var(--color-text-muted)]">{{ 'helpCenter.contactDisplayIntro' | translate }}</p>
+
+  <div *ngIf="loading" class="flex flex-col items-center justify-center gap-3 py-8">
+    <div class="h-8 w-8 animate-spin rounded-full border-[3px] border-[var(--color-border)] border-t-[var(--color-brand)]"></div>
+    <p class="text-sm text-[var(--color-text-muted)]">{{ 'common.loading' | translate }}</p>
+  </div>
+
+  <app-card *ngIf="!loading" class="mx-auto block max-w-lg">
+  <form [formGroup]="form" (ngSubmit)="save()" class="space-y-4">
+    <div>
+      <label class="mb-1.5 flex flex-wrap items-baseline gap-1 text-sm font-medium text-[var(--color-text)]" for="hc-support-email">
+        <lucide-angular [img]="Mail" class="h-4 w-4 shrink-0 text-[var(--color-text-muted)]"></lucide-angular>
+        <span>{{ 'helpCenter.supportEmailPublic' | translate }}</span>
+      </label>
+      <input
+        id="hc-support-email"
+        type="email"
+        autocomplete="email"
+        class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm text-[var(--color-text)] focus:border-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--color-brand)_25%,transparent)]"
+        formControlName="supportEmail"
+        [class.border-[var(--color-error)]]="form.controls.supportEmail.invalid && form.controls.supportEmail.touched" />
+      <p *ngIf="form.controls.supportEmail.invalid && form.controls.supportEmail.touched" class="mt-1 text-xs text-[var(--color-error)]">
+        {{ 'helpCenter.contactDisplayEmailInvalid' | translate }}
+      </p>
+    </div>
+    <div>
+      <label class="mb-1.5 flex flex-wrap items-baseline gap-1 text-sm font-medium text-[var(--color-text)]" for="hc-support-phone">
+        <lucide-angular [img]="Phone" class="h-4 w-4 shrink-0 text-[var(--color-text-muted)]"></lucide-angular>
+        <span>{{ 'helpCenter.supportPhonePublic' | translate }}</span>
+      </label>
+      <input
+        id="hc-support-phone"
+        type="tel"
+        autocomplete="tel"
+        class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm text-[var(--color-text)] focus:border-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--color-brand)_25%,transparent)]"
+        formControlName="supportPhone" />
+    </div>
+    <div *ngIf="canEdit()" class="pt-2">
+      <app-button type="submit" variant="primary" [disabled]="saving || form.invalid">
+        {{ saving ? ('common.saving' | translate) : ('common.save' | translate) }}
+      </app-button>
+    </div>
+  </form>
+  </app-card>
+</div>

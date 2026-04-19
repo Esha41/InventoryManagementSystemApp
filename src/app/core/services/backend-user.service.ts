@@ -51,6 +51,23 @@ export class BackendUserService {
     private configService: ConfigService
   ) { }
 
+  private normalizeRole(role: Partial<RawRoleApiResponse> | RoleDto): RoleDto {
+    const raw = role as Partial<RawRoleApiResponse>;
+    const dept = raw.departmentId;
+    return {
+      id: String(raw.id ?? raw.roleId ?? ''),
+      name: raw.name ?? raw.roleName ?? '',
+      nameEn: raw.nameEn,
+      nameAr: raw.nameAr,
+      isDefaultRole: !!(raw.isDefaultRole ?? raw.isDefault),
+      isSuperAdmin: !!(raw.isSuperAdmin ?? raw.superAdmin),
+      isAdmin: !!(raw.isAdmin ?? raw.admin),
+      applicationEntityIds: Array.isArray(raw.applicationEntityIds) ? raw.applicationEntityIds : undefined,
+      ...(raw.isSelected !== undefined ? { isSelected: !!raw.isSelected } : {}),
+      ...(dept !== undefined && dept !== null ? { departmentId: dept } : {})
+    };
+  }
+
   // ==================== USER MANAGEMENT ====================
 
   /**
@@ -87,14 +104,7 @@ export class BackendUserService {
           // Normalize roles
           const rawRoles = Array.isArray(rawUser.roles) ? rawUser.roles : [];
           if (rawRoles.length > 0) {
-            const mappedRoles: RoleDto[] = rawRoles.map((role: RawRoleApiResponse) => ({
-              id: String(role.id ?? role.roleId ?? ''),
-              name: role.name ?? role.roleName ?? '',
-              isDefaultRole: !!(role.isDefaultRole ?? role.isDefault),
-              isSuperAdmin: !!(role.isSuperAdmin ?? role.superAdmin),
-              isAdmin: !!(role.isAdmin ?? role.admin),
-              applicationEntityIds: Array.isArray(role.applicationEntityIds) ? role.applicationEntityIds : undefined
-            }));
+            const mappedRoles: RoleDto[] = rawRoles.map((role: RawRoleApiResponse) => this.normalizeRole(role));
             user.roles = mappedRoles;
             // Extract role IDs
             const roleIdsFromRoles = mappedRoles
@@ -411,7 +421,7 @@ export class BackendUserService {
     return this.apiService.get<RoleDto[]>(
       API_ENDPOINTS.USERS.ROLES(userId)
     ).pipe(
-      map(roles => roles || []),
+      map((roles) => (roles || []).map((role) => this.normalizeRole(role))),
       catchError(error => {
         this.configService.logError('Failed to fetch user roles', error);
         return throwError(() => new Error(
@@ -498,7 +508,7 @@ export class BackendUserService {
         if (!data) {
           throw new Error('Failed to fetch roles');
         }
-        return data.items || [];
+        return (data.items || []).map((role) => this.normalizeRole(role));
       }),
       tap(roles => {
         this.rolesSubject.next(roles);
@@ -521,9 +531,7 @@ export class BackendUserService {
     return this.apiService.get<RoleDto[]>(
       API_ENDPOINTS.ROLES.BASE
     ).pipe(
-      map(roles => {
-        return roles || [];
-      })
+      map((roles) => (roles || []).map((role) => this.normalizeRole(role)))
     );
   }
 

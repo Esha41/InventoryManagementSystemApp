@@ -1,0 +1,252 @@
+<div class="page-wrapper">
+  <div class="page-container space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-4">
+        <button (click)="onCancel()"
+          class="p-2 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors"
+          [title]="'common.back' | translate">
+          <lucide-angular [img]="backIcon" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+        </button>
+        <div>
+          <h1 class="text-3xl font-bold text-[var(--color-text)]">
+            {{ (isEditMode ? 'scheduledReports.editSchedule' : 'scheduledReports.createSchedule') | translate }}
+          </h1>
+          <p class="text-[var(--color-text-muted)] mt-2">{{ 'scheduledReports.formSubtitle' | translate }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="errorMessage"
+      class="p-4 bg-[var(--color-error)]/10 border-2 border-[var(--color-error)]/20 rounded-lg flex items-center justify-between">
+      <span class="text-[var(--color-error)] text-sm">{{ errorMessage }}</span>
+      <button (click)="clearError()" class="text-[var(--color-error)] hover:text-[var(--color-error)]/80">
+        <lucide-angular [img]="X" class="h-4 w-4"></lucide-angular>
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <app-loading-state *ngIf="loading" size="lg" [fullPage]="false">
+    </app-loading-state>
+
+    <!-- Form -->
+    <form *ngIf="!loading" (ngSubmit)="onSubmit()" class="space-y-6">
+      <div class="bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg shadow-custom-sm p-6 space-y-6">
+        
+        <!-- Section 1: Select Report -->
+        <div class="space-y-4">
+          <h2 class="text-xl font-semibold text-[var(--color-text)] border-b border-[var(--color-border)] pb-2">
+            {{ 'scheduledReports.section.selectReport' | translate }}
+          </h2>
+
+          <!-- Schedule Name -->
+          <div>
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'scheduledReports.scheduleName' | translate }} <span class="text-[var(--color-error)]">*</span>
+            </label>
+            <input type="text" [(ngModel)]="formData.scheduleName" name="scheduleName" required
+              [placeholder]="'scheduledReports.scheduleNamePlaceholder' | translate"
+              class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-background)] text-[var(--color-text)]" />
+          </div>
+
+          <!-- Report Selection -->
+          <div>
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'scheduledReports.report' | translate }} <span class="text-[var(--color-error)]">*</span>
+            </label>
+            <select [(ngModel)]="formData.reportId" name="reportId" required
+              class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-background)] text-[var(--color-text)]">
+              <option value="">{{ 'common.select' | translate }}</option>
+              <option *ngFor="let report of reports" [value]="report.id">{{ report.reportName }}</option>
+            </select>
+          </div>
+
+          <!-- Output Format -->
+          <div>
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'scheduledReports.outputFormat' | translate }} <span class="text-[var(--color-error)]">*</span>
+            </label>
+            <select [(ngModel)]="formData.outputFormat" name="outputFormat" required
+              class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-background)] text-[var(--color-text)]">
+              <option *ngFor="let format of outputFormats" [value]="format.value">{{ format.label }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Section 2: Schedule Configuration -->
+        <div class="space-y-4 pt-6 border-t border-[var(--color-border)]">
+          <h2 class="text-xl font-semibold text-[var(--color-text)] border-b border-[var(--color-border)] pb-2">
+            {{ 'scheduledReports.section.schedule' | translate }}
+          </h2>
+
+          <!-- Frequency -->
+          <div>
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-3">
+              {{ 'scheduledReports.frequency' | translate }} <span class="text-[var(--color-error)]">*</span>
+            </label>
+            <div class="flex flex-wrap gap-4">
+              <label *ngFor="let freq of frequencies" class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" [(ngModel)]="formData.frequency" name="frequency" [value]="freq.value"
+                  (change)="onFrequencyChange()"
+                  class="w-4 h-4 text-[var(--color-primary)] focus:ring-[var(--color-primary)]" />
+                <span class="text-[var(--color-text)]">{{ freq.label | translate }}</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Weekly Day Selector -->
+          <div *ngIf="formData.frequency === 'Weekly'">
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'scheduledReports.dayOfWeek' | translate }} <span class="text-[var(--color-error)]">*</span>
+            </label>
+            <select [(ngModel)]="formData.dayOfWeek" name="dayOfWeek" required
+              class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-background)] text-[var(--color-text)]">
+              <option *ngFor="let day of daysOfWeek" [value]="day.value">{{ day.label }}</option>
+            </select>
+          </div>
+
+          <!-- Monthly Day Selector -->
+          <div *ngIf="formData.frequency === 'Monthly'">
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'scheduledReports.dayOfMonth' | translate }} <span class="text-[var(--color-error)]">*</span>
+            </label>
+            <select [(ngModel)]="formData.dayOfMonth" name="dayOfMonth" required
+              class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-background)] text-[var(--color-text)]">
+              <option *ngFor="let day of daysOfMonth" [value]="day">{{ day }}</option>
+            </select>
+          </div>
+
+          <!-- Time of Day -->
+          <div>
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'scheduledReports.timeOfDay' | translate }} <span class="text-[var(--color-error)]">*</span>
+            </label>
+            <input type="time" [(ngModel)]="formData.timeOfDay" name="timeOfDay" required
+              class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-background)] text-[var(--color-text)]" />
+          </div>
+        </div>
+
+        <!-- Section 3: Recipients -->
+        <div class="space-y-4 pt-6 border-t border-[var(--color-border)]">
+          <h2 class="text-xl font-semibold text-[var(--color-text)] border-b border-[var(--color-border)] pb-2">
+            {{ 'scheduledReports.section.recipients' | translate }}
+          </h2>
+
+          <!-- Recipients List -->
+          <div *ngIf="formData.recipients.length > 0" class="space-y-2">
+            <div *ngFor="let recipient of formData.recipients; let i = index"
+              class="flex items-center justify-between p-3 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
+              <div class="flex items-center gap-3">
+                <lucide-angular [img]="Mail" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+                <div>
+                  <span class="text-sm font-medium text-[var(--color-text)]">{{ getRecipientDisplay(recipient) }}</span>
+                  <span class="ml-2 text-xs text-[var(--color-text-muted)]">({{ recipient.recipientType }})</span>
+                </div>
+              </div>
+              <button type="button" (click)="removeRecipient(i)"
+                class="p-1 text-[var(--color-error)] hover:text-[var(--color-error)]/80 hover:bg-[var(--color-error)]/10 rounded transition-colors">
+                <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+              </button>
+            </div>
+          </div>
+
+          <!-- Add Recipient Form -->
+          <div *ngIf="showRecipientForm" class="p-4 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)] space-y-3">
+            <div>
+              <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                {{ 'scheduledReports.selectUser' | translate }}
+              </label>
+              <select [(ngModel)]="recipientForm.userId" name="userId"
+                class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-background)] text-[var(--color-text)]">
+                <option value="">{{ 'scheduledReports.selectUser' | translate }}</option>
+                <option *ngFor="let user of users" [value]="user.id">{{ user.name }} ({{ user.email }})</option>
+              </select>
+            </div>
+
+            <!-- <div>
+              <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                {{ 'scheduledReports.emailAddress' | translate }}
+              </label>
+              <input type="email" [(ngModel)]="recipientForm.emailAddress" name="emailAddress"
+                [placeholder]="'scheduledReports.emailPlaceholder' | translate"
+                [disabled]="!!recipientForm.userId"
+                class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-background)] text-[var(--color-text)] disabled:opacity-50" />
+            </div> -->
+
+            <div>
+              <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                {{ 'scheduledReports.recipientType' | translate }}
+              </label>
+              <select [(ngModel)]="recipientForm.recipientType" name="recipientType"
+                class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-background)] text-[var(--color-text)]">
+                <option *ngFor="let type of recipientTypes" [value]="type.value">{{ type.label }}</option>
+              </select>
+            </div>
+
+            <div class="flex gap-2">
+              <app-button variant="primary" (click)="addRecipient()" class="whitespace-nowrap">
+                <span class="flex items-center gap-2 whitespace-nowrap" [class.flex-row-reverse]="isRTL">
+                  <lucide-angular [img]="Plus" class="h-4 w-4 flex-shrink-0"></lucide-angular>
+                  <span class="whitespace-nowrap">{{ 'common.add' | translate }}</span>
+                </span>
+              </app-button>
+              <button type="button" (click)="showRecipientForm = false; recipientForm = { recipientType: 'To' }"
+                class="px-4 py-2 border-2 border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors">
+                {{ 'common.cancel' | translate }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Add Recipient Button -->
+          <button *ngIf="!showRecipientForm" type="button" (click)="showRecipientForm = true"
+            class="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors text-[var(--color-text)]">
+            <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
+            <span>{{ 'scheduledReports.addRecipient' | translate }}</span>
+          </button>
+        </div>
+
+        <!-- Section 4: Email Configuration (Optional) -->
+        <div class="space-y-4 pt-6 border-t border-[var(--color-border)]">
+          <h2 class="text-xl font-semibold text-[var(--color-text)] border-b border-[var(--color-border)] pb-2">
+            {{ 'scheduledReports.section.emailConfig' | translate }}
+          </h2>
+
+          <!-- Email Subject -->
+          <div>
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'scheduledReports.emailSubject' | translate }}
+            </label>
+            <input type="text" [(ngModel)]="formData.emailSubject" name="emailSubject"
+              [placeholder]="'scheduledReports.emailSubjectPlaceholder' | translate"
+              class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-background)] text-[var(--color-text)]" />
+          </div>
+
+          <!-- Email Body -->
+          <div>
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'scheduledReports.emailBody' | translate }}
+            </label>
+            <textarea [(ngModel)]="formData.emailBody" name="emailBody" rows="4"
+              [placeholder]="'scheduledReports.emailBodyPlaceholder' | translate"
+              class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-background)] text-[var(--color-text)]"></textarea>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex items-center justify-end gap-3 pt-6 border-t border-[var(--color-border)]">
+          <button type="button" (click)="onCancel()"
+            class="px-6 py-2 border-2 border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors">
+            {{ 'common.cancel' | translate }}
+          </button>
+          <app-button variant="primary" type="submit" [disabled]="!isFormValid() || submitting" class="whitespace-nowrap">
+            <span class="flex items-center gap-2 whitespace-nowrap" [class.flex-row-reverse]="isRTL">
+              <lucide-angular [img]="Save" class="h-4 w-4 flex-shrink-0"></lucide-angular>
+              <span class="whitespace-nowrap">{{ submitting ? ('common.saving' | translate) : ('common.save' | translate) }}</span>
+            </span>
+          </app-button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

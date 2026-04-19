@@ -315,8 +315,6 @@ export class BackendAuthService {
 
         const departmentId = this.tryParseNumber(
           apiData.department?.id ??
-          apiData.deparmentId ??
-          apiData.DeparmentId ??
           apiData.departmentId ??
           apiData.DepartmentId
         );
