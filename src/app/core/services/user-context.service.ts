@@ -167,8 +167,6 @@ export class UserContextService {
     const departmentId = this.toNumber(
       apiData.department?.id ??
       apiData.Department?.Id ??
-      apiData.deparmentId ??
-      apiData.DeparmentId ??
       apiData.departmentId ??
       apiData.DepartmentId
     );

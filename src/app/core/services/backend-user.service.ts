@@ -53,6 +53,7 @@ export class BackendUserService {
 
   private normalizeRole(role: Partial<RawRoleApiResponse> | RoleDto): RoleDto {
     const raw = role as Partial<RawRoleApiResponse>;
+    const dept = raw.departmentId;
     return {
       id: String(raw.id ?? raw.roleId ?? ''),
       name: raw.name ?? raw.roleName ?? '',
@@ -61,7 +62,9 @@ export class BackendUserService {
       isDefaultRole: !!(raw.isDefaultRole ?? raw.isDefault),
       isSuperAdmin: !!(raw.isSuperAdmin ?? raw.superAdmin),
       isAdmin: !!(raw.isAdmin ?? raw.admin),
-      applicationEntityIds: Array.isArray(raw.applicationEntityIds) ? raw.applicationEntityIds : undefined
+      applicationEntityIds: Array.isArray(raw.applicationEntityIds) ? raw.applicationEntityIds : undefined,
+      ...(raw.isSelected !== undefined ? { isSelected: !!raw.isSelected } : {}),
+      ...(dept !== undefined && dept !== null ? { departmentId: dept } : {})
     };
   }
 

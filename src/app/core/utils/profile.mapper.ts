@@ -32,8 +32,7 @@ export function mapApiResponseToAuthenticatedUser(
     ? getLocalizedName(apiUser.department, getCurrentLang(translateService))
     : undefined;
 
-  // Get department ID from nested object or from deparmentId field (handle API typo)
-  const departmentId = apiUser.department?.id ?? apiUser.deparmentId ?? undefined;
+  const departmentId = apiUser.department?.id ?? apiUser.departmentId ?? undefined;
 
   // Extract rank name from nested rank object
   const rankNameEn = apiUser.rank?.nameEn ?? undefined;

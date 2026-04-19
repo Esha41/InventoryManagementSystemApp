@@ -286,19 +286,11 @@ export class UserFormModalComponent implements OnInit, OnChanges, OnDestroy {
     this.backendUserService.getUserRoles(this.user.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-      next: (roles: any[]) => {
+      next: (roles: RoleDto[]) => {
         if (roles && roles.length > 0) {
-          this.roles = roles.map(r => ({
-            id: r.roleId,
-            name: r.roleName,
-            isDefaultRole: r.isDefaultRole || false,
-            isSuperAdmin: r.isSuperAdmin || false,
-            isAdmin: r.isAdmin || false
-          }));
-
-          // For non-superadmin: hide SuperAdmin from selection but preserve for save
-          const selectedRoleIds = roles.filter(r => r.isSelected).map(r => r.roleId);
-          const superAdminIds = roles.filter(r => r.isSelected && r.isSuperAdmin).map(r => r.roleId);
+          // Keep `this.roles` from getRoles() for labels (nameEn/nameAr). Selection comes from this API.
+          const selectedRoleIds = roles.filter(r => r.isSelected).map(r => r.id);
+          const superAdminIds = roles.filter(r => r.isSelected && r.isSuperAdmin).map(r => r.id);
           if (!this.isCurrentUserSuperAdmin && superAdminIds.length > 0) {
             this.userSuperAdminRoleIds = superAdminIds;
           }
@@ -312,9 +304,9 @@ export class UserFormModalComponent implements OnInit, OnChanges, OnDestroy {
           this.userForm.patchValue({ roleIds: this.user.roleIds });
         }
 
-        // Bind department for edit form if provided in the response
-        const selectedWithDept = roles?.find(r => r.isSelected && (r.departmentId != null || r.deparmentId != null));
-        const deptId = selectedWithDept?.departmentId ?? selectedWithDept?.deparmentId;
+        // Bind department for edit form if provided in the response (user dept echoed on UserRoleDto rows)
+        const selectedWithDept = roles?.find(r => r.isSelected && r.departmentId != null);
+        const deptId = selectedWithDept?.departmentId;
         if (deptId != null) {
           this.userForm.patchValue({ departmentId: deptId });
         }

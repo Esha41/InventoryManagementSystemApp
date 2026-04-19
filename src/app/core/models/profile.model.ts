@@ -34,7 +34,6 @@ export interface ProfileRole {
 
 /**
  * API response from /Users/me endpoint
- * Note: API has typos in field names (deparmentId, militoryId)
  */
 export interface UserMeResponse {
   id: string;
@@ -44,12 +43,12 @@ export interface UserMeResponse {
   ldapUserName?: string;
   isSuperAdmin?: boolean;
   extraEmployeesView?: string;
-  deparmentId?: number | null; // Note: API has typo "deparmentId"
+  departmentId?: number | null;
   roles?: ProfileRole[];
   fullNameEN?: string;
   fullNameAR?: string;
   rankId?: number | null;
-  militoryId?: string | number | null; // Note: API has typo "militoryId"
+  militoryId?: string | number | null;
   department?: ProfileDepartment;
   rank?: ProfileRank;
   isOnboardingCompleted?: boolean;
