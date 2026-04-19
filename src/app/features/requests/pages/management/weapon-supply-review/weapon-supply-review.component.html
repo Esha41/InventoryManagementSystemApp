@@ -360,27 +360,15 @@ class="assets-table-input w-full min-w-0">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
             <div class="space-y-1">
               <label class="block text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-1">
-                {{ 'weaponSupplyReview.receiverName' | translate }} <span class="text-[var(--color-error)]">*</span>
+                {{ 'weaponSupplyReview.receiver' | translate }} <span class="text-[var(--color-error)]">*</span>
               </label>
-              <input type="text" [(ngModel)]="receiverName"
-                class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] transition-all">
-            </div>
-
-            <div class="space-y-1">
-              <label class="block text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-1">
-                {{ 'weaponSupplyReview.receiverMilitaryId' | translate }} <span class="text-[var(--color-error)]">*</span>
-              </label>
-              <input type="text" [(ngModel)]="receiverMilitaryId"
-                class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] transition-all">
-            </div>
-
-            <div class="space-y-1">
-              <label class="block text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-1">
-                {{ 'weaponSupplyReview.receiverRank' | translate }} <span class="text-[var(--color-error)]">*</span>
-              </label>
-              <app-dropdown [options]="rankDropdownOptions" [(ngModel)]="receiverRankId"
+              <app-dropdown
+                [options]="employeeDropdownOptions"
+                [(ngModel)]="receiverEmployeeId"
                 optionValue="value" optionLabel="label"
-                [placeholder]="'weaponSupplyReview.selectRank' | translate"
+                [placeholder]="'weaponSupplyReview.selectReceiver' | translate"
+                [addActionLabel]="'weaponSupplyReview.addEmployee'"
+                (addActionClick)="openAddEmployeeModal()"
                 class="w-full">
               </app-dropdown>
             </div>

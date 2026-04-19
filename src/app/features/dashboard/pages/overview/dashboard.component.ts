@@ -21,10 +21,6 @@ import { RequestStatusUpdateService } from '@services/request-status-update.serv
 import { DashboardDataService } from '@services/dashboard-data.service';
 import { DashboardFilterService } from '@services/dashboard-filter.service';
 import { DashboardCard } from '@models/dashboard.model';
-import {
-  getRequestStatusTranslationKey,
-  CardStatus
-} from '@utils/dashboard.utils';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { RequestFilterBarComponent, StatusFilter } from '@components/request-filter-bar/request-filter-bar.component';

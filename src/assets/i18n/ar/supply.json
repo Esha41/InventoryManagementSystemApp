@@ -302,6 +302,8 @@
     "partiallySelected": "منفذ جزئياً",
     "fullySelected": "منفذ بالكامل",
     "receiverInformation": "معلومات المستلم",
+    "receiver": "المستلم",
+    "selectReceiver": "اختر المستلم (الاسم والرقم العسكري)",
     "receiverName": "اسم المستلم",
     "receiverMilitaryId": "الرقم العسكري للمستلم",
     "receiverRank": "رتبة المستلم",

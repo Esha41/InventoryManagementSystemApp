@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnDestroy, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnDestroy, OnChanges, OnInit, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -7,6 +7,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { SupplyDto } from '@services/supply.service';
 import { LookupItem } from '@services/lookup.service';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
+import { DropdownOption } from '@components/dropdown/dropdown.component';
 import { getFileSizeFromFile, removeFile, MAX_FILE_SIZE_MB, validateFile, showFileValidationErrors } from '@utils/file.utils';
 import { WorkflowApprovalSupplyService } from '../../services/workflow-approval-supply.service';
 import { WorkflowApprovalDataService } from '../../services/workflow-approval-data.service';
@@ -15,6 +16,10 @@ import { WorkflowApprovalNavigationService } from '../../services/workflow-appro
 import { ToastService } from '@services/toast.service';
 import { ConfigService } from '@services/config.service';
 import { getRankDisplayName as getRankDisplayNameHelper } from '../../utils/workflow-approval-helpers';
+import { EmployeeService } from '@services/employee.service';
+import { EmployeeDto } from '@core/models/asset.model';
+import { getCurrentLang } from '@utils/localization.utils';
+import { EmployeeFormModalComponent } from '@components/employee-form-modal/employee-form-modal.component';
 
 @Component({
   selector: 'app-workflow-supply-submission',
@@ -24,13 +29,14 @@ import { getRankDisplayName as getRankDisplayNameHelper } from '../../utils/work
     FormsModule,
     TranslateModule,
     LucideAngularModule,
-    DropdownComponent
+    DropdownComponent,
+    EmployeeFormModalComponent
   ],
   templateUrl: './workflow-supply-submission.component.html',
   styleUrls: ['./workflow-supply-submission.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class WorkflowSupplySubmissionComponent implements OnDestroy, OnChanges {
+export class WorkflowSupplySubmissionComponent implements OnInit, OnDestroy, OnChanges {
   @Input() supplyId: number | null = null;
   @Input() supplyData: SupplyDto | null = null;
   @Input() ranks: LookupItem[] = [];
@@ -61,16 +67,16 @@ export class WorkflowSupplySubmissionComponent implements OnDestroy, OnChanges {
 
   // Receiver information for supply submission
   receiverInfo: {
-    recieverName: string;
-    receiverRankId: number | null;
-    recieverMilitaryId: string;
+    receiverEmployeeId: number | null;
     notes: string;
   } = {
-    recieverName: "",
-    receiverRankId: null,
-    recieverMilitaryId: "",
+    receiverEmployeeId: null,
     notes: ""
   };
+
+  employees: EmployeeDto[] = [];
+  employeeDropdownOptions: DropdownOption<number>[] = [];
+  isEmployeeModalOpen = false;
 
   isSubmittingSupply: boolean = false;
 
@@ -95,7 +101,8 @@ export class WorkflowSupplySubmissionComponent implements OnDestroy, OnChanges {
     private supplyServiceHelper: WorkflowApprovalSupplyService,
     private dataService: WorkflowApprovalDataService,
     private stateService: WorkflowApprovalStateService,
-    private navigationService: WorkflowApprovalNavigationService
+    private navigationService: WorkflowApprovalNavigationService,
+    private employeeService: EmployeeService
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -106,6 +113,10 @@ export class WorkflowSupplySubmissionComponent implements OnDestroy, OnChanges {
     }
   }
 
+  ngOnInit(): void {
+    this.loadEmployees();
+  }
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
@@ -113,11 +124,50 @@ export class WorkflowSupplySubmissionComponent implements OnDestroy, OnChanges {
 
   private initializeReceiverInfo(): void {
     if (this.supplyData) {
-      this.receiverInfo.recieverName = this.supplyData.recieverName || "";
-      this.receiverInfo.receiverRankId = this.supplyData.receiverRankId || null;
-      this.receiverInfo.recieverMilitaryId = this.supplyData.recieverMilitaryId || "";
+      this.receiverInfo.receiverEmployeeId = this.supplyData.receiverEmployeeId || null;
       this.receiverInfo.notes = this.supplyData.notes || "";
     }
+  }
+
+  private loadEmployees(): void {
+    this.employeeService.getEmployees()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (employees) => {
+          this.employees = (employees || []).filter(e => !e.isDeleted);
+          this.employeeDropdownOptions = this.createEmployeeOptions();
+        },
+        error: (error) => {
+          this.configService.logError('Failed to load employees', error);
+          this.employees = [];
+          this.employeeDropdownOptions = [];
+        }
+      });
+  }
+
+  private createEmployeeOptions(): DropdownOption<number>[] {
+    const lang = getCurrentLang(this.translateService);
+    return this.employees.map(emp => {
+      const name = lang === 'ar'
+        ? (emp.nameAr || emp.nameEn || String(emp.id))
+        : (emp.nameEn || emp.nameAr || String(emp.id));
+      const militaryId = emp.militaryId || (emp as { militoryId?: string }).militoryId;
+      const label = militaryId ? `${name} (${militaryId})` : name;
+      return { value: emp.id, label };
+    }).sort((a, b) => a.label.localeCompare(b.label));
+  }
+
+  openAddEmployeeModal(): void {
+    this.isEmployeeModalOpen = true;
+  }
+
+  onEmployeeModalClosed(): void {
+    this.isEmployeeModalOpen = false;
+  }
+
+  onEmployeeSaved(): void {
+    this.isEmployeeModalOpen = false;
+    this.loadEmployees();
   }
 
   private loadExistingFiles(): void {
@@ -146,11 +196,8 @@ export class WorkflowSupplySubmissionComponent implements OnDestroy, OnChanges {
     // Backward compatibility: For old orders that may have receiver info filled
     // but submissionStatus is still 1 (Draft), check if essential receiver fields are present
     const hasReceiverInfo = !!(
-      this.supplyData.recieverName &&
-      this.supplyData.recieverName.trim() !== '' &&
-      this.supplyData.receiverRankId &&
-      this.supplyData.recieverMilitaryId &&
-      this.supplyData.recieverMilitaryId.trim() !== ''
+      this.supplyData.receiverEmployeeId &&
+      this.supplyData.receiverEmployeeId > 0
     );
 
     return hasReceiverInfo;
@@ -187,30 +234,10 @@ export class WorkflowSupplySubmissionComponent implements OnDestroy, OnChanges {
     }
 
     // Validate required fields
-    if (!this.receiverInfo.recieverName || !this.receiverInfo.recieverName.trim()) {
-      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.receiverNameRequired']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
+    if (!this.receiverInfo.receiverEmployeeId || this.receiverInfo.receiverEmployeeId <= 0) {
+      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.receiverRequired']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.error(
-          translations['workflowApprovalDetail.errors.receiverNameRequired'] || 'Receiver name is required',
-          translations['toast.error']
-        );
-      });
-      return;
-    }
-
-    if (!this.receiverInfo.receiverRankId || this.receiverInfo.receiverRankId <= 0) {
-      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.receiverRankRequired']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-        this.toastService.error(
-          translations['workflowApprovalDetail.errors.receiverRankRequired'] || 'Receiver rank is required',
-          translations['toast.error']
-        );
-      });
-      return;
-    }
-
-    if (!this.receiverInfo.recieverMilitaryId || !this.receiverInfo.recieverMilitaryId.trim()) {
-      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.militaryIdRequired']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-        this.toastService.error(
-          translations['workflowApprovalDetail.errors.militaryIdRequired'] || 'Military ID is required',
+          translations['workflowApprovalDetail.errors.receiverRequired'] || 'Receiver is required',
           translations['toast.error']
         );
       });

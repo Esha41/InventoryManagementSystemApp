@@ -5,7 +5,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { CardComponent } from '@components/card/card.component';
-import { ButtonComponent } from '@components/button/button.component';
 import { LucideAngularModule, Save, X } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
 import { OnboardingTourService } from '@features/onboarding/services/onboarding-tour.service';
@@ -14,11 +13,7 @@ import { LookupItem } from '@models/lookup.model';
 import { AmmunitionCreateDto, AmmunitionReadDto } from '@models/ammunition.model';
 import { WeaponDto, CreateUpdateWeaponDto } from '@models/weapon.model';
 import { ExplosiveDto, CreateUpdateExplosiveDto } from '@models/explosive.model';
-import { AmmunitionService } from '@services/ammunition.service';
-import { WeaponService } from '@services/weapon.service';
-import { ExplosiveService } from '@services/explosive.service';
 import { ApiService } from '@services/api.service';
-import { APIOperationResponse } from '@models/api-response.model';
 import { DropdownOption, DropdownComponent } from '@components/dropdown/dropdown.component';
 import { ToastService } from '@services/toast.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
@@ -130,9 +125,6 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     private translationService: TranslationService,
     private lookupService: LookupService,
     private apiService: ApiService,
-    private ammunitionsService: AmmunitionService,
-    private weaponService: WeaponService,
-    private explosiveService: ExplosiveService,
     private toastService: ToastService,
     private router: Router,
     private route: ActivatedRoute,

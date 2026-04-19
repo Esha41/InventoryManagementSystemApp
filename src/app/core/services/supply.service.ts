@@ -68,16 +68,12 @@ export interface CreateSupplyDto {
 }
 
 export interface UpdateSupplyDto {
-  recieverName: string;
-  receiverRankId: number;
-  recieverMilitaryId: string;
+  receiverEmployeeId: number;
   notes?: string;
 }
 
 export interface SubmitSupplyDto {
-  recieverName: string;
-  receiverRankId: number | null;
-  recieverMilitaryId: string;
+  receiverEmployeeId: number;
   notes?: string;
 }
 
@@ -176,18 +172,12 @@ export interface SupplyDto {
   id: number;
   orderId: number;
   supplyDate?: string;
-  recieverName?: string;
-  receiverRankId?: number;
-  recieverMilitaryId?: string;
+  receiverEmployeeId?: number;
   submissionStatus: number; // SupplySubmissionStatus enum
   fulfillmentStatus: number; // SupplyFulfillmentStatus enum
   notes?: string;
   order?: OrderDto;
-  receiverRank?: {
-    id: number;
-    nameAr?: string;
-    nameEn?: string;
-  };
+  receiverEmployee?: import('@core/models/asset.model').EmployeeDto;
   supplyDetails: SupplyDetailDto[];
   files?: FileUploadDto[];
 }
@@ -359,11 +349,7 @@ export class SupplyService {
     this.config.log(`Submitting supply ${id}`, dto);
 
     const formData = new FormData();
-    formData.append('RecieverName', dto.recieverName);
-    if (dto.receiverRankId !== null) {
-      formData.append('ReceiverRankId', dto.receiverRankId.toString());
-    }
-    formData.append('RecieverMilitaryId', dto.recieverMilitaryId);
+    formData.append('ReceiverEmployeeId', dto.receiverEmployeeId.toString());
     if (dto.notes) {
       formData.append('Notes', dto.notes);
     }
