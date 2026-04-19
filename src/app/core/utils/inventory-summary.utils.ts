@@ -45,7 +45,6 @@ export class InventorySummaryUtils {
             case 1: return 'Ammunition';
             case 2: return 'Weapon';
             case 3: return 'Explosive';
-            case 4: return 'Accessory';
             default: return 'Unknown';
         }
     }

@@ -218,11 +218,12 @@ export class InventoryService implements IImportableService {
   }
 
   /**
-   * Get ALL lots for a specific item (including expired and empty lots)
+   * Get ALL lots for a specific item, optionally filtered to a single depot.
    */
-  getLotsByItemId(itemId: number): Observable<LotDetailDto[]> {
-    this.config.log(`Fetching all lots for item ${itemId}`);
-    return this.apiService.get<LotDetailDto[]>(`${this.endpoint}/item/${itemId}/lots`);
+  getLotsByItemId(itemId: number, depotId?: number): Observable<LotDetailDto[]> {
+    this.config.log(`Fetching all lots for item ${itemId}`, { depotId });
+    const params = depotId ? `?depotId=${depotId}` : '';
+    return this.apiService.get<LotDetailDto[]>(`${this.endpoint}/item/${itemId}/lots${params}`);
   }
 
   /**
@@ -270,13 +271,18 @@ export class InventoryService implements IImportableService {
   }
 
   /**
-   * Get aggregated inventory summary for all items
-   * Endpoint: GET /api/Inventory/items/summary
+   * Get aggregated inventory summary for all items, optionally filtered by depot(s).
+   * Endpoint: GET /api/Inventory/items/summary[?depotIds=X&depotIds=Y]
+   * When depotIds is empty/undefined, returns data for all accessible depots.
    */
-  getAllItemsSummary(): Observable<ItemInventorySummaryDto[]> {
-    this.config.log('Fetching inventory summary for all items');
+  getAllItemsSummary(depotIds?: number[]): Observable<ItemInventorySummaryDto[]> {
+    this.config.log('Fetching inventory summary for all items', { depotIds });
+    let params = '';
+    if (depotIds && depotIds.length > 0) {
+      params = '?' + depotIds.map(id => `depotIds=${id}`).join('&');
+    }
 
-    return this.apiService.get<ItemInventorySummaryDto[]>(`${this.endpoint}/items/summary`).pipe(
+    return this.apiService.get<ItemInventorySummaryDto[]>(`${this.endpoint}/items/summary${params}`).pipe(
       map(items => items.map(item => ({
         ...item,
         itemType: typeof item.itemType === 'string'
@@ -293,8 +299,7 @@ export class InventoryService implements IImportableService {
     const itemTypeMap: { [key: string]: number } = {
       'Ammunition': 1,
       'Weapon': 2,
-      'Explosive': 3,
-      'Accessory': 4
+      'Explosive': 3
     };
     return itemTypeMap[itemType] || 0;
   }

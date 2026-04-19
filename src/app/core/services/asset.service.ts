@@ -58,6 +58,16 @@ export class AssetService implements IImportableService {
     }
 
     /**
+     * Get all assets for a specific catalog item, optionally scoped to one depot.
+     * Used by the inventory dashboard accordion for weapon items.
+     */
+    getAssetsByItemId(itemId: number, depotId?: number): Observable<AssetDto[]> {
+        let params = new HttpParams();
+        if (depotId) params = params.set('depotId', depotId.toString());
+        return this.apiService.get<AssetDto[]>(`${this.basePath}/item/${itemId}`, params);
+    }
+
+    /**
      * Get all assets
      */
     getAll<T = AssetDto>(query?: { search?: string; depotId?: number }): Observable<T[]> {

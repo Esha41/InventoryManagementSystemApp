@@ -81,7 +81,117 @@
       "expiringSoon": "Expiring Soon",
       "lowStock": "Low Stock",
       "next30Days": "Next 30 days",
-      "belowThreshold": "Below threshold"
+      "belowThreshold": "Below threshold",
+      "distinctItemTypes": "Distinct item types",
+      "totalRemaining": "Total Remaining",
+      "availableUnits": "Available units",
+      "totalLots": "Total Lots",
+      "activeLots": "Active lots",
+      "byType": "Items by Type"
+    },
+    "itemType": {
+      "ammunition": "Ammunition",
+      "weapon": "Weapon",
+      "explosive": "Explosive"
+    },
+    "filter": {
+      "allDepots": "All my depots",
+      "viewingDepot": "Viewing depot",
+      "depots": "depots"
+    },
+    "tabs": {
+      "all": "All",
+      "ammunition": "Ammunition",
+      "weapon": "Weapons",
+      "explosive": "Explosives"
+    },
+    "itemSummary": {
+      "title": "All Items Summary",
+      "items": "items",
+      "empty": "No inventory items found",
+      "noFilterMatch": "No items match your filters",
+      "clickHint": "Click a row to expand details (lots for ammunition/explosives, assets for weapons)",
+      "filteredHint": "of {{total}} in current depot scope",
+      "totalsHint": "Table totals reflect the filtered list above.",
+      "totalsRow": "Totals",
+      "cols": {
+        "itemName": "Item Name",
+        "itemNo": "Item No",
+        "type": "Type",
+        "caliber": "Caliber",
+        "totalQty": "Total Qty",
+        "usedQty": "Used Qty",
+        "reservedQty": "Reserved Qty",
+        "remainingQty": "Remaining Qty",
+        "lots": "Lots"
+      },
+      "filters": {
+        "depot": "Depot",
+        "pickItem": "Item",
+        "allItems": "All items",
+        "search": "Search",
+        "searchPlaceholder": "Name, item no., NSN, part no.",
+        "caliber": "Caliber",
+        "caliberPlaceholder": "Filter by caliber",
+        "itemType": "Item type",
+        "allTypes": "All types",
+        "clear": "Clear filters"
+      },
+      "singleItemTotalsWithNo": "{{name}} ({{no}})",
+      "singleItemTotalsNameOnly": "{{name}}"
+    },
+    "assetDetail": {
+      "title": "Asset Details",
+      "assets": "assets",
+      "empty": "No assets found for this weapon",
+      "cols": {
+        "serialNumber": "Serial No",
+        "depot": "Depot",
+        "batch": "Batch",
+        "purchaseDate": "Purchase Date",
+        "warrantyExpiry": "Warranty Expiry",
+        "assignedTo": "Assigned To",
+        "status": "Status"
+      }
+    },
+    "lotDetail": {
+      "title": "Lot Details",
+      "lots": "lots",
+      "totalsRow": "Lot totals",
+      "empty": "No lots found for this item",
+      "cols": {
+        "lot": "Lot",
+        "depot": "Depot",
+        "batchNo": "Batch No",
+        "originalQty": "Original Qty",
+        "usedQty": "Used Qty",
+        "reservedQty": "Reserved Qty",
+        "remainingQty": "Remaining Qty",
+        "expiryDate": "Expiry Date",
+        "status": "Status"
+      },
+      "status": {
+        "empty": "Empty",
+        "expired": "Expired",
+        "ready": "Ready",
+        "notReady": "Not Ready"
+      }
+    },
+    "depotStock": {
+      "title": "Stock by Depot",
+      "selectDepot": "— Select a depot —",
+      "hint": "Select a depot from the dropdown to view its stock details",
+      "empty": "No stock items found for this depot",
+      "cols": {
+        "item": "Item",
+        "lot": "Lot",
+        "batchNo": "Batch No",
+        "originalQty": "Original Qty",
+        "currentQty": "Current Qty",
+        "remainingQty": "Remaining Qty",
+        "expiryDate": "Expiry Date",
+        "readyForIssue": "Ready for Issue"
+      }
     },
     "expiringLots": {
       "title": "Expiring lots",

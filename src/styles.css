@@ -435,32 +435,34 @@ footer {
   text-align: end;
 }
 
-/* RTL-aware table alignment */
-[dir="rtl"] table th,
-[dir="rtl"] table td {
+/* RTL-aware table alignment (skip table[dir=ltr] data grids — those rules target rtl UI tables only) */
+[dir="rtl"] table:not([dir="ltr"]) th,
+[dir="rtl"] table:not([dir="ltr"]) td {
   text-align: start;
 }
 
-[dir="rtl"] table th.text-right,
-[dir="rtl"] table td.text-right,
-[dir="rtl"] table th.text-end,
-[dir="rtl"] table td.text-end {
+[dir="rtl"] table:not([dir="ltr"]) th.text-right,
+[dir="rtl"] table:not([dir="ltr"]) td.text-right,
+[dir="rtl"] table:not([dir="ltr"]) th.text-end,
+[dir="rtl"] table:not([dir="ltr"]) td.text-end {
   text-align: end;
 }
 
 [dir="ltr"] table th.text-right,
-[dir="ltr"] table td.text-right {
-  text-align: right;
+[dir="ltr"] table td.text-right,
+[dir="ltr"] table th.text-end,
+[dir="ltr"] table td.text-end {
+  text-align: end;
 }
 
 /* Ensure table cells align properly in RTL */
-[dir="rtl"] table th:not(.text-right),
-[dir="rtl"] table td:not(.text-right) {
+[dir="rtl"] table:not([dir="ltr"]) th:not(.text-right):not(.text-end),
+[dir="rtl"] table:not([dir="ltr"]) td:not(.text-right):not(.text-end) {
   text-align: start;
 }
 
-[dir="ltr"] table th:not(.text-right),
-[dir="ltr"] table td:not(.text-right) {
+[dir="ltr"] table th:not(.text-right):not(.text-end),
+[dir="ltr"] table td:not(.text-right):not(.text-end) {
   text-align: left;
 }
 
