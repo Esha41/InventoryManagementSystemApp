@@ -80,7 +80,117 @@
       "expiringSoon": "تنتهي قريباً",
       "lowStock": "مخزون منخفض",
       "next30Days": "الـ 30 يوم القادمة",
-      "belowThreshold": "أقل من الحد الأدنى"
+      "belowThreshold": "أقل من الحد الأدنى",
+      "distinctItemTypes": "أنواع المواد المختلفة",
+      "totalRemaining": "إجمالي المتبقي",
+      "availableUnits": "الوحدات المتاحة",
+      "totalLots": "إجمالي الدفعات",
+      "activeLots": "الدفعات النشطة",
+      "byType": "المواد حسب النوع"
+    },
+    "itemType": {
+      "ammunition": "ذخيرة",
+      "weapon": "سلاح",
+      "explosive": "متفجرات"
+    },
+    "filter": {
+      "allDepots": "جميع مستودعاتي",
+      "viewingDepot": "عرض المستودع",
+      "depots": "مستودعات"
+    },
+    "tabs": {
+      "all": "الكل",
+      "ammunition": "ذخيرة",
+      "weapon": "أسلحة",
+      "explosive": "متفجرات"
+    },
+    "itemSummary": {
+      "title": "ملخص جميع المواد",
+      "items": "مواد",
+      "empty": "لا توجد مواد مخزون",
+      "noFilterMatch": "لا توجد مواد تطابق عوامل التصفية",
+      "clickHint": "انقر على صف لعرض التفاصيل (دفعات للذخيرة والمتفجرات، أصول للأسلحة)",
+      "filteredHint": "من أصل {{total}} في نطاق المستودع الحالي",
+      "totalsHint": "إجماليات الجدول تعكس القائمة المصفاة أعلاه.",
+      "totalsRow": "الإجماليات",
+      "cols": {
+        "itemName": "اسم المادة",
+        "itemNo": "رقم المادة",
+        "type": "النوع",
+        "caliber": "العيار",
+        "totalQty": "إجمالي الكمية",
+        "usedQty": "الكمية المستخدمة",
+        "reservedQty": "الكمية المحجوزة",
+        "remainingQty": "الكمية المتبقية",
+        "lots": "الدفعات"
+      },
+      "filters": {
+        "depot": "المستودع",
+        "pickItem": "المادة",
+        "allItems": "كل المواد",
+        "search": "بحث",
+        "searchPlaceholder": "الاسم، رقم المادة، NSN، رقم القطعة",
+        "caliber": "العيار",
+        "caliberPlaceholder": "تصفية حسب العيار",
+        "itemType": "نوع المادة",
+        "allTypes": "كل الأنواع",
+        "clear": "مسح عوامل التصفية"
+      },
+      "singleItemTotalsWithNo": "{{name}} ({{no}})",
+      "singleItemTotalsNameOnly": "{{name}}"
+    },
+    "assetDetail": {
+      "title": "تفاصيل الأصول",
+      "assets": "أصول",
+      "empty": "لا توجد أصول لهذا السلاح",
+      "cols": {
+        "serialNumber": "الرقم التسلسلي",
+        "depot": "المستودع",
+        "batch": "الدفعة",
+        "purchaseDate": "تاريخ الشراء",
+        "warrantyExpiry": "انتهاء الضمان",
+        "assignedTo": "معين إلى",
+        "status": "الحالة"
+      }
+    },
+    "lotDetail": {
+      "title": "تفاصيل الدفعات",
+      "lots": "دفعات",
+      "totalsRow": "إجمالي الدفعات",
+      "empty": "لا توجد دفعات لهذه المادة",
+      "cols": {
+        "lot": "الدفعة",
+        "depot": "المستودع",
+        "batchNo": "رقم الحزمة",
+        "originalQty": "الكمية الأصلية",
+        "usedQty": "الكمية المستخدمة",
+        "reservedQty": "الكمية المحجوزة",
+        "remainingQty": "الكمية المتبقية",
+        "expiryDate": "تاريخ الانتهاء",
+        "status": "الحالة"
+      },
+      "status": {
+        "empty": "فارغة",
+        "expired": "منتهية الصلاحية",
+        "ready": "جاهزة",
+        "notReady": "غير جاهزة"
+      }
+    },
+    "depotStock": {
+      "title": "المخزون حسب المستودع",
+      "selectDepot": "— اختر مستودعاً —",
+      "hint": "اختر مستودعاً من القائمة لعرض تفاصيل مخزونه",
+      "empty": "لا توجد مواد في هذا المستودع",
+      "cols": {
+        "item": "المادة",
+        "lot": "الدفعة",
+        "batchNo": "رقم الحزمة",
+        "originalQty": "الكمية الأصلية",
+        "currentQty": "الكمية الحالية",
+        "remainingQty": "الكمية المتبقية",
+        "expiryDate": "تاريخ الانتهاء",
+        "readyForIssue": "جاهز للصرف"
+      }
     },
     "expiringLots": {
       "title": "lots علي وشك الانتهاء",

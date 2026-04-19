@@ -38,8 +38,7 @@ export class WarehouseInventoryFilterService {
       const enumMap: { [key: string]: number } = {
         'Ammunition': 1,
         'Weapon': 2,
-        'Explosive': 3,
-        'Accessory': 4
+        'Explosive': 3
       };
 
       if (enumMap[itemType] !== undefined) {

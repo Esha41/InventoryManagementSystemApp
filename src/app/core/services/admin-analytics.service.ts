@@ -270,8 +270,7 @@ export class AdminAnalyticsService implements OnDestroy {
                 const itemTypeNames: { [key: number]: string } = {
                     1: 'Ammunition',
                     2: 'Weapon',
-                    3: 'Explosive',
-                    4: 'Accessory'
+                    3: 'Explosive'
                 };
 
                 activeItems.forEach(item => {

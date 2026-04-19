@@ -1,297 +1,372 @@
 <div class="page-wrapper">
-  <!-- Enhanced Header Section -->
-  <div
-    class="bg-gradient-to-r from-[var(--color-brand)]/10 via-[var(--color-brand)]/5 to-transparent border-b border-[var(--color-border)] mb-6 md:mb-8">
-    <div class="page-container py-6 md:py-8">
+
+  <!-- ── Header ────────────────────────────────────────────────────────────── -->
+  <div class="bg-gradient-to-r from-[var(--color-brand)]/10 via-[var(--color-brand)]/5 to-transparent border-b border-[var(--color-border)] mb-6 md:mb-8">
+    <div class="page-container py-5 md:py-6">
       <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-        <div class="animate-fade-in min-w-0">
-          <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--color-text)] mb-2">{{ 'inventoryDashboard.title' | translate }}</h1>
-          <p class="text-sm sm:text-base text-[var(--color-text-muted)]">{{ 'inventoryDashboard.subtitle' | translate }}</p>
+
+        <!-- Title + refresh -->
+        <div class="min-w-0 flex-1">
+          <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)] mb-1">
+            {{ 'inventoryDashboard.title' | translate }}
+          </h1>
+          <p class="text-sm text-[var(--color-text-muted)]">{{ 'inventoryDashboard.subtitle' | translate }}</p>
         </div>
 
-        <!-- Shared Filter Bar Component -->
-        <app-request-filter-bar layout="separate" [showStatusFilter]="true" [showPriorityFilter]="false"
-          [showSearchBar]="true" [showResultCount]="true" [statusFilter]="selectedStatusFilter"
-          [searchQuery]="searchQuery" [resultCount]="filteredCardsCount" [useSearchButton]="true"
-          (statusFilterChange)="onStatusFilterChange($event)" (searchTriggered)="onSearchChange($event)"
-          class="animate-slide-in-right">
-        </app-request-filter-bar>
+        <button type="button" (click)="onRefresh()"
+          class="flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text-muted)] hover:text-[var(--color-brand)] hover:border-[var(--color-brand)] transition-colors text-sm font-medium shrink-0 self-start sm:self-center">
+          <lucide-angular [img]="RefreshCw" class="w-4 h-4" [class.animate-spin]="isLoading"></lucide-angular>
+          <span class="hidden sm:inline">{{ 'common.refresh' | translate }}</span>
+        </button>
+
       </div>
+
+      <!-- Active depot badges -->
+      <div *ngIf="selectedDepotIds.length > 0" class="mt-3 flex flex-wrap gap-2">
+        <span *ngFor="let dId of selectedDepotIds" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[var(--color-brand)]/10 text-[var(--color-brand)] border border-[var(--color-brand)]/20">
+          <lucide-angular [img]="Warehouse" class="w-3.5 h-3.5"></lucide-angular>
+          {{ getDepotNameById(dId) }}
+        </span>
+      </div>
+
     </div>
   </div>
 
-  <!-- Main Content -->
   <div class="page-container">
-    <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
-      <!-- Low Stock Card -->
-      <div (click)="onLowStockClick()"
-        class="bg-[var(--color-background)] rounded-xl p-4 sm:p-6 border border-[var(--color-border)] shadow-custom-sm cursor-pointer hover:shadow-custom-md transition-shadow active:scale-[0.98]">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm font-medium text-[var(--color-text-muted)] mb-1">{{
-              'inventoryDashboard.statistics.lowStock' | translate }}</p>
-            <p class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ statistics.lowStock | number }}</p>
-            <p class="text-xs text-[var(--color-text-muted)] mt-1">{{ 'inventoryDashboard.statistics.belowThreshold' |
-              translate }}</p>
-          </div>
-          <div class="w-12 h-12 rounded-lg bg-[var(--color-error)]/10 flex items-center justify-center">
-            <svg class="w-6 h-6 text-[var(--color-error)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
-              </path>
-            </svg>
-          </div>
-        </div>
-      </div>
 
-      <!-- Expiring Soon Card -->
-      <div (click)="onExpiringSoonClick()"
-        class="bg-[var(--color-background)] rounded-xl p-4 sm:p-6 border border-[var(--color-border)] shadow-custom-sm cursor-pointer hover:shadow-custom-md transition-shadow active:scale-[0.98]">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm font-medium text-[var(--color-text-muted)] mb-1">{{
-              'inventoryDashboard.statistics.expiringSoon' | translate }}</p>
-            <p class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ statistics.expiringSoon | number }}</p>
-            <p class="text-xs text-[var(--color-text-muted)] mt-1">{{ 'inventoryDashboard.statistics.next30Days' |
-              translate }}</p>
-          </div>
-          <div class="w-12 h-12 rounded-lg bg-[var(--color-warning)]/10 flex items-center justify-center">
-            <svg class="w-6 h-6 text-[var(--color-warning)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z">
-              </path>
-            </svg>
-          </div>
-        </div>
+    <!-- Loading skeleton -->
+    <div *ngIf="isLoading" class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+      <div *ngFor="let i of [1,2,3,4,5,6]"
+        class="bg-[var(--color-background-muted)] rounded-xl h-28 animate-pulse border border-[var(--color-border)]">
       </div>
     </div>
 
-    <!-- Table View -->
-    <div *ngIf="visibleCards.length > 0"
-      class="bg-[var(--color-background)] rounded-xl shadow-custom-sm border border-[var(--color-border)] overflow-hidden mb-6 md:mb-8">
-      <!-- Mobile Card View -->
-      <div class="lg:hidden grid grid-cols-1 gap-4 p-4 overflow-x-hidden">
-        <div *ngFor="let card of paginatedCards"
-          class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] relative overflow-hidden transition-all duration-200"
-          [class.border-l-4]="card.isMyTurn" [class.border-l-[var(--color-brand)]]="card.isMyTurn">
+    <ng-container *ngIf="!isLoading">
 
-          <!-- Header -->
-          <div class="flex justify-between items-start mb-3">
-            <div class="flex flex-col">
-              <span class="font-bold text-[var(--color-text)] text-sm">{{ card.orders[0].orderId || card.title }}</span>
-              <span class="text-xs text-[var(--color-text-muted)]">{{ formatApprovalDateTime(card.orders[0].requestDate)
-                || 'N/A' }}</span>
-            </div>
-            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-              [ngClass]="getStatusBadgeClass(card.status)">
-              {{ getStatusTranslationKey(card.status) | translate }}
-            </span>
-          </div>
+      <!-- ── 6 Stat Cards ────────────────────────────────────────────────── -->
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 md:mb-8">
 
-          <!-- Details -->
-          <div class="grid grid-cols-2 gap-3 text-sm mb-4">
-            <div>
-              <p class="text-[var(--color-text-muted)] text-xs mb-0.5">{{ 'dashboard.department' | translate }}</p>
-              <p class="font-medium text-[var(--color-text)] truncate">{{ card.orders[0].departmentName || 'N/A' }}</p>
-            </div>
-            <div>
-              <p class="text-[var(--color-text-muted)] text-xs mb-0.5">{{ 'dashboard.requester' | translate }}</p>
-              <p class="font-medium text-[var(--color-text)] truncate">{{ card.orders[0].requesterName || 'N/A' }}</p>
-            </div>
-          </div>
-
-          <!-- Footer / Actions -->
-          <div class="flex items-center justify-between pt-3 border-t border-[var(--color-border-muted)]">
-            <span *ngIf="card.isMyTurn"
-              class="text-[10px] font-bold text-[var(--color-brand)] uppercase tracking-wider animate-pulse">
-              {{ 'requestsManagement.actionRequired' | translate }}
-            </span>
-            <span *ngIf="!card.isMyTurn"></span> <!-- Spacer if needed -->
-
-            <button (click)="onTableAction(card)"
-              class="flex items-center gap-1.5 px-3 py-2 min-h-[2.75rem] bg-[var(--color-background-hover)] rounded-lg text-[var(--color-brand)] text-xs font-medium active:scale-95 transition-transform">
-              <lucide-angular [img]="Eye" class="w-4 h-4"></lucide-angular>
-              <span>{{ 'common.view' | translate }}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Desktop Table View -->
-      <div class="hidden lg:block overflow-x-auto">
-        <table class="min-w-full divide-y divide-[var(--color-border)]">
-          <thead class="bg-[var(--color-background-muted)]">
-            <tr>
-              <th
-                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
-                (click)="sortByColumn('orderNumber')">
-                <div class="flex items-center gap-2">
-                  {{ 'dashboard.orderNumber' | translate }}
-                  <lucide-angular *ngIf="sortState.column !== 'orderNumber'" [img]="ArrowUpDown"
-                    class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                  <lucide-angular *ngIf="sortState.column === 'orderNumber' && sortState.direction === 'asc'"
-                    [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                  <lucide-angular *ngIf="sortState.column === 'orderNumber' && sortState.direction === 'desc'"
-                    [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                </div>
-              </th>
-              <th
-                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
-                (click)="sortByColumn('usageDate')">
-                <div class="flex items-center gap-2">
-                  {{ 'dashboard.requestDate' | translate }}
-                  <lucide-angular *ngIf="sortState.column !== 'usageDate'" [img]="ArrowUpDown"
-                    class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                  <lucide-angular *ngIf="sortState.column === 'usageDate' && sortState.direction === 'asc'"
-                    [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                  <lucide-angular *ngIf="sortState.column === 'usageDate' && sortState.direction === 'desc'"
-                    [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                </div>
-              </th>
-              <th
-                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
-                (click)="sortByColumn('department')">
-                <div class="flex items-center gap-2">
-                  {{ 'dashboard.department' | translate }}
-                  <lucide-angular *ngIf="sortState.column !== 'department'" [img]="ArrowUpDown"
-                    class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                  <lucide-angular *ngIf="sortState.column === 'department' && sortState.direction === 'asc'"
-                    [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                  <lucide-angular *ngIf="sortState.column === 'department' && sortState.direction === 'desc'"
-                    [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                </div>
-              </th>
-              <th
-                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
-                (click)="sortByColumn('requester')">
-                <div class="flex items-center gap-2">
-                  {{ 'dashboard.requester' | translate }}
-                  <lucide-angular *ngIf="sortState.column !== 'requester'" [img]="ArrowUpDown"
-                    class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                  <lucide-angular *ngIf="sortState.column === 'requester' && sortState.direction === 'asc'"
-                    [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                  <lucide-angular *ngIf="sortState.column === 'requester' && sortState.direction === 'desc'"
-                    [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                </div>
-              </th>
-              <th
-                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
-                (click)="sortByColumn('status')">
-                <div class="flex items-center gap-2">
-                  {{ 'dashboard.status' | translate }}
-                  <lucide-angular *ngIf="sortState.column !== 'status'" [img]="ArrowUpDown"
-                    class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                  <lucide-angular *ngIf="sortState.column === 'status' && sortState.direction === 'asc'" [img]="ArrowUp"
-                    class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                  <lucide-angular *ngIf="sortState.column === 'status' && sortState.direction === 'desc'"
-                    [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                </div>
-              </th>
-              <th
-                class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
-                {{ 'common.actions' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody class="bg-[var(--color-background)] divide-y divide-[var(--color-border)]">
-            <tr *ngFor="let card of paginatedCards; trackBy: trackByCard" [class.action-required-highlight]="card.isMyTurn"
-              class="hover:bg-[var(--color-background-hover)] transition-colors">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)]">
-                {{ card.orders[0].orderId || card.title }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
-                {{ formatApprovalDateTime(card.orders[0].requestDate) || 'N/A' }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
-                {{ card.orders[0].departmentName || 'N/A' }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
-                {{ card.orders[0].requesterName || 'N/A' }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center gap-2">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                    [ngClass]="getStatusBadgeClass(card.status)">
-                    {{ getStatusTranslationKey(card.status) | translate }}
-                  </span>
-                  <span *ngIf="card.isMyTurn" class="action-required-badge animate-action-glow">
-                    {{ 'requestsManagement.actionRequired' | translate }}
-                  </span>
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
-                <button (click)="onTableAction(card)"
-                  class="text-[var(--color-brand)] hover:text-[var(--color-brand-hover)] transition-colors">
-                  <lucide-angular [img]="Eye" class="w-5 h-5"></lucide-angular>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Pagination Footer -->
-    <div *ngIf="visibleCards.length > 0"
-      class="flex flex-col sm:flex-row items-stretch sm:items-center justify-start sm:justify-between gap-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] rounded-lg px-4 sm:px-6 py-4 mb-6 md:mb-8 text-start">
-      <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="totalItems" [visibleItems]="paginatedCards.length"
-        (rowsPerPageChange)="onRowsPerPageChange($event)">
-      </app-rows-per-page>
-
-      <div *ngIf="totalPages > 1" class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-        <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
-        </app-pagination>
-        <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap mt-2 sm:mt-0">
-          {{ currentPage }} {{ 'common.of' | translate }} {{ totalPages }}
-        </span>
-      </div>
-    </div>
-
-    <!-- No Cards Message -->
-    <div *ngIf="visibleCards.length === 0" class="flex items-center justify-center min-h-[60vh]">
-      <div *ngIf="showContactAdminNotice; else noOrdersMessage" class="max-w-2xl w-full mx-auto">
-        <div
-          class="bg-[var(--color-background)] rounded-2xl shadow-custom-lg border border-[var(--color-border)] p-6 sm:p-8 md:p-12">
-          <div class="flex flex-col items-center gap-6 text-center">
-            <div
-              class="flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-[var(--color-error)]/20 to-[var(--color-error)]/10 border-2 border-[var(--color-error)]/30">
-              <lucide-angular [img]="ShieldAlert" class="w-10 h-10 text-[var(--color-error)]"></lucide-angular>
-            </div>
-            <div class="space-y-3">
-              <h2 class="text-2xl font-bold text-[var(--color-text)]">Access Needed</h2>
-              <p class="text-base text-[var(--color-text-muted)] leading-relaxed max-w-md mx-auto">
-                Your account is connected through LDAP but no permissions are currently assigned. Please contact your
-                system administrator to request access.
+        <!-- Low Stock -->
+        <div (click)="onLowStockClick()"
+          class="bg-[var(--color-background)] rounded-xl p-4 sm:p-5 border border-[var(--color-border)] shadow-custom-sm cursor-pointer hover:shadow-custom-md transition-shadow active:scale-[0.98]">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1 truncate">
+                {{ 'inventoryDashboard.statistics.lowStock' | translate }}
               </p>
+              <p class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ lowStockCount | number }}</p>
+              <p class="text-xs text-[var(--color-text-muted)] mt-1">{{ 'inventoryDashboard.statistics.belowThreshold' | translate }}</p>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-[var(--color-error)]/10 flex items-center justify-center shrink-0">
+              <svg class="w-5 h-5 text-[var(--color-error)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+              </svg>
             </div>
           </div>
         </div>
+
+        <!-- Expiring Soon -->
+        <div (click)="onExpiringSoonClick()"
+          class="bg-[var(--color-background)] rounded-xl p-4 sm:p-5 border border-[var(--color-border)] shadow-custom-sm cursor-pointer hover:shadow-custom-md transition-shadow active:scale-[0.98]">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1 truncate">
+                {{ 'inventoryDashboard.statistics.expiringSoon' | translate }}
+              </p>
+              <p class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ expiringSoonCount | number }}</p>
+              <p class="text-xs text-[var(--color-text-muted)] mt-1">{{ 'inventoryDashboard.statistics.next30Days' | translate }}</p>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-[var(--color-warning)]/10 flex items-center justify-center shrink-0">
+              <svg class="w-5 h-5 text-[var(--color-warning)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Items -->
+        <div class="bg-[var(--color-background)] rounded-xl p-4 sm:p-5 border border-[var(--color-border)] shadow-custom-sm">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1 truncate">
+                {{ 'inventoryDashboard.statistics.totalItems' | translate }}
+              </p>
+              <p class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ itemSummaries.length | number }}</p>
+              <p class="text-xs text-[var(--color-text-muted)] mt-1">{{ 'inventoryDashboard.statistics.distinctItemTypes' | translate }}</p>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center shrink-0">
+              <lucide-angular [img]="Package" class="w-5 h-5 text-[var(--color-brand)]"></lucide-angular>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Remaining Quantity -->
+        <div class="bg-[var(--color-background)] rounded-xl p-4 sm:p-5 border border-[var(--color-border)] shadow-custom-sm">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1 truncate">
+                {{ 'inventoryDashboard.statistics.totalRemaining' | translate }}
+              </p>
+              <p class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ totalRemainingQty | number }}</p>
+              <p class="text-xs text-[var(--color-text-muted)] mt-1">{{ 'inventoryDashboard.statistics.availableUnits' | translate }}</p>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-[var(--color-success)]/10 flex items-center justify-center shrink-0">
+              <lucide-angular [img]="ChartBar" class="w-5 h-5 text-[var(--color-success)]"></lucide-angular>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Lots/Assets -->
+        <div class="bg-[var(--color-background)] rounded-xl p-4 sm:p-5 border border-[var(--color-border)] shadow-custom-sm">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1 truncate">
+                {{ 'inventoryDashboard.statistics.totalLots' | translate }}
+              </p>
+              <p class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ totalLotsStat | number }}</p>
+              <p class="text-xs text-[var(--color-text-muted)] mt-1">{{ 'inventoryDashboard.statistics.activeLots' | translate }}</p>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center shrink-0">
+              <lucide-angular [img]="Layers" class="w-5 h-5 text-[var(--color-brand)]"></lucide-angular>
+            </div>
+          </div>
+        </div>
+
+        <!-- By Type -->
+        <div class="bg-[var(--color-background)] rounded-xl p-4 sm:p-5 border border-[var(--color-border)] shadow-custom-sm">
+          <p class="text-xs font-medium text-[var(--color-text-muted)] mb-3">
+            {{ 'inventoryDashboard.statistics.byType' | translate }}
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-y-2 gap-x-3">
+            <div class="flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-[var(--color-info)] shrink-0"></span>
+              <span class="text-xs text-[var(--color-text-muted)] truncate">{{ 'inventoryDashboard.itemType.ammunition' | translate }}</span>
+              <span class="ms-auto text-xs font-bold text-[var(--color-text)]">{{ byType.ammo }}</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-[var(--color-error)] shrink-0"></span>
+              <span class="text-xs text-[var(--color-text-muted)] truncate">{{ 'inventoryDashboard.itemType.weapon' | translate }}</span>
+              <span class="ms-auto text-xs font-bold text-[var(--color-text)]">{{ byType.weapon }}</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-[var(--color-warning)] shrink-0"></span>
+              <span class="text-xs text-[var(--color-text-muted)] truncate">{{ 'inventoryDashboard.itemType.explosive' | translate }}</span>
+              <span class="ms-auto text-xs font-bold text-[var(--color-text)]">{{ byType.explosive }}</span>
+            </div>
+          </div>
+        </div>
+
       </div>
-      <ng-template #noOrdersMessage>
-        <div class="text-center">
-            <div
-            class="bg-[var(--color-background)] rounded-2xl shadow-custom-md border border-[var(--color-border)] p-6 sm:p-8 md:p-12 inline-block">
-            <div class="flex flex-col items-center gap-4">
-              <div class="w-16 h-16 rounded-full bg-[var(--color-background-hover)] flex items-center justify-center">
-                <svg class="w-8 h-8 text-[var(--color-text-muted)]" fill="none" stroke="currentColor"
-                  viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                  </path>
-                </svg>
+      <!-- ── End Stat Cards ──────────────────────────────────────────────── -->
+
+      <!-- ── Item Summary Table ─────────────────────────────────────────── -->
+      <div class="bg-[var(--color-background)] rounded-xl shadow-custom-sm border border-[var(--color-border)] overflow-hidden mb-6 md:mb-8">
+
+        <!-- Section header -->
+        <div class="px-4 sm:px-6 py-4 border-b border-[var(--color-border)] flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div>
+            <h2 class="text-base sm:text-lg font-semibold text-[var(--color-text)]">
+              {{ 'inventoryDashboard.itemSummary.title' | translate }}
+            </h2>
+            <p class="text-xs text-[var(--color-text-muted)] mt-0.5">
+              {{ 'inventoryDashboard.itemSummary.clickHint' | translate }}
+            </p>
+          </div>
+          <div class="text-sm text-[var(--color-text-muted)] shrink-0 text-end">
+            <span class="font-medium text-[var(--color-text)]">{{ filteredItemCount }}</span>
+            {{ 'inventoryDashboard.itemSummary.items' | translate }}
+            <span *ngIf="hasActiveTableFilters && itemSummaries.length !== filteredItemCount" class="block text-xs mt-0.5">
+              {{ 'inventoryDashboard.itemSummary.filteredHint' | translate: { total: itemSummaries.length } }}
+            </span>
+          </div>
+        </div>
+
+        <!-- ── Filters ───────────────────────────────────────────────────── -->
+        <div *ngIf="depots.length > 0 || itemSummaries.length > 0" class="px-4 sm:px-6 py-3 border-b border-[var(--color-border)] bg-[var(--color-background-muted)]/50">
+          <div class="flex flex-col lg:flex-row flex-wrap gap-3 lg:items-end">
+
+            <!-- Depot multi-select -->
+            <div *ngIf="depots.length > 0" class="w-full min-w-[200px] lg:max-w-xs lg:flex-none">
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.depot' | translate }}</label>
+              <app-dropdown class="block w-full min-h-[42px]"
+                [(ngModel)]="selectedDepotIds"
+                (ngModelChange)="onDepotFilterChange($event)"
+                [options]="depotDropdownOptions"
+                [multiple]="true"
+                [showSearch]="true"
+                [placeholder]="'inventoryDashboard.filter.allDepots' | translate">
+              </app-dropdown>
+            </div>
+
+            <ng-container *ngIf="itemSummaries.length > 0">
+              <!-- Item multi-select picker -->
+              <div class="w-full min-w-[200px] lg:max-w-xs lg:flex-none">
+                <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.pickItem' | translate }}</label>
+                <app-dropdown class="block w-full min-h-[42px]"
+                  [(ngModel)]="selectedItemFilterIds"
+                  (ngModelChange)="onItemPickFilterChange()"
+                  [options]="itemPicklistOptions"
+                  [multiple]="true"
+                  [showSearch]="true"
+                  [placeholder]="'inventoryDashboard.itemSummary.filters.allItems' | translate">
+                </app-dropdown>
               </div>
-              <p class="text-lg font-medium text-[var(--color-text-muted)]">
-                {{ 'dashboard.noOrders' | translate }}
-              </p>
-            </div>
+
+              <!-- Text search -->
+              <div class="w-full flex-1 min-w-0 sm:min-w-[200px]">
+                <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.search' | translate }}</label>
+                <div class="relative">
+                  <span class="pointer-events-none absolute inset-y-0 start-0 z-[1] flex w-10 items-center justify-center text-[var(--color-text-muted)]" aria-hidden="true">
+                    <lucide-angular [img]="Search" class="h-4 w-4 shrink-0"></lucide-angular>
+                  </span>
+                  <input type="text" [(ngModel)]="itemSearchText" (ngModelChange)="onItemSearchInput()"
+                    [placeholder]="'inventoryDashboard.itemSummary.filters.searchPlaceholder' | translate"
+                    autocomplete="off"
+                    class="block w-full h-[42px] box-border ps-10 pe-3 py-0 text-sm leading-[42px] border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent [appearance:none]" />
+                </div>
+              </div>
+
+              <!-- Caliber -->
+              <div class="w-full min-w-[200px] lg:max-w-xs lg:flex-none">
+                <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.caliber' | translate }}</label>
+                <input type="text" [(ngModel)]="caliberFilterText" (ngModelChange)="onCaliberFilterInput()"
+                  [placeholder]="'inventoryDashboard.itemSummary.filters.caliberPlaceholder' | translate"
+                  [attr.list]="'inventory-caliber-options'"
+                  class="block w-full min-h-[42px] box-border px-3 py-2 text-sm leading-normal border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent" />
+                <datalist id="inventory-caliber-options">
+                  <option *ngFor="let c of distinctCalibers" [value]="c"></option>
+                </datalist>
+              </div>
+
+              <!-- Item type (only shown in "All" tab) -->
+              <div *ngIf="activeTab === 'all'" class="w-full min-w-[200px] lg:max-w-xs lg:flex-none">
+                <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.itemType' | translate }}</label>
+                <app-dropdown class="block w-full min-h-[42px]"
+                  [(ngModel)]="itemTypeFilter"
+                  (ngModelChange)="onItemTypeFilterChange()"
+                  [options]="itemTypeDropdownOptions"
+                  [placeholderSelectable]="true"
+                  [placeholderValue]="null"
+                  [showSearch]="false"
+                  [placeholder]="'inventoryDashboard.itemSummary.filters.allTypes' | translate">
+                </app-dropdown>
+              </div>
+
+              <!-- Clear filters (same control as asset list filter bar) -->
+              <div *ngIf="hasActiveTableFilters" class="w-full sm:w-auto lg:ms-auto">
+                <button type="button" (click)="clearTableFilters()"
+                  class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors w-full sm:w-auto justify-center">
+                  <lucide-angular [img]="FilterX" class="h-4 w-4"></lucide-angular>
+                  <span>{{ 'assetList.filters.clear' | translate }}</span>
+                </button>
+              </div>
+            </ng-container>
+          </div>
+          <p *ngIf="itemSummaries.length > 0 && hasActiveTableFilters" class="text-xs text-[var(--color-text-muted)] mt-2">
+            {{ 'inventoryDashboard.itemSummary.totalsHint' | translate }}
+          </p>
+        </div>
+
+        <!-- ── Tabs ──────────────────────────────────────────────────────── -->
+        <div *ngIf="itemSummaries.length > 0" class="px-4 sm:px-6 border-b border-[var(--color-border)]">
+          <nav class="flex gap-1 overflow-x-auto -mb-px" aria-label="Item type tabs">
+            <button *ngFor="let tab of [
+              { id: 'all',        label: 'inventoryDashboard.tabs.all',        count: tabCounts.all },
+              { id: 'ammunition', label: 'inventoryDashboard.tabs.ammunition',  count: tabCounts.ammunition },
+              { id: 'explosive',  label: 'inventoryDashboard.tabs.explosive',   count: tabCounts.explosive },
+              { id: 'weapon',     label: 'inventoryDashboard.tabs.weapon',      count: tabCounts.weapon }
+            ]"
+            type="button"
+            (click)="setActiveTab($any(tab.id))"
+            [class]="activeTab === tab.id
+              ? 'whitespace-nowrap border-b-2 border-[var(--color-brand)] text-[var(--color-brand)] px-3 py-3 text-sm font-semibold transition-colors'
+              : 'whitespace-nowrap border-b-2 border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:border-[var(--color-border)] px-3 py-3 text-sm font-medium transition-colors'">
+              {{ tab.label | translate }}
+              <span class="ms-1.5 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-xs font-medium"
+                [class]="activeTab === tab.id
+                  ? 'bg-[var(--color-brand)] text-white'
+                  : 'bg-[var(--color-background-muted)] text-[var(--color-text-muted)]'">
+                {{ tab.count }}
+              </span>
+            </button>
+          </nav>
+        </div>
+
+        <!-- Empty state (no data from API) -->
+        <div *ngIf="itemSummaries.length === 0" class="flex flex-col items-center justify-center py-16 text-center px-4">
+          <lucide-angular [img]="Package" class="w-12 h-12 text-[var(--color-text-muted)] mb-3"></lucide-angular>
+          <p class="text-[var(--color-text-muted)]">{{ 'inventoryDashboard.itemSummary.empty' | translate }}</p>
+        </div>
+
+        <!-- No rows match filters -->
+        <div *ngIf="itemSummaries.length > 0 && filteredItemCount === 0" class="flex flex-col items-center justify-center py-12 text-center px-4">
+          <p class="text-[var(--color-text-muted)]">{{ 'inventoryDashboard.itemSummary.noFilterMatch' | translate }}</p>
+          <button type="button" (click)="clearTableFilters()"
+            class="mt-4 flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors w-full sm:w-auto justify-center">
+            <lucide-angular [img]="FilterX" class="h-4 w-4"></lucide-angular>
+            <span>{{ 'assetList.filters.clear' | translate }}</span>
+          </button>
+        </div>
+
+        <app-inventory-item-summary-table
+          *ngIf="itemSummaries.length > 0 && filteredItemCount > 0"
+          [rows]="paginatedItemSummaries"
+          [itemSortColumn]="itemSortColumn"
+          [itemSortDirection]="itemSortDirection"
+          [expandedItemId]="expandedItemId"
+          [lotDetails]="lotDetails"
+          [isLotsLoading]="isLotsLoading"
+          [lotSortColumn]="lotSortColumn"
+          [lotSortDirection]="lotSortDirection"
+          [paginatedLotDetails]="paginatedLotDetails"
+          [lotTotalPages]="lotTotalPages"
+          [lotCurrentPage]="lotCurrentPage"
+          [lotRowsPerPage]="lotRowsPerPage"
+          [assetDetails]="assetDetails"
+          [isAssetsLoading]="isAssetsLoading"
+          [assetSortColumn]="assetSortColumn"
+          [assetSortDirection]="assetSortDirection"
+          [paginatedAssetDetails]="paginatedAssetDetails"
+          [assetTotalPages]="assetTotalPages"
+          [assetCurrentPage]="assetCurrentPage"
+          [assetRowsPerPage]="assetRowsPerPage"
+          [selectedDepotId]="selectedDepotIds.length === 1 ? selectedDepotIds[0] : null"
+          [selectedDepotLabel]="selectedDepotLabel"
+          [singleItemTotalsSubtitle]="singleItemTotalsSubtitle"
+          [sumTotalQtyFiltered]="sumTotalQtyFiltered"
+          [sumUsedQtyFiltered]="sumUsedQtyFiltered"
+          [sumReservedQtyFiltered]="sumReservedQtyFiltered"
+          [sumRemainingQtyFiltered]="sumRemainingQtyFiltered"
+          [sumLotsFiltered]="sumLotsFiltered"
+          (itemSort)="sortItemsByColumn($event)"
+          (rowToggle)="toggleItemExpand($event)"
+          (lotSort)="sortLotsByColumn($event)"
+          (lotPageChange)="onLotPageChange($event)"
+          (lotRowsPerPageChange)="onLotRowsPerPageChange($event)"
+          (assetSort)="sortAssetsByColumn($event)"
+          (assetPageChange)="onAssetPageChange($event)"
+          (assetRowsPerPageChange)="onAssetRowsPerPageChange($event)">
+        </app-inventory-item-summary-table>
+
+        <!-- Item table pagination -->
+        <div *ngIf="itemSummaries.length > 0 && filteredItemCount > 0"
+          class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 sm:px-6 py-4">
+          <app-rows-per-page [rowsPerPage]="itemRowsPerPage" [totalItems]="filteredItemCount"
+            [visibleItems]="paginatedItemSummaries.length" (rowsPerPageChange)="onItemRowsPerPageChange($event)">
+          </app-rows-per-page>
+          <div *ngIf="itemTotalPages > 1" class="flex items-center gap-3">
+            <app-pagination [currentPage]="itemCurrentPage" [totalPages]="itemTotalPages" (pageChange)="onItemPageChange($event)">
+            </app-pagination>
+            <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+              {{ itemCurrentPage }} {{ 'common.of' | translate }} {{ itemTotalPages }}
+            </span>
           </div>
         </div>
-      </ng-template>
-    </div>
+
+      </div>
+      <!-- ── End Item Summary Table ──────────────────────────────────────── -->
+
+    </ng-container>
 
   </div>
 </div>
-
-<!-- Unified Request Details Modal -->
-<app-request-details-modal [isOpen]="isRequestModalOpen" [request]="selectedRequest" (close)="closeRequestModal()">
-</app-request-details-modal>

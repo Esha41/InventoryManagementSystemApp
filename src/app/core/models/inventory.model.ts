@@ -34,8 +34,7 @@ export interface BaseItemDto {
 export enum ItemType {
   Ammunition = 1,
   Weapon = 2,
-  Explosive = 3,
-  Accessory = 4
+  Explosive = 3
 }
 
 /**
@@ -174,6 +173,9 @@ export interface ItemInventorySummaryDto {
   itemType: number;
   nsn: string;
   partNo: string;
+  /** Catalog field (ammunition / weapon); may be empty */
+  caliber?: string | null;
+  caliberUnitName?: string | null;
   totalQuantity: number;
   usedQuantity: number;
   reservedQuantityByOrdersOnProcessing: number;

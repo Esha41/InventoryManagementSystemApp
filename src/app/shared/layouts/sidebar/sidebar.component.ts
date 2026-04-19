@@ -70,12 +70,6 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       permissions: ['dashboard_view']
     },
     {
-      label: 'nav.help',
-      icon: HelpCircle,
-      route: '/help',
-      permissions: []
-    },
-    {
       label: 'nav.inventoryDashboard',
       icon: Boxes,
       route: '/inventory-dashboard',
@@ -156,6 +150,12 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
           permissions: ['viewrequest.page', 'request.page', 'requestReciever.page']
         }
       ]
+    },
+    {
+      label: 'nav.help',
+      icon: HelpCircle,
+      route: '/help',
+      permissions: []
     },
     // Temporarily commented out - contains dummy data, will be implemented later
     // {
