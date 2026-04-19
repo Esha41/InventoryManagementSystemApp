@@ -1,0 +1,27 @@
+<div class="select-role">
+  <div class="select-role__header">
+    <lucide-angular [img]="Users" class="select-role__icon" aria-hidden="true"></lucide-angular>
+    <h1 class="select-role__title">{{ 'auth.selectRole.title' | translate }}</h1>
+    <p class="select-role__hint">{{ 'auth.selectRole.hint' | translate }}</p>
+  </div>
+
+  <p *ngIf="error" class="select-role__error" role="alert">{{ error }}</p>
+
+  <ul *ngIf="roles.length" class="select-role__list">
+    <li *ngFor="let r of roles">
+      <button
+        type="button"
+        class="select-role__btn"
+        [disabled]="isLoading"
+        (click)="select(r.id)">
+        {{ roleLabel(r) }}
+      </button>
+    </li>
+  </ul>
+
+  <div class="select-role__actions">
+    <button type="button" class="select-role__cancel" (click)="cancel()" [disabled]="isLoading">
+      {{ (isSwitchMode ? 'common.cancel' : 'auth.selectRole.backToLogin') | translate }}
+    </button>
+  </div>
+</div>

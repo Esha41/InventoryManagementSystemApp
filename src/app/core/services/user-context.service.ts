@@ -221,6 +221,7 @@ export class UserContextService {
         normalizedRoles.push({
           id: roleId,
           name: role.name ?? role.Name ?? '',
+          nameAr: role.nameAr ?? role.NameAr ?? '',
           isDefaultRole: role.isDefaultRole ?? role.IsDefaultRole ?? false,
           isSuperAdmin: role.isSuperAdmin ?? role.IsSuperAdmin ?? false
         });
@@ -254,6 +255,11 @@ export class UserContextService {
       apiData.rankNameAr ??
       apiData.RankNameAr;
 
+    const defaultRoleId =
+      apiData.defaultRoleId ??
+      apiData.DefaultRoleId ??
+      undefined;
+
     return {
       id: String(apiData.id ?? apiData.Id ?? ''),
       userName: String(apiData.userName ?? apiData.UserName ?? ''),
@@ -275,7 +281,8 @@ export class UserContextService {
       militaryId: militaryId || undefined,
       militoryId: militaryId || undefined,
       roles: normalizedRoles,
-      roleIds: roleIds
+      roleIds: roleIds,
+      defaultRoleId: defaultRoleId != null && String(defaultRoleId).trim() !== '' ? String(defaultRoleId) : undefined
     };
   }
 }

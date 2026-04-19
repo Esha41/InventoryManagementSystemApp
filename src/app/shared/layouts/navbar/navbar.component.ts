@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, Bell, User, Globe, LogOut, ChevronDown, Moon, Sun, Menu } from 'lucide-angular';
+import { LucideAngularModule, Bell, User, Users, Globe, LogOut, ChevronDown, Moon, Sun, Menu } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { UserContextService } from '@services/user-context.service';
@@ -30,6 +30,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   readonly Moon = Moon;
   readonly Sun = Sun;
   readonly Menu = Menu;
+  readonly Users = Users;
 
   @Output() menuClick = new EventEmitter<void>();
 
@@ -127,12 +128,27 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   getUserRole(): string {
-    // Try to get role from user details first
-    if (this.userDetails?.roles && this.userDetails.roles.length > 0) {
-      const role = this.userDetails.roles[0];
-      return getLocalizedName(role, getCurrentLang(this.translateService)) || role.name || 'User';
+    const roles = this.userDetails?.roles;
+    if (roles?.length) {
+      const first = roles[0];
+      return getLocalizedName(first, getCurrentLang(this.translateService)) || first.name || 'User';
     }
     return this.currentUser?.roles?.[0] || 'User';
+  }
+
+  /**
+   * Default / session role for the dropdown (localized), using defaultRoleId when present.
+   * Shown without an "Active role" prefix — only the role name(s).
+   */
+  getNavbarActiveRoleDisplay(): string {
+    const roles = this.userDetails?.roles;
+    if (!roles?.length) {
+      return this.currentUser?.roles?.[0] || '';
+    }
+    const defId = this.userDetails?.defaultRoleId?.toLowerCase().trim();
+    const match = defId ? roles.find(r => (r.id || '').toLowerCase().trim() === defId) : undefined;
+    const role = match ?? roles[0];
+    return getLocalizedName(role, getCurrentLang(this.translateService)) || role.name || '';
   }
 
   getUserEmail(): string {
@@ -170,6 +186,15 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   navigateToProfile(): void {
     this.router.navigate(['/profile']);
+    this.closeUserMenu();
+  }
+
+  get showSwitchRole(): boolean {
+    return (this.userDetails?.roles?.length ?? 0) > 1;
+  }
+
+  navigateToSwitchRole(): void {
+    void this.router.navigate(['/auth/select-role'], { queryParams: { switch: '1' } });
     this.closeUserMenu();
   }
 

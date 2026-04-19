@@ -3,6 +3,35 @@ import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
 import { ConfigService } from '@services/config.service';
 
+/** Extract message from APIOperationResponse-shaped JSON bodies (and common variants). */
+function extractMessageFromErrorBody(body: unknown): string | null {
+  if (body == null) return null;
+  if (typeof body === 'string') {
+    const t = body.trim();
+    return t.length ? t : null;
+  }
+  if (typeof body !== 'object') return null;
+  const o = body as Record<string, unknown>;
+  const m = o['message'] ?? o['Message'];
+  if (typeof m === 'string' && m.trim()) return m.trim();
+  const errs = o['errors'] ?? o['Errors'];
+  if (Array.isArray(errs) && errs.length > 0) {
+    const first = errs[0];
+    if (typeof first === 'string') return first;
+    if (first && typeof first === 'object' && 'description' in (first as object)) {
+      const d = (first as Record<string, unknown>)['description'];
+      if (typeof d === 'string') return d;
+    }
+  }
+  if (errs && typeof errs === 'object' && !Array.isArray(errs)) {
+    const vals = Object.values(errs as Record<string, unknown>).flat();
+    const v0 = vals[0];
+    if (typeof v0 === 'string') return v0;
+    if (Array.isArray(v0) && typeof v0[0] === 'string') return v0[0];
+  }
+  return null;
+}
+
 /**
  * HTTP Interceptor for handling errors
  * - Formats error messages
@@ -24,8 +53,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       } else {
         // Server-side error
         if (error.error) {
-          // Backend returned an error response
-          if (typeof error.error === 'string') {
+          const extracted = extractMessageFromErrorBody(error.error);
+          if (extracted) {
+            errorMessage = extracted;
+          } else if (typeof error.error === 'string') {
             errorMessage = error.error;
           } else if (error.error.message || error.error.Message) {
             errorMessage = error.error.message ?? error.error.Message;

@@ -411,6 +411,13 @@ export class LoginComponent implements OnInit {
         this.captchaId = '';
         this.loginForm.get('captcha')?.setValue('');
 
+        if (response.requiresRoleSelection) {
+          setTimeout(() => {
+            this.router.navigate(['/auth/select-role']);
+          }, 200);
+          return;
+        }
+
         setTimeout(() => {
           this.router.navigateByUrl(getDefaultLandingUrl(this.backendAuth));
         }, 400);

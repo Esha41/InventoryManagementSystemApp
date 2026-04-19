@@ -129,6 +129,22 @@ export class ErrorHandler {
       return translate.instant(message);
     }
 
+    // Backend i18n keys (e.g. server.unauthorized) merged under root `server` in common.json
+    if (message.startsWith('server.')) {
+      const t = translate.instant(message);
+      if (t && t !== message) return t;
+    }
+
+    // Raw Angular HTTP text when status is 401 (no usable JSON body)
+    if (
+      (message.includes('Server Error:') && /\b401\b/.test(message)) ||
+      /Http failure response for .*\s401\s/.test(message)
+    ) {
+      const key = 'auth.selectRole.errors.httpUnauthorized';
+      const t = translate.instant(key);
+      if (t && t !== key) return t;
+    }
+
     for (const { pattern, translationKey, extractParams } of TRANSLATABLE_ERROR_PATTERNS) {
       const match = message.match(pattern);
       if (match) {

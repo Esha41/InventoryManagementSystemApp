@@ -52,28 +52,56 @@
               </div>
             </div>
 
-            <!-- Name and Username -->
+            <!-- Name + email (roles listed below when the account has roles) -->
             <div class="flex-1 min-w-0">
-              <h2 class="text-2xl font-bold text-[var(--color-text)] mb-1">{{ getUserName() }}</h2>
-              <div class="flex items-center gap-2 flex-wrap mb-2">
-                <p class="text-sm text-[var(--color-text-muted)]" *ngIf="currentUser.userName">
-                  <span class="font-medium">&#64;</span>{{ currentUser.userName }}
-                </p>
-                <span *ngIf="currentUser.userName && currentUser.email" class="text-[var(--color-text-muted)]">•</span>
-                <p class="text-sm text-[var(--color-text-muted)] truncate" *ngIf="currentUser.email">
-                  {{ currentUser.email }}
-                </p>
-              </div>
-
-              <!-- Roles Badge -->
-              <div *ngIf="currentUser.roles && currentUser.roles.length > 0" class="flex items-center gap-2 flex-wrap">
-                <span *ngFor="let role of currentUser.roles"
-                  class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-[var(--color-brand)]/10 text-[var(--color-brand)] border border-[var(--color-brand)]/20">
-                  {{ role }}
-                </span>
-              </div>
+              <h2 class="text-2xl font-bold text-[var(--color-text)] mb-2">{{ getUserName() }}</h2>
+              <p *ngIf="getSessionRoleDisplay()" class="text-sm font-medium text-[var(--color-text)] truncate mb-1">
+                {{ getSessionRoleDisplay() }}
+              </p>
+              <p class="text-sm text-[var(--color-text-muted)] truncate" *ngIf="getProfileEmail()">
+                {{ getProfileEmail() }}
+              </p>
             </div>
           </div>
+        </div>
+
+        <!-- Your roles (when the account has at least one role to list) -->
+        <div *ngIf="hasRolesSection()"
+          class="px-6 py-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)]/40">
+          <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
+            <div class="flex items-start gap-3 min-w-0">
+              <div
+                class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center flex-shrink-0">
+                <lucide-angular [img]="Users" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
+              </div>
+              <div class="min-w-0">
+                <h3 class="text-base font-bold text-[var(--color-text)]">{{ 'profile.yourRoles' | translate }}</h3>
+                <p class="text-xs text-[var(--color-text-muted)] mt-0.5">{{ 'profile.rolesHint' | translate }}</p>
+              </div>
+            </div>
+            <button *ngIf="showSwitchRole()" type="button" (click)="navigateToSwitchRole()"
+              class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg border border-[var(--color-brand)]/40 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 transition-colors flex-shrink-0">
+              {{ 'profile.switchRoleAction' | translate }}
+            </button>
+          </div>
+          <ul *ngIf="getRoleDetails().length > 0" class="space-y-2" role="list">
+            <li *ngFor="let role of getRoleDetails()"
+              class="flex items-center gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-4 py-3">
+              <span *ngIf="isRoleActive(role)" class="h-2.5 w-2.5 shrink-0 rounded-full bg-[var(--color-success)] shadow-[0_0_0_2px_var(--color-background)]"
+                [attr.title]="'profile.currentSessionRole' | translate" role="img"
+                [attr.aria-label]="'profile.currentSessionRole' | translate"></span>
+              <span class="text-sm font-medium text-[var(--color-text)] truncate">{{ roleDisplayName(role) }}</span>
+            </li>
+          </ul>
+          <ul *ngIf="getRoleDetails().length === 0 && getFallbackRoleNames().length > 0" class="space-y-2" role="list">
+            <li *ngFor="let name of getFallbackRoleNames()"
+              class="flex items-center gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-4 py-3 text-sm font-medium text-[var(--color-text)]">
+              <span *ngIf="isFallbackRoleActive(name)" class="h-2.5 w-2.5 shrink-0 rounded-full bg-[var(--color-success)] shadow-[0_0_0_2px_var(--color-background)]"
+                [attr.title]="'profile.currentSessionRole' | translate" role="img"
+                [attr.aria-label]="'profile.currentSessionRole' | translate"></span>
+              <span class="truncate">{{ name }}</span>
+            </li>
+          </ul>
         </div>
 
         <!-- Profile Details Grid -->

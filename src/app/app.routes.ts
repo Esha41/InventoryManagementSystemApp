@@ -21,6 +21,10 @@ export const routes: Routes = [
         loadComponent: () => import('@auth/pages/reset-password/reset-password.component').then(m => m.ResetPasswordComponent)
       },
       {
+        path: 'select-role',
+        loadComponent: () => import('@auth/pages/select-role/select-role.component').then(m => m.SelectRoleComponent)
+      },
+      {
         path: '',
         redirectTo: 'login',
         pathMatch: 'full'

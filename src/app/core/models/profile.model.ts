@@ -30,6 +30,8 @@ export interface ProfileRank {
 export interface ProfileRole {
   id: string;
   name: string;
+  nameAr?: string | null;
+  isDefaultRole?: boolean;
 }
 
 /**
@@ -44,6 +46,8 @@ export interface UserMeResponse {
   isSuperAdmin?: boolean;
   extraEmployeesView?: string;
   departmentId?: number | null;
+  /** Active session / default role id (ApplicationUser.DefaultRoleId). */
+  defaultRoleId?: string | null;
   roles?: ProfileRole[];
   fullNameEN?: string;
   fullNameAR?: string;

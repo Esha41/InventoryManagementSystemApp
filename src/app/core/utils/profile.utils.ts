@@ -5,6 +5,7 @@
 
 import { AuthenticatedUser } from '@models/auth.model';
 import { TranslateService } from '@ngx-translate/core';
+import { getLocalizedName, getCurrentLang } from './localization.utils';
 
 /**
  * Get localized user name
@@ -32,6 +33,28 @@ export function getRolesString(user: AuthenticatedUser | null, translateService:
     return translateService.instant('profile.noRoles');
   }
   return user.roles.join(', ');
+}
+
+/**
+ * Localized label for the user's active / default role (session role).
+ */
+export function getActiveRoleDisplay(user: AuthenticatedUser | null, translateService: TranslateService): string {
+  if (!user) return '';
+  const lang = getCurrentLang(translateService);
+  const defId = user.defaultRoleId?.toLowerCase().trim();
+  const details = user.roleDetails;
+  if (details?.length) {
+    const active = defId
+      ? details.find(r => r.id?.toLowerCase().trim() === defId)
+      : details.find(r => r.isDefaultRole);
+    const pick = active ?? details[0];
+    const label = getLocalizedName({ name: pick.name, nameAr: pick.nameAr }, lang);
+    return label || pick.name || '';
+  }
+  if (user.roles?.length) {
+    return user.roles[0];
+  }
+  return '';
 }
 
 /**
