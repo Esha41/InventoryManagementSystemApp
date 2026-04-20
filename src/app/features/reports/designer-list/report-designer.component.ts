@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule, Plus, Edit2, Trash2, Globe, Eye, Upload, Users } from 'lucide-angular';
+import { LucideAngularModule, Plus, Edit2, Trash2, Globe, Eye, Upload, Users, FileText } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
 import { ButtonComponent } from '@components/button/button.component';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
@@ -13,7 +13,6 @@ import { ReportService, Report, ReportTemplate } from '@services/report.service'
 import { ToastService } from '@services/toast.service';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { TemplateSelectDialogComponent } from '../template-select-dialog/template-select-dialog.component';
 import { RoleSelectDialogComponent } from '../role-select-dialog/role-select-dialog.component';
 
 @Component({
@@ -30,7 +29,6 @@ import { RoleSelectDialogComponent } from '../role-select-dialog/role-select-dia
     LoadingStateComponent,
     ErrorStateComponent,
     ConfirmDialogComponent,
-    TemplateSelectDialogComponent,
     RoleSelectDialogComponent
   ],
   templateUrl: './report-designer.component.html',
@@ -44,6 +42,7 @@ export class ReportDesignerComponent implements OnInit {
   readonly Eye = Eye;
   readonly Upload = Upload;
   readonly Users = Users;
+  readonly FileText = FileText;
 
   reports: Report[] = [];
   filteredReports: Report[] = [];
@@ -60,8 +59,10 @@ export class ReportDesignerComponent implements OnInit {
   showDeleteDialog = false;
   reportToDelete: Report | null = null;
 
-  // Template selection dialog
-  showTemplateDialog = false;
+  /** Built-in layouts shown on this page (Users & Allowance first, then others from API) */
+  reportTemplates: ReportTemplate[] = [];
+  templatesLoading = false;
+  templatesError: string | null = null;
 
   // Role selection dialog
   showRoleDialog = false;
@@ -100,6 +101,7 @@ export class ReportDesignerComponent implements OnInit {
     // Check permissions using standard pattern
     this.checkPermissions();
     this.loadReports();
+    this.loadReportTemplates();
 
     // Prefetch designer route in background to reduce first-click delay.
     this.prefetchDesignerChunk();
@@ -156,17 +158,17 @@ export class ReportDesignerComponent implements OnInit {
   }
 
   onCreateReport(): void {
-    // Ensure prefetch started (in case ngOnInit didn't run yet / hot reload).
     this.prefetchDesignerChunk();
-
-    // Show template selection dialog
-    this.showTemplateDialog = true;
+    this.router.navigate(['/report-designer/designer'], {
+      queryParams: {
+        reportUrl: 'BaseReportTemplate',
+        mode: 'create'
+      }
+    });
   }
 
-  onTemplateSelected(template: ReportTemplate): void {
-    this.showTemplateDialog = false;
-    
-    // Navigate to designer with selected template
+  openTemplateInDesigner(template: ReportTemplate): void {
+    this.prefetchDesignerChunk();
     this.router.navigate(['/report-designer/designer'], {
       queryParams: {
         reportUrl: template.url,
@@ -175,8 +177,34 @@ export class ReportDesignerComponent implements OnInit {
     });
   }
 
-  onTemplateDialogCancel(): void {
-    this.showTemplateDialog = false;
+  private loadReportTemplates(): void {
+    if (!this.canCreateReport) {
+      return;
+    }
+    this.templatesLoading = true;
+    this.templatesError = null;
+    this.reportService
+      .getTemplates()
+      .pipe(
+        catchError((err) => {
+          console.error('Error loading report templates:', err);
+          this.templatesError = this.translateService.instant('common.errorLoadingData');
+          return of([]);
+        }),
+        finalize(() => {
+          this.templatesLoading = false;
+        })
+      )
+      .subscribe((templates) => {
+        const preferredOrder = ['UsersReportTemplate', 'AllowanceItemsReportTemplate', 'BaseReportTemplate'];
+        this.reportTemplates = [...templates].sort((a, b) => {
+          const rank = (url: string) => {
+            const i = preferredOrder.indexOf(url);
+            return i === -1 ? preferredOrder.length : i;
+          };
+          return rank(a.url) - rank(b.url);
+        });
+      });
   }
 
   onImportReport(): void {
