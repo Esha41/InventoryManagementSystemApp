@@ -28,6 +28,7 @@ export interface Asset {
   nsn?: string;
   price?: number;
   minimumQuantity?: number;
+  criticalQuantity?: number;
   imageUrl?: string;
   expiryDate?: string;
   expiryDateRaw?: string;

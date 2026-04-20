@@ -53,6 +53,7 @@ export interface AmmunitionReadDto {
   expiryDate?: Date | string;
   price?: number;
   minimumQuantity?: number;
+  criticalQuantity?: number;
   createdDate: Date;
   modifiedDate?: Date;
   
@@ -116,6 +117,7 @@ export interface AmmunitionCreateDto {
   notes?: string;
   price?: number;
   minimumQuantity?: number;
+  criticalQuantity?: number;
 }
 
 export interface AmmunitionUpdateDto {

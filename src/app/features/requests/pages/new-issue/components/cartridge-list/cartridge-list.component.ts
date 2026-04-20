@@ -1,14 +1,12 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { CatalogPaginationState } from '../../new-issue-request.state';
-import { OrderService } from '@services/order.service';
 import { ConfigService } from '@services/config.service';
 import { ItemTypeValidationService } from '@services/item-type-validation.service';
-import { ErrorHandler } from '@utils/error-handler.utils';
 
 export interface Cartridge {
   id: number;
@@ -150,15 +148,12 @@ export class CartridgeListComponent implements OnChanges {
   pendingQuantity: number = 1;
   searchTerm: string = '';
   draftSearchTerm = '';
-  verifyingAllowance: boolean = false;
   allowanceErrorMessage: string | null = null;
   itemTypeValidationErrorMessage: string | null = null;
 
   constructor(
-    private orderService: OrderService,
     private config: ConfigService,
     private itemTypeValidationService: ItemTypeValidationService,
-    private translate: TranslateService,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -253,38 +248,8 @@ export class CartridgeListComponent implements OnChanges {
       cartridge.itemType = newItemType;
     }
 
-    // If "From Allowance" is selected, verify allowance before confirming
-    if (this.fromReserve === 'Yes') {
-      this.verifyingAllowance = true;
-      this.orderService.verifyAllowance(cartridge.id, quantity).subscribe({
-        next: (result) => {
-          this.verifyingAllowance = false;
-
-          if (!result.isValid) {
-            // Quantity exceeds available allowance - use translated message
-            const errorMsg = this.translate.instant('newIssueRequest.errors.allowanceExceeded', {
-              requestedQuantity: quantity,
-              availableQuantity: result.availableQuantity
-            });
-            this.allowanceErrorMessage = errorMsg;
-            this.allowanceError.emit(errorMsg);
-            return; // Don't confirm, show error
-          }
-
-          // Quantity is valid, proceed with confirmation
-          this.proceedWithConfirmation(cartridge, quantity);
-        },
-        error: (error) => {
-          this.verifyingAllowance = false;
-          const errorMsg = ErrorHandler.extractAndTranslateErrorMessage(error, this.translate.instant('newIssueRequest.errors.failedToVerifyAllowance'), this.translate);
-          this.allowanceErrorMessage = errorMsg;
-          this.allowanceError.emit(errorMsg);
-        }
-      });
-    } else {
-      // Not from allowance, proceed directly
-      this.proceedWithConfirmation(cartridge, quantity);
-    }
+    // From allowance: allow quantities above remaining allowance (negative balance tracked server-side)
+    this.proceedWithConfirmation(cartridge, quantity);
   }
 
   /**
@@ -340,7 +305,6 @@ export class CartridgeListComponent implements OnChanges {
     this.pendingQuantity = 1;
     this.allowanceErrorMessage = null;
     this.itemTypeValidationErrorMessage = null;
-    this.verifyingAllowance = false;
   }
 
   onFilterChange(): void {

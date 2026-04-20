@@ -1,5 +1,16 @@
 /* Add Asset - responsive tabs and form */
 
+/* Equal two-column tracks; paired block uses col-span-full for aligned rows */
+.add-asset-form-grid {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+  .add-asset-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .asset-tab {
   touch-action: manipulation;
 }

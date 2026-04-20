@@ -217,6 +217,8 @@
     "pricePlaceholder": "أدخل السعر (اختياري)",
     "minimumQuantity": "الحد الأدنى للكمية",
     "minimumQuantityPlaceholder": "أدخل الحد الأدنى للكمية (اختياري)",
+    "criticalQuantity": "الكمية الحرجة",
+    "criticalQuantityPlaceholder": "أدخل الكمية الحرجة (اختياري)",
     "enterAmmunitionName": "أدخل اسم المادة",
     "enterWeaponName": "أدخل اسم السلاح",
     "enterExplosiveName": "أدخل اسم المتفجر",
@@ -251,7 +253,6 @@
     "selectExplosiveType": "اختر نوع المتفجر",
     "notes": "ملاحظات",
     "enterNotes": "أدخل الملاحظات",
-    "itemNoMustBeUnique": "يجب أن يكون رقم المادة فريداً عبر جميع سجلات المواد",
     "errors": {
       "itemNoAlreadyExists": "رقم المادة موجود مسبقاً. يرجى استخدام رقم مادة فريد.",
       "itemNoAlreadyExistsWithValue": "رقم المادة '{{itemNo}}' موجود مسبقاً. يرجى استخدام رقم مادة فريد.",

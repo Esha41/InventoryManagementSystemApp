@@ -21,6 +21,7 @@ export interface BaseItemDto {
   expiryDate?: Date | string;
   price?: number;
   minimumQuantity?: number;
+  criticalQuantity?: number;
   isDeleted: boolean;
   hcc?: {
     id: number;

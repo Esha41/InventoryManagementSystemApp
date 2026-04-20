@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, catchError, map, of, throwError } from 'rxjs';
 import { ConfigService } from './config.service';
 import { ApiService } from './api.service';
@@ -134,25 +134,6 @@ export class OrderService {
   getOrderSummary(): Observable<OrderStatusSummaryItem[]> {
     this.config.log('Fetching order summary');
     return this.apiService.get<OrderStatusSummaryItem[]>(`${this.endpoint}/summary`);
-  }
-
-  verifyAllowance(itemId: number, requestedQuantity: number): Observable<{ availableQuantity: number; isValid: boolean; message?: string }> {
-    this.config.log(`Verifying allowance for item ${itemId}, quantity ${requestedQuantity}`);
-    const params = new HttpParams()
-      .set('itemId', itemId.toString())
-      .set('requestedQuantity', requestedQuantity.toString());
-
-    return this.apiService.get<any>(`${this.endpoint}/verify-allowance`, params).pipe(
-      map(data => {
-        const availableQuantity = data?.availableQuantity ?? data?.data?.availableQuantity ?? 0;
-        const isValid = requestedQuantity <= availableQuantity;
-        return {
-          availableQuantity,
-          isValid,
-          message: data?.message
-        };
-      })
-    );
   }
 
   addOrderItem(orderId: number, itemDto: CreateRequestItemDto): Observable<APIOperationResponse<number>> {

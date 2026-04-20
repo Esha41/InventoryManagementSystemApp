@@ -33,6 +33,7 @@ interface AssetForm {
   nsn: string;
   price: string;
   minimumQuantity: string;
+  criticalQuantity: string;
   unNumber: string;
   distribution: string;
   referenceNo: string;
@@ -145,6 +146,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
       nsn: '',
       price: '',
       minimumQuantity: '',
+      criticalQuantity: '',
       unNumber: '',
       distribution: '',
       referenceNo: '',
@@ -371,6 +373,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.assetForm.notes?.trim()) dto.notes = this.assetForm.notes.trim();
     if (this.assetForm.price) dto.price = parseFloat(this.assetForm.price);
     if (this.assetForm.minimumQuantity) dto.minimumQuantity = parseInt(this.assetForm.minimumQuantity);
+    if (this.assetForm.criticalQuantity) dto.criticalQuantity = parseInt(this.assetForm.criticalQuantity, 10);
     if (this.assetForm.isLinked) dto.isLinked = this.assetForm.isLinked === 'true';
 
     const formData = new FormData();
@@ -414,6 +417,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.assetForm.model?.trim()) dto.model = this.assetForm.model.trim();
     if (this.assetForm.price) dto.price = parseFloat(this.assetForm.price);
     if (this.assetForm.minimumQuantity) dto.minimumQuantity = parseInt(this.assetForm.minimumQuantity);
+    if (this.assetForm.criticalQuantity) dto.criticalQuantity = parseInt(this.assetForm.criticalQuantity, 10);
     if (this.assetForm.primaryPurposIds?.length) {
       dto.primaryPurposIds = [...this.assetForm.primaryPurposIds];
     }
@@ -448,6 +452,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.assetForm.nsn?.trim()) dto.nsn = this.assetForm.nsn.trim();
     if (this.assetForm.price) dto.price = parseFloat(this.assetForm.price);
     if (this.assetForm.minimumQuantity) dto.minimumQuantity = parseInt(this.assetForm.minimumQuantity);
+    if (this.assetForm.criticalQuantity) dto.criticalQuantity = parseInt(this.assetForm.criticalQuantity, 10);
     if (this.assetForm.distribution?.trim()) dto.distribution = this.assetForm.distribution.trim();
     if (this.assetForm.referenceNo?.trim()) dto.referenceNo = this.assetForm.referenceNo.trim();
     if (this.assetForm.unNumber?.trim()) dto.unNumber = this.assetForm.unNumber.trim();

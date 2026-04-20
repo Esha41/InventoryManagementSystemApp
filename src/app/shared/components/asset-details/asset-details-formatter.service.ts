@@ -5,6 +5,7 @@ import { getLookupDisplayName } from '@utils/asset-list.utils';
 import { AmmunitionReadDto } from '@models/ammunition.model';
 import { WeaponDto } from '@models/weapon.model';
 import { ExplosiveDto } from '@models/explosive.model';
+import type { AssetUnion } from '@utils/asset-property.utils';
 import { AssetDetailsData } from './asset-details.component';
 
 /**
@@ -35,6 +36,7 @@ export class AssetDetailsFormatterService {
       batchNo: computed(() => this.propertyAccessor.getBatchNo(asset()) || '-'),
       price: computed(() => this.propertyAccessor.getPrice(asset()) || '-'),
       minimumQuantity: computed(() => this.propertyAccessor.getMinimumQuantity(asset()) || '-'),
+      criticalQuantity: computed(() => this.propertyAccessor.getCriticalQuantity(asset()) || '-'),
       expiryDate: computed(() => this.propertyAccessor.getExpiryDate(asset()) || '-'),
       readyForIssue: computed(() => this.propertyAccessor.getReadyForIssue(asset()) || '-'),
 
@@ -149,12 +151,21 @@ export class AssetDetailsFormatterService {
           : '-'
       ),
 
-      // Explosive specific
+      // Explosive specific (enum label only)
       explosiveType: computed(() =>
         isExplosive()
           ? this.propertyAccessor.getExplosiveTypeName(asset() as ExplosiveDto) || '-'
           : '-'
       ),
+      /** Catalog item type (lookup) preferred, then legacy enum name */
+      explosiveTypeDisplay: computed(() => {
+        if (!isExplosive() || !asset()) return '-';
+        const ex = asset() as ExplosiveDto;
+        const fromLookup = this.propertyAccessor.getType(ex as AssetUnion);
+        if (fromLookup && fromLookup !== '-') return fromLookup;
+        const fromEnum = this.propertyAccessor.getExplosiveTypeName(ex as AssetUnion);
+        return fromEnum && fromEnum !== '-' ? fromEnum : '-';
+      }),
       unNumber: computed(() =>
         isExplosive()
           ? this.propertyAccessor.getUnNumber(asset() as ExplosiveDto) || '-'

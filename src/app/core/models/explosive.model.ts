@@ -75,6 +75,7 @@ export interface CreateUpdateExplosiveDto {
   compatibilityId?: number;
   price?: number;
   minimumQuantity?: number;
+  criticalQuantity?: number;
   distribution?: string;
   referenceNo?: string;
   notes?: string;
