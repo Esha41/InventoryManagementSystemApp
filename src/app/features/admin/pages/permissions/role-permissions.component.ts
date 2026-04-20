@@ -162,7 +162,13 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
     }
 
     if (!search) return roles;
-    return roles.filter(role => role.name?.toLowerCase().includes(search));
+    return roles.filter(role => this.roleMatchesSearch(role, search));
+  }
+
+  /** Match against all display fields so Arabic search works when UI is in Arabic (name vs nameAr). */
+  private roleMatchesSearch(role: RoleDto, searchLower: string): boolean {
+    const parts = [role.name, role.nameEn, role.nameAr].filter((v): v is string => !!v?.trim());
+    return parts.some(p => p.toLowerCase().includes(searchLower));
   }
 
   get paginatedRoles(): RoleDto[] {
