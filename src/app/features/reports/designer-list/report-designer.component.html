@@ -22,7 +22,7 @@
             </div>
           </div>
 
-          <!-- Create Report Button - Right Side -->
+          <!-- Create New Report Button - Right Side -->
           <div *ngIf="!loading && !error && canCreateReport" class="flex items-center gap-3 justify-end flex-shrink-0">
             <!-- <app-button variant="secondary" (click)="onImportReport()">
               <span class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
@@ -37,6 +37,40 @@
               </span>
             </app-button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Built-in templates (Users, Allowance, Base, …) -->
+    <div *ngIf="canCreateReport"
+      class="bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg shadow-custom-sm p-4 sm:p-6 space-y-4">
+      <div>
+        <h2 class="text-base sm:text-lg font-semibold text-[var(--color-text)]">
+          {{ 'reportDesigner.templatesSectionTitle' | translate }}
+        </h2>
+        <p class="text-sm text-[var(--color-text-muted)] mt-1">
+          {{ 'reportDesigner.templatesSectionHint' | translate }}
+        </p>
+      </div>
+      <app-loading-state *ngIf="templatesLoading" size="sm" [fullPage]="false">
+      </app-loading-state>
+      <p *ngIf="templatesError && !templatesLoading" class="text-sm text-[var(--color-error)]">{{ templatesError }}</p>
+      <div *ngIf="!templatesLoading && !templatesError && reportTemplates.length > 0"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div *ngFor="let t of reportTemplates"
+          class="flex flex-col rounded-xl border border-[var(--color-border)] bg-[var(--color-background-muted)]/40 p-4 gap-3">
+          <div class="flex items-start gap-3" [class.flex-row-reverse]="isRTL">
+            <lucide-angular [img]="FileText" class="h-8 w-8 text-[var(--color-primary)] flex-shrink-0 mt-0.5"></lucide-angular>
+            <div class="min-w-0 flex-1">
+              <div class="font-medium text-[var(--color-text)] text-sm sm:text-base">{{ t.name }}</div>
+              <p *ngIf="t.description" class="text-xs sm:text-sm text-[var(--color-text-muted)] mt-1">{{ t.description }}</p>
+            </div>
+          </div>
+          <app-button variant="secondary" class="w-full mt-auto" (click)="openTemplateInDesigner(t)">
+            <span class="flex items-center justify-center gap-2 w-full" [class.flex-row-reverse]="isRTL">
+              <span>{{ 'reportDesigner.openInDesigner' | translate }}</span>
+            </span>
+          </app-button>
         </div>
       </div>
     </div>
@@ -267,13 +301,6 @@
       [confirmText]="'common.delete' | translate" [cancelText]="'common.cancel' | translate"
       (confirmed)="onDeleteConfirm()" (cancelled)="onDeleteCancel()">
     </app-confirm-dialog>
-
-    <!-- Template Selection Dialog -->
-    <app-template-select-dialog
-      [isOpen]="showTemplateDialog"
-      (templateSelected)="onTemplateSelected($event)"
-      (cancelled)="onTemplateDialogCancel()">
-    </app-template-select-dialog>
 
     <!-- Role Selection Dialog -->
     <app-role-select-dialog

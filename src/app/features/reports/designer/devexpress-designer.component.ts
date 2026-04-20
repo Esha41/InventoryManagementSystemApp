@@ -26,6 +26,13 @@ export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit 
   readonly ArrowLeft = ArrowLeft;
   readonly ArrowRight = ArrowRight;
 
+  /** Layout URLs served by ReportFactory when no DB row exists — not valid post-save report IDs */
+  private static readonly builtInTemplateUrls = new Set([
+    'BaseReportTemplate',
+    'AllowanceItemsReportTemplate',
+    'UsersReportTemplate'
+  ]);
+
   // IIS: `^DXXRD(.*)` → backend `/api/DXXRD...` — keep path at site root, not `/api/DXXRD`
   readonly getDesignerModelAction = '/DXXRD/GetDesignerModel';
   reportName: string = "BaseReportTemplate"; // Default report name, can be passed via route params
@@ -75,7 +82,7 @@ export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit 
     const savedReportUrl = (event?.args as { Url?: string })?.Url 
       ?? this.getCurrentReportUrlFromEvent(event);
 
-    if (!savedReportUrl || savedReportUrl === 'BaseReportTemplate') {
+    if (!savedReportUrl || DevExpressReportDesignerComponent.builtInTemplateUrls.has(savedReportUrl)) {
       return;
     }
 

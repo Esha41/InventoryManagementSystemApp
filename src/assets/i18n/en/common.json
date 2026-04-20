@@ -432,7 +432,7 @@
   },
   "reportDesigner": {
     "subtitle": "Design and manage your custom reports",
-    "createReport": "Create Report",
+    "createReport": "Create New Report",
     "importReport": "Import Report",
     "noReports": "No Reports",
     "noReportsDescription": "You haven't created any reports yet.",
@@ -452,6 +452,9 @@
     "noRolesFound": "No roles found matching your search",
     "roleSelectionInfo": "Select which roles can access this report when it's published. If no roles are selected, the report will be accessible to all authenticated users.",
     "selectTemplate": "Select Template",
+    "templatesSectionTitle": "Report templates",
+    "templatesSectionHint": "Start from a built-in layout in the visual designer, then save to create a new report.",
+    "openInDesigner": "Open in designer",
     "noTemplates": "No templates available",
     "import": {
       "invalidFileType": "Invalid file type. Only {{extensions}} files are allowed.",
