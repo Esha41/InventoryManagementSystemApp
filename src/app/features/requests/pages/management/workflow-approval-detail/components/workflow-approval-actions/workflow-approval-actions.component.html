@@ -49,11 +49,11 @@
           <input type="file" #approvalFileInput (change)="onApprovalFileSelected($event)"
             [disabled]="processing || isProcessingAction" multiple accept=".jpg,.jpeg,.png,.pdf,.xlsx,.docx"
             class="hidden">
-          <label (click)="!processing && approvalFileInput.click()" [class.opacity-50]="processing"
-            [class.cursor-not-allowed]="processing"
-            class="px-4 py-2 rounded-lg border-0 text-sm font-semibold bg-[var(--color-brand)]/10 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20 cursor-pointer transition-all">
+          <button type="button" (click)="approvalFileInput.click()"
+            [disabled]="processing || isProcessingAction"
+            class="px-4 py-2 rounded-lg text-sm font-medium bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand)]/90 cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0">
             {{ 'common.chooseFiles' | translate }}
-          </label>
+          </button>
           <span class="text-sm text-[var(--color-text-muted)] flex-1">
             <span *ngIf="approvalFiles.length === 0">{{ 'common.noFileChosen' | translate }}</span>
             <span *ngIf="approvalFiles.length > 0">{{ approvalFiles.length }} {{ approvalFiles.length === 1
