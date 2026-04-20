@@ -85,10 +85,10 @@
             <div class="relative flex items-center gap-2">
               <input type="file" #editBatchFileInput (change)="onAttachmentChange($event)" multiple
                 accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" class="hidden">
-              <label (click)="editBatchFileInput.click()"
-                class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium bg-[var(--color-brand)]/10 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20 cursor-pointer transition-colors">
+              <button type="button" (click)="editBatchFileInput.click()"
+                class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand)]/90 cursor-pointer transition-colors">
                 {{ 'common.chooseFiles' | translate }}
-              </label>
+              </button>
               <span class="text-sm text-[var(--color-text-muted)] flex-1">
                 <span *ngIf="!deliveryReceiptFiles.length">{{ 'common.noFileChosen' | translate }}</span>
                 <span *ngIf="deliveryReceiptFiles.length">{{ deliveryReceiptFiles.length }} {{ deliveryReceiptFiles.length
