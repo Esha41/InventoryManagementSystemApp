@@ -14,9 +14,11 @@ import { RoleSelectionPanelComponent } from '@auth/components/role-selection-pan
 import { BackendAuthService } from '@services/backend-auth.service';
 import { UserContextService } from '@services/user-context.service';
 import { SwitchRoleModalService } from '@services/switch-role-modal.service';
+import { ToastService } from '@services/toast.service';
 import { RoleForSelection } from '@models/auth.model';
 import { getDefaultLandingUrl } from '@core/utils/default-landing-route.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 @Component({
   selector: 'app-switch-role-modal',
@@ -40,6 +42,7 @@ export class SwitchRoleModalComponent implements OnInit, OnDestroy {
     private backendAuth: BackendAuthService,
     private router: Router,
     private translate: TranslateService,
+    private toastService: ToastService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -98,6 +101,16 @@ export class SwitchRoleModalComponent implements OnInit, OnDestroy {
     this.backendAuth.selectRole(roleId, { switchWhileLoggedIn: true }).subscribe({
       next: () => {
         this.submitLoading = false;
+        const picked = this.roles.find(r => String(r.id) === String(roleId));
+        const roleLabel =
+          picked != null
+            ? getLocalizedName({ name: picked.name, nameAr: picked.nameAr }, getCurrentLang(this.translate)) ||
+              picked.name
+            : roleId;
+        this.toastService.success(
+          this.translate.instant('auth.selectRole.roleActiveMessage', { role: roleLabel }),
+          this.translate.instant('auth.selectRole.roleActiveTitle')
+        );
         this.switchRoleModal.close();
         this.cdr.markForCheck();
         void this.router.navigateByUrl(getDefaultLandingUrl(this.backendAuth));
