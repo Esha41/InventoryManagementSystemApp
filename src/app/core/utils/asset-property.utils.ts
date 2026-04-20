@@ -221,6 +221,18 @@ export class AssetPropertyAccessor {
     return asset.minimumQuantity != null ? asset.minimumQuantity.toString() : '-';
   }
 
+  getCriticalQuantity(asset: AssetUnion): string {
+    if (!asset) return '-';
+    if ('criticalQuantity' in asset && (asset as { criticalQuantity?: number }).criticalQuantity != null) {
+      return String((asset as { criticalQuantity?: number }).criticalQuantity);
+    }
+    if ('originalData' in asset && (asset as Asset).originalData) {
+      const od = (asset as Asset).originalData as AmmunitionReadDto;
+      if (od?.criticalQuantity != null) return od.criticalQuantity.toString();
+    }
+    return '-';
+  }
+
   getBatchNo(asset: AssetUnion): string {
     if (!asset || !('batchNo' in asset)) return '-';
     return asset.batchNo || '-';

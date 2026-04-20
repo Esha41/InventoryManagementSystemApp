@@ -56,6 +56,7 @@ export function mapAmmunitionToAsset(
     readyForIssue: dto.readyForIssue ?? true,
     price: dto.price,
     minimumQuantity: dto.minimumQuantity,
+    criticalQuantity: dto.criticalQuantity,
     imageUrl: undefined, // Will be set in loadAmmunitionImages() using image ID from response
     originalData: dto
   };

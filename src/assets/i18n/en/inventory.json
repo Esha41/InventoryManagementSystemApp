@@ -220,6 +220,8 @@
     "pricePlaceholder": "Enter price (optional)",
     "minimumQuantity": "Minimum Quantity",
     "minimumQuantityPlaceholder": "Enter minimum quantity (optional)",
+    "criticalQuantity": "Critical Quantity",
+    "criticalQuantityPlaceholder": "Enter critical quantity (optional)",
     "enterAmmunitionName": "Enter ammunition name",
     "enterWeaponName": "Enter weapon name",
     "enterExplosiveName": "Enter explosive name",

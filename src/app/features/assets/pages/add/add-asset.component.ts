@@ -33,6 +33,7 @@ interface AssetForm {
   nsn: string;
   price: string;
   minimumQuantity: string;
+  criticalQuantity: string;
   unNumber: string;
   distribution: string;
   referenceNo: string;
@@ -145,6 +146,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
       nsn: '',
       price: '',
       minimumQuantity: '',
+      criticalQuantity: '',
       unNumber: '',
       distribution: '',
       referenceNo: '',
@@ -371,6 +373,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.assetForm.notes?.trim()) dto.notes = this.assetForm.notes.trim();
     if (this.assetForm.price) dto.price = parseFloat(this.assetForm.price);
     if (this.assetForm.minimumQuantity) dto.minimumQuantity = parseInt(this.assetForm.minimumQuantity);
+    if (this.assetForm.criticalQuantity) dto.criticalQuantity = parseInt(this.assetForm.criticalQuantity, 10);
     if (this.assetForm.isLinked) dto.isLinked = this.assetForm.isLinked === 'true';
 
     const formData = new FormData();

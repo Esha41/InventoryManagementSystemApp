@@ -16,6 +16,7 @@ export function createAssetEditForm(fb: FormBuilder): FormGroup {
     expiryDate: [null],
     price: [null as number | null],
     minimumQuantity: [null as number | null],
+    criticalQuantity: [null as number | null],
 
     // Ammunition
     bulletDiameter: [null as number | null],

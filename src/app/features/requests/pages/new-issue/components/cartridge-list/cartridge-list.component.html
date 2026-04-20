@@ -351,9 +351,9 @@
             (keydown)="$event.stopPropagation()" (input)="updatePendingQuantity($event)"
             class="w-24 px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent">
         </div>
-        <app-button variant="primary" (clicked)="confirmAdd(cartridge, $event)" [disabled]="verifyingAllowance"
+        <app-button variant="primary" (clicked)="confirmAdd(cartridge, $event)"
           class="bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand-dark)] disabled:opacity-50 disabled:cursor-not-allowed">
-          {{ verifyingAllowance ? ('common.loading' | translate) : ('common.confirm' | translate) }}
+          {{ 'common.confirm' | translate }}
         </app-button>
         <app-button *ngIf="cartridge.added" variant="outline" (clicked)="removePending(cartridge, $event)"
           class="border-[var(--color-border)] text-[var(--color-text)] hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/30">
@@ -370,10 +370,6 @@
       <div *ngIf="allowanceErrorMessage && pendingCartridgeId === cartridge.id"
         class="mt-3 bg-red-500/10 border border-red-500/20 text-red-500 text-sm rounded-lg p-3">
         {{ allowanceErrorMessage }}
-      </div>
-      <div *ngIf="verifyingAllowance && pendingCartridgeId === cartridge.id"
-        class="mt-3 text-sm text-[var(--color-text-muted)]">
-        {{ 'common.loading' | translate }}...
       </div>
     </div>
   </div>

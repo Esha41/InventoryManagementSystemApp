@@ -441,6 +441,10 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
     return this.fields.minimumQuantity();
   }
 
+  getCriticalQuantity(): string {
+    return this.fields.criticalQuantity();
+  }
+
   getExpiryDate(): string {
     return this.fields.expiryDate();
   }
