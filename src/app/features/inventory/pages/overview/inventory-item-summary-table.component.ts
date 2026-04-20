@@ -1,8 +1,11 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
+  OnDestroy,
+  OnInit,
   Output
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -15,15 +18,18 @@ import {
   Package,
   RefreshCw,
   ChevronDown,
-  ChevronUp,
-  Shield
+  ChevronUp
 } from 'lucide-angular';
 import { ItemInventorySummaryDto, ItemType } from '@models/inventory.model';
-import { AssetDto, AssetStatus, getAssetStatusLabel } from '@models/asset.model';
+import { ActiveTab } from './inventory-dashboard.helpers';
+import { AssetDto } from '@models/asset.model';
 import { LotDetailDto } from '@services/inventory.service';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { TranslationService } from '@services/translation.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-inventory-item-summary-table',
@@ -42,12 +48,23 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
       :host {
         display: block;
         width: 100%;
+        max-width: 100%;
         min-width: 0;
+        box-sizing: border-box;
+      }
+      .item-summary-table-scroll {
+        box-sizing: border-box;
+      }
+      .item-summary-main-table {
+        width: 100%;
+        min-width: 100%;
+        box-sizing: border-box;
       }
     `
   ]
 })
-export class InventoryItemSummaryTableComponent {
+export class InventoryItemSummaryTableComponent implements OnInit, OnDestroy {
+  private readonly destroy$ = new Subject<void>();
   @Input({ required: true }) rows!: ItemInventorySummaryDto[];
   @Input() itemSortColumn: string | null = null;
   @Input() itemSortDirection: 'asc' | 'desc' = 'asc';
@@ -81,6 +98,8 @@ export class InventoryItemSummaryTableComponent {
   @Input() sumReservedQtyFiltered = 0;
   @Input() sumRemainingQtyFiltered = 0;
   @Input() sumLotsFiltered = 0;
+  /** Drives weapon vs ammunition/explosive column layout (matches warehouse inventory summary). */
+  @Input() activeTab: ActiveTab = 'all';
 
   @Output() readonly itemSort = new EventEmitter<string>();
   @Output() readonly rowToggle = new EventEmitter<ItemInventorySummaryDto>();
@@ -98,10 +117,30 @@ export class InventoryItemSummaryTableComponent {
   readonly RefreshCw = RefreshCw;
   readonly ChevronDown = ChevronDown;
   readonly ChevronUp = ChevronUp;
-  readonly Shield = Shield;
   readonly ItemType = ItemType;
 
-  constructor(private readonly translate: TranslateService) {}
+  constructor(
+    private readonly translate: TranslateService,
+    private readonly translationService: TranslationService,
+    private readonly cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
+    this.translate.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  get isRTL(): boolean {
+    return this.translationService?.isRTL() ?? false;
+  }
+
+  get tableDir(): 'rtl' | 'ltr' {
+    return this.isRTL ? 'rtl' : 'ltr';
+  }
 
   onItemSort(column: string): void { this.itemSort.emit(column); }
   onLotSort(column: string): void { this.lotSort.emit(column); }
@@ -118,6 +157,21 @@ export class InventoryItemSummaryTableComponent {
 
   isWeaponItem(item: ItemInventorySummaryDto): boolean {
     return item.itemType === ItemType.Weapon;
+  }
+
+  /** Lot-style quantity columns apply to ammunition / explosives only (not the Weapons tab). */
+  get showLotQuantityColumns(): boolean {
+    return this.activeTab !== 'weapon';
+  }
+
+  /** Main grid column count for expanded panel colspan. */
+  get mainTableColumnCount(): number {
+    return this.showLotQuantityColumns ? 9 : 5;
+  }
+
+  /** In "All" tab, weapon rows still hide per-row lot metrics like warehouse. */
+  showLotMetricForRow(item: ItemInventorySummaryDto): boolean {
+    return this.showLotQuantityColumns && !this.isWeaponItem(item);
   }
 
   isExpandedLoading(item: ItemInventorySummaryDto): boolean {
@@ -163,45 +217,25 @@ export class InventoryItemSummaryTableComponent {
     }
   }
 
-  getAssetStatusBadgeClass(status?: AssetStatus): string {
-    const base = 'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border';
-    switch (status) {
-      case AssetStatus.ReadyToIssue:
-        return `${base} border-[color-mix(in_srgb,var(--color-success)_35%,var(--color-border))] bg-[color-mix(in_srgb,var(--color-success)_14%,var(--color-background))] text-[var(--color-success)]`;
-      case AssetStatus.Assigned:
-        return `${base} border-[color-mix(in_srgb,var(--color-info)_35%,var(--color-border))] bg-[color-mix(in_srgb,var(--color-info)_14%,var(--color-background))] text-[var(--color-info)]`;
-      case AssetStatus.InMaintenance:
-        return `${base} border-[color-mix(in_srgb,var(--color-warning)_35%,var(--color-border))] bg-[color-mix(in_srgb,var(--color-warning)_14%,var(--color-background))] text-[var(--color-warning)]`;
-      case AssetStatus.UnserviceableRepairable:
-      case AssetStatus.UnserviceableUnrepairable:
-      case AssetStatus.AwaitingDisposal:
-      case AssetStatus.Disposed:
-        return `${base} border-[color-mix(in_srgb,var(--color-error)_35%,var(--color-border))] bg-[color-mix(in_srgb,var(--color-error)_14%,var(--color-background))] text-[var(--color-error)]`;
-      default:
-        return `${base} border-[var(--color-border)] bg-[var(--color-background-soft)] text-[var(--color-text-muted)]`;
-    }
-  }
-
-  getAssetStatusLabel(status?: AssetStatus): string {
-    return getAssetStatusLabel(status);
-  }
-
   getAssetDepotName(asset: AssetDto): string {
     if (!asset.depot) return '—';
     return getLocalizedName(asset.depot, getCurrentLang(this.translate)) || asset.depot.nameEn || asset.depot.nameAr || '—';
+  }
+
+  getAssetAssigneeName(asset: AssetDto): string {
+    if (!asset.custodian) return '—';
+    return (
+      getLocalizedName(asset.custodian, getCurrentLang(this.translate)) ||
+      asset.custodian.nameEn ||
+      asset.custodian.nameAr ||
+      '—'
+    );
   }
 
   getRemainingQtyClass(remaining: number, total: number): string {
     if (remaining === 0) return 'text-[var(--color-error)] font-bold';
     if (total > 0 && remaining / total < 0.2) return 'text-[var(--color-warning)] font-semibold';
     return 'text-[var(--color-success)]';
-  }
-
-  formatCaliberDisplay(item: ItemInventorySummaryDto): string {
-    const c = (item.caliber || '').trim();
-    if (!c) return '—';
-    const u = (item.caliberUnitName || '').trim();
-    return u ? `${c} (${u})` : c;
   }
 
   formatExpiryDate(date?: Date | string): string {
@@ -211,10 +245,6 @@ export class InventoryItemSummaryTableComponent {
       if (isNaN(d.getTime())) return '—';
       return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
     } catch { return '—'; }
-  }
-
-  formatDate(date?: Date | string): string {
-    return this.formatExpiryDate(date);
   }
 
   getExpiryClass(date?: Date | string): string {

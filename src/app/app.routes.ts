@@ -63,6 +63,18 @@ export const routes: Routes = [
         data: { permissions: ['lowStockReportPage'] }
       },
       {
+        path: 'inventory-dashboard/draft-supplies',
+        loadComponent: () => import('@inventory/pages/draft-supplies/draft-supplies.component').then(m => m.DraftSuppliesComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['InventoryDashboard'] }
+      },
+      {
+        path: 'inventory-dashboard/orders-awaiting-fulfillment',
+        loadComponent: () => import('@inventory/pages/orders-awaiting-fulfillment/orders-awaiting-fulfillment.component').then(m => m.OrdersAwaitingFulfillmentComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['InventoryDashboard'] }
+      },
+      {
         path: 'admin-dashboard',
         loadComponent: () => import('@admin/pages/dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent),
         canActivate: [permissionGuard],
