@@ -365,10 +365,10 @@
                             <div class="relative flex items-center gap-2">
                                 <input type="file" #weaponAddFileInput (change)="onAttachmentChange($event)" multiple
                                     accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" class="hidden">
-                                <label (click)="weaponAddFileInput.click()"
-                                    class="px-4 py-2 rounded-lg border-0 text-sm font-semibold bg-[var(--color-brand)]/10 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20 cursor-pointer transition-all">
+                                <button type="button" (click)="weaponAddFileInput.click()"
+                                    class="px-4 py-2 rounded-lg text-sm font-medium bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand)]/90 cursor-pointer transition-all">
                                     {{ 'common.chooseFiles' | translate }}
-                                </label>
+                                </button>
                                 <span class="text-sm text-[var(--color-text-muted)] flex-1">
                                     <span *ngIf="!deliveryReceiptFiles.length">{{ 'common.noFileChosen' | translate }}</span>
                                     <span *ngIf="deliveryReceiptFiles.length">{{ deliveryReceiptFiles.length }} {{ deliveryReceiptFiles.length === 1 ? ('common.file' | translate) : ('common.files' | translate) }}</span>
@@ -660,10 +660,10 @@
                             <div class="relative flex items-center gap-2">
                                 <input type="file" #bulkCommonFileInput (change)="onAttachmentChange($event)" multiple
                                     accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" class="hidden">
-                                <label (click)="bulkCommonFileInput.click()"
-                                    class="px-4 py-2 rounded-lg border-0 text-sm font-semibold bg-[var(--color-brand)]/10 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20 cursor-pointer transition-all">
+                                <button type="button" (click)="bulkCommonFileInput.click()"
+                                    class="px-4 py-2 rounded-lg text-sm font-medium bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand)]/90 cursor-pointer transition-all">
                                     {{ 'common.chooseFiles' | translate }}
-                                </label>
+                                </button>
                                 <span class="text-sm text-[var(--color-text-muted)] flex-1">
                                     <span *ngIf="!deliveryReceiptFiles.length">{{ 'common.noFileChosen' | translate }}</span>
                                     <span *ngIf="deliveryReceiptFiles.length">{{ deliveryReceiptFiles.length }} {{ deliveryReceiptFiles.length === 1 ? ('common.file' | translate) : ('common.files' | translate) }}</span>
