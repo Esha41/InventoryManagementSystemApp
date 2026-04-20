@@ -383,6 +383,10 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
         }
       }
     });
+
+    if (this.selectedFiles.length === 0) {
+      this.errors['selectedFiles'] = this.translate.instant('discardRequest.errors.filesRequired');
+    }
   }
 
   toggleItemDropdown(index: number): void {
@@ -677,6 +681,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
       // Add only valid files to the selection
       if (validFiles.length > 0) {
         this.selectedFiles = [...this.selectedFiles, ...validFiles];
+        this.clearError('selectedFiles');
       }
 
       this.fileInputElement = input;
@@ -687,6 +692,9 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
 
   removeFile(index: number): void {
     removeFile(this.selectedFiles, index, this.fileInputElement);
+    if (this.selectedFiles.length > 0) {
+      this.clearError('selectedFiles');
+    }
   }
 
   getFileSize = getFileSizeFromFile;

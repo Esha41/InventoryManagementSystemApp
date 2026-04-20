@@ -160,19 +160,18 @@
         <!-- File Upload -->
         <div>
           <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-            {{ 'newIssueRequest.attachments' | translate }} <span class="text-[var(--color-text-muted)] font-normal">({{
-              'common.optional' | translate }})</span>
+            {{ 'newIssueRequest.attachments' | translate }} <span class="text-red-500">*</span>
           </label>
           <div class="space-y-3">
             <!-- File Input -->
-            <div class="relative flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-3">
               <input type="file" #fileInput (change)="onFileSelected($event)" multiple
                 accept=".jpg,.jpeg,.png,.pdf,.xlsx,.docx" class="hidden">
-              <label (click)="fileInput.click()"
-                class="px-3 py-1 rounded border-0 text-sm font-semibold bg-[var(--color-brand)]/10 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20 cursor-pointer transition-all">
+              <button type="button" (click)="fileInput.click()"
+                class="px-4 py-2 rounded-lg text-sm font-medium bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand)]/90 cursor-pointer transition-all">
                 {{ 'common.chooseFiles' | translate }}
-              </label>
-              <span class="text-sm text-[var(--color-text-muted)] flex-1">
+              </button>
+              <span class="text-sm text-[var(--color-text-muted)] truncate max-w-xs">
                 <span *ngIf="selectedFiles.length === 0">{{ 'common.noFileChosen' | translate }}</span>
                 <span *ngIf="selectedFiles.length > 0">{{ selectedFiles.length }} {{ selectedFiles.length === 1 ?
                   ('common.file' | translate) : ('common.files' | translate) }}</span>
@@ -200,6 +199,9 @@
             <!-- Helper Text -->
             <p class="text-xs text-[var(--color-text-muted)]">
               {{ 'newIssueRequest.attachmentsHint' | translate }}
+            </p>
+            <p *ngIf="hasError('selectedFiles')" class="text-xs text-red-600">
+              {{ formErrors.selectedFiles | translate }}
             </p>
             <p class="text-xs text-[var(--color-text-muted)] font-medium">
               {{ 'common.maximumFileSize' | translate: {size: MAX_FILE_SIZE_MB} }}
@@ -300,7 +302,7 @@
         <!-- Comments -->
         <div>
           <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.comments' |
-            translate }} <span class="text-red-500">*</span></label>
+            translate }}</label>
           <textarea name="requesterComments" [ngModel]="requesterComments"
             (ngModelChange)="onRequesterCommentsChange($event)" rows="4"
             placeholder="{{ 'newIssueRequest.commentsPlaceholder' | translate }}"

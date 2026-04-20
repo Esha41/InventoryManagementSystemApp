@@ -143,7 +143,7 @@
     "selectedItems": "المواد المحددة",
     "orderDocument": "وثيقة الطلب",
     "attachments": "المرفقات",
-    "attachmentsHint": "حدد ملفاً واحداً أو أكثر للمرفق. الملفات اختيارية.",
+    "attachmentsHint": "حدد ملفاً واحداً أو أكثر للمرفق. مطلوب ملف واحد على الأقل.",
     "view": "عرض",
     "reserveDetails": "تفاصيل الاحتياطي",
     "showingForSelectedItems": "عرض للمواد المحددة",
@@ -165,6 +165,7 @@
       "invalidMilitaryTime": "تنسيق الوقت العسكري غير صحيح. يرجى استخدام تنسيق HHMM (مثال: 1430).",
       "orderPriorityRequired": "أولوية الطلب مطلوبة.",
       "commentsRequired": "التعليقات مطلوبة.",
+      "attachmentsRequired": "مطلوب ملف مرفق واحد على الأقل.",
       "required": "هذا الحقل مطلوب.",
       "correctErrors": "يرجى تصحيح الحقول المحددة قبل المتابعة.",
       "errors": {
@@ -214,6 +215,7 @@
       "failedToLoadRequestPurposes": "فشل تحميل أغراض الطلب",
       "failedToLoadItems": "فشل تحميل المواد",
       "failedToLoadUsers": "فشل تحميل المستخدمين",
+      "filesRequired": "مطلوب ملف مرفق واحد على الأقل",
       "fileSizeExceeded": "حجم الملف يتجاوز الحد الأقصى المسموح به وهو",
       "invalidFileFormat": "الملف \"{{fileName}}\" له تنسيق غير صالح. التنسيقات المسموحة: JPEG، JPG، PNG، PDF، XLSX، DOCX."
     },
@@ -257,6 +259,7 @@
       "failedToLoadItems": "فشل تحميل المواد",
       "failedToLoadUsers": "فشل تحميل المستخدمين",
       "correctFormErrors": "يرجى تصحيح أخطاء النموذج",
+      "filesRequired": "مطلوب ملف مرفق واحد على الأقل",
       "fileSizeExceeded": "حجم الملف يتجاوز الحد الأقصى المسموح به وهو",
       "invalidFileFormat": "الملف \"{{fileName}}\" له تنسيق غير صالح. التنسيقات المسموحة: JPEG، JPG، PNG، PDF، XLSX، DOCX."
     },

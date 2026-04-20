@@ -144,7 +144,8 @@ export class UsageFormComponent {
     usageDateTo: null,
     usageTimeTo: null,
     orderPriority: null,
-    requesterComments: null
+    requesterComments: null,
+    selectedFiles: null
   };
 
   formErrors: UsageFormErrors = { ...this.defaultErrors };
@@ -286,14 +287,6 @@ export class UsageFormComponent {
     this.requesterCommentsChange.emit(value);
 
     this.clearError('requesterComments');
-
-    if (this.hasAttemptedSubmit) {
-      if (!value || value.trim().length === 0) {
-        this.formErrors.requesterComments = 'newIssueRequest.validation.commentsRequired';
-      } else {
-        this.clearError('requesterComments');
-      }
-    }
   }
 
   onFileSelected(event: Event): void {
@@ -322,6 +315,7 @@ export class UsageFormComponent {
       if (validFiles.length > 0) {
         this.selectedFiles = [...this.selectedFiles, ...validFiles];
         this.filesChange.emit(this.selectedFiles);
+        this.clearError('selectedFiles');
       }
 
       // Reset input to allow selecting the same files again if needed
@@ -332,6 +326,9 @@ export class UsageFormComponent {
   removeFile(index: number): void {
     removeFile(this.selectedFiles, index);
     this.filesChange.emit(this.selectedFiles);
+    if (this.selectedFiles.length > 0) {
+      this.clearError('selectedFiles');
+    }
   }
 
   getFileSize = getFileSizeFromFile;
@@ -411,8 +408,8 @@ export class UsageFormComponent {
       isValid = false;
     }
 
-    if (!this.requesterComments || this.requesterComments.trim().length === 0) {
-      this.formErrors.requesterComments = 'newIssueRequest.validation.commentsRequired';
+    if (!this.selectedFiles || this.selectedFiles.length === 0) {
+      this.formErrors.selectedFiles = 'newIssueRequest.validation.attachmentsRequired';
       isValid = false;
     }
 
@@ -452,4 +449,5 @@ type UsageFormErrors = {
   usageTimeTo: string | null;
   orderPriority: string | null;
   requesterComments: string | null;
+  selectedFiles: string | null;
 };

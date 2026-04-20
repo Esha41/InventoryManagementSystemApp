@@ -511,6 +511,10 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
       }
     });
 
+    if (this.selectedFiles.length === 0) {
+      this.errors['selectedFiles'] = this.translate.instant('returnRequest.errors.filesRequired');
+    }
+
     if (Object.keys(this.errors).length > 0) {
       return;
     }
@@ -762,6 +766,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
       // Add only valid files to the selection
       if (validFiles.length > 0) {
         this.selectedFiles = [...this.selectedFiles, ...validFiles];
+        this.clearError('selectedFiles');
       }
 
       this.fileInputElement = input;
@@ -772,6 +777,9 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
 
   removeFile(index: number): void {
     removeFile(this.selectedFiles, index, this.fileInputElement);
+    if (this.selectedFiles.length > 0) {
+      this.clearError('selectedFiles');
+    }
   }
 
   getFileSize = getFileSizeFromFile;

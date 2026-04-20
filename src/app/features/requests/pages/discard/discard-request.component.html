@@ -153,8 +153,7 @@
           <!-- Attachments -->
           <div class="flex flex-col lg:flex-row lg:items-start lg:gap-8 gap-2">
             <label class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
-              {{ 'common.attachments' | translate }}
-              <span class="text-xs text-[var(--color-text-muted)]">({{ 'common.optional' | translate }})</span>
+              {{ 'common.attachments' | translate }} <span class="text-[var(--color-error)]">*</span>
             </label>
             <div class="flex-1">
               <div class="space-y-3">
@@ -188,8 +187,11 @@
                 </div>
 
                 <div class="space-y-1">
-                  <p class="text-xs text-[var(--color-text-muted)]">
-                    {{ 'common.attachmentsHintOptional' | translate }}
+                  <p *ngIf="!hasError('selectedFiles')" class="text-xs text-[var(--color-text-muted)]">
+                    {{ 'discardRequest.errors.filesRequired' | translate }}
+                  </p>
+                  <p *ngIf="hasError('selectedFiles')" class="text-xs font-medium text-[var(--color-error)]">
+                    {{ getError('selectedFiles') }}
                   </p>
                   <p class="text-xs text-[var(--color-text-muted)] font-medium">
                     {{ 'common.maximumFileSize' | translate: {size: MAX_FILE_SIZE_MB} }}
