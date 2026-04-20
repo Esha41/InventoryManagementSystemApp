@@ -12,6 +12,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@services/notification.service';
 import { ThemeService } from '@services/theme.service';
 import { UserDelegationService } from '@services/user-delegation.service';
+import { SwitchRoleModalService } from '@services/switch-role-modal.service';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 @Component({
@@ -50,7 +51,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private translateService: TranslateService,
     public themeService: ThemeService,
-    private delegationService: UserDelegationService
+    private delegationService: UserDelegationService,
+    private switchRoleModal: SwitchRoleModalService
   ) { }
 
   ngOnInit(): void {
@@ -194,7 +196,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   navigateToSwitchRole(): void {
-    void this.router.navigate(['/auth/select-role'], { queryParams: { switch: '1' } });
+    this.switchRoleModal.open();
     this.closeUserMenu();
   }
 

@@ -80,8 +80,9 @@
               </div>
             </div>
             <button *ngIf="showSwitchRole()" type="button" (click)="navigateToSwitchRole()"
-              class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg border border-[var(--color-brand)]/40 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 transition-colors flex-shrink-0">
-              {{ 'profile.switchRoleAction' | translate }}
+              class="inline-flex items-center gap-2.5 px-4 py-2.5 text-base font-semibold bg-gradient-to-r from-[var(--color-brand)] to-[var(--color-brand-dark)] hover:from-[var(--color-brand-dark)] hover:to-[var(--color-brand)] text-white rounded-lg transition-all shadow-custom-sm hover:shadow-custom-md flex-shrink-0 leading-snug">
+              <lucide-angular [img]="Users" class="h-5 w-5 shrink-0"></lucide-angular>
+              <span>{{ 'profile.switchRoleAction' | translate }}</span>
             </button>
           </div>
           <ul *ngIf="getRoleDetails().length > 0" class="space-y-2" role="list">

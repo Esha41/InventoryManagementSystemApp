@@ -3,28 +3,23 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule, Users } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { StorageService } from '@services/storage.service';
-import { UserContextService } from '@services/user-context.service';
+import { SwitchRoleModalService } from '@services/switch-role-modal.service';
 import { RoleForSelection } from '@models/auth.model';
 import { getDefaultLandingUrl } from '@core/utils/default-landing-route.utils';
-import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { RoleSelectionPanelComponent } from '@auth/components/role-selection-panel/role-selection-panel.component';
 
 @Component({
   selector: 'app-select-role',
   standalone: true,
-  imports: [CommonModule, TranslateModule, LucideAngularModule],
+  imports: [CommonModule, TranslateModule, RoleSelectionPanelComponent],
   templateUrl: './select-role.component.html',
-  styleUrls: ['./select-role.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SelectRoleComponent implements OnInit {
-  readonly Users = Users;
-
   roles: RoleForSelection[] = [];
-  isSwitchMode = false;
   isLoading = false;
   error = '';
 
@@ -33,7 +28,7 @@ export class SelectRoleComponent implements OnInit {
     private route: ActivatedRoute,
     private backendAuth: BackendAuthService,
     private storageService: StorageService,
-    private userContextService: UserContextService,
+    private switchRoleModal: SwitchRoleModalService,
     private translate: TranslateService,
     private cdr: ChangeDetectorRef
   ) {
@@ -41,48 +36,39 @@ export class SelectRoleComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.isSwitchMode = this.route.snapshot.queryParamMap.get('switch') === '1';
-    if (this.isSwitchMode) {
-      this.userContextService.getCurrentUserDetails(true).subscribe({
-        next: details => {
-          this.roles = (details?.roles ?? []).map(r => ({
-            id: r.id,
-            name: r.name,
-            nameAr: r.nameAr
-          }));
-          this.cdr.markForCheck();
-        },
-        error: (err: unknown) => {
-          this.error = ErrorHandler.extractAndTranslateErrorMessage(
-            err,
-            this.translate.instant('auth.selectRole.errors.loadRolesFailed'),
-            this.translate
-          );
-          this.cdr.markForCheck();
-        }
-      });
-    } else {
-      const raw = this.storageService.get<string>('available_roles_json');
-      try {
-        this.roles = raw ? (JSON.parse(raw) as RoleForSelection[]) : [];
-      } catch {
-        this.roles = [];
+    const isSwitchDeeplink = this.route.snapshot.queryParamMap.get('switch') === '1';
+    if (isSwitchDeeplink) {
+      if (this.backendAuth.isAuthenticated()) {
+        void this.router.navigate(['/'], { replaceUrl: true }).then(() => {
+          this.switchRoleModal.open();
+        });
+      } else {
+        void this.router.navigate(['/auth/login']);
       }
-      if (!this.roles.length) {
-        this.error = this.translate.instant('auth.selectRole.errors.noRoles');
-      }
+      return;
     }
+
+    const raw = this.storageService.get<string>('available_roles_json');
+    try {
+      this.roles = raw ? (JSON.parse(raw) as RoleForSelection[]) : [];
+    } catch {
+      this.roles = [];
+    }
+    if (!this.roles.length) {
+      this.error = this.translate.instant('auth.selectRole.errors.noRoles');
+    }
+    this.cdr.markForCheck();
   }
 
   select(roleId: string): void {
     this.isLoading = true;
     this.error = '';
     this.cdr.markForCheck();
-    this.backendAuth.selectRole(roleId, { switchWhileLoggedIn: this.isSwitchMode }).subscribe({
+    this.backendAuth.selectRole(roleId, { switchWhileLoggedIn: false }).subscribe({
       next: () => {
         this.isLoading = false;
         this.cdr.markForCheck();
-        this.router.navigateByUrl(getDefaultLandingUrl(this.backendAuth));
+        void this.router.navigateByUrl(getDefaultLandingUrl(this.backendAuth));
       },
       error: (err: unknown) => {
         this.isLoading = false;
@@ -96,17 +82,9 @@ export class SelectRoleComponent implements OnInit {
     });
   }
 
-  roleLabel(r: RoleForSelection): string {
-    return getLocalizedName({ name: r.name, nameAr: r.nameAr }, getCurrentLang(this.translate)) || r.name;
-  }
-
   cancel(): void {
-    if (this.isSwitchMode) {
-      void this.router.navigate(['/']);
-    } else {
-      this.storageService.remove('role_selection_token');
-      this.storageService.remove('available_roles_json');
-      void this.router.navigate(['/auth/login']);
-    }
+    this.storageService.remove('role_selection_token');
+    this.storageService.remove('available_roles_json');
+    void this.router.navigate(['/auth/login']);
   }
 }

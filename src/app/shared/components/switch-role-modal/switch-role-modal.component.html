@@ -1,0 +1,22 @@
+<app-modal
+  [isOpen]="isOpen"
+  [title]="'profile.menu.switchRole' | translate"
+  [size]="'sm'"
+  [showFooter]="false"
+  [showCloseButton]="true"
+  [scrollable]="true"
+  bodyMaxHeight="min(70vh, 28rem)"
+  (closed)="onModalClosed()"
+>
+  <app-role-selection-panel
+    layout="compact"
+    hintKey="auth.selectRole.hintSwitchRole"
+    [roles]="roles"
+    [listLoading]="listLoading"
+    [submitLoading]="submitLoading"
+    [error]="error"
+    [isPostLoginFlow]="false"
+    (rolePick)="onRolePick($event)"
+    (cancel)="onPanelCancel()"
+  />
+</app-modal>

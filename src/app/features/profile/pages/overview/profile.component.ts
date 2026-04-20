@@ -21,6 +21,7 @@ import { DelegationListComponent } from './delegation-list/delegation-list.compo
 import { ToastService } from '@services/toast.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { OnboardingTourService } from '@features/onboarding/services/onboarding-tour.service';
+import { SwitchRoleModalService } from '@services/switch-role-modal.service';
 
 @Component({
   selector: 'app-profile',
@@ -66,7 +67,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
     private toastService: ToastService,
     private onboardingTourService: OnboardingTourService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private switchRoleModal: SwitchRoleModalService
   ) { }
 
   ngOnInit(): void {
@@ -235,7 +237,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   }
 
   navigateToSwitchRole(): void {
-    void this.router.navigate(['/auth/select-role'], { queryParams: { switch: '1' } });
+    this.switchRoleModal.open();
   }
 
   getProfileEmail(): string {
