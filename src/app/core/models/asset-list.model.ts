@@ -70,10 +70,44 @@ export interface Asset {
 }
 
 /**
+ * Per-column text/numeric filters (AND with quick search and dropdowns). Sent to the API where supported.
+ */
+export interface AssetColumnFilters {
+  name: string;
+  itemNo: string;
+  partNo: string;
+  nsn: string;
+  caliber: string;
+  /** Weapon: weapon type label (partial match EN/AR) */
+  weaponType: string;
+  armNumber: string;
+  unNumber: string;
+}
+
+export function createEmptyColumnFilters(): AssetColumnFilters {
+  return {
+    name: '',
+    itemNo: '',
+    partNo: '',
+    nsn: '',
+    caliber: '',
+    weaponType: '',
+    armNumber: '',
+    unNumber: ''
+  };
+}
+
+export function hasAnyColumnFilter(filters: AssetColumnFilters): boolean {
+  return Object.values(filters).some(v => (v ?? '').trim().length > 0);
+}
+
+/**
  * Filter state for asset list
  */
 export interface AssetFilterState {
   searchTerm: string;
+  /** Additional filters for individual table columns (asset master–style) */
+  columnFilters: AssetColumnFilters;
   // Ammunition filters
   selectedCaseType: string | null;
   /** Ammunition: single primary purpose lookup id; filtered client-side (junction / legacy scalar). */

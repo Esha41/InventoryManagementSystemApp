@@ -24,7 +24,8 @@ import {
   AssetSortState,
   AssetPaginationState,
   AssetModalState,
-  AssetImageState
+  AssetImageState,
+  createEmptyColumnFilters
 } from '@models/asset-list.model';
 import { LookupItem } from '@models/lookup.model';
 import { AssetFilterOptions, AssetLookups } from '../models/asset-filter-options.model';
@@ -346,6 +347,14 @@ export class AssetListFacade {
 
   clearFilters(): void {
     this._filterState.next(resetFilterState(this._filterState.value));
+    this.onFilterChange();
+  }
+
+  clearColumnFilters(): void {
+    this._filterState.next({
+      ...this._filterState.value,
+      columnFilters: createEmptyColumnFilters()
+    });
     this.onFilterChange();
   }
 

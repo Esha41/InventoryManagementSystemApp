@@ -1,4 +1,11 @@
-import { AssetFilterState, AssetSortState, AssetPaginationState, AssetModalState, AssetImageState } from '../models/asset-list.model';
+import {
+  AssetFilterState,
+  AssetSortState,
+  AssetPaginationState,
+  AssetModalState,
+  AssetImageState,
+  createEmptyColumnFilters
+} from '../models/asset-list.model';
 
 /**
  * Initial filter state
@@ -6,6 +13,7 @@ import { AssetFilterState, AssetSortState, AssetPaginationState, AssetModalState
 export function createInitialFilterState(): AssetFilterState {
   return {
     searchTerm: '',
+    columnFilters: createEmptyColumnFilters(),
     // Ammunition filters
     selectedCaseType: null,
     selectedPrimaryPurposeId: null,

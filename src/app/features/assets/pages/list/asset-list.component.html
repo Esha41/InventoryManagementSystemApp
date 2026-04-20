@@ -27,7 +27,8 @@
     <div class="mb-6">
       <app-asset-filter-bar data-onboarding="asset-list-filters" [activeTab]="activeTab" [filterState]="filterState" [isRTL]="isRTL"
       [filterOptions]="filterOptions"
-      (filterChange)="onFilterChange()" (searchTriggered)="onFilterChange()" (searchCleared)="onSearchCleared()" (clearFilters)="clearFilters()">
+      (filterChange)="onFilterChange()" (searchTriggered)="onFilterChange()" (searchCleared)="onSearchCleared()" (clearFilters)="clearFilters()"
+      (columnFiltersClear)="onColumnFiltersClear()">
       </app-asset-filter-bar>
     </div>
 

@@ -7,10 +7,10 @@ import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, Change
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, Search, FilterX, X } from 'lucide-angular';
+import { LucideAngularModule, Search, FilterX, X, ChevronDown } from 'lucide-angular';
 import { CardComponent } from '@components/card/card.component';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
-import { AssetType, AssetFilterState } from '@models/asset-list.model';
+import { AssetType, AssetFilterState, hasAnyColumnFilter } from '@models/asset-list.model';
 import { AssetFilterOptions } from '../../models/asset-filter-options.model';
 
 @Component({
@@ -40,10 +40,14 @@ export class AssetFilterBarComponent {
   @Output() clearFilters = new EventEmitter<void>();
   @Output() searchTriggered = new EventEmitter<string>();
   @Output() searchCleared = new EventEmitter<void>();
+  @Output() columnFiltersClear = new EventEmitter<void>();
 
   readonly Search = Search;
   readonly FilterX = FilterX;
   readonly X = X;
+  readonly ChevronDown = ChevronDown;
+
+  showMoreFilters = false;
 
   onFilterChange(): void {
     this.filterChange.emit();
@@ -61,5 +65,31 @@ export class AssetFilterBarComponent {
 
   onClearFilters(): void {
     this.clearFilters.emit();
+  }
+
+  toggleMoreFilters(): void {
+    this.showMoreFilters = !this.showMoreFilters;
+    this.cdr.markForCheck();
+  }
+
+  columnFiltersActive(): boolean {
+    const cf = this.filterState?.columnFilters;
+    return cf ? hasAnyColumnFilter(cf) : false;
+  }
+
+  applyColumnFilters(): void {
+    this.filterChange.emit();
+    this.cdr.markForCheck();
+  }
+
+  onColumnFilterKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      this.applyColumnFilters();
+    }
+  }
+
+  onClearColumnFilters(): void {
+    this.columnFiltersClear.emit();
   }
 }

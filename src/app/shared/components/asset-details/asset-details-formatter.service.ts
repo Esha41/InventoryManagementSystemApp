@@ -57,8 +57,8 @@ export class AssetDetailsFormatterService {
           : '-'
       ),
       ammunitionCaliber: computed(() =>
-        isAmmunition()
-          ? this.propertyAccessor.getAmmunitionCaliber(asset() as AmmunitionReadDto) || '-'
+        isAmmunition() || isExplosive()
+          ? this.propertyAccessor.getAmmunitionCaliber(asset() as AmmunitionReadDto | ExplosiveDto) || '-'
           : '-'
       ),
       bulletDiameter: computed(() =>
