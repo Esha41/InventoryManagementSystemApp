@@ -20,6 +20,7 @@ export interface CreateOrderDto {
     reason: string;
     priority: number;
     notes?: string;
+    requestPurposeNotes?: string;
     departmentId: number;
     requestTypeId?: number | null;
     requesterId?: string | null;
@@ -55,6 +56,7 @@ export interface OrderDto {
     priority: number | string; // Can be number (1, 2, 3) or string ('High', 'Medium', 'Low')
     status: number | string; // Can be number (1, 2, 3, 4) or string ('New', 'UnderProcess', 'Approved', 'Rejected')
     notes?: string;
+    requestPurposeNotes?: string;
     departmentId: number;
     requesterId?: string | null;
     recieverId?: string | null;

@@ -31,6 +31,7 @@ export class DiscardService {
     if (dto.reason) formData.append('Reason', dto.reason);
     formData.append('Priority', dto.priority.toString());
     if (dto.notes) formData.append('Notes', dto.notes);
+    if (dto.requestPurposeNotes) formData.append('RequestPurposeNotes', dto.requestPurposeNotes);
     formData.append('DepartmentId', dto.departmentId.toString());
     if (dto.requesterId) formData.append('RequesterId', dto.requesterId);
     formData.append('RequestPurposeId', dto.requestPurposeId.toString());

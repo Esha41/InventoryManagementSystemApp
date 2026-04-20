@@ -182,6 +182,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy, AfterViewIni
 
   usageFormData: UsageFormData = {
     usePurpose: '',
+    requestPurposeNotes: '',
     usageLocation: '',
     numberOfOfficers: null,
     numberOfOtherRanks: null,
@@ -1050,6 +1051,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy, AfterViewIni
     this.fromReserve = 'Yes'; // Reset to default
     this.usageFormData = {
       usePurpose: '',
+      requestPurposeNotes: '',
       usageLocation: '',
       numberOfOfficers: null,
       numberOfOtherRanks: null,

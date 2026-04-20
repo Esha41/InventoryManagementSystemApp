@@ -13,6 +13,7 @@ export interface OrderSubmissionData {
   selectedEntries: Array<{ id: number; quantity: number }>;
   selectedRequestPurposeId: number | null;
   usePurpose: string;
+  requestPurposeNotes: string;
   usageDateFrom: string;
   usageTimeFrom: string;
   usageDateTo: string;
@@ -168,6 +169,7 @@ export class OrderSubmissionService {
       requestNo: orderNumber,
       reason: getValueOrDefault(data.usePurpose, data.orderType || 'New Order Issue'),
       notes: getValueOrDefault(data.requesterComments, ''),
+      requestPurposeNotes: getValueOrDefault(data.requestPurposeNotes, ''),
       departmentId: data.departmentId,
       requestTypeId: data.defaultRequestTypeId,
       requesterId: null,

@@ -51,6 +51,7 @@
     "requestDate": "Request Date",
     "department": "Department",
     "requestPurpose": "Request Purpose",
+    "requestPurposeNotes": "Request Purpose Notes",
     "usagePurposes": {
       "Training Order": "Training Order",
       "Operation Order": "Operation Order",

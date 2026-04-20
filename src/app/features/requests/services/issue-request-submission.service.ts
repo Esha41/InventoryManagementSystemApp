@@ -51,6 +51,7 @@ export class IssueRequestSubmissionService {
       selectedEntries: cartridgeState.selectedEntries,
       selectedRequestPurposeId: requestPurposeState.selectedRequestPurposeId,
       usePurpose: usageFormData.usePurpose,
+      requestPurposeNotes: usageFormData.requestPurposeNotes,
       usageDateFrom: usageFormData.usageDateFrom,
       usageTimeFrom: usageFormData.usageTimeFrom,
       usageDateTo: usageFormData.usageDateTo,

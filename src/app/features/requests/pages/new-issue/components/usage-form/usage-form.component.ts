@@ -98,6 +98,7 @@ export class UsageFormComponent {
   @Input() fromReserve: string = 'Yes';
   @Input() usePurpose: string = '';
   @Input() selectedUsePurposeId: number | null = null;
+  @Input() requestPurposeNotes: string = '';
   @Input() usePurposeOptions: DropdownOption<number>[] = [];
   @Input() usageLocation: string = '';
   @Input() numberOfOfficers: number | null = null;
@@ -131,6 +132,7 @@ export class UsageFormComponent {
   @Output() usageTimeFromChange = new EventEmitter<string>();
   @Output() usageDateToChange = new EventEmitter<string>();
   @Output() usageTimeToChange = new EventEmitter<string>();
+  @Output() requestPurposeNotesChange = new EventEmitter<string>();
   @Output() orderPriorityChange = new EventEmitter<string>();
   @Output() requesterCommentsChange = new EventEmitter<string>();
   @Output() previous = new EventEmitter<void>();
@@ -143,6 +145,7 @@ export class UsageFormComponent {
     usageTimeFrom: null,
     usageDateTo: null,
     usageTimeTo: null,
+    requestPurposeNotes: null,
     orderPriority: null,
     requesterComments: null,
     selectedFiles: null
@@ -181,8 +184,22 @@ export class UsageFormComponent {
     if (this.hasAttemptedSubmit) {
       if (value === null || value === undefined) {
         this.formErrors.usePurpose = 'newIssueRequest.validation.usePurposeRequired';
+        this.formErrors.requestPurposeNotes = null;
       } else {
         this.clearError('usePurpose');
+        if (!this.requestPurposeNotes || this.requestPurposeNotes.trim().length === 0) {
+          this.formErrors.requestPurposeNotes = 'newIssueRequest.validation.requestPurposeNotesRequired';
+        }
+      }
+    }
+  }
+
+  onRequestPurposeNotesChange(value: string): void {
+    this.requestPurposeNotesChange.emit(value);
+    this.clearError('requestPurposeNotes');
+    if (this.hasAttemptedSubmit && this.selectedUsePurposeId !== null) {
+      if (!value || value.trim().length === 0) {
+        this.formErrors.requestPurposeNotes = 'newIssueRequest.validation.requestPurposeNotesRequired';
       }
     }
   }
@@ -365,6 +382,11 @@ export class UsageFormComponent {
       this.formErrors.usePurpose = 'newIssueRequest.validation.usePurposeRequired';
       isValid = false;
     }
+    if (this.selectedUsePurposeId !== null && this.selectedUsePurposeId !== undefined
+      && (!this.requestPurposeNotes || this.requestPurposeNotes.trim().length === 0)) {
+      this.formErrors.requestPurposeNotes = 'newIssueRequest.validation.requestPurposeNotesRequired';
+      isValid = false;
+    }
 
     if (!this.usageLocation || this.usageLocation.trim().length === 0) {
       this.formErrors.usageLocation = 'newIssueRequest.validation.usageLocationRequired';
@@ -442,6 +464,7 @@ export class UsageFormComponent {
 
 type UsageFormErrors = {
   usePurpose: string | null;
+  requestPurposeNotes: string | null;
   usageLocation: string | null;
   usageDateFrom: string | null;
   usageTimeFrom: string | null;

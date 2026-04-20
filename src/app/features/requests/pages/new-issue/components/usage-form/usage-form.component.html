@@ -125,6 +125,23 @@
           </p>
         </div>
 
+        <!-- Request Purpose Notes (required when use purpose selected) -->
+        <div *ngIf="selectedUsePurposeId !== null && selectedUsePurposeId !== undefined">
+          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+            {{ 'newIssueRequest.requestPurposeNotes' | translate }} <span class="text-red-500">*</span>
+          </label>
+          <textarea [ngModel]="requestPurposeNotes" (ngModelChange)="onRequestPurposeNotesChange($event)" rows="3"
+            [placeholder]="'newIssueRequest.requestPurposeNotesPlaceholder' | translate"
+            class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 transition-all resize-none"
+            [ngClass]="{
+              'focus:ring-[var(--color-brand)] focus:border-transparent': !hasError('requestPurposeNotes'),
+              'border-red-500 focus:ring-red-500 focus:border-red-500': hasError('requestPurposeNotes')
+            }"></textarea>
+          <p *ngIf="hasError('requestPurposeNotes')" class="mt-1 text-xs text-red-600">
+            {{ formErrors.requestPurposeNotes | translate }}
+          </p>
+        </div>
+
         <!-- Usage Location -->
         <div>
           <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usageLocation' |

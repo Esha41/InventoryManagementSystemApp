@@ -67,6 +67,15 @@
         requestDetail?.requestPurposeNameAr) }}</p>
     </div>
 
+    <div *ngIf="requestDetail?.requestPurposeNotes" class="md:col-span-2 space-y-1">
+      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+        {{ 'common.requestPurposeNotes' | translate }}
+      </label>
+      <div class="mt-1 p-3 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
+        <p class="text-sm text-[var(--color-text)] leading-relaxed">{{ requestDetail?.requestPurposeNotes }}</p>
+      </div>
+    </div>
+
     <!-- Usage Location -->
     <div *ngIf="requestDetail?.usageLocation" class="space-y-1">
       <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">

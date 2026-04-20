@@ -15,6 +15,7 @@ export interface CreateDiscardDto {
     reason?: string;
     priority: number; // 1 = High, 2 = Medium, 3 = Low
     notes?: string;
+    requestPurposeNotes?: string;
     departmentId: number;
     requesterId?: string;
     requestPurposeId: number;
@@ -36,6 +37,7 @@ export interface DiscardDto {
     priority: number;
     status: number;
     notes?: string;
+    requestPurposeNotes?: string;
     departmentId: number;
     requesterId?: string;
     recieverId?: number;

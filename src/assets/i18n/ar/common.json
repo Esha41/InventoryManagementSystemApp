@@ -50,6 +50,7 @@
     "requestDate": "تاريخ الطلب",
     "department": "الوحدة",
     "requestPurpose": "الغرض من الطلب",
+    "requestPurposeNotes": "ملاحظات الغرض من الطلب",
     "usageLocation": "موقع الاستخدام",
     "numberOfOfficers": "عدد الضباط",
     "numberOfOtherRanks": "عدد الرتب الأخرى",
