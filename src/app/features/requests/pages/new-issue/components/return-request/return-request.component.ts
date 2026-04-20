@@ -72,6 +72,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
   reason: string = '';
   priority: number = 1;
   notes: string = '';
+  requestPurposeNotes: string = '';
   departmentId: number | null = null;
   requesterId: string | null = null;
   requestPurposeId: number | null = null;
@@ -496,6 +497,9 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
     if (!this.requestPurposeId) {
       this.errors['requestPurposeId'] = 'Request purpose is required';
     }
+    if (this.requestPurposeId && !this.requestPurposeNotes.trim()) {
+      this.errors['requestPurposeNotes'] = this.translate.instant('returnRequest.errors.requestPurposeNotesRequired');
+    }
 
     if (this.returnItems.length === 0) {
       this.errors['returnItems'] = 'At least one return item is required';
@@ -510,6 +514,10 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
         this.errors[`returnItem_${index}_quantity`] = 'Quantity must be a positive whole number';
       }
     });
+
+    if (this.selectedFiles.length === 0) {
+      this.errors['selectedFiles'] = this.translate.instant('returnRequest.errors.filesRequired');
+    }
 
     if (Object.keys(this.errors).length > 0) {
       return;
@@ -545,6 +553,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
       reason: this.reason || undefined,
       priority: Number(this.priority),
       notes: this.notes || undefined,
+      requestPurposeNotes: this.requestPurposeNotes || undefined,
       departmentId: Number(this.departmentId!),
       requesterId: undefined,
       requestPurposeId: Number(this.requestPurposeId!),
@@ -611,6 +620,21 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
   onRequestPurposeChange(): void {
     this.clearError('requestPurposeId');
     if (this.isSubmitted && this.requestPurposeId) this.clearError('requestPurposeId');
+    if (!this.requestPurposeId) {
+      this.requestPurposeNotes = '';
+      this.clearError('requestPurposeNotes');
+      return;
+    }
+    if (this.isSubmitted && this.requestPurposeNotes.trim().length === 0) {
+      this.errors['requestPurposeNotes'] = this.translate.instant('returnRequest.errors.requestPurposeNotesRequired');
+    }
+  }
+
+  onRequestPurposeNotesChange(): void {
+    this.clearError('requestPurposeNotes');
+    if (this.isSubmitted && this.requestPurposeId && this.requestPurposeNotes.trim().length === 0) {
+      this.errors['requestPurposeNotes'] = this.translate.instant('returnRequest.errors.requestPurposeNotesRequired');
+    }
   }
 
   onQuantityChange(index: number): void {
@@ -713,6 +737,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
     this.reason = '';
     this.priority = 1;
     this.notes = '';
+    this.requestPurposeNotes = '';
     if (this.isDepartmentLocked) {
       this.departmentId = this.preferredDepartmentId;
       this.lockedDepartmentName = this.buildLockedDepartmentName();
@@ -762,6 +787,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
       // Add only valid files to the selection
       if (validFiles.length > 0) {
         this.selectedFiles = [...this.selectedFiles, ...validFiles];
+        this.clearError('selectedFiles');
       }
 
       this.fileInputElement = input;
@@ -772,6 +798,9 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
 
   removeFile(index: number): void {
     removeFile(this.selectedFiles, index, this.fileInputElement);
+    if (this.selectedFiles.length > 0) {
+      this.clearError('selectedFiles');
+    }
   }
 
   getFileSize = getFileSizeFromFile;

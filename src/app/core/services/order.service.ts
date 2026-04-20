@@ -26,6 +26,7 @@ export class OrderService {
     if (payload.reason) formData.append('Reason', payload.reason);
     formData.append('Priority', payload.priority.toString());
     if (payload.notes) formData.append('Notes', payload.notes);
+    if (payload.requestPurposeNotes) formData.append('RequestPurposeNotes', payload.requestPurposeNotes);
     formData.append('RequestPurposeId', payload.requestPurposeId.toString());
     formData.append('IsFromAllowance', payload.isFromAllowance.toString());
     formData.append('UsageDateFrom', payload.usageDateFrom);

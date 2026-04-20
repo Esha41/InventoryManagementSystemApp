@@ -98,6 +98,7 @@ export class UsageFormComponent {
   @Input() fromReserve: string = 'Yes';
   @Input() usePurpose: string = '';
   @Input() selectedUsePurposeId: number | null = null;
+  @Input() requestPurposeNotes: string = '';
   @Input() usePurposeOptions: DropdownOption<number>[] = [];
   @Input() usageLocation: string = '';
   @Input() numberOfOfficers: number | null = null;
@@ -131,6 +132,7 @@ export class UsageFormComponent {
   @Output() usageTimeFromChange = new EventEmitter<string>();
   @Output() usageDateToChange = new EventEmitter<string>();
   @Output() usageTimeToChange = new EventEmitter<string>();
+  @Output() requestPurposeNotesChange = new EventEmitter<string>();
   @Output() orderPriorityChange = new EventEmitter<string>();
   @Output() requesterCommentsChange = new EventEmitter<string>();
   @Output() previous = new EventEmitter<void>();
@@ -143,8 +145,10 @@ export class UsageFormComponent {
     usageTimeFrom: null,
     usageDateTo: null,
     usageTimeTo: null,
+    requestPurposeNotes: null,
     orderPriority: null,
-    requesterComments: null
+    requesterComments: null,
+    selectedFiles: null
   };
 
   formErrors: UsageFormErrors = { ...this.defaultErrors };
@@ -180,8 +184,22 @@ export class UsageFormComponent {
     if (this.hasAttemptedSubmit) {
       if (value === null || value === undefined) {
         this.formErrors.usePurpose = 'newIssueRequest.validation.usePurposeRequired';
+        this.formErrors.requestPurposeNotes = null;
       } else {
         this.clearError('usePurpose');
+        if (!this.requestPurposeNotes || this.requestPurposeNotes.trim().length === 0) {
+          this.formErrors.requestPurposeNotes = 'newIssueRequest.validation.requestPurposeNotesRequired';
+        }
+      }
+    }
+  }
+
+  onRequestPurposeNotesChange(value: string): void {
+    this.requestPurposeNotesChange.emit(value);
+    this.clearError('requestPurposeNotes');
+    if (this.hasAttemptedSubmit && this.selectedUsePurposeId !== null) {
+      if (!value || value.trim().length === 0) {
+        this.formErrors.requestPurposeNotes = 'newIssueRequest.validation.requestPurposeNotesRequired';
       }
     }
   }
@@ -286,14 +304,6 @@ export class UsageFormComponent {
     this.requesterCommentsChange.emit(value);
 
     this.clearError('requesterComments');
-
-    if (this.hasAttemptedSubmit) {
-      if (!value || value.trim().length === 0) {
-        this.formErrors.requesterComments = 'newIssueRequest.validation.commentsRequired';
-      } else {
-        this.clearError('requesterComments');
-      }
-    }
   }
 
   onFileSelected(event: Event): void {
@@ -322,6 +332,7 @@ export class UsageFormComponent {
       if (validFiles.length > 0) {
         this.selectedFiles = [...this.selectedFiles, ...validFiles];
         this.filesChange.emit(this.selectedFiles);
+        this.clearError('selectedFiles');
       }
 
       // Reset input to allow selecting the same files again if needed
@@ -332,6 +343,9 @@ export class UsageFormComponent {
   removeFile(index: number): void {
     removeFile(this.selectedFiles, index);
     this.filesChange.emit(this.selectedFiles);
+    if (this.selectedFiles.length > 0) {
+      this.clearError('selectedFiles');
+    }
   }
 
   getFileSize = getFileSizeFromFile;
@@ -366,6 +380,11 @@ export class UsageFormComponent {
 
     if (this.selectedUsePurposeId === null || this.selectedUsePurposeId === undefined) {
       this.formErrors.usePurpose = 'newIssueRequest.validation.usePurposeRequired';
+      isValid = false;
+    }
+    if (this.selectedUsePurposeId !== null && this.selectedUsePurposeId !== undefined
+      && (!this.requestPurposeNotes || this.requestPurposeNotes.trim().length === 0)) {
+      this.formErrors.requestPurposeNotes = 'newIssueRequest.validation.requestPurposeNotesRequired';
       isValid = false;
     }
 
@@ -411,8 +430,8 @@ export class UsageFormComponent {
       isValid = false;
     }
 
-    if (!this.requesterComments || this.requesterComments.trim().length === 0) {
-      this.formErrors.requesterComments = 'newIssueRequest.validation.commentsRequired';
+    if (!this.selectedFiles || this.selectedFiles.length === 0) {
+      this.formErrors.selectedFiles = 'newIssueRequest.validation.attachmentsRequired';
       isValid = false;
     }
 
@@ -445,6 +464,7 @@ export class UsageFormComponent {
 
 type UsageFormErrors = {
   usePurpose: string | null;
+  requestPurposeNotes: string | null;
   usageLocation: string | null;
   usageDateFrom: string | null;
   usageTimeFrom: string | null;
@@ -452,4 +472,5 @@ type UsageFormErrors = {
   usageTimeTo: string | null;
   orderPriority: string | null;
   requesterComments: string | null;
+  selectedFiles: string | null;
 };

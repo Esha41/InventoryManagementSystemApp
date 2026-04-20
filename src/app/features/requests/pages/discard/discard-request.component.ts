@@ -73,6 +73,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
   reason: string = '';
   priority: number = 1; // 1 = High, 2 = Medium, 3 = Low
   notes: string = '';
+  requestPurposeNotes: string = '';
   departmentId: number | null = null;
   requesterId: string | null = null;
   requestPurposeId: number | null = null;
@@ -369,6 +370,9 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
     if (!this.departmentId) this.errors['departmentId'] = 'Department is required';
 
     if (!this.requestPurposeId) this.errors['requestPurposeId'] = 'Request Purpose is required';
+    if (this.requestPurposeId && !this.requestPurposeNotes.trim()) {
+      this.errors['requestPurposeNotes'] = this.translate.instant('discardRequest.errors.requestPurposeNotesRequired');
+    }
 
     const validItems = this.discardItems.filter(item => item.itemId && item.quantity);
     if (validItems.length === 0) this.errors['discardItems'] = 'At least one discard item is required';
@@ -383,6 +387,10 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
         }
       }
     });
+
+    if (this.selectedFiles.length === 0) {
+      this.errors['selectedFiles'] = this.translate.instant('discardRequest.errors.filesRequired');
+    }
   }
 
   toggleItemDropdown(index: number): void {
@@ -512,6 +520,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
       reason: this.reason || undefined,
       priority: Number(this.priority),
       notes: this.notes || undefined,
+      requestPurposeNotes: this.requestPurposeNotes || undefined,
       departmentId: Number(this.departmentId!),
       requesterId: undefined,
       requestPurposeId: Number(this.requestPurposeId!),
@@ -628,6 +637,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
     this.reason = '';
     this.priority = 1;
     this.notes = '';
+    this.requestPurposeNotes = '';
     if (this.isDepartmentLocked) {
       this.departmentId = this.preferredDepartmentId;
       this.lockedDepartmentName = this.buildLockedDepartmentName();
@@ -677,6 +687,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
       // Add only valid files to the selection
       if (validFiles.length > 0) {
         this.selectedFiles = [...this.selectedFiles, ...validFiles];
+        this.clearError('selectedFiles');
       }
 
       this.fileInputElement = input;
@@ -687,6 +698,9 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
 
   removeFile(index: number): void {
     removeFile(this.selectedFiles, index, this.fileInputElement);
+    if (this.selectedFiles.length > 0) {
+      this.clearError('selectedFiles');
+    }
   }
 
   getFileSize = getFileSizeFromFile;
@@ -721,6 +735,21 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
   onRequestPurposeChange(): void {
     this.clearError('requestPurposeId');
     if (this.isSubmitted && this.requestPurposeId) this.clearError('requestPurposeId');
+    if (!this.requestPurposeId) {
+      this.requestPurposeNotes = '';
+      this.clearError('requestPurposeNotes');
+      return;
+    }
+    if (this.isSubmitted && this.requestPurposeNotes.trim().length === 0) {
+      this.errors['requestPurposeNotes'] = this.translate.instant('discardRequest.errors.requestPurposeNotesRequired');
+    }
+  }
+
+  onRequestPurposeNotesChange(): void {
+    this.clearError('requestPurposeNotes');
+    if (this.isSubmitted && this.requestPurposeId && this.requestPurposeNotes.trim().length === 0) {
+      this.errors['requestPurposeNotes'] = this.translate.instant('discardRequest.errors.requestPurposeNotesRequired');
+    }
   }
 
   onQuantityChange(index: number): void {

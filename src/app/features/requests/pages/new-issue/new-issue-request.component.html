@@ -39,6 +39,7 @@
       [numberOfOfficers]="usageFormData.numberOfOfficers" [numberOfOtherRanks]="usageFormData.numberOfOtherRanks"
       [usageDateFrom]="usageFormData.usageDateFrom" [usageTimeFrom]="usageFormData.usageTimeFrom"
       [usageDateTo]="usageFormData.usageDateTo" [usageTimeTo]="usageFormData.usageTimeTo"
+      [requestPurposeNotes]="usageFormData.requestPurposeNotes"
       [orderPriority]="usageFormData.orderPriority" [orderPriorities]="filterOptions.orderPriorities"
       [requesterComments]="reviewFormData.requesterComments" [selectedFiles]="usageFormFiles"
       [totalReserve]="selectedTotalReserve" [availableReserve]="selectedAvailableReserve"
@@ -52,6 +53,7 @@
       (usageDateFromChange)="usageFormData.usageDateFrom = $event"
       (usageTimeFromChange)="usageFormData.usageTimeFrom = $event"
       (usageDateToChange)="usageFormData.usageDateTo = $event" (usageTimeToChange)="usageFormData.usageTimeTo = $event"
+      (requestPurposeNotesChange)="usageFormData.requestPurposeNotes = $event"
       (orderPriorityChange)="usageFormData.orderPriority = $event"
       (requesterCommentsChange)="reviewFormData.requesterComments = $event" (filesChange)="usageFormFiles = $event"
       (previous)="onPrevious()" (next)="onNext()">

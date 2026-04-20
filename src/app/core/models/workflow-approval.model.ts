@@ -116,6 +116,7 @@ export interface RequestDetail {
   requestPurposeName?: string;
   requestPurposeNameAr?: string;
   requestPurposeNameEn?: string;
+  requestPurposeNotes?: string;
   requestItems?: RequestItem[];
   approvalHistory?: WorkflowApprovalStep[];
   // Usage-related fields
@@ -161,6 +162,7 @@ export interface BaseRequestDto {
   requesterNameAr?: string;
   requesterUserName?: string;
   requestPurposeName?: string;
+  requestPurposeNotes?: string;
   requestItems?: RequestItemDto[];
   approvalHistory?: WorkflowApprovalStep[];
   files?: FileUploadDto[];

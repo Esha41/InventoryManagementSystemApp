@@ -62,6 +62,7 @@ export interface CartridgeState {
 
 export interface UsageFormData {
   usePurpose: string;
+  requestPurposeNotes: string;
   usageLocation: string;
   numberOfOfficers: number | null;
   numberOfOtherRanks: number | null;

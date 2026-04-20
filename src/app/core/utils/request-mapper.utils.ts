@@ -387,6 +387,7 @@ export function mapToRequestDetail(data: BaseRequestDto): RequestDetail {
     requestPurposeName: data.requestPurposeName,
     requestPurposeNameAr: data['requestPurposeNameAr'],
     requestPurposeNameEn: data['requestPurposeNameEn'],
+    requestPurposeNotes: data.requestPurposeNotes ?? data['requestPurposeNotes'],
     requestItems: mapRequestItems(data.requestItems || []),
     approvalHistory: mapApprovalHistory(data.approvalHistory || [], requestStatus),
     // Usage-related fields

@@ -18,6 +18,7 @@ export interface CreateReturnDto {
     reason?: string;
     priority: number;
     notes?: string;
+    requestPurposeNotes?: string;
     departmentId: number;
     requesterId?: string;
     requestPurposeId: number;
@@ -39,6 +40,7 @@ export interface ReturnDto {
     priority: number;
     status: number;
     notes?: string;
+    requestPurposeNotes?: string;
     departmentId: number;
     requesterId?: string;
     recieverId?: number;

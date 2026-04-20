@@ -138,6 +138,22 @@
             </div>
           </div>
 
+          <!-- Request Purpose Notes (required when purpose selected) -->
+          <div *ngIf="requestPurposeId" class="flex flex-col lg:flex-row lg:items-start lg:gap-8 gap-2">
+            <label class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
+              {{ 'returnRequest.requestPurposeNotes' | translate }} <span class="text-[var(--color-error)]">*</span>
+            </label>
+            <div class="flex-1">
+              <textarea [(ngModel)]="requestPurposeNotes" name="requestPurposeNotes" rows="3"
+                (ngModelChange)="onRequestPurposeNotesChange()"
+                [placeholder]="'returnRequest.requestPurposeNotesPlaceholder' | translate"
+                class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] resize-none transition-all"></textarea>
+              <p *ngIf="hasError('requestPurposeNotes')" class="mt-1.5 text-xs text-[var(--color-error)]">
+                {{ getError('requestPurposeNotes') }}
+              </p>
+            </div>
+          </div>
+
           <!-- Notes -->
           <div class="flex flex-col lg:flex-row lg:items-start lg:gap-8 gap-2">
             <label class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
@@ -152,8 +168,7 @@
           <!-- Attachments -->
           <div class="flex flex-col lg:flex-row lg:items-start lg:gap-8 gap-2">
             <label class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
-              {{ 'common.attachments' | translate }}
-              <span class="text-xs text-[var(--color-text-muted)]">({{ 'common.optional' | translate }})</span>
+              {{ 'common.attachments' | translate }} <span class="text-[var(--color-error)]">*</span>
             </label>
             <div class="flex-1">
               <div class="space-y-3">
@@ -187,8 +202,11 @@
                 </div>
 
                 <div class="space-y-1">
-                  <p class="text-xs text-[var(--color-text-muted)]">
-                    {{ 'common.attachmentsHintOptional' | translate }}
+                  <p *ngIf="!hasError('selectedFiles')" class="text-xs text-[var(--color-text-muted)]">
+                    {{ 'returnRequest.errors.filesRequired' | translate }}
+                  </p>
+                  <p *ngIf="hasError('selectedFiles')" class="text-xs font-medium text-[var(--color-error)]">
+                    {{ getError('selectedFiles') }}
                   </p>
                   <p class="text-xs text-[var(--color-text-muted)] font-medium">
                     {{ 'common.maximumFileSize' | translate: {size: MAX_FILE_SIZE_MB} }}
