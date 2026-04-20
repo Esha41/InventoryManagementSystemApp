@@ -218,8 +218,8 @@
     "saving": "Saving...",
     "price": "Price",
     "pricePlaceholder": "Enter price (optional)",
-    "minimumQuantity": "Minimum Quantity",
-    "minimumQuantityPlaceholder": "Enter minimum quantity (optional)",
+    "minimumQuantity": "Low Quantity",
+    "minimumQuantityPlaceholder": "Enter low quantity (optional)",
     "criticalQuantity": "Critical Quantity",
     "criticalQuantityPlaceholder": "Enter critical quantity (optional)",
     "enterAmmunitionName": "Enter ammunition name",
@@ -248,7 +248,7 @@
     "enterReferenceNo": "Enter reference number",
     "classification": "Classification",
     "selectClassification": "Select classification",
-    "type": "Item Type",
+    "type": "Ammunition Type",
     "weaponType": "Weapon Type",
     "explosiveType": "Explosive Type",
     "selectItemType": "Select item type",
@@ -256,7 +256,6 @@
     "selectExplosiveType": "Select explosive type",
     "notes": "Notes",
     "enterNotes": "Enter notes",
-    "itemNoMustBeUnique": "Item No must be unique across all ammunition records",
     "errors": {
       "itemNoAlreadyExists": "Item number already exists. Please use a unique item number.",
       "itemNoAlreadyExistsWithValue": "Item number '{{itemNo}}' already exists. Please use a unique item number.",
@@ -313,7 +312,7 @@
       "partNo": "Part No",
       "nsn": "NSN",
       "price": "Price",
-      "minimumQuantity": "Minimum Quantity",
+      "minimumQuantity": "Low Quantity",
       "bulletDiameter": "Bullet Diameter",
       "totalWeight": "Total Weight",
       "isLinked": "Is Linked",
@@ -355,7 +354,7 @@
       "partNo": "Enter part number",
       "nsn": "Enter NSN",
       "price": "Enter price",
-      "minimumQuantity": "Enter minimum quantity"
+      "minimumQuantity": "Enter low quantity"
     },
     "successMessage": "Asset created successfully",
     "barrelLengthUnit": "Barrel Length Unit",
@@ -465,7 +464,7 @@
       "expiryDate": "Expiry Date",
       "status": "Status",
       "price": "Price",
-      "minimumQuantity": "Minimum Quantity",
+      "minimumQuantity": "Low Quantity",
       "actions": "Actions"
     },
     "actions": {
@@ -575,8 +574,8 @@
       "expiryDate": "Expiry Date",
       "price": "Price",
       "pricePlaceholder": "Enter price (optional)",
-      "minimumQuantity": "Minimum Quantity",
-      "minimumQuantityPlaceholder": "Enter minimum quantity (optional)",
+      "minimumQuantity": "Low Quantity",
+      "minimumQuantityPlaceholder": "Enter low quantity (optional)",
       "saveChanges": "Save Changes"
     },
     "deleteModal": {

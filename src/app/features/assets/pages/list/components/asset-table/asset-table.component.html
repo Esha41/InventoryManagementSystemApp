@@ -105,10 +105,6 @@
               class="px-2 py-0.5 bg-purple-50 text-purple-700 rounded-full border border-purple-100">
               {{ asset.weaponType }}
             </span>
-            <span *ngIf="activeTab === 'explosive' && asset.explosiveType"
-              class="px-2 py-0.5 bg-red-50 text-red-700 rounded-full border border-red-100">
-              {{ asset.explosiveType }}
-            </span>
           </div>
 
           <!-- Metrics Grid -->
@@ -192,9 +188,7 @@
               <ng-container *ngIf="activeTab === 'explosive'">
                 <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'armNumber', labelKey: 'addAsset.armNumber' }"></ng-container>
                 <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'primaryPurpose', labelKey: 'assetList.table.primaryPurpose' }"></ng-container>
-                <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'explosiveType', labelKey: 'addAsset.explosiveType' }"></ng-container>
                 <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'unNumber', labelKey: 'addAsset.unNumber' }"></ng-container>
-                <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'compatibility', labelKey: 'addAsset.compatibility' }"></ng-container>
               </ng-container>
 
               <!-- Common Columns -->
@@ -250,11 +244,7 @@
               <td *ngIf="activeTab === 'explosive'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
                 asset.primaryPurpose }}</td>
               <td *ngIf="activeTab === 'explosive'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
-                asset.explosiveType }}</td>
-              <td *ngIf="activeTab === 'explosive'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
                 asset.unNumber }}</td>
-              <td *ngIf="activeTab === 'explosive'" class="py-4 px-6 text-[var(--color-text)] text-sm">{{
-                asset.compatibility || '-' }}</td>
 
               <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.price ? asset.price : '-' }}</td>
               <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.minimumQuantity ?

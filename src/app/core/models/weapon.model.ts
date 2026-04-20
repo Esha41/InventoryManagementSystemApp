@@ -53,6 +53,7 @@ export interface CreateUpdateWeaponDto {
   partNo?: string;
   price?: number;
   minimumQuantity?: number;
+  criticalQuantity?: number;
   nsn?: string;
   distribution?: string;
   referenceNo?: string;

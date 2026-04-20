@@ -253,7 +253,6 @@
     "selectExplosiveType": "اختر نوع المتفجر",
     "notes": "ملاحظات",
     "enterNotes": "أدخل الملاحظات",
-    "itemNoMustBeUnique": "يجب أن يكون رقم المادة فريداً عبر جميع سجلات المواد",
     "errors": {
       "itemNoAlreadyExists": "رقم المادة موجود مسبقاً. يرجى استخدام رقم مادة فريد.",
       "itemNoAlreadyExistsWithValue": "رقم المادة '{{itemNo}}' موجود مسبقاً. يرجى استخدام رقم مادة فريد.",

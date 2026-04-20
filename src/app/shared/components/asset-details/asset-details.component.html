@@ -100,14 +100,24 @@
             </div>
 
             <!-- Ammunition and Explosive: Arm Number -->
-            <div *ngIf="(isAmmunition() || isExplosive()) && getArmNumber() !== '-'">
+            <div *ngIf="isAmmunition() || isExplosive()">
               <p class="text-[var(--color-text-muted)] mb-1">{{ 'addAsset.armNumber' | translate }}</p>
               <p class="text-[var(--color-text)]">{{ getArmNumber() }}</p>
             </div>
 
-            <div *ngIf="isAmmunition() && getPrimaryPurpose() !== '-'">
+            <div *ngIf="isAmmunition()">
               <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.primaryPurpose' | translate }}</p>
               <p class="text-[var(--color-text)]">{{ getPrimaryPurpose() }}</p>
+            </div>
+
+            <div *ngIf="isAmmunition()">
+              <p class="text-[var(--color-text-muted)] mb-1">{{ 'addAsset.caliber' | translate }}</p>
+              <p class="text-[var(--color-text)]">{{ getAmmunitionCaliber() }}</p>
+            </div>
+
+            <div *ngIf="isAmmunition()">
+              <p class="text-[var(--color-text-muted)] mb-1">{{ 'addAsset.classification' | translate }}</p>
+              <p class="text-[var(--color-text)]">{{ getClassification() }}</p>
             </div>
 
             <!-- Weapon specific fields -->
@@ -121,10 +131,10 @@
               <p class="text-[var(--color-text)]">{{ getPrimaryPurpose() }}</p>
             </div>
 
-            <!-- Explosive specific fields -->
-            <div *ngIf="isExplosive() && getExplosiveType() !== '-'">
-              <p class="text-[var(--color-text-muted)] mb-1">{{ 'explosive.explosiveType' | translate }}</p>
-              <p class="text-[var(--color-text)]">{{ getExplosiveType() }}</p>
+            <!-- Explosive specific fields (catalog type or enum) -->
+            <div *ngIf="isExplosive() && getExplosiveTypeDisplay() !== '-'">
+              <p class="text-[var(--color-text-muted)] mb-1">{{ 'addAsset.explosiveType' | translate }}</p>
+              <p class="text-[var(--color-text)]">{{ getExplosiveTypeDisplay() }}</p>
             </div>
 
             <div class="col-span-2" *ngIf="isAmmunition() && getProjectileColor() !== '-'">
@@ -141,11 +151,6 @@
             }}</h4>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-            <div *ngIf="getAmmunitionCaliber() !== '-'">
-              <p class="text-[var(--color-text-muted)] mb-1">{{ 'addAsset.caliber' | translate }}</p>
-              <p class="text-[var(--color-text)]">{{ getAmmunitionCaliber() }}</p>
-            </div>
-
             <div *ngIf="getTotalWeight() !== '-'">
               <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.totalWeight' | translate }}</p>
               <p class="text-[var(--color-text)]">{{ getTotalWeight() }}</p>
@@ -184,6 +189,11 @@
             <div *ngIf="getLinked() !== '-'">
               <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.viewModal.isLinked' | translate }}</p>
               <p class="text-[var(--color-text)]">{{ getLinked() }}</p>
+            </div>
+
+            <div *ngIf="getUnNumberForAmmunition() !== '-'">
+              <p class="text-[var(--color-text-muted)] mb-1">{{ 'explosive.unNumber' | translate }}</p>
+              <p class="text-[var(--color-text)]">{{ getUnNumberForAmmunition() }}</p>
             </div>
           </div>
         </div>
@@ -278,13 +288,13 @@
               <p class="text-[var(--color-text)]">{{ getCapabilityGroup() }}</p>
             </div>
 
-            <div *ngIf="getClassification() !== '-'">
-              <p class="text-[var(--color-text-muted)] mb-1">Classification</p>
+            <div *ngIf="isExplosive()">
+              <p class="text-[var(--color-text-muted)] mb-1">{{ 'addAsset.classification' | translate }}</p>
               <p class="text-[var(--color-text)]">{{ getClassification() }}</p>
             </div>
 
-            <div *ngIf="getType() !== '-'">
-              <p class="text-[var(--color-text-muted)] mb-1">Type</p>
+            <div *ngIf="isAmmunition() && getType() !== '-'">
+              <p class="text-[var(--color-text-muted)] mb-1">{{ 'addAsset.type' | translate }}</p>
               <p class="text-[var(--color-text)]">{{ getType() }}</p>
             </div>
           </div>
@@ -316,11 +326,6 @@
             </div>
 
             <div *ngIf="isAmmunition()">
-              <p class="text-[var(--color-text-muted)] mb-1">Compatibility</p>
-              <p class="text-[var(--color-text)]">{{ getCompatibility() }}</p>
-            </div>
-
-            <div *ngIf="isAmmunition()">
               <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.totalWeight' | translate }}</p>
               <p class="text-[var(--color-text)]">{{ getTotalWeight() }}</p>
             </div>
@@ -330,19 +335,9 @@
               <p class="text-[var(--color-text)]">{{ getDistribution() }}</p>
             </div>
 
-            <div *ngIf="isAmmunition()">
-              <p class="text-[var(--color-text-muted)] mb-1">UN Number</p>
-              <p class="text-[var(--color-text)]">{{ getUnNumberForAmmunition() }}</p>
-            </div>
-
             <div>
               <p class="text-[var(--color-text-muted)] mb-1">Reference No</p>
               <p class="text-[var(--color-text)]">{{ getReferenceNo() }}</p>
-            </div>
-
-            <div *ngIf="isAmmunition() && getUnNumberForAmmunition() !== '-'">
-              <p class="text-[var(--color-text-muted)] mb-1">UN Number</p>
-              <p class="text-[var(--color-text)]">{{ getUnNumberForAmmunition() }}</p>
             </div>
 
             <div class="col-span-2">

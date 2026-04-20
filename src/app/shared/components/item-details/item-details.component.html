@@ -154,6 +154,11 @@
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.viewModal.isLinked' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ getLinked() }}</p>
           </div>
+
+          <div *ngIf="getUnNumberForAmmunition()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'explosive.unNumber' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getUnNumberForAmmunition() }}</p>
+          </div>
         </div>
       </div>
 
@@ -277,11 +282,6 @@
           <div *ngIf="getReferenceNo()">
             <p class="text-[var(--color-text-muted)] mb-1">Reference No</p>
             <p class="text-[var(--color-text)]">{{ getReferenceNo() }}</p>
-          </div>
-
-          <div *ngIf="isAmmunition && getUnNumberForAmmunition()">
-            <p class="text-[var(--color-text-muted)] mb-1">UN Number</p>
-            <p class="text-[var(--color-text)]">{{ getUnNumberForAmmunition() }}</p>
           </div>
 
           <div *ngIf="getNotes()" class="col-span-2">

@@ -85,8 +85,13 @@ export class AssetPropertyAccessor {
 
   // Ammunition and Explosive properties
   getArmNumber(asset: AssetUnion): string {
-    if (isAmmunition(asset) || isExplosive(asset)) {
-      return ((asset as any).armNumber || '-');
+    if (!(isAmmunition(asset) || isExplosive(asset))) return '-';
+    const v = (asset as AmmunitionReadDto | ExplosiveDto).armNumber;
+    if (v != null && String(v).trim() !== '' && v !== '-') return String(v).trim();
+    const assetWithOd = asset as AssetUnion & { originalData?: AmmunitionReadDto | ExplosiveDto };
+    if (assetWithOd.originalData) {
+      const av = assetWithOd.originalData.armNumber;
+      if (av != null && String(av).trim() !== '') return String(av).trim();
     }
     return '-';
   }
@@ -127,7 +132,15 @@ export class AssetPropertyAccessor {
   }
 
   getAmmunitionCaliber(asset: AssetUnion): string {
-    return isAmmunition(asset) ? ((asset as AmmunitionReadDto).caliber || '-') : '-';
+    if (isExplosive(asset)) return '-';
+    if (!isAmmunition(asset)) return '-';
+    const raw = (asset as AmmunitionReadDto).caliber;
+    if (raw != null && String(raw).trim() !== '' && raw !== '-') return String(raw).trim();
+    const ammoWithOd = asset as AssetUnion & { originalData?: AmmunitionReadDto };
+    if (ammoWithOd.originalData?.caliber != null && String(ammoWithOd.originalData.caliber).trim() !== '') {
+      return String(ammoWithOd.originalData.caliber).trim();
+    }
+    return '-';
   }
 
   // Weapon properties
@@ -307,34 +320,72 @@ export class AssetPropertyAccessor {
   }
 
   getClassification(asset: AssetUnion): string {
-    if (isAmmunition(asset)) {
-      return this.getLookupName(asset.classification);
+    if (!asset) return '-';
+
+    const pick = (a: { classification?: LookupDto } | null | undefined): string | null => {
+      if (!a?.classification) return null;
+      const s = this.getLookupName(a.classification);
+      return s && s !== '' ? s : null;
+    };
+
+    if (isWeapon(asset)) {
+      const r = pick(asset as WeaponDto);
+      if (r) return r;
+    } else if (isExplosive(asset)) {
+      const r = pick(asset as ExplosiveDto);
+      if (r) return r;
+    } else if (isAmmunition(asset)) {
+      const r = pick(asset as AmmunitionReadDto);
+      if (r) return r;
     }
-    if (isExplosive(asset)) {
-      return this.getLookupName(asset.classification);
+
+    if ('originalData' in asset && (asset as Asset).originalData) {
+      const od = (asset as Asset).originalData as AmmunitionReadDto | ExplosiveDto | WeaponDto;
+      const r2 = pick(od);
+      if (r2) return r2;
     }
-    // Additional check: if itemType is "Explosive", treat as explosive
-    if (asset && 'itemType' in asset) {
+
+    if ('itemType' in asset) {
       const itemType = (asset as any).itemType;
       if (typeof itemType === 'string' && itemType.toLowerCase() === 'explosive') {
-        return this.getLookupName((asset as any).classification);
+        const legacy = this.getLookupName((asset as any).classification);
+        if (legacy && legacy !== '') return legacy;
       }
     }
     return '-';
   }
 
   getType(asset: AssetUnion): string {
-    if (isAmmunition(asset)) {
-      return this.getLookupName(asset.type);
+    if (!asset) return '-';
+
+    const pick = (a: { type?: LookupDto } | null | undefined): string | null => {
+      if (!a?.type) return null;
+      const s = this.getLookupName(a.type);
+      return s && s !== '' ? s : null;
+    };
+
+    if (isWeapon(asset)) {
+      const r = pick(asset as WeaponDto);
+      if (r) return r;
+    } else if (isExplosive(asset)) {
+      const r = pick(asset as ExplosiveDto);
+      if (r) return r;
+    } else if (isAmmunition(asset)) {
+      const r = pick(asset as AmmunitionReadDto);
+      if (r) return r;
     }
-    if (isExplosive(asset)) {
-      return this.getLookupName(asset.type);
+
+    if ('originalData' in asset && (asset as Asset).originalData) {
+      const od = (asset as Asset).originalData as AmmunitionReadDto | ExplosiveDto | WeaponDto;
+      const r2 = pick(od);
+      if (r2) return r2;
     }
-    // Additional check: if itemType is "Explosive", treat as explosive
-    if (asset && 'itemType' in asset) {
+
+    if ('itemType' in asset) {
       const itemType = (asset as any).itemType;
       if (typeof itemType === 'string' && itemType.toLowerCase() === 'explosive') {
-        return this.getLookupName((asset as any).type);
+        const legacy = this.getLookupName((asset as any).type);
+        if (legacy && legacy !== '') return legacy;
       }
     }
     return '-';
@@ -382,24 +433,35 @@ export class AssetPropertyAccessor {
       const parts = purposes.map(p => this.getLookupName(p)).filter(Boolean);
       return parts.length > 0 ? parts.join(', ') : null;
     };
-    const fromPurposesOrLegacy = (purposes: LookupDto[] | undefined, legacy: LookupDto | undefined): string => {
+    const fromPurposesOrLegacy = (
+      purposes: LookupDto[] | undefined,
+      legacy: LookupDto | undefined
+    ): string | null => {
       const multi = fromList(purposes);
       if (multi) return multi;
-      return this.getLookupName(legacy);
+      const one = this.getLookupName(legacy);
+      return one && one !== '' ? one : null;
     };
-    // Explosive before ammunition: both may have armNumber (isAmmunition is broad)
+
+    const tryResolve = (a: AmmunitionReadDto | ExplosiveDto | WeaponDto | null | undefined): string | null => {
+      if (!a) return null;
+      return fromPurposesOrLegacy(a.primaryPurposes, a.primaryPurpos);
+    };
+
     if (isExplosive(asset)) {
-      return fromPurposesOrLegacy(asset.primaryPurposes, asset.primaryPurpos);
+      let r = tryResolve(asset as ExplosiveDto);
+      if (r) return r;
+    } else if (isAmmunition(asset)) {
+      let r = tryResolve(asset as AmmunitionReadDto);
+      if (r) return r;
+    } else if (isWeapon(asset)) {
+      let r = tryResolve(asset as WeaponDto);
+      if (r) return r;
     }
-    if (isAmmunition(asset)) {
-      return fromPurposesOrLegacy(asset.primaryPurposes, asset.primaryPurpos);
-    }
-    if (isWeapon(asset)) {
-      return fromPurposesOrLegacy(asset.primaryPurposes, asset.primaryPurpos);
-    }
+
     if ('originalData' in asset && (asset as Asset).originalData) {
-      const od = (asset as Asset).originalData as AmmunitionReadDto | ExplosiveDto | WeaponDto;
-      return fromPurposesOrLegacy(od?.primaryPurposes, od?.primaryPurpos);
+      const r2 = tryResolve((asset as Asset).originalData as AmmunitionReadDto | ExplosiveDto | WeaponDto);
+      if (r2) return r2;
     }
     if ('primaryPurpose' in asset && typeof (asset as Asset).primaryPurpose === 'string') {
       const s = (asset as Asset).primaryPurpose;

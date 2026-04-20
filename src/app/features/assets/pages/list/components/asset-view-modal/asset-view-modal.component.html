@@ -243,6 +243,13 @@
               <p class="mt-1 text-sm text-[var(--color-text)]">{{ getMinimumQuantity() }}</p>
             </div>
 
+            <!-- Critical Quantity -->
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
+                'addAsset.criticalQuantity' | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getCriticalQuantity() }}</p>
+            </div>
+
             <!-- Caliber Unit -->
             <div>
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.caliberUnit' |
@@ -308,7 +315,7 @@
             <div>
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.unNumber' |
                 translate }}</label>
-              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getUnNumberForAmmunition() }}</p>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getUnNumber() }}</p>
             </div>
             <div>
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
