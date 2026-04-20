@@ -86,8 +86,16 @@
       "totalRemaining": "Total Remaining",
       "availableUnits": "Available units",
       "totalLots": "Total Lots",
-      "activeLots": "Active lots",
+      "activeLots": "Active Lots",
       "byType": "Items by Type"
+    },
+    "weaponsAndPipeline": {
+      "sectionTitle": "Weapons",
+      "weaponAssetsTotal": "Weapon assets",
+      "assigned": "Assigned",
+      "inDepot": "In depot",
+      "draftSupplies": "Pending issuance requests",
+      "ordersAwaiting": "Orders awaiting fulfillment"
     },
     "itemType": {
       "ammunition": "Ammunition",
@@ -156,7 +164,7 @@
     },
     "lotDetail": {
       "title": "Lot Details",
-      "lots": "lots",
+      "lots": "Lots",
       "totalsRow": "Lot totals",
       "empty": "No lots found for this item",
       "cols": {
@@ -224,6 +232,25 @@
       "depot": "Depot",
       "stock": "Stock",
       "noDepots": "No depot information available"
+    },
+    "draftSuppliesPage": {
+      "title": "Requests pending issuance",
+      "subtitle": "Supply requests that are still waiting to be issued for the selected depots",
+      "empty": "No requests pending issuance in scope",
+      "cols": {
+        "kind": "Type",
+        "order": "Order",
+        "submissionStatus": "Submission status"
+      }
+    },
+    "ordersAwaitingPage": {
+      "title": "Orders awaiting fulfillment",
+      "subtitle": "Approved orders not fully supplied (ammunition/explosives and/or weapons)",
+      "empty": "No orders awaiting fulfillment in scope",
+      "cols": {
+        "order": "Order",
+        "status": "Status"
+      }
     },
     "annualSupplyActivity": "Annual Supply Activity",
     "overstock": "Overstock"

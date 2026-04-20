@@ -84,9 +84,17 @@
       "distinctItemTypes": "أنواع المواد المختلفة",
       "totalRemaining": "إجمالي المتبقي",
       "availableUnits": "الوحدات المتاحة",
-      "totalLots": "إجمالي الدفعات",
-      "activeLots": "الدفعات النشطة",
+      "totalLots": "Total Lots",
+      "activeLots": "Active Lots",
       "byType": "المواد حسب النوع"
+    },
+    "weaponsAndPipeline": {
+      "sectionTitle": "الأسلحة",
+      "weaponAssetsTotal": "أصول الأسلحة",
+      "assigned": "العهد مُسنَدة",
+      "inDepot": "في المستودع",
+      "draftSupplies": "طلبات بانتظار الصرف",
+      "ordersAwaiting": "طلبات تم صرفها جزئيا"
     },
     "itemType": {
       "ammunition": "ذخيرة",
@@ -122,7 +130,7 @@
         "usedQty": "الكمية المستخدمة",
         "reservedQty": "الكمية المحجوزة",
         "remainingQty": "الكمية المتبقية",
-        "lots": "الدفعات"
+        "lots": "Lots"
       },
       "filters": {
         "depot": "المستودع",
@@ -155,7 +163,7 @@
     },
     "lotDetail": {
       "title": "تفاصيل الدفعات",
-      "lots": "دفعات",
+      "lots": "Lots",
       "totalsRow": "إجمالي الدفعات",
       "empty": "لا توجد دفعات لهذه المادة",
       "cols": {
@@ -193,8 +201,8 @@
       }
     },
     "expiringLots": {
-      "title": "lots علي وشك الانتهاء",
-      "subtitle": "lots التي ستنتهي صلاحيتها خلال الـ 30 يوم القادمة",
+      "title": "Lots قريبة من الانتهاء",
+      "subtitle": "Lots ستنتهي صلاحيتها خلال الـ 30 يوماً القادمة",
       "itemName": "اسم المادة",
       "itemNo": "رقم المادة",
       "lot": "lot",
@@ -206,7 +214,7 @@
       "depot": "المستودع",
       "supplier": "المورد",
       "manufacturer": "الشركة المصنعة",
-      "noLots": "لا توجد lots ستنتهي صلاحيتها خلال الـ 30 يوم القادمة"
+      "noLots": "لا توجد Lots ستنتهي صلاحيتها خلال الـ 30 يوماً القادمة"
     },
     "lowStock": {
       "title": "المخزون المنخفض",
@@ -224,12 +232,31 @@
       "stock": "المخزون",
       "noDepots": "لا توجد معلومات عن المستودعات"
     },
+    "draftSuppliesPage": {
+      "title": "طلبات بانتظار الصرف",
+      "subtitle": "طلبات توريد ما زالت بانتظار الصرف للمستودعات المحددة",
+      "empty": "لا توجد طلبات بانتظار الصرف في النطاق",
+      "cols": {
+        "kind": "النوع",
+        "order": "الطلب",
+        "submissionStatus": "حالة الإرسال"
+      }
+    },
+    "ordersAwaitingPage": {
+      "title": "طلبات تم صرفها جزئيا",
+      "subtitle": "طلبات تم صرفها جزئيا ولم يكتمل صرفها (ذخيرة/متفجرات و/أو أسلحة)",
+      "empty": "لا توجد طلبات تم صرفها جزئيا في النطاق",
+      "cols": {
+        "order": "الطلب",
+        "status": "الحالة"
+      }
+    },
     "annualSupplyActivity": "نشاط التوريد السنوي",
     "overstock": "الفائض"
   },
   "inventorySummary": {
     "title": "ملخص المخزون",
-    "subtitle": "نظرة عامة على جميع المواد مع تفاصيل lots",
+    "subtitle": "نظرة عامة على جميع المواد مع تفاصيل Lots",
     "itemName": "اسم مادة",
     "itemNo": "رقم المادة",
     "type": "النوع",
@@ -239,7 +266,7 @@
     "usedQty": "الكمية المصروفة سابقا",
     "reservedQty": "الكمية المحجوزة",
     "remainingQty": "الكمية المتبقية",
-    "totalLots": "إجمالي lots",
+    "totalLots": "Total Lots",
     "totalAssets": "إجمالي الأصول",
     "lotDetails": "تفاصيل lot",
     "assetDetails": "تفاصيل الأصول",
@@ -258,8 +285,8 @@
     "noItems": "لا توجد مواد مخزون متاحة",
     "searchPlaceholder": "البحث باسم مادة، رقم مادة، NSN، أو رقم القطعة...",
     "noResults": "لا توجد مواد تطابق معايير البحث",
-    "exportWithDetails": "تصدير مع تفاصيل lots",
-    "exportingWithDetails": "جارٍ تحميل تفاصيل lots للتصدير. الرجاء الانتظار..."
+    "exportWithDetails": "تصدير مع تفاصيل Lots",
+    "exportingWithDetails": "جارٍ تحميل تفاصيل Lots للتصدير. الرجاء الانتظار..."
   },
   "forecast": {
     "title": "التوقعات",

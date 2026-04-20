@@ -2,6 +2,11 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 import { APIOperationResponse } from '@models/api-response.model';
+import {
+  DraftSupplyListItemDto,
+  InventoryDashboardSummaryDto,
+  OrderAwaitingFulfillmentListItemDto
+} from '@models/inventory-dashboard-monitoring.model';
 
 export interface ExpiringLotDto {
   inventoryDetailId: number;
@@ -66,5 +71,37 @@ export class MonitoringService {
    */
   getLowStockItems(): Observable<any[]> {
     return this.apiService.get<any[]>(`${this.baseEndpoint}/low-stock`);
+  }
+
+  /**
+   * Combined weapon asset + supply pipeline metrics (single round-trip).
+   * Query params align with inventory items summary: repeated depotIds.
+   */
+  getInventoryDashboardSummary(depotIds?: number[]): Observable<InventoryDashboardSummaryDto> {
+    let params = '';
+    if (depotIds && depotIds.length > 0) {
+      params = '?' + depotIds.map(id => `depotIds=${id}`).join('&');
+    }
+    return this.apiService.get<InventoryDashboardSummaryDto>(`${this.baseEndpoint}/dashboard/inventory-summary${params}`);
+  }
+
+  /** Draft Supply + AssetSupply rows (same rules as dashboard pipeline draft count). */
+  getDraftSuppliesList(depotIds?: number[]): Observable<DraftSupplyListItemDto[]> {
+    let params = '';
+    if (depotIds && depotIds.length > 0) {
+      params = '?' + depotIds.map(id => `depotIds=${id}`).join('&');
+    }
+    return this.apiService.get<DraftSupplyListItemDto[]>(`${this.baseEndpoint}/dashboard/draft-supplies${params}`);
+  }
+
+  /** Approved orders not fully fulfilled (same rules as dashboard awaiting count). */
+  getOrdersAwaitingFulfillmentList(depotIds?: number[]): Observable<OrderAwaitingFulfillmentListItemDto[]> {
+    let params = '';
+    if (depotIds && depotIds.length > 0) {
+      params = '?' + depotIds.map(id => `depotIds=${id}`).join('&');
+    }
+    return this.apiService.get<OrderAwaitingFulfillmentListItemDto[]>(
+      `${this.baseEndpoint}/dashboard/orders-awaiting-fulfillment${params}`
+    );
   }
 }

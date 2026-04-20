@@ -15,25 +15,56 @@ export class InventorySummaryDataService {
     ) { }
 
     /**
-     * Load all inventory items (ammunition, weapons as assets, explosives)
-     * @returns Observable of combined inventory summary data
+     * Load all inventory items (ammunition, weapons as assets, explosives).
+     * Weapons use {@link AssetDto} counts — same rules as {@link loadMergedItemSummaries}.
      */
     loadAllItems(): Observable<ItemInventorySummaryDto[]> {
+        return this.loadMergedItemSummaries(undefined);
+    }
+
+    /**
+     * Lot-based summary from Inventory API plus weapon rows derived from asset counts.
+     * Matches `/inventory-summary`: `GET /Inventory/items/summary` is lot-only; weapon totals must come from assets.
+     *
+     * @param depotIds Optional depot filter (same as inventory summary). Empty/undefined = all accessible depots.
+     */
+    loadMergedItemSummaries(depotIds?: number[]): Observable<ItemInventorySummaryDto[]> {
         return forkJoin({
-            // Get ammunition and explosives from inventory summary (lot-based)
-            inventorySummary: this.inventoryService.getAllItemsSummary().pipe(
+            inventorySummary: this.inventoryService.getAllItemsSummary(depotIds).pipe(
                 map(items => this.filterOutWeapons(items)),
                 catchError(() => of([]))
             ),
-            // Get weapons from assets (asset-based)
-            weaponAssets: this.assetService.getAll<AssetDto>().pipe(
+            weaponAssets: this.loadAssetsForDepotScope(depotIds).pipe(
                 map(assets => this.transformAssetsToSummary(assets)),
                 catchError(() => of([]))
             )
         }).pipe(
-            map(({ inventorySummary, weaponAssets }) =>
-                [...inventorySummary, ...weaponAssets]
+            map(({ inventorySummary, weaponAssets }) => [...inventorySummary, ...weaponAssets])
+        );
+    }
+
+    /** All assets in scope: unfiltered API, single depot, or merged unique assets across multiple depots. */
+    private loadAssetsForDepotScope(depotIds?: number[]): Observable<AssetDto[]> {
+        if (!depotIds?.length) {
+            return this.assetService.getAll<AssetDto>({ search: '' });
+        }
+        if (depotIds.length === 1) {
+            return this.assetService.getAll<AssetDto>({ search: '', depotId: depotIds[0] });
+        }
+        return forkJoin(
+            depotIds.map(id =>
+                this.assetService.getAll<AssetDto>({ search: '', depotId: id }).pipe(catchError(() => of([] as AssetDto[])))
             )
+        ).pipe(
+            map(groups => {
+                const byAssetId = new Map<number, AssetDto>();
+                for (const a of groups.flat()) {
+                    if (!a.isDeleted) {
+                        byAssetId.set(a.id, a);
+                    }
+                }
+                return [...byAssetId.values()];
+            })
         );
     }
 

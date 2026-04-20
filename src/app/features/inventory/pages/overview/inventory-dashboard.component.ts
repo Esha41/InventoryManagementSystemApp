@@ -8,12 +8,17 @@ import { catchError, filter, map, startWith, switchMap, finalize, distinctUntilC
 import {
   LucideAngularModule,
   RefreshCw,
-  Package, Layers, ChartBar, Warehouse, Search, Shield, FilterX
+  Package,
+  Warehouse,
+  Search,
+  Shield,
+  FilterX
 } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { MonitoringService } from '@services/monitoring.service';
 import { InventoryService, LotDetailDto } from '@services/inventory.service';
 import { AssetService } from '@services/asset.service';
+import { InventorySummaryDataService } from '@services/inventory-summary-data.service';
 import { LookupService } from '@services/lookup.service';
 import { ItemInventorySummaryDto, ItemType } from '@models/inventory.model';
 import { AssetDto } from '@models/asset.model';
@@ -22,6 +27,7 @@ import { PaginationComponent } from '@components/pagination/pagination.component
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { DropdownComponent, DropdownOption } from '@shared/components/dropdown/dropdown.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { TranslationService } from '@services/translation.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { defaultPageSize } from '@constants/app.constants';
 import {
@@ -33,6 +39,23 @@ import {
   ActiveTab
 } from './inventory-dashboard.helpers';
 import { InventoryItemSummaryTableComponent } from './inventory-item-summary-table.component';
+import { InventoryDashboardStatCardsComponent } from './components/inventory-dashboard-stat-cards/inventory-dashboard-stat-cards.component';
+import { InventoryDashboardWeaponPipelineComponent } from './components/inventory-dashboard-weapon-pipeline/inventory-dashboard-weapon-pipeline.component';
+import { InventoryDashboardSummaryDto } from '@models/inventory-dashboard-monitoring.model';
+
+const emptyInventoryMonitoring = (): InventoryDashboardSummaryDto => ({
+  weaponAssets: {
+    totalAssets: 0,
+    assignedCount: 0,
+    inDepotCount: 0,
+    unknownStatusCount: 0,
+    byStatus: []
+  },
+  pipeline: {
+    draftSupplyCount: 0,
+    ordersAwaitingFulfillmentCount: 0
+  }
+});
 
 @Component({
   selector: 'app-inventory-dashboard',
@@ -45,7 +68,9 @@ import { InventoryItemSummaryTableComponent } from './inventory-item-summary-tab
     PaginationComponent,
     RowsPerPageComponent,
     DropdownComponent,
-    InventoryItemSummaryTableComponent
+    InventoryItemSummaryTableComponent,
+    InventoryDashboardStatCardsComponent,
+    InventoryDashboardWeaponPipelineComponent
   ],
   templateUrl: './inventory-dashboard.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -77,6 +102,9 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   lowStockCount = 0;
   expiringSoonCount = 0;
 
+  /** Weapon assets + supply pipeline (multi-depot aligned with item summary). */
+  inventoryMonitoring: InventoryDashboardSummaryDto = emptyInventoryMonitoring();
+
   // ── Item summary table ─────────────────────────────────────────────────────
   itemSummaries: ItemInventorySummaryDto[] = [];
   itemSortColumn: string | null = null;
@@ -104,8 +132,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   // ── Icons ──────────────────────────────────────────────────────────────────
   readonly RefreshCw = RefreshCw;
   readonly Package = Package;
-  readonly Layers = Layers;
-  readonly ChartBar = ChartBar;
   readonly Warehouse = Warehouse;
   readonly Search = Search;
   readonly Shield = Shield;
@@ -115,12 +141,18 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     private readonly authService: BackendAuthService,
     private readonly monitoringService: MonitoringService,
     private readonly inventoryService: InventoryService,
+    private readonly inventorySummaryData: InventorySummaryDataService,
     private readonly assetService: AssetService,
     private readonly lookupService: LookupService,
     private readonly translate: TranslateService,
+    private readonly translationService: TranslationService,
     private readonly cdr: ChangeDetectorRef,
     private readonly router: Router
   ) {}
+
+  get isRTL(): boolean {
+    return this.translationService?.isRTL() ?? false;
+  }
 
   ngOnInit(): void {
     this.lookupService.getDepotList().pipe(
@@ -155,12 +187,13 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       map(() => 'navigation')
     );
 
-    const languageChanges$ = this.translate.onLangChange.pipe(map(() => 'language-change'));
+    this.translate.onLangChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.cdr.markForCheck());
 
     merge(
       userChanges$.pipe(distinctUntilChanged()),
       navigationChanges$,
-      languageChanges$,
       this.manualRefresh$
     ).pipe(
       startWith('initial-load'),
@@ -176,6 +209,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
         this.lowStockCount = result.lowStockCount;
         this.expiringSoonCount = result.expiringSoonCount;
         this.itemSummaries = result.itemSummaries;
+        this.inventoryMonitoring = result.inventoryMonitoring ?? emptyInventoryMonitoring();
         this.itemCurrentPage = 1;
         this.expandedItemId = null;
         this.lotDetails = [];
@@ -198,7 +232,10 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     return forkJoin({
       lowStockCount: this.monitoringService.getLowStockItemsCount(singleDepotId).pipe(catchError(() => of(0))),
       expiringSoonCount: this.monitoringService.getExpiringLotsCount(singleDepotId).pipe(catchError(() => of(0))),
-      itemSummaries: this.inventoryService.getAllItemsSummary(ids).pipe(catchError(() => of([])))
+      itemSummaries: this.inventorySummaryData.loadMergedItemSummaries(ids).pipe(catchError(() => of([]))),
+      inventoryMonitoring: this.monitoringService.getInventoryDashboardSummary(ids).pipe(
+        catchError(() => of(emptyInventoryMonitoring()))
+      )
     }).pipe(
       catchError(err => {
         this.errorMessage = ErrorHandler.extractErrorMessage(err, 'Failed to load dashboard data');
@@ -422,19 +459,31 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   }
 
   get sumUsedQtyFiltered(): number {
-    return sumItemSummariesField(this.filteredItemSummaries, 'usedQuantity');
+    return sumItemSummariesField(
+      this.filteredItemSummaries.filter(i => i.itemType !== ItemType.Weapon),
+      'usedQuantity'
+    );
   }
 
   get sumReservedQtyFiltered(): number {
-    return sumItemSummariesField(this.filteredItemSummaries, 'reservedQuantityByOrdersOnProcessing');
+    return sumItemSummariesField(
+      this.filteredItemSummaries.filter(i => i.itemType !== ItemType.Weapon),
+      'reservedQuantityByOrdersOnProcessing'
+    );
   }
 
   get sumRemainingQtyFiltered(): number {
-    return sumItemSummariesField(this.filteredItemSummaries, 'remainingQuantity');
+    return sumItemSummariesField(
+      this.filteredItemSummaries.filter(i => i.itemType !== ItemType.Weapon),
+      'remainingQuantity'
+    );
   }
 
   get sumLotsFiltered(): number {
-    return sumItemSummariesField(this.filteredItemSummaries, 'totalLots');
+    return sumItemSummariesField(
+      this.filteredItemSummaries.filter(i => i.itemType !== ItemType.Weapon),
+      'totalLots'
+    );
   }
 
   // ── Item summary table ─────────────────────────────────────────────────────
@@ -632,6 +681,22 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
   onLowStockClick(): void {
     this.router.navigate(['/inventory-dashboard/low-stock']);
+  }
+
+  onDraftSuppliesClick(): void {
+    const ids = this.selectedDepotIds.length > 0 ? this.selectedDepotIds : undefined;
+    this.router.navigate(
+      ['/inventory-dashboard/draft-supplies'],
+      ids?.length ? { queryParams: { depotIds: ids } } : {}
+    );
+  }
+
+  onOrdersAwaitingClick(): void {
+    const ids = this.selectedDepotIds.length > 0 ? this.selectedDepotIds : undefined;
+    this.router.navigate(
+      ['/inventory-dashboard/orders-awaiting-fulfillment'],
+      ids?.length ? { queryParams: { depotIds: ids } } : {}
+    );
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
