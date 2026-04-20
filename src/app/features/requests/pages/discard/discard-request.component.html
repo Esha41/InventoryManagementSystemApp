@@ -7,8 +7,8 @@
 
     <!-- Item Type Selection Buttons -->
     <div data-onboarding="discard-tabs"
-      class="bg-[var(--color-background)] rounded-lg p-2 shadow-sm border border-[var(--color-border)] overflow-hidden">
-      <nav class="flex gap-1 overflow-x-auto scrollbar-hide" aria-label="Item Type Tabs">
+      class="bg-[var(--color-background)] rounded-lg p-2 shadow-sm border border-[var(--color-border)]">
+      <nav class="flex gap-1 overflow-x-auto scrollbar-hide px-1 py-1" aria-label="Item Type Tabs">
         <button (click)="onItemTypeChange('Ammunition')" [ngClass]="{
             'bg-[var(--color-brand)] text-white shadow-lg scale-105 active-tab': selectedItemType === 'Ammunition',
             'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': selectedItemType !== 'Ammunition'

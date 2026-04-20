@@ -24,34 +24,34 @@
         <table class="min-w-full">
           <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
             <tr>
-              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] tracking-wide">
                 {{ 'inventorySummary.itemName' | translate }}
               </th>
-              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] tracking-wide">
                 {{ 'inventorySummary.itemNo' | translate }}
               </th>
-              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] tracking-wide">
                 {{ 'inventorySummary.type' | translate }}
               </th>
-              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] tracking-wide">
                 {{ 'inventorySummary.nsn' | translate }}
               </th>
-              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] tracking-wide">
                 {{ 'inventorySummary.partNo' | translate }}
               </th>
-              <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+              <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] tracking-wide">
                 {{ 'inventorySummary.totalQty' | translate }}
               </th>
-              <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+              <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] tracking-wide">
                 {{ 'inventorySummary.usedQty' | translate }}
               </th>
-              <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+              <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] tracking-wide">
                 {{ 'inventorySummary.reservedQty' | translate }}
               </th>
-              <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+              <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] tracking-wide">
                 {{ 'inventorySummary.remainingQty' | translate }}
               </th>
-              <th class="px-6 py-3 text-center text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+              <th class="px-6 py-3 text-center text-xs font-medium text-[var(--color-text)] tracking-wide">
                 {{ 'inventorySummary.totalLots' | translate }}
               </th>
             </tr>
@@ -103,14 +103,14 @@
       <div
         class="bg-[var(--color-background)] rounded-lg overflow-hidden shadow-custom-sm border-2 border-[var(--color-border)] mb-6">
         <div class="px-6 py-4 bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
-          <h3 class="text-sm font-semibold text-[var(--color-text)] uppercase tracking-wider">
+          <h3 class="text-sm font-semibold text-[var(--color-text)] tracking-wider">
             {{ 'addInventory.deliveryReceiptInformation' | translate }}
           </h3>
         </div>
         <div class="p-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
                 {{ 'addInventory.deliveryReceipt' | translate }}
               </label>
               <p class="text-sm font-medium text-[var(--color-text)]">
@@ -119,7 +119,7 @@
             </div>
 
             <div>
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
                 {{ 'common.attachments' | translate }}
               </label>
 
@@ -146,7 +146,7 @@
         *ngIf="inventoryDetail?.invoiceNumber || inventoryDetail?.invoiceDate || inventoryDetail?.recievedDate || inventoryDetail?.contractNumber || inventoryDetail?.notes"
         class="bg-[var(--color-background)] rounded-lg overflow-hidden shadow-custom-sm border-2 border-[var(--color-border)] mb-6">
         <div class="px-6 py-4 bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
-          <h3 class="text-sm font-semibold text-[var(--color-text)] uppercase tracking-wider">
+          <h3 class="text-sm font-semibold text-[var(--color-text)] tracking-wider">
             {{ 'editInventoryDetail.invoiceInformation' | translate }}
           </h3>
         </div>
@@ -154,7 +154,7 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Invoice Number -->
             <div *ngIf="inventoryDetail?.invoiceNumber">
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
                 {{ 'editInventoryDetail.invoiceNumber' | translate }}
               </label>
               <p class="text-sm font-medium text-[var(--color-text)]">
@@ -164,7 +164,7 @@
 
             <!-- Invoice Date -->
             <div *ngIf="inventoryDetail?.invoiceDate">
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
                 {{ 'editInventoryDetail.invoiceDate' | translate }}
               </label>
               <p class="text-sm font-medium text-[var(--color-text)]">
@@ -174,7 +174,7 @@
 
             <!-- Received Date -->
             <div *ngIf="inventoryDetail?.recievedDate">
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
                 {{ 'editInventoryDetail.receivedDate' | translate }}
               </label>
               <p class="text-sm font-medium text-[var(--color-text)]">
@@ -185,7 +185,7 @@
 
             <!-- Contract Number -->
             <div>
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
                 {{ 'editInventoryDetail.contractNumber' | translate }}
               </label>
               <p class="text-sm font-medium text-[var(--color-text)]">
@@ -195,7 +195,7 @@
 
             <!-- Notes -->
             <div *ngIf="inventoryDetail?.notes" class="md:col-span-2">
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
                 {{ 'editInventoryDetail.notes' | translate }}
               </label>
               <p class="text-sm text-[var(--color-text)] whitespace-pre-wrap">
@@ -210,7 +210,7 @@
       <div
         class="bg-[var(--color-background)] rounded-lg overflow-hidden shadow-custom-sm border-2 border-[var(--color-border)]">
         <div class="px-6 py-4 bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
-          <h3 class="text-sm font-semibold text-[var(--color-text)] uppercase tracking-wider">
+          <h3 class="text-sm font-semibold text-[var(--color-text)] tracking-wider">
             {{ 'inventorySummary.lotDetails' | translate }}
           </h3>
         </div>
@@ -231,40 +231,40 @@
             <table class="min-w-full">
               <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
                 <tr>
-                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] tracking-wide">
                     {{ 'inventorySummary.lotNumber' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] tracking-wide">
                     {{ 'inventorySummary.depot' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] tracking-wide">
                     {{ 'inventorySummary.supplier' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] tracking-wide">
                     {{ 'inventorySummary.manufacturer' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] tracking-wide">
                     {{ 'inventorySummary.country' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] tracking-wide">
                     {{ 'inventorySummary.primaryPurpose' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] tracking-wide">
                     {{ 'inventorySummary.batchNo' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] tracking-wide">
                     {{ 'inventorySummary.expiryDate' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                  <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] tracking-wide">
                     {{ 'inventorySummary.originalQty' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                  <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] tracking-wide">
                     {{ 'inventorySummary.usedQty' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                  <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] tracking-wide">
                     {{ 'inventorySummary.reservedQty' | translate }}
                   </th>
-                  <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] uppercase tracking-wide">
+                  <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] tracking-wide">
                     {{ 'inventorySummary.remainingQty' | translate }}
                   </th>
                 </tr>
