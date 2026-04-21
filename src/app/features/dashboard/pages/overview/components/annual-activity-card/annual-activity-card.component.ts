@@ -8,7 +8,6 @@ import { TranslateModule } from '@ngx-translate/core';
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './annual-activity-card.component.html',
-  styleUrls: ['./annual-activity-card.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AnnualActivityCardComponent {

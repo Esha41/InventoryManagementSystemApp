@@ -13,7 +13,6 @@ import { Subject, takeUntil } from 'rxjs';
   standalone: true,
   imports: [CommonModule, LucideAngularModule, TranslateModule],
   templateUrl: './return-details-modal.component.html',
-  styleUrls: ['./return-details-modal.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ReturnDetailsModalComponent implements OnInit, OnDestroy {

@@ -1,61 +1,80 @@
-<div class="app-dropdown" [class.app-dropdown-disabled]="disabled" [class.app-dropdown-error]="error">
+<div class="relative w-full">
   <button
     type="button"
-    class="app-dropdown-trigger"
-    [class.app-dropdown-open]="isOpen"
+    class="app-dropdown-trigger w-full flex items-center justify-between gap-3 py-2.5 px-4 rounded-xl border-2 border-border bg-background text-text text-sm font-medium outline-none transition-[border-color,box-shadow] duration-200 ease-in-out motion-reduce:transition-none disabled:cursor-not-allowed disabled:opacity-60 enabled:hover:border-[rgba(var(--app-dropdown-accent-color-rgb),0.6)] enabled:hover:shadow-[0_0_0_4px_rgba(var(--app-dropdown-accent-color-rgb),0.12)] focus-visible:border-[rgba(var(--app-dropdown-accent-color-rgb),0.6)] focus-visible:shadow-[0_0_0_4px_rgba(var(--app-dropdown-accent-color-rgb),0.12)] data-[trigger-state=open]:border-[var(--app-dropdown-accent-color)] data-[trigger-state=open]:shadow-[0_0_0_4px_rgba(var(--app-dropdown-accent-color-rgb),0.12)] data-[trigger-state=error]:border-[rgba(var(--color-danger-rgb,220,38,38),0.8)] data-[trigger-state=error]:shadow-[0_0_0_3px_rgba(var(--color-danger-rgb,220,38,38),0.12)] data-[trigger-state=error]:enabled:hover:border-[rgba(var(--color-danger-rgb,220,38,38),1)] data-[trigger-state=error]:enabled:hover:shadow-[0_0_0_3px_rgba(var(--color-danger-rgb,220,38,38),0.18)] data-[trigger-state=error]:focus-visible:border-[rgba(var(--color-danger-rgb,220,38,38),1)] data-[trigger-state=error]:focus-visible:shadow-[0_0_0_3px_rgba(var(--color-danger-rgb,220,38,38),0.18)]"
+    [attr.data-trigger-state]="error ? 'error' : isOpen ? 'open' : 'idle'"
     [attr.disabled]="disabled ? true : null"
     (click)="toggleDropdown()"
     (blur)="onTriggerBlur()"
   >
-    <span class="app-dropdown-label" [class.app-dropdown-placeholder]="!hasSelection">
+    <span
+      class="flex-1 min-w-0 text-start text-sm whitespace-nowrap overflow-hidden text-ellipsis"
+      [class.text-text-muted]="!hasSelection"
+      [class.font-normal]="!hasSelection"
+      [class.font-medium]="hasSelection"
+    >
       {{ displayLabel }}
     </span>
     <lucide-angular
       [img]="ChevronDown"
-      class="app-dropdown-icon"
-      [class.app-dropdown-icon-rotated]="isOpen"
+      class="shrink-0 w-4 h-4 text-text-muted flex items-center justify-center origin-center transition-[transform,color] duration-200 ease-in-out motion-reduce:transition-none"
+      [class.rotate-180]="isOpen"
     ></lucide-angular>
   </button>
 
-  <div class="app-dropdown-panel" *ngIf="isOpen">
-    <!-- Add Action (when addActionLabel is set, shown at top of panel) -->
-    <div *ngIf="addActionLabel" class="app-dropdown-add-action border-b border-[var(--color-border)] p-2">
-      <button type="button" (click)="onAddActionClick($event)"
-        class="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 rounded-lg transition-colors">
+  <div
+    class="app-dropdown-panel absolute top-[calc(100%+0.5rem)] left-0 right-0 z-[99999] rounded-xl border-2 border-border bg-background shadow-[var(--shadow-xl)] overflow-hidden transition-colors duration-200 ease-in-out motion-reduce:transition-none"
+    *ngIf="isOpen"
+  >
+    <div *ngIf="addActionLabel" class="border-b border-border p-2">
+      <button
+        type="button"
+        (click)="onAddActionClick($event)"
+        class="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 rounded-lg transition-colors"
+      >
         {{ addActionLabel | translate }}
       </button>
     </div>
-    <!-- Search Input (hidden when showSearch=false, e.g. rows-per-page with few options) -->
-    <div class="app-dropdown-search" *ngIf="showSearch && options && options.length > 0" (click)="onSearchClick($event)">
+    <div
+      class="p-3 border-b border-border bg-background transition-colors duration-200 ease-in-out motion-reduce:transition-none"
+      *ngIf="showSearch && options && options.length > 0"
+      (click)="onSearchClick($event)"
+    >
       <div class="relative flex items-center">
         <span
-          class="pointer-events-none absolute inset-y-0 z-[1] flex w-10 items-center justify-center text-[var(--color-text-muted)]"
-          [ngClass]="{'start-0': !isRTL, 'end-0': isRTL}"
+          class="pointer-events-none absolute inset-y-0 z-[1] flex w-10 items-center justify-center text-text-muted"
+          [ngClass]="{ 'start-0': !isRTL, 'end-0': isRTL }"
           aria-hidden="true"
         >
           <lucide-angular [img]="Search" class="h-4 w-4 shrink-0"></lucide-angular>
         </span>
         <input
           type="text"
-          class="app-dropdown-search-input"
+          class="w-full min-h-10 box-border py-2 border border-border rounded-lg text-sm leading-5 text-text bg-background transition-[border-color,box-shadow] duration-200 ease-in-out text-start focus:outline-none focus:border-[var(--app-dropdown-accent-color)] focus:shadow-[0_0_0_2px_rgba(var(--app-dropdown-accent-color-rgb),0.12)] placeholder:text-text-muted motion-reduce:transition-none"
           [value]="searchTerm"
           (input)="onSearchChange($event)"
           (click)="onSearchClick($event)"
           [placeholder]="'common.search' | translate"
-          style="text-align: start;"
-          [ngStyle]="isRTL
-            ? { paddingInlineStart: '0.75rem', paddingInlineEnd: '2.5rem' }
-            : { paddingInlineStart: '2.5rem', paddingInlineEnd: '0.75rem' }"
+          style="text-align: start"
+          [ngStyle]="
+            isRTL
+              ? { paddingInlineStart: '0.75rem', paddingInlineEnd: '2.5rem' }
+              : { paddingInlineStart: '2.5rem', paddingInlineEnd: '0.75rem' }
+          "
         />
       </div>
     </div>
 
-    <ul class="app-dropdown-list" [ngClass]="panelClass">
+    <ul
+      class="app-dropdown-list dropdown-list-scroll max-h-60 overflow-y-auto m-0 p-0 list-none [scrollbar-width:thin] [scrollbar-color:var(--color-text-muted)_var(--color-background-active)]"
+      [ngClass]="panelClass"
+    >
       <li
-        class="app-dropdown-option"
+        class="app-dropdown-option py-2.5 px-4 text-sm text-text cursor-pointer transition-[background-color,color] duration-150 ease-in-out motion-reduce:transition-none hover:bg-background-hover"
         *ngFor="let option of computedOptions; let idx = index; trackBy: trackOption"
-        [class.app-dropdown-option-selected]="isSelected(option)"
-        [class.app-dropdown-option-disabled]="isOptionDisabled(option)"
+        [ngClass]="isOptionDisabled(option) ? 'opacity-60 cursor-not-allowed hover:!bg-transparent' : ''"
+        [class.font-semibold]="isSelected(option)"
+        [style.background-color]="isSelected(option) ? 'rgba(var(--app-dropdown-accent-color-rgb), 0.08)' : null"
         (click)="selectOption(option)"
       >
         <span *ngIf="multiple" class="flex items-center gap-2 w-full">
@@ -64,18 +83,16 @@
             [checked]="isSelected(option)"
             (click)="$event.stopPropagation()"
             (change)="selectOption(option)"
-            class="h-4 w-4 rounded border-2 border-[var(--color-border)] text-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/20 cursor-pointer"
+            class="h-4 w-4 rounded border-2 border-border text-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/20 cursor-pointer"
             [disabled]="isOptionDisabled(option)"
           />
           <span class="flex-1">{{ getOptionLabel(option) }}</span>
         </span>
         <span *ngIf="!multiple">{{ getOptionLabel(option) }}</span>
       </li>
-      <li class="app-dropdown-empty" *ngIf="computedOptions.length === 0">
+      <li class="py-3 px-4 text-sm text-text-muted text-center" *ngIf="computedOptions.length === 0">
         {{ searchTerm ? ('common.noResultsFound' | translate) : noDataText }}
       </li>
     </ul>
   </div>
 </div>
-
-

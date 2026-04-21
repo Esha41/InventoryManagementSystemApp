@@ -193,7 +193,7 @@ export class CartridgeDataService {
         if (allowanceItems.length === 0) {
           return of({
             cartridges: [],
-            error: 'No allowance items found for your department this year. Please contact your administrator.'
+            error: this.translateService.instant('newIssueRequest.noAllowanceItemsFound')
           });
         }
 

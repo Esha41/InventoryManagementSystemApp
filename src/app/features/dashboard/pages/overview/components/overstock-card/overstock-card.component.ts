@@ -15,7 +15,6 @@ export interface OverstockItemView {
   standalone: true,
   imports: [CommonModule, TranslateModule],
   templateUrl: './overstock-card.component.html',
-  styleUrls: ['./overstock-card.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OverstockCardComponent {

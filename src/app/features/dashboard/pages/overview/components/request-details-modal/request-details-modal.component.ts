@@ -37,7 +37,6 @@ export type UnifiedRequestItemDto = OrderRequestItemDto | ReturnItemDto | Discar
   standalone: true,
   imports: [CommonModule, LucideAngularModule, TranslateModule],
   templateUrl: './request-details-modal.component.html',
-  styleUrls: ['./request-details-modal.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RequestDetailsModalComponent implements OnInit, OnDestroy {

@@ -1,334 +1,71 @@
-/* Dashboard specific styles */
-
-/* Industry standard: min-height: 0 on flex children allows them to shrink below content size.
-   page-wrapper uses min-h-screen globally, but inside main layout the scroll area is < 100vh. */
-:host .page-wrapper {
-  min-height: 0;
-  padding-bottom: 0; /* Eliminate bottom padding - last child handles spacing */
-}
-
-/* Min-height only when loading/empty so overlay has space; avoids forcing height when cards fit */
-.dashboard-main-content {
-  min-height: 0;
-  padding-bottom: 0.5rem; /* Override page-container py - reduces accumulated bottom space */
-}
-.dashboard-main-content--tall {
-  min-height: 400px;
-}
-
-/* Smooth animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-/* Use margin instead of transform to avoid creating a containing block that breaks
-   position:fixed dropdowns (e.g. filter dropdowns) - transform constrains fixed positioning */
-@keyframes slideInRight {
-  from {
-    margin-inline-start: 2rem;
-    opacity: 0;
-  }
-
-  to {
-    margin-inline-start: 0;
-    opacity: 1;
-  }
-}
-
-@keyframes slideInFromBottom {
-  from {
-    transform: translateY(1rem);
-    opacity: 0;
-  }
-
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.animate-slide-in-right {
-  animation: slideInRight 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.animate-in {
-  animation: fadeIn 0.2s ease-out;
-}
-
-.fade-in {
-  animation: fadeIn 0.2s ease-out;
-}
-
-.slide-in-from-bottom-4 {
-  animation: slideInFromBottom 0.3s ease-out;
-}
-
-/* Card hover effects */
-app-status-card {
-  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
-  height: 100%;
-  /* Ensure cards fill their grid cells */
-  max-height: 750px;
-  /* Increased card height for better scrolling */
-  /* Prevent cards from stretching too wide - set reasonable max width */
-  max-width: 100%;
+/* Child layout internals (request-filter-bar / app-dropdown): no Tailwind equivalent from this template. */
+::ng-deep app-request-filter-bar[layout='unified'] {
+  min-width: 0;
   width: 100%;
 }
 
-/* Prevent cards from stretching too much on large screens */
-@media (min-width: 1280px) {
-  app-status-card {
-    max-width: 400px;
-    /* Reasonable max width for cards on large screens */
-    margin-left: auto;
-    margin-right: auto;
-    /* Center cards when they hit max-width constraint */
-  }
-}
-
-/* On 2xl screens, allow slightly wider cards but still constrain */
-@media (min-width: 1536px) {
-  app-status-card {
-    max-width: 450px;
-    /* Slightly wider for 2xl screens but still constrained */
-    margin-left: auto;
-    margin-right: auto;
-    /* Center cards when they hit max-width constraint */
-  }
-}
-
-app-status-card:hover {
-  transform: translateY(-2px);
-}
-
-/* Ensure grid items stretch to same height */
-.grid>app-status-card {
-  display: flex;
-  flex-direction: column;
-}
-
-/* Set max-height on grid container items */
-.grid.grid-cols-1>app-status-card,
-.grid.md\\:grid-cols-2>app-status-card,
-.grid.lg\\:grid-cols-3>app-status-card,
-.grid.xl\\:grid-cols-4>app-status-card,
-.grid.\\32xl\\:grid-cols-5>app-status-card {
-  max-height: 750px;
-  /* Increased card height for better scrolling */
-}
-
-/* Responsive grid adjustments */
-@media (max-width: 1024px) {
-  .grid.lg\\:grid-cols-3 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 768px) {
-  .grid.lg\\:grid-cols-3 {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Cards grid inherits page-container max-width constraints */
-/* Grid items will naturally respect card max-width constraints */
-
-/* Custom scrollbar for modal */
-.overflow-y-auto::-webkit-scrollbar {
-  width: 6px;
-}
-
-.overflow-y-auto::-webkit-scrollbar-track {
-  background: var(--color-background-muted);
-  border-radius: var(--radius-md);
-}
-
-.overflow-y-auto::-webkit-scrollbar-thumb {
-  background: var(--color-text-muted);
-  border-radius: var(--radius-md);
-}
-
-.overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text);
-}
-
-/* Soft shadow utility */
-.shadow-soft {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-/* Balanced dropdown width for optimized layout */
-::ng-deep app-dropdown.w-44 {
-  width: 11rem !important;
-  min-width: 11rem !important;
-  max-width: 11rem !important;
-  flex-shrink: 0;
-  display: block;
-}
-
-::ng-deep app-dropdown.w-44 .app-dropdown,
-::ng-deep app-dropdown.w-44 .app-dropdown-trigger {
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0;
-  height: 2.5rem !important;
-  border-radius: var(--radius-lg) !important;
-  border-color: var(--color-border) !important;
-}
-
-::ng-deep app-dropdown.w-44 .app-dropdown-panel {
-  width: 100% !important;
-  max-width: 11rem !important;
-  min-width: 0;
-  margin-top: 0.5rem;
-  z-index: 100 !important;
-  box-shadow: var(--shadow-lg) !important;
-}
-
-/* Compact dropdown width for efficient layout */
-::ng-deep app-dropdown.w-40 {
-  width: 10rem !important;
-  min-width: 10rem !important;
-  max-width: 10rem !important;
-  flex-shrink: 0;
-  display: block;
-}
-
-::ng-deep app-dropdown.w-40 .app-dropdown,
-::ng-deep app-dropdown.w-40 .app-dropdown-trigger {
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0;
-  height: 2.25rem !important;
-  /* py-2 equivalent */
-  border-radius: var(--radius-md) !important;
-  border-color: var(--color-border) !important;
-}
-
-::ng-deep app-dropdown.w-40 .app-dropdown-panel {
-  width: 100% !important;
-  max-width: 10rem !important;
-  min-width: 0;
-  margin-top: 0.25rem;
-  z-index: 100 !important;
-  box-shadow: var(--shadow-md) !important;
-}
-
-/* Search input styling refinements */
-.dashboard-search-input {
+::ng-deep app-request-filter-bar[layout='unified'] .dashboard-search-input {
+  min-width: 0 !important;
+  width: 100%;
+  font-size: 0.875rem;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.dashboard-search-input:focus {
+::ng-deep app-request-filter-bar[layout='unified'] .dashboard-search-input:focus {
   outline: none;
   background-color: var(--color-background);
   box-shadow: inset 0 0 0 2px var(--color-brand-light, rgba(208, 184, 136, 0.2));
 }
 
-/* Action Required styles */
-.action-required-row {
-  border-left: 4px solid var(--color-brand) !important;
-  background-color: rgba(37, 99, 235, 0.05);
-  /* Subtle blue tint */
-}
-
-.action-required-row:hover {
-  background-color: rgba(37, 99, 235, 0.08) !important;
-}
-
-@keyframes pulse {
-
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.7;
-  }
-}
-
-.animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Dashboard filter bar: let flexbox handle sizing naturally; no rigid min-widths */
-::ng-deep app-request-filter-bar[layout="unified"] {
-  min-width: 0;
-  width: 100%;
-}
-
-::ng-deep app-request-filter-bar[layout="unified"] .dashboard-search-input {
-  min-width: 0 !important;
-  width: 100%;
-  font-size: 0.875rem;
-}
-
-/* Search bar: full width when stacked; grows in row only at xl+ */
-::ng-deep app-request-filter-bar[layout="unified"] > div > div:first-child {
+::ng-deep app-request-filter-bar[layout='unified'] > div > div:first-child {
   min-width: 0 !important;
   flex: 0 0 auto !important;
   width: 100%;
 }
 
 @media (min-width: 1280px) {
-  ::ng-deep app-request-filter-bar[layout="unified"] > div > div:first-child {
+  ::ng-deep app-request-filter-bar[layout='unified'] > div > div:first-child {
     flex: 1 1 0% !important;
     width: auto;
   }
 }
 
-/* Filters container: shrinkable */
-::ng-deep app-request-filter-bar[layout="unified"] > div > div:last-child {
+::ng-deep app-request-filter-bar[layout='unified'] > div > div:last-child {
   min-width: 0 !important;
   flex: 0 1 auto !important;
 }
 
-/* Dropdown: flexible, capped width */
-::ng-deep app-request-filter-bar[layout="unified"] app-dropdown {
+::ng-deep app-request-filter-bar[layout='unified'] app-dropdown {
   min-width: 0 !important;
   flex: 0 1 auto !important;
 }
 
-::ng-deep app-request-filter-bar[layout="unified"] app-dropdown .app-dropdown,
-::ng-deep app-request-filter-bar[layout="unified"] app-dropdown .app-dropdown-trigger {
+::ng-deep app-request-filter-bar[layout='unified'] app-dropdown .app-dropdown,
+::ng-deep app-request-filter-bar[layout='unified'] app-dropdown .app-dropdown-trigger {
   width: 100% !important;
   min-width: 0 !important;
 }
 
-/* Mobile: full-width stacked controls */
 @media (max-width: 640px) {
-  ::ng-deep app-request-filter-bar[layout="unified"] app-dropdown {
+  ::ng-deep app-request-filter-bar[layout='unified'] app-dropdown {
     width: 100% !important;
     max-width: 100% !important;
   }
 }
 
-/* xl+: unified bar is horizontal; stable filter row + dropdown width */
 @media (min-width: 1280px) {
-  ::ng-deep app-request-filter-bar[layout="unified"] > div > div:last-child {
+  ::ng-deep app-request-filter-bar[layout='unified'] > div > div:last-child {
     flex-shrink: 0 !important;
   }
 
-  ::ng-deep app-request-filter-bar[layout="unified"] app-dropdown {
+  ::ng-deep app-request-filter-bar[layout='unified'] app-dropdown {
     width: 14rem !important;
     flex: 0 0 auto !important;
   }
 }
 
-/* 2xl+: extra room */
 @media (min-width: 1536px) {
-  ::ng-deep app-request-filter-bar[layout="unified"] app-dropdown {
+  ::ng-deep app-request-filter-bar[layout='unified'] app-dropdown {
     width: 16rem !important;
   }
 }

@@ -22,7 +22,6 @@ import {
   standalone: true,
   imports: [CommonModule, LucideAngularModule, TranslateModule],
   templateUrl: './order-details-modal.component.html',
-  styleUrls: ['./order-details-modal.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OrderDetailsModalComponent implements OnInit, OnDestroy {

@@ -13,7 +13,6 @@ import { Subject, takeUntil } from 'rxjs';
   standalone: true,
   imports: [CommonModule, LucideAngularModule, TranslateModule],
   templateUrl: './discard-details-modal.component.html',
-  styleUrls: ['./discard-details-modal.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DiscardDetailsModalComponent implements OnInit, OnDestroy {

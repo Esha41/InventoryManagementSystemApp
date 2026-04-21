@@ -1,11 +1,11 @@
-<div class="page-wrapper">
+<div class="page-wrapper min-h-0 pb-0">
   <!-- Balanced Header Section -->
   <div
     class="bg-gradient-to-br from-[var(--color-brand)]/5 to-transparent border-b border-[var(--color-border)] mb-6 md:mb-10 relative">
     <div class="page-container py-6 md:py-8 relative z-10">
       <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 md:gap-6">
         <!-- Title & Subtitle -->
-        <div class="animate-fade-in min-w-0 flex-shrink-0">
+        <div class="min-w-0 flex-shrink-0 animate-dashboard-header-fade">
           <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--color-text)] mb-1 tracking-tight">
             {{ 'dashboard.title' | translate }}
           </h1>
@@ -16,7 +16,7 @@
 
         <!-- Filters & View Toggle: stack until xl (1280px) — at ~1058px side-by-side caused dropdown to overlap grid toggle -->
         <div *ngIf="totalItems > 0 || searchQuery || selectedStatusFilter !== 'all'"
-          class="flex flex-col xl:flex-row items-stretch xl:items-center gap-4 xl:gap-5 animate-slide-in-right w-full xl:w-auto min-w-0">
+          class="flex flex-col xl:flex-row items-stretch xl:items-center gap-4 xl:gap-5 w-full xl:w-auto min-w-0">
 
           <!-- Shared Filter Bar Component -->
           <div class="w-full xl:flex-1 min-w-0">
@@ -51,7 +51,10 @@
   </div>
 
   <!-- Main Content -->
-  <div class="page-container relative dashboard-main-content" [class.dashboard-main-content--tall]="isLoading || visibleCards.length === 0">
+  <div
+    class="page-container relative min-h-0 pb-2"
+    [ngClass]="{ 'min-h-[400px]': isLoading || visibleCards.length === 0 }"
+  >
     <!-- Loading Overlay -->
     <div *ngIf="isLoading"
       class="absolute inset-0 z-50 flex items-center justify-center bg-[var(--color-background)]/60 backdrop-blur-[2px]">
@@ -59,12 +62,14 @@
         <div
           class="w-12 h-12 border-4 border-[var(--color-brand)]/20 border-t-[var(--color-brand)] rounded-full animate-spin">
         </div>
-        <p class="text-sm font-medium text-[var(--color-text)] animate-pulse">{{ 'common.loading' | translate }}...</p>
+        <p class="text-sm font-medium text-[var(--color-text)] animate-dashboard-pulse">{{ 'common.loading' | translate }}...</p>
       </div>
     </div>
     <!-- Status Cards Grid -->
-    <div *ngIf="viewMode === 'grid' && visibleCards.length > 0"
-      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-6 mb-6 md:mb-8">
+    <div
+      *ngIf="viewMode === 'grid' && visibleCards.length > 0"
+      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-6 mb-6 md:mb-8 max-md:!grid-cols-1 max-[1024px]:lg:!grid-cols-2 [&>app-status-card]:flex [&>app-status-card]:flex-col [&>app-status-card]:h-full [&>app-status-card]:w-full [&>app-status-card]:max-h-[750px] [&>app-status-card]:max-w-full [&>app-status-card]:transition-[transform,box-shadow] [&>app-status-card]:duration-200 [&>app-status-card]:ease-out [&>app-status-card]:hover:-translate-y-0.5 xl:[&>app-status-card]:mx-auto xl:[&>app-status-card]:max-w-[400px] 2xl:[&>app-status-card]:max-w-[450px]"
+    >
       <app-status-card *ngFor="let card of paginatedCards; trackBy: trackByCard" [title]="card.title" [status]="card.status"
         [orders]="card.orders" [orderRequestId]="card.orderRequestId || null"
         [returnRequestId]="card.returnRequestId || null" [discardRequestId]="card.discardRequestId || null"
@@ -99,18 +104,18 @@
           <div class="grid grid-cols-2 gap-3 text-sm mb-4">
             <div>
               <p class="text-[var(--color-text-muted)] text-xs mb-0.5">{{ 'dashboard.department' | translate }}</p>
-              <p class="font-medium text-[var(--color-text)] truncate">{{ card.orders[0].departmentName || 'N/A' }}</p>
+              <p class="font-medium text-[var(--color-text)] truncate">{{ displayDepartment(card.orders[0]) }}</p>
             </div>
             <div>
               <p class="text-[var(--color-text-muted)] text-xs mb-0.5">{{ 'dashboard.requester' | translate }}</p>
-              <p class="font-medium text-[var(--color-text)] truncate">{{ card.orders[0].requesterName || 'N/A' }}</p>
+              <p class="font-medium text-[var(--color-text)] truncate">{{ displayRequester(card.orders[0]) }}</p>
             </div>
           </div>
 
           <!-- Footer / Actions -->
           <div class="flex items-center justify-between pt-3 border-t border-[var(--color-border-muted)]">
             <span *ngIf="card.isMyTurn"
-              class="text-[10px] font-bold text-[var(--color-brand)] uppercase tracking-wider animate-pulse">
+              class="text-[10px] font-bold text-[var(--color-brand)] uppercase tracking-wider animate-dashboard-pulse">
               {{ 'requestsManagement.actionRequired' | translate }}
             </span>
             <span *ngIf="!card.isMyTurn"></span> <!-- Spacer if needed -->
@@ -209,10 +214,10 @@
                 {{ formatApprovalDateTime(card.orders[0].requestDate) || 'N/A' }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
-                {{ card.orders[0].departmentName || 'N/A' }}
+                {{ displayDepartment(card.orders[0]) }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
-                {{ card.orders[0].requesterName || 'N/A' }}
+                {{ displayRequester(card.orders[0]) }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center gap-2">

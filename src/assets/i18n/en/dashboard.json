@@ -95,7 +95,7 @@
       "assigned": "Assigned",
       "inDepot": "In depot",
       "draftSupplies": "Pending issuance requests",
-      "ordersAwaiting": "Orders awaiting fulfillment"
+      "ordersAwaiting": "Orders completed but not fully fulfilled"
     },
     "itemType": {
       "ammunition": "Ammunition",
@@ -244,9 +244,9 @@
       }
     },
     "ordersAwaitingPage": {
-      "title": "Orders awaiting fulfillment",
+      "title": "Orders completed but not fully fulfilled",
       "subtitle": "Approved orders not fully supplied (ammunition/explosives and/or weapons)",
-      "empty": "No orders awaiting fulfillment in scope",
+      "empty": "No orders completed but not fully fulfilled in scope",
       "cols": {
         "order": "Order",
         "status": "Status"

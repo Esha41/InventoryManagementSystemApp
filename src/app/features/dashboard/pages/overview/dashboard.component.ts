@@ -26,6 +26,7 @@ import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.co
 import { RequestFilterBarComponent, StatusFilter } from '@components/request-filter-bar/request-filter-bar.component';
 import { formatTimeToMilitary, formatDateTimeExtended } from '@utils/format.utils';
 import { defaultPageSize } from '@constants/app.constants';
+import { localizedBilingualLabel } from '@utils/localization.utils';
 
 @Component({
   selector: 'app-dashboard',
@@ -115,6 +116,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   // Helper for status translation in table view
+  displayDepartment(order: OrderItem | undefined): string {
+    if (!order) return 'N/A';
+    const lang = this.translate.currentLang || this.translate.defaultLang || 'en';
+    return localizedBilingualLabel(order.departmentNameEn, order.departmentNameAr, order.departmentName, lang);
+  }
+
+  displayRequester(order: OrderItem | undefined): string {
+    if (!order) return 'N/A';
+    const lang = this.translate.currentLang || this.translate.defaultLang || 'en';
+    return localizedBilingualLabel(order.requesterNameEn, order.requesterNameAr, order.requesterName, lang);
+  }
+
   getStatusTranslationKey(status: string): string {
     switch (status) {
       case 'new-issue':
@@ -205,13 +218,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
       map(() => 'navigation')
     );
 
-    const languageChanges$ = this.translate.onLangChange.pipe(
-      map(() => 'language-change')
-    );
-
     // Merge all triggers and use distinctUntilChanged with a time window
     // to prevent duplicate calls within a short time frame
-    merge(userChanges$, statusUpdates$, navigationChanges$, languageChanges$)
+    merge(userChanges$, statusUpdates$, navigationChanges$)
       .pipe(
         debounceTime(100), // Small debounce to handle rapid successive events
         takeUntil(this.destroy$)
@@ -219,6 +228,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this.loadAllRequests();
       });
+
+    this.translate.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
   }
 
   /**

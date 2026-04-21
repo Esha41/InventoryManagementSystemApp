@@ -1,12 +1,19 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, MoreVertical, Eye } from 'lucide-angular';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Subject, takeUntil } from 'rxjs';
 import { formatTimeToMilitary, formatDateTimeExtended } from '@utils/format.utils';
+import { localizedBilingualLabel } from '@utils/localization.utils';
 
 export interface OrderItem {
   orderId: string;
   requestDate: string;
+  /** Preferred: bilingual fields; UI resolves via localizedBilingualLabel */
+  departmentNameEn?: string;
+  departmentNameAr?: string;
+  requesterNameEn?: string;
+  requesterNameAr?: string;
+  /** Legacy single string (e.g. search); prefer En/Ar for display */
   departmentName?: string;
   requesterName?: string;
   items?: ReturnItem[];
@@ -26,12 +33,14 @@ export type StatusType = 'new-issue' | 'on-progress' | 'completed' | 'new' | 'de
 @Component({
   selector: 'app-status-card',
   standalone: true,
-  imports: [CommonModule, TranslateModule, LucideAngularModule],
+  imports: [CommonModule, TranslateModule],
   templateUrl: './status-card.component.html',
   styleUrls: ['./status-card.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class StatusCardComponent {
+export class StatusCardComponent implements OnInit, OnDestroy {
+  private readonly destroy$ = new Subject<void>();
+
   @Input() title: string = '';
   @Input() status: StatusType = 'new-issue';
   @Input() orders: OrderItem[] = [];
@@ -43,8 +52,29 @@ export class StatusCardComponent {
   @Output() viewDetails = new EventEmitter<number>();
   @Output() viewDiscardDetails = new EventEmitter<number>();
 
-  readonly MoreVertical = MoreVertical;
-  readonly Eye = Eye;
+  constructor(
+    private readonly translate: TranslateService,
+    private readonly cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
+    this.translate.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  displayDepartment(order: OrderItem): string {
+    const lang = this.translate.currentLang || this.translate.defaultLang || 'en';
+    return localizedBilingualLabel(order.departmentNameEn, order.departmentNameAr, order.departmentName, lang);
+  }
+
+  displayRequester(order: OrderItem): string {
+    const lang = this.translate.currentLang || this.translate.defaultLang || 'en';
+    return localizedBilingualLabel(order.requesterNameEn, order.requesterNameAr, order.requesterName, lang);
+  }
 
   onViewDetails(): void {
     if (this.orderRequestId) {
@@ -86,39 +116,41 @@ export class StatusCardComponent {
     );
   }
 
-  getDotColor(): string {
+  /** Status dot fill (matches previous BEM color tokens). */
+  getDotBg(): string {
     switch (this.status) {
       case 'new-issue':
       case 'new':
-        return 'status-card__dot--new';
+        return 'bg-[#e5e7eb]';
       case 'on-progress':
-        return 'status-card__dot--progress';
+        return 'bg-[#f59e0b]';
       case 'completed':
-        return 'status-card__dot--done';
+        return 'bg-[#10b981]';
       case 'declined':
-        return 'status-card__dot--declined';
+        return 'bg-[#ef4444]';
       case 'returned':
-        return 'status-card__dot--returned';
+        return 'bg-[#a855f7]';
       default:
-        return 'status-card__dot--muted';
+        return 'bg-[#e9ebf0]';
     }
   }
 
-  getDividerClass(): string {
+  /** Accent bar under header (matches previous divider tokens). */
+  getDividerBg(): string {
     switch (this.status) {
       case 'new-issue':
       case 'new':
-        return 'status-card__divider--new';
+        return 'bg-[#7c5afe]';
       case 'on-progress':
-        return 'status-card__divider--progress';
+        return 'bg-[#f59e0b]';
       case 'completed':
-        return 'status-card__divider--done';
+        return 'bg-[#10b981]';
       case 'declined':
-        return 'status-card__divider--declined';
+        return 'bg-[#ef4444]';
       case 'returned':
-        return 'status-card__divider--returned';
+        return 'bg-[#a855f7]';
       default:
-        return 'status-card__divider--muted';
+        return 'bg-[#e5e7eb]';
     }
   }
 

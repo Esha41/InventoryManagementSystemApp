@@ -9,6 +9,7 @@ import { ReturnDto } from '@models/return.model';
 import { DiscardService } from './discard.service';
 import { DiscardDto } from '@models/discard.model';
 import { DashboardCard } from '@models/dashboard.model';
+import { OrderItem } from '@dashboard/pages/overview/components/status-card/status-card.component';
 import {
   mapRequestStatusToCardStatus,
   getRequestTitle,
@@ -17,8 +18,6 @@ import {
   DisplayableRequest
 } from '@utils/dashboard.utils';
 import { mapToOrderDto, mapToReturnDto, mapToDiscardDto, separateRequestsByType } from '@utils/request-type-mapper.utils';
-import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
-import { TranslateService } from '@ngx-translate/core';
 import { PaginatedList, PagedRequest } from '@models/api-response.model';
 import { RequestType } from '@utils/request-type-mapper.utils';
 
@@ -35,8 +34,7 @@ export class DashboardDataService {
     private readonly unifiedRequestService: UnifiedRequestService,
     private readonly orderService: OrderService,
     private readonly returnService: ReturnService,
-    private readonly discardService: DiscardService,
-    private readonly translate: TranslateService
+    private readonly discardService: DiscardService
   ) { }
 
   /**
@@ -101,8 +99,7 @@ export class DashboardDataService {
               orders: [{
                 orderId: getRequestTitle(order, order.orderNo),
                 requestDate: order.creationDate ? (typeof order.creationDate === 'string' ? order.creationDate : order.creationDate.toISOString()) : '',
-                departmentName: this.resolveOrderDepartmentName(order),
-                requesterName: this.resolveRequesterName(order),
+                ...this.buildOrderItemNameFieldsFromOrder(order),
                 items: mapRequestItems(order.requestItems)
               }],
               permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
@@ -117,8 +114,7 @@ export class DashboardDataService {
               orders: [{
                 orderId: getRequestTitle(ret),
                 requestDate: ret.creationDate ? (typeof ret.creationDate === 'string' ? ret.creationDate : ret.creationDate.toISOString()) : '',
-                departmentName: this.resolveReturnDepartmentName(ret),
-                requesterName: this.resolveRequesterName(ret),
+                ...this.buildOrderItemNameFieldsFromReturn(ret),
                 items: mapRequestItems(ret.requestItems)
               }],
               permissions: ['Permissions.Return.View', 'Permissions.Return.Page'],
@@ -133,8 +129,7 @@ export class DashboardDataService {
               orders: [{
                 orderId: getRequestTitle(discard),
                 requestDate: discard.creationDate ? (typeof discard.creationDate === 'string' ? discard.creationDate : discard.creationDate.toISOString()) : '',
-                departmentName: this.resolveDiscardDepartmentName(discard),
-                requesterName: this.resolveRequesterName(discard),
+                ...this.buildOrderItemNameFieldsFromDiscard(discard),
                 items: mapRequestItems(discard.requestItems)
               }],
               permissions: ['Permissions.Discard.View', 'Permissions.Discard.Page'],
@@ -173,8 +168,7 @@ export class DashboardDataService {
       orders: [{
         orderId: getRequestTitle(order, order.orderNo),
         requestDate: order.creationDate ? (typeof order.creationDate === 'string' ? order.creationDate : order.creationDate.toISOString()) : '',
-        departmentName: this.resolveOrderDepartmentName(order),
-        requesterName: this.resolveRequesterName(order),
+        ...this.buildOrderItemNameFieldsFromOrder(order),
         items: mapRequestItems(order.requestItems)
       }],
       permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
@@ -199,8 +193,7 @@ export class DashboardDataService {
       orders: [{
         orderId: getRequestTitle(ret),
         requestDate: (ret as any).creationDate ? (typeof (ret as any).creationDate === 'string' ? (ret as any).creationDate : (ret as any).creationDate.toISOString()) : '',
-        departmentName: this.resolveReturnDepartmentName(ret),
-        requesterName: this.resolveRequesterName(ret),
+        ...this.buildOrderItemNameFieldsFromReturn(ret),
         items: mapRequestItems(ret.requestItems)
       }],
       permissions: ['Permissions.Return.View', 'Permissions.Return.Page'],
@@ -289,8 +282,7 @@ export class DashboardDataService {
       orders: [{
         orderId: getRequestTitle(discard),
         requestDate: (discard as any).creationDate ? (typeof (discard as any).creationDate === 'string' ? (discard as any).creationDate : (discard as any).creationDate.toISOString()) : '',
-        departmentName: this.resolveDiscardDepartmentName(discard),
-        requesterName: this.resolveRequesterName(discard),
+        ...this.buildOrderItemNameFieldsFromDiscard(discard),
         items: mapRequestItems(discard.requestItems)
       }],
       permissions: ['Permissions.Discard.View', 'Permissions.Discard.Page'],
@@ -300,69 +292,75 @@ export class DashboardDataService {
   }
 
 
-  /**
-   * Resolve department name with localization for orders
-   */
-  private resolveOrderDepartmentName(order: OrderDto): string {
-    if (!order) return 'N/A';
-    const currentLang = getCurrentLang(this.translate);
-
-    // Use nested department object if available (for proper localization)
-    if (order.department) {
-      const localized = getLocalizedName(order.department, currentLang);
-      if (localized) return localized;
-    }
-
-    // Fallback to flattened properties
-    if (order.departmentNameEn || order.departmentNameAr) {
-      const localized = getLocalizedName(
-        {
-          nameEn: order.departmentNameEn,
-          nameAr: order.departmentNameAr
-        },
-        currentLang
-      );
-      if (localized) return localized;
-    }
-
-    return 'N/A';
+  private buildOrderItemNameFieldsFromOrder(
+    order: OrderDto
+  ): Pick<OrderItem, 'departmentName' | 'departmentNameEn' | 'departmentNameAr' | 'requesterName' | 'requesterNameEn' | 'requesterNameAr'> {
+    const d = this.extractDepartmentBilingualFromOrder(order);
+    const r = this.extractRequesterBilingual(order);
+    return this.mergeOrderItemNameFields(d, r);
   }
 
-  /**
-   * Resolve requester name with localization
-   * Works for OrderDto, ReturnDto, and DiscardDto
-   */
-  private resolveRequesterName(request: OrderDto | ReturnDto | DiscardDto | any): string {
-    if (!request) return 'N/A';
-    const currentLang = getCurrentLang(this.translate);
+  private buildOrderItemNameFieldsFromReturn(
+    ret: ReturnDto
+  ): Pick<OrderItem, 'departmentName' | 'departmentNameEn' | 'departmentNameAr' | 'requesterName' | 'requesterNameEn' | 'requesterNameAr'> {
+    const d = this.extractDepartmentBilingualFromReturnDepartment(ret.department);
+    const r = this.extractRequesterBilingual(ret);
+    return this.mergeOrderItemNameFields(d, r);
+  }
 
-    // Use nested requester object if available (for proper localization)
+  private buildOrderItemNameFieldsFromDiscard(
+    discard: DiscardDto
+  ): Pick<OrderItem, 'departmentName' | 'departmentNameEn' | 'departmentNameAr' | 'requesterName' | 'requesterNameEn' | 'requesterNameAr'> {
+    const d = this.extractDepartmentBilingualFromReturnDepartment(discard.department);
+    const r = this.extractRequesterBilingual(discard);
+    return this.mergeOrderItemNameFields(d, r);
+  }
+
+  private mergeOrderItemNameFields(
+    d: { en: string; ar: string },
+    r: { en: string; ar: string }
+  ): Pick<OrderItem, 'departmentName' | 'departmentNameEn' | 'departmentNameAr' | 'requesterName' | 'requesterNameEn' | 'requesterNameAr'> {
+    return {
+      departmentNameEn: d.en || undefined,
+      departmentNameAr: d.ar || undefined,
+      departmentName: (d.en || d.ar) || undefined,
+      requesterNameEn: r.en || undefined,
+      requesterNameAr: r.ar || undefined,
+      requesterName: (r.en || r.ar) || undefined
+    };
+  }
+
+  private extractDepartmentBilingualFromOrder(order: OrderDto): { en: string; ar: string } {
+    if (!order) return { en: '', ar: '' };
+    const en = (order.department?.nameEn ?? order.departmentNameEn ?? '').trim();
+    const ar = (order.department?.nameAr ?? order.departmentNameAr ?? '').trim();
+    return { en, ar };
+  }
+
+  private extractDepartmentBilingualFromReturnDepartment(department: ReturnDto['department']): { en: string; ar: string } {
+    if (!department) return { en: '', ar: '' };
+    return {
+      en: (department.nameEn ?? '').trim(),
+      ar: (department.nameAr ?? '').trim()
+    };
+  }
+
+  private extractRequesterBilingual(request: OrderDto | ReturnDto | DiscardDto | any): { en: string; ar: string } {
+    if (!request) return { en: '', ar: '' };
     if (request.requester) {
-      const localized = getLocalizedName(request.requester, currentLang);
-      if (localized) return localized;
-      if (request.requester.userName) return request.requester.userName;
+      const en = (request.requester.fullNameEN ?? request.requesterNameEn ?? '').trim();
+      const ar = (request.requester.fullNameAR ?? request.requesterNameAr ?? '').trim();
+      if (!en && !ar && request.requester.userName) {
+        const u = String(request.requester.userName).trim();
+        return { en: u, ar: u };
+      }
+      return { en, ar };
     }
-
-    // Fallback to flattened property (for OrderDto compatibility)
-    if (request.requesterName) return request.requesterName;
-
-    return 'N/A';
-  }
-
-  /**
-   * Resolve return department name with localization
-   */
-  private resolveReturnDepartmentName(ret: ReturnDto): string {
-    const currentLang = getCurrentLang(this.translate);
-    return getLocalizedName(ret.department, currentLang) || 'N/A';
-  }
-
-  /**
-   * Resolve discard department name with localization
-   */
-  private resolveDiscardDepartmentName(discard: DiscardDto): string {
-    const currentLang = getCurrentLang(this.translate);
-    return getLocalizedName(discard.department, currentLang) || 'N/A';
+    const flat = (request.requesterName ?? '').trim();
+    if (flat) {
+      return { en: flat, ar: flat };
+    }
+    return { en: '', ar: '' };
   }
 
   /**

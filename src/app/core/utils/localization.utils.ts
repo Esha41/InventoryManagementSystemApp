@@ -75,3 +75,22 @@ export const getCurrentLang = (translateService: any): string => {
   return translateService?.currentLang || translateService?.defaultLang || 'en';
 }
 
+/**
+ * UI label from bilingual API fields; picks EN/AR from currentLang with the same fallbacks as getLocalizedName.
+ */
+export const localizedBilingualLabel = (
+  nameEn?: string | null,
+  nameAr?: string | null,
+  legacySingle?: string | null,
+  currentLang: string = 'en'
+): string => {
+  const fromPair = getLocalizedName(
+    { nameEn: nameEn ?? undefined, nameAr: nameAr ?? undefined },
+    currentLang
+  );
+  if (fromPair) return fromPair;
+  const legacy = legacySingle?.trim();
+  if (legacy) return legacy;
+  return 'N/A';
+};
+

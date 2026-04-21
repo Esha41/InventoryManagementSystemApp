@@ -9,6 +9,7 @@
     "send": "Send",
     "selectOrderSource": "Select Order Source",
     "selectOrderSourceDescription": "Choose whether you want to order from your department's allowance or from all available ammunition",
+    "noAllowanceItemsFound": "No allowance available for your unit. Please contact your administrator.",
     "fromAllowance": "From Allowance",
     "fromAllowanceDescription": "Order items from your department's pre-allocated allowance for this year",
     "fromAllAmmunition": "From Out of Allowance",

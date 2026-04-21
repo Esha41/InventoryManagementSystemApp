@@ -1,8 +1,8 @@
 <div *ngIf="isOpen" class="fixed inset-0 z-50 overflow-y-auto" (click)="onBackdropClick($event)">
-  <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"></div>
+  <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity animate-dash-modal-backdrop"></div>
   <div class="flex min-h-full items-center justify-center p-4">
     <div
-      class="relative bg-[var(--color-background)] rounded-2xl shadow-custom-2xl max-w-5xl w-full my-8 animate-in fade-in slide-in-from-bottom-4 duration-300"
+      class="relative bg-[var(--color-background)] rounded-2xl shadow-custom-2xl max-w-5xl w-full my-8 animate-dash-modal-panel"
       (click)="$event.stopPropagation()">
       <!-- Modal Header -->
       <div

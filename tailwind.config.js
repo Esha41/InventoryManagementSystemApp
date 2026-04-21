@@ -49,10 +49,15 @@ module.exports = {
         'custom-lg': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
         'custom-xl': '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
         'premium': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        'soft': '0 4px 12px rgba(0, 0, 0, 0.05)',
       },
       animation: {
         'fade-in': 'fadeIn 0.3s ease-in-out',
         'slide-in': 'slideIn 0.3s ease-out',
+        'dashboard-header-fade': 'dashboardHeaderFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        'dashboard-pulse': 'dashboardPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'dash-modal-backdrop': 'dashModalBackdrop 0.2s ease-out forwards',
+        'dash-modal-panel': 'dashModalPanel 0.3s ease-out forwards',
       },
       keyframes: {
         fadeIn: {
@@ -62,7 +67,23 @@ module.exports = {
         slideIn: {
           '0%': { transform: 'translateY(10px)', opacity: '0' },
           '100%': { transform: 'translateY(0)', opacity: '1' },
-        }
+        },
+        dashboardHeaderFade: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        dashboardPulse: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.7' },
+        },
+        dashModalBackdrop: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        dashModalPanel: {
+          '0%': { opacity: '0', transform: 'translateY(1rem)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
       }
     },
   },

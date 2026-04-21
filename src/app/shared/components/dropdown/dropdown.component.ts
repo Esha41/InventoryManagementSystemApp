@@ -25,6 +25,13 @@ import { TranslationService } from '@services/translation.service';
 
 type Primitive = string | number | boolean | null | undefined;
 
+const PANEL_GAP_PX = 8;
+const VIEWPORT_PAD_PX = 10;
+
+function overflowYClipsVertically(overflowY: string): boolean {
+  return overflowY === 'hidden' || overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'clip';
+}
+
 export interface DropdownOption<T = Primitive> {
   label: string;
   value: T;
@@ -56,77 +63,20 @@ export class DropdownComponent<T = Primitive>
   readonly ChevronDown = ChevronDown;
   readonly Search = Search;
 
-  /**
-   * Collection of options to display. Accepts an array of primitives or objects.
-   */
   @Input() options: Array<DropdownOption<T> | T> = [];
-
-  /**
-   * Optional key used to read the display label from complex option objects.
-   * Falls back to `label` property or stringified value.
-   */
   @Input() optionLabel?: string;
-
-  /**
-   * Custom function that returns the display label for a given option.
-   * Overrides optionLabel/property-based resolution when provided.
-   */
   @Input() optionLabelFn?: (option: DropdownOption<T> | T) => string;
-
-  /**
-   * Optional key used to read the value from complex option objects.
-   * Falls back to `value` property or the option itself.
-   */
   @Input() optionValue?: string;
-
-  /**
-   * Placeholder text shown when no value is selected.
-   */
   @Input() placeholder = 'Select';
-
-  /**
-   * When true, renders the placeholder as a selectable option at the top of the list.
-   */
   @Input() placeholderSelectable = false;
-
-  /**
-   * Value emitted when the placeholder option is chosen.
-   */
   @Input() placeholderValue: T | null = null;
-
-  /**
-   * Disables user interactions.
-   */
   @Input() disabled = false;
-
-  /**
-   * When true, allows multiple selections. Value will be an array.
-   */
   @Input() multiple = false;
-
-  /**
-   * Message shown when no options are available.
-   */
   @Input() noDataText = 'No options available';
-
-  /**
-   * Additional class(es) applied to the dropdown panel element.
-   */
   @Input() panelClass = '';
-
-  /**
-   * When true, option labels are treated as translation keys.
-   */
   @Input() translateLabels = false;
-
-  /**
-   * When false, hides the search input in the dropdown panel (e.g. for small lists like rows-per-page).
-   */
   @Input() showSearch = true;
 
-  /**
-   * Marks the control as required for template-driven forms.
-   */
   @Input()
   set required(value: boolean | string) {
     const coerced =
@@ -140,40 +90,13 @@ export class DropdownComponent<T = Primitive>
     return this._required;
   }
 
-  /**
-   * Custom tracking function to optimise ngFor rendering.
-   */
   @Input() trackByFn?: (option: DropdownOption<T> | T, index: number) => any;
-
-  /**
-   * When true, renders the trigger in an error state.
-   */
   @Input() error = false;
-
-  /**
-   * Optional name attribute support for template-driven forms.
-   */
   @Input() name: string | null = null;
-
-  /**
-   * Emits whenever the component opens or closes.
-   */
-  @Output() openedChange = new EventEmitter<boolean>();
-
-  /**
-   * Emits the value of the newly selected option.
-   */
-  @Output() selectionChange = new EventEmitter<T | null | T[]>();
-
-  /**
-   * Optional label for an "Add" action button shown at the bottom of the dropdown panel.
-   * When set, a button is rendered; use addActionClick to handle the click.
-   */
   @Input() addActionLabel?: string;
 
-  /**
-   * Emits when the add action button is clicked.
-   */
+  @Output() openedChange = new EventEmitter<boolean>();
+  @Output() selectionChange = new EventEmitter<T | null | T[]>();
   @Output() addActionClick = new EventEmitter<void>();
 
   isOpen = false;
@@ -214,9 +137,6 @@ export class DropdownComponent<T = Primitive>
     return this.translationService?.isRTL() ?? false;
   }
 
-  /**
-   * Computed list of options optionally prepending the placeholder option.
-   */
   get computedOptions(): Array<DropdownOption<T> | T> {
     let baseOptions = this.options ?? [];
 
@@ -240,9 +160,6 @@ export class DropdownComponent<T = Primitive>
     return baseOptions;
   }
 
-  /**
-   * Indicates whether a non-null/undefined value is currently selected.
-   */
   get hasSelection(): boolean {
     if (this.multiple) {
       return Array.isArray(this.innerValue) && this.innerValue.length > 0;
@@ -250,9 +167,6 @@ export class DropdownComponent<T = Primitive>
     return this.innerValue !== null && this.innerValue !== undefined && this.innerValue !== '';
   }
 
-  /**
-   * Returns the label to display within the trigger button.
-   */
   get displayLabel(): string {
     if (!this.hasSelection) {
       return this.placeholder;
@@ -275,12 +189,9 @@ export class DropdownComponent<T = Primitive>
         return this.placeholder;
       }
 
-      // Show all selected role names, or count if too many
       if (selectedLabels.length <= 3) {
         return selectedLabels.join(', ');
       }
-
-      // If more than 3, show first 3 and count
       return `${selectedLabels.slice(0, 3).join(', ')} +${selectedLabels.length - 3} more`;
     }
 
@@ -359,63 +270,78 @@ export class DropdownComponent<T = Primitive>
   private adjustPanelPosition(): void {
     const panel = this.host.nativeElement.querySelector('.app-dropdown-panel') as HTMLElement;
     const trigger = this.host.nativeElement.querySelector('.app-dropdown-trigger') as HTMLElement;
-    if (!panel || !trigger) return;
-
-    // Use fixed positioning to escape overflow clipping (e.g. tables with overflow-x-auto)
-    const rect = trigger.getBoundingClientRect();
-    const gap = 8;
-    const viewportPadding = 10;
-    panel.style.position = 'fixed';
-    panel.style.top = `${rect.bottom + gap}px`;
-    panel.style.bottom = 'auto';
-    panel.style.left = `${rect.left}px`;
-    panel.style.width = `${rect.width}px`;
-    panel.style.minWidth = `${rect.width}px`;
-    panel.style.maxWidth = '';
-    panel.style.right = 'auto';
-    panel.style.zIndex = '99999';
-
-    if (this.isRTL) {
-      panel.style.left = 'auto';
-      panel.style.right = `${window.innerWidth - rect.right}px`;
+    if (!panel || !trigger) {
+      return;
     }
 
-    // After initial render, measure and constrain to fit within viewport
-    requestAnimationFrame(() => {
-      if (!panel.isConnected) return;
-      const panelRect = panel.getBoundingClientRect();
-      const list = panel.querySelector('.app-dropdown-list') as HTMLElement;
+    if (!this.isInsideVerticallyClippingScroller(trigger)) {
+      this.positionPanelAnchored(panel);
+      return;
+    }
 
-      const spaceBelow = window.innerHeight - rect.bottom - gap - viewportPadding;
-      const spaceAbove = rect.top - gap - viewportPadding;
-
-      // Height of everything in the panel except the options list (search bar, borders, etc.)
-      const listRect = list?.getBoundingClientRect();
-      const nonListHeight = listRect ? (panelRect.height - listRect.height) : 0;
-
-      if (panelRect.bottom > window.innerHeight - viewportPadding) {
-        if (spaceAbove > spaceBelow && spaceAbove > 100) {
-          // Flip above trigger
-          panel.style.top = 'auto';
-          panel.style.bottom = `${window.innerHeight - rect.top + gap}px`;
-
-          // Constrain list height to available space above
-          if (list) {
-            const maxListHeight = spaceAbove - nonListHeight;
-            if (maxListHeight < 240) {
-              list.style.maxHeight = `${Math.max(maxListHeight, 80)}px`;
-            }
-          }
-        } else if (list) {
-          // Stay below but constrain list height so it fits in viewport
-          const maxListHeight = spaceBelow - nonListHeight;
-          list.style.maxHeight = `${Math.max(maxListHeight, 80)}px`;
-        }
-      }
-    });
+    const rect = trigger.getBoundingClientRect();
+    this.positionPanelFixedToTrigger(panel, rect);
+    requestAnimationFrame(() => this.clampFixedPanelVertically(panel, rect));
   }
 
+  /** Normal case: panel under trigger, CSS handles width. */
+  private positionPanelAnchored(panel: HTMLElement): void {
+    panel.style.cssText =
+      'position:absolute;top:calc(100% + 0.5rem);bottom:auto;left:0;right:0;z-index:99999';
+  }
 
+  /** Escape overflow:hidden ancestors (e.g. table scroll regions). */
+  private positionPanelFixedToTrigger(panel: HTMLElement, rect: DOMRect): void {
+    const w = `${rect.width}px`;
+    if (this.isRTL) {
+      panel.style.cssText =
+        `position:fixed;top:${rect.bottom + PANEL_GAP_PX}px;bottom:auto;left:auto;right:${window.innerWidth - rect.right}px;` +
+        `width:${w};min-width:${w};max-width:;z-index:99999`;
+    } else {
+      panel.style.cssText =
+        `position:fixed;top:${rect.bottom + PANEL_GAP_PX}px;bottom:auto;left:${rect.left}px;right:auto;` +
+        `width:${w};min-width:${w};max-width:;z-index:99999`;
+    }
+  }
+
+  private clampFixedPanelVertically(panel: HTMLElement, triggerRect: DOMRect): void {
+    if (!panel.isConnected) {
+      return;
+    }
+    const panelRect = panel.getBoundingClientRect();
+    const list = panel.querySelector('.app-dropdown-list') as HTMLElement;
+    const spaceBelow =
+      window.innerHeight - triggerRect.bottom - PANEL_GAP_PX - VIEWPORT_PAD_PX;
+    const spaceAbove = triggerRect.top - PANEL_GAP_PX - VIEWPORT_PAD_PX;
+    const listRect = list?.getBoundingClientRect();
+    const chromeHeight = listRect ? panelRect.height - listRect.height : 0;
+
+    if (panelRect.bottom <= window.innerHeight - VIEWPORT_PAD_PX) {
+      return;
+    }
+
+    if (spaceAbove > spaceBelow && spaceAbove > 100) {
+      panel.style.top = 'auto';
+      panel.style.bottom = `${window.innerHeight - triggerRect.top + PANEL_GAP_PX}px`;
+      if (list) {
+        const maxH = spaceAbove - chromeHeight;
+        if (maxH < 240) {
+          list.style.maxHeight = `${Math.max(maxH, 80)}px`;
+        }
+      }
+    } else if (list) {
+      list.style.maxHeight = `${Math.max(spaceBelow - chromeHeight, 80)}px`;
+    }
+  }
+
+  private isInsideVerticallyClippingScroller(from: HTMLElement): boolean {
+    for (let el = from.parentElement; el && el !== document.body; el = el.parentElement) {
+      if (overflowYClipsVertically(getComputedStyle(el).overflowY)) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   close(): void {
     if (!this.isOpen) {
@@ -426,18 +352,9 @@ export class DropdownComponent<T = Primitive>
     this.searchTerm = '';
     document.removeEventListener('scroll', this.scrollHandler, { capture: true });
 
-    // Reset panel positioning
     const panel = this.host.nativeElement.querySelector('.app-dropdown-panel') as HTMLElement;
     if (panel) {
-      panel.style.position = '';
-      panel.style.top = '';
-      panel.style.bottom = '';
-      panel.style.left = '';
-      panel.style.width = '';
-      panel.style.minWidth = '';
-      panel.style.maxWidth = '';
-      panel.style.right = '';
-
+      panel.style.cssText = '';
       const list = panel.querySelector('.app-dropdown-list') as HTMLElement;
       if (list) {
         list.style.maxHeight = '';
@@ -515,33 +432,20 @@ export class DropdownComponent<T = Primitive>
       if (!Array.isArray(this.innerValue) || this.innerValue.length === 0) {
         return false;
       }
-      // Use a more robust comparison that handles type coercion for numbers/strings
-      return this.innerValue.some(val => {
-        // Strict equality first
-        if (val === optionValue) {
-          return true;
-        }
-        // Handle number/string coercion for IDs
-        if (typeof val === 'number' && typeof optionValue === 'string') {
-          return val === Number(optionValue);
-        }
-        if (typeof val === 'string' && typeof optionValue === 'number') {
-          return Number(val) === optionValue;
-        }
-        return false;
-      });
+      return this.innerValue.some(val => this.samePrimitive(val, optionValue));
     }
+    return this.samePrimitive(this.innerValue, optionValue);
+  }
 
-    // For single select, also handle type coercion
-    if (optionValue === this.innerValue) {
+  private samePrimitive(a: unknown, b: unknown): boolean {
+    if (a === b) {
       return true;
     }
-    // Handle number/string coercion
-    if (typeof optionValue === 'number' && typeof this.innerValue === 'string') {
-      return optionValue === Number(this.innerValue);
+    if (typeof a === 'number' && typeof b === 'string') {
+      return a === Number(b);
     }
-    if (typeof optionValue === 'string' && typeof this.innerValue === 'number') {
-      return Number(optionValue) === this.innerValue;
+    if (typeof a === 'string' && typeof b === 'number') {
+      return Number(a) === b;
     }
     return false;
   }
@@ -561,37 +465,24 @@ export class DropdownComponent<T = Primitive>
       }
     }
 
-    // Check DropdownOption shape first (e.g. placeholder option with explicit label)
-    if (option && typeof option === 'object' && 'label' in option) {
-      const label = (option as any).label;
-      if (label !== undefined && label !== null) {
-        return this.formatLabel(label);
+    if (option && typeof option === 'object' && !Array.isArray(option)) {
+      if ('label' in option) {
+        const label = (option as { label?: unknown }).label;
+        if (label !== undefined && label !== null) {
+          return this.formatLabel(label);
+        }
       }
-    }
-
-    if (
-      this.optionLabel &&
-      option &&
-      typeof option === 'object' &&
-      !Array.isArray(option)
-    ) {
-      const label = (option as any)[this.optionLabel];
-      return this.formatLabel(label);
-    }
-
-    if (option && typeof option === 'object' && 'label' in option) {
-      const label = (option as any).label;
-      return this.formatLabel(label);
+      if (this.optionLabel) {
+        return this.formatLabel((option as Record<string, unknown>)[this.optionLabel]);
+      }
     }
 
     if (typeof option === 'string' || typeof option === 'number') {
       return this.formatLabel(option);
     }
-
     if (typeof option === 'boolean') {
       return this.formatLabel(option ? 'Yes' : 'No');
     }
-
     return this.formatLabel('');
   }
 

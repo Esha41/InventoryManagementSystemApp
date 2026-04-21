@@ -7,6 +7,7 @@ import { Injectable } from '@angular/core';
 import { BackendAuthService } from './backend-auth.service';
 import { DashboardCard } from '@models/dashboard.model';
 import { CardStatus } from '@utils/dashboard.utils';
+import { OrderItem } from '@dashboard/pages/overview/components/status-card/status-card.component';
 
 export interface FilterOptions {
   statusFilter: CardStatus | 'all' | 'action-required';
@@ -83,10 +84,14 @@ export class DashboardFilterService {
       const query = options.searchQuery.trim().toLowerCase();
       filteredCards = filteredCards.filter(card => {
         // Search in order IDs, department names, requester names
-        return card.orders.some(order =>
+        return card.orders.some((order: OrderItem) =>
           (order.orderId && order.orderId.toLowerCase().includes(query)) ||
           (order.departmentName && order.departmentName.toLowerCase().includes(query)) ||
-          (order.requesterName && order.requesterName.toLowerCase().includes(query))
+          (order.departmentNameEn && order.departmentNameEn.toLowerCase().includes(query)) ||
+          (order.departmentNameAr && order.departmentNameAr.toLowerCase().includes(query)) ||
+          (order.requesterName && order.requesterName.toLowerCase().includes(query)) ||
+          (order.requesterNameEn && order.requesterNameEn.toLowerCase().includes(query)) ||
+          (order.requesterNameAr && order.requesterNameAr.toLowerCase().includes(query))
         );
       });
     }
