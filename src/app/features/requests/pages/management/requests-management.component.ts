@@ -13,12 +13,14 @@ import { Subject, takeUntil } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { RequestStatusUpdateService } from '@services/request-status-update.service';
 import { defaultPageSize } from '@constants/app.constants';
+import { AutoRejectCountdownService, OrderAutoRejectCountdownDto } from '@shared/services/auto-reject-countdown.service';
+import { AutoRejectCountdownComponent } from '@shared/components/auto-reject-countdown/auto-reject-countdown.component';
 
 
 @Component({
   selector: 'app-requests-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, PaginationComponent, RowsPerPageComponent, RequestFilterBarComponent, AppDatePipe],
+  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, PaginationComponent, RowsPerPageComponent, RequestFilterBarComponent, AppDatePipe, AutoRejectCountdownComponent],
   templateUrl: './requests-management.component.html',
   styleUrls: ['./requests-management.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -31,6 +33,7 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
 
   requests: Request[] = [];
   loading = false;
+  countdownByRequestId: Record<number, OrderAutoRejectCountdownDto> = {};
 
   // Filter state (managed by shared component)
   searchQuery: string = '';
@@ -45,7 +48,8 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
     private requestsManagementService: RequestsManagementService,
     private router: Router,
     private requestStatusUpdateService: RequestStatusUpdateService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private autoRejectCountdownService: AutoRejectCountdownService
   ) { }
 
   ngOnInit(): void {
@@ -78,6 +82,7 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
 
   loadRequests(): void {
     this.loading = true;
+    this.countdownByRequestId = {};
     this.cdr.markForCheck();
 
     this.requestsManagementService.getRequests(
@@ -91,6 +96,7 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           this.requests = response.items;
+          this.loadAutoRejectCountdowns();
           this.totalItems = response.totalCount;
           this.loading = false;
           this.cdr.markForCheck();
@@ -228,5 +234,29 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
 
   openOrderDetails(order: Request): void {
     this.router.navigate(['/requests-management', order.id, 'workflow-approval']);
+  }
+
+  private loadAutoRejectCountdowns(): void {
+    const orderIds = this.requests
+      .filter(r => r.requestType === 'Order')
+      .map(r => r.id);
+    if (orderIds.length === 0) {
+      this.countdownByRequestId = {};
+      this.cdr.markForCheck();
+      return;
+    }
+    this.autoRejectCountdownService
+      .getBulk(orderIds)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(rows => {
+        this.countdownByRequestId =
+          this.autoRejectCountdownService.mapByRequestId(rows);
+        this.cdr.markForCheck();
+      });
+  }
+
+  getAutoRejectCountdown(request: Request): OrderAutoRejectCountdownDto | null {
+    if (request.requestType !== 'Order') return null;
+    return this.countdownByRequestId[request.id] ?? null;
   }
 }

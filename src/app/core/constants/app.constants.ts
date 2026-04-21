@@ -229,6 +229,12 @@ export const API_ENDPOINTS = {
     SCHEDULE: '/ItemNotification/schedule',
   },
 
+  // Order auto-reject settings + countdown (Workflows API)
+  ORDER_AUTO_REJECT: {
+    SETTINGS: '/order-auto-reject-settings',
+    COUNTDOWN: '/order-auto-reject/countdown',
+  },
+
   // Onboarding
   ONBOARDING: {
     STATUS: '/account/onboarding-status',

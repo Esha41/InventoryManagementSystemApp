@@ -378,6 +378,12 @@ export const routes: Routes = [
         data: { permissions: ['stockNotificationSettingsPage'] }
       },
       {
+        path: 'order-auto-reject-settings',
+        loadComponent: () => import('@settings/pages/order-auto-reject/order-auto-reject-settings.component').then(m => m.OrderAutoRejectSettingsComponent),
+        canActivate: [permissionGuard],
+        data: { permissions: ['orderAutoRejectSettings.page'] }
+      },
+      {
         path: 'help',
         loadComponent: () =>
           import('@features/help/pages/help-center-user/help-center-user.component').then(

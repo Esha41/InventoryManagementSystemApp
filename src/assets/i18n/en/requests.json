@@ -297,6 +297,7 @@
       "low": "Low"
     },
     "requestType": "Request Type",
+    "autoReject": "Auto-reject",
     "status": "Status",
     "noRequestsFound": "No requests found",
     "high": "High",

@@ -36,7 +36,11 @@
           </div>
 
           <!-- Actions moved to right -->
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-3 flex-wrap justify-end">
+            <app-auto-reject-countdown
+              *ngIf="requestDetail.requestType === 'Order'"
+              [countdown]="autoRejectCountdown"
+            ></app-auto-reject-countdown>
             <button *ngIf="requestDetail.requestType === 'Order'" type="button" (click)="openOrderHistory()"
               class="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-[var(--color-text)] bg-[var(--color-background)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]">
               <lucide-angular [img]="HistoryIcon" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
