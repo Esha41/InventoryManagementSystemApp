@@ -72,6 +72,7 @@
     "reason": "Reason",
     "comments": "Comments",
     "notAvailable": "Not Available",
+    "unknown": "Unknown",
     "optional": "Optional",
     "exportToExcel": "Export to Excel",
     "exportSuccess": "Data exported successfully",

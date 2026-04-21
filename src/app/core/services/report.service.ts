@@ -14,9 +14,7 @@ export interface Report {
   id: string;
   reportName: string;
   url: string;
-  reportStatusId: number;
-  reportStatusNameEn: string;
-  reportStatusNameAr: string;
+  reportStatusId: ReportStatus;
   description?: string;
   reportParameters?: string;
   creationDate: Date;
@@ -27,6 +25,12 @@ export interface Report {
   deletionDate?: Date;
   deletedBy?: string;
   roles?: ReportRole[];
+}
+
+export enum ReportStatus {
+  Draft = 1,
+  Published = 2,
+  Inactive = 3
 }
 
 @Injectable({

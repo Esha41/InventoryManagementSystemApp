@@ -9,7 +9,7 @@ import { ButtonComponent } from '@components/button/button.component';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { BackendAuthService } from '@services/backend-auth.service';
-import { ReportService, Report, ReportTemplate } from '@services/report.service';
+import { ReportService, Report, ReportTemplate, ReportStatus } from '@services/report.service';
 import { ToastService } from '@services/toast.service';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -328,9 +328,8 @@ export class ReportDesignerComponent implements OnInit {
     this.reportToDelete = null;
   }
 
-  /** ReportStatuses.Published = 2 */
   isPublished(report: Report): boolean {
-    return report.reportStatusId === 2;
+    return this.normalizeStatus(report.reportStatusId as ReportStatus | number | string) === ReportStatus.Published;
   }
 
   onTogglePublicPrivate(report: Report): void {
@@ -453,25 +452,52 @@ export class ReportDesignerComponent implements OnInit {
     this.selectedRoleIds = [];
   }
 
-  getStatusClass(status: string): string {
-    // Map backend status names to CSS classes
-    const statusLower = status.toLowerCase();
-    if (statusLower.includes('published') || statusLower.includes('active')) {
+  private normalizeStatus(status: ReportStatus | number | string): ReportStatus | null {
+    if (typeof status === 'number') {
+      if (status === ReportStatus.Draft || status === ReportStatus.Published || status === ReportStatus.Inactive) {
+        return status;
+      }
+      return null;
+    }
+
+    const normalized = String(status).toLowerCase();
+    if (normalized === 'draft') {
+      return ReportStatus.Draft;
+    }
+    if (normalized === 'published') {
+      return ReportStatus.Published;
+    }
+    if (normalized === 'inactive') {
+      return ReportStatus.Inactive;
+    }
+
+    return null;
+  }
+
+  getStatusClass(status: ReportStatus | number | string): string {
+    const normalizedStatus = this.normalizeStatus(status);
+    if (normalizedStatus === ReportStatus.Published) {
       return 'bg-[var(--color-success)]/20 text-[var(--color-success)] border-[var(--color-success)]/30';
     }
-    if (statusLower.includes('draft') || statusLower.includes('pending')) {
+    if (normalizedStatus === ReportStatus.Draft) {
       return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-    }
-    if (statusLower.includes('archived') || statusLower.includes('inactive')) {
-      return 'bg-[var(--color-background-active)] text-[var(--color-text-muted)] border-[var(--color-border)]';
     }
     return 'bg-[var(--color-background-active)] text-[var(--color-text-muted)] border-[var(--color-border)]';
   }
 
   getStatusDisplayName(report: Report): string {
-    // Use the appropriate status name based on current language
-    const isRTL = this.translationService.isRTL();
-    return isRTL && report.reportStatusNameAr ? report.reportStatusNameAr : report.reportStatusNameEn;
+    const normalizedStatus = this.normalizeStatus(report.reportStatusId as ReportStatus | number | string);
+
+    switch (normalizedStatus) {
+      case ReportStatus.Published:
+        return this.translateService.instant('reportDesigner.status.published');
+      case ReportStatus.Draft:
+        return this.translateService.instant('reportDesigner.status.draft');
+      case ReportStatus.Inactive:
+        return this.translateService.instant('common.statuses.Inactive');
+      default:
+        return this.translateService.instant('common.unknown');
+    }
   }
 
   getRoleDisplayName(role: { roleNameEn?: string; roleNameAr?: string; roleName: string }): string {
