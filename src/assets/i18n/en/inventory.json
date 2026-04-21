@@ -438,7 +438,12 @@
       "allClassifications": "All Classifications",
       "allCountries": "All Countries",
       "allExplosiveTypes": "All Explosive Types",
-      "defaultSort": "Default"
+      "defaultSort": "Default",
+      "moreColumnFilters": "Additional filters",
+      "hideColumnFilters": "Hide additional filters",
+      "applyColumnFilters": "Apply additional filters",
+      "clearColumnFilters": "Clear additional filters",
+      "columnFiltersHint": "Additional filters by field. These combine with the search box and dropdowns (all must match). Press Enter or Apply to search."
     },
     "sort": {
       "nameAsc": "Name (A-Z)",

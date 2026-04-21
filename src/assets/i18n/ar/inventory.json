@@ -430,7 +430,12 @@
       "allClassifications": "جميع التصنيفات",
       "allCountries": "جميع البلدان",
       "allExplosiveTypes": "جميع أنواع المتفجرات",
-      "defaultSort": "افتراضي"
+      "defaultSort": "افتراضي",
+      "moreColumnFilters": "فلاتر إضافية",
+      "hideColumnFilters": "إخفاء الفلاتر الإضافية",
+      "applyColumnFilters": "تطبيق الفلاتر الإضافية",
+      "clearColumnFilters": "مسح الفلاتر الإضافية",
+      "columnFiltersHint": "فلاتر إضافية حسب الحقول. تُدمج مع مربع البحث والقوائم (يجب أن تتحقق كل الشروط). اضغط Enter أو تطبيق للبحث."
     },
     "sort": {
       "nameAsc": "الاسم (أ-ي)",

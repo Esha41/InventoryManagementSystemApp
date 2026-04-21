@@ -168,6 +168,182 @@
           placeholder="{{ 'assetList.filters.allPrimaryPurposes' | translate }}">
         </app-dropdown>
       </div>
+
+      <div class="w-full flex flex-wrap items-end gap-2 sm:ms-auto sm:w-auto">
+        <button
+          type="button"
+          (click)="toggleMoreFilters()"
+          [attr.aria-expanded]="showMoreFilters"
+          class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 border-[var(--color-border)] bg-[var(--color-background)] text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-background-hover)] transition-colors w-full sm:w-auto justify-center"
+        >
+          <lucide-angular
+            [img]="ChevronDown"
+            class="h-4 w-4 text-[var(--color-text-muted)] transition-transform duration-200 shrink-0"
+            [class.rotate-180]="showMoreFilters"
+          ></lucide-angular>
+          <span>{{ (showMoreFilters ? 'assetList.filters.hideColumnFilters' : 'assetList.filters.moreColumnFilters') | translate }}</span>
+        </button>
+      </div>
     </div>
+
+    <ng-container *ngIf="showMoreFilters">
+      <div class="pt-5 mt-5 border-t border-[var(--color-border)] space-y-4">
+        <p class="text-xs text-[var(--color-text-muted)]">{{ 'assetList.filters.columnFiltersHint' | translate }}</p>
+
+        <!-- Ammunition: match table columns -->
+        <div *ngIf="activeTab === 'ammunition'" class="flex flex-col gap-4">
+          <div class="alf-more-filters__single-line">
+            <div class="alf-col-field alf-col-field--line">
+              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'assetList.table.name' | translate }}</label>
+              <input type="text" [(ngModel)]="filterState.columnFilters.name" (keydown)="onColumnFilterKeydown($event)"
+                class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
+            </div>
+            <div class="alf-col-field alf-col-field--line">
+              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'assetList.table.itemNo' | translate }}</label>
+              <input type="text" [(ngModel)]="filterState.columnFilters.itemNo" (keydown)="onColumnFilterKeydown($event)"
+                class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
+            </div>
+            <div class="alf-col-field alf-col-field--line">
+              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'assetList.table.partNo' | translate }}</label>
+              <input type="text" [(ngModel)]="filterState.columnFilters.partNo" (keydown)="onColumnFilterKeydown($event)"
+                class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
+            </div>
+            <div class="alf-col-field alf-col-field--line">
+              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'addAsset.caliber' | translate }}</label>
+              <input type="text" [(ngModel)]="filterState.columnFilters.caliber" (keydown)="onColumnFilterKeydown($event)"
+                class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
+            </div>
+          </div>
+          <div class="alf-more-filters__actions-row w-full flex flex-wrap items-end gap-4">
+            <div class="alf-more-filters__arm-un-line flex flex-nowrap gap-4 min-w-0 overflow-x-auto pb-0.5">
+              <div class="alf-col-field alf-col-field--line">
+                <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'addAsset.armNumber' | translate }}</label>
+                <input type="text" [(ngModel)]="filterState.columnFilters.armNumber" (keydown)="onColumnFilterKeydown($event)"
+                  class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
+              </div>
+              <div class="alf-col-field alf-col-field--line">
+                <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'addAsset.unNumber' | translate }}</label>
+                <input type="text" [(ngModel)]="filterState.columnFilters.unNumber" (keydown)="onColumnFilterKeydown($event)"
+                  class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
+              </div>
+              <div class="alf-col-field alf-col-field--line">
+                <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'assetList.table.nsn' | translate }}</label>
+                <input type="text" [(ngModel)]="filterState.columnFilters.nsn" (keydown)="onColumnFilterKeydown($event)"
+                  class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
+              </div>
+            </div>
+            <div class="alf-more-filters__actions flex flex-wrap gap-2 w-full sm:w-auto sm:ms-auto">
+              <button
+                type="button"
+                (click)="applyColumnFilters()"
+                class="px-4 py-2 bg-[var(--color-brand)] text-white text-sm font-semibold rounded-lg hover:bg-[var(--color-brand-hover)] transition-colors"
+              >
+                {{ 'assetList.filters.applyColumnFilters' | translate }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="activeTab === 'weapon'" class="flex flex-col gap-4">
+          <div class="alf-more-filters__single-line">
+            <div class="alf-col-field alf-col-field--line">
+              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'assetList.table.name' | translate }}</label>
+              <input type="text" [(ngModel)]="filterState.columnFilters.name" (keydown)="onColumnFilterKeydown($event)"
+                class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
+            </div>
+            <div class="alf-col-field alf-col-field--line">
+              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'assetList.table.itemNo' | translate }}</label>
+              <input type="text" [(ngModel)]="filterState.columnFilters.itemNo" (keydown)="onColumnFilterKeydown($event)"
+                class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
+            </div>
+            <div class="alf-col-field alf-col-field--line">
+              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'assetList.table.partNo' | translate }}</label>
+              <input type="text" [(ngModel)]="filterState.columnFilters.partNo" (keydown)="onColumnFilterKeydown($event)"
+                class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
+            </div>
+            <div class="alf-col-field alf-col-field--line">
+              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'addAsset.unNumber' | translate }}</label>
+              <input type="text" [(ngModel)]="filterState.columnFilters.unNumber" (keydown)="onColumnFilterKeydown($event)"
+                class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
+            </div>
+            <div class="alf-col-field alf-col-field--line">
+              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'assetList.table.nsn' | translate }}</label>
+              <input type="text" [(ngModel)]="filterState.columnFilters.nsn" (keydown)="onColumnFilterKeydown($event)"
+                class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
+            </div>
+          </div>
+          <div class="alf-more-filters__actions-row w-full flex flex-wrap items-end gap-4">
+            <div class="alf-col-field alf-col-field--line">
+              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'addAsset.weaponType' | translate }}</label>
+              <input type="text" [(ngModel)]="filterState.columnFilters.weaponType" (keydown)="onColumnFilterKeydown($event)"
+                class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
+            </div>
+            <div class="alf-col-field alf-col-field--line">
+              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'addAsset.caliber' | translate }}</label>
+              <input type="text" [(ngModel)]="filterState.columnFilters.caliber" (keydown)="onColumnFilterKeydown($event)"
+                class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
+            </div>
+            <div class="alf-more-filters__actions flex flex-wrap gap-2 w-full sm:w-auto sm:ms-auto">
+              <button
+                type="button"
+                (click)="applyColumnFilters()"
+                class="px-4 py-2 bg-[var(--color-brand)] text-white text-sm font-semibold rounded-lg hover:bg-[var(--color-brand-hover)] transition-colors"
+              >
+                {{ 'assetList.filters.applyColumnFilters' | translate }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Explosives -->
+        <div *ngIf="activeTab === 'explosive'" class="flex flex-col gap-4">
+          <div class="alf-more-filters__single-line">
+            <div class="alf-col-field alf-col-field--line">
+              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'assetList.table.name' | translate }}</label>
+              <input type="text" [(ngModel)]="filterState.columnFilters.name" (keydown)="onColumnFilterKeydown($event)"
+                class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
+            </div>
+            <div class="alf-col-field alf-col-field--line">
+              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'assetList.table.itemNo' | translate }}</label>
+              <input type="text" [(ngModel)]="filterState.columnFilters.itemNo" (keydown)="onColumnFilterKeydown($event)"
+                class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
+            </div>
+            <div class="alf-col-field alf-col-field--line">
+              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'assetList.table.partNo' | translate }}</label>
+              <input type="text" [(ngModel)]="filterState.columnFilters.partNo" (keydown)="onColumnFilterKeydown($event)"
+                class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
+            </div>
+          </div>
+          <div class="alf-more-filters__actions-row w-full flex flex-wrap items-end gap-4">
+            <div class="alf-more-filters__arm-un-line flex flex-nowrap gap-4 min-w-0 overflow-x-auto pb-0.5">
+              <div class="alf-col-field alf-col-field--line">
+                <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'addAsset.armNumber' | translate }}</label>
+                <input type="text" [(ngModel)]="filterState.columnFilters.armNumber" (keydown)="onColumnFilterKeydown($event)"
+                  class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
+              </div>
+              <div class="alf-col-field alf-col-field--line">
+                <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'addAsset.unNumber' | translate }}</label>
+                <input type="text" [(ngModel)]="filterState.columnFilters.unNumber" (keydown)="onColumnFilterKeydown($event)"
+                  class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
+              </div>
+              <div class="alf-col-field alf-col-field--line">
+                <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'assetList.table.nsn' | translate }}</label>
+                <input type="text" [(ngModel)]="filterState.columnFilters.nsn" (keydown)="onColumnFilterKeydown($event)"
+                  class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
+              </div>
+            </div>
+            <div class="alf-more-filters__actions flex flex-wrap gap-2 w-full sm:w-auto sm:ms-auto">
+              <button
+                type="button"
+                (click)="applyColumnFilters()"
+                class="px-4 py-2 bg-[var(--color-brand)] text-white text-sm font-semibold rounded-lg hover:bg-[var(--color-brand-hover)] transition-colors"
+              >
+                {{ 'assetList.filters.applyColumnFilters' | translate }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
   </div>
 </app-card>

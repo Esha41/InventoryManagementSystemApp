@@ -11,7 +11,14 @@ import { AmmunitionService } from '@services/ammunition.service';
 import { WeaponService } from '@services/weapon.service';
 import { ExplosiveService } from '@services/explosive.service';
 import { PaginatedList, PagedRequest, FilterData } from '@models/api-response.model';
-import { Asset, AssetType, AssetFilterState, AssetSortState } from '@models/asset-list.model';
+import {
+  Asset,
+  AssetType,
+  AssetFilterState,
+  AssetSortState,
+  AssetColumnFilters,
+  createEmptyColumnFilters
+} from '@models/asset-list.model';
 import { AssetDto } from '@models/asset.model';
 import { AmmunitionReadDto } from '@models/ammunition.model';
 import { WeaponDto } from '@models/weapon.model';
@@ -82,6 +89,58 @@ function buildExplosiveSearchFilters(searchTerm: string): FilterData {
   ];
   maybeAppendExactPriceToOrGroup(filters, term);
   return { logic: 'or', filters };
+}
+
+function appendContainsFilter(filters: FilterData[], field: string, raw: string | undefined): void {
+  const t = (raw ?? '').trim();
+  if (!t) return;
+  filters.push({ field, operator: 'contains', value: t });
+}
+
+function appendOrEnArContains(
+  filters: FilterData[],
+  fieldEn: string,
+  fieldAr: string,
+  raw: string | undefined
+): void {
+  const t = (raw ?? '').trim();
+  if (!t) return;
+  filters.push({
+    logic: 'or',
+    filters: [
+      { field: fieldEn, operator: 'contains', value: t },
+      { field: fieldAr, operator: 'contains', value: t }
+    ]
+  });
+}
+
+function appendAmmunitionColumnFilters(filters: FilterData[], cf: AssetColumnFilters): void {
+  appendContainsFilter(filters, 'Name', cf.name);
+  appendContainsFilter(filters, 'ItemNo', cf.itemNo);
+  appendContainsFilter(filters, 'PartNo', cf.partNo);
+  appendContainsFilter(filters, 'Nsn', cf.nsn);
+  appendContainsFilter(filters, 'ArmNumber', cf.armNumber);
+  appendContainsFilter(filters, 'UNNumber', cf.unNumber);
+  appendContainsFilter(filters, 'Caliber', cf.caliber);
+}
+
+function appendWeaponColumnFilters(filters: FilterData[], cf: AssetColumnFilters): void {
+  appendContainsFilter(filters, 'Name', cf.name);
+  appendContainsFilter(filters, 'ItemNo', cf.itemNo);
+  appendContainsFilter(filters, 'PartNo', cf.partNo);
+  appendContainsFilter(filters, 'Nsn', cf.nsn);
+  appendContainsFilter(filters, 'UNNumber', cf.unNumber);
+  appendContainsFilter(filters, 'Caliber', cf.caliber);
+  appendOrEnArContains(filters, 'Type.NameEn', 'Type.NameAr', cf.weaponType);
+}
+
+function appendExplosiveColumnFilters(filters: FilterData[], cf: AssetColumnFilters): void {
+  appendContainsFilter(filters, 'Name', cf.name);
+  appendContainsFilter(filters, 'ItemNo', cf.itemNo);
+  appendContainsFilter(filters, 'PartNo', cf.partNo);
+  appendContainsFilter(filters, 'Nsn', cf.nsn);
+  appendContainsFilter(filters, 'ArmNumber', cf.armNumber);
+  appendContainsFilter(filters, 'UNNumber', cf.unNumber);
 }
 
 @Injectable({
@@ -187,6 +246,8 @@ export class AssetListService {
         value: filterState.selectedCountryOfManufacture.toString()
       });
     }
+
+    appendWeaponColumnFilters(filters, filterState.columnFilters ?? createEmptyColumnFilters());
 
     let sortField: string | undefined;
     let sortDirection: number | undefined;
@@ -318,6 +379,8 @@ export class AssetListService {
         value: filterState.selectedCompatibility.toString()
       });
     }
+
+    appendAmmunitionColumnFilters(filters, filterState.columnFilters ?? createEmptyColumnFilters());
 
     let sortField: string | undefined;
     let sortDirection: number | undefined;
@@ -468,6 +531,8 @@ export class AssetListService {
         value: filterState.selectedExplosiveCompatibility.toString()
       });
     }
+
+    appendExplosiveColumnFilters(filters, filterState.columnFilters ?? createEmptyColumnFilters());
 
     let sortField: string | undefined;
     let sortDirection: number | undefined;
