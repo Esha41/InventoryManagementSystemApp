@@ -242,6 +242,7 @@
     "integratedInventoryManagement": "نظام التسلح المتكامل",
     "supplyOrder": "طلب التوريد",
     "stockNotificationSettings": "إعدادات إشعار انخفاض المخزون",
+    "orderAutoRejectSettings": "إعدادات الرفض التلقائي للطلبات",
     "biTool": "أداة BI",
     "reportDesigner": "مصمم التقارير",
     "reportDashboard": "لوحة التقارير",

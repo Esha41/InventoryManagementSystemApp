@@ -57,6 +57,8 @@ import { OrderItemTrackingModalComponent } from './components/order-item-trackin
 import { WorkflowReturnDepotComponent } from './components/workflow-return-depot/workflow-return-depot.component';
 import { WorkflowReturnDeliveryDateComponent } from './components/workflow-return-delivery-date/workflow-return-delivery-date.component';
 import { WorkflowReturnApprovedSummaryComponent } from './components/workflow-return-approved-summary/workflow-return-approved-summary.component';
+import { AutoRejectCountdownService, OrderAutoRejectCountdownDto } from '@shared/services/auto-reject-countdown.service';
+import { AutoRejectCountdownComponent } from '@shared/components/auto-reject-countdown/auto-reject-countdown.component';
 
 @Component({
   selector: 'app-workflow-approval-detail',
@@ -81,7 +83,8 @@ import { WorkflowReturnApprovedSummaryComponent } from './components/workflow-re
     OrderItemTrackingModalComponent,
     WorkflowReturnDepotComponent,
     WorkflowReturnDeliveryDateComponent,
-    WorkflowReturnApprovedSummaryComponent
+    WorkflowReturnApprovedSummaryComponent,
+    AutoRejectCountdownComponent
   ],
   templateUrl: './workflow-approval-detail.component.html',
   styleUrls: ['./workflow-approval-detail.component.css'],
@@ -135,6 +138,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
   requestId: number = 0;
   requestDetail: RequestDetail | null = null;
+  autoRejectCountdown: OrderAutoRejectCountdownDto | null = null;
   loading: boolean = true;
   error: string | null = null;
   orderFiles: FileUploadDto[] = []; // Files attached to the request (Order, Return, Discard)
@@ -199,6 +203,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     private confirmationService: WorkflowApprovalConfirmationService,
     private stateService: WorkflowApprovalStateService,
     private assetSupplyService: AssetSupplyService,
+    private autoRejectCountdownService: AutoRejectCountdownService,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -349,6 +354,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   }
 
   loadRequestDetail(): void {
+    this.autoRejectCountdown = null;
     this.loading = true;
     this.error = null;
     // Reset pickup date state when loading new request
@@ -649,6 +655,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
               this.loading = false;
             }
 
+            this.loadAutoRejectCountdownForOrder();
+
             // Trigger change detection for OnPush strategy
             this.cdr.markForCheck();
           }).catch(() => {
@@ -682,6 +690,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
               this.loading = false;
             }
 
+            this.loadAutoRejectCountdownForOrder();
+
             // Trigger change detection for OnPush strategy
             this.cdr.markForCheck();
           });
@@ -699,7 +709,19 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       });
   }
 
-
+  private loadAutoRejectCountdownForOrder(): void {
+    if (this.requestDetail?.requestType !== 'Order') {
+      this.autoRejectCountdown = null;
+      return;
+    }
+    this.autoRejectCountdownService
+      .getOne(this.requestId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(c => {
+        this.autoRejectCountdown = c;
+        this.cdr.markForCheck();
+      });
+  }
 
   goBack(): void {
     this.navigationService.goBack();

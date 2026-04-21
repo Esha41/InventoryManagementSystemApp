@@ -70,6 +70,9 @@
                 class="text-[10px] font-bold text-[var(--color-brand)] uppercase tracking-wider animate-pulse">
                 {{ 'requestsManagement.actionRequired' | translate }}
               </span>
+              <app-auto-reject-countdown
+                [countdown]="getAutoRejectCountdown(request)"
+              ></app-auto-reject-countdown>
             </div>
 
             <button (click)="openOrderDetails(request)"
@@ -138,6 +141,9 @@
                     <span *ngIf="request.isMyTurn" class="action-required-badge animate-action-glow whitespace-nowrap">
                       {{ 'requestsManagement.actionRequired' | translate }}
                     </span>
+                    <app-auto-reject-countdown
+                      [countdown]="getAutoRejectCountdown(request)"
+                    ></app-auto-reject-countdown>
                   </div>
                 </td>
                 <td class="px-6 py-4 text-end">

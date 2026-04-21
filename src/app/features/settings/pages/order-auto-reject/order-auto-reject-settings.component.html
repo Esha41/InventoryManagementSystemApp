@@ -1,0 +1,204 @@
+<div class="page-wrapper">
+  <div class="page-container space-y-6 space-x-6">
+
+    <div>
+      <h1 class="text-2xl font-bold text-[var(--color-text)]">
+        {{ 'orderAutoRejectSettings.title' | translate }}
+      </h1>
+      <p class="text-sm text-[var(--color-text-muted)] mt-1">
+        {{ 'orderAutoRejectSettings.subtitle' | translate }}
+      </p>
+    </div>
+
+    <app-error-state
+      *ngIf="errorMessage"
+      [error]="errorMessage"
+      variant="banner"
+      containerClass="mb-0"
+    ></app-error-state>
+
+    <app-card>
+      <div *ngIf="isLoadingSettings" class="text-center py-12">
+        <p class="text-[var(--color-text-muted)]">{{ 'common.loading' | translate }}</p>
+      </div>
+
+      <form *ngIf="!isLoadingSettings" [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="p-6 space-y-8">
+
+          <section class="space-y-4">
+            <h4 class="text-lg font-semibold text-[var(--color-text)] border-b border-[var(--color-border)] pb-2">
+              {{ 'orderAutoRejectSettings.sectionWhenStarts' | translate }}
+            </h4>
+            <div>
+              <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+                {{ 'orderAutoRejectSettings.triggerRole' | translate }}
+              </label>
+              <app-dropdown
+                class="w-full"
+                formControlName="triggerRoleId"
+                [options]="roles"
+                [multiple]="false"
+                [required]="true"
+                optionValue="id"
+                optionLabel="name"
+                [placeholderSelectable]="false"
+                placeholder="{{
+                  isLoadingRoles
+                    ? ('common.loading' | translate)
+                    : ('orderAutoRejectSettings.triggerRolePlaceholder' | translate)
+                }}"
+              ></app-dropdown>
+              <p class="mt-1 text-xs text-[var(--color-text-muted)]">
+                {{ 'orderAutoRejectSettings.triggerRoleHint' | translate }}
+              </p>
+            </div>
+          </section>
+
+          <section class="space-y-4">
+            <h4 class="text-lg font-semibold text-[var(--color-text)] border-b border-[var(--color-border)] pb-2">
+              {{ 'orderAutoRejectSettings.sectionWhenActs' | translate }}
+            </h4>
+            <div>
+              <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+                {{ 'orderAutoRejectSettings.thresholdDays' | translate }}
+              </label>
+              <input
+                type="number"
+                formControlName="thresholdDays"
+                min="1"
+                max="365"
+                class="w-full px-3 py-3 border-2 border-[var(--color-border)] rounded-xl text-sm bg-[var(--color-background)] text-[var(--color-text)] hover:bg-[var(--color-background-hover)] transition-all focus:outline-none focus:border-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/25"
+              />
+              <p class="mt-1 text-xs text-[var(--color-text-muted)]">
+                {{ 'orderAutoRejectSettings.thresholdDaysHint' | translate }}
+              </p>
+              <p
+                *ngIf="form.get('thresholdDays')?.invalid && form.get('thresholdDays')?.touched"
+                class="mt-1 text-xs text-[var(--color-error)]"
+              >
+                {{ 'orderAutoRejectSettings.thresholdDaysError' | translate }}
+              </p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+                {{ 'orderAutoRejectSettings.reminderLeadDays' | translate }}
+              </label>
+              <p class="text-xs text-[var(--color-text-muted)] mb-2">
+                {{ 'orderAutoRejectSettings.reminderLeadDaysHint' | translate }}
+              </p>
+              <div class="flex flex-wrap gap-2 mb-2">
+                <span
+                  *ngFor="let d of reminderLeadDaysList"
+                  class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium bg-[var(--color-background-muted)] border border-[var(--color-border)]"
+                >
+                  {{ d }}d
+                  <button type="button" (click)="removeLeadDay(d)" class="text-[var(--color-text-muted)] hover:text-[var(--color-error)]">
+                    &times;
+                  </button>
+                </span>
+              </div>
+              <div class="flex flex-wrap gap-2 items-center">
+                <input
+                  type="number"
+                  [(ngModel)]="newLeadDayInput"
+                  [ngModelOptions]="{ standalone: true }"
+                  [min]="1"
+                  [max]="(form.get('thresholdDays')?.value ?? 365) - 1"
+                  class="w-28 px-3 py-2 border-2 border-[var(--color-border)] rounded-lg text-sm bg-[var(--color-background)]"
+                  placeholder="{{ 'orderAutoRejectSettings.reminderLeadDaysPlaceholder' | translate }}"
+                />
+                <app-button [type]="'button'" [variant]="'secondary'" (clicked)="addLeadDay()">
+                  {{ 'orderAutoRejectSettings.addReminderDay' | translate }}
+                </app-button>
+              </div>
+            </div>
+          </section>
+
+          <section class="space-y-4">
+            <h4 class="text-lg font-semibold text-[var(--color-text)] border-b border-[var(--color-border)] pb-2">
+              {{ 'orderAutoRejectSettings.sectionNotify' | translate }}
+            </h4>
+            <p class="text-sm text-[var(--color-text)] font-medium">
+              {{ 'orderAutoRejectSettings.notifyRequester' | translate }}
+            </p>
+            <p class="text-xs text-[var(--color-text-muted)]">
+              {{ 'orderAutoRejectSettings.notifyRequesterLockedHint' | translate }}
+            </p>
+            <div>
+              <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+                {{ 'orderAutoRejectSettings.notifyRoles' | translate }}
+              </label>
+              <app-dropdown
+                class="w-full"
+                formControlName="notifyRoleIds"
+                [options]="roles"
+                [multiple]="true"
+                optionValue="id"
+                optionLabel="name"
+                [placeholderSelectable]="false"
+                placeholder="{{ 'orderAutoRejectSettings.notifyRolesPlaceholder' | translate }}"
+              ></app-dropdown>
+              <p class="mt-1 text-xs text-[var(--color-text-muted)]">
+                {{ 'orderAutoRejectSettings.notifyRolesHint' | translate }}
+              </p>
+            </div>
+          </section>
+
+          <section class="space-y-4">
+            <h4 class="text-lg font-semibold text-[var(--color-text)] border-b border-[var(--color-border)] pb-2">
+              {{ 'orderAutoRejectSettings.sectionSchedule' | translate }}
+            </h4>
+            <div class="flex items-center gap-3">
+              <input type="checkbox" formControlName="isEnabled" id="auto-reject-is-enabled" class="rounded border-[var(--color-border)]" />
+              <label for="auto-reject-is-enabled" class="text-sm font-medium text-[var(--color-text)]">
+                {{ 'orderAutoRejectSettings.isEnabled' | translate }}
+              </label>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+                {{ 'orderAutoRejectSettings.scanSchedule' | translate }}
+              </label>
+              <app-dropdown
+                class="w-full"
+                formControlName="scanSchedulePreset"
+                [options]="scanScheduleDropdownOptions"
+                optionLabel="label"
+                optionValue="value"
+                [translateLabels]="true"
+                [multiple]="false"
+                [placeholderSelectable]="false"
+                placeholder="{{ 'orderAutoRejectSettings.scanSchedulePlaceholder' | translate }}"
+              ></app-dropdown>
+              <p class="mt-1 text-xs text-[var(--color-text-muted)]">
+                {{ 'orderAutoRejectSettings.scanScheduleHint' | translate }}
+              </p>
+            </div>
+            <div *ngIf="form.get('scanSchedulePreset')?.value === customScheduleValue" class="space-y-1">
+              <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="auto-reject-scan-cron-custom">
+                {{ 'orderAutoRejectSettings.scanCronCustomLabel' | translate }}
+              </label>
+              <input
+                id="auto-reject-scan-cron-custom"
+                type="text"
+                formControlName="scanCron"
+                class="w-full px-3 py-3 border-2 border-[var(--color-border)] rounded-xl text-sm bg-[var(--color-background)] text-[var(--color-text)] hover:bg-[var(--color-background-hover)] transition-all focus:outline-none focus:border-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/25 font-mono"
+              />
+              <p class="mt-1 text-xs text-[var(--color-text-muted)]">
+                {{ 'orderAutoRejectSettings.scanCronCustomHint' | translate }}
+              </p>
+            </div>
+          </section>
+
+          <div class="flex items-center justify-end gap-3 pt-4 border-t border-[var(--color-border)]">
+            <app-button [type]="'submit'" [variant]="'primary'" [disabled]="form.invalid || isSaving">
+              {{ isSaving ? ('common.saving' | translate) : ('common.save' | translate) }}
+            </app-button>
+          </div>
+
+        </div>
+      </form>
+    </app-card>
+
+  </div>
+</div>

@@ -1,0 +1,13 @@
+<ng-container *ngIf="countdown && countdown.state !== 'none'">
+  <span [class]="pillClass()" [attr.title]="'autoRejectCountdown.title' | translate">
+    <ng-container [ngSwitch]="countdown.state">
+      <span *ngSwitchCase="'expired'">{{ 'autoRejectCountdown.expired' | translate }}</span>
+      <span *ngSwitchCase="'warning'">
+        {{ 'autoRejectCountdown.daysLeft' | translate: { days: countdown.daysRemaining } }}
+      </span>
+      <span *ngSwitchCase="'running'">
+        {{ 'autoRejectCountdown.daysLeft' | translate: { days: countdown.daysRemaining } }}
+      </span>
+    </ng-container>
+  </span>
+</ng-container>

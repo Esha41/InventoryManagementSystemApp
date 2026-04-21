@@ -233,6 +233,7 @@
     "integratedInventoryManagement": "Integrated Armament System",
     "supplyOrder": "Supply Order",
     "stockNotificationSettings": "Stock Notification Settings",
+    "orderAutoRejectSettings": "Order Auto-Reject Settings",
     "biTool": "BI Tool",
     "reportDesigner": "Report Designer",
     "reportDashboard": "Report Dashboard",

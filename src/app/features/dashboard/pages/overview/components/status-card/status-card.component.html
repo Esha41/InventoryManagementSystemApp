@@ -5,12 +5,12 @@
   </div>
 
   <!-- Individual Order Cards -->
-  <div *ngFor="let order of orders" class="status-card" [class.action-required-highlight]="isMyTurn">
+  <div *ngFor="let order of orders" class="status-card min-w-0" [class.action-required-highlight]="isMyTurn">
     <!-- Header -->
     <div class="status-card__header">
-      <div class="status-card__headline flex items-center gap-2">
+      <div class="status-card__headline flex min-w-0 items-center gap-2">
         <span class="status-card__dot {{ getDotColor() }}"></span>
-        <span *ngIf="isMyTurn" class="action-required-badge animate-action-glow">
+        <span *ngIf="isMyTurn" class="action-required-badge animate-action-glow shrink-0 whitespace-nowrap">
           {{ 'requestsManagement.actionRequired' | translate }}
         </span>
       </div>
