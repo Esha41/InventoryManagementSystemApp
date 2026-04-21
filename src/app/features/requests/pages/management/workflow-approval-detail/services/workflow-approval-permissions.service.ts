@@ -56,8 +56,8 @@ export class WorkflowApprovalPermissionsService {
 
   /**
    * Check if user can approve or reject requests.
-   * Matches backend GetCurrentApprovalStepByRequestIdAsync: SuperAdmin bypass, else exact approver/role/delegation
-   * (exposed as isCurrentUserApprover on the pending history row). No JWT role-name heuristics or permission-count bypass.
+   * Gated by request status (pending / returned-for-review paths), then either elevated workflow admin
+   * or {@link WorkflowApprovalStep.isCurrentUserApprover} on the current pending step from the DTO.
    */
   canApproveOrReject(requestDetail: RequestDetail | null, processing: boolean): boolean {
     if (!requestDetail || processing) {
@@ -72,15 +72,6 @@ export class WorkflowApprovalPermissionsService {
     const currentUser = this.authService.getCurrentUser();
     if (!currentUser) {
       return false;
-    }
-
-    // If the current user is the requester, don't show approve/reject buttons
-    if (requestDetail.requesterId && currentUser.id) {
-      const requesterId = requestDetail.requesterId.toLowerCase().trim();
-      const currentUserId = currentUser.id.toLowerCase().trim();
-      if (requesterId === currentUserId) {
-        return false;
-      }
     }
 
     if (this.isElevatedWorkflowAdmin()) {

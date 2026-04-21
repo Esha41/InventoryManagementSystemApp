@@ -55,6 +55,7 @@ export * from './monitoring.service';
 export * from './role.service';
 export * from './report.service';
 export * from './idle.service';
+export * from './switch-role-modal.service';
 
 // Re-export commonly used types from supply.service for convenience
 export type {

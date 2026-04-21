@@ -11,7 +11,9 @@ const SESSION_STORAGE_KEYS = new Set([
   'user_profile_data',
   'sessionExpired',
   'loginFailedAttempts',
-  'bulkAssetData'
+  'bulkAssetData',
+  'role_selection_token',
+  'available_roles_json'
 ]);
 
 /**

@@ -1,0 +1,39 @@
+<div class="role-selection-panel" [class.role-selection-panel--compact]="layout === 'compact'">
+  <div *ngIf="layout === 'full'" class="role-selection-panel__header">
+    <div class="role-selection-panel__icon-wrap" aria-hidden="true">
+      <lucide-angular [img]="Users" class="role-selection-panel__icon"></lucide-angular>
+    </div>
+    <h1 class="role-selection-panel__title">{{ 'auth.selectRole.title' | translate }}</h1>
+    <p class="role-selection-panel__hint">{{ hintKey | translate }}</p>
+  </div>
+
+  <p *ngIf="layout === 'compact'" class="role-selection-panel__hint role-selection-panel__hint--below-title">
+    {{ hintKey | translate }}
+  </p>
+
+  <p *ngIf="error" class="role-selection-panel__error" role="alert">{{ error }}</p>
+
+  <div *ngIf="listLoading && !roles.length" class="role-selection-panel__loading text-sm text-[var(--color-text-muted)] text-center py-4">
+    {{ 'common.loading' | translate }}
+  </div>
+
+  <div *ngIf="roles.length" class="role-selection-panel__panel">
+    <ul class="role-selection-panel__list">
+      <li *ngFor="let r of roles" class="role-selection-panel__item">
+        <button
+          type="button"
+          class="role-selection-panel__btn"
+          [disabled]="isBusy"
+          (click)="onPick(r.id)">
+          <span class="role-selection-panel__btn-label">{{ roleLabel(r) }}</span>
+        </button>
+      </li>
+    </ul>
+  </div>
+
+  <div class="role-selection-panel__actions">
+    <button type="button" class="role-selection-panel__cancel" (click)="onCancel()" [disabled]="submitLoading">
+      {{ (isPostLoginFlow ? 'auth.selectRole.backToLogin' : 'common.cancel') | translate }}
+    </button>
+  </div>
+</div>

@@ -10,7 +10,19 @@ const isRefreshRequest = (url: string): boolean =>
   url.includes('/account/refresh') || url.endsWith('account/refresh');
 
 const isLoginRequest = (url: string): boolean =>
-  url.includes('/account/login') || url.endsWith('account/login');
+  url.includes('/account/login') ||
+  url.endsWith('account/login') ||
+  url.includes('/account/select-role') ||
+  url.endsWith('account/select-role');
+
+/** POST select-role after credential login uses roleSelectionToken only; a stale Bearer causes JWT middleware to 401 before AllowAnonymous. */
+const shouldSkipBearerForSelectRole = (
+  req: { method: string; url: string },
+  pendingRoleSelectionToken: string | null
+): boolean =>
+  req.method === 'POST' &&
+  !!pendingRoleSelectionToken &&
+  (req.url.includes('/account/select-role') || req.url.endsWith('account/select-role'));
 
 /** Sensitive keys to redact from debug logs */
 const SENSITIVE_KEYS = new Set([
@@ -46,12 +58,15 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const backendAuth = inject(BackendAuthService);
 
   const token = storageService.get<string>('auth_token');
+  const pendingRoleSelectionToken = storageService.get<string>('role_selection_token');
   const skipAuth = isRefreshRequest(req.url);
   const isLogin = isLoginRequest(req.url);
+  const skipBearer =
+    skipAuth || shouldSkipBearerForSelectRole(req, pendingRoleSelectionToken);
 
   let authReq = req.clone({
     withCredentials: true,
-    ...(token && !skipAuth
+    ...(token && !skipBearer
       ? { setHeaders: { Authorization: `Bearer ${token}` } }
       : {})
   });

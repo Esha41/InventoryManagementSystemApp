@@ -14,6 +14,8 @@ export interface RawUserApiResponse {
   militoryId?: string;
   fullNameEN?: string;
   fullNameAR?: string;
+  defaultRoleId?: string | null;
+  DefaultRoleId?: string | null;
   roles?: RawRoleApiResponse[];
   roleIds?: string[];
   departmentId?: number;
@@ -73,6 +75,8 @@ export interface BackendUserDto {
   militoryId?: string; // Backend API field name (typo in API)
   roles?: RoleDto[];
   roleIds: string[];
+  /** Active session role id when provided by API. */
+  defaultRoleId?: string | null;
 }
 
 /**

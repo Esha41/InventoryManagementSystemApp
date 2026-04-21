@@ -1,0 +1,10 @@
+<app-role-selection-panel
+  layout="full"
+  [roles]="roles"
+  [listLoading]="false"
+  [submitLoading]="isLoading"
+  [error]="error"
+  [isPostLoginFlow]="true"
+  (rolePick)="select($event)"
+  (cancel)="cancel()"
+/>

@@ -56,9 +56,14 @@
             <span class="text-xs md:text-sm font-bold text-[var(--color-brand)]">{{ getUserInitials() }}</span>
           </div>
 
-          <!-- User Info (Hidden on mobile) -->
-          <div class="hidden md:flex flex-col items-start">
-            <span class="text-sm font-semibold text-[var(--color-navbar-fg)]">{{ getUserFullName() }}</span>
+          <!-- User Info (Hidden on mobile): name + session role -->
+          <div class="hidden md:flex flex-col items-start min-w-0 max-w-[11rem] lg:max-w-[15rem]">
+            <span class="text-sm font-semibold text-[var(--color-navbar-fg)] truncate w-full">{{ getUserFullName() }}</span>
+            <span *ngIf="getNavbarActiveRoleDisplay()"
+              class="text-xs text-[var(--color-navbar-fg-muted)] truncate w-full mt-0.5 leading-snug"
+              [attr.title]="getNavbarActiveRoleDisplay()">
+              {{ getNavbarActiveRoleDisplay() }}
+            </span>
           </div>
 
           <!-- Chevron -->
@@ -69,27 +74,32 @@
 
         <!-- Dropdown Menu - responsive width, doesn't overflow viewport -->
         <div *ngIf="showUserMenu"
-          class="absolute mt-2 w-64 max-w-[calc(100vw-2rem)] bg-[var(--color-background)] rounded-xl shadow-custom-lg border border-[var(--color-border)] animate-in fade-in slide-in-from-top-2 duration-200 z-50"
+          class="absolute mt-2 w-[min(20rem,calc(100vw-2rem))] min-w-[18rem] sm:min-w-[19rem] bg-[var(--color-background)] rounded-xl shadow-custom-lg border border-[var(--color-border)] animate-in fade-in slide-in-from-top-2 duration-200 z-50"
           [class.right-0]="!isRTL" [class.left-0]="isRTL" (click)="$event.stopPropagation()">
           <!-- User Info in Dropdown -->
-          <div class="px-4 py-3 border-b border-[var(--color-border)]">
-            <div class="flex items-center gap-3">
+          <div class="px-5 py-4 border-b border-[var(--color-border)]">
+            <div class="flex items-center gap-3.5">
               <div
-                class="h-12 w-12 rounded-full bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-accent-dark)] flex items-center justify-center shadow-sm">
-                <span class="text-base font-bold text-white">{{ getUserInitials() }}</span>
+                class="h-14 w-14 shrink-0 rounded-full bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-accent-dark)] flex items-center justify-center shadow-sm">
+                <span class="text-lg font-bold text-white">{{ getUserInitials() }}</span>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-[var(--color-text)] truncate">{{ getUserFullName() }}</p>
-                <p class="text-xs text-[var(--color-text-muted)] truncate">{{ getUserEmail() }}</p>
+                <p class="text-[0.9375rem] font-semibold leading-snug text-[var(--color-text)] truncate">{{ getUserFullName() }}</p>
+                <p class="text-xs text-[var(--color-text-muted)] truncate mt-1 leading-snug">{{ getUserEmail() }}</p>
               </div>
             </div>
           </div>
 
           <!-- Menu Items -->
-          <div class="py-2">
+          <div class="py-1.5">
+            <button *ngIf="showSwitchRole" type="button" (click)="navigateToSwitchRole()"
+              class="flex items-center gap-3 w-full px-5 py-3 text-sm text-[var(--color-text)] hover:bg-[var(--color-background-hover)] transition-colors">
+              <lucide-angular [img]="Users" class="h-[1.125rem] w-[1.125rem] shrink-0 text-[var(--color-accent)]"></lucide-angular>
+              <span class="font-medium flex-1 text-start">{{ 'profile.menu.switchRole' | translate }}</span>
+            </button>
             <button (click)="navigateToProfile()"
-              class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-[var(--color-text)] hover:bg-[var(--color-background-hover)] transition-colors">
-              <lucide-angular [img]="User" class="h-4 w-4 text-[var(--color-accent)]"></lucide-angular>
+              class="flex items-center gap-3 w-full px-5 py-3 text-sm text-[var(--color-text)] hover:bg-[var(--color-background-hover)] transition-colors">
+              <lucide-angular [img]="User" class="h-[1.125rem] w-[1.125rem] shrink-0 text-[var(--color-accent)]"></lucide-angular>
               <span class="font-medium flex-1 text-start">{{ 'profile.menu.myProfile' | translate }}</span>
               <span *ngIf="pendingDelegationCount > 0"
                 class="rounded-full w-5 h-5 bg-red-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
@@ -99,10 +109,10 @@
           </div>
 
           <!-- Logout -->
-          <div class="py-2 border-t border-[var(--color-border)]">
+          <div class="py-1.5 border-t border-[var(--color-border)]">
             <button (click)="logout()"
-              class="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-[var(--color-error)] hover:bg-[var(--color-error)]/5 transition-colors">
-              <lucide-angular [img]="LogOut" class="h-4 w-4"></lucide-angular>
+              class="flex items-center gap-3 w-full px-5 py-3 text-sm text-[var(--color-error)] hover:bg-[var(--color-background-hover)] active:bg-[var(--color-background-active)] transition-colors">
+              <lucide-angular [img]="LogOut" class="h-[1.125rem] w-[1.125rem] shrink-0"></lucide-angular>
               <span class="font-medium">{{ 'accessDenied.logout' | translate }}</span>
             </button>
           </div>

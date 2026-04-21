@@ -4,22 +4,24 @@ import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil, catchError, of, forkJoin } from 'rxjs';
 import { map, delay, switchMap } from 'rxjs/operators';
-import { LucideAngularModule, User, Mail, Building2, Shield, Hash, Navigation2, Award, Lock, RotateCcw } from 'lucide-angular';
+import { LucideAngularModule, User, Users, Mail, Building2, Shield, Hash, Navigation2, Award, Lock, RotateCcw } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
-import { AuthenticatedUser } from '@models/auth.model';
+import { AuthenticatedUser, UserRoleDetail } from '@models/auth.model';
 import { ChangePasswordRequest } from '@profile/models/change-password.model';
 import { UserMeResponse } from '@profile/models/profile.model';
 import { TranslationService } from '@services/translation.service';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { mapApiResponseToAuthenticatedUser } from '@utils/profile.mapper';
-import { getUserName, getRolesString, getRankName, getDepartmentName, getUserInitials } from '@utils/profile.utils';
+import { getUserName, getRolesString, getRankName, getDepartmentName, getUserInitials, getActiveRoleDisplay } from '@utils/profile.utils';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ChangePasswordModalComponent } from '@components/change-password-modal/change-password-modal.component';
 import { DelegationListComponent } from './delegation-list/delegation-list.component';
 import { ToastService } from '@services/toast.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { OnboardingTourService } from '@features/onboarding/services/onboarding-tour.service';
+import { SwitchRoleModalService } from '@services/switch-role-modal.service';
 
 @Component({
   selector: 'app-profile',
@@ -39,6 +41,7 @@ import { OnboardingTourService } from '@features/onboarding/services/onboarding-
 })
 export class ProfileComponent implements OnInit, OnDestroy {
   readonly User = User;
+  readonly Users = Users;
   readonly Mail = Mail;
   readonly Building2 = Building2;
   readonly Shield = Shield;
@@ -64,7 +67,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
     private toastService: ToastService,
     private onboardingTourService: OnboardingTourService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private switchRoleModal: SwitchRoleModalService
   ) { }
 
   ngOnInit(): void {
@@ -173,6 +177,71 @@ export class ProfileComponent implements OnInit, OnDestroy {
    */
   getUserInitials(): string {
     return getUserInitials(this.currentUser, this.translateService);
+  }
+
+  /** Session / default role label (localized name only, no "Active role" prefix). */
+  getSessionRoleDisplay(): string {
+    return getActiveRoleDisplay(this.currentUser, this.translateService);
+  }
+
+  getRoleDetails(): UserRoleDetail[] {
+    return this.currentUser?.roleDetails?.length ? this.currentUser.roleDetails : [];
+  }
+
+  /** Show roles block when API/JWT exposed at least one role. */
+  hasRolesSection(): boolean {
+    return this.getRoleDetails().length > 0 || (this.currentUser?.roles?.length ?? 0) > 0;
+  }
+
+  /** When roleDetails are missing, list JWT string role names. */
+  getFallbackRoleNames(): string[] {
+    return (this.currentUser?.roles || []).filter(r => !!r?.trim());
+  }
+
+  roleDisplayName(role: UserRoleDetail): string {
+    return getLocalizedName(
+      { name: role.name, nameAr: role.nameAr },
+      getCurrentLang(this.translateService)
+    ) || role.name;
+  }
+
+  /** Current session role row (aligned with getActiveRoleDisplay / defaultRoleId). */
+  isRoleActive(role: UserRoleDetail): boolean {
+    const details = this.currentUser?.roleDetails;
+    if (!details?.length) {
+      return false;
+    }
+    const defId = this.currentUser?.defaultRoleId?.toLowerCase().trim();
+    if (defId) {
+      return (role.id || '').toLowerCase().trim() === defId;
+    }
+    const flagged = details.find(r => r.isDefaultRole);
+    if (flagged) {
+      return (role.id || '') === (flagged.id || '');
+    }
+    return (role.id || '') === (details[0].id || '');
+  }
+
+  /** JWT-only role list: mark row that matches session display (see getActiveRoleDisplay). */
+  isFallbackRoleActive(name: string): boolean {
+    if (this.getRoleDetails().length > 0) {
+      return false;
+    }
+    const session = getActiveRoleDisplay(this.currentUser, this.translateService);
+    return !!session && session === name;
+  }
+
+  showSwitchRole(): boolean {
+    const n = this.getRoleDetails().length || this.currentUser?.roles?.length || 0;
+    return n > 1;
+  }
+
+  navigateToSwitchRole(): void {
+    this.switchRoleModal.open();
+  }
+
+  getProfileEmail(): string {
+    return this.currentUser?.email || '';
   }
 
   /**

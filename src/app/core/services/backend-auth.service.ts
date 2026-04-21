@@ -185,7 +185,18 @@ export class BackendAuthService {
         }
         return response.data;
       }),
-      switchMap(loginResponse => this.handleLoginSuccess(loginResponse)),
+      switchMap(loginResponse => {
+        if (loginResponse.requiresRoleSelection && loginResponse.roleSelectionToken) {
+          this.clearSessionCredentialsForPendingRoleSelection();
+          this.storageService.set('role_selection_token', loginResponse.roleSelectionToken);
+          this.storageService.set('available_roles_json', JSON.stringify(loginResponse.availableRoles || []));
+          return of(loginResponse);
+        }
+        if (!loginResponse.accessToken) {
+          return throwError(() => new Error('Login failed: no access token'));
+        }
+        return this.handleLoginSuccess(loginResponse);
+      }),
       catchError(error => {
         this.configService.logError('Login failed', error);
         this.clearAuthData();
@@ -195,8 +206,39 @@ export class BackendAuthService {
     );
   }
 
+  /**
+   * Complete login after choosing a role (post-login) or switch role while signed in.
+   */
+  selectRole(roleId: string, options?: { switchWhileLoggedIn?: boolean }): Observable<LoginResponse> {
+    const body: { roleId: string; roleSelectionToken?: string } = { roleId };
+    if (!options?.switchWhileLoggedIn) {
+      const t = this.storageService.get<string>('role_selection_token');
+      if (!t) {
+        return throwError(() => new Error('Role selection session expired. Please sign in again.'));
+      }
+      body.roleSelectionToken = t;
+    }
+
+    return this.apiService.postRaw<LoginResponse>(API_ENDPOINTS.AUTH.SELECT_ROLE, body).pipe(
+      map(response => {
+        if (!response.succeeded || !response.data) {
+          throw new Error(response.message || 'Role selection failed');
+        }
+        return response.data;
+      }),
+      switchMap(loginResponse => this.handleLoginSuccess(loginResponse)),
+      catchError(error => {
+        this.configService.logError('Select role failed', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
   private handleLoginSuccess(response: LoginResponse): Observable<LoginResponse> {
     this.configService.log('Login successful');
+
+    this.storageService.remove('role_selection_token');
+    this.storageService.remove('available_roles_json');
 
     const expiresAt = new Date(response.expiresAt);
 
@@ -927,6 +969,28 @@ export class BackendAuthService {
   /**
    * Clear authentication data
    */
+  /**
+   * Removes a stale JWT/session from storage before storing role-selection tokens.
+   * An old Bearer on POST /account/select-role would make JWT middleware return 401.
+   */
+  private clearSessionCredentialsForPendingRoleSelection(): void {
+    this.stopSessionHeartbeat();
+    this.profileDataService.clearProfile();
+    this.storageService.remove('auth_token');
+    this.storageService.remove('current_user');
+    this.storageService.remove('token_expires_at');
+    this.storageService.remove('user_profile_data');
+    this.currentUserSubject.next(null);
+    this.isAuthenticatedSubject.next(false);
+    this.authStateSubject.next({
+      isAuthenticated: false,
+      user: null,
+      token: null,
+      refreshToken: null,
+      expiresAt: null
+    });
+  }
+
   private clearAuthData(): void {
     // Prevent recursive calls
     if (this.isClearingAuthData) {

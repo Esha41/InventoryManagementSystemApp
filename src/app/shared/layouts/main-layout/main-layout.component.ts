@@ -13,6 +13,7 @@ import { IdleService } from '@services/idle.service';
 import { OnboardingTourService } from '@features/onboarding/services/onboarding-tour.service';
 import { TermsAcceptanceFacade } from '@features/help/facades/terms-acceptance.facade';
 import { TermsAcceptanceModalComponent } from '@features/help/components/terms-acceptance-modal/terms-acceptance-modal.component';
+import { SwitchRoleModalComponent } from '@shared/components/switch-role-modal/switch-role-modal.component';
 
 @Component({
   selector: 'app-main-layout',
@@ -26,7 +27,8 @@ import { TermsAcceptanceModalComponent } from '@features/help/components/terms-a
     ToastComponent,
     AnnouncementBannerComponent,
     IdleTimeoutModalComponent,
-    TermsAcceptanceModalComponent
+    TermsAcceptanceModalComponent,
+    SwitchRoleModalComponent
   ],
   templateUrl: './main-layout.component.html',
   styleUrls: ['./main-layout.component.css']
