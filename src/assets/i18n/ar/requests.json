@@ -283,6 +283,11 @@
   },
   "requestsManagement": {
     "title": "إدارة الموافقات",
+    "subtitle": "راجع طلبات الموافقة واعتمادها من مكان واحد.",
+    "filterStatusLabel": "الحالة",
+    "filterPriorityLabel": "الأولوية",
+    "filterStatusPlaceholder": "كل الحالات",
+    "filterPriorityPlaceholder": "كل الأولويات",
     "actionRequired": "مطلوب إجراء",
     "orderId": "رقم الطلب",
     "requestDate": "تاريخ الطلب",

@@ -43,22 +43,20 @@ export class RequestsManagementService {
   ): Observable<PaginatedList<Request>> {
     const filters: FilterData[] = [];
 
-    // Search filter
     if (searchQuery && searchQuery.trim()) {
       filters.push({ value: searchQuery.trim() });
     }
 
-    // Status filter
     if (statusFilter !== 'all') {
       if (statusFilter === 'action-required') {
         filters.push({ field: 'IsMyTurn', operator: 'eq', value: 'true' });
       } else {
         const statusMap: Record<string, number> = {
-          'new': 1,
+          new: 1,
           'on-progress': 2,
-          'completed': 3,
-          'declined': 4,
-          'returned': 6
+          completed: 3,
+          declined: 4,
+          returned: 6
         };
         const statusValue = statusMap[statusFilter];
         if (statusValue) {
@@ -67,12 +65,11 @@ export class RequestsManagementService {
       }
     }
 
-    // Priority filter
     if (priorityFilter !== 'all') {
       const priorityMap: Record<string, number> = {
-        'normal': 1,
-        'urgent': 2,
-        'veryurgent': 3
+        normal: 1,
+        urgent: 2,
+        veryurgent: 3
       };
       const priorityValue = priorityMap[priorityFilter.toLowerCase().replace(/\s+/g, '')];
       if (priorityValue !== undefined) {

@@ -23,7 +23,7 @@ import { DashboardFilterService } from '@services/dashboard-filter.service';
 import { DashboardCard } from '@models/dashboard.model';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
-import { RequestFilterBarComponent, StatusFilter } from '@components/request-filter-bar/request-filter-bar.component';
+import { RequestFilterBarComponent, StatusFilter, PriorityFilter } from '@components/request-filter-bar/request-filter-bar.component';
 import { formatTimeToMilitary, formatDateTimeExtended } from '@utils/format.utils';
 import { defaultPageSize } from '@constants/app.constants';
 import { localizedBilingualLabel } from '@utils/localization.utils';
@@ -67,6 +67,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // Filter state (managed by shared component)
   searchQuery: string = '';
   selectedStatusFilter: StatusFilter = 'all';
+  selectedPriorityFilter: PriorityFilter = 'all';
 
   // Sort state
   sortState: { column: string | null; direction: 'asc' | 'desc' } = {
@@ -101,17 +102,36 @@ export class DashboardComponent implements OnInit, OnDestroy {
     switch (status) {
       case 'new-issue':
       case 'new':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300';
       case 'on-progress':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300';
       case 'completed':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300';
       case 'declined':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300';
       case 'returned':
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-[var(--color-background-muted)] text-[var(--color-text-muted)]';
+    }
+  }
+
+  /** Returns only the background colour class for the status dot (no text classes). */
+  getStatusDotClass(status: string): string {
+    switch (status) {
+      case 'new-issue':
+      case 'new':
+        return 'bg-blue-500';
+      case 'on-progress':
+        return 'bg-yellow-500';
+      case 'completed':
+        return 'bg-green-500';
+      case 'declined':
+        return 'bg-red-500';
+      case 'returned':
+        return 'bg-purple-500';
+      default:
+        return 'bg-[var(--color-text-muted)]';
     }
   }
 
@@ -245,6 +265,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.rowsPerPage,
       this.searchQuery,
       this.selectedStatusFilter,
+      this.selectedPriorityFilter,
       this.sortState
     )
       .pipe(takeUntil(this.destroy$))
@@ -273,8 +294,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.loadAllRequests();
   }
 
+  onPriorityFilterChange(priority: PriorityFilter): void {
+    this.selectedPriorityFilter = priority;
+    this.currentPage = 1;
+    this.loadAllRequests();
+  }
+
   onSearchChange(query: string): void {
     this.searchQuery = query;
+    this.currentPage = 1;
+    this.loadAllRequests();
+  }
+
+  onFiltersCleared(): void {
+    this.selectedStatusFilter = 'all';
+    this.selectedPriorityFilter = 'all';
+    this.searchQuery = '';
     this.currentPage = 1;
     this.loadAllRequests();
   }

@@ -287,6 +287,11 @@
   },
   "requestsManagement": {
     "title": "Approval Management",
+    "subtitle": "Review and approve requests in one place.",
+    "filterStatusLabel": "Status",
+    "filterPriorityLabel": "Priority",
+    "filterStatusPlaceholder": "All statuses",
+    "filterPriorityPlaceholder": "All priorities",
     "actionRequired": "Action Required",
     "orderId": "Order ID",
     "requestDate": "Request Date",

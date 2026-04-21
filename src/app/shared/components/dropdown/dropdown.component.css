@@ -6,21 +6,28 @@
   --app-dropdown-accent-color-rgb: var(--dropdown-accent-color-rgb, var(--color-brand-rgb));
 }
 
-/* WebKit scrollbar — no built-in Tailwind equivalent in this project. */
+/* WebKit scrollbar — match global theme (styles.css --app-scrollbar-*) */
 .dropdown-list-scroll::-webkit-scrollbar {
-  width: 6px;
+  width: var(--app-scrollbar-size, 5px);
 }
 
 .dropdown-list-scroll::-webkit-scrollbar-track {
-  background: var(--color-background-active);
-  border-radius: var(--radius-md);
+  background: var(--app-scrollbar-track);
+  border-radius: var(--radius-full);
+  box-shadow: inset 0 0 0 1px var(--app-scrollbar-track-edge);
 }
 
 .dropdown-list-scroll::-webkit-scrollbar-thumb {
-  background: var(--color-text-muted);
-  border-radius: var(--radius-md);
+  background: var(--app-scrollbar-thumb);
+  border-radius: var(--radius-full);
+  transition: background-color var(--transition-fast, 150ms ease);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-background) 55%, transparent);
 }
 
 .dropdown-list-scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text);
+  background: var(--app-scrollbar-thumb-hover);
+}
+
+.dropdown-list-scroll::-webkit-scrollbar-thumb:active {
+  background: var(--app-scrollbar-thumb-active);
 }

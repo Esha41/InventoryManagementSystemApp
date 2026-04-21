@@ -1,183 +1,310 @@
-<div class="page-wrapper">
-  <div class="page-container space-y-6">
-    <!-- Header with Search and Filter -->
-    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-      <h1 class="text-3xl font-bold text-[var(--color-text)] flex-shrink-0 animate-fade-in">{{
-        'requestsManagement.title' | translate }}
-      </h1>
+<!-- ═══════════════════════════════════════════════════════════════
+     REQUESTS MANAGEMENT PAGE
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="page-wrapper min-h-0 pb-0">
 
-      <!-- Search and Filter Section -->
-      <app-request-filter-bar layout="separate" [showStatusFilter]="true" [showPriorityFilter]="true"
-        [showSearchBar]="true" [showResultCount]="true" [statusFilter]="selectedStatusFilter"
-        [priorityFilter]="selectedPriorityFilter" [searchQuery]="searchQuery" [resultCount]="filteredRequestsCount"
-        [useSearchButton]="true" (statusFilterChange)="onStatusFilterChange($event)"
-        (priorityFilterChange)="onPriorityFilterChange($event)" (searchTriggered)="onSearchChange($event)"
-        class="animate-slide-in-right">
-      </app-request-filter-bar>
-    </div>
-
-    <!-- Content Container -->
-    <div class="space-y-4">
-
-      <!-- Mobile Card View (Visible < lg) -->
-      <div class="grid grid-cols-1 gap-4 lg:hidden">
-        <!-- Loading State -->
-        <div *ngIf="loading" class="text-center py-8 text-[var(--color-text-muted)]">
-          {{ 'common.loadingWithDots' | translate }}
+  <!-- ── Header (aligned with dashboard) ─────────────────────────── -->
+  <div class="border-b border-[var(--color-border)] bg-transparent mb-6">
+    <div class="page-container py-5 md:py-6">
+      <div class="flex flex-col xl:flex-row xl:items-center gap-4 xl:gap-6">
+        <div class="min-w-0 flex-shrink-0">
+          <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)] tracking-tight leading-tight">
+            {{ 'requestsManagement.title' | translate }}
+          </h1>
+          <p class="text-sm text-[var(--color-text-muted)] mt-0.5 truncate">
+            {{ 'requestsManagement.subtitle' | translate }}
+          </p>
         </div>
 
-        <!-- Empty State -->
-        <div *ngIf="!loading && requests.length === 0"
-          class="text-center py-8 text-[var(--color-text-muted)] bg-[var(--color-surface)] rounded-xl border border-[var(--color-border-muted)]">
-          {{ 'requestsManagement.noRequestsFound' | translate }}
-        </div>
-
-        <!-- Request Cards -->
-        <div *ngFor="let request of paginatedRequests"
-          class="bg-[var(--color-surface)] rounded-xl p-4 shadow-sm border border-[var(--color-border-muted)] space-y-3 relative overflow-hidden"
-          [class.border-l-4]="request.isMyTurn" [class.border-l-[var(--color-brand)]]="request.isMyTurn">
-
-          <!-- Header: ID and Priority -->
-          <div class="flex justify-between items-start">
-            <span class="font-bold text-[var(--color-text)]">{{ request.orderId }}</span>
-            <span
-              class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium uppercase tracking-wide {{ getPriorityClass(request.priority) }}">
-              {{ getPriorityText(request.priority) | translate }}
-            </span>
-          </div>
-
-          <!-- Info Grid -->
-          <div class="grid grid-cols-2 gap-2 text-sm">
-            <div>
-              <p class="text-[var(--color-text-muted)] text-xs">{{ 'requestsManagement.requestDate' | translate }}</p>
-              <p class="font-medium text-[var(--color-text)]">{{ request.requestDate | appDate }}</p>
-            </div>
-            <div>
-              <p class="text-[var(--color-text-muted)] text-xs">{{ 'requestsManagement.requestType' | translate }}</p>
-              <p class="font-medium text-[var(--color-text)]">{{ getRequestTypeText(request.requestType) | translate }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Footer: Status and Action -->
-          <div class="flex items-center justify-between pt-2 border-t border-[var(--color-border-muted)]">
-            <div class="flex flex-col gap-1">
-              <span class="inline-flex items-center gap-1.5 text-sm font-medium {{ getStatusClass(request.status) }}">
-                <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
-                {{ getStatusText(request.status) | translate }}
-              </span>
-              <span *ngIf="request.isMyTurn"
-                class="text-[10px] font-bold text-[var(--color-brand)] uppercase tracking-wider animate-pulse">
-                {{ 'requestsManagement.actionRequired' | translate }}
-              </span>
-              <app-auto-reject-countdown
-                [countdown]="getAutoRejectCountdown(request)"
-              ></app-auto-reject-countdown>
-            </div>
-
-            <button (click)="openOrderDetails(request)"
-              class="p-2 rounded-full hover:bg-[var(--color-background-hover)] transition-colors text-[var(--color-text-muted)]">
-              <lucide-angular [img]="ChevronDown" class="h-5 w-5"></lucide-angular>
-            </button>
+        <div class="flex flex-col xl:flex-row items-stretch xl:items-center gap-3 w-full xl:flex-1 min-w-0">
+          <div class="flex-1 min-w-0">
+            <app-request-filter-bar
+              [showStatusFilter]="true"
+              [showPriorityFilter]="true"
+              [showSearchBar]="true"
+              [showResultCount]="true"
+              [statusFilter]="selectedStatusFilter"
+              [priorityFilter]="selectedPriorityFilter"
+              [searchQuery]="searchQuery"
+              [resultCount]="filteredRequestsCount"
+              [useSearchButton]="true"
+              (statusFilterChange)="onStatusFilterChange($event)"
+              (priorityFilterChange)="onPriorityFilterChange($event)"
+              (searchTriggered)="onSearchChange($event)"
+              (filtersCleared)="onFiltersCleared()">
+            </app-request-filter-bar>
           </div>
         </div>
       </div>
-
-      <!-- Desktop Table View (Visible >= lg) -->
-      <div
-        class="hidden lg:block bg-[var(--color-surface)] rounded-lg shadow-custom-sm border border-[var(--color-border-muted)]">
-        <div class="overflow-x-auto rounded-t-lg">
-          <!-- Table -->
-          <table class="w-full min-w-[1000px]">
-            <thead class="bg-[var(--color-background-muted)]">
-              <tr>
-                <th
-                  class="px-6 py-4 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
-                  {{ 'requestsManagement.orderId' | translate }}</th>
-                <th
-                  class="px-6 py-4 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
-                  {{ 'requestsManagement.requestDate' | translate }}</th>
-                <th
-                  class="px-6 py-4 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
-                  {{ 'requestsManagement.priority' | translate }}</th>
-                <th
-                  class="px-6 py-4 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">
-                  {{ 'requestsManagement.requestType' | translate }}</th>
-                <th
-                  class="px-6 py-4 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider min-w-[280px]">
-                  {{ 'requestsManagement.status' | translate }}</th>
-                <th class="px-6 py-4 text-end w-16"></th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-[var(--color-border)]">
-              <tr *ngIf="loading" class="hover:bg-[var(--color-background-muted)] transition-colors">
-                <td colspan="6" class="px-6 py-4 text-center text-sm text-[var(--color-text-muted)]">{{
-                  'common.loadingWithDots' | translate }}</td>
-              </tr>
-              <tr *ngIf="!loading && requests.length === 0"
-                class="hover:bg-[var(--color-background-muted)] transition-colors">
-                <td colspan="6" class="px-6 py-4 text-center text-sm text-[var(--color-text-muted)]">{{
-                  'requestsManagement.noRequestsFound' | translate }}</td>
-              </tr>
-              <tr *ngFor="let request of paginatedRequests" [class.action-required-highlight]="request.isMyTurn"
-                class="hover:bg-[var(--color-background-muted)] transition-colors">
-                <td class="px-6 py-4 text-sm font-medium text-[var(--color-text)] text-start">{{ request.orderId }}</td>
-                <td class="px-6 py-4 text-sm text-[var(--color-text)] text-start">{{ request.requestDate | appDate }}
-                </td>
-                <td class="px-6 py-4 text-start">
-                  <span
-                    class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ getPriorityClass(request.priority) }}">
-                    {{ getPriorityText(request.priority) | translate }}
-                  </span>
-                </td>
-                <td class="px-6 py-4 text-sm text-[var(--color-text)] text-start">{{
-                  getRequestTypeText(request.requestType) | translate }}</td>
-                <td class="px-6 py-4 text-start">
-                  <div class="flex flex-col items-start gap-1.5">
-                    <span
-                      class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap {{ getStatusClass(request.status) }}">
-                      {{ getStatusText(request.status) | translate }}
-                    </span>
-                    <span *ngIf="request.isMyTurn" class="action-required-badge animate-action-glow whitespace-nowrap">
-                      {{ 'requestsManagement.actionRequired' | translate }}
-                    </span>
-                    <app-auto-reject-countdown
-                      [countdown]="getAutoRejectCountdown(request)"
-                    ></app-auto-reject-countdown>
-                  </div>
-                </td>
-                <td class="px-6 py-4 text-end">
-                  <button (click)="openOrderDetails(request)"
-                    class="w-8 h-8 rounded-full border-2 border-[var(--color-text-muted)] flex items-center justify-center hover:border-[var(--color-accent)] hover:bg-[var(--color-background-hover)] transition-colors">
-                    <lucide-angular [img]="ChevronDown" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Footer with Pagination (Desktop) -->
-        <div class="px-6 py-4 border-t border-[var(--color-border)] flex items-center justify-between">
-          <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="totalItems"
-            (rowsPerPageChange)="onRowsPerPageChange($event)">
-          </app-rows-per-page>
-
-          <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
-          </app-pagination>
-        </div>
-      </div>
-
-      <!-- Mobile Pagination (Simplified) -->
-      <div class="lg:hidden flex flex-col gap-4 py-4">
-        <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)"
-          class="w-full justify-center">
-        </app-pagination>
-        <div class="text-center text-xs text-[var(--color-text-muted)]">
-          {{ 'common.showing' | translate }} {{ (currentPage - 1) * rowsPerPage + 1 }} - {{ Math.min(currentPage *
-          rowsPerPage, totalItems) }} {{ 'common.of' | translate }} {{ totalItems }}
-        </div>
-      </div>
-
     </div>
   </div>
+
+  <div class="page-container space-y-6 pb-6">
+
+  <!-- ── Mobile Cards (< md, same breakpoint as dashboard list) ───── -->
+  <div class="md:hidden space-y-3">
+
+    <!-- Loading skeleton -->
+    <ng-container *ngIf="loading">
+      <div *ngFor="let i of [1,2,3,4]"
+        class="bg-[var(--color-background)] rounded-xl border border-[var(--color-border)] p-4 space-y-3 animate-pulse shadow-sm">
+        <div class="flex justify-between">
+          <div class="h-4 w-28 rounded bg-[var(--color-border)]"></div>
+          <div class="h-5 w-16 rounded-full bg-[var(--color-border)]"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div class="h-8 rounded bg-[var(--color-border)]"></div>
+          <div class="h-8 rounded bg-[var(--color-border)]"></div>
+        </div>
+        <div class="h-px bg-[var(--color-border)]"></div>
+        <div class="flex justify-between items-center">
+          <div class="h-5 w-24 rounded-full bg-[var(--color-border)]"></div>
+          <div class="h-8 w-8 rounded-full bg-[var(--color-border)]"></div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Empty state -->
+    <div *ngIf="!loading && requests.length === 0"
+      class="flex flex-col items-center justify-center py-16 text-center
+             bg-[var(--color-background)] rounded-xl border border-[var(--color-border)] shadow-sm">
+      <div class="w-12 h-12 rounded-full bg-[var(--color-background-muted)] flex items-center justify-center mb-3
+                  border border-[var(--color-border)]">
+        <lucide-angular [img]="Inbox" class="w-6 h-6 text-[var(--color-text-muted)]"></lucide-angular>
+      </div>
+      <p class="text-sm font-medium text-[var(--color-text)]">
+        {{ 'requestsManagement.noRequestsFound' | translate }}
+      </p>
+    </div>
+
+    <!-- Request cards -->
+    <div *ngFor="let request of paginatedRequests"
+      (click)="openOrderDetails(request)"
+      class="group bg-[var(--color-background)] rounded-xl cursor-pointer border border-[var(--color-border)]
+             transition-all duration-200 shadow-sm
+             hover:shadow-md active:scale-[0.99]"
+      [ngClass]="request.isMyTurn
+        ? 'border-s-[3px] border-s-[var(--color-brand)] ring-1 ring-[var(--color-brand)]/15'
+        : 'hover:border-[var(--color-brand)]/35'">
+
+      <div class="p-4 space-y-3">
+        <!-- Row 1: Order ID + Priority badge -->
+        <div class="flex items-center justify-between gap-2">
+          <span class="font-semibold text-[var(--color-text)] text-sm">
+            {{ request.orderId }}
+          </span>
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide
+                       {{ getPriorityClass(request.priority) }}">
+            {{ getPriorityText(request.priority) | translate }}
+          </span>
+        </div>
+
+        <!-- Row 2: Meta grid -->
+        <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+          <div>
+            <span class="block text-[var(--color-text-muted)]">
+              {{ 'requestsManagement.requestDate' | translate }}
+            </span>
+            <span class="font-medium text-[var(--color-text)]">
+              {{ request.requestDate | appDate }}
+            </span>
+          </div>
+          <div>
+            <span class="block text-[var(--color-text-muted)]">
+              {{ 'requestsManagement.requestType' | translate }}
+            </span>
+            <span class="font-medium text-[var(--color-text)]">
+              {{ getRequestTypeText(request.requestType) | translate }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="h-px bg-[var(--color-border)]"></div>
+
+        <!-- Row 3: Status + action pill + chevron -->
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex flex-col gap-1 min-w-0">
+            <span class="inline-flex items-center gap-1.5 text-xs font-medium
+                         {{ getStatusClass(request.status) }}">
+              <span class="w-1.5 h-1.5 rounded-full bg-current flex-shrink-0"></span>
+              {{ getStatusText(request.status) | translate }}
+            </span>
+
+            <span *ngIf="request.isMyTurn"
+              class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full
+                     text-[10px] font-bold uppercase tracking-wide
+                     bg-[var(--color-brand)]/10 text-[var(--color-brand)]
+                     border border-[var(--color-brand)]/20 whitespace-nowrap">
+              <span class="w-1.5 h-1.5 rounded-full bg-[var(--color-brand)] animate-pulse"></span>
+              {{ 'requestsManagement.actionRequired' | translate }}
+            </span>
+
+            <app-auto-reject-countdown
+              [countdown]="getAutoRejectCountdown(request)">
+            </app-auto-reject-countdown>
+          </div>
+
+          <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
+                      text-[var(--color-text-muted)] bg-[var(--color-background-muted)]
+                      group-hover:bg-[var(--color-brand)]/10 group-hover:text-[var(--color-brand)]
+                      transition-colors duration-200">
+            <lucide-angular [img]="ChevronDown" class="w-4 h-4 -rotate-90 rtl:rotate-90"></lucide-angular>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Pagination -->
+    <div *ngIf="!loading && requests.length > 0"
+      class="flex flex-col items-center gap-2 pt-2">
+      <app-pagination
+        [currentPage]="currentPage"
+        [totalPages]="totalPages"
+        (pageChange)="onPageChange($event)"
+        class="w-full justify-center">
+      </app-pagination>
+      <p class="text-xs text-[var(--color-text-muted)]">
+        {{ 'common.showing' | translate }}
+        {{ (currentPage - 1) * rowsPerPage + 1 }}–{{ Math.min(currentPage * rowsPerPage, totalItems) }}
+        {{ 'common.of' | translate }} {{ totalItems }}
+      </p>
+    </div>
+  </div>
+
+  <!-- ── Desktop Table (>= md, styled like dashboard list view) ───── -->
+  <div class="hidden md:block bg-[var(--color-background)] rounded-xl border border-[var(--color-border)]
+              shadow-sm overflow-hidden mb-6">
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[900px]">
+        <thead>
+          <tr class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
+            <th class="px-5 py-3 text-start text-[11px] font-semibold text-[var(--color-text-muted)]
+                       uppercase tracking-wider">
+              {{ 'requestsManagement.orderId' | translate }}
+            </th>
+            <th class="px-5 py-3 text-start text-[11px] font-semibold text-[var(--color-text-muted)]
+                       uppercase tracking-wider">
+              {{ 'requestsManagement.requestDate' | translate }}
+            </th>
+            <th class="px-5 py-3 text-start text-[11px] font-semibold text-[var(--color-text-muted)]
+                       uppercase tracking-wider">
+              {{ 'requestsManagement.priority' | translate }}
+            </th>
+            <th class="px-5 py-3 text-start text-[11px] font-semibold text-[var(--color-text-muted)]
+                       uppercase tracking-wider">
+              {{ 'requestsManagement.requestType' | translate }}
+            </th>
+            <th class="px-5 py-3 text-start text-[11px] font-semibold text-[var(--color-text-muted)]
+                       uppercase tracking-wider">
+              {{ 'requestsManagement.status' | translate }}
+            </th>
+            <th class="px-5 py-3 text-end text-[11px] font-semibold text-[var(--color-text-muted)]
+                       uppercase tracking-wider w-16">
+              {{ 'common.actions' | translate }}
+            </th>
+          </tr>
+        </thead>
+
+        <tbody class="divide-y divide-[var(--color-border)]">
+
+          <!-- Loading rows -->
+          <ng-container *ngIf="loading">
+            <tr *ngFor="let i of [1,2,3,4,5]" class="animate-pulse">
+              <td class="px-5 py-3.5"><div class="h-4 w-28 rounded bg-[var(--color-border)]"></div></td>
+              <td class="px-5 py-3.5"><div class="h-4 w-20 rounded bg-[var(--color-border)]"></div></td>
+              <td class="px-5 py-3.5"><div class="h-5 w-16 rounded-full bg-[var(--color-border)]"></div></td>
+              <td class="px-5 py-3.5"><div class="h-4 w-16 rounded bg-[var(--color-border)]"></div></td>
+              <td class="px-5 py-3.5"><div class="h-5 w-24 rounded-full bg-[var(--color-border)]"></div></td>
+              <td class="px-5 py-3.5"><div class="h-8 w-8 rounded-lg bg-[var(--color-border)] ms-auto"></div></td>
+            </tr>
+          </ng-container>
+
+          <!-- Empty state -->
+          <tr *ngIf="!loading && requests.length === 0">
+            <td colspan="6" class="px-5 py-16 text-center text-sm text-[var(--color-text-muted)]">
+              {{ 'requestsManagement.noRequestsFound' | translate }}
+            </td>
+          </tr>
+
+          <!-- Data rows -->
+          <tr *ngFor="let request of paginatedRequests"
+            class="group hover:bg-[var(--color-background-muted)] transition-colors"
+            [class.action-required-highlight]="request.isMyTurn">
+
+            <td class="px-5 py-3.5 text-sm font-medium text-[var(--color-text)] whitespace-nowrap truncate max-w-[200px]">
+              {{ request.orderId }}
+            </td>
+
+            <td class="px-5 py-3.5 text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+              {{ request.requestDate | appDate }}
+            </td>
+
+            <td class="px-5 py-3.5">
+              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap
+                           {{ getPriorityClass(request.priority) }}">
+                {{ getPriorityText(request.priority) | translate }}
+              </span>
+            </td>
+
+            <td class="px-5 py-3.5 text-sm text-[var(--color-text)] whitespace-nowrap max-w-[200px] truncate">
+              {{ getRequestTypeText(request.requestType) | translate }}
+            </td>
+
+            <td class="px-5 py-3.5">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap
+                             {{ getStatusClass(request.status) }}">
+                  {{ getStatusText(request.status) | translate }}
+                </span>
+                <span *ngIf="request.isMyTurn" class="action-required-badge animate-action-glow whitespace-nowrap">
+                  {{ 'requestsManagement.actionRequired' | translate }}
+                </span>
+                <app-auto-reject-countdown
+                  [countdown]="getAutoRejectCountdown(request)">
+                </app-auto-reject-countdown>
+              </div>
+            </td>
+
+            <td class="px-5 py-3.5 text-end">
+              <button type="button"
+                (click)="openOrderDetails(request)"
+                class="inline-flex items-center justify-center w-8 h-8 rounded-lg
+                       text-[var(--color-text-muted)] hover:text-[var(--color-brand)]
+                       hover:bg-[var(--color-brand)]/10 active:scale-95 transition-all">
+                <lucide-angular [img]="Eye" class="w-4 h-4"></lucide-angular>
+              </button>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Pagination (same bar treatment as dashboard list view) -->
+  <div *ngIf="totalItems > 0"
+    class="hidden md:flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4
+           border-t border-[var(--color-border)] bg-[var(--color-background-muted)]
+           rounded-xl px-4 sm:px-6 py-3.5">
+    <app-rows-per-page
+      [rowsPerPage]="rowsPerPage"
+      [totalItems]="totalItems"
+      [visibleItems]="requests.length"
+      (rowsPerPageChange)="onRowsPerPageChange($event)">
+    </app-rows-per-page>
+
+    <div *ngIf="totalPages > 1" class="flex items-center gap-3">
+      <app-pagination
+        [currentPage]="currentPage"
+        [totalPages]="totalPages"
+        (pageChange)="onPageChange($event)">
+      </app-pagination>
+      <span class="text-xs text-[var(--color-text-muted)] whitespace-nowrap">
+        {{ currentPage }} {{ 'common.of' | translate }} {{ totalPages }}
+      </span>
+    </div>
+  </div>
+
+  </div>
+</div>

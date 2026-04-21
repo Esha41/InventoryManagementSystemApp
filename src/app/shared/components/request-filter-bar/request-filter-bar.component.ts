@@ -9,19 +9,6 @@ import { CardStatus } from '@utils/dashboard.utils';
 export type PriorityFilter = 'all' | 'Normal' | 'Urgent' | 'VeryUrgent';
 export type StatusFilter = CardStatus | 'all' | 'action-required';
 
-/**
- * Reusable filter bar component for request-based pages
- * Supports status filtering, priority filtering, and search functionality
- * 
- * @example
- * <app-request-filter-bar
- *   [showPriorityFilter]="true"
- *   [resultCount]="filteredCount"
- *   (statusFilterChange)="onStatusChange($event)"
- *   (priorityFilterChange)="onPriorityChange($event)"
- *   (searchQueryChange)="onSearchChange($event)">
- * </app-request-filter-bar>
- */
 @Component({
     selector: 'app-request-filter-bar',
     standalone: true,
@@ -38,33 +25,28 @@ export type StatusFilter = CardStatus | 'all' | 'action-required';
     encapsulation: ViewEncapsulation.None
 })
 export class RequestFilterBarComponent {
-    // Configuration inputs
     @Input() showStatusFilter = true;
     @Input() showPriorityFilter = false;
     @Input() showSearchBar = true;
     @Input() showResultCount = true;
     @Input() searchPlaceholder = 'dashboard.searchOrders';
-    @Input() layout: 'unified' | 'separate' = 'unified'; // unified = dashboard style, separate = requests-management style
     @Input() useSearchButton = false;
 
-    // Filter values
     @Input() statusFilter: StatusFilter = 'all';
     @Input() priorityFilter: PriorityFilter = 'all';
     @Input() searchQuery = '';
     @Input() resultCount = 0;
 
-    // Output events
     @Output() statusFilterChange = new EventEmitter<StatusFilter>();
     @Output() priorityFilterChange = new EventEmitter<PriorityFilter>();
     @Output() searchQueryChange = new EventEmitter<string>();
     @Output() searchTriggered = new EventEmitter<string>();
+    @Output() filtersCleared = new EventEmitter<void>();
 
-    // Icons
     readonly Search = Search;
     readonly X = X;
     readonly Filter = Filter;
 
-    // Filter options
     readonly statusFilterOptions: DropdownOption<StatusFilter>[] = [
         { label: 'dashboard.filters.all', value: 'all' },
         { label: 'requestsManagement.actionRequired', value: 'action-required' },
@@ -84,9 +66,6 @@ export class RequestFilterBarComponent {
 
     constructor(private readonly translate: TranslateService) { }
 
-    /**
-     * Translation function for dropdown labels
-     */
     readonly statusFilterLabelFn = (option: DropdownOption<StatusFilter> | StatusFilter): string => {
         if (typeof option === 'object' && option !== null && 'label' in option) {
             return this.translate.instant(option.label as string);
@@ -101,25 +80,16 @@ export class RequestFilterBarComponent {
         return '';
     };
 
-    /**
-     * Handle status filter change
-     */
     onStatusChange(value: StatusFilter): void {
         this.statusFilter = value;
         this.statusFilterChange.emit(value);
     }
 
-    /**
-     * Handle priority filter change
-     */
     onPriorityChange(value: PriorityFilter): void {
         this.priorityFilter = value;
         this.priorityFilterChange.emit(value);
     }
 
-    /**
-     * Handle search query change
-     */
     onSearchChange(value: string): void {
         this.searchQuery = value;
         if (!this.useSearchButton) {
@@ -127,19 +97,27 @@ export class RequestFilterBarComponent {
         }
     }
 
-    /**
-     * Trigger search manually
-     */
     onSearchClick(): void {
         this.searchTriggered.emit(this.searchQuery);
     }
 
-    /**
-     * Clear search query
-     */
     clearSearch(): void {
         this.searchQuery = '';
         this.searchQueryChange.emit('');
         this.searchTriggered.emit('');
+    }
+
+    get hasActiveFilters(): boolean {
+        const statusActive = this.showStatusFilter && this.statusFilter !== 'all';
+        const priorityActive = this.showPriorityFilter && this.priorityFilter !== 'all';
+        const searchActive = this.showSearchBar && !!this.searchQuery?.trim();
+        return statusActive || priorityActive || searchActive;
+    }
+
+    clearAllFilters(): void {
+        if (!this.hasActiveFilters) {
+            return;
+        }
+        this.filtersCleared.emit();
     }
 }

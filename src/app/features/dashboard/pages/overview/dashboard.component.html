@@ -1,239 +1,238 @@
 <div class="page-wrapper min-h-0 pb-0">
-  <!-- Balanced Header Section -->
-  <div
-    class="bg-gradient-to-br from-[var(--color-brand)]/5 to-transparent border-b border-[var(--color-border)] mb-6 md:mb-10 relative">
-    <div class="page-container py-6 md:py-8 relative z-10">
-      <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 md:gap-6">
-        <!-- Title & Subtitle -->
-        <div class="min-w-0 flex-shrink-0 animate-dashboard-header-fade">
-          <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--color-text)] mb-1 tracking-tight">
+
+  <!-- ── Header ────────────────────────────────────────────────── -->
+  <div class="border-b border-[var(--color-border)] bg-transparent mb-6">
+    <div class="page-container py-5 md:py-6">
+      <div class="flex flex-col xl:flex-row xl:items-center gap-4 xl:gap-6">
+
+        <!-- Title -->
+        <div class="min-w-0 flex-shrink-0">
+          <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)] tracking-tight leading-tight">
             {{ 'dashboard.title' | translate }}
           </h1>
-          <p class="text-sm sm:text-base text-[var(--color-text-muted)] font-medium truncate max-w-xl">
+          <p class="text-sm text-[var(--color-text-muted)] mt-0.5 truncate">
             {{ 'dashboard.subtitle' | translate }}
           </p>
         </div>
 
-        <!-- Filters & View Toggle: stack until xl (1280px) — at ~1058px side-by-side caused dropdown to overlap grid toggle -->
-        <div *ngIf="totalItems > 0 || searchQuery || selectedStatusFilter !== 'all'"
-          class="flex flex-col xl:flex-row items-stretch xl:items-center gap-4 xl:gap-5 w-full xl:w-auto min-w-0">
+        <!-- Controls row (filter bar + view toggle) -->
+        <div class="flex flex-col xl:flex-row items-stretch xl:items-end gap-3 w-full xl:flex-1 min-w-0">
 
-          <!-- Shared Filter Bar Component -->
-          <div class="w-full xl:flex-1 min-w-0">
-            <app-request-filter-bar layout="unified" [showStatusFilter]="true" [showPriorityFilter]="false"
-              [showSearchBar]="true" [showResultCount]="true" [statusFilter]="selectedStatusFilter"
-              [searchQuery]="searchQuery" [resultCount]="filteredCardsCount" [useSearchButton]="true"
-              (statusFilterChange)="onStatusFilterChange($event)" (searchTriggered)="onSearchChange($event)">
+          <!-- Filter bar -->
+          <div class="flex-1 min-w-0">
+            <app-request-filter-bar
+              [showStatusFilter]="true"
+              [showPriorityFilter]="true"
+              [showSearchBar]="true"
+              [showResultCount]="true"
+              [statusFilter]="selectedStatusFilter"
+              [priorityFilter]="selectedPriorityFilter"
+              [searchQuery]="searchQuery"
+              [resultCount]="filteredCardsCount"
+              [useSearchButton]="true"
+              (statusFilterChange)="onStatusFilterChange($event)"
+              (priorityFilterChange)="onPriorityFilterChange($event)"
+              (searchTriggered)="onSearchChange($event)"
+              (filtersCleared)="onFiltersCleared()">
             </app-request-filter-bar>
           </div>
 
-          <!-- Refined View Toggle -->
-          <div
-            class="flex items-center p-1.5 bg-[var(--color-background)] rounded-xl shadow-premium border border-[var(--color-border)] flex-shrink-0 w-full xl:w-auto justify-center xl:justify-start">
-            <button (click)="toggleViewMode('grid')" [class.bg-[var(--color-brand)]]="viewMode === 'grid'"
-              [class.text-white]="viewMode === 'grid'" [class.text-[var(--color-text-muted)]]="viewMode !== 'grid'"
-              class="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 min-h-[2.75rem] rounded-lg transition-all duration-300 shadow-soft flex-1 xl:flex-initial"
-              [class.hover:bg-[var(--color-background-hover)]]="viewMode !== 'grid'">
+          <!-- View toggle -->
+          <div class="flex items-center p-1 bg-[var(--color-background-muted)] rounded-xl
+                      border border-[var(--color-border)] flex-shrink-0
+                      w-full xl:w-auto">
+            <button (click)="toggleViewMode('grid')"
+              class="flex-1 xl:flex-initial inline-flex items-center justify-center gap-2
+                     px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wide
+                     transition-all duration-200"
+              [ngClass]="viewMode === 'grid'
+                ? 'bg-[var(--color-brand)] text-white shadow-sm'
+                : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'">
               <lucide-angular [img]="Grid" class="w-4 h-4"></lucide-angular>
-              <span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">{{ 'dashboard.gridView' | translate }}</span>
+              <span>{{ 'dashboard.gridView' | translate }}</span>
             </button>
-            <button (click)="toggleViewMode('table')" [class.bg-[var(--color-brand)]]="viewMode === 'table'"
-              [class.text-white]="viewMode === 'table'" [class.text-[var(--color-text-muted)]]="viewMode !== 'table'"
-              class="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 min-h-[2.75rem] rounded-lg transition-all duration-300 flex-1 xl:flex-initial"
-              [class.hover:bg-[var(--color-background-hover)]]="viewMode !== 'table'">
+            <button (click)="toggleViewMode('table')"
+              class="flex-1 xl:flex-initial inline-flex items-center justify-center gap-2
+                     px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wide
+                     transition-all duration-200"
+              [ngClass]="viewMode === 'table'
+                ? 'bg-[var(--color-brand)] text-white shadow-sm'
+                : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'">
               <lucide-angular [img]="List" class="w-4 h-4"></lucide-angular>
-              <span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">{{ 'dashboard.listView' | translate }}</span>
+              <span>{{ 'dashboard.listView' | translate }}</span>
             </button>
           </div>
+
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Main Content -->
-  <div
-    class="page-container relative min-h-0 pb-2"
-    [ngClass]="{ 'min-h-[400px]': isLoading || visibleCards.length === 0 }"
-  >
-    <!-- Loading Overlay -->
+  <!-- ── Main content ───────────────────────────────────────────── -->
+  <div class="page-container relative min-h-0 pb-6"
+    [ngClass]="{ 'min-h-[400px]': isLoading || visibleCards.length === 0 }">
+
+    <!-- Loading overlay -->
     <div *ngIf="isLoading"
-      class="absolute inset-0 z-50 flex items-center justify-center bg-[var(--color-background)]/60 backdrop-blur-[2px]">
+      class="absolute inset-0 z-50 flex items-center justify-center
+             bg-[var(--color-background)]/70 backdrop-blur-[2px] rounded-xl">
       <div class="flex flex-col items-center gap-3">
-        <div
-          class="w-12 h-12 border-4 border-[var(--color-brand)]/20 border-t-[var(--color-brand)] rounded-full animate-spin">
-        </div>
-        <p class="text-sm font-medium text-[var(--color-text)] animate-dashboard-pulse">{{ 'common.loading' | translate }}...</p>
+        <div class="w-10 h-10 border-[3px] border-[var(--color-brand)]/20
+                    border-t-[var(--color-brand)] rounded-full animate-spin"></div>
+        <p class="text-sm font-medium text-[var(--color-text-muted)]">
+          {{ 'common.loading' | translate }}…
+        </p>
       </div>
     </div>
-    <!-- Status Cards Grid -->
-    <div
-      *ngIf="viewMode === 'grid' && visibleCards.length > 0"
-      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-6 mb-6 md:mb-8 max-md:!grid-cols-1 max-[1024px]:lg:!grid-cols-2 [&>app-status-card]:flex [&>app-status-card]:flex-col [&>app-status-card]:h-full [&>app-status-card]:w-full [&>app-status-card]:max-h-[750px] [&>app-status-card]:max-w-full [&>app-status-card]:transition-[transform,box-shadow] [&>app-status-card]:duration-200 [&>app-status-card]:ease-out [&>app-status-card]:hover:-translate-y-0.5 xl:[&>app-status-card]:mx-auto xl:[&>app-status-card]:max-w-[400px] 2xl:[&>app-status-card]:max-w-[450px]"
-    >
-      <app-status-card *ngFor="let card of paginatedCards; trackBy: trackByCard" [title]="card.title" [status]="card.status"
-        [orders]="card.orders" [orderRequestId]="card.orderRequestId || null"
-        [returnRequestId]="card.returnRequestId || null" [discardRequestId]="card.discardRequestId || null"
-        [isMyTurn]="card.isMyTurn || false" (viewOrderDetails)="onViewOrderDetails($event)"
-        (viewDetails)="onViewDetails($event)" (viewDiscardDetails)="onViewDiscardDetails($event)"></app-status-card>
+
+    <!-- ── Grid view ──────────────────────────────────────────── -->
+    <div *ngIf="viewMode === 'grid' && visibleCards.length > 0"
+      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5
+             gap-4 md:gap-5 mb-6
+             [&>app-status-card]:flex [&>app-status-card]:flex-col [&>app-status-card]:h-full
+             [&>app-status-card]:transition-[transform,box-shadow] [&>app-status-card]:duration-200
+             [&>app-status-card]:ease-out [&>app-status-card]:hover:-translate-y-0.5">
+      <app-status-card
+        *ngFor="let card of paginatedCards; trackBy: trackByCard"
+        [title]="card.title"
+        [status]="card.status"
+        [orders]="card.orders"
+        [orderRequestId]="card.orderRequestId || null"
+        [returnRequestId]="card.returnRequestId || null"
+        [discardRequestId]="card.discardRequestId || null"
+        [isMyTurn]="card.isMyTurn || false"
+        (viewOrderDetails)="onViewOrderDetails($event)"
+        (viewDetails)="onViewDetails($event)"
+        (viewDiscardDetails)="onViewDiscardDetails($event)">
+      </app-status-card>
     </div>
 
-    <!-- Table View -->
+    <!-- ── Table view ─────────────────────────────────────────── -->
     <div *ngIf="viewMode === 'table' && visibleCards.length > 0"
-      class="bg-[var(--color-background)] rounded-xl shadow-custom-sm border border-[var(--color-border)] overflow-hidden mb-8">
+      class="bg-[var(--color-background)] rounded-xl border border-[var(--color-border)]
+             shadow-sm overflow-hidden mb-6">
 
-      <!-- Mobile Table (Card) View -->
-      <div class="md:hidden grid grid-cols-1 gap-4 p-4 overflow-x-hidden">
+      <!-- Mobile cards (< md) -->
+      <div class="md:hidden divide-y divide-[var(--color-border)]">
         <div *ngFor="let card of paginatedCards; trackBy: trackByCard"
-          class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] relative overflow-hidden transition-all duration-200"
-          [class.border-l-4]="card.isMyTurn" [class.border-l-[var(--color-brand)]]="card.isMyTurn">
+          class="flex items-start gap-3 p-4 transition-colors hover:bg-[var(--color-background-muted)]"
+          [ngClass]="card.isMyTurn ? 'border-s-[3px] border-s-[var(--color-brand)]' : ''">
 
-          <!-- Header -->
-          <div class="flex justify-between items-start mb-3">
-            <div class="flex flex-col">
-              <span class="font-bold text-[var(--color-text)] text-sm">{{ card.orders[0].orderId || card.title }}</span>
-              <span class="text-xs text-[var(--color-text-muted)]">{{ formatApprovalDateTime(card.orders[0].requestDate)
-                || 'N/A' }}</span>
-            </div>
-            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-              [ngClass]="getStatusBadgeClass(card.status)">
-              {{ getStatusTranslationKey(card.status) | translate }}
+          <!-- Status dot -->
+          <div class="flex-shrink-0 mt-1">
+            <span class="w-2 h-2 rounded-full block"
+              [ngClass]="getStatusDotClass(card.status)">
             </span>
           </div>
 
-          <!-- Details -->
-          <div class="grid grid-cols-2 gap-3 text-sm mb-4">
-            <div>
-              <p class="text-[var(--color-text-muted)] text-xs mb-0.5">{{ 'dashboard.department' | translate }}</p>
-              <p class="font-medium text-[var(--color-text)] truncate">{{ displayDepartment(card.orders[0]) }}</p>
+          <!-- Info -->
+          <div class="flex-1 min-w-0">
+            <div class="flex items-start justify-between gap-2 mb-1.5">
+              <span class="text-sm font-semibold text-[var(--color-text)] truncate">
+                {{ card.orders[0].orderId || card.title }}
+              </span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium
+                           flex-shrink-0 whitespace-nowrap"
+                [ngClass]="getStatusBadgeClass(card.status)">
+                {{ getStatusTranslationKey(card.status) | translate }}
+              </span>
             </div>
-            <div>
-              <p class="text-[var(--color-text-muted)] text-xs mb-0.5">{{ 'dashboard.requester' | translate }}</p>
-              <p class="font-medium text-[var(--color-text)] truncate">{{ displayRequester(card.orders[0]) }}</p>
+            <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-[var(--color-text-muted)] mb-2.5">
+              <span class="truncate">{{ displayDepartment(card.orders[0]) }}</span>
+              <span class="truncate">{{ displayRequester(card.orders[0]) }}</span>
+              <span class="col-span-2 text-[var(--color-text-muted)]/70">
+                {{ formatApprovalDateTime(card.orders[0].requestDate) || '—' }}
+              </span>
             </div>
-          </div>
-
-          <!-- Footer / Actions -->
-          <div class="flex items-center justify-between pt-3 border-t border-[var(--color-border-muted)]">
-            <span *ngIf="card.isMyTurn"
-              class="text-[10px] font-bold text-[var(--color-brand)] uppercase tracking-wider animate-dashboard-pulse">
-              {{ 'requestsManagement.actionRequired' | translate }}
-            </span>
-            <span *ngIf="!card.isMyTurn"></span> <!-- Spacer if needed -->
-
-            <button (click)="onTableAction(card)"
-              class="flex items-center gap-1.5 px-3 py-2 min-h-[2.75rem] bg-[var(--color-background-hover)] rounded-lg text-[var(--color-brand)] text-xs font-medium active:scale-95 transition-transform">
-              <lucide-angular [img]="Eye" class="w-4 h-4"></lucide-angular>
-              <span>{{ 'common.view' | translate }}</span>
-            </button>
+            <div class="flex items-center justify-between">
+              <span *ngIf="card.isMyTurn"
+                class="text-[10px] font-bold text-[var(--color-brand)] uppercase tracking-wide animate-pulse">
+                {{ 'requestsManagement.actionRequired' | translate }}
+              </span>
+              <span *ngIf="!card.isMyTurn"></span>
+              <button (click)="onTableAction(card)"
+                class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium
+                       text-[var(--color-brand)] bg-[var(--color-brand)]/8
+                       hover:bg-[var(--color-brand)]/15 active:scale-95 transition-all">
+                <lucide-angular [img]="Eye" class="w-3.5 h-3.5"></lucide-angular>
+                {{ 'common.view' | translate }}
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Desktop Table View -->
+      <!-- Desktop table (>= md) -->
       <div class="hidden md:block overflow-x-auto">
-        <table class="min-w-full divide-y divide-[var(--color-border)]">
-          <thead class="bg-[var(--color-background-muted)]">
-            <tr>
-              <th
-                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
-                (click)="sortByColumn('orderNumber')">
-                <div class="flex items-center gap-2">
-                  {{ 'dashboard.orderNumber' | translate }}
-                  <lucide-angular *ngIf="sortState.column !== 'orderNumber'" [img]="ArrowUpDown"
-                    class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                  <lucide-angular *ngIf="sortState.column === 'orderNumber' && sortState.direction === 'asc'"
-                    [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                  <lucide-angular *ngIf="sortState.column === 'orderNumber' && sortState.direction === 'desc'"
-                    [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+        <table class="w-full min-w-[700px]">
+          <thead>
+            <tr class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
+              <th *ngFor="let col of [
+                    {key:'orderNumber', label:'dashboard.orderNumber'},
+                    {key:'usageDate',   label:'dashboard.requestDate'},
+                    {key:'department',  label:'dashboard.department'},
+                    {key:'requester',   label:'dashboard.requester'},
+                    {key:'status',      label:'dashboard.status'}
+                  ]"
+                class="px-5 py-3 text-start text-[11px] font-semibold text-[var(--color-text-muted)]
+                       uppercase tracking-wider cursor-pointer select-none
+                       hover:bg-[var(--color-background-hover)] transition-colors"
+                (click)="sortByColumn(col.key)">
+                <div class="flex items-center gap-1.5">
+                  {{ col.label | translate }}
+                  <lucide-angular
+                    *ngIf="sortState.column !== col.key" [img]="ArrowUpDown"
+                    class="w-3.5 h-3.5 text-[var(--color-text-muted)]/50">
+                  </lucide-angular>
+                  <lucide-angular
+                    *ngIf="sortState.column === col.key && sortState.direction === 'asc'" [img]="ArrowUp"
+                    class="w-3.5 h-3.5 text-[var(--color-brand)]">
+                  </lucide-angular>
+                  <lucide-angular
+                    *ngIf="sortState.column === col.key && sortState.direction === 'desc'" [img]="ArrowDown"
+                    class="w-3.5 h-3.5 text-[var(--color-brand)]">
+                  </lucide-angular>
                 </div>
               </th>
-              <th
-                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
-                (click)="sortByColumn('usageDate')">
-                <div class="flex items-center gap-2">
-                  {{ 'dashboard.requestDate' | translate }}
-                  <lucide-angular *ngIf="sortState.column !== 'usageDate'" [img]="ArrowUpDown"
-                    class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                  <lucide-angular *ngIf="sortState.column === 'usageDate' && sortState.direction === 'asc'"
-                    [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                  <lucide-angular *ngIf="sortState.column === 'usageDate' && sortState.direction === 'desc'"
-                    [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                </div>
+              <th class="px-5 py-3 text-end text-[11px] font-semibold text-[var(--color-text-muted)]
+                         uppercase tracking-wider w-16">
+                {{ 'common.actions' | translate }}
               </th>
-              <th
-                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
-                (click)="sortByColumn('department')">
-                <div class="flex items-center gap-2">
-                  {{ 'dashboard.department' | translate }}
-                  <lucide-angular *ngIf="sortState.column !== 'department'" [img]="ArrowUpDown"
-                    class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                  <lucide-angular *ngIf="sortState.column === 'department' && sortState.direction === 'asc'"
-                    [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                  <lucide-angular *ngIf="sortState.column === 'department' && sortState.direction === 'desc'"
-                    [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                </div>
-              </th>
-              <th
-                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
-                (click)="sortByColumn('requester')">
-                <div class="flex items-center gap-2">
-                  {{ 'dashboard.requester' | translate }}
-                  <lucide-angular *ngIf="sortState.column !== 'requester'" [img]="ArrowUpDown"
-                    class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                  <lucide-angular *ngIf="sortState.column === 'requester' && sortState.direction === 'asc'"
-                    [img]="ArrowUp" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                  <lucide-angular *ngIf="sortState.column === 'requester' && sortState.direction === 'desc'"
-                    [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                </div>
-              </th>
-              <th
-                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)] transition-colors"
-                (click)="sortByColumn('status')">
-                <div class="flex items-center gap-2">
-                  {{ 'dashboard.status' | translate }}
-                  <lucide-angular *ngIf="sortState.column !== 'status'" [img]="ArrowUpDown"
-                    class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
-                  <lucide-angular *ngIf="sortState.column === 'status' && sortState.direction === 'asc'" [img]="ArrowUp"
-                    class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                  <lucide-angular *ngIf="sortState.column === 'status' && sortState.direction === 'desc'"
-                    [img]="ArrowDown" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
-                </div>
-              </th>
-              <th
-                class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
-                {{ 'common.actions' | translate }}</th>
             </tr>
           </thead>
-          <tbody class="bg-[var(--color-background)] divide-y divide-[var(--color-border)]">
-            <tr *ngFor="let card of paginatedCards; trackBy: trackByCard" [class.action-required-highlight]="card.isMyTurn"
-              class="hover:bg-[var(--color-background-hover)] transition-colors">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)]">
+          <tbody class="divide-y divide-[var(--color-border)]">
+            <tr *ngFor="let card of paginatedCards; trackBy: trackByCard"
+              class="group hover:bg-[var(--color-background-muted)] transition-colors"
+              [class.action-required-highlight]="card.isMyTurn">
+              <td class="px-5 py-3.5 text-sm font-medium text-[var(--color-text)] whitespace-nowrap">
                 {{ card.orders[0].orderId || card.title }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
-                {{ formatApprovalDateTime(card.orders[0].requestDate) || 'N/A' }}
+              <td class="px-5 py-3.5 text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+                {{ formatApprovalDateTime(card.orders[0].requestDate) || '—' }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+              <td class="px-5 py-3.5 text-sm text-[var(--color-text)] whitespace-nowrap max-w-[200px] truncate">
                 {{ displayDepartment(card.orders[0]) }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
+              <td class="px-5 py-3.5 text-sm text-[var(--color-text)] whitespace-nowrap">
                 {{ displayRequester(card.orders[0]) }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap">
+              <td class="px-5 py-3.5">
                 <div class="flex items-center gap-2">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                  <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap"
                     [ngClass]="getStatusBadgeClass(card.status)">
                     {{ getStatusTranslationKey(card.status) | translate }}
                   </span>
-                  <span *ngIf="card.isMyTurn" class="action-required-badge animate-action-glow">
+                  <span *ngIf="card.isMyTurn" class="action-required-badge animate-action-glow whitespace-nowrap">
                     {{ 'requestsManagement.actionRequired' | translate }}
                   </span>
                 </div>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+              <td class="px-5 py-3.5 text-end">
                 <button (click)="onTableAction(card)"
-                  class="text-[var(--color-brand)] hover:text-[var(--color-brand-hover)] transition-colors">
-                  <lucide-angular [img]="Eye" class="w-5 h-5"></lucide-angular>
+                  class="inline-flex items-center justify-center w-8 h-8 rounded-lg
+                         text-[var(--color-text-muted)] hover:text-[var(--color-brand)]
+                         hover:bg-[var(--color-brand)]/10 active:scale-95 transition-all">
+                  <lucide-angular [img]="Eye" class="w-4 h-4"></lucide-angular>
                 </button>
               </td>
             </tr>
@@ -242,66 +241,73 @@
       </div>
     </div>
 
-    <!-- Pagination Footer -->
+    <!-- ── Pagination footer ──────────────────────────────────── -->
     <div *ngIf="visibleCards.length > 0 || totalItems > 0"
-      class="flex flex-col sm:flex-row items-stretch sm:items-center justify-start sm:justify-between gap-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] rounded-lg px-4 sm:px-6 py-4 text-start">
-      <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="totalItems" [visibleItems]="visibleCards.length"
+      class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4
+             border-t border-[var(--color-border)] bg-[var(--color-background-muted)]
+             rounded-xl px-4 sm:px-6 py-3.5">
+      <app-rows-per-page
+        [rowsPerPage]="rowsPerPage"
+        [totalItems]="totalItems"
+        [visibleItems]="visibleCards.length"
         (rowsPerPageChange)="onRowsPerPageChange($event)">
       </app-rows-per-page>
 
-      <div *ngIf="totalPages > 1" class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-        <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
+      <div *ngIf="totalPages > 1" class="flex items-center gap-3">
+        <app-pagination
+          [currentPage]="currentPage"
+          [totalPages]="totalPages"
+          (pageChange)="onPageChange($event)">
         </app-pagination>
-        <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap mt-2 sm:mt-0">
+        <span class="text-xs text-[var(--color-text-muted)] whitespace-nowrap">
           {{ currentPage }} {{ 'common.of' | translate }} {{ totalPages }}
         </span>
       </div>
     </div>
 
-    <!-- No Cards Message -->
-    <div *ngIf="visibleCards.length === 0 && !isLoading" class="flex items-center justify-center min-h-[60vh]">
-      <div *ngIf="showContactAdminNotice; else noOrdersMessage" class="max-w-2xl w-full mx-auto">
-        <div
-          class="bg-[var(--color-background)] rounded-2xl shadow-custom-lg border border-[var(--color-border)] p-6 sm:p-8 md:p-12">
-          <div class="flex flex-col items-center gap-6 text-center">
-            <div
-              class="flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-[var(--color-error)]/20 to-[var(--color-error)]/10 border-2 border-[var(--color-error)]/30">
-              <lucide-angular [img]="ShieldAlert" class="w-10 h-10 text-[var(--color-error)]"></lucide-angular>
-            </div>
-            <div class="space-y-3">
-              <h2 class="text-2xl font-bold text-[var(--color-text)]">Access Needed</h2>
-              <p class="text-base text-[var(--color-text-muted)] leading-relaxed max-w-md mx-auto">
-                Your account is connected through LDAP but no permissions are currently assigned. Please contact your
-                system administrator to request access.
-              </p>
-            </div>
-          </div>
+    <!-- ── Empty state ────────────────────────────────────────── -->
+    <div *ngIf="visibleCards.length === 0 && !isLoading"
+      class="flex items-center justify-center min-h-[55vh]">
+
+      <!-- LDAP / no access notice -->
+      <div *ngIf="showContactAdminNotice; else noOrdersBlock"
+        class="max-w-md w-full mx-auto bg-[var(--color-background)] rounded-2xl
+               border border-[var(--color-border)] shadow-sm p-8 text-center">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full
+                    bg-[var(--color-error)]/10 border border-[var(--color-error)]/20 mb-4">
+          <lucide-angular [img]="ShieldAlert" class="w-8 h-8 text-[var(--color-error)]"></lucide-angular>
         </div>
+        <h2 class="text-lg font-bold text-[var(--color-text)] mb-2">Access Needed</h2>
+        <p class="text-sm text-[var(--color-text-muted)] leading-relaxed">
+          Your account is connected through LDAP but no permissions are currently assigned.
+          Please contact your system administrator to request access.
+        </p>
       </div>
-      <ng-template #noOrdersMessage>
-        <div class="text-center">
-            <div
-            class="bg-[var(--color-background)] rounded-2xl shadow-custom-md border border-[var(--color-border)] p-6 sm:p-8 md:p-12 inline-block">
-            <div class="flex flex-col items-center gap-4">
-              <div class="w-16 h-16 rounded-full bg-[var(--color-background-hover)] flex items-center justify-center">
-                <svg class="w-8 h-8 text-[var(--color-text-muted)]" fill="none" stroke="currentColor"
-                  viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                  </path>
-                </svg>
-              </div>
-              <p class="text-lg font-medium text-[var(--color-text-muted)]">
-                {{ 'dashboard.noOrders' | translate }}
-              </p>
-            </div>
+
+      <!-- No orders -->
+      <ng-template #noOrdersBlock>
+        <div class="text-center bg-[var(--color-background)] rounded-2xl
+                    border border-[var(--color-border)] shadow-sm p-10 inline-block">
+          <div class="inline-flex items-center justify-center w-14 h-14 rounded-full
+                      bg-[var(--color-background-hover)] mb-4">
+            <svg class="w-7 h-7 text-[var(--color-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+              </path>
+            </svg>
           </div>
+          <p class="text-base font-medium text-[var(--color-text-muted)]">
+            {{ 'dashboard.noOrders' | translate }}
+          </p>
         </div>
       </ng-template>
     </div>
 
-    <!-- Unified Request Details Modal -->
-    <app-request-details-modal [isOpen]="isRequestModalOpen" [request]="selectedRequest" (close)="closeRequestModal()">
+    <!-- Request details modal -->
+    <app-request-details-modal
+      [isOpen]="isRequestModalOpen"
+      [request]="selectedRequest"
+      (close)="closeRequestModal()">
     </app-request-details-modal>
 
   </div>

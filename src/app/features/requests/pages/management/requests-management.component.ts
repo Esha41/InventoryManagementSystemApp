@@ -3,8 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, ChevronDown } from 'lucide-angular';
-import { PaginationComponent, RowsPerPageComponent, RequestFilterBarComponent, StatusFilter, PriorityFilter } from '@components/index';
+import { LucideAngularModule, ChevronDown, Inbox, Eye } from 'lucide-angular';
+import {
+  PaginationComponent,
+  RowsPerPageComponent,
+  RequestFilterBarComponent,
+  StatusFilter,
+  PriorityFilter
+} from '@components/index';
 import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 import { RequestsManagementService } from './services/requests-management.service';
 import { getRequestStatusClass } from './utils/ui-helpers.utils';
@@ -30,6 +36,8 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
   readonly Math = Math;
 
   readonly ChevronDown = ChevronDown;
+  readonly Inbox = Inbox;
+  readonly Eye = Eye;
 
   requests: Request[] = [];
   loading = false;
@@ -131,6 +139,14 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
+  onFiltersCleared(): void {
+    this.selectedStatusFilter = 'all';
+    this.selectedPriorityFilter = 'all';
+    this.searchQuery = '';
+    this.currentPage = 1;
+    this.loadRequests();
+  }
+
   get paginatedRequests(): Request[] {
     return this.requests;
   }
@@ -163,16 +179,16 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
   }
 
   getPriorityClass(priority: string): string {
-    const priorityLower = priority.toLowerCase().trim().replace(/\s+/g, '');
+    const priorityLower = priority?.toLowerCase().trim().replace(/\s+/g, '') ?? '';
     switch (priorityLower) {
       case 'normal':
-        return 'bg-green-100 text-green-800 border border-green-200';
+        return 'bg-green-100 text-green-800 border border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800/50';
       case 'urgent':
-        return 'bg-orange-100 text-orange-800 border border-orange-200';
+        return 'bg-orange-100 text-orange-800 border border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-800/50';
       case 'veryurgent':
-        return 'bg-red-100 text-red-800 border border-red-200';
+        return 'bg-red-100 text-red-800 border border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800/50';
       default:
-        return 'bg-gray-100 text-gray-800 border border-gray-200';
+        return 'bg-[var(--color-background-muted)] text-[var(--color-text-muted)] border border-[var(--color-border)]';
     }
   }
 

@@ -81,16 +81,30 @@ export function getItemProductId(item: OrderItem, orderData: OrderDto | null): s
 }
 
 /**
- * Get status CSS classes for request status badges
+ * Get status CSS classes for request status badges (aligned with dashboard list pills).
  */
 export function getRequestStatusClass(status: string): string {
-  switch (status) {
-    case 'Pending': return 'bg-[#FEF3C7] text-[#92400E]';
-    case 'Confirmed': return 'bg-[#D1FAE5] text-[#065F46]';
-    case 'Rejected': return 'bg-[#FEE2E2] text-[#991B1B]';
+  const s = status ?? '';
+  switch (s) {
+    case 'New':
+    case 'new':
+      return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300';
+    case 'Pending':
+    case 'pending':
+      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300';
+    case 'Confirmed':
+    case 'confirmed':
+      return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300';
+    case 'Rejected':
+    case 'rejected':
+      return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300';
     case 'Returned':
-    case 'ReturnedForReview': return 'bg-purple-50 text-purple-700';
-    default: return 'bg-gray-100 text-gray-800';
+    case 'ReturnedForReview':
+    case 'returned':
+    case 'returnedforreview':
+      return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300';
+    default:
+      return 'bg-[var(--color-background-muted)] text-[var(--color-text-muted)]';
   }
 }
 

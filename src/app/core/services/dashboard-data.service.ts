@@ -18,7 +18,7 @@ import {
   DisplayableRequest
 } from '@utils/dashboard.utils';
 import { mapToOrderDto, mapToReturnDto, mapToDiscardDto, separateRequestsByType } from '@utils/request-type-mapper.utils';
-import { PaginatedList, PagedRequest } from '@models/api-response.model';
+import { FilterData, PaginatedList, PagedRequest } from '@models/api-response.model';
 import { RequestType } from '@utils/request-type-mapper.utils';
 
 /**
@@ -210,31 +210,43 @@ export class DashboardDataService {
     rowsPerPage: number,
     searchQuery: string,
     statusFilter: string,
+    priorityFilter: string,
     sortState: { column: string | null; direction: 'asc' | 'desc' }
   ): Observable<PaginatedList<DashboardCard>> {
-    const filters: any[] = []; // Use strict FilterData[] in implementation if possible, or build carefully
+    const filters: FilterData[] = [];
 
-    // Global search
     if (searchQuery && searchQuery.trim()) {
       filters.push({ value: searchQuery.trim() });
     }
 
-    // Status filter mapping
     if (statusFilter !== 'all') {
       if (statusFilter === 'action-required') {
         filters.push({ field: 'IsMyTurn', operator: 'eq', value: 'true' });
       } else {
         const dashboardStatusToBackendStatus: Record<string, number> = {
-          'new': 1,
+          new: 1,
           'on-progress': 2,
-          'completed': 3,
-          'declined': 4,
-          'returned': 6
+          completed: 3,
+          declined: 4,
+          returned: 6
         };
         const statusValue = dashboardStatusToBackendStatus[statusFilter];
         if (statusValue) {
           filters.push({ field: 'Status', operator: 'eq', value: statusValue.toString() });
         }
+      }
+    }
+
+    if (priorityFilter && priorityFilter !== 'all') {
+      const priorityMap: Record<string, number> = {
+        normal: 1,
+        urgent: 2,
+        veryurgent: 3
+      };
+      const key = priorityFilter.toLowerCase().trim().replace(/\s+/g, '');
+      const priorityValue = priorityMap[key];
+      if (priorityValue !== undefined) {
+        filters.push({ field: 'Priority', operator: 'eq', value: priorityValue.toString() });
       }
     }
 
