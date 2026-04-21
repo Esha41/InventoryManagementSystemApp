@@ -71,6 +71,7 @@
     "reason": "السبب",
     "comments": "التعليقات",
     "notAvailable": "غير متوفر",
+    "unknown": "غير معروف",
     "optional": "اختياري",
     "exportToExcel": "تصدير إلى Excel",
     "exportSuccess": "تم تصدير البيانات بنجاح",
