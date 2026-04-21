@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, Bell, User, Users, Globe, LogOut, ChevronDown, Moon, Sun, Menu } from 'lucide-angular';
+import { LucideAngularModule, Bell, User, Users, Globe, LogOut, ChevronDown, Moon, Sun, Menu, HelpCircle } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { UserContextService } from '@services/user-context.service';
@@ -32,6 +32,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   readonly Sun = Sun;
   readonly Menu = Menu;
   readonly Users = Users;
+  readonly HelpCircle = HelpCircle;
 
   @Output() menuClick = new EventEmitter<void>();
 
@@ -184,6 +185,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
   navigateToNotifications(): void {
     this.router.navigate(['/notifications']);
     this.closeUserMenu();
+  }
+
+  navigateToHelp(): void {
+    this.router.navigate(['/help']);
   }
 
   navigateToProfile(): void {
