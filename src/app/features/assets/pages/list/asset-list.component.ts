@@ -194,11 +194,6 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
     this.facade.clearFilters();
   }
 
-  onColumnFiltersClear(): void {
-    this.facade.clearColumnFilters();
-    this.cdr.markForCheck();
-  }
-
   sortByColumn(column: string): void {
     this.facade.sortByColumn(column);
   }

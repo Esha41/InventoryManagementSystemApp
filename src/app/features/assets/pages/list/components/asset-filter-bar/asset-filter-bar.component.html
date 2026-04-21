@@ -183,15 +183,6 @@
           ></lucide-angular>
           <span>{{ (showMoreFilters ? 'assetList.filters.hideColumnFilters' : 'assetList.filters.moreColumnFilters') | translate }}</span>
         </button>
-        <button
-          *ngIf="columnFiltersActive() && !showMoreFilters"
-          type="button"
-          (click)="onClearColumnFilters()"
-          class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 border-[var(--color-border)] bg-[var(--color-background)] text-sm font-medium text-[var(--color-brand)] hover:bg-[var(--color-background-hover)] transition-colors w-full sm:w-auto justify-center"
-        >
-          <lucide-angular [img]="FilterX" class="h-4 w-4 shrink-0 text-[var(--color-brand)]" aria-hidden="true"></lucide-angular>
-          <span>{{ 'assetList.filters.clearColumnFilters' | translate }}</span>
-        </button>
       </div>
     </div>
 
@@ -249,14 +240,6 @@
               >
                 {{ 'assetList.filters.applyColumnFilters' | translate }}
               </button>
-              <button
-                *ngIf="columnFiltersActive()"
-                type="button"
-                (click)="onClearColumnFilters()"
-                class="px-4 py-2 border-2 border-[var(--color-border)] text-sm font-medium text-[var(--color-text)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors"
-              >
-                {{ 'assetList.filters.clearColumnFilters' | translate }}
-              </button>
             </div>
           </div>
         </div>
@@ -308,14 +291,6 @@
               >
                 {{ 'assetList.filters.applyColumnFilters' | translate }}
               </button>
-              <button
-                *ngIf="columnFiltersActive()"
-                type="button"
-                (click)="onClearColumnFilters()"
-                class="px-4 py-2 border-2 border-[var(--color-border)] text-sm font-medium text-[var(--color-text)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors"
-              >
-                {{ 'assetList.filters.clearColumnFilters' | translate }}
-              </button>
             </div>
           </div>
         </div>
@@ -364,14 +339,6 @@
                 class="px-4 py-2 bg-[var(--color-brand)] text-white text-sm font-semibold rounded-lg hover:bg-[var(--color-brand-hover)] transition-colors"
               >
                 {{ 'assetList.filters.applyColumnFilters' | translate }}
-              </button>
-              <button
-                *ngIf="columnFiltersActive()"
-                type="button"
-                (click)="onClearColumnFilters()"
-                class="px-4 py-2 border-2 border-[var(--color-border)] text-sm font-medium text-[var(--color-text)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors"
-              >
-                {{ 'assetList.filters.clearColumnFilters' | translate }}
               </button>
             </div>
           </div>
