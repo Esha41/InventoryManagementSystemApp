@@ -37,7 +37,7 @@
     "filtersSection": "Filters",
     "filtersSearch": "Search",
     "clearFilters": "Clear Filters",
-    "searchPlaceholder": "Search by Item Name, Item Number, Supplier, Invoice, Lot...",
+    "searchPlaceholder": "Search ....",
     "searchPlaceholderBatch": "Search by Batch Number",
     "filterByItem": "Items",
     "filterBySupplier": "Suppliers",
@@ -384,12 +384,11 @@
   },
   "assetList": {
     "title": "Asset List",
-    "subtitle": "Manage and track all inventory items in the system",
     "addAmmunition": "Add Ammunition",
     "addWeapon": "Add Weapon",
     "addExplosive": "Add Explosive",
-    "searchPlaceholder": "Search by name, item no, part no, NSN, or exact price…",
-    "searchPlaceholderWeapons": "Search by name, item no, part no, NSN, caliber, or exact price…",
+    "searchPlaceholder": "Search....",
+    "searchPlaceholderWeapons": "Search....",
     "tabs": {
       "ammunition": "Ammunition",
       "weapon": "Weapons",

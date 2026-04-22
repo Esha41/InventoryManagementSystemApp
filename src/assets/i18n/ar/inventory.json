@@ -376,12 +376,11 @@
   },
   "assetList": {
     "title": "قائمة المواد",
-    "subtitle": "إدارة وتتبع جميع مواد المخزون في النظام",
     "addAmmunition": "إضافة ذخيرة",
     "addWeapon": "إضافة سلاح",
     "addExplosive": "إضافة متفجر",
-    "searchPlaceholder": "البحث بالاسم، رقم المادة، رقم القطعة، NSN، أو السعر (رقم مطابق)…",
-    "searchPlaceholderWeapons": "البحث بالاسم، رقم المادة، رقم القطعة، NSN، العيار، أو السعر (رقم مطابق)…",
+    "searchPlaceholder": "البحث....",
+    "searchPlaceholderWeapons": "البحث....",
     "tabs": {
       "ammunition": "الذخيرة",
       "weapon": "الأسلحة",

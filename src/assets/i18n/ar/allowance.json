@@ -1,7 +1,6 @@
 {
   "allowance": {
     "title": "مقرر",
-    "subtitle": "إدارة وعرض مواد المقرر حسب الوحدة",
     "addAllowance": "إضافة مقرر",
     "addSubtitle": "إنشاء طلب مقرر جديد لوحدة",
     "backToList": "العودة إلى القائمة",

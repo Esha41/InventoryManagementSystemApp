@@ -287,7 +287,6 @@
   },
   "requestsManagement": {
     "title": "Approval Management",
-    "subtitle": "Review and approve requests in one place.",
     "filterStatusLabel": "Status",
     "filterPriorityLabel": "Priority",
     "filterStatusPlaceholder": "All statuses",
@@ -320,7 +319,6 @@
     "orderReport": {
       "breadcrumb": "Requests · Order Report",
       "title": "Order Report",
-      "subtitle": "Detailed workflow overview for {{department}}",
       "print": "Print",
       "exportPdf": "Export PDF",
       "generating": "Generating...",

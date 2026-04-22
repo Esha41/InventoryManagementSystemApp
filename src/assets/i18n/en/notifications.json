@@ -106,7 +106,6 @@
   },
   "stockNotificationSettings": {
     "title": "Stock Notification Settings",
-    "subtitle": "Configure recipients and schedule for low stock notifications",
     "recipientsSettings": "Recipients Settings",
     "roles": "Roles",
     "rolesPlaceholder": "Select roles",
@@ -122,7 +121,6 @@
   },
   "orderAutoRejectSettings": {
     "title": "Order Auto-Reject Settings",
-    "subtitle": "Configure which approval role starts the timer, how long to wait, who gets notified, and reminder points before auto-rejection.",
     "settingsTitle": "Auto-Rejection Configuration",
     "sectionWhenStarts": "When does the timer start?",
     "sectionWhenActs": "When do we auto-reject?",

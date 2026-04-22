@@ -62,7 +62,7 @@
       "all": "All",
       "filterByStatus": "Filter by Status"
     },
-    "searchOrders": "Search orders by number, department, or requester...",
+    "searchOrders": "Search ....",
     "goToApprovalPage": "Go to Approval Page",
     "gridView": "Grid View",
     "listView": "List View",
@@ -74,7 +74,6 @@
   },
   "inventoryDashboard": {
     "title": "Inventory Dashboard",
-    "subtitle": "Inventory overview and request status",
     "statistics": {
       "totalItems": "Total Items",
       "totalQuantity": "Total Quantity",
@@ -203,7 +202,6 @@
     },
     "expiringLots": {
       "title": "Expiring lots",
-      "subtitle": "lots expiring in the next 30 days",
       "itemName": "Item Name",
       "itemNo": "Item No",
       "lot": "lot",
@@ -219,7 +217,6 @@
     },
     "lowStock": {
       "title": "Low Stock",
-      "subtitle": "Items below minimum stock threshold",
       "itemName": "Item Name",
       "itemNo": "Item No",
       "nsn": "NSN",
@@ -257,7 +254,6 @@
   },
   "inventorySummary": {
     "title": "Inventory Summary",
-    "subtitle": "Overview of all items with lot details",
     "itemName": "Item Name",
     "itemNo": "Item No",
     "type": "Type",
@@ -284,7 +280,7 @@
     "noLots": "No lots available for this item",
     "noAssets": "No assets available for this item",
     "noItems": "No inventory items available",
-    "searchPlaceholder": "Search by item name, item number, NSN, or part number...",
+    "searchPlaceholder": "Search ....",
     "noResults": "No items match your search criteria",
     "exportWithDetails": "Export with lot details",
     "exportingWithDetails": "Loading lot details for export. Please wait..."

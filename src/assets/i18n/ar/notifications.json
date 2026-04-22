@@ -106,7 +106,6 @@
   },
   "stockNotificationSettings": {
     "title": "إعدادات إشعارات المخزون",
-    "subtitle": "تكوين المستلمين والجدولة لإشعارات المخزون المنخفض",
     "recipientsSettings": "إعدادات المستلمين",
     "roles": "الأدوار",
     "rolesPlaceholder": "اختر الأدوار",
@@ -122,7 +121,6 @@
   },
   "orderAutoRejectSettings": {
     "title": "إعدادات الرفض التلقائي للطلبات",
-    "subtitle": "اضبط الدور الذي يبدأ المؤقت، والمدة، والمستلمين، ونقاط التذكير قبل الرفض التلقائي.",
     "settingsTitle": "إعداد الرفض التلقائي",
     "sectionWhenStarts": "متى يبدأ المؤقت؟",
     "sectionWhenActs": "متى يتم الرفض التلقائي؟",

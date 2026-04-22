@@ -214,7 +214,7 @@
     "inventory": "INVENTORY",
     "addAsset": "Add Asset",
     "assetList": "Asset List",
-    "weaponAssetMaster": "Asset Master(Weapon)",
+    "weaponAssetMaster": "Weapon Tracker",
     "searchInventory": "Search Inventory",
     "inventoryForecast": "Inventory Forecast",
     "inventorySummary": "Inventory Summary",
@@ -303,7 +303,7 @@
     "failedToDeleteAssignment": "Failed to delete assignment"
   },
   "depotManagement": {
-    "search": "Search depots by name, code, or location...",
+    "search": "Search ....",
     "errors": {
       "fillRequiredFields": "Please fill in all required fields",
       "invalidLatitude": "Latitude must be between -90 and 90",
@@ -364,14 +364,14 @@
     }
   },
   "weaponAssetMaster": {
-    "title": "Asset Master(Weapon)",
+    "title": "Weapon Tracker",
     "subtitle": "Serialized weapon assets: custodians, depots, and full audit history.",
     "tableTitle": "Assets (Weapon)",
     "refreshing": "Updating…",
     "filters": {
       "heading": "Filters",
       "searchLabel": "Search",
-      "searchPlaceholder": "Search by name, item no., NSN, part no., serial, custodian, department, notes…",
+      "searchPlaceholder": "Search......",
       "clear": "Clear all filters",
       "all": "All",
       "custodyLabel": "Checkout / check-in",
@@ -435,7 +435,6 @@
     "CANCEL": "Cancel"
   },
   "reportDesigner": {
-    "subtitle": "Design and manage your custom reports",
     "createReport": "Create New Report",
     "importReport": "Import Report",
     "noReports": "No Reports",
@@ -500,7 +499,6 @@
     }
   },
   "reportDashboard": {
-    "subtitle": "Browse and view published reports",
     "noReports": "No Public Reports",
     "noReportsDescription": "There are no published reports available at the moment.",
     "viewReport": "View Report",
