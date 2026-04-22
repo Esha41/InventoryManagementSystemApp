@@ -280,7 +280,7 @@
     "noLots": "No lots available for this item",
     "noAssets": "No assets available for this item",
     "noItems": "No inventory items available",
-    "searchPlaceholder": "Search by item name, item number, NSN, or part number...",
+    "searchPlaceholder": "Search ....",
     "noResults": "No items match your search criteria",
     "exportWithDetails": "Export with lot details",
     "exportingWithDetails": "Loading lot details for export. Please wait..."

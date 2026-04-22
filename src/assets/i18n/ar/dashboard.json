@@ -136,7 +136,7 @@
         "pickItem": "المادة",
         "allItems": "كل المواد",
         "search": "بحث",
-        "searchPlaceholder": "الاسم، رقم المادة، NSN، رقم القطعة",
+        "searchPlaceholder": "البحث....",
         "caliber": "العيار",
         "caliberPlaceholder": "تصفية حسب العيار",
         "itemType": "نوع المادة",

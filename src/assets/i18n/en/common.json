@@ -371,7 +371,7 @@
     "filters": {
       "heading": "Filters",
       "searchLabel": "Search",
-      "searchPlaceholder": "Search by name, item no., NSN, part no., serial, custodian, department, notes…",
+      "searchPlaceholder": "Search......",
       "clear": "Clear all filters",
       "all": "All",
       "custodyLabel": "Checkout / check-in",
