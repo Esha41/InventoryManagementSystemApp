@@ -1,7 +1,6 @@
 {
   "manageAdmins": {
     "title": "إدارة المستخدمين",
-    "subtitle": "إدارة مستخدمي النظام ووصولهم",
     "addUser": "إضافة مستخدم",
     "totalUsers": "إجمالي المستخدمين",
     "rolesAvailable": "الأدوار المتاحة",
@@ -52,7 +51,6 @@
   },
   "adminRoles": {
     "title": "إدارة الأدوار",
-    "subtitle": "إدارة الأدوار والصلاحيات",
     "addRole": "إضافة دور",
     "totalRoles": "إجمالي الأدوار",
     "activeRoles": "الأدوار النشطة",
@@ -74,7 +72,6 @@
   },
   "rolePermissions": {
     "title": "صلاحيات الأدوار",
-    "subtitle": "إدارة صلاحيات الأدوار في النظام",
     "selectRole": "اختر دوراً",
     "selectARole": "اختر دوراً للبدء",
     "selectRoleDescription": "اختر دوراً من القائمة على اليسار لعرض الصلاحيات وإدارتها.",
@@ -186,7 +183,6 @@
   },
   "lookupManagement": {
     "title": "جداول البحث",
-    "subtitle": "إدارة جداول البحث والبيانات المرجعية",
     "selectTable": "اختر جدول البحث",
     "selectTablePlaceholder": "اختر جدولاً للإدارة...",
     "searchPlaceholder": "البحث بالاسم أو الرمز...",
@@ -437,7 +433,6 @@
   },
   "ldapSettings": {
     "title": "إعدادات LDAP",
-    "subtitle": "تكوين اتصال خادم LDAP وإعدادات المصادقة",
     "ldapSettings": "إعدادات LDAP",
     "ldapServer": "عنوان خادم LDAP",
     "ldapServerPlaceholder": "مثال: ldaps://ldap.example.com:636",
@@ -467,7 +462,6 @@
   },
   "adminImportExport": {
     "title": "إدارة الاستيراد والتصدير",
-    "subtitle": "إدارة عمليات استيراد وتصدير البيانات للأصول وملخص المخزون ومخزون المستودع",
     "sections": {
       "assets": "المواد",
       "inventorySummary": "ملخص المخزون",

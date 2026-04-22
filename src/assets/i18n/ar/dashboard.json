@@ -73,7 +73,6 @@
   },
   "inventoryDashboard": {
     "title": "لوحة تحكم المخزون",
-    "subtitle": "نظرة عامة على المخزون وحالة الطلبات",
     "statistics": {
       "totalItems": "إجمالي المواد",
       "totalQuantity": "إجمالي الكمية",
@@ -202,7 +201,6 @@
     },
     "expiringLots": {
       "title": "Lots قريبة من الانتهاء",
-      "subtitle": "Lots ستنتهي صلاحيتها خلال الـ 30 يوماً القادمة",
       "itemName": "اسم المادة",
       "itemNo": "رقم المادة",
       "lot": "lot",
@@ -218,7 +216,6 @@
     },
     "lowStock": {
       "title": "المخزون المنخفض",
-      "subtitle": "المواد التي تقل عن الحد الأدنى للمخزون",
       "itemName": "اسم المادة",
       "itemNo": "رقم المادة",
       "nsn": "NSN",
@@ -256,7 +253,6 @@
   },
   "inventorySummary": {
     "title": "ملخص المخزون",
-    "subtitle": "نظرة عامة على جميع المواد مع تفاصيل Lots",
     "itemName": "اسم مادة",
     "itemNo": "رقم المادة",
     "type": "النوع",

@@ -1,7 +1,6 @@
 {
   "manageAdmins": {
     "title": "Manage Users",
-    "subtitle": "Manage system users and their access",
     "addUser": "Add User",
     "totalUsers": "Total Users",
     "rolesAvailable": "Roles Available",
@@ -52,7 +51,6 @@
   },
   "adminRoles": {
     "title": "Role Management",
-    "subtitle": "Manage roles and permissions",
     "addRole": "Add Role",
     "totalRoles": "Total Roles",
     "activeRoles": "Active Roles",
@@ -74,7 +72,6 @@
   },
   "rolePermissions": {
     "title": "Role Permissions",
-    "subtitle": "Manage permissions for system roles",
     "selectRole": "Select a role",
     "selectARole": "Select a role to start",
     "selectRoleDescription": "Choose a role from the list on the left to view and manage permissions.",
@@ -186,7 +183,6 @@
   },
   "lookupManagement": {
     "title": "Lookup Tables",
-    "subtitle": "Manage system lookup tables and reference data",
     "selectTable": "Select Lookup Table",
     "selectTablePlaceholder": "Select a table to manage...",
     "searchPlaceholder": "Search by name or code...",
@@ -437,7 +433,6 @@
   },
   "ldapSettings": {
     "title": "LDAP Settings",
-    "subtitle": "Configure LDAP server connection and authentication",
     "ldapSettings": "LDAP Settings",
     "ldapServer": "LDAP Server URL",
     "ldapServerPlaceholder": "e.g., ldaps://ldap.example.com:636",
@@ -467,7 +462,6 @@
   },
   "adminImportExport": {
     "title": "Import & Export Management",
-    "subtitle": "Manage data import and export operations for assets, inventory summary, and warehouse inventory",
     "sections": {
       "assets": "Assets",
       "inventorySummary": "Inventory Summary",

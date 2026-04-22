@@ -1,7 +1,6 @@
 {
   "scheduledReports": {
     "title": "Scheduled Reports",
-    "subtitle": "Manage automated report generation and distribution",
     "createSchedule": "Create Schedule",
     "daily": "Daily",
     "weekly": "Weekly",

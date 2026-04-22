@@ -384,7 +384,6 @@
   },
   "assetList": {
     "title": "Asset List",
-    "subtitle": "Manage and track all inventory items in the system",
     "addAmmunition": "Add Ammunition",
     "addWeapon": "Add Weapon",
     "addExplosive": "Add Explosive",

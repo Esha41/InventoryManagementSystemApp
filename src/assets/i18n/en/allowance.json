@@ -1,7 +1,6 @@
 {
   "allowance": {
     "title": "Allowance",
-    "subtitle": "Manage and view allowance items by department",
     "addAllowance": "Add Allowance",
     "addSubtitle": "Create a new allowance request for a department",
     "export": "Export Report",

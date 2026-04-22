@@ -15,9 +15,6 @@
             <h1 class="text-xl sm:text-2xl font-bold text-[var(--color-text)]">
               {{ 'requestsManagement.orderReport.title' | translate }}
             </h1>
-            <p class="text-xs sm:text-sm text-[var(--color-text-muted)] mt-0.5">
-              {{ 'requestsManagement.orderReport.subtitle' | translate:{ department: 'All Departments' } }}
-            </p>
           </div>
         </div>
       </div>
@@ -63,8 +60,7 @@
               <div class="min-w-0 flex-1">
                 <h2 class="text-lg sm:text-xl lg:text-2xl font-bold mb-1 sm:mb-1.5 truncate">{{ orderSummary.orderId }}</h2>
                 <p class="text-xs sm:text-sm text-white/80 line-clamp-2 sm:line-clamp-none">
-                  {{ resolveUsagePurpose() || ('requestsManagement.orderReport.subtitle' | translate:{ department:
-                  orderSummary.department }) }}
+                  {{ resolveUsagePurpose() }}
                 </p>
               </div>
               <div class="flex-shrink-0">

@@ -74,7 +74,6 @@
   },
   "inventoryDashboard": {
     "title": "Inventory Dashboard",
-    "subtitle": "Inventory overview and request status",
     "statistics": {
       "totalItems": "Total Items",
       "totalQuantity": "Total Quantity",
@@ -203,7 +202,6 @@
     },
     "expiringLots": {
       "title": "Expiring lots",
-      "subtitle": "lots expiring in the next 30 days",
       "itemName": "Item Name",
       "itemNo": "Item No",
       "lot": "lot",
@@ -219,7 +217,6 @@
     },
     "lowStock": {
       "title": "Low Stock",
-      "subtitle": "Items below minimum stock threshold",
       "itemName": "Item Name",
       "itemNo": "Item No",
       "nsn": "NSN",
@@ -257,7 +254,6 @@
   },
   "inventorySummary": {
     "title": "Inventory Summary",
-    "subtitle": "Overview of all items with lot details",
     "itemName": "Item Name",
     "itemNo": "Item No",
     "type": "Type",

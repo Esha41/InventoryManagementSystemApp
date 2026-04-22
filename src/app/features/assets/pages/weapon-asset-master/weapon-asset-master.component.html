@@ -1,18 +1,15 @@
 <div class="page-wrapper">
   <div class="bg-gradient-to-r from-[var(--color-brand)]/10 via-[var(--color-brand)]/5 to-transparent border-b border-[var(--color-border)]">
-    <div class="page-container py-6">
-      <h1 class="text-3xl font-bold text-[var(--color-text)] mb-1">
+    <div class="page-container !py-4">
+      <h1 class="text-3xl font-bold text-[var(--color-text)]">
         {{ 'weaponAssetMaster.title' | translate }}
       </h1>
-      <p class="text-[var(--color-text-muted)]">
-        {{ 'weaponAssetMaster.subtitle' | translate }}
-      </p>
     </div>
   </div>
 
-  <div class="page-container space-y-6 py-6">
-    <app-card [shadow]="true">
-      <div class="p-4 sm:p-6 space-y-4">
+  <div class="page-container flex flex-col gap-6 !pt-2 !pb-4 md:!pt-3 md:!pb-5 lg:!pt-3 lg:!pb-6">
+    <app-card [shadow]="true" [padding]="false">
+      <div class="p-3 sm:p-4 space-y-3">
         <h2 class="text-base font-semibold text-[var(--color-text)]">
           {{ 'weaponAssetMaster.filters.heading' | translate }}
         </h2>
@@ -230,8 +227,8 @@
 
     <app-loading-state *ngIf="loading" size="lg" [fullPage]="false"></app-loading-state>
 
-    <app-card *ngIf="hasLoadedOnce" [shadow]="true">
-      <div class="p-4 sm:p-6 border-b border-[var(--color-border)] flex flex-wrap items-center justify-between gap-3">
+    <app-card *ngIf="hasLoadedOnce" [shadow]="true" [padding]="false">
+      <div class="p-3 sm:p-4 border-b border-[var(--color-border)] flex flex-wrap items-center justify-between gap-3">
         <h2 class="text-lg font-semibold text-[var(--color-text)]">
           {{ 'weaponAssetMaster.tableTitle' | translate }}
         </h2>

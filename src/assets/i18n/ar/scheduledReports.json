@@ -1,7 +1,6 @@
 {
   "scheduledReports": {
     "title": "التقارير المجدولة",
-    "subtitle": "إدارة إنشاء التقارير التلقائي والتوزيع",
     "createSchedule": "إنشاء جدولة",
     "daily": "يومي",
     "weekly": "أسبوعي",

@@ -223,7 +223,7 @@
     "inventory": "المخزون",
     "addAsset": "إضافة مادة",
     "assetList": "قائمة المواد",
-    "weaponAssetMaster": "سجل الأصول (الأسلحة)",
+    "weaponAssetMaster": "متتبع الأسلحة",
     "searchInventory": "البحث في المخزون",
     "inventoryForecast": "توقعات المخزون",
     "inventorySummary": "تقرير المخزون",
@@ -367,7 +367,7 @@
     }
   },
   "weaponAssetMaster": {
-    "title": "سجل الأصول (الأسلحة)",
+    "title": "متتبع الأسلحة",
     "subtitle": "أصول الأسلحة المرقمة: المسؤولون والمستودعات وسجل التدقيق الكامل.",
     "tableTitle": "الأصول (الأسلحة)",
     "refreshing": "جاري التحديث…",
@@ -438,7 +438,6 @@
     "CANCEL": "إلغاء"
   },
   "reportDesigner": {
-    "subtitle": "صمم وأدر تقاريرك المخصصة",
     "createReport": "إنشاء تقرير جديد",
     "importReport": "استيراد تقرير",
     "noReports": "لا توجد تقارير",
@@ -503,7 +502,6 @@
     }
   },
   "reportDashboard": {
-    "subtitle": "تصفح وعرض التقارير المنشورة",
     "noReports": "لا توجد تقارير عامة",
     "noReportsDescription": "لا توجد تقارير منشورة متاحة في الوقت الحالي.",
     "viewReport": "عرض التقرير",

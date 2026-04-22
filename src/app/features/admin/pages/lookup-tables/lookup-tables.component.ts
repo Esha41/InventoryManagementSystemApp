@@ -24,9 +24,6 @@ import { LookupManagementComponent } from './components/lookup-management/lookup
             <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">
               {{ 'lookupManagement.title' | translate }}
             </h1>
-            <p class="text-sm text-[var(--color-text-muted)] mt-1">
-              {{ 'lookupManagement.subtitle' | translate }}
-            </p>
           </div>
         </div>
 

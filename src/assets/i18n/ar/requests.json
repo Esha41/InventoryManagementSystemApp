@@ -283,7 +283,6 @@
   },
   "requestsManagement": {
     "title": "إدارة الموافقات",
-    "subtitle": "راجع طلبات الموافقة واعتمادها من مكان واحد.",
     "filterStatusLabel": "الحالة",
     "filterPriorityLabel": "الأولوية",
     "filterStatusPlaceholder": "كل الحالات",
@@ -316,7 +315,6 @@
     "orderReport": {
       "breadcrumb": "الطلبات · تقرير الطلب",
       "title": "تقرير الطلب",
-      "subtitle": "نظرة تفصيلية لسير العمل لـ {{department}}",
       "print": "طباعة",
       "exportPdf": "تصدير PDF",
       "generating": "جاري التحضير...",
