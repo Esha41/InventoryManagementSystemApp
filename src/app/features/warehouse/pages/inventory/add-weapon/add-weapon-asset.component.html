@@ -307,7 +307,7 @@
                                 <app-dropdown class="w-full" formControlName="assignToEmployeeId"
                                     [options]="employeeDropdownOptions" optionValue="value"
                                     [placeholderSelectable]="false"
-                                    [addActionLabel]="'addWeaponAsset.assignment.addPerson'"
+                                    [addActionLabel]="canCreateEmployee ? ('addWeaponAsset.assignment.addPerson' | translate) : undefined"
                                     (addActionClick)="openAddEmployeeModal()"
                                     (selectionChange)="onSingleAssignmentEmployeeChange(i, $event)"
                                     placeholder="{{ 'addWeaponAsset.assignment.selectEmployee' | translate }}">
@@ -610,7 +610,7 @@
                         <app-dropdown class="w-full" formControlName="assignToEmployeeId"
                             [options]="employeeDropdownOptions" optionValue="value"
                             [placeholderSelectable]="false"
-                            [addActionLabel]="'addWeaponAsset.assignment.addPerson'"
+                            [addActionLabel]="canCreateEmployee ? ('addWeaponAsset.assignment.addPerson' | translate) : undefined"
                             (addActionClick)="openAddEmployeeModal()"
                             (selectionChange)="onBulkAssignmentEmployeeChange($event)"
                             placeholder="{{ 'addWeaponAsset.assignment.selectEmployee' | translate }}">

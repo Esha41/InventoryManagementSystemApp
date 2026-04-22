@@ -14,6 +14,7 @@ import { LookupService, LookupItem } from '@services/lookup.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { StorageService } from '@services/storage.service';
+import { BackendAuthService } from '@services/backend-auth.service';
 
 // Models
 import { CreateAssetDto, EmployeeDto, CreateBulkAssetsFromTemplateDto } from '@models/asset.model';
@@ -51,6 +52,7 @@ export type WeaponAssignMode = 'none' | 'department' | 'employee';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddWeaponAssetComponent implements OnInit, OnDestroy {
+    private static readonly EMPLOYEE_CREATE_PERMISSION = 'Permissions.Employee.Create';
     // Icons
     readonly Save = Save;
     readonly X = X;
@@ -103,8 +105,13 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
         private translateService: TranslateService,
         private translationService: TranslationService,
         private cdr: ChangeDetectorRef,
-        private storageService: StorageService
+        private storageService: StorageService,
+        private authService: BackendAuthService
     ) { }
+
+    get canCreateEmployee(): boolean {
+        return this.authService.hasPermission(AddWeaponAssetComponent.EMPLOYEE_CREATE_PERMISSION);
+    }
 
     get isRTL(): boolean {
         return this.translationService?.isRTL() ?? false;
@@ -290,6 +297,9 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
     }
 
     openAddEmployeeModal(): void {
+        if (!this.canCreateEmployee) {
+            return;
+        }
         this.isEmployeeModalOpen = true;
         this.cdr.markForCheck();
     }

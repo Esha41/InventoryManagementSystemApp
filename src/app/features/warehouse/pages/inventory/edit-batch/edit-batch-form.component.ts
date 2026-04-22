@@ -33,6 +33,7 @@ import { ErrorHandler } from '@utils/error-handler.utils';
 import { trackByIndex } from '@utils/trackby.utils';
 import { formatDateForInput } from '@utils/format.utils';
 import { FileUploadService } from '@services/file-upload.service';
+import { BackendAuthService } from '@services/backend-auth.service';
 
 export type BatchEditAssignMode = 'none' | 'department' | 'employee';
 
@@ -56,6 +57,7 @@ export type BatchEditAssignMode = 'none' | 'department' | 'employee';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
+  private static readonly EMPLOYEE_CREATE_PERMISSION = 'Permissions.Employee.Create';
   @Input({ required: true }) batchId!: number;
   @Input({ required: true }) warehouseId!: number;
   /** When false, hide bottom save/cancel row (e.g. modal supplies footer actions). */
@@ -136,8 +138,13 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
     private toastService: ToastService,
     private translateService: TranslateService,
     private translationService: TranslationService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private authService: BackendAuthService
   ) { }
+
+  get canCreateEmployee(): boolean {
+    return this.authService.hasPermission(EditBatchFormComponent.EMPLOYEE_CREATE_PERMISSION);
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (this.batchId > 0 && this.warehouseId > 0 &&
@@ -369,6 +376,9 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
   }
 
   openAddEmployeeModal(): void {
+    if (!this.canCreateEmployee) {
+      return;
+    }
     this.isEmployeeModalOpen = true;
     this.cdr.markForCheck();
   }

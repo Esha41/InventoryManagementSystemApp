@@ -582,6 +582,7 @@
   },
   "server": {
     "unauthorized": "You are not signed in or your session expired. Please sign in again.",
+    "forbidden": "You do not have permission to perform this action.",
     "invalidLogin": "Your session is invalid. Please sign in again.",
     "unableToRefreshToken": "Could not refresh your session. Please sign in again.",
     "roleSelectionRequired": "Choose a role to continue."

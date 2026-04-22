@@ -50,7 +50,7 @@
           [options]="employeeDropdownOptions"
           optionValue="value" optionLabel="label"
           [placeholder]="'workflowApprovalDetail.selectReceiver' | translate"
-          [addActionLabel]="'weaponSupplyReview.addEmployee' | translate"
+          [addActionLabel]="canCreateEmployee ? ('weaponSupplyReview.addEmployee' | translate) : undefined"
           (addActionClick)="openAddEmployeeModal()"
           [disabled]="isSubmittingSupply || isLastApprovalCompleted"
           class="w-full">

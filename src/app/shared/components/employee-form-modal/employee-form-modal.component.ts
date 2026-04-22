@@ -11,6 +11,7 @@ import { EmployeeService } from '@services/employee.service';
 import { CreateUpdateEmployeeDto } from '@core/models/employee.model';
 import { EmployeeDto } from '@core/models/asset.model';
 import { Observable } from 'rxjs';
+import { ErrorHandler } from '@core/utils/error-handler.utils';
 
 @Component({
   selector: 'app-employee-form-modal',
@@ -199,7 +200,11 @@ export class EmployeeFormModalComponent implements OnInit, OnChanges {
         this.isLoading = false;
         const errorKey = isEdit ? 'employeeFormModal.updateError' : 'employeeFormModal.createError';
         const titleKey = isEdit ? 'employeeFormModal.updateTitle' : 'employeeFormModal.createTitle';
-        const msg = error?.message || this.translate.instant(errorKey);
+        const msg = ErrorHandler.extractAndTranslateErrorMessage(
+          error,
+          this.translate.instant(errorKey),
+          this.translate
+        );
         this.errorMessage = msg;
         this.toastService.error(
           msg,
