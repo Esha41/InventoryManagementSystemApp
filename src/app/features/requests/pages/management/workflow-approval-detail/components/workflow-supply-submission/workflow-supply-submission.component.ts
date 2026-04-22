@@ -20,6 +20,7 @@ import { EmployeeService } from '@services/employee.service';
 import { EmployeeDto } from '@core/models/asset.model';
 import { getCurrentLang } from '@utils/localization.utils';
 import { EmployeeFormModalComponent } from '@components/employee-form-modal/employee-form-modal.component';
+import { BackendAuthService } from '@services/backend-auth.service';
 
 @Component({
   selector: 'app-workflow-supply-submission',
@@ -37,6 +38,7 @@ import { EmployeeFormModalComponent } from '@components/employee-form-modal/empl
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WorkflowSupplySubmissionComponent implements OnInit, OnDestroy, OnChanges {
+  private static readonly EMPLOYEE_CREATE_PERMISSION = 'Permissions.Employee.Create';
   @Input() supplyId: number | null = null;
   @Input() supplyData: SupplyDto | null = null;
   @Input() ranks: LookupItem[] = [];
@@ -102,8 +104,13 @@ export class WorkflowSupplySubmissionComponent implements OnInit, OnDestroy, OnC
     private dataService: WorkflowApprovalDataService,
     private stateService: WorkflowApprovalStateService,
     private navigationService: WorkflowApprovalNavigationService,
-    private employeeService: EmployeeService
+    private employeeService: EmployeeService,
+    private authService: BackendAuthService
   ) {}
+
+  get canCreateEmployee(): boolean {
+    return this.authService.hasPermission(WorkflowSupplySubmissionComponent.EMPLOYEE_CREATE_PERMISSION);
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     // Update receiver info when supplyData changes
@@ -158,6 +165,9 @@ export class WorkflowSupplySubmissionComponent implements OnInit, OnDestroy, OnC
   }
 
   openAddEmployeeModal(): void {
+    if (!this.canCreateEmployee) {
+      return;
+    }
     this.isEmployeeModalOpen = true;
   }
 

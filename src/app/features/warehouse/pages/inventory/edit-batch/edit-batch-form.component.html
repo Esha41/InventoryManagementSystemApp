@@ -232,7 +232,7 @@
                 <app-dropdown class="w-full min-w-[10rem] block text-sm" formControlName="assignToEmployeeId"
                   [options]="employees" optionValue="id" [optionLabelFn]="employeeOptionLabel"
                   [placeholderSelectable]="false" [showSearch]="true"
-                  [addActionLabel]="'addWeaponAsset.assignment.addPerson'"
+                  [addActionLabel]="canCreateEmployee ? ('addWeaponAsset.assignment.addPerson' | translate) : undefined"
                   (addActionClick)="openAddEmployeeModal()"
                   (selectionChange)="onRowAssignmentEmployeeChange(i, $event)"
                   placeholder="{{ 'editBatch.selectEmployee' | translate }}">

@@ -145,6 +145,16 @@ export class ErrorHandler {
       if (t && t !== key) return t;
     }
 
+    // Raw Angular HTTP text when status is 403 (no usable JSON body)
+    if (
+      (message.includes('Server Error:') && /\b403\b/.test(message)) ||
+      /Http failure response for .*\s403\s/.test(message)
+    ) {
+      const key = 'server.forbidden';
+      const t = translate.instant(key);
+      if (t && t !== key) return t;
+    }
+
     for (const { pattern, translationKey, extractParams } of TRANSLATABLE_ERROR_PATTERNS) {
       const match = message.match(pattern);
       if (match) {

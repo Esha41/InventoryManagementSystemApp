@@ -28,6 +28,7 @@ import { LoadingStateComponent } from '@components/loading-state/loading-state.c
 import { EmployeeFormModalComponent } from '@components/employee-form-modal/employee-form-modal.component';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { FocusOnInitDirective } from '@core/directives/focus-on-init.directive';
+import { BackendAuthService } from '@services/backend-auth.service';
 
 @Component({
   selector: 'app-weapon-supply-review',
@@ -52,6 +53,7 @@ import { FocusOnInitDirective } from '@core/directives/focus-on-init.directive';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
+  private static readonly EMPLOYEE_CREATE_PERMISSION = 'Permissions.Employee.Create';
   private destroy$ = new Subject<void>();
 
   readonly ArrowLeft = ArrowLeft;
@@ -133,8 +135,13 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
     public lookupService: WeaponSupplyLookupService,
     public displayService: WeaponSupplyDisplayService,
     private fileUploadService: FileUploadService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private authService: BackendAuthService
   ) {}
+
+  get canCreateEmployee(): boolean {
+    return this.authService.hasPermission(WeaponSupplyReviewComponent.EMPLOYEE_CREATE_PERMISSION);
+  }
 
   get employeeDropdownOptions(): DropdownOption<number>[] {
     return this.lookupService.employeeDropdownOptions;
@@ -488,6 +495,9 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
   }
 
   openAddEmployeeModal(): void {
+    if (!this.canCreateEmployee) {
+      return;
+    }
     this.isEmployeeModalOpen = true;
     this.cdr.markForCheck();
   }
