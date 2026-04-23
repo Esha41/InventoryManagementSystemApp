@@ -20,7 +20,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Phone, Mail } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
 
-import { HelpCenterService } from '@services/help-center.service';
+import { HelpCenterService } from '@help-center/services/help-center.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { BackendAuthService } from '@services/backend-auth.service';

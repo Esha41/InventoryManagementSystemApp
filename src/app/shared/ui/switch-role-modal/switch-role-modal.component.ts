@@ -13,7 +13,7 @@ import { ModalComponent } from '@components/modal/modal.component';
 import { RoleSelectionPanelComponent } from '@auth/components/role-selection-panel/role-selection-panel.component';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { UserContextService } from '@services/user-context.service';
-import { SwitchRoleModalService } from '@services/switch-role-modal.service';
+import { SwitchRoleModalService } from './switch-role-modal.service';
 import { ToastService } from '@services/toast.service';
 import { RoleForSelection } from '@models/auth.model';
 import { getDefaultLandingUrl } from '@core/utils/default-landing-route.utils';

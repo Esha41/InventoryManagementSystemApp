@@ -5,7 +5,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
 
-import { AssetService } from '@services/asset.service';
+import { AssetService } from '@assets/services/asset.service';
 import { ToastService } from '@services/toast.service';
 import { AssetDto, AssetStatus, getAssetStatusLabel } from '@models/asset.model';
 import { AssetDetailsComponent as SharedAssetDetailsComponent } from '@components/asset-details/asset-details.component';

@@ -7,7 +7,7 @@ import { LookupItem, LookupTableConfig, CreateUpdateLookupDto } from '@models/lo
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
-import { LookupManagementService } from '@services/lookup-management.service';
+import { LookupManagementService } from '@admin/services/lookup-management.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { LookupFiltersComponent } from '../lookup-filters/lookup-filters.component';
 import { LookupFormModalComponent } from '@admin/components/lookup-form-modal/lookup-form-modal.component';
@@ -17,9 +17,9 @@ import { EmployeeFormModalComponent } from '@components/employee-form-modal/empl
 import { ImportDialogComponent } from '@components/import-dialog/import-dialog.component';
 import { ImportPreviewDialogComponent, PreviewData } from '@components/import-preview-dialog/import-preview-dialog.component';
 import { EmployeeDto } from '@core/models/asset.model';
-import { EmployeeService } from '@services/employee.service';
+import { EmployeeService } from '@admin/services/employee.service';
 import { BackendAuthService } from '@services/backend-auth.service';
-import { ImportExportService } from '@services/import-export.service';
+import { ImportExportService } from '@admin/services/import-export.service';
 import { mapImportResultToPreviewData } from '@core/utils/asset-master-import-preview.utils';
 import { defaultPageSize } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';

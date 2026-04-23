@@ -6,10 +6,10 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { concatMap, map } from 'rxjs/operators';
-import { AssetService } from '@services/asset.service';
-import { AmmunitionService } from '@services/ammunition.service';
-import { WeaponService } from '@services/weapon.service';
-import { ExplosiveService } from '@services/explosive.service';
+import { AssetService } from '@assets/services/asset.service';
+import { AmmunitionService } from '@assets/services/ammunition.service';
+import { WeaponService } from '@assets/services/weapon.service';
+import { ExplosiveService } from '@assets/services/explosive.service';
 import { PaginatedList, PagedRequest, FilterData } from '@models/api-response.model';
 import {
   Asset,

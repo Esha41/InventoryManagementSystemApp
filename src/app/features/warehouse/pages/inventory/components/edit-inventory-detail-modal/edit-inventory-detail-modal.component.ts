@@ -11,8 +11,8 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { formatDateShort } from '@core/utils/format.utils';
 import { FileUploadDto, FileUploadService } from '@services/file-upload.service';
-import { AmmunitionService } from '@services/ammunition.service';
-import { ExplosiveService } from '@services/explosive.service';
+import { AmmunitionService } from '@assets/services/ammunition.service';
+import { ExplosiveService } from '@assets/services/explosive.service';
 import { Subscription } from 'rxjs';
 
 @Component({

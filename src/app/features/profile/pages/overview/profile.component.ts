@@ -21,7 +21,7 @@ import { DelegationListComponent } from './delegation-list/delegation-list.compo
 import { ToastService } from '@services/toast.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { OnboardingTourService } from '@features/onboarding/services/onboarding-tour.service';
-import { SwitchRoleModalService } from '@services/switch-role-modal.service';
+import { SwitchRoleModalService } from '@shared/ui/switch-role-modal/switch-role-modal.service';
 
 @Component({
   selector: 'app-profile',

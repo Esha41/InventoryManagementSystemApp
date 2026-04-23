@@ -5,7 +5,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { StorageService } from '@services/storage.service';
-import { SwitchRoleModalService } from '@services/switch-role-modal.service';
+import { SwitchRoleModalService } from '@shared/ui/switch-role-modal/switch-role-modal.service';
 import { RoleForSelection } from '@models/auth.model';
 import { getDefaultLandingUrl } from '@core/utils/default-landing-route.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';

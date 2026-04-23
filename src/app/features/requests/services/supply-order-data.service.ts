@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, EMPTY, forkJoin } from 'rxjs';
 import { map, catchError, switchMap } from 'rxjs/operators';
-import { OrderService } from '@services/order.service';
+import { OrderService } from '@requests/services/order.service';
 import { OrderDto } from '@models/order.model';
-import { SupplyService, SupplyDto } from '@services/supply.service';
-import { InventoryService, LotDetailDto } from '@services/inventory.service';
-import { AmmunitionService } from '@services/ammunition.service';
-import { ExplosiveService } from '@services/explosive.service';
+import { SupplyService, SupplyDto } from '@requests/services/supply.service';
+import { InventoryService, LotDetailDto } from '@inventory/services/inventory.service';
+import { AmmunitionService } from '@assets/services/ammunition.service';
+import { ExplosiveService } from '@assets/services/explosive.service';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';

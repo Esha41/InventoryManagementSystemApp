@@ -4,7 +4,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, BookOpen, Download, FileText, Inbox, Phone } from 'lucide-angular';
 import { Subject, catchError, of, takeUntil } from 'rxjs';
 
-import { HelpCenterService } from '@services/help-center.service';
+import { HelpCenterService } from '@help-center/services/help-center.service';
 import { HelpCenterArticlesTabComponent } from './components/help-center-articles-tab/help-center-articles-tab.component';
 import { HelpCenterMessagesTabComponent } from './components/help-center-messages-tab/help-center-messages-tab.component';
 import { HelpCenterTermsTabComponent } from './components/help-center-terms-tab/help-center-terms-tab.component';

@@ -1,5 +1,5 @@
 import { ItemInventorySummaryDto, ItemType } from '@models/inventory.model';
-import { LotDetailDto } from '@services/inventory.service';
+import { LotDetailDto } from '@inventory/services/inventory.service';
 import { AssetDto } from '@models/asset.model';
 
 export type ActiveTab = 'all' | 'ammunition' | 'weapon' | 'explosive';

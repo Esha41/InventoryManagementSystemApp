@@ -25,7 +25,7 @@ import {
 import { Subject, catchError, of, take, takeUntil } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 
-import { HelpCenterService } from '@services/help-center.service';
+import { HelpCenterService } from '@help-center/services/help-center.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import {
@@ -40,7 +40,7 @@ import { CardComponent } from '@components/card/card.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { APP_CONSTANTS, defaultPageSize } from '@constants/app.constants';
 import { AppDatePipe } from '@shared/pipes/app-date.pipe';
-import { HelpCenterHtmlSanitizerService } from '@services/help-center-html-sanitizer.service';
+import { HelpCenterHtmlSanitizerService } from '@help-center/services/help-center-html-sanitizer.service';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { UserContextService } from '@services/user-context.service';
 import { getLocalizedName } from '@utils/localization.utils';

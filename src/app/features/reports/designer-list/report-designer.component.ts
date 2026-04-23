@@ -9,7 +9,7 @@ import { ButtonComponent } from '@components/button/button.component';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { BackendAuthService } from '@services/backend-auth.service';
-import { ReportService, Report, ReportTemplate, ReportStatus } from '@services/report.service';
+import { ReportService, Report, ReportTemplate, ReportStatus } from '@reports/services/report.service';
 import { ToastService } from '@services/toast.service';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';

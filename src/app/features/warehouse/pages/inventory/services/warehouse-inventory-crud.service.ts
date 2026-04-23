@@ -1,11 +1,14 @@
 import { Injectable } from '@angular/core';
 import { Observable, forkJoin, timer, switchMap, of } from 'rxjs';
-import { InventoryService } from '@services/inventory.service';
-import { AssetService } from '@services/asset.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { InventoryService } from '@inventory/services/inventory.service';
+import { AssetService } from '@assets/services/asset.service';
 import { InventoryDetailDto, UpdateInventoryDetailDto, UpdateInventoryDto, InventoryDto } from '@models/inventory.model';
 import { AssetDto } from '@models/asset.model';
 import { ToastService } from '@services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
+import { ErrorHandler } from '@utils/error-handler.utils';
+import { WarehouseInventoryStore } from '../../../services/warehouse-inventory.store';
 
 export interface EditInventoryDetailResult {
   success: boolean;
@@ -214,6 +217,95 @@ export class WarehouseInventoryCrudService {
           } as DeleteAssetResult);
         })
       );
+  }
+
+  
+  editInventoryDetailFlow(
+    detail: InventoryDetailDto,
+    inventory: InventoryDto,
+    updateDetailDto: UpdateInventoryDetailDto,
+    updateInventoryDto: UpdateInventoryDto | undefined,
+    files: File[] | undefined,
+    removedFileIds: number[] | undefined,
+    store: WarehouseInventoryStore,
+    onRefresh: () => void
+  ): void {
+    this.editInventoryDetail(detail, inventory, updateDetailDto, updateInventoryDto, files, removedFileIds)
+      .pipe(takeUntilDestroyed(store.destroyRef))
+      .subscribe({
+        next: res => {
+          if (res.success && res.updatedInventory) {
+            onRefresh();
+          } else {
+            this.showToastFromKeys('toast.failedToUpdate', res.error);
+          }
+        },
+        error: err => this.showToastFromKeys('toast.failedToUpdate', undefined, err)
+      });
+  }
+
+  deleteInventoryDetailFlow(
+    detail: InventoryDetailDto,
+    store: WarehouseInventoryStore,
+    onRefresh: () => void
+  ): void {
+    this.deleteInventoryDetail(detail)
+      .pipe(takeUntilDestroyed(store.destroyRef))
+      .subscribe({
+        next: res => {
+          if (res.success) {
+            onRefresh();
+          } else {
+            this.showToastFromKeys('toast.failedToDelete', res.error);
+          }
+        },
+        error: err => this.showToastFromKeys('toast.failedToDelete', undefined, err)
+      });
+  }
+
+  loadAssetForEditFlow(asset: AssetDto, store: WarehouseInventoryStore): void {
+    store.setLoadingAsset(true);
+    store.setSelectedAsset(asset);
+    this.loadAssetForEdit(asset.id)
+      .pipe(takeUntilDestroyed(store.destroyRef))
+      .subscribe({
+        next: updated => {
+          store.setSelectedAsset(updated || null);
+          store.setLoadingAsset(false);
+          store.setEditAssetModalOpen(true);
+        },
+        error: () => {
+          store.setLoadingAsset(false);
+        }
+      });
+  }
+
+  deleteAssetFlow(assetId: number, store: WarehouseInventoryStore, onRefresh: () => void): void {
+    this.deleteAsset(assetId)
+      .pipe(takeUntilDestroyed(store.destroyRef))
+      .subscribe({
+        next: res => res.success ? onRefresh() : this.showDeleteAssetError(res.error),
+        error: () => this.showDeleteAssetError()
+      });
+  }
+
+  private showDeleteAssetError(error?: string): void {
+    this.translateService.get(['toast.error', 'warehouseInventory.failedToDeleteAsset']).subscribe(t => {
+      this.toastService.error(
+        error || t['warehouseInventory.failedToDeleteAsset'] || 'Failed to delete asset',
+        t['toast.error']
+      );
+    });
+  }
+
+  private showToastFromKeys(messageKey: string, overrideMessage?: string, error?: unknown): void {
+    this.translateService.get([messageKey, 'toast.error']).subscribe(t => {
+      const msg = overrideMessage
+        || (error !== undefined
+          ? ErrorHandler.extractAndTranslateErrorMessage(error, t[messageKey], this.translateService)
+          : t[messageKey]);
+      this.toastService.error(msg, t['toast.error']);
+    });
   }
 }
 

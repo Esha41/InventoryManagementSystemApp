@@ -8,7 +8,7 @@ import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { RequestStatusUpdateService } from '@services/request-status-update.service';
+import { RequestStatusUpdateService } from '@requests/services/request-status-update.service';
 import { RequestStatusEnum } from '@utils/request-mapper.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { TranslateService } from '@ngx-translate/core';

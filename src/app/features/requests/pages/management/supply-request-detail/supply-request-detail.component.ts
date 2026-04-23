@@ -11,7 +11,7 @@ import { catchError, map, switchMap } from 'rxjs/operators';
 import { SupplyRequestDetailService } from './services/supply-request-detail.service';
 import { OrderItemManagementService } from './services/order-item-management.service';
 import { LotSelectionService } from './services/lot-selection.service';
-import { AmmunitionService } from '@services/ammunition.service';
+import { AmmunitionService } from '@assets/services/ammunition.service';
 import { SupplyOrderDataService } from '@requests/services/supply-order-data.service';
 import { ToastService } from '@services/toast.service';
 import { ConfigService } from '@services/config.service';
@@ -32,7 +32,7 @@ import { HasPermissionDirective } from '@core/directives/has-permission.directiv
 import { formatNumber as formatNumberUtil, formatDate as formatDateUtil, formatTimeToMilitary as formatTimeToMilitaryUtil } from '@utils/format.utils';
 import { getApprovalStatusBadgeClass } from '@utils/status-class.utils';
 import { mapLotDetailsToLotItems } from '@utils/lot.utils';
-import { LotDetailDto } from '@services/inventory.service';
+import { LotDetailDto } from '@inventory/services/inventory.service';
 import {
   getLotConditionClass,
   getItemTypeIcon as getItemTypeIconUtil,

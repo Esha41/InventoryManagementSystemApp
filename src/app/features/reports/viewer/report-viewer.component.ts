@@ -5,7 +5,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, ArrowRight, X } from 'lucide-angular';
 import { DxReportViewerModule } from 'devexpress-reporting-angular';
 import { TranslationService } from '@services/translation.service';
-import { ReportService } from '@services/report.service';
+import { ReportService } from '@reports/services/report.service';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { ConfigService } from '@services/config.service';
 import { take } from 'rxjs/operators';

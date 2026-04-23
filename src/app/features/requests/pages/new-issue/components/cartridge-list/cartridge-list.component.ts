@@ -6,7 +6,7 @@ import { ButtonComponent } from '@components/button/button.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { CatalogPaginationState } from '../../new-issue-request.state';
 import { ConfigService } from '@services/config.service';
-import { ItemTypeValidationService } from '@services/item-type-validation.service';
+import { ItemTypeValidationService } from '@admin/services/item-type-validation.service';
 
 export interface Cartridge {
   id: number;

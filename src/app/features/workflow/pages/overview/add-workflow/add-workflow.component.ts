@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { LucideAngularModule, Save, X, ArrowLeft, ArrowRight, GripVertical } from 'lucide-angular';
-import { WorkflowService } from '@services/workflow.service';
+import { WorkflowService } from '@workflow/services/workflow.service';
 import { BackendUserService } from '@services/backend-user.service';
 import { RoleDto, ApplicationEntityDto } from '@models/backend-user.model';
 import { TranslationService } from '@services/translation.service';

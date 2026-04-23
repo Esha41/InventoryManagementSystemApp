@@ -8,7 +8,7 @@ import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { RequestDetail } from '@models/workflow-approval.model';
 import { OrderItemManagementService } from '@requests/pages/management/supply-request-detail/services/order-item-management.service';
 import { WorkflowApprovalStateService } from '../../services/workflow-approval-state.service';
-import { WeaponService } from '@services/weapon.service';
+import { WeaponService } from '@assets/services/weapon.service';
 import { CreateRequestItemDto } from '@models/request-item.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { takeUntil } from 'rxjs/operators';

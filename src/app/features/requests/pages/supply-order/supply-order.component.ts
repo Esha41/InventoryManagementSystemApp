@@ -17,7 +17,7 @@ import { OrderItemsManagementComponent } from './components/order-items-manageme
 import { ApprovalWorkflowComponent } from './components/approval-workflow/approval-workflow.component';
 import { SupplyItemsListComponent } from './components/supply-items-list/supply-items-list.component';
 import { OrderDto, OrderRequestItemDto } from '@models/order.model';
-import { SupplyDto } from '@services/supply.service';
+import { SupplyDto } from '@requests/services/supply.service';
 import { ToastService } from '@services/toast.service';
 import { APIOperationResponse } from '@models/api-response.model';
 import { SupplyItemDisplay } from '@models/supply-order.model';

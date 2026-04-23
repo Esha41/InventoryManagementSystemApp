@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { forkJoin, Observable, Subject, takeUntil } from 'rxjs';
-import { ItemDepartmentAssignmentService } from '@services/item-department-assignment.service';
+import { ItemDepartmentAssignmentService } from '@admin/services/item-department-assignment.service';
 import { LookupService } from '@services/lookup.service';
-import { AmmunitionService } from '@services/ammunition.service';
-import { WeaponService } from '@services/weapon.service';
-import { ExplosiveService } from '@services/explosive.service';
+import { AmmunitionService } from '@assets/services/ammunition.service';
+import { WeaponService } from '@assets/services/weapon.service';
+import { ExplosiveService } from '@assets/services/explosive.service';
 import {
   ItemDepartmentAssignmentDto,
   CreateUpdateItemDepartmentAssignmentDto,

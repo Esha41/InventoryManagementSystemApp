@@ -12,7 +12,7 @@ import { Subject, of } from 'rxjs';
 import { catchError, takeUntil } from 'rxjs/operators';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, ChevronDown, ChevronRight, Package, Paperclip } from 'lucide-angular';
-import { ReturnService } from '@services/return.service';
+import { ReturnService } from '@requests/services/return.service';
 import { FileUploadService } from '@services/file-upload.service';
 import { FileUploadDto } from '@models/file-upload.model';
 import { ReturnTrackingLineDto } from '@models/return.model';

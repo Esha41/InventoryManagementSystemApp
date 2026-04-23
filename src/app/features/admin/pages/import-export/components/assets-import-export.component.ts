@@ -6,12 +6,12 @@ import { LucideAngularModule, Download, Upload, FileText } from 'lucide-angular'
 import { CardComponent } from '@components/card/card.component';
 import { ButtonComponent } from '@components/button/button.component';
 import { ImportDialogComponent } from '@components/import-dialog/import-dialog.component';
-import { AmmunitionService } from '@services/ammunition.service';
-import { WeaponService } from '@services/weapon.service';
-import { ExplosiveService } from '@services/explosive.service';
+import { AmmunitionService } from '@assets/services/ammunition.service';
+import { WeaponService } from '@assets/services/weapon.service';
+import { ExplosiveService } from '@assets/services/explosive.service';
 import { ToastService } from '@services/toast.service';
-import { ExcelExportService, ExcelColumn } from '@services/excel-export.service';
-import { ImportExportService } from '@services/import-export.service';
+import { ExcelColumn } from '@services/excel.service';
+import { ImportExportService } from '@admin/services/import-export.service';
 import { TemplateGenerationService } from '@services/template-generation.service';
 import { AmmunitionReadDto } from '@models/ammunition.model';
 import { WeaponDto } from '@models/weapon.model';
@@ -68,7 +68,6 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
     private weaponService: WeaponService,
     private explosiveService: ExplosiveService,
     private toastService: ToastService,
-    private excelExportService: ExcelExportService,
     private importExportService: ImportExportService,
     private templateGenerationService: TemplateGenerationService,
     private translateService: TranslateService,

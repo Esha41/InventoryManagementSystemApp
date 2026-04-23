@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { catchError, of, take } from 'rxjs';
-import { HelpCenterService } from '@services/help-center.service';
+import { HelpCenterService } from '@help-center/services/help-center.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { OnboardingTourService } from '@features/onboarding/services/onboarding-tour.service';

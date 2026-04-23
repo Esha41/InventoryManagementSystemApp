@@ -19,7 +19,7 @@ import { HasPermissionDirective } from '@core/directives/has-permission.directiv
 import { LoadingStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
-import { ProfileDataService } from '@services/profile-data.service';
+import { ProfileDataService } from '@profile/services/profile-data.service';
 import { DepotUserAssignmentModalComponent } from './components/depot-user-assignment-modal/depot-user-assignment-modal.component';
 import { trackById } from '@utils/trackby.utils';
 

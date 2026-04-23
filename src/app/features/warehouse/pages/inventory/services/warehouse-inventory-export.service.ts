@@ -1,11 +1,18 @@
 import { Injectable } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslateService } from '@ngx-translate/core';
-import { ExcelExportService, ExcelColumn } from '@services/excel-export.service';
+import { ExcelService, ExcelColumn } from '@services/excel.service';
 import { ToastService } from '@services/toast.service';
+import { InventoryService } from '@inventory/services/inventory.service';
 import { InventoryDetailDto } from '@models/inventory.model';
 import { AssetDto } from '@models/asset.model';
 import { BatchSummaryDto } from '@models/batch.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { ErrorHandler } from '@utils/error-handler.utils';
+import { WarehouseInventoryStore } from '../../../services/warehouse-inventory.store';
+import { WarehouseInventoryService } from '../../../services/warehouse-inventory.service';
+import { WarehouseInventoryDataService } from '../../../services/warehouse-inventory-data.service';
+import { WarehouseInventoryFormatterService } from './warehouse-inventory-formatter.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,9 +20,13 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 export class WarehouseInventoryExportService {
 
   constructor(
-    private excelExportService: ExcelExportService,
+    private excelService: ExcelService,
     private translateService: TranslateService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private inventoryService: InventoryService,
+    private warehouseInventoryService: WarehouseInventoryService,
+    private warehouseInventoryDataService: WarehouseInventoryDataService,
+    private formatterService: WarehouseInventoryFormatterService
   ) {}
 
   /**
@@ -44,7 +55,7 @@ export class WarehouseInventoryExportService {
       }
     ];
 
-    this.excelExportService.exportToExcel({
+    this.excelService.exportToExcel({
       fileName: `${depoName}_Batches`,
       sheetName: 'Batches',
       columns,
@@ -144,7 +155,7 @@ export class WarehouseInventoryExportService {
       expiryDateExport: formatDate(d.expiryDate)
     }));
 
-    this.excelExportService.exportToExcel({
+    this.excelService.exportToExcel({
       fileName: fileName,
       sheetName: sheetName,
       columns: columns,
@@ -218,7 +229,7 @@ export class WarehouseInventoryExportService {
       warrantyExpiryDateExport: formatDate(a.warrantyExpiryDate)
     }));
 
-    this.excelExportService.exportToExcel({
+    this.excelService.exportToExcel({
       fileName: fileName,
       sheetName: sheetName,
       columns: columns,
@@ -229,6 +240,64 @@ export class WarehouseInventoryExportService {
     this.translateService.get(['common.exportSuccess', 'toast.success']).subscribe(translations => {
       this.toastService.success(translations['common.exportSuccess'], translations['toast.success']);
     });
+  }
+
+  // ---------- Store-aware orchestration flows ----------
+
+  exportDepotFlow(store: WarehouseInventoryStore): void {
+    const cfg = this.warehouseInventoryService.resolveExportConfig(store.activeTab());
+    if (cfg.kind === 'batch') {
+      this.exportBatchSummariesToExcel(store.filteredBatches(), store.depoName());
+      return;
+    }
+    const depotId = store.depoId();
+    if (!depotId) return;
+    store.setLoading(true);
+    this.inventoryService.getWarehouseInventoryDetailsForExport(depotId, cfg.itemType)
+      .pipe(takeUntilDestroyed(store.destroyRef))
+      .subscribe({
+        next: rows => {
+          store.setLoading(false);
+          this.exportInventoryToExcel(
+            rows,
+            store.depoName(),
+            cfg.exportTab,
+            d => this.formatterService.getItemName(d),
+            d => this.formatterService.formatDate(d),
+            d => this.formatterService.getPrimaryPurposeName(d)
+          );
+        },
+        error: () => {
+          store.setLoading(false);
+          this.toastService.error('Failed to fetch data for export');
+        }
+      });
+  }
+
+  exportBatchAssetsFlow(batch: BatchSummaryDto, store: WarehouseInventoryStore, lang: string): void {
+    this.warehouseInventoryDataService.exportBatchAssetsExcel(batch.id, lang)
+      .pipe(takeUntilDestroyed(store.destroyRef))
+      .subscribe({
+        next: blob => {
+          const nameSafe = (batch.batchNumber || `batch_${batch.id}`).replace(/[^\w.-]+/g, '_');
+          this.downloadBlob(blob, `${nameSafe}_BatchAssets_${new Date().toISOString().slice(0, 10)}.xlsx`);
+          this.translateService.get(['common.exportSuccess', 'toast.success'])
+            .pipe(takeUntilDestroyed(store.destroyRef))
+            .subscribe(t => this.toastService.success(t['common.exportSuccess'], t['toast.success']));
+        },
+        error: err => {
+          this.toastService.error(ErrorHandler.extractErrorMessage(err, 'Export failed'));
+        }
+      });
+  }
+
+  private downloadBlob(blob: Blob, fileName: string): void {
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    window.URL.revokeObjectURL(url);
   }
 }
 

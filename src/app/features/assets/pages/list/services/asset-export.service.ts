@@ -5,7 +5,7 @@
 
 import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { ExcelExportService, ExcelColumn } from '@services/excel-export.service';
+import { ExcelService, ExcelColumn } from '@services/excel.service';
 import { Asset, AssetType } from '@models/asset-list.model';
 import { LookupDto } from '@models/ammunition.model';
 import { getLookupDisplayName } from '@utils/asset-list.utils';
@@ -15,7 +15,7 @@ import { getLookupDisplayName } from '@utils/asset-list.utils';
 })
 export class AssetExportService {
   constructor(
-    private excelExportService: ExcelExportService,
+    private excelService: ExcelService,
     private translateService: TranslateService
   ) { }
 
@@ -26,7 +26,7 @@ export class AssetExportService {
     const columns = this.buildExportColumns(activeTab);
     const fileName = `Asset_List_${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}`;
 
-    this.excelExportService.exportToExcel({
+    this.excelService.exportToExcel({
       fileName: fileName,
       sheetName: activeTab.charAt(0).toUpperCase() + activeTab.slice(1),
       columns: columns,
@@ -169,7 +169,7 @@ export class AssetExportService {
   downloadImportTemplate(activeTab: AssetType): void {
     const { headers, sampleData } = this.getTemplateData(activeTab);
 
-    this.excelExportService.exportToExcel({
+    this.excelService.exportToExcel({
       fileName: `${activeTab}_import_template`,
       columns: headers,
       data: sampleData,

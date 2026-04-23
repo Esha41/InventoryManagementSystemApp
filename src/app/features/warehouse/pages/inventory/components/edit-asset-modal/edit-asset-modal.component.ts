@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
-import { AssetService } from '@services/asset.service';
+import { AssetService } from '@assets/services/asset.service';
 import { ToastService } from '@services/toast.service';
 import { AssetDto, UpdateAssetDto } from '@models/asset.model';
 import { ModalComponent } from '@components/modal/modal.component';

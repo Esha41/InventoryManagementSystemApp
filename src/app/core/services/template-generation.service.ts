@@ -1,21 +1,19 @@
 import { Injectable } from '@angular/core';
-import { ExcelExportService, ExcelColumn } from './excel-export.service';
-import { InventoryService } from './inventory.service';
-import { AmmunitionService } from './ammunition.service';
-import { ExplosiveService } from './explosive.service';
-import { WeaponService } from './weapon.service';
+import { InventoryService } from '@inventory/services/inventory.service';
+import { AmmunitionService } from '@assets/services/ammunition.service';
+import { ExplosiveService } from '@assets/services/explosive.service';
+import { WeaponService } from '@assets/services/weapon.service';
 import { TranslateService } from '@ngx-translate/core';
 import { saveAs } from 'file-saver';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { ToastService } from './toast.service';
+import { ToastService } from '@services/toast.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TemplateGenerationService {
   constructor(
-    private excelExportService: ExcelExportService,
     private inventoryService: InventoryService,
     private ammunitionService: AmmunitionService,
     private explosiveService: ExplosiveService,

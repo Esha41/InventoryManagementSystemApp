@@ -8,8 +8,8 @@ import { Subject, takeUntil, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { ToastService } from '@services/toast.service';
-import { SupplyService, SupplyDto, SubmitSupplyDto } from '@services/supply.service';
-import { AssetSupplyService } from '@services/asset-supply.service';
+import { SupplyService, SupplyDto, SubmitSupplyDto } from '@requests/services/supply.service';
+import { AssetSupplyService } from '@requests/services/asset-supply.service';
 import { LookupItem } from '@services/lookup.service';
 import { RequestDetail, BaseRequestDto, WorkflowApprovalStep, FileUploadDto } from '@models/workflow-approval.model';
 import { mapToRequestDetail } from '@utils/request-mapper.utils';
@@ -22,7 +22,7 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
 import { validateFile, showFileValidationErrors } from '@utils/file.utils';
 import { ConfirmationDialogComponent, ConfirmationType } from '@components/confirmation-dialog/confirmation-dialog.component';
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
-import { UserDelegationService } from '@services/user-delegation.service';
+import { UserDelegationService } from '@admin/services/user-delegation.service';
 // Import extracted services
 import { WorkflowApprovalDataService } from './services/workflow-approval-data.service';
 import { WorkflowApprovalPermissionsService } from './services/workflow-approval-permissions.service';

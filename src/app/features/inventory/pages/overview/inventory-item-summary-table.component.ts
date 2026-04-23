@@ -23,7 +23,7 @@ import {
 import { ItemInventorySummaryDto, ItemType } from '@models/inventory.model';
 import { ActiveTab } from './inventory-dashboard.helpers';
 import { AssetDto } from '@models/asset.model';
-import { LotDetailDto } from '@services/inventory.service';
+import { LotDetailDto } from '@inventory/services/inventory.service';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';

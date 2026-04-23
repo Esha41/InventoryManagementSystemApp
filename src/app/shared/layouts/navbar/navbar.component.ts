@@ -9,10 +9,10 @@ import { UserContextService } from '@services/user-context.service';
 import { AuthenticatedUser } from '@models/auth.model';
 import { BackendUserDto } from '@models/backend-user.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { NotificationService } from '@services/notification.service';
+import { NotificationService } from '@notifications/services/notification.service';
 import { ThemeService } from '@services/theme.service';
-import { UserDelegationService } from '@services/user-delegation.service';
-import { SwitchRoleModalService } from '@services/switch-role-modal.service';
+import { UserDelegationService } from '@admin/services/user-delegation.service';
+import { SwitchRoleModalService } from '@shared/ui/switch-role-modal/switch-role-modal.service';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 @Component({

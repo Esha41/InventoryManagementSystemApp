@@ -3,7 +3,7 @@
  * Maps between API DTOs and UI display models
  */
 
-import { SupplyDto, SupplyDetailDto } from '@services/supply.service';
+import { SupplyDto, SupplyDetailDto } from '@requests/services/supply.service';
 import { SupplyItemDisplay } from '@models/supply-order.model';
 import { getLocalizedName } from '@utils/localization.utils';
 

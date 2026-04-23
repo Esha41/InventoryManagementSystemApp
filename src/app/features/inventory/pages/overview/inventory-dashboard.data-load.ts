@@ -3,7 +3,7 @@ import { forkJoin, Observable, of } from 'rxjs';
 import { catchError, filter, map, pairwise, startWith, skip, distinctUntilChanged } from 'rxjs/operators';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { MonitoringService } from '@services/monitoring.service';
-import { InventorySummaryDataService } from '@services/inventory-summary-data.service';
+import { InventorySummaryDataService } from '@inventory/services/inventory-summary-data.service';
 import { ItemInventorySummaryDto } from '@models/inventory.model';
 import { InventoryDashboardSummaryDto } from '@models/inventory-dashboard-monitoring.model';
 

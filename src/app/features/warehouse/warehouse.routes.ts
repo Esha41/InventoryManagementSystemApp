@@ -16,6 +16,13 @@ export const WAREHOUSE_ROUTES: Routes = [
     canActivate: [permissionGuard],
     data: { permissions: ['inventorypage.page', 'inventory.view'] }
   },
+  // Must be before `:warehouseId/inventory/:itemId` or `/inventory/add` is matched with itemId="add" and the wrong component loads.
+  {
+    path: ':id/inventory/add',
+    loadComponent: () => import('./pages/inventory/add-inventory/add-inventory.component').then(m => m.AddInventoryComponent),
+    canActivate: [permissionGuard],
+    data: { permissions: ['inventorypage.page', 'inventory.create'] }
+  },
   {
     path: ':warehouseId/inventory/:itemId',
     loadComponent: () => import('./pages/inventory/inventory-item-detail/inventory-item-detail.component').then(m => m.InventoryItemDetailComponent),
@@ -27,12 +34,6 @@ export const WAREHOUSE_ROUTES: Routes = [
     loadComponent: () => import('./pages/map/warehouse-map/warehouse-map.component').then(m => m.WarehouseMapComponent),
     canActivate: [permissionGuard],
     data: { permissions: ['WarehouseMapView'] }
-  },
-  {
-    path: ':id/inventory/add',
-    loadComponent: () => import('./pages/inventory/add-inventory/add-inventory.component').then(m => m.AddInventoryComponent),
-    canActivate: [permissionGuard],
-    data: { permissions: ['inventorypage.page', 'inventory.create'] }
   },
   {
     path: ':id/assets/add',

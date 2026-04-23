@@ -5,7 +5,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, switchMap, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { LucideAngularModule } from 'lucide-angular';
-import { InventoryService, LotDetailDto } from '@services/inventory.service';
+import { InventoryService, LotDetailDto } from '@inventory/services/inventory.service';
 import { WarehouseInventoryFormatterService } from '../services/warehouse-inventory-formatter.service';
 import { LookupService } from '@services/lookup.service';
 import { InventoryDetailDto, ItemType } from '@models/inventory.model';

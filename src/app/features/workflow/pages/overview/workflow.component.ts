@@ -6,7 +6,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil, Observable, forkJoin, throwError, of } from 'rxjs';
 import { map, catchError, switchMap } from 'rxjs/operators';
 import { LucideAngularModule, Search, ChevronLeft, ChevronRight, Eye, FileEdit, Plus } from 'lucide-angular';
-import { WorkflowService } from '@services/workflow.service';
+import { WorkflowService } from '@workflow/services/workflow.service';
 import { LookupService, LookupItem } from '@services/lookup.service';
 import { BackendUserService } from '@services/backend-user.service';
 import { RoleDto, ApplicationEntityDto } from '@models/backend-user.model';
@@ -20,7 +20,7 @@ import { HasPermissionDirective } from '@core/directives/has-permission.directiv
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslationMap } from '@models/common.types';
-import { ProfileDataService } from '@services/profile-data.service';
+import { ProfileDataService } from '@profile/services/profile-data.service';
 import { ConfigService } from '@services/config.service';
 import { trackById, trackByIndex } from '@utils/trackby.utils';
 import { defaultPageSize } from '@constants/app.constants';

@@ -113,6 +113,9 @@
       ],
       "@reports/*": [
         "src/app/features/reports/*"
+      ],
+      "@help-center/*": [
+        "src/app/features/help-center/*"
       ]
     }
   },

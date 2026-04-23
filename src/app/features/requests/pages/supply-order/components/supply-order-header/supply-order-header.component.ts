@@ -4,7 +4,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, ArrowRight } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
 import { OrderDto } from '@models/order.model';
-import { SupplyDto } from '@services/supply.service';
+import { SupplyDto } from '@requests/services/supply.service';
 
 /**
  * Supply Order Header Component

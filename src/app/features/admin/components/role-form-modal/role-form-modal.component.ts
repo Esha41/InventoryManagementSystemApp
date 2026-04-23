@@ -9,7 +9,7 @@ import { BackendUserService } from '@services/backend-user.service';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { Subject, takeUntil } from 'rxjs';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
-import { ProfileDataService } from '@services/profile-data.service';
+import { ProfileDataService } from '@profile/services/profile-data.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { ConfigService } from '@services/config.service';
 

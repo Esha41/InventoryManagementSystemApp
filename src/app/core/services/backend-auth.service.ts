@@ -18,7 +18,7 @@ import {
 } from '@models/auth.model';
 import { ChangePasswordRequest } from '@models/change-password.model';
 import { ApiResponse } from '@models/api-response.model';
-import { ProfileDataService } from './profile-data.service';
+import { ProfileDataService } from '@profile/services/profile-data.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 
 /**
