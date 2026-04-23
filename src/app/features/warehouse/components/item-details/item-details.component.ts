@@ -645,6 +645,16 @@ export class ItemDetailsComponent implements OnInit, OnChanges, OnDestroy {
     return '';
   }
 
+  getCaliberCategory(): string {
+    if ((this.isAsset || this.isDirectDto) && this.isAmmunition) {
+      return this.propertyAccessor.getAmmunitionCaliberCategory(this.item as Asset | AmmunitionReadDto) || '';
+    }
+    if ((this.isAsset || this.isDirectDto) && this.isWeapon) {
+      return this.propertyAccessor.getWeaponCaliberCategory(this.item as Asset | WeaponDto) || '';
+    }
+    return '';
+  }
+
   getType(): string {
     if ((this.isAsset || this.isDirectDto) && (this.isAmmunition || this.isExplosive)) {
       return this.propertyAccessor.getType(this.item as Asset | AmmunitionReadDto | ExplosiveDto) || '';

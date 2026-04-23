@@ -115,6 +115,11 @@
               <p class="text-[var(--color-text)]">{{ getAmmunitionCaliber() }}</p>
             </div>
 
+            <div *ngIf="isAmmunition() && getCaliberCategory() !== '-'">
+              <p class="text-[var(--color-text-muted)] mb-1">{{ 'addAsset.ammunitionSizeClass' | translate }}</p>
+              <p class="text-[var(--color-text)]">{{ getCaliberCategory() }}</p>
+            </div>
+
             <div *ngIf="isAmmunition() || isExplosive()">
               <p class="text-[var(--color-text-muted)] mb-1">{{ 'addAsset.classification' | translate }}</p>
               <p class="text-[var(--color-text)]">{{ getClassification() }}</p>
@@ -211,6 +216,11 @@
             <div *ngIf="getCaliberUnit() !== '-'">
               <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.caliberUnit' | translate }}</p>
               <p class="text-[var(--color-text)]">{{ getCaliberUnit() }}</p>
+            </div>
+
+            <div *ngIf="getCaliberCategory() !== '-'">
+              <p class="text-[var(--color-text-muted)] mb-1">{{ 'addAsset.ammunitionSizeClass' | translate }}</p>
+              <p class="text-[var(--color-text)]">{{ getCaliberCategory() }}</p>
             </div>
 
             <div *ngIf="getModel() !== '-'">

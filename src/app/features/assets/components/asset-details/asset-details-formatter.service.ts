@@ -262,7 +262,16 @@ export class AssetDetailsFormatterService {
       ),
       itemType: computed(() =>
         isWeapon() ? this.propertyAccessor.getTypeForWeapon(asset() as WeaponDto) || '-' : '-'
-      )
+      ),
+      caliberCategory: computed(() => {
+        if (isAmmunition()) {
+          return this.propertyAccessor.getAmmunitionCaliberCategory(asset()) || '-';
+        }
+        if (isWeapon()) {
+          return this.propertyAccessor.getWeaponCaliberCategory(asset()) || '-';
+        }
+        return '-';
+      })
     };
   }
 }

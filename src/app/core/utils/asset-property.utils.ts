@@ -131,6 +131,64 @@ export class AssetPropertyAccessor {
     return this._activeTab;
   }
 
+  /** Maps AmmunitionType / WeaponCaliberCategory (1–3 or enum name) to translated label */
+  private caliberCategoryEnumLabel(value: number | string | null | undefined): string {
+    if (value == null || value === '') return '-';
+    let n: number;
+    if (typeof value === 'string') {
+      const v = value.trim();
+      const lower = v.toLowerCase();
+      if (lower === 'small' || v === '1') n = 1;
+      else if (lower === 'medium' || v === '2') n = 2;
+      else if (lower === 'large' || v === '3') n = 3;
+      else {
+        n = parseInt(v, 10);
+        if (Number.isNaN(n)) return '-';
+      }
+    } else {
+      n = value;
+    }
+    const key =
+      n === 1
+        ? 'newIssueRequest.ammunitionTypeSmall'
+        : n === 2
+          ? 'newIssueRequest.ammunitionTypeMedium'
+          : n === 3
+            ? 'newIssueRequest.ammunitionTypeLarge'
+            : '';
+    if (!key) return '-';
+    const label = this.translateService.instant(key);
+    return label?.trim() ? label : '-';
+  }
+
+  private resolveAmmunitionReadDto(asset: AssetUnion): AmmunitionReadDto | null {
+    if (!asset) return null;
+    if (isAmmunition(asset)) return asset as AmmunitionReadDto;
+    const od = (asset as Asset)?.originalData;
+    if (od && isAmmunition(od)) return od as AmmunitionReadDto;
+    return null;
+  }
+
+  private resolveWeaponDto(asset: AssetUnion): WeaponDto | null {
+    if (!asset) return null;
+    if (isWeapon(asset)) return asset as WeaponDto;
+    const od = (asset as Asset)?.originalData;
+    if (od && isWeapon(od)) return od as WeaponDto;
+    return null;
+  }
+
+  getAmmunitionCaliberCategory(asset: AssetUnion): string {
+    const dto = this.resolveAmmunitionReadDto(asset);
+    if (!dto || dto.ammunitionType == null) return '-';
+    return this.caliberCategoryEnumLabel(dto.ammunitionType);
+  }
+
+  getWeaponCaliberCategory(asset: AssetUnion): string {
+    const dto = this.resolveWeaponDto(asset);
+    if (!dto || dto.caliberCategory == null) return '-';
+    return this.caliberCategoryEnumLabel(dto.caliberCategory);
+  }
+
   getAmmunitionCaliber(asset: AssetUnion): string {
     if (isExplosive(asset)) return '-';
     if (!isAmmunition(asset)) return '-';
