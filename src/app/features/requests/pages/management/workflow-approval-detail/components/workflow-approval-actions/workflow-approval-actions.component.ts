@@ -15,7 +15,7 @@ import { ToastService } from '@services/toast.service';
 import { takeUntil } from 'rxjs/operators';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { getTransitionDisplayName, getWorkflowStepDisplayName } from '../../utils/workflow-approval-helpers';
-import { ConfirmationDialogComponent, ConfirmationType } from '@shared/components/confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationDialogComponent, ConfirmationType } from '@components/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-workflow-approval-actions',

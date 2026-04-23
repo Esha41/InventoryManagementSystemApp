@@ -36,8 +36,11 @@
       "@shared/*": [
         "src/app/shared/*"
       ],
+      "@ui/*": [
+        "src/app/shared/ui/*"
+      ],
       "@components/*": [
-        "src/app/shared/components/*"
+        "src/app/shared/ui/*"
       ],
       "@layouts/*": [
         "src/app/shared/layouts/*"

@@ -19,8 +19,8 @@ import { Subject, takeUntil } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { RequestStatusUpdateService } from '@services/request-status-update.service';
 import { defaultPageSize } from '@constants/app.constants';
-import { AutoRejectCountdownService, OrderAutoRejectCountdownDto } from '@shared/services/auto-reject-countdown.service';
-import { AutoRejectCountdownComponent } from '@shared/components/auto-reject-countdown/auto-reject-countdown.component';
+import { AutoRejectCountdownService, OrderAutoRejectCountdownDto } from '@requests/services/auto-reject-countdown.service';
+import { AutoRejectCountdownComponent } from '@requests/components/auto-reject-countdown/auto-reject-countdown.component';
 
 
 @Component({

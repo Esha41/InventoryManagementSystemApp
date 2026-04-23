@@ -1,8 +1,8 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { ModalComponent } from '../modal/modal.component';
-import { ButtonComponent } from '../button/button.component';
+import { ModalComponent } from '@components/modal/modal.component';
+import { ButtonComponent } from '@components/button/button.component';
 import { RoleDto, CreateRoleDto, UpdateRoleDto, ApplicationEntityDto } from '@models/backend-user.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BackendUserService } from '@services/backend-user.service';
@@ -49,7 +49,6 @@ export class RoleFormModalComponent implements OnInit, OnChanges, OnDestroy {
     return entity ? this.getEntityName(entity) : '';
   };
 
-  // Super admin check
   isSuperAdmin = false;
 
   private readonly destroy$ = new Subject<void>();
@@ -65,10 +64,8 @@ export class RoleFormModalComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Check if user is super admin
     const profileData = this.profileDataService.getFullProfileData();
     this.isSuperAdmin = profileData?.isSuperAdmin || false;
-
     this.initializeForm();
   }
 
@@ -76,7 +73,6 @@ export class RoleFormModalComponent implements OnInit, OnChanges, OnDestroy {
     if (changes['isOpen'] && changes['isOpen'].currentValue) {
       this.initializeForm();
       this.errorMessage = '';
-      // Load existing entity selection from role if editing (take first one if multiple exist)
       if (this.role?.applicationEntityIds && this.role.applicationEntityIds.length > 0) {
         this.selectedEntityId = this.role.applicationEntityIds[0];
         this.roleForm.patchValue({ applicationEntityId: this.selectedEntityId });
@@ -88,7 +84,6 @@ export class RoleFormModalComponent implements OnInit, OnChanges, OnDestroy {
     }
     if (changes['role'] || changes['mode']) {
       this.initializeForm();
-      // Load existing entity selection from role if editing (take first one if multiple exist)
       if (this.role?.applicationEntityIds && this.role.applicationEntityIds.length > 0) {
         this.selectedEntityId = this.role.applicationEntityIds[0];
         this.roleForm.patchValue({ applicationEntityId: this.selectedEntityId });
@@ -113,7 +108,7 @@ export class RoleFormModalComponent implements OnInit, OnChanges, OnDestroy {
       nameAr: [this.role?.nameAr || '', [Validators.required, Validators.minLength(3)]],
       isSuperAdmin: [this.role?.isSuperAdmin || false],
       isAdmin: [this.role?.isAdmin || false],
-      applicationEntityId: [null] // Single entity selection
+      applicationEntityId: [null]
     });
   }
 
@@ -147,17 +142,14 @@ export class RoleFormModalComponent implements OnInit, OnChanges, OnDestroy {
     if (this.mode === 'create') {
       return this.translateService.instant('roleFormModal.createTitle');
     }
-
     const nameAr = this.role?.nameAr;
     const nameEn = this.role?.nameEn || this.role?.name;
     let roleDisplayName = '';
-
     if (nameAr && nameEn) {
       roleDisplayName = `${nameAr} / ${nameEn}`;
     } else {
       roleDisplayName = nameAr || nameEn || '';
     }
-
     return `${this.translateService.instant('roleFormModal.editTitle')}: ${roleDisplayName}`;
   }
 
@@ -166,66 +158,61 @@ export class RoleFormModalComponent implements OnInit, OnChanges, OnDestroy {
       this.markFormGroupTouched();
       return;
     }
-
     this.isLoading = true;
     this.errorMessage = '';
-
-    // Get selected entity ID (single selection)
     const selectedEntityId = this.roleForm.value.applicationEntityId;
     const applicationEntityIds = selectedEntityId ? [selectedEntityId] : undefined;
 
     if (this.mode === 'create') {
       const dto: CreateRoleDto = {
-        name: this.roleForm.value.nameEn, // Use nameEn as primary name for now
+        name: this.roleForm.value.nameEn,
         nameEn: this.roleForm.value.nameEn,
         nameAr: this.roleForm.value.nameAr,
         isSuperAdmin: this.roleForm.value.isSuperAdmin || false,
         isAdmin: this.roleForm.value.isAdmin || false,
         applicationEntityIds: applicationEntityIds
       };
-
       this.backendUserService.createRole(dto)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-        next: (role: RoleDto) => {
-          this.isLoading = false;
-          this.saved.emit(role);
-          this.close();
-        },
-        error: (error: unknown) => {
-          this.configService.logError('Error creating role', error);
-          this.isLoading = false;
-          const errorMsg = ErrorHandler.extractErrorMessage(error, 'Failed to create role');
-          this.errorMessage = errorMsg;
-          this.error.emit(errorMsg);
-        }
-      });
+          next: (role: RoleDto) => {
+            this.isLoading = false;
+            this.saved.emit(role);
+            this.close();
+          },
+          error: (error: unknown) => {
+            this.configService.logError('Error creating role', error);
+            this.isLoading = false;
+            const errorMsg = ErrorHandler.extractErrorMessage(error, 'Failed to create role');
+            this.errorMessage = errorMsg;
+            this.error.emit(errorMsg);
+          }
+        });
     } else if (this.role) {
       const dto: UpdateRoleDto = {
         id: this.role.id,
-        name: this.roleForm.value.nameEn, // Use nameEn as primary name
+        name: this.roleForm.value.nameEn,
         nameEn: this.roleForm.value.nameEn,
         nameAr: this.roleForm.value.nameAr,
         isSuperAdmin: this.roleForm.value.isSuperAdmin || false,
         isAdmin: this.roleForm.value.isAdmin || false,
         applicationEntityIds: applicationEntityIds
       };
-
       this.backendUserService.updateRole(this.role.id, dto)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-        next: (role: RoleDto) => {
-          this.isLoading = false;
-          this.saved.emit(role);
-          this.close();
-        },
-        error: (error: unknown) => {
-          this.isLoading = false;
-          const errorMsg = ErrorHandler.extractErrorMessage(error, 'Failed to update role');
-          this.errorMessage = errorMsg;
-          this.error.emit(errorMsg);
-        }
-      });
+          next: (role: RoleDto) => {
+            this.isLoading = false;
+            this.saved.emit(role);
+            this.close();
+          },
+          error: (error: unknown) => {
+            this.isLoading = false;
+            const errorMsg = ErrorHandler.extractErrorMessage(error, 'Failed to update role');
+            this.errorMessage = errorMsg;
+            this.error.emit(errorMsg);
+          }
+        });
     }
   }
 
@@ -238,12 +225,8 @@ export class RoleFormModalComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private unwrapEntityOption(option: DropdownOption<ApplicationEntityDto> | ApplicationEntityDto | null): ApplicationEntityDto | null {
-    if (!option) {
-      return null;
-    }
-    if (typeof option === 'object' && 'value' in option) {
-      return option.value as ApplicationEntityDto;
-    }
+    if (!option) return null;
+    if (typeof option === 'object' && 'value' in option) return option.value as ApplicationEntityDto;
     return option as ApplicationEntityDto;
   }
 

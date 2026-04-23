@@ -11,7 +11,7 @@ import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, Error
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { UserManagementService } from '@services/user-management.service';
 import { UserFiltersComponent } from '../user-filters/user-filters.component';
-import { UserFormModalComponent } from '@components/user-form-modal/user-form-modal.component';
+import { UserFormModalComponent } from '@admin/components/user-form-modal/user-form-modal.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { ProfileDataService } from '@services/profile-data.service';
 import { BackendAuthService } from '@services/backend-auth.service';
