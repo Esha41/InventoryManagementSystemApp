@@ -30,6 +30,7 @@ interface AddStepForm {
   higherApprovalRoleId?: string | null;
   higherApplicationEntityId?: number | null;
   canReturn?: boolean;
+  parallelRoleIds?: string[];
   errors?: { role?: boolean; entity?: boolean; higherRole?: boolean; higherEntity?: boolean };
 }
 
@@ -268,7 +269,10 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
         higherApprovalRoleId: s.requireHigherApproval ? (s.higherApprovalRoleId || null) : null,
         higherApplicationEntityId: s.requireHigherApproval ? (s.higherApplicationEntityId || null) : null,
         reserveQty: false,
-        canReturn: !!s.canReturn
+        canReturn: !!s.canReturn,
+        parallelRoleIds: Array.isArray(s.parallelRoleIds)
+          ? [...new Set(s.parallelRoleIds.filter(id => !!id && id !== s.roleId))]
+          : []
       }))
     };
 
@@ -333,6 +337,7 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
       higherApprovalRoleId: null,
       higherApplicationEntityId: null,
       canReturn: false,
+      parallelRoleIds: [],
       errors: { role: true, entity: true, higherRole: false, higherEntity: false }
     });
 

@@ -281,6 +281,8 @@
     "steps": "Steps",
     "addStep": "Add Step",
     "role": "Role",
+    "parallelApproverRoles": "Parallel approver roles (optional)",
+    "parallelApproverRolesPlaceholder": "Select additional roles that may approve this step",
     "stepOrder": "Order",
     "first": "First",
     "second": "Second",

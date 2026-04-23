@@ -307,16 +307,55 @@ export class OrderReportService {
     const requestStatus = mapRequestStatus(baseRequest.status);
     const workflowSteps = mapApprovalHistory(baseRequest.approvalHistory || [], requestStatus);
 
-    return workflowSteps.map((step, index) => ({
-      step: (step.steporder ? (step.steporder + 1) : (index + 2)).toString(),
-      role: this.getLocalizedRoleName(step),
-      approver: this.getLocalizedApproverName(step),
-      status: step.status?.toLowerCase() as 'pending' | 'approved' | 'rejected' | 'in-progress' | 'returned' | 'returnedforreview' || 'pending',
-      // Use changedAt (raw date) instead of approvedDateTime (already formatted)
-      // changedAt should have time information from the backend
-      date: step.changedAt || null, // Raw date for pipe formatting
-      notes: step.comments || ''
-    }));
+    const currentLang = getCurrentLang(this.translate);
+
+    return workflowSteps.map((step, index) => {
+      const parallelNote =
+        step.eligibleParallelRoleNamesEn || step.eligibleParallelRoleNamesAr
+          ? `${this.translate.instant('workflowApprovalDetail.parallelApproversLabel')}: ${
+              currentLang === 'ar'
+                ? step.eligibleParallelRoleNamesAr || step.eligibleParallelRoleNamesEn
+                : step.eligibleParallelRoleNamesEn || step.eligibleParallelRoleNamesAr
+            }`
+          : '';
+
+      const roleLine = [this.getLocalizedRoleName(step), parallelNote].filter(Boolean).join(' — ');
+
+      const approverBase = this.getLocalizedApproverName(step);
+      const extras: string[] = [];
+      if (step.isDelegation === true || step.isDelegation === 1) {
+        extras.push(this.translate.instant('workflowApprovalDetail.actedThroughDelegation'));
+      }
+      if (
+        step.changedByRoleId &&
+        step.applicationRoleId &&
+        String(step.changedByRoleId) !== String(step.applicationRoleId)
+      ) {
+        const performedName =
+          currentLang === 'ar'
+            ? step.changedByRoleNameAr || step.changedByRoleName
+            : step.changedByRoleName || step.changedByRoleNameAr;
+        if (performedName) {
+          extras.push(`${this.translate.instant('workflowApprovalDetail.performedAsRole')}: ${performedName}`);
+        }
+      }
+      const approverLine = [approverBase, ...extras].filter(Boolean).join(' — ');
+
+      return {
+        step: (step.steporder ? (step.steporder + 1) : (index + 2)).toString(),
+        role: roleLine,
+        approver: approverLine,
+        status: step.status?.toLowerCase() as
+          | 'pending'
+          | 'approved'
+          | 'rejected'
+          | 'in-progress'
+          | 'returned'
+          | 'returnedforreview' || 'pending',
+        date: step.changedAt || null,
+        notes: step.comments || ''
+      };
+    });
   }
 
   private buildFallbackApprovalSteps(

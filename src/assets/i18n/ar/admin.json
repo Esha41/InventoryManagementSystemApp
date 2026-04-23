@@ -281,6 +281,8 @@
     "steps": "الخطوات",
     "addStep": "إضافة خطوة",
     "role": "الدور",
+    "parallelApproverRoles": "أدوار موافقة متوازية (اختياري)",
+    "parallelApproverRolesPlaceholder": "اختر أدواراً إضافية يمكنها الموافقة على هذه الخطوة",
     "stepOrder": "الترتيب",
     "first": "الأولى",
     "second": "الثانية",

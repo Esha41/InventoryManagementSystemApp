@@ -1,11 +1,12 @@
 import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, ChevronDown, ChevronUp, CheckCircle, Clock, AlertTriangle } from 'lucide-angular';
 import { WorkflowApprovalStep } from '@models/workflow-approval.model';
 import { getApprovalStatusBadgeClass } from '@utils/status-class.utils';
 import { getApproverName as getApproverNameUtil } from '@utils/supply-order-format.utils';
 import { TranslationService } from '@services/translation.service';
+import { getLocalizedValue as getLocalizedValueHelper } from '../../../management/workflow-approval-detail/utils/workflow-approval-helpers';
 
 /**
  * Approval Workflow Component
@@ -36,7 +37,10 @@ export class ApprovalWorkflowComponent implements OnInit {
 
   isApprovalWorkflowExpanded: boolean = true;
 
-  constructor(private translationService: TranslationService) {}
+  constructor(
+    private translationService: TranslationService,
+    private translate: TranslateService
+  ) {}
 
   ngOnInit(): void {
     this.isApprovalWorkflowExpanded = this.isExpanded;
@@ -66,6 +70,37 @@ export class ApprovalWorkflowComponent implements OnInit {
    */
   getApproverName(approval: WorkflowApprovalStep): string {
     return getApproverNameUtil(approval, this.translationService);
+  }
+
+  getLocalizedExtra(en?: string, ar?: string): string {
+    return getLocalizedValueHelper(en, ar, this.translate);
+  }
+
+  getDelegationMessageKey(approval: WorkflowApprovalStep): string {
+    switch (approval.status) {
+      case 'Approved':
+        return 'workflowApprovalDetail.approvedThroughDelegation';
+      case 'Rejected':
+        return 'workflowApprovalDetail.rejectedThroughDelegation';
+      case 'Returned':
+      case 'ReturnedForReview':
+        return 'workflowApprovalDetail.returnedThroughDelegation';
+      default:
+        return 'workflowApprovalDetail.actedThroughDelegation';
+    }
+  }
+
+  showPerformedAsRole(approval: WorkflowApprovalStep): boolean {
+    if (
+      approval.isPending ||
+      approval.isDelegation === true ||
+      approval.isDelegation === 1 ||
+      !approval.changedByRoleId ||
+      !approval.applicationRoleId
+    ) {
+      return false;
+    }
+    return String(approval.changedByRoleId) !== String(approval.applicationRoleId);
   }
 }
 

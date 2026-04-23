@@ -244,10 +244,25 @@ export function mapApprovalHistory(history: any[], requestStatus?: RequestStatus
         ? 'Pending'
         : mapApprovalStatus(newStatusNum || oldStatusNum || 0);
 
-      // Get approver name: if pending, show role name, otherwise show who approved it
-      const approverName = isPending
-        ? (h.applicationRoleName || h.ApplicationRoleName || h.applicationRoleId || 'Pending Approval')
-        : getApproverName(h.changedBy);
+      const changedByVal = h.changedBy ?? h.ChangedBy;
+      const approverNameEn = h.approverNameEn ?? h.ApproverNameEn;
+      const approverNameAr = h.approverNameAr ?? h.ApproverNameAr;
+
+      let approverName: string;
+      if (isPending) {
+        approverName =
+          h.applicationRoleName ||
+          h.ApplicationRoleName ||
+          h.applicationRoleId ||
+          'Pending Approval';
+      } else if (approverNameEn || approverNameAr) {
+        approverName = (approverNameEn || approverNameAr) as string;
+      } else {
+        approverName = getApproverName(changedByVal);
+      }
+
+      const isDel = h.isDelegation ?? h.IsDelegation;
+      const isDelegationFlag = isDel === true || isDel === 1 || String(isDel).toLowerCase() === 'true';
 
       return {
         id: h.id || index,
@@ -256,10 +271,10 @@ export function mapApprovalHistory(history: any[], requestStatus?: RequestStatus
         oldRequestStatus: h.oldRequestStatus || h.OldRequestStatus,
         newRequestStatus: h.newRequestStatus || h.NewRequestStatus,
         comments: h.comments || h.Comments,
-        changedBy: h.changedBy || h.ChangedBy,
+        changedBy: changedByVal,
         approverName: approverName,
-        approverNameEn: h.approverNameEn || h.ApproverNameEn,
-        approverNameAr: h.approverNameAr || h.ApproverNameAr,
+        approverNameEn: approverNameEn,
+        approverNameAr: approverNameAr,
         changedAt: h.changedAt || h.ChangedAt,
         steporder: h.steporder || h.stepOrder || h.StepOrder || index + 1,
         applicationRoleId: h.applicationRoleId || h.ApplicationRoleId,
@@ -273,6 +288,12 @@ export function mapApprovalHistory(history: any[], requestStatus?: RequestStatus
         higherApprovalRoleId: h.higherApprovalRoleId || h.HigherApprovalRoleId,
         isCurrentUserApprover: h.isCurrentUserApprover || h.IsCurrentUserApprover || false,
         canReturn: h.canReturn || h.CanReturn || false,
+        isDelegation: isDelegationFlag,
+        changedByRoleId: h.changedByRoleId ?? h.ChangedByRoleId,
+        changedByRoleName: h.changedByRoleName ?? h.ChangedByRoleName,
+        changedByRoleNameAr: h.changedByRoleNameAr ?? h.ChangedByRoleNameAr,
+        eligibleParallelRoleNamesEn: h.eligibleParallelRoleNamesEn ?? h.EligibleParallelRoleNamesEn,
+        eligibleParallelRoleNamesAr: h.eligibleParallelRoleNamesAr ?? h.EligibleParallelRoleNamesAr,
         files: h.files || h.Files || [],
         transitions: h.transitions || h.Transitions || []
       };
@@ -298,8 +319,16 @@ export function mapApprovalHistory(history: any[], requestStatus?: RequestStatus
 export function getApproverName(changedBy?: string): string {
   if (!changedBy) return 'Unknown Approver';
 
+  // User id (GUID) — do not treat as email local-part
+  const guidLike = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    changedBy.trim()
+  );
+  if (guidLike) {
+    return 'Unknown Approver';
+  }
+
   const parts = changedBy.split('@');
-  if (parts.length > 0) {
+  if (parts.length > 1) {
     const name = parts[0];
     return name.charAt(0).toUpperCase() + name.slice(1);
   }

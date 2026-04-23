@@ -82,6 +82,9 @@
                     style="min-width: 200px;">{{
                     'workflow.role' | translate }}</th>
                   <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
+                    style="min-width: 220px;">{{
+                    'workflow.parallelApproverRoles' | translate }}</th>
+                  <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
                     style="min-width: 200px;">{{
                     'workflow.applicationEntity' | translate }}</th>
                   <!-- Higher Approval columns - commented out as not in use -->
@@ -132,6 +135,12 @@
                   <td class="px-4 py-3">
                     <app-dropdown class="w-full" [(ngModel)]="s.roleId" name="erole-{{i}}" [options]="roles"
                       optionLabel="name" optionValue="id" [placeholder]="'workflow.selectRole' | translate">
+                    </app-dropdown>
+                  </td>
+                  <td class="px-4 py-3">
+                    <app-dropdown class="w-full" [(ngModel)]="s.parallelRoleIds" name="eparallel-{{i}}"
+                      [options]="roles" optionLabel="name" optionValue="id" [multiple]="true"
+                      [placeholder]="'workflow.parallelApproverRolesPlaceholder' | translate">
                     </app-dropdown>
                   </td>
                   <td class="px-4 py-3">
