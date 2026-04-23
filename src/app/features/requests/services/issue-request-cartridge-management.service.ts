@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Cartridge } from '@requests/pages/new-issue/components/cartridge-list/cartridge-list.component';
+import { Cartridge } from '@models/cartridge.model';
 import { CartridgeState } from '@requests/pages/new-issue/new-issue-request.state';
 import { IssueRequestStateService } from './issue-request-state.service';
 

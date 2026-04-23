@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, HostListener, ElementRef, ViewChildren, QueryList, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, HostListener, ElementRef, ViewChildren, QueryList, ChangeDetectionStrategy, ChangeDetectorRef, Optional, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -29,7 +29,8 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { getFileSizeFromFile, removeFile, validateFile, MAX_FILE_SIZE_MB, showFileValidationErrors } from '@utils/file.utils';
 import { ConfirmationDialogComponent, ConfirmationType } from '@components/confirmation-dialog/confirmation-dialog.component';
 import { ErrorHandler } from '@utils/error-handler.utils';
-import { OnboardingTourService } from '@features/onboarding/services/onboarding-tour.service';
+import { ONBOARDING_TOUR } from '@core/tokens/onboarding-tour.token';
+import { IOnboardingTourProvider } from '@core/interfaces/onboarding-tour-provider.interface';
 
 interface ReturnItemForm {
   itemId: number | null;
@@ -145,11 +146,11 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
     private backendAuthService: BackendAuthService,
     private backendUserService: BackendUserService,
     private cdr: ChangeDetectorRef,
-    private onboardingTourService: OnboardingTourService
+    @Optional() @Inject(ONBOARDING_TOUR) private onboardingTourService: IOnboardingTourProvider | null
   ) { }
 
   ngAfterViewInit(): void {
-    setTimeout(() => this.onboardingTourService.checkAndStartPageTour('return-request'), 300);
+    setTimeout(() => this.onboardingTourService?.checkAndStartPageTour('return-request'), 300);
   }
 
   ngOnInit(): void {

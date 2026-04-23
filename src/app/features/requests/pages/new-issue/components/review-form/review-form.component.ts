@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
-import { Cartridge } from '../cartridge-list/cartridge-list.component';
+import { Cartridge } from '@models/cartridge.model';
 import { LucideAngularModule, Eye } from 'lucide-angular';
 import { getFileSizeFromFile, viewFile as viewFileUtil } from '@utils/file.utils';
 import { formatDateTimeExtended } from '@utils/format.utils';

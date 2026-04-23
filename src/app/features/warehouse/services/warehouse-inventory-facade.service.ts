@@ -4,7 +4,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { merge } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
-import { InventoryService } from '@inventory/services/inventory.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { getCurrentLang, getLocalizedName } from '@utils/localization.utils';
 import { InventoryDetailDto, UpdateInventoryDetailDto, UpdateInventoryDto } from '@models/inventory.model';
@@ -30,7 +29,6 @@ export class WarehouseInventoryFacadeService {
   private readonly router = inject(Router);
   private readonly translateService = inject(TranslateService);
   private readonly toastService = inject(ToastService);
-  private readonly inventoryService = inject(InventoryService);
   private readonly filterService = inject(WarehouseInventoryFilterService);
   private readonly inventoryCore = inject(WarehouseInventoryService);
   private readonly dataService = inject(WarehouseInventoryDataService);
@@ -181,7 +179,7 @@ export class WarehouseInventoryFacadeService {
   }
 
   onEditItem(detail: InventoryDetailDto): void {
-    this.inventoryService.getById(detail.inventoryId)
+    this.dataService.loadInventoryById(detail.inventoryId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: inv => {
@@ -191,9 +189,7 @@ export class WarehouseInventoryFacadeService {
           this.store.setEditModalOpen(true);
         },
         error: () => {
-          this.translateService.get('toast.failedToLoadDetails')
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe(msg => this.toastService.error(msg));
+          this.toastService.error(this.translateService.instant('toast.failedToLoadDetails'));
         }
       });
   }
@@ -248,9 +244,10 @@ export class WarehouseInventoryFacadeService {
         next: () => {
           if (this.store.expandedBatchId() === batch.id) this.store.collapseExpandedBatch();
           this.store.removeBatchById(batch.id, bs => this.applyBatchSearch(bs));
-          this.translateService.get('warehouseInventory.batchDeleted')
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe(msg => this.toastService.success(msg, this.translateService.instant('toast.success')));
+          this.toastService.success(
+            this.translateService.instant('warehouseInventory.batchDeleted'),
+            this.translateService.instant('toast.success')
+          );
         },
         error: err => {
           const fallback = this.translateService.instant('warehouseInventory.failedToDeleteBatch');

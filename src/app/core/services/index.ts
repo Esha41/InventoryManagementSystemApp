@@ -21,7 +21,7 @@ export * from './idle.service';
 export * from './excel.service';
 export * from './template-generation.service';
 
-// Re-export commonly used types from supply (domain: requests)
+// Supply API DTOs (canonical definitions in core/models/supply-dto.model)
 export type {
     SupplyLotSuggestionDto,
     OrderItemSupplySuggestionDto,
@@ -33,4 +33,4 @@ export type {
     UpdateSupplyDetailDto,
     SupplyDetailDto,
     SupplyDto
-} from '@requests/services/supply.service';
+} from '@models/supply-dto.model';

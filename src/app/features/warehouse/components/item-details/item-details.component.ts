@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnDes
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Cartridge } from '@requests/pages/new-issue/components/cartridge-list/cartridge-list.component';
+import { Cartridge } from '@models/cartridge.model';
 import { AmmunitionService } from '@assets/services/ammunition.service';
 import { WeaponService } from '@assets/services/weapon.service';
 import { ExplosiveService } from '@assets/services/explosive.service';

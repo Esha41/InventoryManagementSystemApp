@@ -10,7 +10,7 @@ import {
   RequestPurposeState,
   OrderSubmissionState
 } from '@requests/pages/new-issue/new-issue-request.state';
-import { getDepartmentIdForRequest as getDepartmentIdForRequestUtil } from '@utils/issue-request.utils';
+import { getDepartmentIdForRequest as getDepartmentIdForRequestUtil } from '@requests/utils/issue-request.utils';
 
 export interface SubmissionDialogConfig {
   title: string;

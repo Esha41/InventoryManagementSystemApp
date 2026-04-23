@@ -29,7 +29,7 @@ import {
   NotificationDetailType,
   MetadataDisplayItem
 } from '@notifications/models/notification.model';
-import { NOTIFICATION_ACTION_KEYS } from '@constants/notification.constants';
+import { NOTIFICATION_ACTION_KEYS } from '@notifications/constants/notification.constants';
 import {
   formatMetadataKey,
   getDisplayMetadata,
@@ -37,7 +37,7 @@ import {
   canProposeNewTime,
   getPriorityLabelTranslation,
   getStatusLabelTranslation
-} from '@utils/notification.utils';
+} from '@notifications/utils/notification.utils';
 import { formatTimeToMilitary } from '@utils/format.utils';
 import { NotificationDetailService } from '@notifications/services/notification-detail.service';
 import { TranslationService } from '@services/translation.service';

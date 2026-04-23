@@ -13,7 +13,7 @@ import { LookupFiltersComponent } from '../lookup-filters/lookup-filters.compone
 import { LookupFormModalComponent } from '@admin/components/lookup-form-modal/lookup-form-modal.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { PaginationComponent, RowsPerPageComponent } from '@components/index';
-import { EmployeeFormModalComponent } from '@components/employee-form-modal/employee-form-modal.component';
+import { EmployeeFormModalComponent } from '@admin/components/employee-form-modal/employee-form-modal.component';
 import { ImportDialogComponent } from '@components/import-dialog/import-dialog.component';
 import { ImportPreviewDialogComponent, PreviewData } from '@components/import-preview-dialog/import-preview-dialog.component';
 import { EmployeeDto } from '@core/models/asset.model';

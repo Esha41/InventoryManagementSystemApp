@@ -1,5 +1,5 @@
-import { Component, OnDestroy, OnInit, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { Cartridge } from './components/cartridge-list/cartridge-list.component';
+import { Component, OnDestroy, OnInit, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Optional, Inject } from '@angular/core';
+import { Cartridge } from '@models/cartridge.model';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -24,7 +24,8 @@ import { IssueRequestUserContextService } from '@requests/services/issue-request
 import { IssueRequestCartridgeLoaderService } from '@requests/services/issue-request-cartridge-loader.service';
 import { IssueRequestCartridgeManagementService } from '@requests/services/issue-request-cartridge-management.service';
 import { IssueRequestSubmissionService } from '@requests/services/issue-request-submission.service';
-import { OnboardingTourService } from '@features/onboarding/services/onboarding-tour.service';
+import { ONBOARDING_TOUR } from '@core/tokens/onboarding-tour.token';
+import { IOnboardingTourProvider } from '@core/interfaces/onboarding-tour-provider.interface';
 import {
   RequestPurposeDto,
   FilterState,
@@ -57,7 +58,7 @@ import {
   applyUserContext as applyUserContextUtil,
   applyAuthenticatedUserContext as applyAuthenticatedUserContextUtil,
   getDepartmentIdForRequest as getDepartmentIdForRequestUtil
-} from '@utils/issue-request.utils';
+} from '@requests/utils/issue-request.utils';
 import { defaultPageSize } from '@constants/app.constants';
 
 interface ExtendedFilterState extends FilterState {
@@ -124,7 +125,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy, AfterViewIni
     private submissionService: IssueRequestSubmissionService,
     private toastService: ToastService,
     private cdr: ChangeDetectorRef,
-    private onboardingTourService: OnboardingTourService
+    @Optional() @Inject(ONBOARDING_TOUR) private onboardingTourService: IOnboardingTourProvider | null
   ) { }
 
   // Grouped state objects
@@ -301,7 +302,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy, AfterViewIni
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => this.onboardingTourService.checkAndStartPageTour('issue-request'), 300);
+    setTimeout(() => this.onboardingTourService?.checkAndStartPageTour('issue-request'), 300);
   }
 
   ngOnInit(): void {

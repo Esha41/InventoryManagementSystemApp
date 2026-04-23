@@ -7,7 +7,7 @@ import { ExplosiveService } from './explosive.service';
 import { ApiService } from '@services/api.service';
 import { CartridgeMapperService } from './cartridge-mapper.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { Cartridge } from '@requests/pages/new-issue/components/cartridge-list/cartridge-list.component';
+import { Cartridge } from '@models/cartridge.model';
 import { TranslateService } from '@ngx-translate/core';
 import { getCurrentLang } from '@utils/localization.utils';
 import { PagedRequest, PaginatedList } from '@models/api-response.model';

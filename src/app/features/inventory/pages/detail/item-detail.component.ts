@@ -8,7 +8,7 @@ import { AmmunitionService } from '@assets/services/ammunition.service';
 import { WeaponService } from '@assets/services/weapon.service';
 import { ExplosiveService } from '@assets/services/explosive.service';
 import { CartridgeMapperService } from '@assets/services/cartridge-mapper.service';
-import { Cartridge } from '@requests/pages/new-issue/components/cartridge-list/cartridge-list.component';
+import { Cartridge } from '@models/cartridge.model';
 import { CartridgeDetailsComponent } from '@requests/pages/new-issue/components/cartridge-details/cartridge-details.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ToastService } from '@services/toast.service';

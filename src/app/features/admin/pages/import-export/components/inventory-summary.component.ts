@@ -9,7 +9,7 @@ import { ToastService } from '@services/toast.service';
 import { ExcelColumn } from '@services/excel.service';
 import { ImportExportService } from '@admin/services/import-export.service';
 import { ItemInventorySummaryDto } from '@models/inventory.model';
-import { InventorySummaryUtils } from '@utils/inventory-summary.utils';
+import { InventorySummaryUtils } from '@warehouse/utils/inventory-summary.utils';
 import { TranslationService } from '@services/translation.service';
 import { LoadingStateComponent } from '@components/index';
 

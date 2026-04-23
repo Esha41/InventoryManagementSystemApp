@@ -22,7 +22,7 @@ import { WeaponDto } from '@models/weapon.model';
 
 // Components
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
-import { EmployeeFormModalComponent } from '@components/employee-form-modal/employee-form-modal.component';
+import { EmployeeFormModalComponent } from '@admin/components/employee-form-modal/employee-form-modal.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 

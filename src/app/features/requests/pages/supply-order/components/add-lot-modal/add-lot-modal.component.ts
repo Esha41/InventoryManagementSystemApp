@@ -11,7 +11,7 @@ import { LotItem } from '@models/supply-order.model';
 import { SupplyOrderDataService } from '@requests/services/supply-order-data.service';
 import { ToastService } from '@services/toast.service';
 import { formatDate as formatDateUtil, formatNumber as formatNumberUtil } from '@utils/format.utils';
-import { getLocalizedOrderItemName } from '@utils/supply-order-format.utils';
+import { getLocalizedOrderItemName } from '@requests/utils/supply-order-format.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 
 /**

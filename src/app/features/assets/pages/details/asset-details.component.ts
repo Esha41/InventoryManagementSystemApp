@@ -8,7 +8,7 @@ import { LucideAngularModule } from 'lucide-angular';
 import { AssetService } from '@assets/services/asset.service';
 import { ToastService } from '@services/toast.service';
 import { AssetDto, AssetStatus, getAssetStatusLabel } from '@models/asset.model';
-import { AssetDetailsComponent as SharedAssetDetailsComponent } from '@components/asset-details/asset-details.component';
+import { AssetDetailsComponent as SharedAssetDetailsComponent } from '@assets/components/asset-details/asset-details.component';
 import { WarehouseDetailLayoutComponent } from '@components/warehouse-detail-layout/warehouse-detail-layout.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { formatDateShort } from '@utils/format.utils';

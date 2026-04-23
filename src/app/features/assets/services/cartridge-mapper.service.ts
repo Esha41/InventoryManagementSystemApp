@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Cartridge } from '@requests/pages/new-issue/components/cartridge-list/cartridge-list.component';
+import { Cartridge } from '@models/cartridge.model';
 import { getLocalizedName } from '@utils/localization.utils';
 import { getWeaponTypeName, getActionTypeName } from '@utils/weapon.utils';
 import { getExplosiveTypeName } from '@utils/explosive.utils';

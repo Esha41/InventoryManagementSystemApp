@@ -45,6 +45,9 @@
       "@layouts/*": [
         "src/app/shared/layouts/*"
       ],
+      "@shell/*": [
+        "src/app/shell/*"
+      ],
       "@utils/*": [
         "src/app/core/utils/*"
       ],

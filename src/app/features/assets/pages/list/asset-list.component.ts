@@ -1,9 +1,10 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, Optional, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { OnboardingTourService } from '@features/onboarding/services/onboarding-tour.service';
+import { ONBOARDING_TOUR } from '@core/tokens/onboarding-tour.token';
+import { IOnboardingTourProvider } from '@core/interfaces/onboarding-tour-provider.interface';
 import { Subject, combineLatest } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
@@ -84,7 +85,7 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
     private readonly toastService: ToastService,
     private readonly propertyAccessor: AssetPropertyAccessor,
     private readonly cdr: ChangeDetectorRef,
-    private readonly onboardingTourService: OnboardingTourService
+    @Optional() @Inject(ONBOARDING_TOUR) private readonly onboardingTourService: IOnboardingTourProvider | null
   ) {}
 
   get isRTL(): boolean {
@@ -134,7 +135,7 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => this.onboardingTourService.checkAndStartPageTour('asset-list'), 300);
+    setTimeout(() => this.onboardingTourService?.checkAndStartPageTour('asset-list'), 300);
   }
 
   ngOnInit(): void {

@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { NotificationService } from '@notifications/services/notification.service';
 import { ThemeService } from '@services/theme.service';
+import { APP_NOTIFICATIONS_BOOTSTRAP } from '@core/notifications/app-notifications-bootstrap.token';
 
 @Component({
   selector: 'app-root',
@@ -11,13 +11,11 @@ import { ThemeService } from '@services/theme.service';
   styles: []
 })
 export class AppComponent implements OnInit {
-  constructor(
-    private notificationService: NotificationService,
-    private themeService: ThemeService
-  ) {}
+  private readonly appNotifications = inject(APP_NOTIFICATIONS_BOOTSTRAP);
+  private readonly themeService = inject(ThemeService);
 
   ngOnInit(): void {
-    this.notificationService.initialize();
+    this.appNotifications.initialize();
     this.themeService.initialize();
   }
 }

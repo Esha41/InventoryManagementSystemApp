@@ -141,7 +141,9 @@ export interface RequestDetail {
 }
 
 /**
- * Base request DTO from backend
+ * Workflow / single-request **detail** payloads (approval screens, order report, supply flow).
+ * For **unified list** endpoints with explicit nested `department` / `requester`, use `UnifiedListRequestDto`
+ * in `unified-list-request.model.ts` (and the `BaseRequestDto` name alias from `UnifiedRequestService`).
  */
 export interface BaseRequestDto {
   id: number;

@@ -9,7 +9,7 @@ import { InventoryService, LotDetailDto } from '@inventory/services/inventory.se
 import { WarehouseInventoryFormatterService } from '../services/warehouse-inventory-formatter.service';
 import { LookupService } from '@services/lookup.service';
 import { InventoryDetailDto, ItemType } from '@models/inventory.model';
-import { AssetDetailsComponent } from '@components/asset-details/asset-details.component';
+import { AssetDetailsComponent } from '@assets/components/asset-details/asset-details.component';
 import { WarehouseDetailLayoutComponent } from '@components/warehouse-detail-layout/warehouse-detail-layout.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';

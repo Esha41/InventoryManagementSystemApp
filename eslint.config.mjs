@@ -3,6 +3,28 @@ import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import angular from 'angular-eslint';
 
+/** Import paths that belong to lazy-loaded feature areas (path aliases). */
+const FEATURE_ALIAS_PATTERNS = [
+  '@app/features/**',
+  '@features/**',
+  '@auth/**',
+  '@dashboard/**',
+  '@warehouse/**',
+  '@requests/**',
+  '@inventory/**',
+  '@assets/**',
+  '@workflow/**',
+  '@department/**',
+  '@forecast/**',
+  '@admin/**',
+  '@settings/**',
+  '@notifications/**',
+  '@profile/**',
+  '@reports/**',
+  '@supply/**',
+  '@help-center/**',
+];
+
 export default tseslint.config(
   {
     files: ['**/*.ts'],
@@ -15,18 +37,23 @@ export default tseslint.config(
     rules: {
       '@angular-eslint/directive-selector': ['error', { type: 'attribute', prefix: 'app', style: 'camelCase' }],
       '@angular-eslint/component-selector': ['error', { type: 'element', prefix: 'app', style: 'kebab-case' }],
-
-      // ─── ARCHITECTURE BOUNDARY ENFORCEMENT ───────────────────────────────
-      // shared/ must never import from features/ — it would create
-      // circular dependencies and destroy feature isolation.
+    },
+  },
+  {
+    files: ['src/app/shared/**/*.ts'],
+    rules: {
       'no-restricted-imports': [
         'error',
         {
           patterns: [
             {
-              group: ['**/features/**'],
+              group: FEATURE_ALIAS_PATTERNS,
               message:
-                'shared/ must not import from features/. Move domain logic into the feature, or extract a truly generic primitive into shared/ui/.',
+                'shared/ must not import feature modules. Move UI into the owning feature under src/app/features/, or keep only generic primitives in shared/.',
+            },
+            {
+              group: ['**/features/**'],
+              message: 'shared/ must not use relative imports into features/.',
             },
           ],
         },
@@ -34,38 +61,20 @@ export default tseslint.config(
     },
   },
   {
-    // Relax the boundary rule for files INSIDE features/ — they may import
-    // from core/ and shared/ freely, but NOT from other sibling features/.
-    files: ['src/app/features/**/*.ts'],
+    files: ['src/app/core/**/*.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
         {
           patterns: [
             {
-              // Cross-feature imports: features/X importing from features/Y
-              // This pattern intentionally allows @core/* and @shared/* via alias.
-              // Adjust the group regex to match your actual feature directory names.
-              group: [
-                '../../../admin/**',
-                '../../../auth/**',
-                '../../../assets/**',
-                '../../../warehouse/**',
-                '../../../requests/**',
-                '../../../inventory/**',
-                '../../../dashboard/**',
-                '../../../notifications/**',
-                '../../../reports/**',
-                '../../../workflow/**',
-                '../../../forecast/**',
-                '../../../profile/**',
-                '../../../settings/**',
-                '../../../department/**',
-                '../../../help/**',
-                '../../../onboarding/**',
-              ],
+              group: FEATURE_ALIAS_PATTERNS,
               message:
-                'Cross-feature imports are forbidden. Expose shared contracts via core/ services, facades, or shared/ primitives instead.',
+                'core/ must not import feature modules. Put transport-only code in core/ and call feature services from features/.',
+            },
+            {
+              group: ['**/features/**'],
+              message: 'core/ must not use relative imports into features/.',
             },
           ],
         },

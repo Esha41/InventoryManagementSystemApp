@@ -19,7 +19,7 @@ import { getRankDisplayName as getRankDisplayNameHelper } from '../../utils/work
 import { EmployeeService } from '@admin/services/employee.service';
 import { EmployeeDto } from '@core/models/asset.model';
 import { getCurrentLang } from '@utils/localization.utils';
-import { EmployeeFormModalComponent } from '@components/employee-form-modal/employee-form-modal.component';
+import { EmployeeFormModalComponent } from '@admin/components/employee-form-modal/employee-form-modal.component';
 import { BackendAuthService } from '@services/backend-auth.service';
 
 @Component({

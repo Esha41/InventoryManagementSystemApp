@@ -9,7 +9,7 @@ import { OrderRequestItemDto, CreateRequestItemDto } from '@models/order.model';
 import { SupplyOrderDataService } from '@requests/services/supply-order-data.service';
 import { ToastService } from '@services/toast.service';
 import { APIOperationResponse } from '@models/api-response.model';
-import { getItemManagementOptionLabel } from '@utils/supply-order-format.utils';
+import { getItemManagementOptionLabel } from '@requests/utils/supply-order-format.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 
 /**

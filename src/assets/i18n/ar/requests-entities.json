@@ -1,0 +1,50 @@
+{
+  "weapon": {
+    "weaponType": "نوع السلاح",
+    "caliber": "العيار",
+    "actionType": "نوع الآلية",
+    "barrelLength": "طول السبطانة",
+    "overallLength": "الطول الكلي",
+    "weight": "الوزن",
+    "capacity": "السعة",
+    "specifications": "المواصفات"
+  },
+  "explosive": {
+    "explosiveType": "نوع المتفجر",
+    "unNumber": "رقم UN",
+    "netExplosiveQuantity": "الكمية الصافية من المتفجرات",
+    "specifications": "المواصفات"
+  },
+  "DELEGATION": {
+    "RESTRICTED_ACCESS_TITLE": "تم تفويض الصلاحيات",
+    "RESTRICTED_ACCESS_MSG": "لقد قمت بتفويض صلاحياتك لمستخدم آخر. لا يمكنك القيام بإجراءات أثناء وجود تفويض نشط. لاستعادة صلاحياتك، يرجى إلغاء التفويض النشط من ملفك الشخصي."
+  },
+  "ORDER_TRACKING": {
+    "TITLE": "سجل تتبع الطلب",
+    "ORDER_HISTORY_TITLE": "سجل تتبع الطلب",
+    "ITEM_HISTORY_TITLE": "سجل تتبع المادة",
+    "HISTORY": "السجل",
+    "VIEW_HISTORY": "عرض السجل",
+    "NO_HISTORY_TITLE": "لا يوجد سجل متاح",
+    "NO_HISTORY_DESC": "لا توجد سجلات تتبع لهذا الطلب حتى الآن.",
+    "ERROR_TITLE": "حدث خطأ ما",
+    "ERROR_DESC": "لم نتمكن من تحميل سجلات التتبع. يرجى المحاولة مرة أخرى.",
+    "RETRY": "إعادة المحاولة",
+    "DATE": "التاريخ",
+    "USER": "المستخدم",
+    "ACTION": "الإجراء",
+    "CHANGES": "التغييرات",
+    "NOTES": "ملاحظات",
+    "QUANTITY_FROM": "من",
+    "QUANTITY_TO": "إلى",
+    "ITEM": "المادة",
+    "ORDER": "الطلب",
+    "ACTION_ADDED": "إضافة مادة",
+    "ACTION_QUANTITYMODIFIED": "تحديث الكمية",
+    "ACTION_DELETED": "حذف مادة",
+    "ACTION_FINALAPPROVED": "الموافقة النهائية",
+    "ACTION_SUPPLIED": "مادة موردة",
+    "ACTION_ASSETSUPPLIED": "سلاح مورد",
+    "ACTION_UNKNOWN": "إجراء آخر"
+  }
+}

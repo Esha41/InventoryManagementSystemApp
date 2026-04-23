@@ -13,7 +13,7 @@ import { APIOperationResponse } from '@models/api-response.model';
 import { BaseRequestDto, WorkflowApprovalStep } from '@models/workflow-approval.model';
 import { OrderRequestItemDto, CreateRequestItemDto } from '@models/order.model';
 import { SupplyItemDisplay, LotItem } from '@models/supply-order.model';
-import { mapSupplyDetailsToDisplay } from '@utils/supply-order.mapper';
+import { mapSupplyDetailsToDisplay } from '@requests/utils/supply-order.mapper';
 import { mapLotDetailsToLotItems, formatLocation, determineCondition, calculateDaysUntilExpiry } from '@utils/lot.utils';
 import { mapApprovalHistory, mapRequestStatus } from '@utils/request-mapper.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';

@@ -28,7 +28,7 @@ import { HasPermissionDirective } from '@core/directives/has-permission.directiv
 import { TranslateService } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
 import { SupplyOrderDataService } from '@requests/services/supply-order-data.service';
-import { getLocalizedOrderItemName, getSupplyItemDisplayName } from '@utils/supply-order-format.utils';
+import { getLocalizedOrderItemName, getSupplyItemDisplayName } from '@requests/utils/supply-order-format.utils';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { ConfigService } from '@services/config.service';
 import { ErrorHandler } from '@utils/error-handler.utils';

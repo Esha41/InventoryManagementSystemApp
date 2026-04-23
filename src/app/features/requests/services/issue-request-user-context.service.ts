@@ -9,7 +9,7 @@ import { UserContextState } from '@requests/pages/new-issue/new-issue-request.st
 import {
   applyUserContext as applyUserContextUtil,
   applyAuthenticatedUserContext as applyAuthenticatedUserContextUtil
-} from '@utils/issue-request.utils';
+} from '@requests/utils/issue-request.utils';
 
 /**
  * Service responsible for managing user context initialization

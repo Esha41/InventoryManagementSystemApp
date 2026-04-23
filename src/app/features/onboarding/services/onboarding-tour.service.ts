@@ -5,6 +5,7 @@ import { driver, Driver } from 'driver.js';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { StorageService } from '@services/storage.service';
 import { TranslationService } from '@services/translation.service';
+import { IOnboardingTourProvider } from '@core/interfaces/onboarding-tour-provider.interface';
 import { OnboardingApiService } from './onboarding-api.service';
 import { getTourSteps } from '../config/tour-steps.config';
 import { getPageTourSteps } from '../config/page-tour-steps.config';
@@ -15,7 +16,7 @@ const PAGE_TOUR_CACHE_PREFIX = 'page_tour_completed_';
 @Injectable({
   providedIn: 'root'
 })
-export class OnboardingTourService implements OnDestroy {
+export class OnboardingTourService implements IOnboardingTourProvider, OnDestroy {
   private driverInstance: Driver | null = null;
   private pageTourDriverInstance: Driver | null = null;
   private destroy$ = new Subject<void>();
@@ -136,9 +137,6 @@ export class OnboardingTourService implements OnDestroy {
     this.startPageTour(pageKey, completedCacheKey);
   }
 
-  /**
-   * @param completedCacheKey Built when starting; reused when saving (driver.js onDestroyStarted must not re-read user).
-   */
   private startPageTour(pageKey: string, completedCacheKey: string): void {
     if (this.pageTourInProgress) return;
     this.pageTourInProgress = true;

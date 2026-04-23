@@ -15,7 +15,7 @@ import {
   getOrderAllowanceKey,
   formatOrderUsageDateFrom,
   formatOrderUsageDateTo
-} from '@utils/dashboard-order.utils';
+} from '@dashboard/utils/dashboard-order.utils';
 
 @Component({
   selector: 'app-order-details-modal',

@@ -27,7 +27,7 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
-import { EmployeeFormModalComponent } from '@components/employee-form-modal/employee-form-modal.component';
+import { EmployeeFormModalComponent } from '@admin/components/employee-form-modal/employee-form-modal.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { trackByIndex } from '@utils/trackby.utils';

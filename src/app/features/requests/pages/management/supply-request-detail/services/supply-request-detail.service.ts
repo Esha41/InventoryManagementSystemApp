@@ -17,7 +17,7 @@ import { BaseRequestDto } from '@models/workflow-approval.model';
 import { SupplyRequestDetail, OrderItem } from '@models/supply-request.model';
 import { mapOrderToRequestDetail, applySuggestionToItems, capOrderItemDischargeToApprovedQuantity } from '../../utils/supply-request.mapper';
 import { mapLotDetailsToLotItems } from '@utils/lot.utils';
-import { mapWorkflowStepsToApprovalSteps } from '@utils/approval-workflow.utils';
+import { mapWorkflowStepsToApprovalSteps } from '@requests/utils/approval-workflow.utils';
 import { mapApprovalHistory, mapRequestStatus } from '@utils/request-mapper.utils';
 import { ConfigService } from '@services/config.service';
 import { ToastService } from '@services/toast.service';

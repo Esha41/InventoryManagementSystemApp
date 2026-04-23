@@ -5,86 +5,11 @@ import { ApiService } from '@services/api.service';
 import { ConfigService } from '@services/config.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { PagedRequest, PaginatedList } from '@models/api-response.model';
-import { RankDto } from '@models/rank.model';
-import { DepartmentDto } from '@models/lookup.model';
 import { RequestItemDto } from '@models/common.model';
+import type { UnifiedListRequestDto } from '@models/unified-list-request.model';
 
-/**
- * Base Request DTO from backend
- * Unified interface for all request types (Order, Return, Discard)
- */
-export interface BaseRequestDto {
-    id: number;
-    requestNo: string;
-    requestType: number; // 1=Order, 2=Return, 3=Discard
-    reason?: string;
-    priority: number; // 1=High, 2=Medium, 3=Low
-    status: number; // 1=New, 2=UnderProcess, 3=Approved, 4=Rejected, 6=ReturnedForReview
-    notes?: string;
-    departmentId: number;
-    departmentName?: string;
-    departmentNameAr?: string;
-    departmentNameEn?: string;
-    requesterId?: string;
-    requesterName?: string;
-    requesterNameAr?: string;
-    requesterNameEn?: string;
-    requesterRoleNameAr?: string;
-    requestPurposeId: number;
-    requestPurposeName?: string;
-    requestPurposeNameAr?: string;
-    requestPurposeNameEn?: string;
-    requestDate: string | Date; // For compatibility with workflow-approval.model
-    creationDate: string | Date;
 
-    // Nested navigation objects
-    department?: {
-        id: number;
-        code: string;
-        nameAr: string;
-        nameEn: string;
-        isDeleted: boolean;
-    };
-
-    requester?: {
-        id: string;
-        userName: string;
-        fullNameEN: string;
-        fullNameAR: string;
-        militoryId?: string | null;
-        email?: string;
-        rank?: RankDto;
-        department?: DepartmentDto;
-    };
-
-    requestPurpose?: {
-        id: number;
-        nameAr: string;
-        nameEn: string;
-        requestType: number;
-    };
-
-    requestItems?: RequestItemDto[];
-
-    // Order-specific fields (nullable for Return/Discard requests)
-    usageDateFrom?: string | Date;
-    usageDateTo?: string | Date;
-    usageTimeFrom?: string;
-    usageTimeTo?: string;
-    usagePurpose?: string;
-    usageLocation?: string;
-    isFromAllowance?: boolean;
-    annualDiscard?: boolean;
-    numberOfOfficer?: number;
-    numberOfOtherRank?: number;
-    depotId?: number;
-    depotNameAr?: string;
-    depotNameEn?: string;
-    receiverId?: string;
-    receiverName?: string;
-    isMyTurn?: boolean;
-    [key: string]: any; // Allow dynamic property access
-}
+export type { UnifiedListRequestDto as BaseRequestDto } from '@models/unified-list-request.model';
 
 // RequestItemDto is now imported from @models/common.model
 // Re-export for backward compatibility
@@ -109,9 +34,9 @@ export class UnifiedRequestService {
      * 
      * @param status Optional status filter (1=New, 2=UnderProcess, 3=Approved, 4=Rejected, 6=ReturnedForReview)
      * @param requestType Optional type filter (1=Order, 2=Return, 3=Discard)
-     * @returns Observable of BaseRequestDto array
+     * @returns Observable of UnifiedListRequestDto array
      */
-    getUserActionRequests(status?: number, requestType?: number): Observable<BaseRequestDto[]> {
+    getUserActionRequests(status?: number, requestType?: number): Observable<UnifiedListRequestDto[]> {
         this.config.log('Fetching user action requests', { status, requestType });
 
         // Build query params
@@ -130,7 +55,7 @@ export class UnifiedRequestService {
             url += `?${params.join('&')}`;
         }
 
-        return this.apiService.get<BaseRequestDto[]>(url).pipe(
+        return this.apiService.get<UnifiedListRequestDto[]>(url).pipe(
             map(data => data ?? []),
             catchError(error => {
                 this.config.logError('Failed to fetch user action requests', error);
@@ -144,9 +69,9 @@ export class UnifiedRequestService {
      * 
      * @param status Optional status filter
      * @param requestType Optional type filter
-     * @returns Observable of BaseRequestDto array
+     * @returns Observable of UnifiedListRequestDto array
      */
-    getAllRequests(status?: number, requestType?: number): Observable<BaseRequestDto[]> {
+    getAllRequests(status?: number, requestType?: number): Observable<UnifiedListRequestDto[]> {
         this.config.log('Fetching all requests', { status, requestType });
 
         let url = API_ENDPOINTS.REQUESTS.ALL;
@@ -164,7 +89,7 @@ export class UnifiedRequestService {
             url += `?${params.join('&')}`;
         }
 
-        return this.apiService.get<BaseRequestDto[]>(url).pipe(
+        return this.apiService.get<UnifiedListRequestDto[]>(url).pipe(
             map(data => data ?? []),
             catchError(error => {
                 this.config.logError('Failed to fetch all requests', error);
@@ -179,9 +104,9 @@ export class UnifiedRequestService {
      * @param departmentId Department ID
      * @param status Optional status filter
      * @param requestType Optional type filter
-     * @returns Observable of BaseRequestDto array
+     * @returns Observable of UnifiedListRequestDto array
      */
-    getRequestsByDepartment(departmentId: number, status?: number, requestType?: number): Observable<BaseRequestDto[]> {
+    getRequestsByDepartment(departmentId: number, status?: number, requestType?: number): Observable<UnifiedListRequestDto[]> {
         this.config.log('Fetching requests by department', { departmentId, status, requestType });
 
         let url = API_ENDPOINTS.REQUESTS.BY_DEPARTMENT(departmentId);
@@ -199,7 +124,7 @@ export class UnifiedRequestService {
             url += `?${params.join('&')}`;
         }
 
-        return this.apiService.get<BaseRequestDto[]>(url).pipe(
+        return this.apiService.get<UnifiedListRequestDto[]>(url).pipe(
             map(data => data ?? []),
             catchError(error => {
                 this.config.logError('Failed to fetch department requests', error);
@@ -210,9 +135,9 @@ export class UnifiedRequestService {
     /**
      * Get all requests where the current user can take action (paginated)
      */
-    getUserActionRequestsPaginated(request: PagedRequest): Observable<PaginatedList<BaseRequestDto>> {
+    getUserActionRequestsPaginated(request: PagedRequest): Observable<PaginatedList<UnifiedListRequestDto>> {
         this.config.log('Fetching user action requests (paginated)', request);
-        return this.apiService.post<PaginatedList<BaseRequestDto>>(
+        return this.apiService.post<PaginatedList<UnifiedListRequestDto>>(
             API_ENDPOINTS.REQUESTS.USER_ACTIONS_PAGINATED,
             request
         );
@@ -221,9 +146,9 @@ export class UnifiedRequestService {
     /**
      * Get all requests (paginated)
      */
-    getAllRequestsPaginated(request: PagedRequest): Observable<PaginatedList<BaseRequestDto>> {
+    getAllRequestsPaginated(request: PagedRequest): Observable<PaginatedList<UnifiedListRequestDto>> {
         this.config.log('Fetching all requests (paginated)', request);
-        return this.apiService.post<PaginatedList<BaseRequestDto>>(
+        return this.apiService.post<PaginatedList<UnifiedListRequestDto>>(
             API_ENDPOINTS.REQUESTS.PAGINATED,
             request
         );

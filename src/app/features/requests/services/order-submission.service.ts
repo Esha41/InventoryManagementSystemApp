@@ -5,7 +5,7 @@ import { OrderService } from './order.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { APIOperationResponse } from '@models/api-response.model';
 import { CreateOrderDto, OrderDto } from '@models/order.model';
-import { Cartridge } from '@requests/pages/new-issue/components/cartridge-list/cartridge-list.component';
+import { Cartridge } from '@models/cartridge.model';
 import { parseOptionalInteger } from '@utils/number.utils';
 import { formatDateForInput } from '@core/utils/format.utils';
 

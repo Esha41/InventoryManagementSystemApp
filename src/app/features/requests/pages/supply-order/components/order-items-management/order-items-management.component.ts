@@ -4,7 +4,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Plus } from 'lucide-angular';
 import { OrderRequestItemDto } from '@models/order.model';
 import { formatNumber as formatNumberUtil } from '@utils/format.utils';
-import { getItemProductId } from '@utils/supply-order-format.utils';
+import { getItemProductId } from '@requests/utils/supply-order-format.utils';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 
 /**

@@ -68,6 +68,10 @@ export class WarehouseInventoryDataService {
     );
   }
 
+  loadInventoryById(inventoryId: number) {
+    return this.inventoryService.getById(inventoryId);
+  }
+
   loadInventoryPage(depotId: number, request: PagedRequest) {
     return this.inventoryService.getInventoryDetailsPaginated(depotId, request);
   }

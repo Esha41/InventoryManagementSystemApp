@@ -1,0 +1,99 @@
+{
+  "returnRequest": {
+    "pageTitle": "Integrated Order Management",
+    "title": "Return Request",
+    "reason": "Reason",
+    "priority": "Priority",
+    "department": "Department",
+    "requester": "Requester",
+    "requestPurpose": "Request Purpose",
+    "requestPurposeNotes": "Request Purpose Notes",
+    "notes": "Notes",
+    "returnItems": "Return Items",
+    "addItem": "Add Item",
+    "item": "Item",
+    "quantity": "Quantity",
+    "itemNotes": "Item Notes",
+    "sendRequest": "Submit",
+    "selectDepartment": "Select Department",
+    "selectRequester": "Select Requester (Optional)",
+    "selectRequestPurpose": "Select Request Purpose",
+    "selectItem": "Select Item",
+    "enterQuantity": "Enter quantity",
+    "enterReason": "Enter reason for return",
+    "enterNotes": "Enter additional notes (optional)",
+    "itemNotesPlaceholder": "Item notes (optional)",
+    "requestPurposeNotesPlaceholder": "Enter notes for the selected request purpose",
+    "attachments": "Attachments",
+    "attachmentsHint": "Select one or more files to attach.",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "errors": {
+      "failedToLoadDepartments": "Failed to load departments",
+      "failedToLoadRequestPurposes": "Failed to load request purposes",
+      "failedToLoadItems": "Failed to load items",
+      "failedToLoadUsers": "Failed to load users",
+      "filesRequired": "At least one file attachment is required",
+      "requestPurposeNotesRequired": "Request purpose notes are required",
+      "fileSizeExceeded": "File size exceeds the maximum allowed size of",
+      "invalidFileFormat": "File \"{{fileName}}\" has an invalid format. Allowed formats: JPEG, JPG, PNG, PDF, XLSX, DOCX."
+    },
+    "success": {
+      "created": "Return request created successfully"
+    },
+    "confirmDialog": {
+      "title": "Confirm Request",
+      "message": "Are you sure you want to submit this return request?"
+    }
+  },
+  "discardRequest": {
+    "title": "Discard Request",
+    "reason": "Reason",
+    "priority": "Priority",
+    "department": "Department",
+    "requester": "Requester",
+    "requestPurpose": "Request Purpose",
+    "requestPurposeNotes": "Request Purpose Notes",
+    "notes": "Notes",
+    "discardItems": "Discard Items",
+    "addItem": "Add Item",
+    "item": "Item",
+    "quantity": "Quantity",
+    "itemNotes": "Item Notes",
+    "sendRequest": "Submit",
+    "selectDepartment": "Select Department",
+    "selectRequester": "Select Requester (Optional)",
+    "selectRequestPurpose": "Select Request Purpose",
+    "selectItem": "Select Item",
+    "enterQuantity": "Enter quantity",
+    "reasonPlaceholder": "Enter reason for discard",
+    "notesPlaceholder": "Enter additional notes (optional)",
+    "quantityPlaceholder": "Enter quantity",
+    "itemNotesPlaceholder": "Item notes (optional)",
+    "requestPurposeNotesPlaceholder": "Enter notes for the selected request purpose",
+    "attachments": "Attachments",
+    "attachmentsHint": "Select one or more files to attach.",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "errors": {
+      "failedToLoadDepartments": "Failed to load departments",
+      "failedToLoadRequestPurposes": "Failed to load request purposes",
+      "failedToLoadItems": "Failed to load items",
+      "failedToLoadUsers": "Failed to load users",
+      "correctFormErrors": "Please correct the form errors",
+      "filesRequired": "At least one file attachment is required",
+      "requestPurposeNotesRequired": "Request purpose notes are required",
+      "fileSizeExceeded": "File size exceeds the maximum allowed size of",
+      "invalidFileFormat": "File \"{{fileName}}\" has an invalid format. Allowed formats: JPEG, JPG, PNG, PDF, XLSX, DOCX."
+    },
+    "success": {
+      "created": "Discard request created successfully"
+    },
+    "confirmDialog": {
+      "title": "Confirm Request",
+      "message": "Are you sure you want to submit this discard request?"
+    }
+  }
+}

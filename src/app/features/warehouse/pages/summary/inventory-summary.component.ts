@@ -15,7 +15,7 @@ import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { InventorySummaryDataService } from '@inventory/services/inventory-summary-data.service';
-import { InventorySummaryUtils } from '@utils/inventory-summary.utils';
+import { InventorySummaryUtils } from '@warehouse/utils/inventory-summary.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';

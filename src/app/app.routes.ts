@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { MainLayoutComponent } from '@layouts/main-layout/main-layout.component';
+import { MainLayoutComponent } from '@shell/layouts/main-layout/main-layout.component';
 import { AuthLayoutComponent } from '@layouts/auth-layout/auth-layout.component';
 import { authGuard, permissionGuard } from '@guards/index';
 export const routes: Routes = [
@@ -22,45 +22,37 @@ export const routes: Routes = [
           import('@core/components/default-landing/default-landing.component').then(m => m.DefaultLandingComponent)
       },
       {
-        path: 'dashboard',
-        loadComponent: () => import('@dashboard/pages/overview/dashboard.component').then(m => m.DashboardComponent),
-        canActivate: [permissionGuard],
-        data: { permissions: ['dashboard_view'] }
-      },
-      {
-        path: 'forecast',
-        loadComponent: () => import('@forecast/pages/overview/forecast.component').then(m => m.ForecastComponent),
-        canActivate: [permissionGuard],
-        data: { permissions: ['forecastpage.page', 'forecastpage.view', 'dashboard_view'] }
-      },
-      {
         path: 'inventory-summary',
         loadComponent: () => import('@warehouse/pages/summary/inventory-summary.component').then(m => m.InventorySummaryComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['inventorySummaryReportPage'] }
       },
       {
-        path: 'notifications',
-        loadComponent: () => import('@notifications/pages/list/notifications.component').then(m => m.NotificationsComponent),
-        canActivate: [permissionGuard],
-        data: { permissions: ['notificationspage.page', 'notificationspage.view', 'dashboard_view'] }
-      },
-      {
-        path: 'profile',
-        loadComponent: () => import('@profile/pages/overview/profile.component').then(m => m.ProfileComponent)
-      },
-      {
         path: 'access-denied',
         loadComponent: () => import('@auth/pages/access-denied/access-denied.component').then(m => m.AccessDeniedComponent)
       },
-      {
-        path: 'help',
-        loadComponent: () =>
-          import('@features/help/pages/help-center-user/help-center-user.component').then(m => m.HelpCenterUserComponent)
-      },
-      { path: 'help-me', redirectTo: 'help', pathMatch: 'full' },
       { path: 'admin/help-me', redirectTo: 'admin/help-center', pathMatch: 'full' },
       // ── FEATURE LAZY CHUNKS ───────────────────────────────────────────────
+      {
+        path: '',
+        loadChildren: () => import('./features/dashboard/dashboard.routes').then(m => m.DASHBOARD_ROUTES)
+      },
+      {
+        path: '',
+        loadChildren: () => import('./features/forecast/forecast.routes').then(m => m.FORECAST_ROUTES)
+      },
+      {
+        path: '',
+        loadChildren: () => import('./features/notifications/notifications.routes').then(m => m.NOTIFICATIONS_ROUTES)
+      },
+      {
+        path: '',
+        loadChildren: () => import('./features/profile/profile.routes').then(m => m.PROFILE_ROUTES)
+      },
+      {
+        path: '',
+        loadChildren: () => import('./features/help/help.routes').then(m => m.HELP_ROUTES)
+      },
       {
         path: 'warehouse',
         loadChildren: () => import('./features/warehouse/warehouse.routes').then(m => m.WAREHOUSE_ROUTES)

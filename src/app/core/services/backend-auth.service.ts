@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Optional, Inject } from '@angular/core';
 import { BehaviorSubject, Observable, throwError, of, timer, Subscription } from 'rxjs';
 import { map, tap, catchError, switchMap, exhaustMap, finalize, shareReplay } from 'rxjs/operators';
 import { ApiService } from './api.service';
@@ -18,7 +18,8 @@ import {
 } from '@models/auth.model';
 import { ChangePasswordRequest } from '@models/change-password.model';
 import { ApiResponse } from '@models/api-response.model';
-import { ProfileDataService } from '@profile/services/profile-data.service';
+import { USER_PROFILE_PROVIDER } from '../tokens/user-profile-provider.token';
+import { IUserProfileProvider } from '../interfaces/user-profile-provider.interface';
 import { ErrorHandler } from '@utils/error-handler.utils';
 
 /**
@@ -47,7 +48,7 @@ export class BackendAuthService {
     private apiService: ApiService,
     private storageService: StorageService,
     private configService: ConfigService,
-    private profileDataService: ProfileDataService
+    @Optional() @Inject(USER_PROFILE_PROVIDER) private profileProvider: IUserProfileProvider | null
   ) {
     this.checkAuthStatus();
   }
@@ -290,7 +291,7 @@ export class BackendAuthService {
                 });
 
                 // Save profile data including isSuperAdmin flag
-                this.profileDataService.saveProfile(mergedUser, userMeData);
+                this.profileProvider?.saveProfile(mergedUser, userMeData);
 
                 this.storageService.set('current_user', mergedUser);
                 this.currentUserSubject.next(mergedUser);
@@ -302,7 +303,7 @@ export class BackendAuthService {
                 this.configService.logError('Failed to fetch user claims, proceeding without permissions', error);
 
                 // Still save profile data even without claims
-                this.profileDataService.saveProfile(authenticatedUser, userMeData);
+                this.profileProvider?.saveProfile(authenticatedUser, userMeData);
 
                 this.storageService.set('current_user', authenticatedUser);
                 this.currentUserSubject.next(authenticatedUser);
@@ -321,7 +322,7 @@ export class BackendAuthService {
                   roles: userWithClaims.roles || []
                 };
 
-                this.profileDataService.saveProfile(mergedUser);
+                this.profileProvider?.saveProfile(mergedUser);
                 this.storageService.set('current_user', mergedUser);
                 this.currentUserSubject.next(mergedUser);
                 this.updateAuthState(mergedUser, response.accessToken, expiresAt);
@@ -329,7 +330,7 @@ export class BackendAuthService {
               }),
               catchError((error) => {
                 this.configService.logError('Failed to fetch user claims, proceeding without permissions', error);
-                this.profileDataService.saveProfile(authenticatedUser);
+                this.profileProvider?.saveProfile(authenticatedUser);
                 this.storageService.set('current_user', authenticatedUser);
                 this.currentUserSubject.next(authenticatedUser);
                 this.updateAuthState(authenticatedUser, response.accessToken, expiresAt);
@@ -975,7 +976,7 @@ export class BackendAuthService {
    */
   private clearSessionCredentialsForPendingRoleSelection(): void {
     this.stopSessionHeartbeat();
-    this.profileDataService.clearProfile();
+    this.profileProvider?.clearProfile();
     this.storageService.remove('auth_token');
     this.storageService.remove('current_user');
     this.storageService.remove('token_expires_at');
@@ -1001,7 +1002,7 @@ export class BackendAuthService {
     this.stopSessionHeartbeat();
 
     try {
-      this.profileDataService.clearProfile();
+      this.profileProvider?.clearProfile();
       this.storageService.remove('auth_token');
       this.storageService.remove('current_user');
       this.storageService.remove('token_expires_at');

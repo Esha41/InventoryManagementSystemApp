@@ -7,57 +7,7 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
 import { CatalogPaginationState } from '../../new-issue-request.state';
 import { ConfigService } from '@services/config.service';
 import { ItemTypeValidationService } from '@admin/services/item-type-validation.service';
-
-export interface Cartridge {
-  id: number;
-  name: string;
-  nameAr?: string; // Arabic name
-  nameEn?: string; // English name
-  selected: boolean;
-  itemNo?: string;
-  productId?: string;
-  ncn?: string;
-  primaryPurpose?: string;
-  projectileColor?: string;
-  totalWeight?: string;
-  projectileMaterial?: string;
-  caseType?: string;
-  primer?: string;
-  propellant?: string;
-  hazardDivision?: string;
-  capabilityGroup?: string;
-  bulletDiameterLabel?: string;
-  linkedLabel?: string;
-  linkedLabelAr?: string; // Arabic linked label
-  linkedLabelEn?: string; // English linked label
-  natureLabel?: string;
-  natureLabelAr?: string; // Arabic nature label
-  natureLabelEn?: string; // English nature label
-  quantity?: number | null;
-  added?: boolean;
-  ammunitionType?: string | number; // Backend returns as string: "Small", "Medium", "Large"
-  armNumber?: string;
-  itemType?: string; // 'Ammunition', 'Weapon', 'Explosive' - inferred from context
-
-  // Weapon Specific
-  weaponType?: string;
-  caliber?: string;
-  actionType?: string;
-  barrelLength?: number;
-  barrelLengthLabel?: string;
-  overallLength?: number;
-  overallLengthLabel?: string;
-  weight?: number;
-  weightLabel?: string;
-  capacity?: number;
-
-  // Explosive Specific
-  explosiveType?: string;
-  unNumber?: string;
-  netExplosiveQuantity?: number;
-  netExplosiveQuantityLabel?: string;
-  totalWeightLabel?: string;
-}
+import { Cartridge } from '@models/cartridge.model';
 
 @Component({
   selector: 'app-cartridge-list',

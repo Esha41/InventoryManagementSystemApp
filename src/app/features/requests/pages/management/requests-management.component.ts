@@ -4,13 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, ChevronDown, Inbox, Eye } from 'lucide-angular';
+import { PaginationComponent, RowsPerPageComponent } from '@components/index';
 import {
-  PaginationComponent,
-  RowsPerPageComponent,
   RequestFilterBarComponent,
   StatusFilter,
   PriorityFilter
-} from '@components/index';
+} from '@requests/components/request-filter-bar/request-filter-bar.component';
 import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 import { RequestsManagementService } from './services/requests-management.service';
 import { getRequestStatusClass } from './utils/ui-helpers.utils';

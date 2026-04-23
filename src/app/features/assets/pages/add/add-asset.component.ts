@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, Optional, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -7,7 +7,8 @@ import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { CardComponent } from '@components/card/card.component';
 import { LucideAngularModule, Save, X } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
-import { OnboardingTourService } from '@features/onboarding/services/onboarding-tour.service';
+import { ONBOARDING_TOUR } from '@core/tokens/onboarding-tour.token';
+import { IOnboardingTourProvider } from '@core/interfaces/onboarding-tour-provider.interface';
 import { LookupService, NatureOptionDto } from '@services/lookup.service';
 import { LookupItem } from '@models/lookup.model';
 import { AmmunitionCreateDto, AmmunitionReadDto } from '@models/ammunition.model';
@@ -142,7 +143,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     private route: ActivatedRoute,
     private translateService: TranslateService,
     private cdr: ChangeDetectorRef,
-    private onboardingTourService: OnboardingTourService
+    @Optional() @Inject(ONBOARDING_TOUR) private onboardingTourService: IOnboardingTourProvider | null
   ) { }
 
   assetForm: AssetForm = this.getInitialForm();
@@ -198,7 +199,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => this.onboardingTourService.checkAndStartPageTour('add-asset'), 300);
+    setTimeout(() => this.onboardingTourService?.checkAndStartPageTour('add-asset'), 300);
   }
 
   ngOnInit(): void {

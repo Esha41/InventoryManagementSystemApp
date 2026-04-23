@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Optional, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -20,8 +20,9 @@ import { ChangePasswordModalComponent } from '@components/change-password-modal/
 import { DelegationListComponent } from './delegation-list/delegation-list.component';
 import { ToastService } from '@services/toast.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
-import { OnboardingTourService } from '@features/onboarding/services/onboarding-tour.service';
-import { SwitchRoleModalService } from '@shared/ui/switch-role-modal/switch-role-modal.service';
+import { ONBOARDING_TOUR } from '@core/tokens/onboarding-tour.token';
+import { IOnboardingTourProvider } from '@core/interfaces/onboarding-tour-provider.interface';
+import { SwitchRoleModalService } from '@auth/components/switch-role-modal/switch-role-modal.service';
 
 @Component({
   selector: 'app-profile',
@@ -65,7 +66,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     private translateService: TranslateService,
     private translationService: TranslationService,
     private toastService: ToastService,
-    private onboardingTourService: OnboardingTourService,
+    @Optional() @Inject(ONBOARDING_TOUR) private onboardingTourService: IOnboardingTourProvider | null,
     private router: Router,
     private cdr: ChangeDetectorRef,
     private switchRoleModal: SwitchRoleModalService
@@ -264,9 +265,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
    * Handle password change submission
    */
   replayTour(): void {
-    this.onboardingTourService.resetTour();
+    this.onboardingTourService?.resetTour();
     this.router.navigate(['/dashboard']).then(() => {
-      setTimeout(() => this.onboardingTourService.startTour(), 500);
+      setTimeout(() => this.onboardingTourService?.startTour(), 500);
     });
   }
 

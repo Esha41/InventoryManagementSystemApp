@@ -1,0 +1,26 @@
+{
+  "workflowReturnApprovedSummary": {
+    "title": "Return completion summary",
+    "subtitle": "Quantities, lots or batches, and serials as recorded when the return was processed.",
+    "item": "Item",
+    "itemNo": "Item No",
+    "sectionWeapons": "Weapons",
+    "sectionAmmunition": "Ammunition",
+    "sectionExplosives": "Explosives",
+    "returnedQty": "Returned Qty",
+    "receivedQty": "Received Qty",
+    "colBatch": "Batch",
+    "colLot": "Lot",
+    "notes": "Notes",
+    "serialDetails": "Serial numbers",
+    "serial": "Serial",
+    "batch": "Batch",
+    "attachmentsTitle": "Attachments",
+    "fileName": "File",
+    "fileSource": "Source",
+    "open": "Open",
+    "sourceRequest": "Request",
+    "sourceProcessing": "Processing line",
+    "loadError": "Could not load return tracking data."
+  }
+}

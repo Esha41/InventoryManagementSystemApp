@@ -23,7 +23,7 @@ import { DashboardFilterService } from '@dashboard/services/dashboard-filter.ser
 import { DashboardCard } from '@models/dashboard.model';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
-import { RequestFilterBarComponent, StatusFilter, PriorityFilter } from '@components/request-filter-bar/request-filter-bar.component';
+import { RequestFilterBarComponent, StatusFilter, PriorityFilter } from '@requests/components/request-filter-bar/request-filter-bar.component';
 import { formatTimeToMilitary, formatDateTimeExtended } from '@utils/format.utils';
 import { defaultPageSize } from '@constants/app.constants';
 import { localizedBilingualLabel } from '@utils/localization.utils';

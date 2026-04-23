@@ -8,7 +8,7 @@ import { OrderRequestItemDto } from '@models/order.model';
 import { SupplyOrderDataService } from '@requests/services/supply-order-data.service';
 import { ToastService } from '@services/toast.service';
 import { APIOperationResponse } from '@models/api-response.model';
-import { getItemProductId } from '@utils/supply-order-format.utils';
+import { getItemProductId } from '@requests/utils/supply-order-format.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 
 /**

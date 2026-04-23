@@ -1,4 +1,8 @@
 import { ApplicationConfig, provideZoneChangeDetection, importProvidersFrom, APP_INITIALIZER } from '@angular/core';
+import { USER_PROFILE_PROVIDER } from './core/tokens/user-profile-provider.token';
+import { ProfileDataService } from './features/profile/services/profile-data.service';
+import { ONBOARDING_TOUR } from './core/tokens/onboarding-tour.token';
+import { OnboardingTourService } from './features/onboarding/services/onboarding-tour.service';
 import { provideQuillConfig } from 'ngx-quill/config';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors, HttpClient } from '@angular/common/http';
@@ -8,28 +12,15 @@ import { Observable, of, forkJoin } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { authInterceptor, errorInterceptor } from './core/interceptors/index';
 import { ConfigService } from './core/services/config.service';
+import { APP_NOTIFICATIONS_BOOTSTRAP } from './core/notifications/app-notifications-bootstrap.token';
+import { NotificationService } from './features/notifications/services/notification.service';
+import { I18N_TRANSLATION_MODULES } from './core/constants/i18n-translation-modules';
 
 export class JsonTranslationLoader implements TranslateLoader {
   constructor(private http: HttpClient) { }
 
   getTranslation(lang: string): Observable<any> {
-    // List of translation module files to load and merge
-    const translationModules = [
-      'common',
-      'dashboard',
-      'requests',
-      'inventory',
-      'supply',
-      'admin',
-      'auth',
-      'allowance',
-      'notifications',
-      'add-weapon-asset',
-      'scheduledReports',
-      'announcements',
-      'onboarding',
-      'help-center'
-    ];
+    const translationModules = [...I18N_TRANSLATION_MODULES];
 
     // Load all modular translation files
     const moduleTranslations = translationModules.map(module =>
@@ -103,6 +94,9 @@ export const appConfig: ApplicationConfig = {
       deps: [ConfigService],
       multi: true
     },
+    { provide: APP_NOTIFICATIONS_BOOTSTRAP, useExisting: NotificationService },
+    { provide: USER_PROFILE_PROVIDER, useExisting: ProfileDataService },
+    { provide: ONBOARDING_TOUR, useExisting: OnboardingTourService },
     importProvidersFrom(
       TranslateModule.forRoot({
         fallbackLang: 'en',

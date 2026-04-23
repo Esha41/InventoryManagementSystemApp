@@ -5,7 +5,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Package, Plus, CheckCircle, Clock } from 'lucide-angular';
 import { SupplyItemDisplay } from '@models/supply-order.model';
 import { formatNumber as formatNumberUtil, formatDate as formatDateUtil } from '@utils/format.utils';
-import { getSupplyItemDisplayName } from '@utils/supply-order-format.utils';
+import { getSupplyItemDisplayName } from '@requests/utils/supply-order-format.utils';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { TranslationService } from '@services/translation.service';
 

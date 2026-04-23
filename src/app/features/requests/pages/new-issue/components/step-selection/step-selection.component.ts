@@ -1,8 +1,9 @@
 import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { CartridgeListComponent, Cartridge } from '../cartridge-list/cartridge-list.component';
-import { AssetDetailsComponent } from '@components/asset-details/asset-details.component';
+import { CartridgeListComponent } from '../cartridge-list/cartridge-list.component';
+import { Cartridge } from '@models/cartridge.model';
+import { AssetDetailsComponent } from '@assets/components/asset-details/asset-details.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ErrorBannerComponent } from '../error-banner/error-banner.component';
 import { FilterState, FilterOptions, CartridgeState, CatalogPaginationState } from '../../new-issue-request.state';

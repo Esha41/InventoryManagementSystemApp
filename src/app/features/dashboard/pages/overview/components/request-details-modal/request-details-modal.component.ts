@@ -19,7 +19,7 @@ import {
   getOrderAllowanceKey,
   formatOrderUsageDateFrom,
   formatOrderUsageDateTo
-} from '@utils/dashboard-order.utils';
+} from '@dashboard/utils/dashboard-order.utils';
 import { RequestType } from '@utils/request-type-mapper.utils';
 
 /**

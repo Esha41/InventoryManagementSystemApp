@@ -25,7 +25,7 @@ import { WeaponSupplyLookupService } from './services/weapon-supply-lookup.servi
 import { WeaponSupplyDisplayService } from './services/weapon-supply-display.service';
 
 import { LoadingStateComponent } from '@components/loading-state/loading-state.component';
-import { EmployeeFormModalComponent } from '@components/employee-form-modal/employee-form-modal.component';
+import { EmployeeFormModalComponent } from '@admin/components/employee-form-modal/employee-form-modal.component';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { FocusOnInitDirective } from '@core/directives/focus-on-init.directive';
 import { BackendAuthService } from '@services/backend-auth.service';
