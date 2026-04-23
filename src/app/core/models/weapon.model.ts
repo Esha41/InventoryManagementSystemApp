@@ -9,6 +9,8 @@ import { LookupDto } from './ammunition.model';
  * Weapon DTO (extends BaseItem)
  */
 export interface WeaponDto extends BaseItemDto {
+  /** Backend WeaponCaliberCategory: 1 = Small, 2 = Medium, 3 = Large */
+  caliberCategory?: number;
   caliber?: string;
   caliberUnitId?: number;
   yearOfManufacture?: number;
@@ -61,6 +63,8 @@ export interface CreateUpdateWeaponDto {
   notes?: string;
   classificationId?: number;
   typeId?: number;
+  /** Backend WeaponCaliberCategory: 1 = Small, 2 = Medium, 3 = Large */
+  caliberCategory?: number;
   caliber?: string;
   caliberUnitId?: number;
   yearOfManufacture?: number;

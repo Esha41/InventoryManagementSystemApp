@@ -220,7 +220,7 @@
       "itemName": "Item Name",
       "itemNo": "Item No",
       "nsn": "NSN",
-      "minimumQuantity": "Minimum Quantity",
+      "minimumQuantity": "Low stock",
       "totalStock": "Total Stock",
       "holdQuantity": "Hold Quantity",
       "suppliedQuantity": "Used Quantity",

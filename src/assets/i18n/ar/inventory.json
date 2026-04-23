@@ -215,10 +215,10 @@
     "saving": "جاري الحفظ...",
     "price": "السعر",
     "pricePlaceholder": "أدخل السعر (اختياري)",
-    "minimumQuantity": "الحد الأدنى للكمية",
-    "minimumQuantityPlaceholder": "أدخل الحد الأدنى للكمية (اختياري)",
-    "criticalQuantity": "الكمية الحرجة",
-    "criticalQuantityPlaceholder": "أدخل الكمية الحرجة (اختياري)",
+    "minimumQuantity": "مخزون منخفض",
+    "minimumQuantityPlaceholder": "أدخل حد المخزون المنخفض (اختياري)",
+    "criticalQuantity": "مخزون حرج",
+    "criticalQuantityPlaceholder": "أدخل حد المخزون الحرج (اختياري)",
     "enterAmmunitionName": "أدخل اسم المادة",
     "enterWeaponName": "أدخل اسم السلاح",
     "enterExplosiveName": "أدخل اسم المتفجر",
@@ -249,6 +249,8 @@
     "weaponType": "نوع السلاح",
     "explosiveType": "نوع المتفجر",
     "selectItemType": "اختر نوع المادة",
+    "ammunitionSizeClass": "فئة العيار",
+    "selectAmmunitionTypeClass": "اختر فئة العيار",
     "selectWeaponType": "اختر نوع السلاح",
     "selectExplosiveType": "اختر نوع المتفجر",
     "notes": "ملاحظات",
@@ -258,7 +260,8 @@
       "itemNoAlreadyExistsWithValue": "رقم المادة '{{itemNo}}' موجود مسبقاً. يرجى استخدام رقم مادة فريد.",
       "bulletDiameterMustBePositive": "يجب أن يكون قطر الرصاصة أكبر من 0",
       "priceMustBePositive": "يجب أن يكون السعر أكبر من 0",
-      "totalWeightMustBePositive": "يجب أن يكون الوزن الإجمالي أكبر من 0"
+      "totalWeightMustBePositive": "يجب أن يكون الوزن الإجمالي أكبر من 0",
+      "ammunitionTypeRequired": "يرجى تحديد فئة حجم الذخيرة"
     },
     "name": "الاسم",
     "itemNo": "رقم المادة",
@@ -309,7 +312,7 @@
       "partNo": "رقم القطعة",
       "nsn": "NSN",
       "price": "السعر",
-      "minimumQuantity": "الحد الأدنى للكمية",
+      "minimumQuantity": "مخزون منخفض",
       "bulletDiameter": "قطر الرصاصة",
       "totalWeight": "الوزن الإجمالي",
       "isLinked": "شرشور",
@@ -351,7 +354,7 @@
       "partNo": "أدخل رقم القطعة",
       "nsn": "أدخل NSN",
       "price": "أدخل السعر",
-      "minimumQuantity": "أدخل الحد الأدنى للكمية"
+      "minimumQuantity": "أدخل حد المخزون المنخفض"
     },
     "addAmmunition": "إضافة ذخيرة",
     "addWeapon": "إضافة سلاح",
@@ -465,7 +468,7 @@
       "expiryDate": "تاريخ الانتهاء",
       "status": "الحالة",
       "price": "السعر",
-      "minimumQuantity": "الحد الأدنى للكمية",
+      "minimumQuantity": "مخزون منخفض",
       "actions": "الإجراءات"
     },
     "actions": {
@@ -575,8 +578,8 @@
       "expiryDate": "تاريخ الانتهاء",
       "price": "السعر",
       "pricePlaceholder": "أدخل السعر (اختياري)",
-      "minimumQuantity": "الحد الأدنى للكمية",
-      "minimumQuantityPlaceholder": "أدخل الحد الأدنى للكمية (اختياري)",
+      "minimumQuantity": "مخزون منخفض",
+      "minimumQuantityPlaceholder": "أدخل حد المخزون المنخفض (اختياري)",
       "saveChanges": "حفظ التغييرات"
     },
     "deleteModal": {

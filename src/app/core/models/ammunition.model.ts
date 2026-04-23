@@ -48,6 +48,8 @@ export interface AmmunitionReadDto {
   referenceNo?: string;
   classificationId?: number;
   typeId?: number;
+  /** Backend enum: 1 = Small, 2 = Medium, 3 = Large */
+  ammunitionType?: number;
   notes?: string;
   readyForIssue: boolean;
   expiryDate?: Date | string;
@@ -114,6 +116,8 @@ export interface AmmunitionCreateDto {
   referenceNo?: string;
   classificationId?: number;
   typeId?: number;
+  /** Backend enum: 1 = Small, 2 = Medium, 3 = Large */
+  ammunitionType?: number;
   notes?: string;
   price?: number;
   minimumQuantity?: number;

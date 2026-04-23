@@ -38,6 +38,10 @@ export function createAssetEditForm(fb: FormBuilder): FormGroup {
     referenceNo: [''],
     classificationId: [null as number | null],
     typeId: [null as number | null],
+    /** Ammunition only: AmmunitionType enum as string '1' | '2' | '3' for dropdown */
+    ammunitionType: [''],
+    /** Weapon only: WeaponCaliberCategory (default Small = 1) */
+    caliberCategory: ['1'],
     notes: [''],
 
     // Weapon
