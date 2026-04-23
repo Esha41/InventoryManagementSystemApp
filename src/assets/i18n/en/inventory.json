@@ -223,10 +223,10 @@
     "saving": "Saving...",
     "price": "Price",
     "pricePlaceholder": "Enter price (optional)",
-    "minimumQuantity": "Low Quantity",
-    "minimumQuantityPlaceholder": "Enter low quantity (optional)",
-    "criticalQuantity": "Critical Quantity",
-    "criticalQuantityPlaceholder": "Enter critical quantity (optional)",
+    "minimumQuantity": "Low stock",
+    "minimumQuantityPlaceholder": "Enter low stock threshold (optional)",
+    "criticalQuantity": "Critical stock",
+    "criticalQuantityPlaceholder": "Enter critical stock threshold (optional)",
     "enterAmmunitionName": "Enter ammunition name",
     "enterWeaponName": "Enter weapon name",
     "enterExplosiveName": "Enter explosive name",
@@ -257,6 +257,8 @@
     "weaponType": "Weapon Type",
     "explosiveType": "Explosive Type",
     "selectItemType": "Select item type",
+    "ammunitionSizeClass": "Caliber category",
+    "selectAmmunitionTypeClass": "Select caliber category",
     "selectWeaponType": "Select weapon type",
     "selectExplosiveType": "Select explosive type",
     "notes": "Notes",
@@ -266,7 +268,8 @@
       "itemNoAlreadyExistsWithValue": "Item number '{{itemNo}}' already exists. Please use a unique item number.",
       "bulletDiameterMustBePositive": "Bullet diameter must be greater than 0",
       "priceMustBePositive": "Price must be greater than 0",
-      "totalWeightMustBePositive": "Total weight must be greater than 0"
+      "totalWeightMustBePositive": "Total weight must be greater than 0",
+      "ammunitionTypeRequired": "Select caliber category"
     },
     "name": "Name",
     "itemNo": "Item No",
@@ -317,7 +320,7 @@
       "partNo": "Part No",
       "nsn": "NSN",
       "price": "Price",
-      "minimumQuantity": "Low Quantity",
+      "minimumQuantity": "Low stock",
       "bulletDiameter": "Bullet Diameter",
       "totalWeight": "Total Weight",
       "isLinked": "Is Linked",
@@ -359,7 +362,7 @@
       "partNo": "Enter part number",
       "nsn": "Enter NSN",
       "price": "Enter price",
-      "minimumQuantity": "Enter low quantity"
+      "minimumQuantity": "Enter low stock threshold"
     },
     "successMessage": "Asset created successfully",
     "barrelLengthUnit": "Barrel Length Unit",
@@ -473,7 +476,7 @@
       "expiryDate": "Expiry Date",
       "status": "Status",
       "price": "Price",
-      "minimumQuantity": "Low Quantity",
+      "minimumQuantity": "Low stock",
       "actions": "Actions"
     },
     "actions": {
@@ -583,8 +586,8 @@
       "expiryDate": "Expiry Date",
       "price": "Price",
       "pricePlaceholder": "Enter price (optional)",
-      "minimumQuantity": "Low Quantity",
-      "minimumQuantityPlaceholder": "Enter low quantity (optional)",
+      "minimumQuantity": "Low stock",
+      "minimumQuantityPlaceholder": "Enter low stock threshold (optional)",
       "saveChanges": "Save Changes"
     },
     "deleteModal": {

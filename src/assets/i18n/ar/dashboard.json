@@ -219,7 +219,7 @@
       "itemName": "اسم المادة",
       "itemNo": "رقم المادة",
       "nsn": "NSN",
-      "minimumQuantity": "الحد الأدنى للكمية",
+      "minimumQuantity": "مخزون منخفض",
       "totalStock": "إجمالي المخزون",
       "holdQuantity": "الكمية المحجوزة",
       "suppliedQuantity": "الكمية المستخدمة",
