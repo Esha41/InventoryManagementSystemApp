@@ -48,7 +48,7 @@
         [itemCount]="itemSummaries.length"
         [totalRemainingQty]="totalRemainingQty"
         [totalLotsStat]="totalLotsStat"
-        [byType]="byType"
+        [byType]="itemTypeCountMetrics.byType"
         (lowStockClick)="onLowStockClick()"
         (expiringSoonClick)="onExpiringSoonClick()">
       </app-inventory-dashboard-stat-cards>
@@ -171,10 +171,10 @@
         <div *ngIf="itemSummaries.length > 0" class="px-4 sm:px-6 border-b border-[var(--color-border)]">
           <nav class="flex gap-1 overflow-x-auto -mb-px" aria-label="Item type tabs">
             <button *ngFor="let tab of [
-              { id: 'all',        label: 'inventoryDashboard.tabs.all',        count: tabCounts.all },
-              { id: 'ammunition', label: 'inventoryDashboard.tabs.ammunition',  count: tabCounts.ammunition },
-              { id: 'explosive',  label: 'inventoryDashboard.tabs.explosive',   count: tabCounts.explosive },
-              { id: 'weapon',     label: 'inventoryDashboard.tabs.weapon',      count: tabCounts.weapon }
+              { id: 'all',        label: 'inventoryDashboard.tabs.all',        count: itemTypeCountMetrics.tabCounts.all },
+              { id: 'ammunition', label: 'inventoryDashboard.tabs.ammunition',  count: itemTypeCountMetrics.tabCounts.ammunition },
+              { id: 'explosive',  label: 'inventoryDashboard.tabs.explosive',   count: itemTypeCountMetrics.tabCounts.explosive },
+              { id: 'weapon',     label: 'inventoryDashboard.tabs.weapon',      count: itemTypeCountMetrics.tabCounts.weapon }
             ]"
             type="button"
             (click)="setActiveTab($any(tab.id))"

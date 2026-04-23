@@ -18,6 +18,8 @@ export class ButtonComponent {
   size = input<ButtonSize>('md');
   disabled = input<boolean>(false);
   type = input<'button' | 'submit' | 'reset'>('button');
+  /** Binds the native `form` attribute (associate submit with a form by its `id` when the button is outside the form). */
+  formId = input<string | undefined>(undefined);
   fullWidth = input<boolean>(false);
 
   // Output signal

@@ -499,6 +499,7 @@
     "importExportDescription": "Import and export system data",
     "workflowDescription": "Configure workflow processes",
     "stockNotificationDescription": "Manage stock notification settings",
+    "orderAutoRejectDescription": "Configure automatic order rejection when approvals time out",
     "chartsComingSoon": "Advanced charts and analytics coming soon",
     "lastUpdated": "Last updated",
     "status": {

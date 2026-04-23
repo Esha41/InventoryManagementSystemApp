@@ -109,13 +109,45 @@ export class DropdownComponent<T = Primitive>
   private onTouched: () => void = () => { };
   private onValidatorChange: () => void = () => { };
 
-  private scrollHandler = (event: Event): void => {
-    if (!this.isOpen) return;
-    const target = event.target as Node;
-    if (!this.host.nativeElement.contains(target)) {
-      this.close();
-      this.onTouched();
+  private appMainEl: HTMLElement | null = null;
+  private openMainScrollTop: number | null = null;
+  private static readonly mainScrollJitterThresholdPx = 4;
+
+  private getAppMain(): HTMLElement | null {
+    if (!this.appMainEl || !this.appMainEl.isConnected) {
+      this.appMainEl = document.querySelector('main[data-onboarding="main-content"]');
     }
+    return this.appMainEl;
+  }
+
+  private syncOpenMainScrollTop(): void {
+    if (!this.isOpen) {
+      return;
+    }
+    const main = this.getAppMain();
+    this.openMainScrollTop = main != null ? main.scrollTop : null;
+  }
+
+  private scrollHandler = (event: Event): void => {
+    if (!this.isOpen) {
+      return;
+    }
+    const target = event.target as Node;
+    if (this.host.nativeElement.contains(target)) {
+      return;
+    }
+    const main = this.getAppMain();
+    if (main && target === main) {
+      if (this.openMainScrollTop === null) {
+        this.syncOpenMainScrollTop();
+        return;
+      }
+      if (Math.abs(main.scrollTop - this.openMainScrollTop) <= DropdownComponent.mainScrollJitterThresholdPx) {
+        return;
+      }
+    }
+    this.close();
+    this.onTouched();
   };
 
   @HostBinding('attr.name')
@@ -241,6 +273,23 @@ export class DropdownComponent<T = Primitive>
     this.onValidatorChange = fn;
   }
 
+  /** Prevents the browser from focusing the trigger in a way that scrolls the app `main` (jostles the whole page, especially filters above a footer control). */
+  onTriggerMouseDown(event: MouseEvent): void {
+    if (this.disabled || event.button !== 0) {
+      return;
+    }
+    event.preventDefault();
+  }
+
+  private ensureTriggerFocusNoScroll(): void {
+    requestAnimationFrame(() => {
+      const btn = this.host.nativeElement.querySelector(
+        '.app-dropdown-trigger'
+      ) as HTMLButtonElement | null;
+      btn?.focus({ preventScroll: true });
+    });
+  }
+
   toggleDropdown(): void {
     if (this.disabled) {
       return;
@@ -248,12 +297,15 @@ export class DropdownComponent<T = Primitive>
 
     this.isOpen = !this.isOpen;
     if (this.isOpen) {
+      this.syncOpenMainScrollTop();
       setTimeout(() => this.adjustPanelPosition(), 0);
       document.addEventListener('scroll', this.scrollHandler, { passive: true, capture: true });
     } else {
+      this.openMainScrollTop = null;
       document.removeEventListener('scroll', this.scrollHandler, { capture: true });
     }
     this.openedChange.emit(this.isOpen);
+    this.ensureTriggerFocusNoScroll();
   }
 
   open(): void {
@@ -262,9 +314,11 @@ export class DropdownComponent<T = Primitive>
     }
     this.isOpen = true;
     this.searchTerm = '';
+    this.syncOpenMainScrollTop();
     setTimeout(() => this.adjustPanelPosition(), 0);
     document.addEventListener('scroll', this.scrollHandler, { passive: true, capture: true });
     this.openedChange.emit(true);
+    this.ensureTriggerFocusNoScroll();
   }
 
   private adjustPanelPosition(): void {
@@ -276,12 +330,16 @@ export class DropdownComponent<T = Primitive>
 
     if (!this.isInsideVerticallyClippingScroller(trigger)) {
       this.positionPanelAnchored(panel);
+      this.syncOpenMainScrollTop();
       return;
     }
 
     const rect = trigger.getBoundingClientRect();
     this.positionPanelFixedToTrigger(panel, rect);
-    requestAnimationFrame(() => this.clampFixedPanelVertically(panel, rect));
+    requestAnimationFrame(() => {
+      this.clampFixedPanelVertically(panel, rect);
+      this.syncOpenMainScrollTop();
+    });
   }
 
   /** Normal case: panel under trigger, CSS handles width. */
@@ -317,6 +375,7 @@ export class DropdownComponent<T = Primitive>
     const chromeHeight = listRect ? panelRect.height - listRect.height : 0;
 
     if (panelRect.bottom <= window.innerHeight - VIEWPORT_PAD_PX) {
+      this.syncOpenMainScrollTop();
       return;
     }
 
@@ -350,6 +409,7 @@ export class DropdownComponent<T = Primitive>
     this.isOpen = false;
     this.hoveredIndex = null;
     this.searchTerm = '';
+    this.openMainScrollTop = null;
     document.removeEventListener('scroll', this.scrollHandler, { capture: true });
 
     const panel = this.host.nativeElement.querySelector('.app-dropdown-panel') as HTMLElement;

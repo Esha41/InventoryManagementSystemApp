@@ -1,10 +1,17 @@
 import { Component, OnDestroy, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, NavigationEnd } from '@angular/router';
+import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Subject, takeUntil, merge, of, forkJoin } from 'rxjs';
-import { catchError, filter, map, startWith, switchMap, finalize, distinctUntilChanged, take } from 'rxjs/operators';
+import { Subject, merge, of, asyncScheduler } from 'rxjs';
+import {
+  catchError,
+  switchMap,
+  finalize,
+  take,
+  takeUntil,
+  debounceTime
+} from 'rxjs/operators';
 import {
   LucideAngularModule,
   RefreshCw,
@@ -31,31 +38,35 @@ import { TranslationService } from '@services/translation.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { defaultPageSize } from '@constants/app.constants';
 import {
+  activeTabFromItemTypeDropdown,
   filterItemSummaries,
+  filterItemSummariesByActiveTab,
+  formatItemPickLabel,
+  hasActiveItemTableFilters,
+  itemTypeTabAndStatCounts,
+  nextTableSort,
+  pageCountForLength,
+  paginatePage,
   sortItemSummaries as sortItemSummariesHelper,
   sortLotDetails as sortLotDetailsHelper,
   distinctCalibersFromItems,
+  sumItemSummariesExcludingWeapon,
   sumItemSummariesField,
+  sortAssetDetailsDtos,
+  totalRemainingFromSummaries,
+  totalLotsFromSummaries,
   ActiveTab
 } from './inventory-dashboard.helpers';
 import { InventoryItemSummaryTableComponent } from './inventory-item-summary-table.component';
 import { InventoryDashboardStatCardsComponent } from './components/inventory-dashboard-stat-cards/inventory-dashboard-stat-cards.component';
 import { InventoryDashboardWeaponPipelineComponent } from './components/inventory-dashboard-weapon-pipeline/inventory-dashboard-weapon-pipeline.component';
 import { InventoryDashboardSummaryDto } from '@models/inventory-dashboard-monitoring.model';
-
-const emptyInventoryMonitoring = (): InventoryDashboardSummaryDto => ({
-  weaponAssets: {
-    totalAssets: 0,
-    assignedCount: 0,
-    inDepotCount: 0,
-    unknownStatusCount: 0,
-    byStatus: []
-  },
-  pipeline: {
-    draftSupplyCount: 0,
-    ordersAwaitingFulfillmentCount: 0
-  }
-});
+import {
+  emptyInventoryMonitoring,
+  enterInventoryDashboard$,
+  getInventoryDashboardData$,
+  userAccountRefetch$
+} from './inventory-dashboard.data-load';
 
 @Component({
   selector: 'app-inventory-dashboard',
@@ -78,41 +89,34 @@ const emptyInventoryMonitoring = (): InventoryDashboardSummaryDto => ({
 export class InventoryDashboardComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   private readonly manualRefresh$ = new Subject<void>();
+  private readonly afterDepotsReady$ = new Subject<void>();
+  private loadingPipelineWired = false;
 
   isLoading = false;
   errorMessage: string | null = null;
 
-  // ── Global depot filter (multi-select) ────────────────────────────────────
   depots: DepotDto[] = [];
-  /** Empty array = "All my depots" */
   selectedDepotIds: number[] = [];
 
-  // ── Tab filter ────────────────────────────────────────────────────────────
   activeTab: ActiveTab = 'all';
 
-  // ── Table filters (client-side) ───────────────────────────────────────────
   itemSearchText = '';
   caliberFilterText = '';
-  /** null = all types (used when tab = 'all' with dropdown) */
   itemTypeFilter: number | null = null;
-  /** Multi-select item filter — empty = all items */
   selectedItemFilterIds: number[] = [];
 
-  // ── Alert stats (react to depot filter) ───────────────────────────────────
   lowStockCount = 0;
   expiringSoonCount = 0;
 
-  /** Weapon assets + supply pipeline (multi-depot aligned with item summary). */
   inventoryMonitoring: InventoryDashboardSummaryDto = emptyInventoryMonitoring();
 
-  // ── Item summary table ─────────────────────────────────────────────────────
   itemSummaries: ItemInventorySummaryDto[] = [];
+  private _itemTypeCountMetrics = itemTypeTabAndStatCounts([]);
   itemSortColumn: string | null = null;
   itemSortDirection: 'asc' | 'desc' = 'asc';
   itemCurrentPage = 1;
   itemRowsPerPage = defaultPageSize;
 
-  // ── Lot detail expansion (ammunition / explosives) ─────────────────────────
   expandedItemId: number | null = null;
   lotDetails: LotDetailDto[] = [];
   isLotsLoading = false;
@@ -121,7 +125,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   lotCurrentPage = 1;
   lotRowsPerPage = 10;
 
-  // ── Asset detail expansion (weapons) ──────────────────────────────────────
   assetDetails: AssetDto[] = [];
   isAssetsLoading = false;
   assetSortColumn: string | null = null;
@@ -129,7 +132,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   assetCurrentPage = 1;
   assetRowsPerPage = 10;
 
-  // ── Icons ──────────────────────────────────────────────────────────────────
   readonly RefreshCw = RefreshCw;
   readonly Package = Package;
   readonly Warehouse = Warehouse;
@@ -161,10 +163,10 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe((depots: DepotDto[]) => {
       this.depots = depots;
-      // Pre-select all accessible depots so the user sees their data immediately
       this.selectedDepotIds = depots.map(d => d.id);
       this.cdr.markForCheck();
       this.setupLoadingPipeline();
+      this.afterDepotsReady$.next();
     });
   }
 
@@ -173,74 +175,68 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  // ── Data pipeline ──────────────────────────────────────────────────────────
-
   private setupLoadingPipeline(): void {
-    const userChanges$ = this.authService.currentUser$.pipe(
-      filter(user => !!user),
-      map(() => 'user-change')
-    );
-
-    const navigationChanges$ = this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd),
-      filter(() => this.router.url.startsWith('/inventory-dashboard')),
-      map(() => 'navigation')
-    );
+    if (this.loadingPipelineWired) {
+      return;
+    }
+    this.loadingPipelineWired = true;
 
     this.translate.onLangChange
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.cdr.markForCheck());
 
     merge(
-      userChanges$.pipe(distinctUntilChanged()),
-      navigationChanges$,
-      this.manualRefresh$
-    ).pipe(
-      startWith('initial-load'),
-      switchMap(() => {
-        this.isLoading = true;
-        this.errorMessage = null;
-        this.cdr.markForCheck();
-        return this.fetchAllData();
-      }),
-      takeUntil(this.destroy$)
-    ).subscribe(result => {
-      if (result) {
-        this.lowStockCount = result.lowStockCount;
-        this.expiringSoonCount = result.expiringSoonCount;
-        this.itemSummaries = result.itemSummaries;
-        this.inventoryMonitoring = result.inventoryMonitoring ?? emptyInventoryMonitoring();
-        this.itemCurrentPage = 1;
-        this.expandedItemId = null;
-        this.lotDetails = [];
-        this.assetDetails = [];
-        // Remove selected items that are no longer in the summary
-        if (this.selectedItemFilterIds.length > 0) {
-          const validIds = new Set(this.itemSummaries.map(i => i.itemId));
-          this.selectedItemFilterIds = this.selectedItemFilterIds.filter(id => validIds.has(id));
+      this.afterDepotsReady$,
+      this.manualRefresh$,
+      userAccountRefetch$(this.authService),
+      enterInventoryDashboard$(this.router)
+    )
+      .pipe(
+        debounceTime(0, asyncScheduler),
+        switchMap(() => {
+          this.isLoading = true;
+          this.errorMessage = null;
+          this.cdr.markForCheck();
+          return this.fetchAllData();
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(result => {
+        if (result) {
+          this.applyDashboardData(result);
         }
-      }
-      this.isLoading = false;
-      this.cdr.markForCheck();
-    });
+      });
+  }
+
+  private applyDashboardData(result: {
+    lowStockCount: number;
+    expiringSoonCount: number;
+    itemSummaries: ItemInventorySummaryDto[];
+    inventoryMonitoring: InventoryDashboardSummaryDto | null;
+  }): void {
+    this.lowStockCount = result.lowStockCount;
+    this.expiringSoonCount = result.expiringSoonCount;
+    this.itemSummaries = result.itemSummaries;
+    this._itemTypeCountMetrics = itemTypeTabAndStatCounts(this.itemSummaries);
+    this.inventoryMonitoring = result.inventoryMonitoring ?? emptyInventoryMonitoring();
+    this.itemCurrentPage = 1;
+    this.expandedItemId = null;
+    this.lotDetails = [];
+    this.assetDetails = [];
+    if (this.selectedItemFilterIds.length > 0) {
+      const validIds = new Set(this.itemSummaries.map(i => i.itemId));
+      this.selectedItemFilterIds = this.selectedItemFilterIds.filter(id => validIds.has(id));
+    }
   }
 
   private fetchAllData() {
-    const ids = this.selectedDepotIds.length > 0 ? this.selectedDepotIds : undefined;
-    // For monitoring endpoints pass only the first selected depot for now (single-depot APIs)
-    const singleDepotId = this.selectedDepotIds.length === 1 ? this.selectedDepotIds[0] : undefined;
-    return forkJoin({
-      lowStockCount: this.monitoringService.getLowStockItemsCount(singleDepotId).pipe(catchError(() => of(0))),
-      expiringSoonCount: this.monitoringService.getExpiringLotsCount(singleDepotId).pipe(catchError(() => of(0))),
-      itemSummaries: this.inventorySummaryData.loadMergedItemSummaries(ids).pipe(catchError(() => of([]))),
-      inventoryMonitoring: this.monitoringService.getInventoryDashboardSummary(ids).pipe(
-        catchError(() => of(emptyInventoryMonitoring()))
-      )
-    }).pipe(
+    return getInventoryDashboardData$(
+      this.selectedDepotIds,
+      this.monitoringService,
+      this.inventorySummaryData
+    ).pipe(
       catchError(err => {
         this.errorMessage = ErrorHandler.extractErrorMessage(err, 'Failed to load dashboard data');
-        this.isLoading = false;
-        this.cdr.markForCheck();
         return of(null);
       }),
       finalize(() => {
@@ -253,8 +249,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   onRefresh(): void {
     this.manualRefresh$.next();
   }
-
-  // ── Global depot filter ────────────────────────────────────────────────────
 
   onDepotFilterChange(depotIds: number[] | null): void {
     this.selectedDepotIds = Array.isArray(depotIds) ? depotIds.map(Number) : [];
@@ -299,17 +293,14 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       (a.itemName || '').localeCompare(b.itemName || '', undefined, { sensitivity: 'base' })
     );
     return rows.map(i => ({
-      label: this.formatItemPickLabel(i),
+      label: formatItemPickLabel(i),
       value: i.itemId
     }));
   }
 
-  private formatItemPickLabel(i: ItemInventorySummaryDto): string {
-    const no = (i.itemNo || '').trim();
-    return no ? `${i.itemName} (${no})` : (i.itemName || '—');
+  get itemTypeCountMetrics() {
+    return this._itemTypeCountMetrics;
   }
-
-  // ── Tabs ───────────────────────────────────────────────────────────────────
 
   setActiveTab(tab: ActiveTab): void {
     this.activeTab = tab;
@@ -322,26 +313,9 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  get tabCounts(): { all: number; ammunition: number; weapon: number; explosive: number } {
-    return {
-      all: this.itemSummaries.length,
-      ammunition: this.itemSummaries.filter(i => i.itemType === ItemType.Ammunition).length,
-      weapon: this.itemSummaries.filter(i => i.itemType === ItemType.Weapon).length,
-      explosive: this.itemSummaries.filter(i => i.itemType === ItemType.Explosive).length
-    };
-  }
-
-  /** Items filtered only by active tab (before text/item filters). Used for item picker options. */
   get tabFilteredSummaries(): ItemInventorySummaryDto[] {
-    if (this.activeTab === 'all') return this.itemSummaries;
-    const tabType =
-      this.activeTab === 'ammunition' ? ItemType.Ammunition :
-      this.activeTab === 'weapon'     ? ItemType.Weapon     :
-                                        ItemType.Explosive;
-    return this.itemSummaries.filter(i => i.itemType === tabType);
+    return filterItemSummariesByActiveTab(this.itemSummaries, this.activeTab);
   }
-
-  // ── Table filters ──────────────────────────────────────────────────────────
 
   onItemSearchInput(): void {
     this.itemCurrentPage = 1;
@@ -358,25 +332,9 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     this.expandedItemId = null;
     this.lotDetails = [];
     this.assetDetails = [];
-
-    // Keep tab strip in sync with the item-type dropdown (All tab only)
-    const raw = this.itemTypeFilter;
-    if (raw === null || raw === undefined) {
-      this.activeTab = 'all';
-    } else {
-      const t = Number(raw);
-      if (t === ItemType.Ammunition) {
-        this.activeTab = 'ammunition';
-        this.itemTypeFilter = null;
-      } else if (t === ItemType.Weapon) {
-        this.activeTab = 'weapon';
-        this.itemTypeFilter = null;
-      } else if (t === ItemType.Explosive) {
-        this.activeTab = 'explosive';
-        this.itemTypeFilter = null;
-      }
-    }
-
+    const next = activeTabFromItemTypeDropdown(this.itemTypeFilter);
+    this.activeTab = next.activeTab;
+    this.itemTypeFilter = next.itemTypeFilter;
     this.cdr.markForCheck();
   }
 
@@ -413,12 +371,12 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   }
 
   get hasActiveTableFilters(): boolean {
-    return (
-      this.activeTab !== 'all' ||
-      !!this.itemSearchText.trim() ||
-      !!this.caliberFilterText.trim() ||
-      this.itemTypeFilter !== null ||
-      this.selectedItemFilterIds.length > 0
+    return hasActiveItemTableFilters(
+      this.activeTab,
+      this.itemSearchText,
+      this.caliberFilterText,
+      this.itemTypeFilter,
+      this.selectedItemFilterIds
     );
   }
 
@@ -436,22 +394,12 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     return this.translate.instant('inventoryDashboard.itemSummary.singleItemTotalsNameOnly', { name: i.itemName });
   }
 
-  // ── Computed stats ─────────────────────────────────────────────────────────
-
   get totalRemainingQty(): number {
-    return this.itemSummaries.reduce((sum, i) => sum + (i.remainingQuantity ?? 0), 0);
+    return totalRemainingFromSummaries(this.itemSummaries);
   }
 
   get totalLotsStat(): number {
-    return this.itemSummaries.reduce((sum, i) => sum + (i.totalLots ?? 0), 0);
-  }
-
-  get byType(): { ammo: number; weapon: number; explosive: number } {
-    return {
-      ammo: this.itemSummaries.filter(i => i.itemType === ItemType.Ammunition).length,
-      weapon: this.itemSummaries.filter(i => i.itemType === ItemType.Weapon).length,
-      explosive: this.itemSummaries.filter(i => i.itemType === ItemType.Explosive).length
-    };
+    return totalLotsFromSummaries(this.itemSummaries);
   }
 
   get sumTotalQtyFiltered(): number {
@@ -459,34 +407,23 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   }
 
   get sumUsedQtyFiltered(): number {
-    return sumItemSummariesField(
-      this.filteredItemSummaries.filter(i => i.itemType !== ItemType.Weapon),
-      'usedQuantity'
-    );
+    return sumItemSummariesExcludingWeapon(this.filteredItemSummaries, 'usedQuantity');
   }
 
   get sumReservedQtyFiltered(): number {
-    return sumItemSummariesField(
-      this.filteredItemSummaries.filter(i => i.itemType !== ItemType.Weapon),
+    return sumItemSummariesExcludingWeapon(
+      this.filteredItemSummaries,
       'reservedQuantityByOrdersOnProcessing'
     );
   }
 
   get sumRemainingQtyFiltered(): number {
-    return sumItemSummariesField(
-      this.filteredItemSummaries.filter(i => i.itemType !== ItemType.Weapon),
-      'remainingQuantity'
-    );
+    return sumItemSummariesExcludingWeapon(this.filteredItemSummaries, 'remainingQuantity');
   }
 
   get sumLotsFiltered(): number {
-    return sumItemSummariesField(
-      this.filteredItemSummaries.filter(i => i.itemType !== ItemType.Weapon),
-      'totalLots'
-    );
+    return sumItemSummariesExcludingWeapon(this.filteredItemSummaries, 'totalLots');
   }
-
-  // ── Item summary table ─────────────────────────────────────────────────────
 
   get sortedItemSummaries(): ItemInventorySummaryDto[] {
     return sortItemSummariesHelper(
@@ -501,26 +438,17 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   }
 
   get itemTotalPages(): number {
-    return Math.ceil(this.filteredItemCount / this.itemRowsPerPage);
+    return pageCountForLength(this.filteredItemCount, this.itemRowsPerPage);
   }
 
   get paginatedItemSummaries(): ItemInventorySummaryDto[] {
-    const sorted = this.sortedItemSummaries;
-    const n = this.filteredItemCount;
-    if (n === 0) return [];
-    const totalPages = Math.ceil(n / this.itemRowsPerPage);
-    const safePage = Math.min(Math.max(1, this.itemCurrentPage), totalPages);
-    const start = (safePage - 1) * this.itemRowsPerPage;
-    return sorted.slice(start, start + this.itemRowsPerPage);
+    return paginatePage(this.sortedItemSummaries, this.itemCurrentPage, this.itemRowsPerPage);
   }
 
   sortItemsByColumn(column: string): void {
-    if (this.itemSortColumn === column) {
-      this.itemSortDirection = this.itemSortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.itemSortColumn = column;
-      this.itemSortDirection = 'asc';
-    }
+    const next = nextTableSort(column, this.itemSortColumn, this.itemSortDirection);
+    this.itemSortColumn = next.sortColumn;
+    this.itemSortDirection = next.sortDirection;
     this.itemCurrentPage = 1;
     this.cdr.markForCheck();
   }
@@ -536,8 +464,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     this.itemCurrentPage = 1;
     this.cdr.markForCheck();
   }
-
-  // ── Row expansion — routes to lots (ammo/explosive) or assets (weapon) ─────
 
   toggleItemExpand(item: ItemInventorySummaryDto): void {
     if (this.expandedItemId === item.itemId) {
@@ -565,7 +491,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   private loadLots(item: ItemInventorySummaryDto): void {
     this.isLotsLoading = true;
     this.cdr.markForCheck();
-    // For single-depot selection pass that depot, otherwise no filter
     const depotId = this.selectedDepotIds.length === 1 ? this.selectedDepotIds[0] : undefined;
     this.inventoryService.getLotsByItemId(item.itemId, depotId).pipe(
       catchError(() => of([])),
@@ -591,28 +516,22 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ── Lot pagination / sort ──────────────────────────────────────────────────
-
   get sortedLotDetails(): LotDetailDto[] {
     return sortLotDetailsHelper(this.lotDetails, this.lotSortColumn, this.lotSortDirection);
   }
 
   get lotTotalPages(): number {
-    return Math.ceil(this.lotDetails.length / this.lotRowsPerPage);
+    return pageCountForLength(this.lotDetails.length, this.lotRowsPerPage);
   }
 
   get paginatedLotDetails(): LotDetailDto[] {
-    const start = (this.lotCurrentPage - 1) * this.lotRowsPerPage;
-    return this.sortedLotDetails.slice(start, start + this.lotRowsPerPage);
+    return paginatePage(this.sortedLotDetails, this.lotCurrentPage, this.lotRowsPerPage);
   }
 
   sortLotsByColumn(column: string): void {
-    if (this.lotSortColumn === column) {
-      this.lotSortDirection = this.lotSortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.lotSortColumn = column;
-      this.lotSortDirection = 'asc';
-    }
+    const next = nextTableSort(column, this.lotSortColumn, this.lotSortDirection);
+    this.lotSortColumn = next.sortColumn;
+    this.lotSortDirection = next.sortDirection;
     this.lotCurrentPage = 1;
     this.cdr.markForCheck();
   }
@@ -628,36 +547,22 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  // ── Asset pagination / sort ────────────────────────────────────────────────
-
   get sortedAssetDetails(): AssetDto[] {
-    if (!this.assetSortColumn) return this.assetDetails;
-    const col = this.assetSortColumn;
-    const dir = this.assetSortDirection === 'asc' ? 1 : -1;
-    return [...this.assetDetails].sort((a, b) => {
-      const av = (a as unknown as Record<string, unknown>)[col] ?? '';
-      const bv = (b as unknown as Record<string, unknown>)[col] ?? '';
-      if (typeof av === 'string') return av.localeCompare(String(bv)) * dir;
-      return ((av as number) - (bv as number)) * dir;
-    });
+    return sortAssetDetailsDtos(this.assetDetails, this.assetSortColumn, this.assetSortDirection);
   }
 
   get assetTotalPages(): number {
-    return Math.ceil(this.assetDetails.length / this.assetRowsPerPage);
+    return pageCountForLength(this.assetDetails.length, this.assetRowsPerPage);
   }
 
   get paginatedAssetDetails(): AssetDto[] {
-    const start = (this.assetCurrentPage - 1) * this.assetRowsPerPage;
-    return this.sortedAssetDetails.slice(start, start + this.assetRowsPerPage);
+    return paginatePage(this.sortedAssetDetails, this.assetCurrentPage, this.assetRowsPerPage);
   }
 
   sortAssetsByColumn(column: string): void {
-    if (this.assetSortColumn === column) {
-      this.assetSortDirection = this.assetSortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.assetSortColumn = column;
-      this.assetSortDirection = 'asc';
-    }
+    const next = nextTableSort(column, this.assetSortColumn, this.assetSortDirection);
+    this.assetSortColumn = next.sortColumn;
+    this.assetSortDirection = next.sortDirection;
     this.assetCurrentPage = 1;
     this.cdr.markForCheck();
   }
@@ -672,8 +577,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     this.assetCurrentPage = 1;
     this.cdr.markForCheck();
   }
-
-  // ── Navigation ─────────────────────────────────────────────────────────────
 
   onExpiringSoonClick(): void {
     this.router.navigate(['/inventory-dashboard/expiring-lots']);
@@ -698,8 +601,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       ids?.length ? { queryParams: { depotIds: ids } } : {}
     );
   }
-
-  // ── Helpers ────────────────────────────────────────────────────────────────
 
   get selectedDepotLabel(): string {
     if (this.selectedDepotIds.length === 0) return '';

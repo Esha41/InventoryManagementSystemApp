@@ -70,10 +70,15 @@ export class AssetService implements IImportableService {
     /**
      * Get all assets
      */
-    getAll<T = AssetDto>(query?: { search?: string; depotId?: number }): Observable<T[]> {
+    getAll<T = AssetDto>(query?: { search?: string; depotId?: number; depotIds?: number[] }): Observable<T[]> {
         let params = new HttpParams();
         if (query?.search) params = params.set('search', query.search);
-        if (query?.depotId) params = params.set('depotId', query.depotId.toString());
+        if (query?.depotId != null) params = params.set('depotId', String(query.depotId));
+        if (query?.depotIds?.length) {
+            for (const id of query.depotIds) {
+                params = params.append('depotIds', String(id));
+            }
+        }
 
         return this.apiService.get<T[]>(this.basePath, params);
     }

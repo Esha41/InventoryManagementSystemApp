@@ -369,7 +369,7 @@
     "tableTitle": "Assets (Weapon)",
     "refreshing": "Updating…",
     "filters": {
-      "heading": "Filters",
+      "heading": "Search",
       "searchLabel": "Search",
       "searchPlaceholder": "Search......",
       "clear": "Clear all filters",
@@ -380,7 +380,7 @@
       "custodyCheckin": "Checked in",
       "dateFrom": "Created from",
       "dateTo": "Created to",
-      "moreFilters": "Additional filters",
+      "moreFilters": "Advanced search",
       "hideFilters": "Hide filters",
       "applyFilters": "Apply filters",
       "employee": "Employee"

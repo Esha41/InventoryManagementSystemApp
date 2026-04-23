@@ -124,6 +124,17 @@
                     </div>
                 </a>
 
+                <ng-container *appHasPermission="'orderAutoRejectSettings.page'">
+                    <a [routerLink]="['/order-auto-reject-settings']" class="quick-action-card">
+                        <div class="quick-action-icon">
+                            <lucide-angular [img]="Timer" class="icon"></lucide-angular>
+                        </div>
+                        <div class="quick-action-content">
+                            <h3 class="quick-action-title">{{ 'nav.orderAutoRejectSettings' | translate }}</h3>
+                            <p class="quick-action-description">{{ 'adminDashboard.orderAutoRejectDescription' | translate }}</p>
+                        </div>
+                    </a>
+                </ng-container>
 
             </div>
         </div>

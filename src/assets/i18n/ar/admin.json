@@ -499,6 +499,7 @@
     "importExportDescription": "استيراد وتصدير بيانات النظام",
     "workflowDescription": "تكوين عمليات سير العمل",
     "stockNotificationDescription": "إدارة إعدادات إشعارات المخزون",
+    "orderAutoRejectDescription": "تكوين الرفض التلقائي للطلبات عند انتهاء مهلة الموافقات",
     "chartsComingSoon": "الرسوم البيانية والتحليلات المتقدمة قريباً",
     "lastUpdated": "آخر تحديث",
     "status": {

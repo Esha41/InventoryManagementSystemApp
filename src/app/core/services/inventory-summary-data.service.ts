@@ -14,20 +14,10 @@ export class InventorySummaryDataService {
         private readonly assetService: AssetService
     ) { }
 
-    /**
-     * Load all inventory items (ammunition, weapons as assets, explosives).
-     * Weapons use {@link AssetDto} counts — same rules as {@link loadMergedItemSummaries}.
-     */
     loadAllItems(): Observable<ItemInventorySummaryDto[]> {
         return this.loadMergedItemSummaries(undefined);
     }
 
-    /**
-     * Lot-based summary from Inventory API plus weapon rows derived from asset counts.
-     * Matches `/inventory-summary`: `GET /Inventory/items/summary` is lot-only; weapon totals must come from assets.
-     *
-     * @param depotIds Optional depot filter (same as inventory summary). Empty/undefined = all accessible depots.
-     */
     loadMergedItemSummaries(depotIds?: number[]): Observable<ItemInventorySummaryDto[]> {
         return forkJoin({
             inventorySummary: this.inventoryService.getAllItemsSummary(depotIds).pipe(
@@ -43,7 +33,6 @@ export class InventorySummaryDataService {
         );
     }
 
-    /** All assets in scope: unfiltered API, single depot, or merged unique assets across multiple depots. */
     private loadAssetsForDepotScope(depotIds?: number[]): Observable<AssetDto[]> {
         if (!depotIds?.length) {
             return this.assetService.getAll<AssetDto>({ search: '' });
@@ -51,21 +40,19 @@ export class InventorySummaryDataService {
         if (depotIds.length === 1) {
             return this.assetService.getAll<AssetDto>({ search: '', depotId: depotIds[0] });
         }
-        return forkJoin(
-            depotIds.map(id =>
-                this.assetService.getAll<AssetDto>({ search: '', depotId: id }).pipe(catchError(() => of([] as AssetDto[])))
-            )
-        ).pipe(
-            map(groups => {
-                const byAssetId = new Map<number, AssetDto>();
-                for (const a of groups.flat()) {
-                    if (!a.isDeleted) {
-                        byAssetId.set(a.id, a);
+        return this.assetService
+            .getAll<AssetDto>({ search: '', depotIds: depotIds })
+            .pipe(
+                map(assets => {
+                    const byAssetId = new Map<number, AssetDto>();
+                    for (const a of assets) {
+                        if (!a.isDeleted) {
+                            byAssetId.set(a.id, a);
+                        }
                     }
-                }
-                return [...byAssetId.values()];
-            })
-        );
+                    return [...byAssetId.values()];
+                })
+            );
     }
 
     private filterOutWeapons(items: ItemInventorySummaryDto[]): ItemInventorySummaryDto[] {
@@ -124,9 +111,9 @@ export class InventorySummaryDataService {
             partNo: weapon.partNo || '',
             totalQuantity: itemAssets.length,
             usedQuantity: 0,
-            reservedQuantityByOrdersOnProcessing: 0, // Not applicable for assets
+            reservedQuantityByOrdersOnProcessing: 0,
             remainingQuantity: this.countAssetsByStatus(itemAssets, 'ReadyToIssue'),
-            totalLots: itemAssets.length // For weapons, represents total asset count
+            totalLots: itemAssets.length
         };
     }
 
