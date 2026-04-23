@@ -1,5 +1,5 @@
 import { ImportResult } from '@models/import-result.model';
-import { PreviewData } from '@shared/components/import-preview-dialog/import-preview-dialog.component';
+import { PreviewData } from '@components/import-preview-dialog/import-preview-dialog.component';
 
 export interface MapImportPreviewOptions {
   /** Column keys (camelCase) to omit from preview table and error export (e.g. assetId, itemId). */

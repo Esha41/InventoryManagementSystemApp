@@ -20,7 +20,7 @@ import { TranslationService } from '@services/translation.service';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { validateFile, showFileValidationErrors } from '@utils/file.utils';
-import { ConfirmationDialogComponent, ConfirmationType } from '@shared/components/confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationDialogComponent, ConfirmationType } from '@components/confirmation-dialog/confirmation-dialog.component';
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 import { UserDelegationService } from '@services/user-delegation.service';
 // Import extracted services
@@ -57,8 +57,8 @@ import { OrderItemTrackingModalComponent } from './components/order-item-trackin
 import { WorkflowReturnDepotComponent } from './components/workflow-return-depot/workflow-return-depot.component';
 import { WorkflowReturnDeliveryDateComponent } from './components/workflow-return-delivery-date/workflow-return-delivery-date.component';
 import { WorkflowReturnApprovedSummaryComponent } from './components/workflow-return-approved-summary/workflow-return-approved-summary.component';
-import { AutoRejectCountdownService, OrderAutoRejectCountdownDto } from '@shared/services/auto-reject-countdown.service';
-import { AutoRejectCountdownComponent } from '@shared/components/auto-reject-countdown/auto-reject-countdown.component';
+import { AutoRejectCountdownService, OrderAutoRejectCountdownDto } from '@requests/services/auto-reject-countdown.service';
+import { AutoRejectCountdownComponent } from '@requests/components/auto-reject-countdown/auto-reject-countdown.component';
 
 @Component({
   selector: 'app-workflow-approval-detail',

@@ -7,7 +7,7 @@ import { LucideAngularModule, Users, Calendar, User, AlertCircle, Filter, Refres
 import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 import { finalize } from 'rxjs/operators';
 import { ToastService } from '@services/toast.service';
-import { ConfirmationDialogComponent } from '@shared/components/confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationDialogComponent } from '@components/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
     selector: 'app-admin-delegations',

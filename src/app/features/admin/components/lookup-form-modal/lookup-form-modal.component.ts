@@ -1,12 +1,12 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { ModalComponent } from '../modal/modal.component';
-import { ButtonComponent } from '../button/button.component';
+import { ModalComponent } from '@components/modal/modal.component';
+import { ButtonComponent } from '@components/button/button.component';
 import { Subject, takeUntil } from 'rxjs';
 import { LookupItem, CreateUpdateLookupDto, LookupTableConfig } from '@models/lookup.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { DropdownComponent, DropdownOption } from '../dropdown/dropdown.component';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 
 @Component({
   selector: 'app-lookup-form-modal',

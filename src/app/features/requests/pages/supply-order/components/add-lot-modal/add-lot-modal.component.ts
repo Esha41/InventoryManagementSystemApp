@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } 
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Package, AlertTriangle } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
-import { ModalComponent } from '@shared/components/modal/modal.component';
+import { ModalComponent } from '@components/modal/modal.component';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { OrderRequestItemDto } from '@models/order.model';
 import { LotItem } from '@models/supply-order.model';

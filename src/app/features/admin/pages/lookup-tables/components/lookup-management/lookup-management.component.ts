@@ -10,7 +10,7 @@ import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { LookupManagementService } from '@services/lookup-management.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { LookupFiltersComponent } from '../lookup-filters/lookup-filters.component';
-import { LookupFormModalComponent } from '@components/lookup-form-modal/lookup-form-modal.component';
+import { LookupFormModalComponent } from '@admin/components/lookup-form-modal/lookup-form-modal.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { PaginationComponent, RowsPerPageComponent } from '@components/index';
 import { EmployeeFormModalComponent } from '@components/employee-form-modal/employee-form-modal.component';

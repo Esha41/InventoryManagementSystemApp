@@ -32,7 +32,7 @@ import { AssetDto } from '@models/asset.model';
 import { DepotDto } from '@models/depot.model';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
-import { DropdownComponent, DropdownOption } from '@shared/components/dropdown/dropdown.component';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslationService } from '@services/translation.service';
 import { ErrorHandler } from '@utils/error-handler.utils';

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { OrderAutoRejectCountdownDto } from '@shared/services/auto-reject-countdown.service';
+import { OrderAutoRejectCountdownDto } from '@requests/services/auto-reject-countdown.service';
 
 @Component({
   selector: 'app-auto-reject-countdown',
@@ -16,15 +16,9 @@ export class AutoRejectCountdownComponent {
 
   pillClass(): string {
     const s = this.countdown?.state ?? 'none';
-    if (s === 'expired') {
-      return 'auto-reject-pill auto-reject-pill--expired';
-    }
-    if (s === 'warning') {
-      return 'auto-reject-pill auto-reject-pill--warning';
-    }
-    if (s === 'running') {
-      return 'auto-reject-pill auto-reject-pill--running';
-    }
+    if (s === 'expired') return 'auto-reject-pill auto-reject-pill--expired';
+    if (s === 'warning') return 'auto-reject-pill auto-reject-pill--warning';
+    if (s === 'running') return 'auto-reject-pill auto-reject-pill--running';
     return '';
   }
 }

@@ -1,8 +1,8 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, OnDestroy, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { ModalComponent } from '../modal/modal.component';
-import { ButtonComponent } from '../button/button.component';
+import { ModalComponent } from '@components/modal/modal.component';
+import { ButtonComponent } from '@components/button/button.component';
 import { BackendUserDto, RoleDto, CreateUserDto, UpdateUserDto } from '@models/backend-user.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BackendUserService } from '@services/backend-user.service';
