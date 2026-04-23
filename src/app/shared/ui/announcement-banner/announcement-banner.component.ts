@@ -5,7 +5,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Megaphone, X } from 'lucide-angular';
 import { filter, takeUntil } from 'rxjs';
 import { Subject } from 'rxjs';
-import { AnnouncementService } from '@services/announcement.service';
+import { AnnouncementService } from '@admin/services/announcement.service';
 import { ActiveAnnouncement, AnnouncementDeliveryType } from '@models/announcement.model';
 
 @Component({

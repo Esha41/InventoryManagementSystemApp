@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { LookupService, LookupItem } from '@services/lookup.service';
-import { EmployeeService } from '@services/employee.service';
+import { EmployeeService } from '@admin/services/employee.service';
 import { EmployeeDto } from '@core/models/asset.model';
 import { DropdownOption } from '@components/dropdown/dropdown.component';
 import { getCurrentLang, getLocalizedName } from '@utils/localization.utils';

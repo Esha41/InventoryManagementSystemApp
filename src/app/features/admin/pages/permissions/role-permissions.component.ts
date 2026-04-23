@@ -13,7 +13,7 @@ import { ButtonComponent } from '@components/button/button.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { LoadingStateComponent } from '@components/index';
-import { ProfileDataService } from '@services/profile-data.service';
+import { ProfileDataService } from '@profile/services/profile-data.service';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { defaultPageSize } from '@constants/app.constants';
 

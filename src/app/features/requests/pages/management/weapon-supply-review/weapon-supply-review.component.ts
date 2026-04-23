@@ -8,8 +8,8 @@ import { LucideAngularModule, ArrowLeft, ArrowRight, ChevronDown, ChevronUp,Chev
 import { Subject, takeUntil, debounceTime, distinctUntilChanged, forkJoin, of } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 
-import { AssetService } from '@services/asset.service';
-import { OrderService } from '@services/order.service';
+import { AssetService } from '@assets/services/asset.service';
+import { OrderService } from '@requests/services/order.service';
 import { FileUploadService } from '@services/file-upload.service';
 import { FileEntityType } from '@models/file-upload.model';
 import { OrderDto } from '@models/order.model';

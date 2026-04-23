@@ -10,7 +10,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Package, AlertTriangle, X } from 'lucide-angular';
 import { ModalComponent } from '@components/modal/modal.component';
 import { OrderItem, LotItem } from '@models/supply-request.model';
-import { LotDetailDto } from '@services/inventory.service';
+import { LotDetailDto } from '@inventory/services/inventory.service';
 import { formatLocation, determineCondition, calculateDaysUntilExpiry } from '@utils/lot.utils';
 import { getLotConditionClass } from '../../../utils/ui-helpers.utils';
 import { formatDate as formatDateUtil, formatNumber as formatNumberUtil } from '@utils/format.utils';

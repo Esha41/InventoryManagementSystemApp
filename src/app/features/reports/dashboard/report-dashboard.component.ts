@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Eye, FileText } from 'lucide-angular';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
-import { ReportService, Report } from '@services/report.service';
+import { ReportService, Report } from '@reports/services/report.service';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 

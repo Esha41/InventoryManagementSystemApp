@@ -13,8 +13,8 @@ import { OrderSuccessComponent } from './components/order-success/order-success.
 import { StepSelectionComponent } from './components/step-selection/step-selection.component';
 import { ErrorBannerComponent } from './components/error-banner/error-banner.component';
 import { Subject, takeUntil, debounceTime } from 'rxjs';
-import { CartridgeDataService } from '@services/cartridge-data.service';
-import { OrderSubmissionService } from '@services/order-submission.service';
+import { CartridgeDataService } from '@assets/services/cartridge-data.service';
+import { OrderSubmissionService } from '@requests/services/order-submission.service';
 import { APIOperationResponse } from '@models/api-response.model';
 import { IssueRequestFilterService } from '@requests/services/issue-request-filter.service';
 import { IssueRequestStateService } from '@requests/services/issue-request-state.service';

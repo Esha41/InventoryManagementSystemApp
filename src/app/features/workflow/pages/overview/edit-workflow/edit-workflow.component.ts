@@ -7,7 +7,7 @@ import { Subject, takeUntil, Observable, forkJoin, throwError, of } from 'rxjs';
 import { map, catchError, switchMap, tap } from 'rxjs/operators';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { LucideAngularModule, Save, X, ArrowLeft, ArrowRight, GripVertical } from 'lucide-angular';
-import { WorkflowService } from '@services/workflow.service';
+import { WorkflowService } from '@workflow/services/workflow.service';
 import { BackendUserService } from '@services/backend-user.service';
 import { RoleDto, BackendUserDto, ApplicationEntityDto } from '@models/backend-user.model';
 import { PaginatedList } from '@models/api-response.model';

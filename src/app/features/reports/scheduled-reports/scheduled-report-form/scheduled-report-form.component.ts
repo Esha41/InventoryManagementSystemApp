@@ -5,7 +5,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Save, X, ArrowLeft, ArrowRight, Plus, Trash2, Mail } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
-import { ReportService, Report, CreateScheduledReportDto, CreateScheduledReportRecipientDto, ScheduledReport } from '@services/report.service';
+import { ReportService, Report, CreateScheduledReportDto, CreateScheduledReportRecipientDto, ScheduledReport } from '@reports/services/report.service';
 import { BackendUserService } from '@services/backend-user.service';
 import { LoadingStateComponent } from '@components/index';
 import { ButtonComponent } from '@components/button/button.component';

@@ -2,7 +2,7 @@ import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Package, TrendingDown, AlertTriangle, TrendingUp, Archive, Clock } from 'lucide-angular';
-import { InventoryMetrics } from '@services/admin-analytics.service';
+import { InventoryMetrics } from '@admin/services/admin-analytics.service';
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 import { Router } from '@angular/router';
 

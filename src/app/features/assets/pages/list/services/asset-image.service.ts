@@ -8,10 +8,10 @@ import { Observable, forkJoin, of } from 'rxjs';
 import { map, catchError, filter, switchMap } from 'rxjs/operators';
 import { Asset, AssetType } from '@models/asset-list.model';
 import { FileUploadDto, FileEntityType } from '@models/file-upload.model';
-import { AmmunitionService } from '@services/ammunition.service';
+import { AmmunitionService } from '@assets/services/ammunition.service';
 import { FileUploadService } from '@services/file-upload.service';
-import { WeaponService } from '@services/weapon.service';
-import { ExplosiveService } from '@services/explosive.service';
+import { WeaponService } from '@assets/services/weapon.service';
+import { ExplosiveService } from '@assets/services/explosive.service';
 
 export interface ImageLoadResult {
   assetId: string;

@@ -18,7 +18,7 @@ import {
 import { combineLatest, Observable, Subject } from 'rxjs';
 import { debounceTime, finalize, map, shareReplay, startWith, takeUntil, tap } from 'rxjs/operators';
 import { Notification } from '@notifications/models/notification.model';
-import { NotificationService } from '@services/notification.service';
+import { NotificationService } from '@notifications/services/notification.service';
 import { ButtonComponent } from '@components/button/button.component';
 import { ModalComponent } from '@components/modal/modal.component';
 import { OrderDto } from '@models/order.model';

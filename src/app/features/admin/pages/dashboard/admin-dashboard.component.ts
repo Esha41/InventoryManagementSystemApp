@@ -5,7 +5,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, LayoutDashboard, Users, RefreshCw, Badge, Settings, Mail, Upload, GitBranch, Timer } from 'lucide-angular';
-import { AdminAnalyticsService, UserActivityMetrics } from '@services/admin-analytics.service';
+import { AdminAnalyticsService, UserActivityMetrics } from '@admin/services/admin-analytics.service';
 import { UserActivityCardComponent } from './components/kpi-cards/user-activity-card/user-activity-card.component';
 import { AdminDelegationsComponent } from './admin-delegations/admin-delegations.component';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';

@@ -2,7 +2,7 @@
  * Lot-related utility functions
  */
 
-import { LotDetailDto } from '@services/inventory.service';
+import { LotDetailDto } from '@inventory/services/inventory.service';
 import { LotItem } from '@models/supply-order.model';
 
 /**

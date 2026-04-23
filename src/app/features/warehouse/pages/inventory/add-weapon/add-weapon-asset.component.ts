@@ -7,9 +7,9 @@ import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { LucideAngularModule, Save, X, Plus, Trash2, ArrowLeft, ArrowRight } from 'lucide-angular';
 
 // Services
-import { AssetService } from '@services/asset.service';
-import { WeaponService } from '@services/weapon.service';
-import { EmployeeService } from '@services/employee.service';
+import { AssetService } from '@assets/services/asset.service';
+import { WeaponService } from '@assets/services/weapon.service';
+import { EmployeeService } from '@admin/services/employee.service';
 import { LookupService, LookupItem } from '@services/lookup.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';

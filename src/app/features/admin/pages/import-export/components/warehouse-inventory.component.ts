@@ -9,12 +9,12 @@ import { ButtonComponent } from '@components/button/button.component';
 import { ImportDialogComponent } from '@components/import-dialog/import-dialog.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { LoadingStateComponent } from '@components/index';
-import { InventoryService } from '@services/inventory.service';
-import { AssetService } from '@services/asset.service';
+import { InventoryService } from '@inventory/services/inventory.service';
+import { AssetService } from '@assets/services/asset.service';
 import { LookupService } from '@services/lookup.service';
 import { ToastService } from '@services/toast.service';
-import { ExcelExportService, ExcelColumn } from '@services/excel-export.service';
-import { ImportExportService } from '@services/import-export.service';
+import { ExcelService, ExcelColumn } from '@services/excel.service';
+import { ImportExportService } from '@admin/services/import-export.service';
 import { TemplateGenerationService } from '@services/template-generation.service';
 import { InventoryDetailDto } from '@models/inventory.model';
 import { AssetDto } from '@models/asset.model';
@@ -75,7 +75,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
     private assetService: AssetService,
     private lookupService: LookupService,
     private toastService: ToastService,
-    private excelExportService: ExcelExportService,
+    private excelService: ExcelService,
     private importExportService: ImportExportService,
     private templateGenerationService: TemplateGenerationService,
     private translateService: TranslateService,

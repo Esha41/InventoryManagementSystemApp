@@ -25,7 +25,7 @@ import { LoadingStateComponent, PaginationComponent, RowsPerPageComponent } from
 import { DepartmentAssignmentsTableComponent } from './components/department-assignments-table/department-assignments-table.component';
 import { AssignmentModalComponent, AssignmentFormData } from './components/assignment-modal/assignment-modal.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
-import { ProfileDataService } from '@services/profile-data.service';
+import { ProfileDataService } from '@profile/services/profile-data.service';
 import { TranslationMap } from '@models/common.types';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { defaultPageSize } from '@constants/app.constants';

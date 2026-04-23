@@ -8,7 +8,7 @@ import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { RequestDetail } from '@models/workflow-approval.model';
 import { DepotDto } from '@models/depot.model';
 import { LookupService } from '@services/lookup.service';
-import { ReturnService } from '@services/return.service';
+import { ReturnService } from '@requests/services/return.service';
 import { WorkflowApprovalStateService } from '../../services/workflow-approval-state.service';
 import { WorkflowApprovalPermissionsService } from '../../services/workflow-approval-permissions.service';
 import { ToastService } from '@services/toast.service';

@@ -6,7 +6,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, ArrowLeft, ArrowRight, Package, Trash2, Paperclip, ChevronDown, ChevronRight } from 'lucide-angular';
 import { AssetStatus, ASSET_STATUS_FORM_OPTIONS_ORDER, getAssetStatusLabel as assetStatusLabelKey } from '@models/asset.model';
-import { ReturnService, ProcessReturnItemsDto } from '@services/return.service';
+import { ReturnService, ProcessReturnItemsDto } from '@requests/services/return.service';
 import { FileUploadService, FileUploadDto } from '@services/file-upload.service';
 import { ReturnTrackingLineDto } from '@models/return.model';
 import { ToastService } from '@services/toast.service';

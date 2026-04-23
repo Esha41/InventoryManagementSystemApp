@@ -7,7 +7,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, Save, X, ArrowLeft, ArrowRight } from 'lucide-angular';
 
 // Services
-import { AssetService } from '@services/asset.service';
+import { AssetService } from '@assets/services/asset.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { StorageService } from '@services/storage.service';

@@ -6,7 +6,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { InventoryService, LotDetailDto } from '@services/inventory.service';
+import { InventoryService, LotDetailDto } from '@inventory/services/inventory.service';
 import { OrderItem, LotItem } from '@models/supply-request.model';
 import { mapLotDetailsToLotItems } from '@utils/lot.utils';
 import { formatLocation, determineCondition, calculateDaysUntilExpiry } from '@utils/lot.utils';

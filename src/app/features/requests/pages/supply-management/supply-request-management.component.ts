@@ -6,7 +6,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Search, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
-import { OrderService } from '@services/order.service';
+import { OrderService } from '@requests/services/order.service';
 import { OrderDto } from '@models/order.model';
 import { SupplyRequest } from '@models/supply-request.model';
 import { Subject, takeUntil } from 'rxjs';

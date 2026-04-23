@@ -8,7 +8,7 @@ import { ToastService } from '@services/toast.service';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent, ConfirmDialogComponent } from '@components/index';
 import { ButtonComponent } from '@components/button/button.component';
 import { ExecutionHistoryDialogComponent } from './execution-history-dialog/execution-history-dialog.component';
-import { ReportService, ScheduledReport, ScheduledReportRecipient } from '@services/report.service';
+import { ReportService, ScheduledReport, ScheduledReportRecipient } from '@reports/services/report.service';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 

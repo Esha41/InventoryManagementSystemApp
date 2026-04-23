@@ -18,7 +18,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 
-import { HelpCenterService } from '@services/help-center.service';
+import { HelpCenterService } from '@help-center/services/help-center.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { BackendAuthService } from '@services/backend-auth.service';

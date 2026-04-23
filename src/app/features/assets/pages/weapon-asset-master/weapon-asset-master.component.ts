@@ -23,10 +23,10 @@ import {
   X,
   FilterX
 } from 'lucide-angular';
-import { AssetService } from '@services/asset.service';
-import { AssetHistoryService, AssetHistoryDto } from '@services/asset-history.service';
+import { AssetService } from '@assets/services/asset.service';
+import { AssetHistoryService, AssetHistoryDto } from '@assets/services/asset-history.service';
 import { LookupService } from '@services/lookup.service';
-import { EmployeeService } from '@services/employee.service';
+import { EmployeeService } from '@admin/services/employee.service';
 import { AssetDto, AssetStatus, EmployeeDto, getAssetStatusLabel } from '@models/asset.model';
 import { ItemType } from '@models/inventory.model';
 import { FilterData, PagedListRequest } from '@models/pagination.model';

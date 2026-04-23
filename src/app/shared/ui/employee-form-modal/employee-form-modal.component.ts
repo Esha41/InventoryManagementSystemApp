@@ -7,7 +7,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { LookupService, LookupItem } from '@services/lookup.service';
 import { ToastService } from '@services/toast.service';
-import { EmployeeService } from '@services/employee.service';
+import { EmployeeService } from '@admin/services/employee.service';
 import { CreateUpdateEmployeeDto } from '@core/models/employee.model';
 import { EmployeeDto } from '@core/models/asset.model';
 import { Observable } from 'rxjs';

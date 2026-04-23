@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, Input, ChangeDetectorRef, ChangeDetection
 import { CommonModule } from '@angular/common';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { EChartsOption } from 'echarts';
-import { AdminAnalyticsService, RequestTrend } from '@services/admin-analytics.service';
+import { AdminAnalyticsService, RequestTrend } from '@admin/services/admin-analytics.service';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { LucideAngularModule, RefreshCw, AlertCircle } from 'lucide-angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';

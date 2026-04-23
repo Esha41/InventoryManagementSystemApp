@@ -2,7 +2,7 @@ import { Component, OnInit, Output, EventEmitter, Input, ChangeDetectionStrategy
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
-import { UserDelegationService } from '@services/user-delegation.service';
+import { UserDelegationService } from '@admin/services/user-delegation.service';
 import { BackendUserDto } from '@models/backend-user.model';
 import { CreateUserDelegation } from '@models/user-delegation';
 import { DelegationScope, getAvailableDelegationScopes } from '@models/delegation-scope.enum';

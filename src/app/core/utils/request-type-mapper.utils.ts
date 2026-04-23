@@ -4,7 +4,7 @@
  * Following Angular best practices for data transformation
  */
 
-import { BaseRequestDto } from '@services/unified-request.service';
+import { BaseRequestDto } from '@requests/services/unified-request.service';
 import { OrderDto } from '@models/order.model';
 import { ReturnDto } from '@models/return.model';
 import { DiscardDto } from '@models/discard.model';

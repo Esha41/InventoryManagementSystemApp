@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Clock, CheckCircle, XCircle, Mail, File } from 'lucide-angular';
 import { ModalComponent } from '@components/modal/modal.component';
-import { ReportService, ScheduledReportExecution } from '@services/report.service';
+import { ReportService, ScheduledReportExecution } from '@reports/services/report.service';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 

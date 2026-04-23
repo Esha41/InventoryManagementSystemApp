@@ -9,11 +9,11 @@ import { LucideAngularModule, Plus, Edit2, Trash2, Search, X } from 'lucide-angu
 import { ApiService } from '@services/api.service';
 import { LookupService, DepartmentDto } from '@services/lookup.service';
 import { LookupItem } from '@models/lookup.model';
-import { AmmunitionService } from '@services/ammunition.service';
+import { AmmunitionService } from '@assets/services/ammunition.service';
 import { AmmunitionReadDto } from '@models/ammunition.model';
-import { WeaponService } from '@services/weapon.service';
+import { WeaponService } from '@assets/services/weapon.service';
 import { WeaponDto } from '@models/weapon.model';
-import { ExplosiveService } from '@services/explosive.service';
+import { ExplosiveService } from '@assets/services/explosive.service';
 import { ExplosiveDto } from '@models/explosive.model';
 import { API_ENDPOINTS, defaultPageSize } from '@constants/app.constants';
 import { ButtonComponent } from '@components/button/button.component';

@@ -2,10 +2,10 @@ import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, S
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { Cartridge } from '../cartridge-list/cartridge-list.component';
-import { AmmunitionService } from '@services/ammunition.service';
-import { WeaponService } from '@services/weapon.service';
-import { ExplosiveService } from '@services/explosive.service';
-import { CartridgeMapperService } from '@services/cartridge-mapper.service';
+import { AmmunitionService } from '@assets/services/ammunition.service';
+import { WeaponService } from '@assets/services/weapon.service';
+import { ExplosiveService } from '@assets/services/explosive.service';
+import { CartridgeMapperService } from '@assets/services/cartridge-mapper.service';
 import { HttpClient } from '@angular/common/http';
 import { catchError, switchMap, of } from 'rxjs';
 

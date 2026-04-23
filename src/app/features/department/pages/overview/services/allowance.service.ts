@@ -3,9 +3,9 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiService } from '@services/api.service';
 import { LookupService, DepartmentDto } from '@services/lookup.service';
-import { AmmunitionService } from '@services/ammunition.service';
-import { WeaponService } from '@services/weapon.service';
-import { ExplosiveService } from '@services/explosive.service';
+import { AmmunitionService } from '@assets/services/ammunition.service';
+import { WeaponService } from '@assets/services/weapon.service';
+import { ExplosiveService } from '@assets/services/explosive.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import type {
   AllowanceItemType,

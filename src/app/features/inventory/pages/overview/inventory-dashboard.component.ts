@@ -23,9 +23,9 @@ import {
 } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { MonitoringService } from '@services/monitoring.service';
-import { InventoryService, LotDetailDto } from '@services/inventory.service';
-import { AssetService } from '@services/asset.service';
-import { InventorySummaryDataService } from '@services/inventory-summary-data.service';
+import { InventoryService, LotDetailDto } from '@inventory/services/inventory.service';
+import { AssetService } from '@assets/services/asset.service';
+import { InventorySummaryDataService } from '@inventory/services/inventory-summary-data.service';
 import { LookupService } from '@services/lookup.service';
 import { ItemInventorySummaryDto, ItemType } from '@models/inventory.model';
 import { AssetDto } from '@models/asset.model';

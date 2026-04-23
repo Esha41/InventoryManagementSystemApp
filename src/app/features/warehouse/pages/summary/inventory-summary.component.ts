@@ -5,21 +5,21 @@ import { RouterModule, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, ChevronDown, ChevronRight, ChevronLeft, Package, AlertCircle, Search, Download, History, ArrowRight, ArrowLeft, User, Building } from 'lucide-angular';
-import { InventoryService, LotDetailDto } from '@services/inventory.service';
-import { AssetService } from '@services/asset.service';
-import { AssetHistoryService, AssetHistoryDto } from '@services/asset-history.service';
+import { InventoryService, LotDetailDto } from '@inventory/services/inventory.service';
+import { AssetService } from '@assets/services/asset.service';
+import { AssetHistoryService, AssetHistoryDto } from '@assets/services/asset-history.service';
 import { ItemInventorySummaryDto } from '@models/inventory.model';
 import { AssetDto, AssetStatus, getAssetStatusLabel } from '@models/asset.model';
 import { CardComponent } from '@components/card/card.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
-import { InventorySummaryDataService } from '@services/inventory-summary-data.service';
+import { InventorySummaryDataService } from '@inventory/services/inventory-summary-data.service';
 import { InventorySummaryUtils } from '@utils/inventory-summary.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
-import { ExcelExportService, ExcelColumn } from '@services/excel-export.service';
+import { ExcelService, ExcelColumn } from '@services/excel.service';
 import { ToastService } from '@services/toast.service';
 import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 import { trackById, trackByKey, trackByIndex } from '@utils/trackby.utils';
@@ -102,7 +102,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
         private assetHistoryService: AssetHistoryService,
         private translateService: TranslateService,
         private translationService: TranslationService,
-        private excelExportService: ExcelExportService,
+        private excelService: ExcelService,
         private toastService: ToastService,
         private router: Router,
         private cdr: ChangeDetectorRef
@@ -556,7 +556,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
 
         const fileName = `Inventory_Summary_${this.activeTab.charAt(0).toUpperCase() + this.activeTab.slice(1)}`;
 
-        this.excelExportService.exportToExcel({
+        this.excelService.exportToExcel({
             fileName: fileName,
             sheetName: 'Summary',
             columns: columns,

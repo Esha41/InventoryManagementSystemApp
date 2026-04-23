@@ -9,11 +9,11 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
-import { UserManagementService } from '@services/user-management.service';
+import { UserManagementService } from '@admin/services/user-management.service';
 import { UserFiltersComponent } from '../user-filters/user-filters.component';
 import { UserFormModalComponent } from '@admin/components/user-form-modal/user-form-modal.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
-import { ProfileDataService } from '@services/profile-data.service';
+import { ProfileDataService } from '@profile/services/profile-data.service';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { defaultPageSize } from '@constants/app.constants';
 
