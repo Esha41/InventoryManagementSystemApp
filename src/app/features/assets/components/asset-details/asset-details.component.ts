@@ -637,4 +637,8 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
   getCapabilityGroup(): string {
     return this.fields.capabilityGroup();
   }
+
+  getCaliberCategory(): string {
+    return this.fields.caliberCategory();
+  }
 }

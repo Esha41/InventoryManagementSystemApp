@@ -145,6 +145,11 @@
             <p class="text-[var(--color-text)]">{{ getPropellant() }}</p>
           </div>
 
+          <div *ngIf="getCaliberCategory()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'addAsset.ammunitionSizeClass' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getCaliberCategory() }}</p>
+          </div>
+
           <div *ngIf="getNature()">
             <p class="text-[var(--color-text-muted)] mb-1">Nature</p>
             <p class="text-[var(--color-text)]">{{ getNature() }}</p>
@@ -175,6 +180,11 @@
           <div *ngIf="getCaliberUnit()">
             <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.caliberUnit' | translate }}</p>
             <p class="text-[var(--color-text)]">{{ getCaliberUnit() }}</p>
+          </div>
+
+          <div *ngIf="getCaliberCategory()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'addAsset.ammunitionSizeClass' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getCaliberCategory() }}</p>
           </div>
 
           <div *ngIf="getActionType()">
