@@ -58,6 +58,14 @@ export interface WorkflowApprovalStep {
   higherApprovalRoleId?: string;
   isCurrentUserApprover?: boolean;
   canReturn?: boolean;
+  /** Backend: user acted via delegation (1) or not (0). */
+  isDelegation?: boolean | number;
+  changedByRoleId?: string;
+  changedByRoleName?: string;
+  changedByRoleNameAr?: string;
+  /** Pending/future: other roles that may approve this step in parallel. */
+  eligibleParallelRoleNamesEn?: string;
+  eligibleParallelRoleNamesAr?: string;
   files?: FileUploadDto[];
   transitions?: WorkflowStepTransition[];
 }

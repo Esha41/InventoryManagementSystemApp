@@ -71,6 +71,7 @@ export interface BackendWorkflowStepDto {
   higherApplicationEntityId?: number | null;
   reserveQty?: boolean;
   canReturn?: boolean;
+  parallelRoleIds?: string[];
 }
 
 export interface BackendCreateWorkflowDto {
@@ -181,5 +182,12 @@ export interface WorkflowStepDto {
   allowedSkipTargetIds?: number[];
   transitions?: WorkflowStepTransitionDto[];
   notifiers?: WorkflowStepNotifier[];
+  parallelRoles?: Array<{
+    id: number;
+    workflowStepId: number;
+    roleId: string;
+    roleName?: string | null;
+    roleNameAr?: string | null;
+  }>;
 }
 

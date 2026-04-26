@@ -106,6 +106,33 @@ export class WorkflowApprovalTimelineComponent implements OnDestroy {
     return getLocalizedValueHelper(en, ar, this.translateService);
   }
 
+  getDelegationMessageKey(approval: WorkflowApprovalStep): string {
+    switch (approval.status) {
+      case 'Approved':
+        return 'workflowApprovalDetail.approvedThroughDelegation';
+      case 'Rejected':
+        return 'workflowApprovalDetail.rejectedThroughDelegation';
+      case 'Returned':
+      case 'ReturnedForReview':
+        return 'workflowApprovalDetail.returnedThroughDelegation';
+      default:
+        return 'workflowApprovalDetail.actedThroughDelegation';
+    }
+  }
+
+  showPerformedAsRole(approval: WorkflowApprovalStep): boolean {
+    if (
+      approval.isPending ||
+      approval.isDelegation === true ||
+      approval.isDelegation === 1 ||
+      !approval.changedByRoleId ||
+      !approval.applicationRoleId
+    ) {
+      return false;
+    }
+    return String(approval.changedByRoleId) !== String(approval.applicationRoleId);
+  }
+
   /**
    * Download a file from approval history
    */

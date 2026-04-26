@@ -33,6 +33,8 @@ interface EditStepForm {
   higherApplicationEntityId?: number | null;
   notifyingRoleIds?: string[];
   notifyingUserIds?: string[];
+  /** Additional roles that may approve the same step (any-of), excluding the primary role. */
+  parallelRoleIds?: string[];
   workflowStepId?: number;
   usersInNotifyingRoles?: Array<{ roleId: string; users: BackendUserDto[] }>;
   availableUsers?: Array<{ id: string; userName: string; roles?: string[] }>;
@@ -190,6 +192,9 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
             higherApplicationEntityId: s.higherApplicationEntityId ?? s.higherApprovalApplicationEntityId ?? null,
             notifyingRoleIds: [],
             notifyingUserIds: [],
+            parallelRoleIds: Array.isArray(s.parallelRoles)
+              ? s.parallelRoles.map(pr => pr.roleId).filter((id: string | undefined) => !!id && id !== s.applicationRoleId)
+              : [],
             workflowStepId: s.id,
             usersInNotifyingRoles: [],
             availableUsers: [],
@@ -343,11 +348,13 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
       higherApplicationEntityId: null,
       notifyingRoleIds: [],
       notifyingUserIds: [],
+      parallelRoleIds: [],
       usersInNotifyingRoles: [],
       availableUsers: [],
       skipToStepIds: [],
       availableNextSteps: [],
-      canSkip: false // New steps default to normal sequential flow
+      canSkip: false, // New steps default to normal sequential flow
+      canReturn: false
     };
     this.editSteps.push(newStep);
     setTimeout(() => {
@@ -422,7 +429,10 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
       higherApprovalRoleId: s.requireHigherApproval ? (s.higherApprovalRoleId || null) : null,
       higherApplicationEntityId: s.requireHigherApproval ? (s.higherApplicationEntityId || null) : null,
       reserveQty: false,
-      canReturn: !!s.canReturn
+      canReturn: !!s.canReturn,
+      parallelRoleIds: Array.isArray(s.parallelRoleIds)
+        ? [...new Set(s.parallelRoleIds.filter(id => !!id && id !== s.roleId))]
+        : []
     }));
 
     // Build backend payload with workflow steps including canReturn
