@@ -180,7 +180,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
         this.translate.instant('weaponSupplyReview.invalidOrderId'),
         this.translate.instant('toast.error')
       );
-      this.router.navigate(['/requests-management']);
+      this.router.navigate(['/requests/requests-management']);
     }
   }
 
@@ -475,7 +475,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
           this.translate.instant('toast.success')
         );
         setTimeout(() => {
-          this.router.navigate(['/requests-management', this.orderId, 'workflow-approval']);
+          this.router.navigate(['/requests/requests-management', this.orderId, 'workflow-approval']);
         }, 1500);
       });
   }
@@ -484,14 +484,14 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     if (this.orderId) {
-      this.router.navigate(['/requests-management', this.orderId, 'workflow-approval']);
+      this.router.navigate(['/requests/requests-management', this.orderId, 'workflow-approval']);
     } else {
-      this.router.navigate(['/requests-management']);
+      this.router.navigate(['/requests/requests-management']);
     }
   }
 
   goToSelectionPage(): void {
-    this.router.navigate(['/requests-management', this.orderId, 'weapon-supply-selection']);
+    this.router.navigate(['/requests/requests-management', this.orderId, 'weapon-supply-selection']);
   }
 
   openAddEmployeeModal(): void {

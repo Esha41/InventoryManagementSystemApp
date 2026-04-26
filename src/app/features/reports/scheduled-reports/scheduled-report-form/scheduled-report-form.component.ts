@@ -270,7 +270,7 @@ export class ScheduledReportFormComponent implements OnInit {
         )
         .subscribe((success: boolean) => {
           if (success) {
-            this.router.navigate(['/scheduled-reports']);
+            this.router.navigate(['/reports/scheduled-reports']);
           }
         });
     } else {
@@ -287,7 +287,7 @@ export class ScheduledReportFormComponent implements OnInit {
         )
         .subscribe((id: string) => {
           if (id) {
-            this.router.navigate(['/scheduled-reports']);
+            this.router.navigate(['/reports/scheduled-reports']);
           }
         });
     }
@@ -305,7 +305,7 @@ export class ScheduledReportFormComponent implements OnInit {
   }
 
   onCancel(): void {
-    this.router.navigate(['/scheduled-reports']);
+    this.router.navigate(['/reports/scheduled-reports']);
   }
 
   clearError(): void {

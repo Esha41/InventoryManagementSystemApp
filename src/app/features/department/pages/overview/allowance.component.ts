@@ -457,7 +457,7 @@ export class AllowanceComponent implements OnInit, OnDestroy {
           );
         });
         // Navigate back to list after successful submission
-        this.router.navigate(['/allowance']);
+        this.router.navigate(['/department/allowance']);
       },
       error: (error: unknown) => {
         this.isLoading = false;
@@ -499,7 +499,7 @@ export class AllowanceComponent implements OnInit, OnDestroy {
   }
 
   onBack(): void {
-    this.router.navigate(['/allowance'], { queryParams: this.getBackQueryParams() });
+    this.router.navigate(['/department/allowance'], { queryParams: this.getBackQueryParams() });
   }
 
   /** Preserve pagination when navigating back to list (Angular best practice: URL-driven state) */
@@ -542,7 +542,7 @@ export class AllowanceComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
           // Redirect back to list if unauthorized
           setTimeout(() => {
-            this.router.navigate(['/allowance']);
+            this.router.navigate(['/department/allowance']);
           }, 2000);
           return;
         }

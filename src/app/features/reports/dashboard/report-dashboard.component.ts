@@ -88,7 +88,7 @@ export class ReportDashboardComponent implements OnInit {
 
   onViewReport(report: Report): void {
     // Open report viewer in a new tab with report URL and name as query parameters
-    const url = this.router.createUrlTree(['/report-viewer'], {
+    const url = this.router.createUrlTree(['/reports/report-viewer'], {
       queryParams: {
         reportUrl: report.url,
         reportName: report.reportName

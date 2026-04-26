@@ -121,11 +121,11 @@ export class ScheduledReportsListComponent implements OnInit {
   }
 
   onCreateSchedule(): void {
-    this.router.navigate(['/scheduled-reports/create']);
+    this.router.navigate(['/reports/scheduled-reports/create']);
   }
 
   onEdit(report: ScheduledReport): void {
-    this.router.navigate(['/scheduled-reports', report.id, 'edit']);
+    this.router.navigate(['/reports/scheduled-reports', report.id, 'edit']);
   }
 
   onDelete(report: ScheduledReport): void {

@@ -282,7 +282,7 @@ export class RequestDetailsModalComponent implements OnInit, OnDestroy {
    */
   navigateToApproval(): void {
     if (this.request?.id) {
-      this.router.navigate(['/requests-management', this.request.id, 'workflow-approval']);
+      this.router.navigate(['/requests/requests-management', this.request.id, 'workflow-approval']);
     }
   }
 }

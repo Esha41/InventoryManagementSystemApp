@@ -44,11 +44,11 @@ export class DepartmentAssignmentsTableComponent {
 
   navigateToAssetDetails(assignment: ItemDepartmentAssignmentDto): void {
     const tab = getAssetDetailsTab(assignment.itemType);
-    const queryParams: { tab?: string; returnTo: string } = { returnTo: '/item-department-assignment' };
+    const queryParams: { tab?: string; returnTo: string } = { returnTo: '/department/item-department-assignment' };
     if (tab) {
       queryParams.tab = tab;
     }
-    this.router.navigate(['/asset-list', assignment.itemId], { queryParams });
+    this.router.navigate(['/assets/asset-list', assignment.itemId], { queryParams });
   }
 
   onDelete(assignment: ItemDepartmentAssignmentDto): void {

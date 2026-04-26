@@ -122,7 +122,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           translations['toast.error']
         );
       });
-      this.router.navigate(['/supply-order']);
+      this.router.navigate(['/requests/supply-order']);
       return;
     }
 
@@ -310,9 +310,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     const byOrder = this.route.snapshot.queryParams['byOrder'] === 'true';
 
     if (byOrder && this.orderId) {
-      this.router.navigate(['/requests-management', this.orderId, 'workflow-approval']);
+      this.router.navigate(['/requests/requests-management', this.orderId, 'workflow-approval']);
     } else {
-      this.router.navigate(['/supply-order']);
+      this.router.navigate(['/requests/supply-order']);
     }
   }
 

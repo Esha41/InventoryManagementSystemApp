@@ -65,29 +65,30 @@ export const routes: Routes = [
         path: 'workflow',
         loadChildren: () => import('./features/workflow/workflow.routes').then(m => m.WORKFLOW_ROUTES)
       },
-      // Scattered-URL features — path:'' preserves all existing URLs
+      // ── PREFIXED FEATURE ROUTES ───────────────────────────────────────────
+      // Each feature owns its own URL namespace — no more path:'' collisions.
       {
-        path: '',
+        path: 'requests',
         loadChildren: () => import('./features/requests/requests.routes').then(m => m.REQUESTS_ROUTES)
       },
       {
-        path: '',
+        path: 'admin',
         loadChildren: () => import('./features/admin/admin.routes').then(m => m.ADMIN_ROUTES)
       },
       {
-        path: '',
+        path: 'assets',
         loadChildren: () => import('./features/assets/assets.routes').then(m => m.ASSETS_ROUTES)
       },
       {
-        path: '',
+        path: 'settings',
         loadChildren: () => import('./features/settings/settings.routes').then(m => m.SETTINGS_ROUTES)
       },
       {
-        path: '',
+        path: 'department',
         loadChildren: () => import('./features/department/department.routes').then(m => m.DEPARTMENT_ROUTES)
       },
       {
-        path: '',
+        path: 'reports',
         loadChildren: () => import('./features/reports/reports.routes').then(m => m.REPORTS_ROUTES)
       }
     ]

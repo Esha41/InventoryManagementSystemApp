@@ -985,7 +985,7 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy, AfterViewIni
   private clearQueryParams(): void {
     // Navigate to the same route without query params to reset state
     // Use replaceUrl to avoid adding to browser history
-    this.router.navigate(['/new-issue-request'], {
+    this.router.navigate(['/requests/new-issue-request'], {
       queryParams: {},
       replaceUrl: true
     });

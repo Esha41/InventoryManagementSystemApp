@@ -155,7 +155,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
       const message = this.translate.instant('supplyRequestDetail.invalidOrderId');
       const title = this.translate.instant('toast.error');
       this.toastService.error(message, title);
-      this.router.navigate(['/requests-management']);
+      this.router.navigate(['/requests/requests-management']);
       return;
     }
     this.loadRequestDetail();
@@ -269,9 +269,9 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     if (this.orderId) {
-      this.router.navigate(['/requests-management', this.orderId, 'workflow-approval']);
+      this.router.navigate(['/requests/requests-management', this.orderId, 'workflow-approval']);
     } else {
-      this.router.navigate(['/requests-management']);
+      this.router.navigate(['/requests/requests-management']);
     }
   }
 

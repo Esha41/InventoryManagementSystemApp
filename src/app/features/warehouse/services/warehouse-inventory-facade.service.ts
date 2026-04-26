@@ -119,7 +119,7 @@ export class WarehouseInventoryFacadeService {
   onViewItem(detail: InventoryDetailDto): void {
     const tab = this.store.activeTab();
     if (this.filterService.isStaticItem(detail) && detail.item) {
-      this.router.navigate(['/asset-list', detail.item.id], { queryParams: { tab } });
+      this.router.navigate(['/assets/asset-list', detail.item.id], { queryParams: { tab } });
       return;
     }
     this.router.navigate(['/warehouse', this.store.depoId(), 'inventory', detail.id],

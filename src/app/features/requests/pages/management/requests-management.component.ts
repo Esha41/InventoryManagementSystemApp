@@ -248,7 +248,7 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
   }
 
   openOrderDetails(order: Request): void {
-    this.router.navigate(['/requests-management', order.id, 'workflow-approval']);
+    this.router.navigate(['/requests/requests-management', order.id, 'workflow-approval']);
   }
 
   private loadAutoRejectCountdowns(): void {

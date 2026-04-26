@@ -159,7 +159,7 @@ export class ReportDesignerComponent implements OnInit {
 
   onCreateReport(): void {
     this.prefetchDesignerChunk();
-    this.router.navigate(['/report-designer/designer'], {
+    this.router.navigate(['/reports/report-designer/designer'], {
       queryParams: {
         reportUrl: 'BaseReportTemplate',
         mode: 'create'
@@ -169,7 +169,7 @@ export class ReportDesignerComponent implements OnInit {
 
   openTemplateInDesigner(template: ReportTemplate): void {
     this.prefetchDesignerChunk();
-    this.router.navigate(['/report-designer/designer'], {
+    this.router.navigate(['/reports/report-designer/designer'], {
       queryParams: {
         reportUrl: template.url,
         mode: 'create'
@@ -281,7 +281,7 @@ export class ReportDesignerComponent implements OnInit {
 
   onEdit(report: Report): void {
     // Navigate to DevExpress Report Designer with the report URL
-    this.router.navigate(['/report-designer/designer'], {
+    this.router.navigate(['/reports/report-designer/designer'], {
       queryParams: { reportUrl: report.url }
     });
 

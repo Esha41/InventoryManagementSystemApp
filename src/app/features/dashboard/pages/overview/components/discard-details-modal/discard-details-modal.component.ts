@@ -182,7 +182,7 @@ export class DiscardDetailsModalComponent implements OnInit, OnDestroy {
   }
 
   navigateToApproval(discardRequestId: number): void {
-    this.router.navigate(['/requests-management', discardRequestId, 'workflow-approval']);
+    this.router.navigate(['/requests/requests-management', discardRequestId, 'workflow-approval']);
   }
 }
 

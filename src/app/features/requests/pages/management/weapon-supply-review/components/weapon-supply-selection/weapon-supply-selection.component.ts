@@ -102,7 +102,7 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
         this.translate.instant('weaponSupplyReview.invalidOrderId'),
         this.translate.instant('toast.error')
       );
-      this.router.navigate(['/requests-management']);
+      this.router.navigate(['/requests/requests-management']);
       return;
     }
     this.loadAllData();
@@ -285,7 +285,7 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
             this.translate.instant('weaponSupplyReview.selectionSaved'),
             this.translate.instant('toast.success')
           );
-          this.router.navigate(['/requests-management', this.orderId, 'workflow-approval']);
+          this.router.navigate(['/requests/requests-management', this.orderId, 'workflow-approval']);
         },
         error: (error) => {
           this.config.logError('Failed to save batch selection', error);
@@ -444,7 +444,7 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
   }
 
   goBack(): void {
-    this.router.navigate(['/requests-management', this.orderId, 'workflow-approval']);
+    this.router.navigate(['/requests/requests-management', this.orderId, 'workflow-approval']);
   }
 
   getDepartmentName(): string {

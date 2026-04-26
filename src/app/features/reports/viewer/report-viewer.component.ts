@@ -112,11 +112,11 @@ export class ReportViewerComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/report-dashboard']);
+    this.router.navigate(['/reports/report-dashboard']);
   }
 
   closeViewer(): void {
-    this.router.navigate(['/report-dashboard']);
+    this.router.navigate(['/reports/report-dashboard']);
   }
 }
 

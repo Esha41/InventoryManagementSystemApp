@@ -518,7 +518,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
                 queryParams['page'] = parsed;
               }
             }
-            this.router.navigate(['/asset-list'], { queryParams });
+            this.router.navigate(['/assets/asset-list'], { queryParams });
           }, 800);
         } else {
           const rawMsg = 'Failed to create asset';

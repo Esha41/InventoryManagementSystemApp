@@ -420,7 +420,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
 
   onAddAllowance(): void {
     const queryParams = this.currentPage > 1 ? { page: this.currentPage } : {};
-    this.router.navigate(['/allowance/add'], { queryParams });
+    this.router.navigate(['/department/allowance/add'], { queryParams });
   }
 
   formatDate(year: number): string {
@@ -446,7 +446,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     if (this.currentPage > 1) {
       queryParams['page'] = this.currentPage;
     }
-    this.router.navigate(['/allowance/add'], { queryParams });
+    this.router.navigate(['/department/allowance/add'], { queryParams });
   }
 
   onDelete(allowance: AllowanceTableRow): void {

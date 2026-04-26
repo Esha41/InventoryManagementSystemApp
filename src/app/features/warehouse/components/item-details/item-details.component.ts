@@ -133,7 +133,7 @@ export class ItemDetailsComponent implements OnInit, OnChanges, OnDestroy {
   onBack(): void {
     if (this.router && this.itemType) {
       // Navigate back to asset-list with tab query param
-      this.router.navigate(['/asset-list'], {
+      this.router.navigate(['/assets/asset-list'], {
         queryParams: { tab: this.itemType }
       });
     } else {

@@ -14,7 +14,7 @@ export function getDefaultLandingUrl(auth: BackendAuthService): string {
     auth.hasPermission('admindashboard.page') ||
     auth.hasPermission('Permissions.AdminDashboard.View')
   ) {
-    return '/admin-dashboard';
+    return '/admin/dashboard';
   }
   if (auth.hasPermission('InventoryDashboard')) {
     return '/inventory-dashboard';
@@ -23,7 +23,7 @@ export function getDefaultLandingUrl(auth: BackendAuthService): string {
     auth.hasPermission('Permissions.SystemUsers.Page') ||
     auth.hasPermission('systemusers.page')
   ) {
-    return '/manage-admins';
+    return '/admin/manage-admins';
   }
   return '/access-denied';
 }

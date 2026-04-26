@@ -178,7 +178,7 @@ export class SupplyRequestManagementComponent implements OnInit, OnDestroy {
   onViewDetails(issueNo: string): void {
     const request = this.requests.find(r => r.issueNo === issueNo);
     if (request) {
-      this.router.navigate(['/supply-request-management', request.id]);
+      this.router.navigate(['/requests/supply-request-management', request.id]);
     }
   }
 

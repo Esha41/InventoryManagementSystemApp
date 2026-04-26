@@ -379,7 +379,7 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
   }
 
   goBack(): void {
-    this.router.navigate(['/requests-management', this.requestId, 'workflow-approval']);
+    this.router.navigate(['/requests/requests-management', this.requestId, 'workflow-approval']);
   }
 
   submit(): void {
@@ -442,7 +442,7 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
                 t['toast.success'] || 'Success'
               );
             });
-          this.router.navigate(['/requests-management', this.requestId, 'workflow-approval']);
+          this.router.navigate(['/requests/requests-management', this.requestId, 'workflow-approval']);
         },
         error: (error) => {
           this.processing = false;

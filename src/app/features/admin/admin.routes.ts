@@ -1,10 +1,10 @@
 import { Routes } from '@angular/router';
 import { permissionGuard } from '@guards/permission.guard';
 
-// These routes are loaded under `path: ''` in app.routes.ts, preserving existing URLs.
+// These routes are loaded under `path: 'admin'` in app.routes.ts → all URLs are /admin/...
 export const ADMIN_ROUTES: Routes = [
   {
-    path: 'admin-dashboard',
+    path: 'dashboard',
     loadComponent: () => import('./pages/dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent),
     canActivate: [permissionGuard],
     data: { permissions: ['admindashboard.page', 'admindashboard.view'] }
@@ -34,7 +34,7 @@ export const ADMIN_ROUTES: Routes = [
     data: { permissions: ['Permissions.LookupTables.Page'] }
   },
   {
-    path: 'admin-roles',
+    path: 'roles',
     loadComponent: () => import('./pages/roles/admin-roles.component').then(m => m.AdminRolesComponent),
     canActivate: [permissionGuard],
     data: { permissions: ['roles.page', 'roles.view'] }
@@ -46,31 +46,31 @@ export const ADMIN_ROUTES: Routes = [
     data: { permissions: ['roles.edit', 'roles.view'] }
   },
   {
-    path: 'admin-import-export',
+    path: 'import-export',
     loadComponent: () => import('./pages/import-export/admin-import-export.component').then(m => m.AdminImportExportComponent),
     canActivate: [permissionGuard],
     data: { permissions: ['AdminImportExport'] }
   },
   {
-    path: 'admin/help-center',
+    path: 'help-center',
     loadComponent: () => import('./pages/help-center-management/help-center-management.component').then(m => m.HelpCenterManagementComponent),
     canActivate: [permissionGuard],
     data: { permissions: ['helpcenter.page', 'helpcenter.view'] }
   },
   {
-    path: 'admin/announcements',
+    path: 'announcements',
     loadComponent: () => import('./pages/announcements/announcements.component').then(m => m.AnnouncementsComponent),
     canActivate: [permissionGuard],
     data: { permissions: ['announcements.page', 'announcements.view'] }
   },
   {
-    path: 'admin/announcements/create',
+    path: 'announcements/create',
     loadComponent: () => import('./pages/announcements/announcement-form/announcement-form.component').then(m => m.AnnouncementFormComponent),
     canActivate: [permissionGuard],
     data: { permissions: ['announcements.create'] }
   },
   {
-    path: 'admin/announcements/edit/:id',
+    path: 'announcements/edit/:id',
     loadComponent: () => import('./pages/announcements/announcement-form/announcement-form.component').then(m => m.AnnouncementFormComponent),
     canActivate: [permissionGuard],
     data: { permissions: ['announcements.edit'] }

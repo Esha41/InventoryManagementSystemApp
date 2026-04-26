@@ -212,7 +212,7 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.facade.paginationState.currentPage > 1) {
       queryParams['page'] = this.facade.paginationState.currentPage;
     }
-    this.router.navigate(['/add-asset'], { queryParams });
+    this.router.navigate(['/assets/add-asset'], { queryParams });
   }
 
   onView(assetId: string): void {
@@ -234,7 +234,7 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
       queryParams['includeDeleted'] = 'true';
       queryParams['weaponsView'] = 'deleted';
     }
-    this.router.navigate(['/asset-list', numericId], { queryParams });
+    this.router.navigate(['/assets/asset-list', numericId], { queryParams });
   }
 
   onEdit(assetId: string): void {

@@ -86,13 +86,13 @@ export class SupplyOrderListComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (supply) => {
           // Supply exists, navigate to it
-          this.router.navigate(['/supply-order', supply.id]);
+          this.router.navigate(['/requests/supply-order', supply.id]);
         },
         error: () => {
           // Supply doesn't exist yet, navigate to supply-request-detail to create it
           // TODO: Later this should auto-create supply or show a better flow
           this.cdr.markForCheck();
-          this.router.navigate(['/requests-management', order.id, 'supply-request-detail']);
+          this.router.navigate(['/requests/requests-management', order.id, 'supply-request-detail']);
         }
       });
   }

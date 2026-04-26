@@ -388,7 +388,7 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
     }
     // If requestId is available, navigate back to workflow approval page
     if (this.requestId) {
-      this.router.navigate(['/requests-management', this.requestId, 'workflow-approval']);
+      this.router.navigate(['/requests/requests-management', this.requestId, 'workflow-approval']);
     } else {
       // Navigate back to asset-list, preserving tab, page, and view mode from query params
       const tab = this._assetType();
@@ -401,7 +401,7 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
       if (qp['ammunitionView'] === 'deleted') queryParams['ammunitionView'] = 'deleted';
       if (qp['explosivesView'] === 'deleted') queryParams['explosivesView'] = 'deleted';
       if (qp['weaponsView'] === 'deleted') queryParams['weaponsView'] = 'deleted';
-      this.router.navigate(['/asset-list'], { queryParams });
+      this.router.navigate(['/assets/asset-list'], { queryParams });
     }
   }
 

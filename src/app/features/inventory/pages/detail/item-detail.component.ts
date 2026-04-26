@@ -266,9 +266,9 @@ export class ItemDetailComponent implements OnInit, OnDestroy {
   goBack(): void {
     // Navigate back to the approval page if requestId is available, otherwise go to requests list
     if (this.requestId) {
-      this.router.navigate(['/requests-management', this.requestId, 'workflow-approval']);
+      this.router.navigate(['/requests/requests-management', this.requestId, 'workflow-approval']);
     } else {
-      this.router.navigate(['/requests-management']);
+      this.router.navigate(['/requests/requests-management']);
     }
   }
 }

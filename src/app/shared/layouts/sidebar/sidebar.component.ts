@@ -79,7 +79,7 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     {
       label: 'nav.analytics',
       icon: TrendingUp,
-      route: '/analytics-dashboard',
+      route: '/admin/analytics-dashboard',
       permissions: ['analytics.page']
     },
     // Temporarily commented out - not needed for now but accessible from other routes
@@ -102,12 +102,12 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       children: [
         {
           label: 'nav.allowance',
-          route: '/allowance',
+          route: '/department/allowance',
           permissions: ['allowanceitem.page']
         },
         {
           label: 'nav.itemDepartmentAssignment',
-          route: '/item-department-assignment',
+          route: '/department/item-department-assignment',
           permissions: ['Permissions.ItemDepartmentAssignment.Page']
         }
       ]
@@ -119,17 +119,17 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       children: [
         {
           label: 'nav.newIssueRequest',
-          route: '/new-issue-request',
+          route: '/requests/new-issue-request',
           permissions: ['order.page']
         },
         {
           label: 'nav.newReturnRequest',
-          route: '/return-request',
+          route: '/requests/return-request',
           permissions: ['return.page']
         },
         {
           label: 'nav.newDiscardRequest',
-          route: '/discard-request',
+          route: '/requests/discard-request',
           permissions: ['discard.page']
         }
       ]
@@ -141,12 +141,12 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       children: [
         {
           label: 'nav.requestsOverview',
-          route: '/requests-management',
+          route: '/requests/requests-management',
           permissions: ['viewrequest.page', 'request.page', 'requestReciever.page']
         },
         {
           label: 'nav.orderReport',
-          route: '/requests-management/order-report',
+          route: '/requests/requests-management/order-report',
           permissions: ['viewrequest.page', 'request.page', 'requestReciever.page']
         }
       ]
@@ -165,19 +165,19 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     {
       label: 'nav.addAsset',
       icon: Plus,
-      route: '/add-asset',
+      route: '/assets/add-asset',
       permissions: ['ammunition.create', 'weapon.create', 'explosive.create']
     },
     {
       label: 'nav.assetList',
       icon: List,
-      route: '/asset-list',
+      route: '/assets/asset-list',
       permissions: ['ammunition.page', 'weapon.page', 'explosive.page']
     },
     {
       label: 'nav.weaponAssetMaster',
       icon: Package,
-      route: '/weapon-asset-master',
+      route: '/assets/weapon-asset-master',
       permissions: ['asset.page', 'asset.view']
     },
     // Temporarily commented out - contains dummy data, will be implemented later
@@ -232,7 +232,7 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
         },
         {
           label: 'nav.reportDashboard',
-          route: '/report-dashboard',
+          route: '/reports/report-dashboard',
           permissions: ['ReportDashboard']
         }
       ]
@@ -244,12 +244,12 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       children: [
         {
           label: 'nav.reportDesigner',
-          route: '/report-designer',
+          route: '/reports/report-designer',
           permissions: ['ReportDesigner']
         },
         {
           label: 'nav.scheduledReports',
-          route: '/scheduled-reports',
+          route: '/reports/scheduled-reports',
           permissions: ['ScheduledReports']
         }
       ]
@@ -262,49 +262,49 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     {
       label: 'nav.adminDashboard',
       icon: Badge,
-      route: '/admin-dashboard',
+      route: '/admin/dashboard',
       permissions: ['admindashboard.page', 'admindashboard.view']
     },
     {
       label: 'nav.manageAdmins',
       icon: Users,
-      route: '/manage-admins',
+      route: '/admin/manage-admins',
       permissions: ['systemusers.page']
     },
     {
       label: 'nav.lookupTables',
       icon: Database,
-      route: '/lookup-tables',
+      route: '/admin/lookup-tables',
       permissions: ['Permissions.LookupTables.Page']
     },
     {
       label: 'nav.adminRoles',
       icon: Badge,
-      route: '/admin-roles',
+      route: '/admin/roles',
       permissions: ['roles.page']
     },
     {
       label: 'nav.rolePermissions',
       icon: Settings,
-      route: '/role-permissions',
+      route: '/admin/role-permissions',
       permissions: ['roles.page']
     },
     {
       label: 'nav.ldapSettings',
       icon: Settings,
-      route: '/ldap-settings',
+      route: '/settings/ldap-settings',
       permissions: ['ldapSettings.page']
     },
     {
       label: 'nav.emailSettings',
       icon: Mail,
-      route: '/email-settings',
+      route: '/settings/email-settings',
       permissions: ['emailsettings.page']
     },
     {
       label: 'nav.adminImportExport',
       icon: Upload,
-      route: '/admin-import-export',
+      route: '/admin/import-export',
       permissions: ['canImportData']
     },
     {
@@ -316,13 +316,13 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     {
       label: 'nav.stockNotificationSettings',
       icon: Mail,
-      route: '/stock-notification-settings',
+      route: '/settings/stock-notification-settings',
       permissions: ['stockNotificationSettingsPage']
     },
     {
       label: 'nav.orderAutoRejectSettings',
       icon: Clock,
-      route: '/order-auto-reject-settings',
+      route: '/settings/order-auto-reject-settings',
       permissions: ['orderAutoRejectSettings.page']
     },
     {
@@ -382,11 +382,11 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       this.expandedMenus.add('nav.warehouse');
     }
     // Auto-expand requests management menu if inside its routes
-    if (url.startsWith('/requests-management')) {
+    if (url.startsWith('/requests/requests-management')) {
       this.expandedMenus.add('nav.requestsManagement');
     }
-    // Auto-expand department menu if on department/allowance routes
-    if (url.startsWith('/allowance') || url.startsWith('/department')) {
+    // Auto-expand department menu if on department routes
+    if (url.startsWith('/department')) {
       this.expandedMenus.add('nav.department');
     }
 
@@ -399,16 +399,16 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       this.expandedMenus.add('nav.reports');
       this.expandedMenus.add('nav.inventoryReports');
     }
-    if (url.startsWith('/report-dashboard')) {
+    if (url.startsWith('/reports/report-dashboard')) {
       this.expandedMenus.add('nav.reports');
     }
 
-    if (url.startsWith('/new-issue-request') || url.startsWith('/return-request') || url.startsWith('/discard-request')) {
+    if (url.startsWith('/requests/new-issue-request') || url.startsWith('/requests/return-request') || url.startsWith('/requests/discard-request')) {
       this.expandedMenus.add('nav.requestManagement');
     }
 
     // Auto-expand BI Tool menu if on report designer or scheduled reports route
-    if (url.startsWith('/report-designer') || url.startsWith('/scheduled-reports')) {
+    if (url.startsWith('/reports/report-designer') || url.startsWith('/reports/scheduled-reports')) {
       this.expandedMenus.add('nav.biTool');
     }
   }

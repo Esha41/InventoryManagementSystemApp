@@ -402,7 +402,7 @@ export class SupplyRequestDetailService {
       }),
       delay(1500),
       tap(() => {
-        this.router.navigate(['/requests-management', orderId, 'workflow-approval']);
+        this.router.navigate(['/requests/requests-management', orderId, 'workflow-approval']);
       })
     );
   }
@@ -430,7 +430,7 @@ export class SupplyRequestDetailService {
       }),
       delay(1500),
       tap(() => {
-        this.router.navigate(['/requests-management', supply.orderId, 'workflow-approval']);
+        this.router.navigate(['/requests/requests-management', supply.orderId, 'workflow-approval']);
       }),
       map(() => supply.id),
       catchError((error) => {

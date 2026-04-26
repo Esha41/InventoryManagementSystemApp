@@ -262,7 +262,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   }
 
   goBack(): void {
-    this.router.navigate(['/requests-management']);
+    this.router.navigate(['/requests/requests-management']);
   }
 
   async generateQrCode(): Promise<void> {
