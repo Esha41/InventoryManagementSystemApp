@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Cartridge } from '@models/cartridge.model';
 import { CartridgeState } from '@requests/pages/new-issue/new-issue-request.state';
 import { IssueRequestStateService } from './issue-request-state.service';
+import { inferCartridgeItemType } from '@requests/utils/issue-request.utils';
 
 /**
  * Service responsible for managing cartridge selection and state
@@ -16,30 +17,6 @@ export class IssueRequestCartridgeManagementService {
   ) { }
 
   /**
-   * Infers item type from cartridge properties
-   * @param cartridge - Cartridge to infer type from
-   * @returns Inferred item type
-   */
-  private inferItemType(cartridge: Cartridge): string | null {
-    if (cartridge.itemType) {
-      return cartridge.itemType;
-    }
-
-    // Infer from properties
-    if (cartridge.weaponType || cartridge.caliber || cartridge.actionType) {
-      return 'Weapon';
-    }
-    if (cartridge.explosiveType || cartridge.unNumber) {
-      return 'Explosive';
-    }
-    if (cartridge.ammunitionType || cartridge.bulletDiameterLabel || cartridge.linkedLabel) {
-      return 'Ammunition';
-    }
-
-    return null;
-  }
-
-  /**
    * Adds a cartridge to selected entries
    * @param cartridge - Cartridge to add
    * @param quantity - Quantity to add
@@ -52,7 +29,7 @@ export class IssueRequestCartridgeManagementService {
   ): void {
     // Ensure itemType is set on cartridge
     if (!cartridge.itemType) {
-      cartridge.itemType = this.inferItemType(cartridge) || undefined;
+      cartridge.itemType = inferCartridgeItemType(cartridge) || undefined;
     }
 
     const existingIndex = cartridgeState.selectedEntries.findIndex(entry => entry.id === cartridge.id);

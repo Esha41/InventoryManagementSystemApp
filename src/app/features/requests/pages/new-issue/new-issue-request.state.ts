@@ -1,6 +1,7 @@
 import { Cartridge } from '@models/cartridge.model';
 import { BackendUserDto } from '@models/backend-user.model';
 import { DropdownOption } from '@components/dropdown/dropdown.component';
+import { defaultPageSize } from '@constants/app.constants';
 
 export interface RequestPurposeDto {
   id: number;
@@ -24,6 +25,14 @@ export interface FilterState {
   selectedUNNumber?: string;
 }
 
+
+export interface ExtendedFilterState extends FilterState {
+  selectedWeaponType?: string;
+  selectedCaliber?: string;
+  selectedExplosiveType?: string;
+  selectedUNNumber?: string;
+}
+
 export interface FilterOptions {
   itemTypeOptions: string[];
   ammunitionTypeOptions: DropdownOption<string>[] | string[];
@@ -34,6 +43,11 @@ export interface FilterOptions {
 
   weaponTypeOptions?: any[]; // DropdownOption[]
   explosiveTypeOptions?: any[]; // DropdownOption[]
+}
+
+export interface ExtendedFilterOptions extends FilterOptions {
+  weaponTypeOptions?: string[];
+  explosiveTypeOptions?: string[];
 }
 
 export interface CatalogPaginationState {
@@ -111,4 +125,154 @@ export interface ReviewFormData {
   requesterComments: string;
   orderType: string;
   orderDocument: string;
+}
+
+export interface ConfirmDialogConfig {
+  title: string;
+  message: string;
+  type: 'success' | 'warning' | 'danger' | 'info';
+  confirmText: string;
+  cancelText: string;
+}
+
+// ----- State factories ---------------------------------------------------
+// Pure factory functions that return fresh state objects. The component uses
+// them for both initial field values and `resetForm()` so the defaults stay
+// declared in exactly one place.
+
+export function createInitialFilterState(): ExtendedFilterState {
+  return {
+    selectedItemType: 'Ammunition',
+    selectedAmmunitionType: '',
+    selectedBulletDiameter: '',
+    selectedLinked: '',
+    selectedNature: '',
+    selectedNSN: '',
+    searchTerm: '',
+    selectedWeaponType: '',
+    selectedCaliber: '',
+    selectedExplosiveType: '',
+    selectedUNNumber: ''
+  };
+}
+
+export function createInitialFilterOptions(): ExtendedFilterOptions {
+  return {
+    itemTypeOptions: ['Ammunition', 'Explosive', 'Weapon'],
+    ammunitionTypeOptions: [
+      { label: 'newIssueRequest.ammunitionTypeSmall', value: 'Small' },
+      { label: 'newIssueRequest.ammunitionTypeMedium', value: 'Medium' },
+      { label: 'newIssueRequest.ammunitionTypeLarge', value: 'Large' }
+    ],
+    bulletDiameters: [],
+    linkedOptions: [
+      { label: 'newIssueRequest.linkedOptionLinked', value: 'Linked' },
+      { label: 'newIssueRequest.linkedOptionNotLinked', value: 'Not Linked' }
+    ],
+    natureOptions: [],
+    orderPriorities: [],
+    weaponTypeOptions: [],
+    explosiveTypeOptions: []
+  };
+}
+
+export function createInitialCatalogPagination(): CatalogPaginationState {
+  return {
+    page: 1,
+    pageSize: defaultPageSize,
+    totalCount: 0,
+    totalPages: 0,
+    hasNextPage: false,
+    hasPreviousPage: false
+  };
+}
+
+export function createInitialCartridgeState(): CartridgeState {
+  return {
+    allCartridges: [],
+    filteredCartridges: [],
+    selectedCartridgeForView: null,
+    showCartridgeDetails: false,
+    loadingCartridges: false,
+    catalogPageLoading: false,
+    cartridgeError: null,
+    selectedEntries: [],
+    selectedCartridgesCache: new Map<number, Cartridge>(),
+    catalogPagination: createInitialCatalogPagination()
+  };
+}
+
+export function createInitialUsageFormData(): UsageFormData {
+  return {
+    usePurpose: '',
+    requestPurposeNotes: '',
+    usageLocation: '',
+    numberOfOfficers: null,
+    numberOfOtherRanks: null,
+    usageDateFrom: '',
+    usageTimeFrom: '',
+    usageDateTo: '',
+    usageTimeTo: '',
+    orderPriority: ''
+  };
+}
+
+export function createInitialReserveDetailsState(): ReserveDetailsState {
+  return {
+    totalReserve: 0,
+    availableReserve: 0,
+    orderedQuantity: 0,
+    usedQuantity: 0,
+    loadingReserveDetails: false,
+    reserveDetailsByItem: []
+  };
+}
+
+export function createInitialUserContextState(): UserContextState {
+  return {
+    currentUserDetails: null,
+    currentUserDepartmentId: null,
+    currentUserRequesterId: null,
+    fallbackRequesterName: '',
+    isAdminUser: false,
+    lockRequesterName: false
+  };
+}
+
+export function createInitialRequestPurposeState(): RequestPurposeState {
+  return {
+    requestPurposeOptions: [],
+    selectedRequestPurposeId: null,
+    loadingRequestPurposes: false,
+    requestPurposesSource: []
+  };
+}
+
+export function createInitialOrderSubmissionState(): OrderSubmissionState {
+  return {
+    submittingOrder: false,
+    orderSubmitError: null,
+    createdOrderId: null,
+    orderNumber: null,
+    orderSubmitted: false
+  };
+}
+
+export function createInitialReviewFormData(): ReviewFormData {
+  return {
+    requesterName: '',
+    requesterComments: '',
+    orderType: 'New Issue Request',
+    orderDocument: ''
+  };
+}
+
+export function createInitialConfirmDialogConfig(): ConfirmDialogConfig {
+  return {
+    title: '',
+    message: '',
+    type: 'success',
+    confirmText: '',
+    cancelText: ''
+  };
 }

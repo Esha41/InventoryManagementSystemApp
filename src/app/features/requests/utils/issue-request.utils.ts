@@ -3,6 +3,7 @@ import { UserContextState } from '@requests/pages/new-issue/new-issue-request.st
 import { BackendUserDto } from '@models/backend-user.model';
 import { AuthenticatedUser } from '@models/auth.model';
 import { resolveUserDisplayName } from '@utils/user.utils';
+import { DropdownOption } from '@components/dropdown/dropdown.component';
 
 /**
  * Issue Request Utilities
@@ -183,4 +184,70 @@ export function getDepartmentIdForRequest(
   defaultDepartmentId: number
 ): number {
   return currentUserDepartmentId || defaultDepartmentId;
+}
+
+/**
+ * Infers the logical item type ('Ammunition' | 'Weapon' | 'Explosive') from a
+ * cartridge's properties. Used both when adding to the selection and when
+ * merging cached selections with the currently filtered list.
+ */
+export function inferCartridgeItemType(cartridge: Cartridge): string | null {
+  if (cartridge.itemType) {
+    return cartridge.itemType;
+  }
+  if (cartridge.weaponType || cartridge.caliber || cartridge.actionType) {
+    return 'Weapon';
+  }
+  if (cartridge.explosiveType || cartridge.unNumber) {
+    return 'Explosive';
+  }
+  if (cartridge.ammunitionType || cartridge.bulletDiameterLabel || cartridge.linkedLabel) {
+    return 'Ammunition';
+  }
+  return null;
+}
+
+/**
+ * Returns true if the selection contains any weapon-typed cartridge.
+ */
+export function hasWeaponInSelection(cartridges: Cartridge[]): boolean {
+  return cartridges.some(c =>
+    c.itemType === 'Weapon' || !!(c.weaponType || c.caliber || c.actionType)
+  );
+}
+
+/**
+ * Filters the available item types based on the allowance/reserve mode. Weapon
+ * is hidden when the user is requesting from outside the reserve.
+ */
+export function getDisplayedItemTypeOptions(itemTypeOptions: string[], fromReserve: string): string[] {
+  if (fromReserve === 'No') {
+    return itemTypeOptions.filter(t => t !== 'Weapon');
+  }
+  return itemTypeOptions;
+}
+
+/**
+ * Filters the use-purpose dropdown to hide Training Order when at least one
+ * weapon is selected (Training Order is invalid for weapon orders).
+ */
+export function getDisplayedUsePurposeOptions(
+  options: DropdownOption<number>[],
+  cartridges: Cartridge[],
+  trainingOrderId: number
+): DropdownOption<number>[] {
+  if (hasWeaponInSelection(cartridges)) {
+    return options.filter(opt => opt.value !== trainingOrderId);
+  }
+  return options;
+}
+
+/**
+ * True when the user has selected at least one cartridge and every selected
+ * entry has a positive quantity.
+ */
+export function canProceedFromSelection(
+  selectedEntries: Array<{ id: number; quantity: number }>
+): boolean {
+  return selectedEntries.length > 0 && selectedEntries.every(entry => entry.quantity > 0);
 }
