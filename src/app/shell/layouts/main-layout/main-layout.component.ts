@@ -1,7 +1,8 @@
 
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
+import { RouterOutlet, Router, NavigationEnd, ActivatedRouteSnapshot } from '@angular/router';
 import { Component, OnInit, OnDestroy, AfterViewInit, Optional, Inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { SidebarComponent } from '@shared/layouts/sidebar/sidebar.component';
 import { FooterComponent } from '@shared/layouts/footer/footer.component';
@@ -15,6 +16,7 @@ import { IOnboardingTourProvider } from '@core/interfaces/onboarding-tour-provid
 import { TermsAcceptanceFacade } from '@features/help/facades/terms-acceptance.facade';
 import { TermsAcceptanceModalComponent } from '@features/help/components/terms-acceptance-modal/terms-acceptance-modal.component';
 import { SwitchRoleModalComponent } from '@auth/components/switch-role-modal/switch-role-modal.component';
+import { ShellRouteData } from '@core/routing/shell-route-data';
 
 @Component({
   selector: 'app-main-layout',
@@ -48,16 +50,28 @@ export class MainLayoutComponent implements OnInit, OnDestroy, AfterViewInit {
   ) {
     this.checkRoute();
     this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
+      .pipe(
+        filter(event => event instanceof NavigationEnd),
+        takeUntilDestroyed()
+      )
       .subscribe(() => {
         this.checkRoute();
       });
   }
 
   private checkRoute(): void {
-    const url = this.router.url;
-    this.shouldCollapseSidebar = url.includes('/report-designer/designer');
-    this.shouldHideSidebar = url.includes('/report-viewer');
+    const shell = this.getLeafShellData();
+    this.shouldCollapseSidebar = shell?.collapseSidebar ?? false;
+    this.shouldHideSidebar = shell?.hideSidebar ?? false;
+  }
+
+  /** Deepest primary-outlet snapshot carries `data.shell` from the active leaf route. */
+  private getLeafShellData(): ShellRouteData | undefined {
+    let snapshot: ActivatedRouteSnapshot = this.router.routerState.snapshot.root;
+    while (snapshot.firstChild) {
+      snapshot = snapshot.firstChild;
+    }
+    return snapshot.data['shell'] as ShellRouteData | undefined;
   }
 
   ngOnInit(): void {

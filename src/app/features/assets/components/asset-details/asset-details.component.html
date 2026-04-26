@@ -4,9 +4,13 @@
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div class="flex items-center gap-2 sm:gap-3 min-w-0">
-        <button *ngIf="showBackButton" (click)="onBack()"
-          class="min-w-[2.75rem] min-h-[2.75rem] p-2 flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors rounded-lg hover:bg-[var(--color-background-hover)] flex-shrink-0">
-          <lucide-angular [img]="ArrowLeft" class="w-5 h-5"></lucide-angular>
+        <button
+          *ngIf="showBackButton"
+          type="button"
+          (click)="onBack()"
+          class="detail-header-back-btn detail-header-back-btn--icon-only"
+          [attr.aria-label]="'common.back' | translate">
+          <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
         </button>
         <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-[var(--color-text)] truncate">
           <span *ngIf="assetType === 'ammunition'">{{ 'assetList.tabs.ammunition' | translate }} {{ 'common.details' |
@@ -51,9 +55,12 @@
     <div *ngIf="showInlineHeader" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
       <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-[var(--color-text)]">{{ 'newIssueRequest.reviewYourSelection' | translate }}
       </h2>
-      <button (click)="onClose()"
-        class="min-w-[2.75rem] min-h-[2.75rem] p-2 flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors rounded-lg hover:bg-[var(--color-background-hover)] self-start">
-        <lucide-angular [img]="ArrowLeft" class="w-5 h-5"></lucide-angular>
+      <button
+        type="button"
+        (click)="onClose()"
+        class="detail-header-back-btn detail-header-back-btn--icon-only self-start"
+        [attr.aria-label]="'common.back' | translate">
+        <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
       </button>
     </div>
     <ng-container *ngTemplateOutlet="assetDetailsContent"></ng-container>
@@ -374,7 +381,7 @@
           
 
             <div>
-              <p class="text-[var(--color-text-muted)] mb-1">Country of Manufacture</p>
+              <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.countryOfManufacture' | translate }}</p>
               <p class="text-[var(--color-text)]">{{ getCountryOfManufactureForWeapon() }}</p>
             </div>
 
@@ -464,8 +471,10 @@
 
     <!-- Go Back Button -->
     <div class="flex justify-center sm:justify-end mt-6 md:mt-8">
-      <button (click)="isPage ? onBack() : onClose()"
-        class="px-8 py-3 border-2 border-[var(--color-border)] text-[var(--color-text)] text-sm font-medium rounded-lg hover:bg-[var(--color-background-hover)] transition-colors">
+      <button
+        type="button"
+        (click)="isPage ? onBack() : onClose()"
+        class="detail-back-text-btn">
         {{ 'common.goBack' | translate }}
       </button>
     </div>

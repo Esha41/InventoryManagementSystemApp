@@ -26,7 +26,7 @@ import { trackById, trackByKey, trackByIndex } from '@utils/trackby.utils';
 import { defaultPageSize } from '@constants/app.constants';
 
 @Component({
-    selector: 'app-inventory-summary',
+    selector: 'app-warehouse-inventory-summary',
     standalone: true,
     imports: [
         CommonModule,
@@ -42,11 +42,11 @@ import { defaultPageSize } from '@constants/app.constants';
         AppDatePipe
     ],
     providers: [InventorySummaryDataService],
-    templateUrl: './inventory-summary.component.html',
-    styleUrls: ['./inventory-summary.component.css'],
+    templateUrl: './warehouse-inventory-summary.component.html',
+    styleUrls: ['./warehouse-inventory-summary.component.css'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class InventorySummaryComponent implements OnInit, OnDestroy {
+export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
     // Data
     items: ItemInventorySummaryDto[] = [];
     filteredItems: ItemInventorySummaryDto[] = [];
@@ -516,7 +516,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
                 width: 15
             },
             {
-                header: this.translateService.instant('inventorySummary.partNo'),
+                header: 'Part No',
                 key: 'partNo',
                 width: 15,
                 format: (value: string) => value || '-'

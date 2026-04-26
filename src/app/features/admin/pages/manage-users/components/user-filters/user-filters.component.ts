@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Search, X } from 'lucide-angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
-import { TranslationService } from '@core/services/translation.service';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { LookupItem } from '@models/lookup.model';
 import { RoleDto } from '@models/backend-user.model';
@@ -31,7 +30,6 @@ import { getCurrentLang, getLocalizedName } from '@utils/localization.utils';
 export class UserFiltersComponent implements OnInit, OnDestroy, OnChanges {
   readonly Search = Search;
   readonly X = X;
-  private readonly translationService = inject(TranslationService, { optional: true });
   private readonly translate = inject(TranslateService);
   private readonly cdr = inject(ChangeDetectorRef);
 
@@ -71,35 +69,19 @@ export class UserFiltersComponent implements OnInit, OnDestroy, OnChanges {
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
 
-  get isRTL(): boolean {
-    return this.translationService?.isRTL() ?? false;
-  }
-
   get showSearchClear(): boolean {
     return (this.searchTerm ?? '').trim().length > 0;
   }
 
-  /**
-   * Inline padding for the search field: icon side + room for clear and/or Search button.
-   */
-  get searchInputPadding(): Record<string, string> {
-    const iconPad = '2.75rem';
-    const endNarrow = '1rem';
-    const endClearOnly = '2.75rem';
-    const endButtonOnly = '6.25rem';
-    const endButtonAndClear = '9rem';
-
-    if (this.isRTL) {
-      const start = this.useSearchButton
-        ? (this.showSearchClear ? endButtonAndClear : endButtonOnly)
-        : (this.showSearchClear ? endClearOnly : endNarrow);
-      return { 'padding-left': start, 'padding-right': iconPad };
+  /** Tailwind `pe-*` (logical end); inline-start padding from global `--app-search-input-padding-start` via `app-search-field__input-ps`. */
+  get searchInputPaddingEndClass(): string {
+    if (this.useSearchButton) {
+      return this.showSearchClear ? 'pe-[14rem]' : 'pe-[10.75rem]';
     }
-
-    const end = this.useSearchButton
-      ? (this.showSearchClear ? endButtonAndClear : endButtonOnly)
-      : (this.showSearchClear ? endClearOnly : endNarrow);
-    return { 'padding-left': iconPad, 'padding-right': end };
+    if (this.showSearchClear) {
+      return 'pe-11';
+    }
+    return 'pe-4';
   }
 
   ngOnInit(): void {
@@ -113,7 +95,6 @@ export class UserFiltersComponent implements OnInit, OnDestroy, OnChanges {
       }
     });
 
-    // Subscribe to language changes to update RTL/LTR layout
     this.translate.onLangChange
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {

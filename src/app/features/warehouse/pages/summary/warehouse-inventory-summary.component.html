@@ -4,8 +4,11 @@
         class="bg-gradient-to-r from-[var(--color-brand)]/10 via-[var(--color-brand)]/5 to-transparent border-b border-[var(--color-border)]">
         <div class="page-container">
             <div class="flex items-center gap-3">
-                <button (click)="onBack()"
-                    class="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
+                <button
+                    type="button"
+                    (click)="onBack()"
+                    class="detail-header-back-btn detail-header-back-btn--icon-only"
+                    [attr.aria-label]="'common.back' | translate">
                     <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
                 </button>
                 <div>
@@ -84,13 +87,11 @@
         <!-- Search Bar -->
         <app-card [shadow]="true" class="mb-6">
             <div class="p-6">
-                <div class="relative">
-                    <div class="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none">
-                        <lucide-icon [img]="Search" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-icon>
-                    </div>
+                <div class="app-search-field">
+                    <lucide-icon [img]="Search" class="app-search-field__icon app-search-field__icon--lg"></lucide-icon>
                     <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()"
                         [placeholder]="'inventorySummary.searchPlaceholder' | translate"
-                        class="w-full ps-10 pe-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all" />
+                        class="app-search-field__input-ps-lg w-full pe-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all" />
                 </div>
             </div>
         </app-card>

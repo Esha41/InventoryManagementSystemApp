@@ -23,7 +23,7 @@ export const routes: Routes = [
       },
       {
         path: 'inventory-summary',
-        loadComponent: () => import('@warehouse/pages/summary/inventory-summary.component').then(m => m.InventorySummaryComponent),
+        loadComponent: () => import('@warehouse/pages/summary/warehouse-inventory-summary.component').then(m => m.WarehouseInventorySummaryComponent),
         canActivate: [permissionGuard],
         data: { permissions: ['inventorySummaryReportPage'] }
       },
@@ -92,5 +92,6 @@ export const routes: Routes = [
       }
     ]
   },
-  { path: '**', redirectTo: '/auth/login' }
+  // Unknown URLs → app root; authGuard on MainLayout then restores session or sends to login.
+  { path: '**', redirectTo: '', pathMatch: 'full' }
 ];

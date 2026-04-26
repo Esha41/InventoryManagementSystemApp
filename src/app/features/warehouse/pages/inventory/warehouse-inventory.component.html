@@ -18,10 +18,13 @@
     <div class="page-container py-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-4">
-          <button (click)="orchestrator.onBackToWarehouses()"
-            class="flex items-center gap-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
+          <button
+            type="button"
+            (click)="orchestrator.onBackToWarehouses()"
+            class="detail-header-back-btn"
+            [attr.aria-label]="'warehouseInventory.backToWarehouses' | translate">
             <lucide-angular [img]="store.backIcon()" class="w-5 h-5"></lucide-angular>
-            <span class="font-medium">{{ 'warehouseInventory.backToWarehouses' | translate }}</span>
+            <span>{{ 'warehouseInventory.backToWarehouses' | translate }}</span>
           </button>
         </div>
       </div>

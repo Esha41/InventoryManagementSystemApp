@@ -4,10 +4,9 @@
          bg-transparent">
 
   <!-- Search -->
-  <div *ngIf="showSearchBar" class="relative flex items-center flex-1 min-w-0 group/rfb-search">
+  <div *ngIf="showSearchBar" class="app-search-field flex flex-1 min-w-0 items-center group/rfb-search">
     <lucide-angular [img]="Search"
-      class="absolute start-3 w-4 h-4 pointer-events-none text-[var(--color-text-muted)] z-10
-             group-focus-within/rfb-search:text-[var(--color-brand)] transition-colors duration-150">
+      class="app-search-field__icon z-10 group-focus-within/rfb-search:text-[var(--color-brand)] transition-colors duration-150">
     </lucide-angular>
 
     <input type="text"
@@ -16,7 +15,7 @@
       (keyup.enter)="onSearchClick()"
       [placeholder]="searchPlaceholder | translate"
       [ngClass]="useSearchButton ? 'pe-[5.5rem] sm:pe-24' : 'pe-9'"
-      class="rfb-search-input w-full ps-10 pe-9 py-2.5 rounded-xl text-sm
+      class="rfb-search-input app-search-field__input-ps w-full pe-9 py-2.5 rounded-xl text-sm
              bg-[var(--color-background)] text-[var(--color-text)]
              placeholder:text-[var(--color-text-muted)]/80
              border border-transparent

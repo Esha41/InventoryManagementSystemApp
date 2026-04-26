@@ -13,8 +13,9 @@ import { InventorySummaryUtils } from '@warehouse/utils/inventory-summary.utils'
 import { TranslationService } from '@services/translation.service';
 import { LoadingStateComponent } from '@components/index';
 
+/** Admin Import/Export tab: rolled-up inventory summary totals and Excel export (not the warehouse full-report page). */
 @Component({
-  selector: 'app-inventory-summary',
+  selector: 'app-admin-inventory-summary',
   standalone: true,
   imports: [
     CommonModule,
@@ -24,11 +25,11 @@ import { LoadingStateComponent } from '@components/index';
     LoadingStateComponent
   ],
   providers: [InventorySummaryDataService],
-  templateUrl: './inventory-summary.component.html',
-  styleUrls: ['./inventory-summary.component.css'],
+  templateUrl: './admin-inventory-summary.component.html',
+  styleUrls: ['./admin-inventory-summary.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class InventorySummaryComponent implements OnInit, OnDestroy {
+export class AdminInventorySummaryComponent implements OnInit, OnDestroy {
   inventorySummaryItems: ItemInventorySummaryDto[] = [];
   filteredInventoryItems: ItemInventorySummaryDto[] = [];
   activeTab: 'ammunition' | 'weapon' | 'explosive' = 'ammunition';
@@ -137,7 +138,7 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
         width: 15
       },
       {
-        header: this.translateService.instant('inventorySummary.partNo'),
+        header: 'Part No',
         key: 'partNo',
         width: 15,
         format: (value: string) => value || '-'
@@ -190,4 +191,3 @@ export class InventorySummaryComponent implements OnInit, OnDestroy {
     });
   }
 }
-

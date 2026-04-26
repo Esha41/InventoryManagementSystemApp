@@ -1,37 +1,40 @@
-<div class="filter-container mb-6">
-  <!-- Search -->
-  <div class="search-wrapper relative">
-    <lucide-angular [img]="Search" 
-      class="search-icon"
-      [ngStyle]="{
-        'left': isRTL ? 'auto' : '1rem',
-        'right': isRTL ? '1rem' : 'auto',
-        'top': '50%',
-        'transform': 'translateY(-50%)'
-      }"></lucide-angular>
-    <input type="text" inputmode="search" enterkeyhint="search" name="userAdminSearch" [(ngModel)]="searchTerm"
-      (ngModelChange)="onSearchChange()" (keyup.enter)="onSearchClick()"
+<div class="mb-6 flex flex-wrap items-center gap-3 max-md:flex-col max-md:items-stretch">
+  <!-- Search: global app-search-field* (tokens in styles.css) -->
+  <div class="app-search-field shrink flex-[1.5] basis-[min(100%,22rem)]">
+    <lucide-angular [img]="Search" class="app-search-field__icon"></lucide-angular>
+    <input
+      type="text"
+      inputmode="search"
+      enterkeyhint="search"
+      name="userAdminSearch"
+      [(ngModel)]="searchTerm"
+      (ngModelChange)="onSearchChange()"
+      (keyup.enter)="onSearchClick()"
       [placeholder]="'manageAdmins.searchPlaceholder' | translate"
-      class="search-input"
-      [class.search-input-with-button]="useSearchButton"
-      [ngStyle]="searchInputPadding" />
-    <div *ngIf="useSearchButton"
-      class="absolute top-1/2 -translate-y-1/2 z-10 flex items-center gap-1"
-      [ngClass]="isRTL ? 'start-2' : 'end-2'">
-      <button *ngIf="showSearchClear" type="button" (click)="onClearSearch($event)"
-        class="p-1 rounded-md text-[var(--color-error)] hover:opacity-80 transition-colors shrink-0"
+      [ngClass]="searchInputPaddingEndClass"
+      class="app-search-field__input-surface app-search-field__input-ps" />
+    <div *ngIf="useSearchButton" class="app-search-field__actions">
+      <button
+        *ngIf="showSearchClear"
+        type="button"
+        (click)="onClearSearch($event)"
+        class="shrink-0 rounded-md p-1 text-[var(--color-error)] transition-colors hover:opacity-80"
         [attr.aria-label]="'common.clear' | translate"
         [title]="'common.clear' | translate">
         <lucide-angular [img]="X" class="h-4 w-4"></lucide-angular>
       </button>
-      <button type="button" (click)="onSearchClick()"
-        class="px-3 py-1 bg-[var(--color-brand)] text-white text-[10px] font-bold uppercase tracking-wider rounded-md hover:bg-[var(--color-brand-hover)] transition-all active:scale-95 shadow-soft shrink-0 whitespace-nowrap">
+      <button
+        type="button"
+        (click)="onSearchClick()"
+        class="shrink-0 whitespace-nowrap rounded-md bg-[var(--color-brand)] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-soft transition-all hover:bg-[var(--color-brand-hover)] active:scale-95">
         {{ 'common.search' | translate }}
       </button>
     </div>
-    <button *ngIf="!useSearchButton && showSearchClear" type="button" (click)="onClearSearch($event)"
-      class="absolute top-1/2 -translate-y-1/2 z-10 p-1 rounded-md text-[var(--color-error)] hover:opacity-80 transition-colors"
-      [ngClass]="isRTL ? 'start-2' : 'end-2'"
+    <button
+      *ngIf="!useSearchButton && showSearchClear"
+      type="button"
+      (click)="onClearSearch($event)"
+      class="app-search-field__actions rounded-md p-1 text-[var(--color-error)] transition-colors hover:opacity-80"
       [attr.aria-label]="'common.clear' | translate"
       [title]="'common.clear' | translate">
       <lucide-angular [img]="X" class="h-4 w-4"></lucide-angular>
@@ -39,9 +42,9 @@
   </div>
 
   <!-- Rank Filter -->
-  <div class="filter-group">
-    <div class="relative w-[200px]">
-      <app-dropdown class="w-full"
+  <div class="relative w-[200px] max-md:w-full">
+      <app-dropdown
+        class="w-full"
         [(ngModel)]="rankFilterId"
         (selectionChange)="onRankFilterChange($event)"
         [options]="ranks"
@@ -52,20 +55,21 @@
         placeholder="{{ 'userFormModal.rankPlaceholder' | translate }}">
       </app-dropdown>
 
-      <button *ngIf="rankFilterId !== null && rankFilterId !== undefined" type="button"
+      <button
+        *ngIf="rankFilterId !== null && rankFilterId !== undefined"
+        type="button"
         (click)="clearRankFilter($event)"
-        class="absolute end-8 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-md hover:bg-[var(--color-background-hover)] active:bg-[var(--color-background-active)] transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] shadow-custom-sm z-20"
-        style="pointer-events: auto;" [attr.aria-label]="'allowance.clearFilter' | translate"
+        class="pointer-events-auto absolute end-8 top-1/2 z-20 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-md border-2 border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text-muted)] shadow-custom-sm transition-colors hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)] active:bg-[var(--color-background-active)]"
+        [attr.aria-label]="'allowance.clearFilter' | translate"
         title="{{ 'allowance.clearFilter' | translate }}">
         <lucide-angular [img]="X" class="h-3.5 w-3.5"></lucide-angular>
       </button>
-    </div>
   </div>
 
   <!-- Department Filter -->
-  <div class="filter-group">
-    <div class="relative w-[200px]">
-      <app-dropdown class="w-full"
+  <div class="relative w-[200px] max-md:w-full">
+      <app-dropdown
+        class="w-full"
         [(ngModel)]="departmentFilterId"
         (selectionChange)="onDepartmentFilterChange($event)"
         [options]="departments"
@@ -76,20 +80,21 @@
         placeholder="{{ 'userFormModal.departmentPlaceholder' | translate }}">
       </app-dropdown>
 
-      <button *ngIf="departmentFilterId !== null && departmentFilterId !== undefined" type="button"
+      <button
+        *ngIf="departmentFilterId !== null && departmentFilterId !== undefined"
+        type="button"
         (click)="clearDepartmentFilter($event)"
-        class="absolute end-8 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-md hover:bg-[var(--color-background-hover)] active:bg-[var(--color-background-active)] transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] shadow-custom-sm z-20"
-        style="pointer-events: auto;" [attr.aria-label]="'allowance.clearFilter' | translate"
+        class="pointer-events-auto absolute end-8 top-1/2 z-20 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-md border-2 border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text-muted)] shadow-custom-sm transition-colors hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)] active:bg-[var(--color-background-active)]"
+        [attr.aria-label]="'allowance.clearFilter' | translate"
         title="{{ 'allowance.clearFilter' | translate }}">
         <lucide-angular [img]="X" class="h-3.5 w-3.5"></lucide-angular>
       </button>
-    </div>
   </div>
 
   <!-- Roles Filter -->
-  <div class="filter-group">
-    <div class="relative w-[220px]">
-      <app-dropdown class="w-full"
+  <div class="relative w-[220px] max-md:w-full">
+      <app-dropdown
+        class="w-full"
         [(ngModel)]="roleFilterId"
         (selectionChange)="onRoleFilterChange($event)"
         [options]="roles"
@@ -100,40 +105,76 @@
         placeholder="{{ 'userFormModal.rolesPlaceholder' | translate }}">
       </app-dropdown>
 
-      <button *ngIf="roleFilterId !== null && roleFilterId !== undefined" type="button"
+      <button
+        *ngIf="roleFilterId !== null && roleFilterId !== undefined"
+        type="button"
         (click)="clearRoleFilter($event)"
-        class="absolute end-8 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-md hover:bg-[var(--color-background-hover)] active:bg-[var(--color-background-active)] transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] shadow-custom-sm z-20"
-        style="pointer-events: auto;" [attr.aria-label]="'allowance.clearFilter' | translate"
+        class="pointer-events-auto absolute end-8 top-1/2 z-20 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-md border-2 border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text-muted)] shadow-custom-sm transition-colors hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)] active:bg-[var(--color-background-active)]"
+        [attr.aria-label]="'allowance.clearFilter' | translate"
         title="{{ 'allowance.clearFilter' | translate }}">
         <lucide-angular [img]="X" class="h-3.5 w-3.5"></lucide-angular>
       </button>
-    </div>
   </div>
 
   <!-- Status Filter Group -->
-  <div class="filter-group">
-    <span class="filter-label text-[var(--color-text-muted)] text-sm font-medium">{{ 'manageAdmins.status' | translate
-      }}:</span>
-    <div class="filter-options">
-      <button (click)="onStatusFilterChange('all')" [class.active]="statusFilter === 'all'" class="filter-btn all">
+  <div class="flex items-center gap-3 max-md:flex-col max-md:items-start">
+    <span class="text-sm font-semibold text-[var(--color-text-muted)]">{{ 'manageAdmins.status' | translate }}:</span>
+    <div
+      class="flex rounded-[0.85rem] border border-[var(--color-border)] bg-[var(--color-background)] p-1 shadow-[var(--shadow-sm)] max-md:w-full">
+      <button
+        (click)="onStatusFilterChange('all')"
+        type="button"
+        class="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-[0.65rem] border border-transparent px-4 py-2 text-sm font-semibold text-[var(--color-text-muted)] transition-all hover:bg-[var(--color-background-muted)] hover:text-[var(--color-text)] max-md:flex-1 max-md:justify-center"
+        [ngClass]="
+          statusFilter === 'all'
+            ? '-translate-y-px bg-[var(--color-brand)] text-white shadow-md border-[var(--color-brand-dark)]'
+            : ''
+        ">
         {{ 'manageAdmins.allUsers' | translate }}
       </button>
 
-      <button (click)="onStatusFilterChange('active')" [class.active]="statusFilter === 'active'"
-        class="filter-btn active">
-        <div class="status-dot bg-[var(--color-success)]"></div>
+      <button
+        (click)="onStatusFilterChange('active')"
+        type="button"
+        class="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-[0.65rem] border border-transparent px-4 py-2 text-sm font-semibold text-[var(--color-text-muted)] transition-all hover:bg-[var(--color-background-muted)] hover:text-[var(--color-text)] max-md:flex-1 max-md:justify-center"
+        [ngClass]="
+          statusFilter === 'active'
+            ? '-translate-y-px bg-[var(--color-success)] text-white shadow-md [border-color:color-mix(in_srgb,var(--color-success)_80%,black)]'
+            : ''
+        ">
+        <div
+          class="h-2.5 w-2.5 rounded-full border-2 border-white"
+          [ngClass]="statusFilter === 'active' ? 'bg-white' : 'bg-[var(--color-success)]'"></div>
         {{ 'manageAdmins.active' | translate }}
       </button>
 
-      <button (click)="onStatusFilterChange('inactive')" [class.active]="statusFilter === 'inactive'"
-        class="filter-btn inactive">
-        <div class="status-dot bg-[var(--color-warning)]"></div>
+      <button
+        (click)="onStatusFilterChange('inactive')"
+        type="button"
+        class="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-[0.65rem] border border-transparent px-4 py-2 text-sm font-semibold text-[var(--color-text-muted)] transition-all hover:bg-[var(--color-background-muted)] hover:text-[var(--color-text)] max-md:flex-1 max-md:justify-center"
+        [ngClass]="
+          statusFilter === 'inactive'
+            ? '-translate-y-px bg-[var(--color-warning)] text-white shadow-md [border-color:color-mix(in_srgb,var(--color-warning)_80%,black)]'
+            : ''
+        ">
+        <div
+          class="h-2.5 w-2.5 rounded-full border-2 border-white"
+          [ngClass]="statusFilter === 'inactive' ? 'bg-white' : 'bg-[var(--color-warning)]'"></div>
         {{ 'manageAdmins.inactive' | translate }}
       </button>
 
-      <button (click)="onStatusFilterChange('deleted')" [class.active]="statusFilter === 'deleted'"
-        class="filter-btn deleted">
-        <div class="status-dot bg-[var(--color-error)]"></div>
+      <button
+        (click)="onStatusFilterChange('deleted')"
+        type="button"
+        class="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-[0.65rem] border border-transparent px-4 py-2 text-sm font-semibold text-[var(--color-text-muted)] transition-all hover:bg-[var(--color-background-muted)] hover:text-[var(--color-text)] max-md:flex-1 max-md:justify-center"
+        [ngClass]="
+          statusFilter === 'deleted'
+            ? '-translate-y-px bg-[var(--color-error)] text-white shadow-md [border-color:color-mix(in_srgb,var(--color-error)_80%,black)]'
+            : ''
+        ">
+        <div
+          class="h-2.5 w-2.5 rounded-full border-2 border-white"
+          [ngClass]="statusFilter === 'deleted' ? 'bg-white' : 'bg-[var(--color-error)]'"></div>
         {{ 'manageAdmins.deleted' | translate }}
       </button>
     </div>

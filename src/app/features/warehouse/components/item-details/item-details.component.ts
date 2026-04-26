@@ -16,7 +16,7 @@ import { WeaponDto } from '@models/weapon.model';
 import { ExplosiveDto } from '@models/explosive.model';
 import { InventoryDetailDto } from '@models/inventory.model';
 import { AssetPropertyAccessor } from '@utils/asset-property.utils';
-import { LucideAngularModule, ArrowLeft } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ArrowRight } from 'lucide-angular';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { TranslationService } from '@services/translation.service';
 
@@ -44,6 +44,11 @@ export class ItemDetailsComponent implements OnInit, OnChanges, OnDestroy {
   loading = false;
   error: string | null = null;
   readonly ArrowLeft = ArrowLeft;
+  readonly ArrowRight = ArrowRight;
+
+  get backIcon(): typeof ArrowLeft {
+    return this.translationService?.isRTL() ? ArrowRight : ArrowLeft;
+  }
   private destroy$ = new Subject<void>();
 
   imageUrl: string | null = null;

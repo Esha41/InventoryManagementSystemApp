@@ -2,8 +2,11 @@
   <!-- Header -->
   <div class="flex items-center justify-between mb-6">
     <div class="flex items-center gap-3">
-      <button (click)="onBack()"
-        class="text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
+      <button
+        type="button"
+        (click)="onBack()"
+        class="detail-header-back-btn detail-header-back-btn--icon-only"
+        [attr.aria-label]="'common.back' | translate">
         <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
       </button>
       <h1 class="text-2xl font-semibold text-[var(--color-text)]">

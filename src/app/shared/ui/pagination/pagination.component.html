@@ -4,7 +4,7 @@
     type="button"
     (click)="onPrevious()"
     [disabled]="isPreviousDisabled"
-    class="pagination-nav-btn"
+    class="pagination-nav-btn pagination-prev-btn"
     [class.pagination-nav-btn-disabled]="isPreviousDisabled"
     [attr.aria-label]="'common.previous' | translate"
     [attr.aria-disabled]="isPreviousDisabled">
@@ -34,7 +34,7 @@
     type="button"
     (click)="onNext()"
     [disabled]="isNextDisabled"
-    class="pagination-nav-btn"
+    class="pagination-nav-btn pagination-next-btn"
     [class.pagination-nav-btn-disabled]="isNextDisabled"
     [attr.aria-label]="'common.next' | translate"
     [attr.aria-disabled]="isNextDisabled">

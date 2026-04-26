@@ -401,7 +401,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
         format: (value: string) => value || '-'
       },
       {
-        header: this.translateService.instant('assetList.table.partNo'),
+        header: 'Part No',
         key: 'partNo',
         width: 15,
         format: (value: string) => value || '-'

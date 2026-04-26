@@ -12,7 +12,10 @@ export const REPORTS_ROUTES: Routes = [
     path: 'report-designer/designer',
     loadComponent: () => import('./designer/devexpress-designer.component').then(m => m.DevExpressReportDesignerComponent),
     canActivate: [permissionGuard],
-    data: { permissions: ['ReportDesigner'] }
+    data: {
+      permissions: ['ReportDesigner'],
+      shell: { collapseSidebar: true }
+    }
   },
   {
     path: 'report-dashboard',
@@ -40,6 +43,7 @@ export const REPORTS_ROUTES: Routes = [
   },
   {
     path: 'report-viewer',
-    loadComponent: () => import('./viewer/report-viewer.component').then(m => m.ReportViewerComponent)
+    loadComponent: () => import('./viewer/report-viewer.component').then(m => m.ReportViewerComponent),
+    data: { shell: { hideSidebar: true } }
   }
 ];

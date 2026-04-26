@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { CardComponent } from '@components/card/card.component';
 import { AssetsImportExportComponent } from './components/assets-import-export.component';
-import { InventorySummaryComponent } from './components/inventory-summary.component';
+import { AdminInventorySummaryComponent } from './components/admin-inventory-summary.component';
 import { WarehouseInventoryComponent } from './components/warehouse-inventory.component';
 import { TranslationService } from '@services/translation.service';
 
@@ -15,7 +15,7 @@ import { TranslationService } from '@services/translation.service';
     TranslateModule,
     CardComponent,
     AssetsImportExportComponent,
-    InventorySummaryComponent,
+    AdminInventorySummaryComponent,
     WarehouseInventoryComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -19,7 +19,7 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil, combineLatest } from 'rxjs';
-import { LucideAngularModule, ArrowLeft, X } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ArrowRight, X } from 'lucide-angular';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { TranslationService } from '@services/translation.service';
 import { AssetDetailsService } from './asset-details.service';
@@ -119,7 +119,13 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
 
   // Icons
   readonly ArrowLeft = ArrowLeft;
+  readonly ArrowRight = ArrowRight;
   readonly X = X; // For modal close button
+
+  /** Back navigation chevron: points toward reading start (LTR=left, RTL=right). */
+  get backIcon(): typeof ArrowLeft {
+    return this.isRTL() ? ArrowRight : ArrowLeft;
+  }
 
   // Cleanup
   private readonly destroy$ = new Subject<void>();

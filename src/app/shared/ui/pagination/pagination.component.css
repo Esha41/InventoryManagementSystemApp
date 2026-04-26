@@ -8,6 +8,21 @@
   z-index: 1;
 }
 
+/* RTL: keep page numbers order, but swap nav buttons sides */
+:host-context([dir='rtl']) .pagination-prev-btn {
+  order: 3;
+}
+
+:host-context([dir='rtl']) .pagination-next-btn {
+  order: 1;
+}
+
+:host-context([dir='rtl']) .pagination-container > ng-container,
+:host-context([dir='rtl']) .pagination-page-btn,
+:host-context([dir='rtl']) .pagination-ellipsis {
+  order: 2;
+}
+
 .pagination-nav-btn {
   display: flex;
   align-items: center;
