@@ -11,6 +11,8 @@ import {
   OrderSubmissionState
 } from '@requests/pages/new-issue/new-issue-request.state';
 import { getDepartmentIdForRequest as getDepartmentIdForRequestUtil } from '@requests/utils/issue-request.utils';
+import { ToastService } from '@services/toast.service';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 export interface SubmissionDialogConfig {
   title: string;
@@ -18,6 +20,26 @@ export interface SubmissionDialogConfig {
   type: 'success' | 'warning' | 'danger' | 'info';
   confirmText: string;
   cancelText: string;
+}
+
+export interface RunSubmissionContext {
+  cartridgeState: CartridgeState;
+  requestPurposeState: RequestPurposeState;
+  usageFormData: UsageFormData;
+  reviewFormData: ReviewFormData;
+  fromReserve: string;
+  currentUserDepartmentId: number | null;
+  defaultDepartmentId: number;
+  defaultRequestPurposeId: number;
+  defaultRequestTypeId: number;
+  files: File[] | undefined;
+  orderSubmissionState: OrderSubmissionState;
+}
+
+export interface RunSubmissionCallbacks {
+  onSuccess(orderId: number | null, orderNumber: string | null): void;
+  onValidationFailure(message: string): void;
+  onTransportError(message: string): void;
 }
 
 /**
@@ -30,7 +52,8 @@ export interface SubmissionDialogConfig {
 export class IssueRequestSubmissionService {
   constructor(
     private orderSubmissionService: OrderSubmissionService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private toastService: ToastService
   ) { }
 
   /**
@@ -70,6 +93,17 @@ export class IssueRequestSubmissionService {
   }
 
   /**
+   * Pre-flight validation that mirrors `OrderSubmissionService.validateOrder`
+   * but builds the payload from the same component-scoped state objects the
+   * `runSubmission` flow expects. Used to block the confirmation dialog when
+   * the form is incomplete.
+   */
+  validateSubmission(ctx: RunSubmissionContext): { isValid: boolean; error?: string } {
+    const submissionData = this.buildSubmissionDataFromContext(ctx);
+    return this.orderSubmissionService.validateOrder(submissionData);
+  }
+
+  /**
    * Loads confirmation dialog translations
    */
   loadConfirmationDialogConfig(): Observable<SubmissionDialogConfig> {
@@ -104,6 +138,78 @@ export class IssueRequestSubmissionService {
     const filesToUpload = files && files.length > 0 ? files : undefined;
 
     return this.orderSubmissionService.submitOrder(payload, filesToUpload);
+  }
+
+  /**
+   * End-to-end submission orchestration: builds payload, validates, submits,
+   * and dispatches the outcome through the supplied callbacks. Validation
+   * failures bypass the network call. Transport-layer errors and server-
+   * reported failures both also fire a localized error toast (matching the
+   * exact behaviour the component used to implement inline).
+   */
+  runSubmission(
+    ctx: RunSubmissionContext,
+    callbacks: RunSubmissionCallbacks
+  ): void {
+    const submissionData = this.buildSubmissionData(
+      ctx.cartridgeState,
+      ctx.requestPurposeState,
+      ctx.usageFormData,
+      ctx.reviewFormData,
+      ctx.fromReserve,
+      ctx.currentUserDepartmentId,
+      ctx.defaultDepartmentId,
+      ctx.defaultRequestPurposeId,
+      ctx.defaultRequestTypeId
+    );
+
+    const validation = this.orderSubmissionService.validateOrder(submissionData);
+    if (!validation.isValid) {
+      callbacks.onValidationFailure(validation.error ?? 'Validation failed');
+      return;
+    }
+
+    this.submitOrder(submissionData, ctx.files, ctx.orderSubmissionState).subscribe({
+      next: (result) => {
+        ctx.orderSubmissionState.submittingOrder = false;
+        if (result.success) {
+          callbacks.onSuccess(result.orderId ?? null, result.orderNumber ?? null);
+        } else {
+          const errorMsg = result.error || 'Failed to submit order. Please try again.';
+          this.translate.get('toast.error').subscribe(title => {
+            this.toastService.error(errorMsg, title);
+          });
+          callbacks.onTransportError(errorMsg);
+        }
+      },
+      error: (error) => {
+        ctx.orderSubmissionState.submittingOrder = false;
+        const errorMsg = ErrorHandler.resolveOrderSubmissionError(undefined, error, 'Failed to submit order');
+        this.translate.get('toast.error').subscribe(title => {
+          this.toastService.error(errorMsg, title);
+        });
+        callbacks.onTransportError(errorMsg);
+      }
+    });
+  }
+
+  /**
+   * Convenience helper that builds the submission payload directly from a
+   * `RunSubmissionContext`. Kept public so callers can validate without
+   * triggering submission (currently unused outside `runSubmission`).
+   */
+  buildSubmissionDataFromContext(ctx: RunSubmissionContext): OrderSubmissionData {
+    return this.buildSubmissionData(
+      ctx.cartridgeState,
+      ctx.requestPurposeState,
+      ctx.usageFormData,
+      ctx.reviewFormData,
+      ctx.fromReserve,
+      ctx.currentUserDepartmentId,
+      ctx.defaultDepartmentId,
+      ctx.defaultRequestPurposeId,
+      ctx.defaultRequestTypeId
+    );
   }
 }
 

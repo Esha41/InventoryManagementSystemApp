@@ -1,16 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Cartridge } from '@models/cartridge.model';
-import { FilterState } from '@requests/pages/new-issue/new-issue-request.state';
+import { FilterState, ExtendedFilterState } from '@requests/pages/new-issue/new-issue-request.state';
 
-/**
- * Extended filter state interface that includes weapon and explosive filters
- */
-export interface ExtendedFilterState extends FilterState {
-  selectedWeaponType?: string;
-  selectedCaliber?: string;
-  selectedExplosiveType?: string;
-  selectedUNNumber?: string;
-}
+export type { ExtendedFilterState };
 
 /**
  * Service responsible for filtering cartridges based on filter state

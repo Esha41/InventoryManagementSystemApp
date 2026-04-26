@@ -36,7 +36,7 @@ export const REQUESTS_ROUTES: Routes = [
   },
   {
     path: 'return-request',
-    loadComponent: () => import('./pages/new-issue/components/return-request/return-request.component').then(m => m.ReturnRequestComponent),
+    loadComponent: () => import('./pages/return-request/return-request.component').then(m => m.ReturnRequestComponent),
     canActivate: [permissionGuard],
     data: { permissions: [PERMISSIONS.REQUESTS.RETURN_REQUEST.PAGE, PERMISSIONS.REQUESTS.RETURN_REQUEST.CREATE, PERMISSIONS.REQUESTS.ORDER.CREATE] }
   },
