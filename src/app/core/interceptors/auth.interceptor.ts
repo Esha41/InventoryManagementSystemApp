@@ -15,6 +15,9 @@ const isLoginRequest = (url: string): boolean =>
   url.includes('/account/select-role') ||
   url.endsWith('account/select-role');
 
+const isLogoutRequest = (url: string): boolean =>
+  url.includes('/account/logout') || url.endsWith('account/logout');
+
 /** POST select-role after credential login uses roleSelectionToken only; a stale Bearer causes JWT middleware to 401 before AllowAnonymous. */
 const shouldSkipBearerForSelectRole = (
   req: { method: string; url: string },
@@ -90,13 +93,27 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       if (error.status === 401) {
         if (skipAuth) {
           configService.logWarning('Refresh failed - redirecting to login');
-          storageService.set('sessionExpired', true);
+          // Only flag sessionExpired when the user had an active session.
+          // A fresh load with no session (restoreSessionSilently on login page) should
+          // not show the "session expired" banner.
+          const hadActiveSession = backendAuth.getCurrentUser() !== null;
           backendAuth.clearSession();
+          if (hadActiveSession) {
+            storageService.set('sessionExpired', true);
+          }
           router.navigate(['/auth/login']);
           return throwError(() => error);
         }
 
-        if (isLogin) {
+        if (isLogin || isLogoutRequest(req.url) || backendAuth.isLoggingOut) {
+          return throwError(() => error);
+        }
+
+        // Re-read token at response time: if session was already cleared (e.g. logout
+        // completed while this request was in-flight), skip refresh and redirect cleanly.
+        const currentToken = storageService.get<string>('auth_token');
+        if (!currentToken) {
+          router.navigate(['/auth/login']);
           return throwError(() => error);
         }
 
@@ -110,8 +127,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           }),
           catchError(refreshError => {
             configService.logWarning('Token refresh failed - redirecting to login');
-            storageService.set('sessionExpired', true);
+            const hadActiveSession = backendAuth.getCurrentUser() !== null;
             backendAuth.clearSession();
+            if (hadActiveSession) {
+              storageService.set('sessionExpired', true);
+            }
             router.navigate(['/auth/login']);
             return throwError(() => refreshError);
           })

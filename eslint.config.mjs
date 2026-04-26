@@ -44,6 +44,7 @@ export default tseslint.config(
     rules: {
       'no-restricted-imports': [
         'error',
+
         {
           patterns: [
             {

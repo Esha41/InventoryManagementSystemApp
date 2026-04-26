@@ -1,816 +1,117 @@
-import { Injectable, Optional, Inject } from '@angular/core';
-import { BehaviorSubject, Observable, throwError, of, timer, Subscription } from 'rxjs';
-import { map, tap, catchError, switchMap, exhaustMap, finalize, shareReplay } from 'rxjs/operators';
-import { ApiService } from './api.service';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { StorageService } from './storage.service';
-import { ConfigService } from './config.service';
-import { API_ENDPOINTS } from '@constants/app.constants';
-import { APIOperationResponse } from '@models/api-response.model';
+import { AuthSessionService } from './auth-session.service';
+import { AuthFlowService } from './auth-flow.service';
+import { TokenRefreshService } from './token-refresh.service';
 import {
   LoginRequest,
   LoginResponse,
   AuthenticatedUser,
-  ForgotPasswordRequest,
-  ResetPasswordRequest,
-  ClaimDto,
-  AuthState,
   CaptchaResponse
 } from '@models/auth.model';
 import { ChangePasswordRequest } from '@models/change-password.model';
-import { ApiResponse } from '@models/api-response.model';
-import { USER_PROFILE_PROVIDER } from '../tokens/user-profile-provider.token';
-import { IUserProfileProvider } from '../interfaces/user-profile-provider.interface';
-import { ErrorHandler } from '@utils/error-handler.utils';
+import { decodeJwtPayload } from '@utils/jwt.util';
 
 /**
- * Backend Authentication Service
- * Handles real API authentication with the backend
+ * Facade for authentication: permissions + delegation to session, flow, and token refresh.
  */
 @Injectable({
   providedIn: 'root'
 })
 export class BackendAuthService {
-  private authStateSubject = new BehaviorSubject<AuthState>(this.getInitialState());
-  public authState$ = this.authStateSubject.asObservable();
-
-  private currentUserSubject = new BehaviorSubject<AuthenticatedUser | null>(null);
-  public currentUser$ = this.currentUserSubject.asObservable();
-
-  private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
-  public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
-
-  private isClearingAuthData = false; // Flag to prevent recursive calls
-  private refreshInProgress: Observable<LoginResponse> | null = null;
-  private sessionHeartbeatSubscription: Subscription | null = null;
-  private readonly SESSION_HEARTBEAT_INTERVAL_MS = 15000; // 15 seconds - detect session invalidation (e.g. Take over on another device)
+  readonly authState$ = this.session.authState$;
+  readonly currentUser$ = this.session.currentUser$;
+  readonly isAuthenticated$ = this.session.isAuthenticated$;
 
   constructor(
-    private apiService: ApiService,
     private storageService: StorageService,
-    private configService: ConfigService,
-    @Optional() @Inject(USER_PROFILE_PROVIDER) private profileProvider: IUserProfileProvider | null
-  ) {
-    this.checkAuthStatus();
-  }
-
-  private userContextService: { clearCache: () => void } | null = null;
+    private session: AuthSessionService,
+    private tokenRefresh: TokenRefreshService,
+    private authFlow: AuthFlowService
+  ) {}
 
   setUserContextService(service: { clearCache: () => void }): void {
-    this.userContextService = service;
+    this.session.setUserContextService(service);
   }
 
-  /**
-   * Get initial auth state from storage
-   */
-  private getInitialState(): AuthState {
-    const token = this.storageService.get<string>('auth_token');
-    const user = this.storageService.get<AuthenticatedUser>('current_user');
-
-    return {
-      isAuthenticated: !!token && !!user,
-      user: user,
-      token: token,
-      refreshToken: null,
-      expiresAt: this.storageService.get<Date>('token_expires_at')
-    };
-  }
-
-  /**
-   * Check authentication status on service initialization
-   * When token is expired, we keep the session - the next API call will get 401,
-   * trigger the refresh flow (using HttpOnly cookie), and either succeed or redirect to login.
-   */
-  private checkAuthStatus(): void {
-    try {
-      const state = this.getInitialState();
-
-      if (state.isAuthenticated && state.user) {
-        this.currentUserSubject.next(state.user);
-        this.isAuthenticatedSubject.next(true);
-        this.authStateSubject.next(state);
-        this.startSessionHeartbeat();
-
-        if (this.isTokenExpired()) {
-          this.configService.log('Token expired - session kept; refresh will run on next API call');
-        } else {
-          this.configService.log('User session restored', { userId: state.user.id });
-        }
-      }
-    } catch (error) {
-      this.configService.logError('Failed to restore session', error);
-      this.clearAuthData();
-    }
-  }
-
-  /**
-   * Generate captcha
-   */
   generateCaptcha(): Observable<CaptchaResponse> {
-    const endpoint = API_ENDPOINTS.AUTH.GENERATE_CAPTCHA;
-    this.configService.log('Generating captcha', { endpoint, fullUrl: `${this.configService.apiUrl}${endpoint}` });
-    return this.apiService.getRaw<any>(
-      endpoint
-    ).pipe(
-      map(response => {
-        this.configService.log('Captcha response received', response);
-
-        // Handle wrapped response (ApiResponse)
-        if (response && typeof response === 'object' && 'succeeded' in response) {
-          const apiResponse = response as APIOperationResponse<CaptchaResponse>;
-          if (!apiResponse.succeeded) {
-            throw new Error(apiResponse.message || 'Failed to generate captcha');
-          }
-          if (!apiResponse.data || !(apiResponse.data as any).captchaId) {
-            // Handle case where data might be the ID itself if backend is weird, 
-            // but assuming standard data structure:
-            if ((apiResponse.data as any).captchaId) return apiResponse.data as CaptchaResponse;
-            throw new Error('Invalid captcha response: missing captchaId');
-          }
-          return apiResponse.data as CaptchaResponse;
-        }
-
-        // Handle direct response (Legacy/Fallback)
-        if (response && typeof response === 'object' && 'captchaId' in response) {
-          const directResponse = response as CaptchaResponse;
-          if (!directResponse.captchaId) {
-            throw new Error('Invalid captcha response: missing captchaId');
-          }
-          return directResponse;
-        }
-
-        // Unexpected response format
-        this.configService.logError('Unexpected captcha response format', response);
-        throw new Error('Invalid captcha response format');
-      }),
-      catchError(error => {
-        this.configService.logError('Failed to generate captcha', error);
-        const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to generate captcha. Please try again.');
-        return throwError(() => new Error(errorMessage));
-      })
-    );
+    return this.authFlow.generateCaptcha();
   }
 
-  /**
-   * Get captcha image URL with cache-busting parameter
-   */
   getCaptchaImageUrl(captchaId: string): string {
-    // Try the primary endpoint first
-    const baseUrl = `${this.configService.apiUrl}${API_ENDPOINTS.AUTH.CAPTCHA_IMAGE(captchaId)}`;
-    // Add cache-busting parameter to ensure fresh image on refresh
-    const timestamp = new Date().getTime();
-    return `${baseUrl}?t=${timestamp}`;
+    return this.authFlow.getCaptchaImageUrl(captchaId);
   }
 
-  /**
-   * Get alternative captcha image URL
-   */
   getAlternativeCaptchaImageUrl(captchaId: string): string {
-    const baseUrl = `${this.configService.apiUrl}${API_ENDPOINTS.AUTH.CAPTCHA_IMAGE_ALT(captchaId)}`;
-    const timestamp = new Date().getTime();
-    return `${baseUrl}?t=${timestamp}`;
+    return this.authFlow.getAlternativeCaptchaImageUrl(captchaId);
   }
 
-  /**
-   * Login with username and password
-   */
   login(credentials: LoginRequest): Observable<LoginResponse> {
-    this.configService.log('Attempting login', { username: credentials.username });
-
-    return this.apiService.postRaw<LoginResponse>(
-      API_ENDPOINTS.AUTH.LOGIN,
-      credentials
-    ).pipe(
-      map(response => {
-        if (!response.succeeded || !response.data) {
-          throw new Error(response.message || 'Login failed');
-        }
-        return response.data;
-      }),
-      switchMap(loginResponse => {
-        if (loginResponse.requiresRoleSelection && loginResponse.roleSelectionToken) {
-          this.clearSessionCredentialsForPendingRoleSelection();
-          this.storageService.set('role_selection_token', loginResponse.roleSelectionToken);
-          this.storageService.set('available_roles_json', JSON.stringify(loginResponse.availableRoles || []));
-          return of(loginResponse);
-        }
-        if (!loginResponse.accessToken) {
-          return throwError(() => new Error('Login failed: no access token'));
-        }
-        return this.handleLoginSuccess(loginResponse);
-      }),
-      catchError(error => {
-        this.configService.logError('Login failed', error);
-        this.clearAuthData();
-        // Pass through original error so login component can extract status, errorCode, message for proper user feedback
-        return throwError(() => error);
-      })
-    );
+    return this.authFlow.login(credentials);
   }
 
-  /**
-   * Complete login after choosing a role (post-login) or switch role while signed in.
-   */
   selectRole(roleId: string, options?: { switchWhileLoggedIn?: boolean }): Observable<LoginResponse> {
-    const body: { roleId: string; roleSelectionToken?: string } = { roleId };
-    if (!options?.switchWhileLoggedIn) {
-      const t = this.storageService.get<string>('role_selection_token');
-      if (!t) {
-        return throwError(() => new Error('Role selection session expired. Please sign in again.'));
-      }
-      body.roleSelectionToken = t;
-    }
-
-    return this.apiService.postRaw<LoginResponse>(API_ENDPOINTS.AUTH.SELECT_ROLE, body).pipe(
-      map(response => {
-        if (!response.succeeded || !response.data) {
-          throw new Error(response.message || 'Role selection failed');
-        }
-        return response.data;
-      }),
-      switchMap(loginResponse => this.handleLoginSuccess(loginResponse)),
-      catchError(error => {
-        this.configService.logError('Select role failed', error);
-        return throwError(() => error);
-      })
-    );
+    return this.authFlow.selectRole(roleId, options);
   }
 
-  private handleLoginSuccess(response: LoginResponse): Observable<LoginResponse> {
-    this.configService.log('Login successful');
-
-    this.storageService.remove('role_selection_token');
-    this.storageService.remove('available_roles_json');
-
-    const expiresAt = new Date(response.expiresAt);
-
-    this.storageService.set('auth_token', response.accessToken);
-    this.storageService.set('token_expires_at', expiresAt);
-
-    return this.fetchCompleteUserData().pipe(
-      switchMap(completeUser => {
-        if (!completeUser) {
-          this.configService.logError('Failed to fetch user data from /Users/me API', null);
-          this.clearAuthData();
-          return throwError(() => new Error('Failed to load user profile. Please try logging in again.'));
-        }
-
-        const authenticatedUser: AuthenticatedUser = {
-          id: completeUser.id || '',
-          userName: completeUser.userName || '',
-          email: completeUser.email || '',
-          roles: [],
-          permissions: [],
-          departmentId: completeUser.departmentId,
-          departmentName: completeUser.departmentName,
-          organizationId: completeUser.organizationId,
-          nameEn: completeUser.nameEn,
-          nameAr: completeUser.nameAr
-        };
-
-        if (this.userContextService) {
-          this.userContextService.clearCache();
-        }
-
-        // Fetch full user profile from /Users/me for ProfileDataService
-        return this.apiService.post<any>(API_ENDPOINTS.USERS.ME, {}).pipe(
-          switchMap(userMeData => {
-            return this.getUserClaims().pipe(
-              map(userWithClaims => {
-                const mergedUser: AuthenticatedUser = {
-                  ...authenticatedUser,
-                  permissions: userWithClaims.permissions || [],
-                  roles: userWithClaims.roles || []
-                };
-
-                this.configService.log('Login complete with permissions', {
-                  userId: mergedUser.id,
-                  userName: mergedUser.userName,
-                  permissionsCount: mergedUser.permissions?.length || 0,
-                  rolesCount: mergedUser.roles?.length || 0,
-                  samplePermissions: mergedUser.permissions?.slice(0, 5).map(p => p.id || p.claimType)
-                });
-
-                // Save profile data including isSuperAdmin flag
-                this.profileProvider?.saveProfile(mergedUser, userMeData);
-
-                this.storageService.set('current_user', mergedUser);
-                this.currentUserSubject.next(mergedUser);
-                this.updateAuthState(mergedUser, response.accessToken, expiresAt);
-
-                return response;
-              }),
-              catchError((error) => {
-                this.configService.logError('Failed to fetch user claims, proceeding without permissions', error);
-
-                // Still save profile data even without claims
-                this.profileProvider?.saveProfile(authenticatedUser, userMeData);
-
-                this.storageService.set('current_user', authenticatedUser);
-                this.currentUserSubject.next(authenticatedUser);
-                this.updateAuthState(authenticatedUser, response.accessToken, expiresAt);
-                return of(response);
-              })
-            );
-          }),
-          catchError(error => {
-            // Fallback: save profile without /Users/me data
-            return this.getUserClaims().pipe(
-              map(userWithClaims => {
-                const mergedUser: AuthenticatedUser = {
-                  ...authenticatedUser,
-                  permissions: userWithClaims.permissions || [],
-                  roles: userWithClaims.roles || []
-                };
-
-                this.profileProvider?.saveProfile(mergedUser);
-                this.storageService.set('current_user', mergedUser);
-                this.currentUserSubject.next(mergedUser);
-                this.updateAuthState(mergedUser, response.accessToken, expiresAt);
-                return response;
-              }),
-              catchError((error) => {
-                this.configService.logError('Failed to fetch user claims, proceeding without permissions', error);
-                this.profileProvider?.saveProfile(authenticatedUser);
-                this.storageService.set('current_user', authenticatedUser);
-                this.currentUserSubject.next(authenticatedUser);
-                this.updateAuthState(authenticatedUser, response.accessToken, expiresAt);
-                return of(response);
-              })
-            );
-          })
-        );
-      }),
-      catchError(error => {
-        this.configService.logError('Failed to fetch user data from /Users/me API', error);
-        this.clearAuthData();
-        return throwError(() => new Error('Failed to load user profile. Please try logging in again.'));
-      }),
-      tap(() => this.startSessionHeartbeat())
-    );
-  }
-
-  private fetchCompleteUserData(): Observable<AuthenticatedUser | null> {
-    return this.apiService.post<any>(API_ENDPOINTS.USERS.ME, {}).pipe(
-      map(apiData => {
-        if (!apiData) {
-          return null;
-        }
-
-        const departmentId = this.tryParseNumber(
-          apiData.department?.id ??
-          apiData.departmentId ??
-          apiData.DepartmentId
-        );
-
-        const departmentNameEn = (
-          apiData.department?.nameEn ??
-          apiData.department?.NameEn ??
-          apiData.Department?.NameEn
-        ) || undefined;
-
-        const departmentNameAr = (
-          apiData.department?.nameAr ??
-          apiData.department?.NameAr ??
-          apiData.Department?.NameAr
-        ) || undefined;
-
-        const departmentName = (
-          departmentNameEn ??
-          departmentNameAr ??
-          apiData.departmentName ??
-          apiData.DepartmentName
-        ) || undefined;
-
-        const nameEn = (
-          apiData.fullNameEN ??
-          apiData.FullNameEN ??
-          apiData.fullNameEn ??
-          apiData.FullNameEn ??
-          apiData.nameEn ??
-          apiData.NameEn
-        ) || undefined;
-
-        const nameAr = (
-          apiData.fullNameAR ??
-          apiData.FullNameAR ??
-          apiData.fullNameAr ??
-          apiData.FullNameAr ??
-          apiData.nameAr ??
-          apiData.NameAr
-        ) || undefined;
-
-        const organizationId = this.tryParseNumber(
-          apiData.organizationId ?? apiData.OrganizationId
-        );
-
-        return {
-          id: apiData.id ?? apiData.Id ?? '',
-          userName: apiData.userName ?? apiData.UserName ?? '',
-          email: apiData.email ?? apiData.Email ?? '',
-          roles: [],
-          permissions: [],
-          departmentId: departmentId ?? undefined,
-          departmentName: departmentName,
-          departmentNameEn: departmentNameEn,
-          departmentNameAr: departmentNameAr,
-          organizationId: organizationId ?? undefined,
-          nameEn: nameEn,
-          nameAr: nameAr
-        } as AuthenticatedUser;
-      }),
-      catchError(() => {
-        return of(null);
-      })
-    );
-  }
-
-  /**
-   * Get user claims from backend
-   */
   getUserClaims(): Observable<AuthenticatedUser> {
-    return this.apiService.get<ClaimDto[]>(
-      API_ENDPOINTS.AUTH.USER_CLAIMS
-    ).pipe(
-      map(claims => {
-        if (!claims) {
-          throw new Error('Failed to fetch user claims');
-        }
-
-        // Extract user info from token or claims
-        const token = this.storageService.get<string>('auth_token');
-        const tokenPayload = token ? this.decodeToken(token) : null;
-
-        const user: AuthenticatedUser = {
-          id: tokenPayload?.userId || '',
-          userName: tokenPayload?.userName || '',
-          email: tokenPayload?.email || '',
-          roles: this.extractRoles(claims),
-          permissions: claims
-        };
-
-        const departmentIdClaim = this.getClaimValue(claims, ['departmentid', 'deptid', 'department']);
-        const departmentNameClaim = this.getClaimValue(claims, ['departmentname', 'deptname']);
-        const fullNameEnClaim = this.getClaimValue(claims, ['fullnameen', 'nameen', 'full_name_en']);
-        const fullNameArClaim = this.getClaimValue(claims, ['fullnamear', 'namear', 'full_name_ar']);
-        const organizationIdClaim = this.getClaimValue(claims, ['organizationid', 'orgid', 'organization']);
-
-        const parsedDepartmentId =
-          this.tryParseNumber(departmentIdClaim) ??
-          this.tryParseNumber(tokenPayload?.DepartmentId ?? tokenPayload?.departmentId ?? tokenPayload?.DeptId);
-        const parsedOrganizationId =
-          this.tryParseNumber(organizationIdClaim) ??
-          this.tryParseNumber(tokenPayload?.OrganizationId ?? tokenPayload?.organizationId ?? tokenPayload?.OrgId);
-        const resolvedDepartmentName =
-          departmentNameClaim ??
-          tokenPayload?.DepartmentName ??
-          tokenPayload?.departmentName ??
-          tokenPayload?.DeptName;
-        const resolvedNameEn =
-          fullNameEnClaim ??
-          tokenPayload?.FullNameEN ??
-          tokenPayload?.fullNameEN ??
-          tokenPayload?.FullNameEn ??
-          tokenPayload?.fullNameEn ??
-          tokenPayload?.NameEn ??
-          tokenPayload?.nameEn;
-        const resolvedNameAr =
-          fullNameArClaim ??
-          tokenPayload?.FullNameAR ??
-          tokenPayload?.fullNameAR ??
-          tokenPayload?.FullNameAr ??
-          tokenPayload?.fullNameAr ??
-          tokenPayload?.NameAr ??
-          tokenPayload?.nameAr;
-
-        if (parsedDepartmentId !== undefined) {
-          user.departmentId = parsedDepartmentId;
-        }
-        if (resolvedDepartmentName) {
-          user.departmentName = resolvedDepartmentName;
-        }
-        if (parsedOrganizationId !== undefined) {
-          user.organizationId = parsedOrganizationId;
-        }
-        if (resolvedNameEn) {
-          user.nameEn = resolvedNameEn;
-        }
-        if (resolvedNameAr) {
-          user.nameAr = resolvedNameAr;
-        }
-
-        return user;
-      }),
-      catchError(error => {
-        this.configService.logError('Failed to fetch user claims', error);
-        return throwError(() => error);
-      })
-    );
+    return this.authFlow.getUserClaims();
   }
 
-  /**
-   * Extract roles from claims
-   */
-  private extractRoles(claims: ClaimDto[]): string[] {
-    return claims
-      .filter(claim => claim.claimType && (claim.claimType.toLowerCase().includes('role')))
-      .map(claim => claim.id);
-  }
-
-  /**
-   * Try to parse number from claim value
-   */
-  private tryParseNumber(value: string | number | null | undefined): number | undefined {
-    if (value === null || value === undefined || value === '') {
-      return undefined;
-    }
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : undefined;
-  }
-
-  /**
-   * Normalize claim key for comparison
-   */
-  private normalizeClaimKey(value: string | null | undefined): string {
-    if (!value) {
-      return '';
-    }
-    return value
-      .toLowerCase()
-      .replace('http://schemas.xmlsoap.org/ws/2005/05/identity/claims/', '')
-      .replace('http://schemas.microsoft.com/ws/2008/06/identity/claims/', '')
-      .replace(/[^a-z0-9]/g, '');
-  }
-
-  /**
-   * Extract claim value by matching claim type against known keys
-   */
-  private getClaimValue(claims: ClaimDto[], keys: string[]): string | null {
-    if (!claims?.length || !keys?.length) {
-      return null;
-    }
-
-    const normalizedKeys = keys.map(key => this.normalizeClaimKey(key));
-    for (const claim of claims) {
-      const claimTypeNormalized = this.normalizeClaimKey(claim.claimType);
-      if (normalizedKeys.includes(claimTypeNormalized) && claim.id) {
-        return claim.id;
-      }
-    }
-
-    return null;
-  }
-
-  /**
-   * Decode JWT token
-   */
-  private decodeToken(token: string): any {
-    try {
-      if (!token || typeof token !== 'string') {
-        return null;
-      }
-
-      const parts = token.split('.');
-      if (parts.length !== 3) {
-        return null;
-      }
-
-      const payload = parts[1];
-      if (!payload) {
-        return null;
-      }
-
-      const decoded = atob(payload);
-      return JSON.parse(decoded);
-    } catch (error) {
-      return null;
-    }
-  }
-
-  /**
-   * Update authentication state
-   */
-  private updateAuthState(user: AuthenticatedUser, token: string, expiresAt: Date): void {
-    const state: AuthState = {
-      isAuthenticated: true,
-      user: user,
-      token: token,
-      refreshToken: null,
-      expiresAt: expiresAt
-    };
-
-    this.currentUserSubject.next(user);
-    this.isAuthenticatedSubject.next(true);
-    this.authStateSubject.next(state);
-  }
-
-  /**
-   * Single in-flight POST /refresh (refresh token rotates server-side; serialize callers).
-   */
-  private getRefreshedLoginResponse(): Observable<LoginResponse> {
-    if (!this.refreshInProgress) {
-      this.refreshInProgress = this.apiService.postRaw<LoginResponse>(
-        API_ENDPOINTS.AUTH.REFRESH,
-        {},
-        { withCredentials: true }
-      ).pipe(
-        map(res => {
-          if (!res.succeeded || !res.data) {
-            throw new Error(res.message || 'Refresh failed');
-          }
-          return res.data;
-        }),
-        finalize(() => {
-          this.refreshInProgress = null;
-        }),
-        shareReplay(1)
-      );
-    }
-    return this.refreshInProgress;
-  }
-
-  /**
-   * Refresh access token using HttpOnly cookie.
-   * Serializes concurrent calls - only one refresh at a time.
-   */
   refreshToken(): Observable<LoginResponse> {
-    return this.getRefreshedLoginResponse().pipe(
+    return this.tokenRefresh.getRefreshedLoginResponse().pipe(
       tap(data => {
-        this.storageService.set('auth_token', data.accessToken);
-        this.storageService.set('token_expires_at', new Date(data.expiresAt));
-        const user = this.getCurrentUser();
-        if (user) {
-          this.updateAuthState(user, data.accessToken, new Date(data.expiresAt));
-        }
+        this.session.applyRefreshedTokens(data.accessToken, new Date(data.expiresAt), data.refreshToken);
       })
     );
   }
 
-  /**
-   * After tab close, sessionStorage is empty but the HttpOnly refresh cookie may still be valid.
-   * Rehydrate user/permissions like a full login without showing the login page.
-   */
   restoreSessionSilently(): Observable<boolean> {
-    if (this.isAuthenticated()) {
-      return of(true);
-    }
-    return this.getRefreshedLoginResponse().pipe(
-      switchMap(loginResponse => this.handleLoginSuccess(loginResponse)),
-      map(() => true),
-      catchError(() => of(false))
-    );
+    return this.authFlow.restoreSessionSilently();
   }
 
-  /**
-   * Logout current user
-   */
   logout(): Observable<boolean> {
-    this.configService.log('Logging out user');
-
-    // Call backend logout endpoint to invalidate refresh token
-    return this.apiService.post<string>(API_ENDPOINTS.AUTH.LOGOUT, {}).pipe(
-      map(() => {
-        this.configService.log('Backend logout successful');
-        this.clearAuthData();
-        return true;
-      }),
-      catchError(error => {
-        // Even if backend logout fails, clear local data to ensure user is logged out
-        this.configService.logError('Backend logout failed, clearing local data anyway', error);
-        this.clearAuthData();
-        return of(true);
-      })
-    );
+    return this.authFlow.logout();
   }
 
-  /**
-   * Change password for current user
-   */
   changePassword(request: ChangePasswordRequest): Observable<boolean> {
-    this.configService.log('Attempting to change password');
-
-    return this.apiService.put<boolean>(
-      API_ENDPOINTS.USERS.CHANGE_PASSWORD,
-      request
-    ).pipe(
-      map(succeeded => {
-        if (!succeeded) {
-          throw new Error('Password change failed');
-        }
-        this.configService.log('Password changed successfully');
-        return true;
-      }),
-      catchError(error => {
-        this.configService.logError('Change password failed', error);
-        return throwError(() => new Error(
-          error.userMessage || error.message || 'Failed to change password. Please try again.'
-        ));
-      })
-    );
+    return this.authFlow.changePassword(request);
   }
 
-  /**
-   * Request password reset (forgot password)
-   */
   forgotPassword(email: string): Observable<boolean> {
-    this.configService.log('Requesting password reset', { email });
-
-    return this.apiService.postRaw<string>(
-      API_ENDPOINTS.AUTH.FORGOT_PASSWORD,
-      { email }
-    ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to send password reset email');
-        }
-        this.configService.log('Password reset email sent successfully');
-        return true;
-      }),
-      catchError(error => {
-        this.configService.logError('Forgot password failed', error);
-        return throwError(() => new Error(
-          error.userMessage || error.message || 'Failed to send password reset email. Please try again.'
-        ));
-      })
-    );
+    return this.authFlow.forgotPassword(email);
   }
 
-  /**
-   * Reset password with token
-   */
   resetPassword(email: string, token: string, newPassword: string): Observable<boolean> {
-    this.configService.log('Attempting to reset password', { email });
-
-    return this.apiService.postRaw<string>(
-      API_ENDPOINTS.AUTH.RESET_PASSWORD,
-      { email, token, newPassword }
-    ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Password reset failed');
-        }
-        this.configService.log('Password reset successfully');
-        return true;
-      }),
-      catchError(error => {
-        this.configService.logError('Reset password failed', error);
-        return throwError(() => new Error(
-          error.userMessage || error.message || 'Failed to reset password. Please try again.'
-        ));
-      })
-    );
+    return this.authFlow.resetPassword(email, token, newPassword);
   }
 
-  /**
-   * Get current authenticated user
-   */
   getCurrentUser(): AuthenticatedUser | null {
-    return this.currentUserSubject.value;
+    return this.session.getCurrentUser();
   }
 
-  /**
-   * Check if user is authenticated
-   * Returns true if we have a session (even when token is expired - refresh will run on next API call)
-   */
   isAuthenticated(): boolean {
-    if (this.isClearingAuthData) {
-      return false;
-    }
-    return this.isAuthenticatedSubject.value;
+    return this.session.isAuthenticated();
   }
 
-  /**
-   * Normalize permission string for comparison
-   * Converts formats like "role.view" or "Permissions.Roles.View" to a common format
-   * Examples:
-   * - "Permissions.Roles.View" -> "roleview"
-   * - "Permissions.Roles.Page" -> "rolepage"
-   * - "role.view" -> "roleview"
-   * - "Roles.View" -> "roleview"
-   */
   private normalizePermission(permission: string): string {
     if (!permission) return '';
 
     let normalized = permission.toLowerCase().trim();
 
-    // Remove "Permissions." prefix if present
     normalized = normalized.replace(/^permissions\./, '');
 
-    // Handle formats like "Roles.View" or "Roles.Edit"
-    // Extract the entity name (Roles, Warehouse, etc.) and action (View, Edit, Create, Delete, Page)
     const parts = normalized.split('.');
     if (parts.length >= 2) {
-      // Get last part (action) and second-to-last or last entity name
-      const action = parts[parts.length - 1]; // View, Edit, Create, Delete, Page, etc.
-      const entity = parts.length > 2 ? parts[parts.length - 2] : parts[0]; // Roles, Warehouse, etc.
+      const action = parts[parts.length - 1];
+      const entity = parts.length > 2 ? parts[parts.length - 2] : parts[0];
 
-      // Convert "Roles" -> "role", "Warehouse" -> "warehouse"
-      const entityNormalized = entity.replace(/s$/, '').toLowerCase(); // Remove plural 's'
+      const entityNormalized = entity.replace(/s$/, '').toLowerCase();
 
-      // Combine: "role" + "view" = "roleview" OR "role" + "page" = "rolepage"
-      // Note: page and view are now treated as different permissions
       normalized = entityNormalized + action;
     } else {
-      // Handle simple formats like "role.view"
       normalized = normalized.replace(/\./g, '').replace(/\s+/g, '');
     }
 
@@ -818,88 +119,42 @@ export class BackendAuthService {
   }
 
   /**
-   * Check if a permission string matches (handles multiple formats)
-   * Examples:
-   * - "Permissions.Roles.View" matches "role.view", "Roles.View", "roles.view"
-   * - "role.view" matches "Permissions.Roles.View", "Roles.View"
+   * Equality (not substring) comparison of normalized permission keys.
+   * Historical substring behavior could over-grant (e.g. required "role" matching user's "roleview").
    */
   private permissionMatches(userPermission: string, requiredPermission: string): boolean {
     if (!userPermission || !requiredPermission) return false;
-
-    const userNorm = this.normalizePermission(userPermission);
-    const requiredNorm = this.normalizePermission(requiredPermission);
-
-
-    if (userNorm === requiredNorm) return true;
-
-
-    if (!requiredPermission.includes('.') && !userPermission.includes('.')) {
-      return false;
-    }
-
-    if (userPermission.includes('.') || requiredPermission.includes('.')) {
-      return userNorm === requiredNorm || userNorm.includes(requiredNorm);
-    }
-
-    return false;
+    return this.normalizePermission(userPermission) === this.normalizePermission(requiredPermission);
   }
 
-  /**
-   * Check if user has a specific permission
-   */
   hasPermission(permission: string): boolean {
     const user = this.getCurrentUser();
     if (!user || !user.permissions || !Array.isArray(user.permissions)) {
       return false;
     }
 
-
-    const token = this.storageService.get<string>('auth_token');
-    if (token) {
-      try {
-        const payload = this.decodeToken(token);
-        if (payload?.IsSuperAdmin === 'true') {
-          return true; // Super admin has ALL permissions
-        }
-      } catch (error) {
-        // If token decoding fails, continue with permission check
-        // Don't log error here to avoid console spam
-      }
+    if (this.isSuperAdmin()) {
+      return true;
     }
 
-    // Check permissions - user.permissions should contain ALL permissions from ALL roles combined
-    const hasPermission = user.permissions.some(p => {
+    return user.permissions.some(p => {
       if (!p) return false;
 
-      // Check both id and claimType fields
       const permissionId = p.id || '';
       const claimType = p.claimType || '';
 
-      // Use the new matching function that handles format differences
-      return this.permissionMatches(permissionId, permission) ||
-        this.permissionMatches(claimType, permission);
+      return this.permissionMatches(permissionId, permission) || this.permissionMatches(claimType, permission);
     });
-
-    return hasPermission;
   }
 
-  /**
-   * Check if user has any of the specified permissions
-   */
   hasAnyPermission(permissions: string[]): boolean {
     return permissions.some(permission => this.hasPermission(permission));
   }
 
-  /**
-   * Check if user has all of the specified permissions
-   */
   hasAllPermissions(permissions: string[]): boolean {
     return permissions.every(permission => this.hasPermission(permission));
   }
 
-  /**
-   * Check if user has a specific role
-   */
   hasRole(role: string): boolean {
     const user = this.getCurrentUser();
     if (!user || !user.roles) return false;
@@ -907,144 +162,33 @@ export class BackendAuthService {
     return user.roles.some(r => r.toLowerCase() === role.toLowerCase());
   }
 
-  /**
-   * Check if current user is a super admin
-   */
   isSuperAdmin(): boolean {
     const token = this.storageService.get<string>('auth_token');
-    if (token) {
-      try {
-        const payload = this.decodeToken(token);
-        return payload?.IsSuperAdmin === 'true';
-      } catch (error) {
-        // If token decoding fails, return false
-        return false;
-      }
-    }
-    return false;
+    const payload = decodeJwtPayload<{ IsSuperAdmin?: string }>(token);
+    return payload?.IsSuperAdmin === 'true';
   }
 
-  /**
-   * Clear session without calling backend. Use when refresh fails.
-   */
+  get isLoggingOut(): boolean {
+    return this.session.logoutInProgress;
+  }
+
   clearSession(): void {
-    this.clearAuthData();
-  }
-
-  /**
-   * Start session heartbeat - periodically validates session so we detect when
-   * user logs in elsewhere (Take over). Invalidated session gets 401, interceptor
-   * redirects to login.
-   */
-  private startSessionHeartbeat(): void {
-    this.stopSessionHeartbeat();
-    this.sessionHeartbeatSubscription = timer(0, this.SESSION_HEARTBEAT_INTERVAL_MS).pipe(
-      exhaustMap(() =>
-        this.apiService.get<any>(API_ENDPOINTS.AUTH.USER_CLAIMS).pipe(
-          catchError(() => of(null))
-        )
-      )
-    ).subscribe();
+    this.session.clearSession();
   }
 
   pauseSessionHeartbeat(): void {
-    this.stopSessionHeartbeat();
+    this.session.pauseSessionHeartbeat();
   }
 
   resumeSessionHeartbeat(): void {
-    if (this.isAuthenticated()) {
-      this.startSessionHeartbeat();
-    }
+    this.session.resumeSessionHeartbeat();
   }
 
-  /**
-   * Stop session heartbeat (e.g. on logout)
-   */
-  private stopSessionHeartbeat(): void {
-    if (this.sessionHeartbeatSubscription) {
-      this.sessionHeartbeatSubscription.unsubscribe();
-      this.sessionHeartbeatSubscription = null;
-    }
-  }
-
-  /**
-   * Clear authentication data
-   */
-  /**
-   * Removes a stale JWT/session from storage before storing role-selection tokens.
-   * An old Bearer on POST /account/select-role would make JWT middleware return 401.
-   */
-  private clearSessionCredentialsForPendingRoleSelection(): void {
-    this.stopSessionHeartbeat();
-    this.profileProvider?.clearProfile();
-    this.storageService.remove('auth_token');
-    this.storageService.remove('current_user');
-    this.storageService.remove('token_expires_at');
-    this.storageService.remove('user_profile_data');
-    this.currentUserSubject.next(null);
-    this.isAuthenticatedSubject.next(false);
-    this.authStateSubject.next({
-      isAuthenticated: false,
-      user: null,
-      token: null,
-      refreshToken: null,
-      expiresAt: null
-    });
-  }
-
-  private clearAuthData(): void {
-    // Prevent recursive calls
-    if (this.isClearingAuthData) {
-      return;
-    }
-
-    this.isClearingAuthData = true;
-    this.stopSessionHeartbeat();
-
-    try {
-      this.profileProvider?.clearProfile();
-      this.storageService.remove('auth_token');
-      this.storageService.remove('current_user');
-      this.storageService.remove('token_expires_at');
-
-      if (typeof window !== 'undefined') {
-        this.storageService.clear();
-      }
-
-      // Update observables
-      this.currentUserSubject.next(null);
-      this.isAuthenticatedSubject.next(false);
-      this.authStateSubject.next({
-        isAuthenticated: false,
-        user: null,
-        token: null,
-        refreshToken: null,
-        expiresAt: null
-      });
-    } finally {
-      // Use setTimeout to reset the flag after the current execution cycle
-      // This ensures any subscriptions triggered by the above next() calls complete first
-      setTimeout(() => {
-        this.isClearingAuthData = false;
-      }, 0);
-    }
-  }
-
-  /**
-   * Check if token is expired
-   */
   isTokenExpired(): boolean {
-    const expiresAt = this.storageService.get<Date>('token_expires_at');
-    if (!expiresAt) return true;
-
-    return new Date(expiresAt) <= new Date();
+    return this.session.isTokenExpired();
   }
 
-  /**
-   * Get token expiration time
-   */
   getTokenExpiresAt(): Date | null {
-    return this.storageService.get<Date>('token_expires_at');
+    return this.session.getTokenExpiresAt();
   }
 }
-

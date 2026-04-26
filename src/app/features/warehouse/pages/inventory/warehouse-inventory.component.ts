@@ -23,7 +23,7 @@ import {
   WAREHOUSE_DEPOT_INVENTORY_IMPORT_PERMISSIONS,
   WAREHOUSE_DEPOT_ASSET_IMPORT_PERMISSIONS
 } from '@core/constants/asset-import-export-permissions';
-import { WarehouseInventoryFiltersComponent } from './warehouse-inventory-filters.component';
+import { InventoryFiltersComponent } from './components/inventory-filters/inventory-filters.component';
 import { WarehouseInventoryTableComponent } from './warehouse-inventory-table.component';
 import { WarehouseInventoryFilterService } from './services/warehouse-inventory-filter.service';
 import { WarehouseInventoryFormatterService } from './services/warehouse-inventory-formatter.service';
@@ -39,7 +39,7 @@ import { WarehouseInventoryViewModelService } from '../../services/warehouse-inv
     ConfirmDialogComponent, EditInventoryDetailModalComponent, EditAssetModalComponent,
     HasPermissionDirective, LoadingStateComponent, ErrorStateComponent,
     PaginationComponent, RowsPerPageComponent,
-    WarehouseInventoryFiltersComponent, WarehouseInventoryTableComponent,
+    InventoryFiltersComponent, WarehouseInventoryTableComponent,
     ImportDialogComponent, ImportPreviewDialogComponent
   ],
   providers: [WarehouseInventoryStore, WarehouseInventoryFacadeService],

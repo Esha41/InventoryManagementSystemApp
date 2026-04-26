@@ -7,6 +7,7 @@ import { ApiService } from './api.service';
 import { StorageService } from './storage.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';
+import { decodeJwtPayload } from '@utils/jwt.util';
 
 const ADMIN_ROLE_KEYWORDS = ['admin', 'administrator', 'superadmin', 'super admin'];
 const ADMIN_PERMISSION_HINTS = [
@@ -56,6 +57,17 @@ export class UserContextService {
 
   clearCache(): void {
     this.cachedUserDetails$ = undefined;
+  }
+
+  /** Pre-populate the cache from already-fetched /Users/me data to avoid a redundant network call. */
+  primeCache(apiData: unknown): void {
+    if (!apiData) return;
+    try {
+      const dto = this.mapApiResponseToDto(apiData as any);
+      this.cachedUserDetails$ = of(dto).pipe(shareReplay(1));
+    } catch {
+      this.cachedUserDetails$ = undefined;
+    }
   }
 
   isAdminUser(): boolean {
@@ -126,20 +138,7 @@ export class UserContextService {
 
   private decodeTokenPayload(): Record<string, unknown> | null {
     const token = this.storageService.get<string>('auth_token');
-    if (!token) {
-      return null;
-    }
-
-    try {
-      const payloadBase64 = token.split('.')[1];
-      if (!payloadBase64) {
-        return null;
-      }
-      const decoded = atob(payloadBase64);
-      return JSON.parse(decoded);
-    } catch {
-      return null;
-    }
+    return decodeJwtPayload<Record<string, unknown>>(token);
   }
 
   private toNumber(value: any): number | null {

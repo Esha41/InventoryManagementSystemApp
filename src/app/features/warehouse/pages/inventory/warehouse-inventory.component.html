@@ -157,7 +157,7 @@
       </div>
 
       <!-- Filters: search + supplier / manufacturer (inventory tabs only) -->
-      <app-warehouse-inventory-filters [searchControl]="store.searchControl"
+      <app-inventory-filters [searchControl]="store.searchControl"
         [searchPlaceholderKey]="store.activeTab() === 'batch' ? 'warehouseInventory.searchPlaceholderBatch' : 'warehouseInventory.searchPlaceholder'"
         [showSupplierManufacturerFilters]="store.activeTab() !== 'batch'"
         [supplierFilterControl]="store.supplierFilterControl" [manufacturerFilterControl]="store.manufacturerFilterControl"
@@ -177,7 +177,7 @@
         [batchPrimaryPurposeOptionLabelFn]="lookupLabel"
         (searchTriggered)="orchestrator.onSearch()" (clearFilters)="orchestrator.onClearInventoryFilters()"
         (applyBatchFilters)="orchestrator.onApplyBatchFilters()">
-      </app-warehouse-inventory-filters>
+      </app-inventory-filters>
 
       <!-- Loading State -->
       <app-loading-state *ngIf="store.loading()" size="lg" [fullPage]="true">
