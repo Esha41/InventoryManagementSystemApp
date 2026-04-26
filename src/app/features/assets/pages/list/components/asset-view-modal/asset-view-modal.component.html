@@ -69,6 +69,11 @@
               <p class="mt-1 text-sm text-[var(--color-text)]">{{ getAmmunitionCaliber() }}</p>
             </div>
             <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.ammunitionSizeClass'
+                | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getAmmunitionCaliberCategory() }}</p>
+            </div>
+            <div>
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{
                 'assetList.viewModal.caseType' | translate }}</label>
               <p class="mt-1 text-sm text-[var(--color-text)]">{{ getCaseType() }}</p>
@@ -177,6 +182,13 @@
               <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.caliber' |
                 translate }}</label>
               <p class="mt-1 text-sm text-[var(--color-text)]">{{ getCaliber() }}</p>
+            </div>
+
+            <!-- Caliber category -->
+            <div>
+              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">{{ 'addAsset.ammunitionSizeClass'
+                | translate }}</label>
+              <p class="mt-1 text-sm text-[var(--color-text)]">{{ getWeaponCaliberCategory() }}</p>
             </div>
 
             <!-- Model -->

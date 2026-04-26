@@ -11,10 +11,11 @@ import { catchError, map, switchMap } from 'rxjs/operators';
 import { SupplyRequestDetailService } from './services/supply-request-detail.service';
 import { OrderItemManagementService } from './services/order-item-management.service';
 import { LotSelectionService } from './services/lot-selection.service';
-import { AmmunitionService } from '@services/ammunition.service';
+import { AmmunitionService } from '@assets/services/ammunition.service';
 import { SupplyOrderDataService } from '@requests/services/supply-order-data.service';
 import { ToastService } from '@services/toast.service';
 import { ConfigService } from '@services/config.service';
+import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 
 // Models
@@ -32,7 +33,7 @@ import { HasPermissionDirective } from '@core/directives/has-permission.directiv
 import { formatNumber as formatNumberUtil, formatDate as formatDateUtil, formatTimeToMilitary as formatTimeToMilitaryUtil } from '@utils/format.utils';
 import { getApprovalStatusBadgeClass } from '@utils/status-class.utils';
 import { mapLotDetailsToLotItems } from '@utils/lot.utils';
-import { LotDetailDto } from '@services/inventory.service';
+import { LotDetailDto } from '@inventory/services/inventory.service';
 import {
   getLotConditionClass,
   getItemTypeIcon as getItemTypeIconUtil,
@@ -68,6 +69,8 @@ import { trackByKey } from '@utils/trackby.utils';
 })
 export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
+
+  readonly PERMISSIONS = PERMISSIONS;
 
   // Icons
   readonly ArrowLeft = ArrowLeft;
@@ -141,11 +144,11 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   ) { }
 
   get canIncreaseQuantity(): boolean {
-    return this.authService.hasPermission('Order.Edit') && this.authService.hasPermission('Order.IncreaseQuantity');
+    return this.authService.hasPermission(PERMISSIONS.REQUESTS.ORDER.EDIT) && this.authService.hasPermission(PERMISSIONS.REQUESTS.ORDER.INCREASE_QUANTITY);
   }
 
   get canDecreaseQuantity(): boolean {
-    return this.authService.hasPermission('Order.Edit') && this.authService.hasPermission('Order.DecreaseQuantity');
+    return this.authService.hasPermission(PERMISSIONS.REQUESTS.ORDER.EDIT) && this.authService.hasPermission(PERMISSIONS.REQUESTS.ORDER.DECREASE_QUANTITY);
   }
 
   ngOnInit(): void {
@@ -155,7 +158,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
       const message = this.translate.instant('supplyRequestDetail.invalidOrderId');
       const title = this.translate.instant('toast.error');
       this.toastService.error(message, title);
-      this.router.navigate(['/requests-management']);
+      this.router.navigate(['/requests/requests-management']);
       return;
     }
     this.loadRequestDetail();
@@ -269,9 +272,9 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     if (this.orderId) {
-      this.router.navigate(['/requests-management', this.orderId, 'workflow-approval']);
+      this.router.navigate(['/requests/requests-management', this.orderId, 'workflow-approval']);
     } else {
-      this.router.navigate(['/requests-management']);
+      this.router.navigate(['/requests/requests-management']);
     }
   }
 

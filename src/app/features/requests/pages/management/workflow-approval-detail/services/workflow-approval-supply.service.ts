@@ -10,7 +10,7 @@ import { throwError } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { SupplyService, SubmitSupplyDto, SupplyDto } from '@services/supply.service';
+import { SupplyService, SubmitSupplyDto, SupplyDto } from '@requests/services/supply.service';
 import { ConfigService } from '@services/config.service';
 import { FileUploadService } from '@services/file-upload.service';
 import { ErrorHandler } from '@utils/error-handler.utils';

@@ -1,4 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
@@ -7,7 +9,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, Save, X, ArrowLeft, ArrowRight } from 'lucide-angular';
 
 // Services
-import { AssetService } from '@services/asset.service';
+import { AssetService } from '@assets/services/asset.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { StorageService } from '@services/storage.service';
@@ -62,6 +64,8 @@ interface BulkAssetData {
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BulkEntryComponent implements OnInit, OnDestroy {
+  readonly PERMISSIONS = PERMISSIONS;
+
     // Icons
     readonly Save = Save;
     readonly X = X;

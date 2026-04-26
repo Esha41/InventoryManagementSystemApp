@@ -36,8 +36,6 @@ export {
   getRequestStatusClass,
   getApprovalStatusClass
 } from './status-class.utils';
-export * from './notification.utils';
-export * from './approval-workflow.utils';
 export * from './dropdown.utils';
 export * from './file.utils';
 export * from './asset-list.mapper';
@@ -57,5 +55,5 @@ export {
 export * from './asset-list.state';
 export * from './asset-list-form.utils';
 export * from './asset-property.utils';
-export * from './issue-request.utils';
 export * from './trackby.utils';
+export * from './jwt.util';

@@ -1,0 +1,399 @@
+<!-- Page Mode: Full page with header and loading/error states -->
+<div *ngIf="isPage" class="page-wrapper">
+  <div class="page-container space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+        <button
+          type="button"
+          (click)="onBack()"
+          class="detail-header-back-btn detail-header-back-btn--icon-only flex-shrink-0"
+          [attr.aria-label]="'common.back' | translate">
+          <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
+        </button>
+        <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-[var(--color-text)] truncate">
+          <span *ngIf="itemType === 'ammunition'">{{ 'assetList.tabs.ammunition' | translate }} {{ 'common.details' |
+            translate }}</span>
+          <span *ngIf="itemType === 'weapon'">{{ 'assetList.tabs.weapon' | translate }} {{ 'common.details' |
+            translate }}</span>
+          <span *ngIf="itemType === 'explosive'">{{ 'assetList.tabs.explosive' | translate }} {{ 'common.details' |
+            translate }}</span>
+        </h1>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <app-loading-state *ngIf="loading" size="lg" [fullPage]="false">
+    </app-loading-state>
+
+    <!-- Error State -->
+    <app-error-state *ngIf="error && !loading" [error]="error || ''" variant="inline" title="common.error"
+      containerClass="mb-8" [actionText]="'common.back'" (action)="onBack()">
+    </app-error-state>
+
+    <!-- Item Details Content -->
+    <div *ngIf="item && !loading && !error" class="bg-[var(--color-background)] rounded-lg p-4 sm:p-6 md:p-8 shadow-sm">
+      <ng-container *ngTemplateOutlet="itemDetailsContent"></ng-container>
+    </div>
+  </div>
+</div>
+
+<!-- Inline/Modal Mode: Just the content -->
+<div *ngIf="!isPage && item" [class]="isModal ? 'bg-[var(--color-background)] rounded-lg p-4 sm:p-6 md:p-8 shadow-sm' : 'bg-[var(--color-background)] rounded-lg p-4 sm:p-6 md:p-8 shadow-sm mb-6'">
+  <h2 *ngIf="!isModal" class="text-2xl font-bold text-[var(--color-text)] text-center mb-8">{{ 'newIssueRequest.reviewYourSelection' |
+    translate }}</h2>
+  <ng-container *ngTemplateOutlet="itemDetailsContent"></ng-container>
+</div>
+
+<!-- Shared Content Template -->
+<ng-template #itemDetailsContent>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+    <!-- Left Side - Details -->
+    <div class="space-y-6">
+      <h3 class="text-xl font-bold text-[var(--color-text)] mb-4">{{ getItemName() }}</h3>
+
+      <!-- Primary Details -->
+      <div class="space-y-4">
+        <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'newIssueRequest.primaryDetails' | translate }}</h4>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div>
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.productName' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getItemName() || '-' }}</p>
+          </div>
+
+          <div>
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.productId' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getProductId() || '-' }}</p>
+          </div>
+
+          <div *ngIf="getPartNo()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.table.partNo' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getPartNo() }}</p>
+          </div>
+
+          <div>
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.nsn' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getNSN() || '-' }}</p>
+          </div>
+
+          <div *ngIf="getBatchNo()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.table.batchNo' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getBatchNo() }}</p>
+          </div>
+
+          <!-- Ammunition specific fields -->
+          <div *ngIf="isAmmunition && getArmNumber()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.viewModal.bulletDiameter' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getArmNumber() }}</p>
+          </div>
+
+          <div *ngIf="isAmmunition && getPrimaryPurpose()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.primaryPurpose' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getPrimaryPurpose() }}</p>
+          </div>
+
+          <!-- Weapon specific fields -->
+          <div *ngIf="isWeapon && getWeaponType()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.weaponType' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getWeaponType() }}</p>
+          </div>
+
+          <!-- Explosive specific fields -->
+          <div *ngIf="isExplosive && getExplosiveType()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'explosive.explosiveType' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getExplosiveType() }}</p>
+          </div>
+
+          <div class="col-span-2" *ngIf="isAmmunition && getProjectileColor()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.projectileColor' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getProjectileColor() }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ammunition Specifications -->
+      <div class="space-y-4" *ngIf="isAmmunition">
+        <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'newIssueRequest.caliberSpecifications' | translate
+          }}</h4>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div *ngIf="getTotalWeight()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.totalWeight' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getTotalWeight() }}</p>
+          </div>
+
+          <div *ngIf="getBulletDiameter()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.viewModal.bulletDiameter' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getBulletDiameter() }}</p>
+          </div>
+
+          <div *ngIf="getProjectileMaterial()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.projectileMaterial' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getProjectileMaterial() }}</p>
+          </div>
+
+          <div *ngIf="getCaseType()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.caseType' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getCaseType() }}</p>
+          </div>
+
+          <div *ngIf="getPrimer()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.primer' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getPrimer() }}</p>
+          </div>
+
+          <div *ngIf="getPropellant()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.propellant' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getPropellant() }}</p>
+          </div>
+
+          <div *ngIf="getCaliberCategory()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'addAsset.ammunitionSizeClass' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getCaliberCategory() }}</p>
+          </div>
+
+          <div *ngIf="getNature()">
+            <p class="text-[var(--color-text-muted)] mb-1">Nature</p>
+            <p class="text-[var(--color-text)]">{{ getNature() }}</p>
+          </div>
+
+          <div *ngIf="getLinked()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.viewModal.isLinked' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getLinked() }}</p>
+          </div>
+
+          <div *ngIf="getUnNumberForAmmunition()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'explosive.unNumber' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getUnNumberForAmmunition() }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Weapon Specifications -->
+      <div class="space-y-4" *ngIf="isWeapon">
+        <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'weapon.specifications' | translate }}</h4>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div *ngIf="getCaliber()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.caliber' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getCaliber() }}</p>
+          </div>
+
+          <div *ngIf="getCaliberUnit()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.caliberUnit' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getCaliberUnit() }}</p>
+          </div>
+
+          <div *ngIf="getCaliberCategory()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'addAsset.ammunitionSizeClass' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getCaliberCategory() }}</p>
+          </div>
+
+          <div *ngIf="getActionType()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.actionType' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getActionType() }}</p>
+          </div>
+
+          <div *ngIf="getModel()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.model' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getModel() }}</p>
+          </div>
+
+          <div *ngIf="getBarrelLengthWithUnit()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.barrelLength' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getBarrelLengthWithUnit() }}</p>
+          </div>
+
+          <div *ngIf="getOverallLengthWithUnit()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.overallLength' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getOverallLengthWithUnit() }}</p>
+          </div>
+
+          <div *ngIf="getWeightWithUnit()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.weight' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getWeightWithUnit() }}</p>
+          </div>
+
+          <div *ngIf="getCapacityForWeapon() !== undefined">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.capacity' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getCapacityForWeapon() }}</p>
+          </div>
+
+          <div *ngIf="getYearOfManufacture()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.yearOfManufacture' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getYearOfManufacture() }}</p>
+          </div>
+
+          <div *ngIf="getCountryOfManufacture()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'weapon.countryOfManufacture' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getCountryOfManufacture() }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Explosive Specifications -->
+      <div class="space-y-4" *ngIf="isExplosive">
+        <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'explosive.specifications' | translate }}</h4>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div *ngIf="getUnNumber()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'explosive.unNumber' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getUnNumber() }}</p>
+          </div>
+
+          <div *ngIf="getNetExplosiveQuantityLabel()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'explosive.netExplosiveQuantity' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getNetExplosiveQuantityLabel() }}</p>
+          </div>
+
+          <div *ngIf="getTotalWeightLabel()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.totalWeight' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getTotalWeightLabel() }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Classifications (Ammunition and Explosive) -->
+      <div class="space-y-4" *ngIf="isAmmunition || isExplosive">
+        <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'newIssueRequest.classifications' | translate }}
+        </h4>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div *ngIf="getHazardDivision()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.hazardDivision' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getHazardDivision() }}</p>
+          </div>
+
+          <div *ngIf="getCapabilityGroup()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.capabilityGroup' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getCapabilityGroup() }}</p>
+          </div>
+
+          <div *ngIf="getClassification()">
+            <p class="text-[var(--color-text-muted)] mb-1">Classification</p>
+            <p class="text-[var(--color-text)]">{{ getClassification() }}</p>
+          </div>
+
+          <div *ngIf="getType()">
+            <p class="text-[var(--color-text-muted)] mb-1">Type</p>
+            <p class="text-[var(--color-text)]">{{ getType() }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Information (Ammunition and Explosive) -->
+      <div class="space-y-4" *ngIf="isAmmunition || isExplosive">
+        <h4 class="text-base font-bold text-[var(--color-text)]">Additional Information</h4>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div *ngIf="getDistribution()">
+            <p class="text-[var(--color-text-muted)] mb-1">Distribution</p>
+            <p class="text-[var(--color-text)]">{{ getDistribution() }}</p>
+          </div>
+
+          <div *ngIf="getReferenceNo()">
+            <p class="text-[var(--color-text-muted)] mb-1">Reference No</p>
+            <p class="text-[var(--color-text)]">{{ getReferenceNo() }}</p>
+          </div>
+
+          <div *ngIf="getNotes()" class="col-span-2">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'common.comments' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getNotes() }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Information (Weapon) -->
+      <div class="space-y-4" *ngIf="isWeapon">
+        <h4 class="text-base font-bold text-[var(--color-text)]">Additional Information</h4>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div *ngIf="getDistributionForWeapon()">
+            <p class="text-[var(--color-text-muted)] mb-1">Distribution</p>
+            <p class="text-[var(--color-text)]">{{ getDistributionForWeapon() }}</p>
+          </div>
+
+          <div *ngIf="getReferenceNo()">
+            <p class="text-[var(--color-text-muted)] mb-1">Reference No</p>
+            <p class="text-[var(--color-text)]">{{ getReferenceNo() }}</p>
+          </div>
+
+          <div *ngIf="getUnNumberForWeapon()">
+            <p class="text-[var(--color-text-muted)] mb-1">UN Number</p>
+            <p class="text-[var(--color-text)]">{{ getUnNumberForWeapon() }}</p>
+          </div>
+
+          <div *ngIf="getClassification()">
+            <p class="text-[var(--color-text-muted)] mb-1">Classification</p>
+            <p class="text-[var(--color-text)]">{{ getClassification() }}</p>
+          </div>
+
+          <div *ngIf="getType()">
+            <p class="text-[var(--color-text-muted)] mb-1">Type</p>
+            <p class="text-[var(--color-text)]">{{ getType() }}</p>
+          </div>
+
+          <div *ngIf="getNotes()" class="col-span-2">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'common.comments' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getNotes() }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Common Fields (All Asset Types) -->
+      <div class="space-y-4">
+        <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'assetList.viewModal.commonFields' | translate }}</h4>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div *ngIf="getPrice()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.table.price' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getPrice() }}</p>
+          </div>
+
+          <div *ngIf="getMinimumQuantity()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.table.minimumQuantity' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getMinimumQuantity() }}</p>
+          </div>
+
+          <div *ngIf="getExpiryDate()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.table.expiryDate' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getExpiryDate() }}</p>
+          </div>
+
+          <div *ngIf="getReadyForIssue()">
+            <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.viewModal.readyForIssue' | translate }}</p>
+            <p class="text-[var(--color-text)]">{{ getReadyForIssue() }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Side - Image -->
+    <div class="flex items-center justify-center">
+      <img *ngIf="imageUrl; else placeholderImage" [src]="imageUrl" [alt]="getItemName() || 'Item'"
+        class="max-w-full h-auto rounded-lg shadow-sm" (error)="imageUrl = null">
+      <ng-template #placeholderImage>
+        <div
+          class="flex items-center justify-center w-full h-64 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
+          <div class="text-center">
+            <svg class="w-16 h-16 text-[var(--color-text-muted)] mx-auto mb-2" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+              </path>
+            </svg>
+            <p class="text-sm text-[var(--color-text-muted)]">{{ 'common.noImage' | translate }}</p>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-6 md:mt-8" *ngIf="showActions && !isPage">
+    <button type="button" (click)="onCancel()" class="detail-back-text-btn">
+      {{ 'common.goBack' | translate }}
+    </button>
+  </div>
+</ng-template>

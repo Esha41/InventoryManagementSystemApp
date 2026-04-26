@@ -125,7 +125,7 @@
           <!-- Action Buttons at Bottom -->
           <div class="flex items-center justify-end gap-4 pt-6 border-t border-[var(--color-border)] mt-6">
             <app-button 
-              *appHasPermission="'emailsettings.edit'"
+              *appHasPermission="PERMISSIONS.SETTINGS.EMAIL.EDIT"
               [variant]="'primary'" 
               [disabled]="isSaving || isLoading" 
               (click)="saveChanges()"

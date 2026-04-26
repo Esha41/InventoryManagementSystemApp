@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { WorkflowService } from '@services/workflow.service';
+import { WorkflowService } from '@workflow/services/workflow.service';
 import { BackendWorkflowDto } from '@models/workflow.model';
 import { trackById } from '@utils/trackby.utils';
 

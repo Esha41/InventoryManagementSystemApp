@@ -19,7 +19,7 @@ import {
   getOrderAllowanceKey,
   formatOrderUsageDateFrom,
   formatOrderUsageDateTo
-} from '@utils/dashboard-order.utils';
+} from '@dashboard/utils/dashboard-order.utils';
 import { RequestType } from '@utils/request-type-mapper.utils';
 
 /**
@@ -282,7 +282,7 @@ export class RequestDetailsModalComponent implements OnInit, OnDestroy {
    */
   navigateToApproval(): void {
     if (this.request?.id) {
-      this.router.navigate(['/requests-management', this.request.id, 'workflow-approval']);
+      this.router.navigate(['/requests/requests-management', this.request.id, 'workflow-approval']);
     }
   }
 }

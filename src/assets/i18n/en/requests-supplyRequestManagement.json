@@ -1,0 +1,25 @@
+{
+  "supplyRequestManagement": {
+    "title": "Supply Request Management",
+    "searchByOrderId": "Search by Order ID...",
+    "issueNo": "Issue No.",
+    "requestType": "Request Type",
+    "quantity": "Quantity",
+    "priority": "Priority",
+    "requestDate": "Request Date",
+    "status": "Status",
+    "showing": "Showing",
+    "of": "of",
+    "noRequests": "No supply requests found",
+    "noRequestsDescription": "There are currently no supply requests to display.",
+    "tabs": {
+      "Cancelled": "Cancelled",
+      "Returned": "Returned",
+      "Delivered": "Delivered",
+      "Completed": "Completed",
+      "Processing": "Processing",
+      "New": "New",
+      "Pending": "Pending"
+    }
+  }
+}

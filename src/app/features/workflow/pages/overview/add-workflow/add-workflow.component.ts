@@ -1,4 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { Subject, takeUntil } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -6,7 +8,7 @@ import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { LucideAngularModule, Save, X, ArrowLeft, ArrowRight, GripVertical } from 'lucide-angular';
-import { WorkflowService } from '@services/workflow.service';
+import { WorkflowService } from '@workflow/services/workflow.service';
 import { BackendUserService } from '@services/backend-user.service';
 import { RoleDto, ApplicationEntityDto } from '@models/backend-user.model';
 import { TranslationService } from '@services/translation.service';
@@ -43,6 +45,8 @@ interface AddStepForm {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddWorkflowComponent implements OnInit, OnDestroy {
+  readonly PERMISSIONS = PERMISSIONS;
+
   readonly Save = Save;
   readonly X = X;
   readonly ArrowLeft = ArrowLeft;

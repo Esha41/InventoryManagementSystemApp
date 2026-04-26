@@ -8,8 +8,8 @@ import { LucideAngularModule, ArrowLeft, ArrowRight, ChevronDown, ChevronUp,Chev
 import { Subject, takeUntil, debounceTime, distinctUntilChanged, forkJoin, of } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 
-import { AssetService } from '@services/asset.service';
-import { OrderService } from '@services/order.service';
+import { AssetService } from '@assets/services/asset.service';
+import { OrderService } from '@requests/services/order.service';
 import { FileUploadService } from '@services/file-upload.service';
 import { FileEntityType } from '@models/file-upload.model';
 import { OrderDto } from '@models/order.model';
@@ -25,9 +25,10 @@ import { WeaponSupplyLookupService } from './services/weapon-supply-lookup.servi
 import { WeaponSupplyDisplayService } from './services/weapon-supply-display.service';
 
 import { LoadingStateComponent } from '@components/loading-state/loading-state.component';
-import { EmployeeFormModalComponent } from '@components/employee-form-modal/employee-form-modal.component';
+import { EmployeeFormModalComponent } from '@admin/components/employee-form-modal/employee-form-modal.component';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { FocusOnInitDirective } from '@core/directives/focus-on-init.directive';
+import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 
 @Component({
@@ -53,7 +54,7 @@ import { BackendAuthService } from '@services/backend-auth.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
-  private static readonly EMPLOYEE_CREATE_PERMISSION = 'Permissions.Employee.Create';
+  private static readonly EMPLOYEE_CREATE_PERMISSION = PERMISSIONS.ADMIN.LOOKUP.EMPLOYEE.CREATE;
   private destroy$ = new Subject<void>();
 
   readonly ArrowLeft = ArrowLeft;
@@ -180,7 +181,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
         this.translate.instant('weaponSupplyReview.invalidOrderId'),
         this.translate.instant('toast.error')
       );
-      this.router.navigate(['/requests-management']);
+      this.router.navigate(['/requests/requests-management']);
     }
   }
 
@@ -475,7 +476,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
           this.translate.instant('toast.success')
         );
         setTimeout(() => {
-          this.router.navigate(['/requests-management', this.orderId, 'workflow-approval']);
+          this.router.navigate(['/requests/requests-management', this.orderId, 'workflow-approval']);
         }, 1500);
       });
   }
@@ -484,14 +485,14 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     if (this.orderId) {
-      this.router.navigate(['/requests-management', this.orderId, 'workflow-approval']);
+      this.router.navigate(['/requests/requests-management', this.orderId, 'workflow-approval']);
     } else {
-      this.router.navigate(['/requests-management']);
+      this.router.navigate(['/requests/requests-management']);
     }
   }
 
   goToSelectionPage(): void {
-    this.router.navigate(['/requests-management', this.orderId, 'weapon-supply-selection']);
+    this.router.navigate(['/requests/requests-management', this.orderId, 'weapon-supply-selection']);
   }
 
   openAddEmployeeModal(): void {

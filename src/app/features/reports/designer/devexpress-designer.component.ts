@@ -248,7 +248,7 @@ export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit 
   goBack(): void {
     // Remove the popstate listener before navigating
  
-    this.router.navigate(['/report-designer']);
+    this.router.navigate(['/reports/report-designer']);
   }
 
   adjustToolbar() {

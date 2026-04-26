@@ -4,7 +4,7 @@ import { SafeHtml } from '@angular/platform-browser';
 import { TranslateModule } from '@ngx-translate/core';
 import { HelpCenterTermsDto } from '@models/help-center.model';
 import { TermsAcceptanceFacade } from '../../facades/terms-acceptance.facade';
-import { HelpCenterHtmlSanitizerService } from '@services/help-center-html-sanitizer.service';
+import { HelpCenterHtmlSanitizerService } from '@help-center/services/help-center-html-sanitizer.service';
 
 @Component({
   selector: 'app-terms-acceptance-modal',

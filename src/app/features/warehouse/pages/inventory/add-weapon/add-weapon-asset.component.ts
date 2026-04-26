@@ -7,13 +7,14 @@ import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { LucideAngularModule, Save, X, Plus, Trash2, ArrowLeft, ArrowRight } from 'lucide-angular';
 
 // Services
-import { AssetService } from '@services/asset.service';
-import { WeaponService } from '@services/weapon.service';
-import { EmployeeService } from '@services/employee.service';
+import { AssetService } from '@assets/services/asset.service';
+import { WeaponService } from '@assets/services/weapon.service';
+import { EmployeeService } from '@admin/services/employee.service';
 import { LookupService, LookupItem } from '@services/lookup.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { StorageService } from '@services/storage.service';
+import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 
 // Models
@@ -22,7 +23,7 @@ import { WeaponDto } from '@models/weapon.model';
 
 // Components
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
-import { EmployeeFormModalComponent } from '@components/employee-form-modal/employee-form-modal.component';
+import { EmployeeFormModalComponent } from '@admin/components/employee-form-modal/employee-form-modal.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 
@@ -52,7 +53,9 @@ export type WeaponAssignMode = 'none' | 'department' | 'employee';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddWeaponAssetComponent implements OnInit, OnDestroy {
-    private static readonly EMPLOYEE_CREATE_PERMISSION = 'Permissions.Employee.Create';
+  readonly PERMISSIONS = PERMISSIONS;
+
+    private static readonly EMPLOYEE_CREATE_PERMISSION = PERMISSIONS.ADMIN.LOOKUP.EMPLOYEE.CREATE;
     // Icons
     readonly Save = Save;
     readonly X = X;

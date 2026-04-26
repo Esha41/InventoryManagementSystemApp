@@ -26,14 +26,7 @@ export class FileUploadService {
     private http: HttpClient
   ) { }
 
-  /**
-   * Upload a single file and link it to an entity
-   * @param file The file to upload
-   * @param entity The entity type (FileEntityType enum value)
-   * @param entityId The ID of the entity
-   * @param isMain Whether this file should be marked as the main file
-   * @returns Observable with the uploaded file master ID
-   */
+
   uploadFile(
     file: File,
     entity: FileEntityType,
@@ -64,13 +57,7 @@ export class FileUploadService {
     );
   }
 
-  /**
-   * Upload multiple files and link them to an entity
-   * @param files Array of files to upload
-   * @param entity The entity type (FileEntityType enum value)
-   * @param entityId The ID of the entity
-   * @returns Observable with array of uploaded file detail IDs
-   */
+
   uploadFilesForEntity(
     files: File[],
     entity: FileEntityType,

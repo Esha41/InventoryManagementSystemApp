@@ -7,9 +7,9 @@ import { LucideAngularModule, ArrowLeft, ArrowRight, CheckCircle, AlertTriangle,
 import { Subject, takeUntil, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
-import { AssetSupplyService, BatchForOrderDepotDto, BatchItemDto } from '@services/asset-supply.service';
+import { AssetSupplyService, BatchForOrderDepotDto, BatchItemDto } from '@requests/services/asset-supply.service';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
-import { OrderService } from '@services/order.service';
+import { OrderService } from '@requests/services/order.service';
 import { OrderDto } from '@models/order.model';
 import { ToastService } from '@services/toast.service';
 import { ConfigService } from '@services/config.service';
@@ -102,7 +102,7 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
         this.translate.instant('weaponSupplyReview.invalidOrderId'),
         this.translate.instant('toast.error')
       );
-      this.router.navigate(['/requests-management']);
+      this.router.navigate(['/requests/requests-management']);
       return;
     }
     this.loadAllData();
@@ -285,7 +285,7 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
             this.translate.instant('weaponSupplyReview.selectionSaved'),
             this.translate.instant('toast.success')
           );
-          this.router.navigate(['/requests-management', this.orderId, 'workflow-approval']);
+          this.router.navigate(['/requests/requests-management', this.orderId, 'workflow-approval']);
         },
         error: (error) => {
           this.config.logError('Failed to save batch selection', error);
@@ -444,7 +444,7 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
   }
 
   goBack(): void {
-    this.router.navigate(['/requests-management', this.orderId, 'workflow-approval']);
+    this.router.navigate(['/requests/requests-management', this.orderId, 'workflow-approval']);
   }
 
   getDepartmentName(): string {

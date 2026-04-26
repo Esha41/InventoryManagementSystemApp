@@ -5,7 +5,7 @@
 
 import { OrderDto, OrderRequestItemDto } from '@models/order.model';
 import { SupplyRequestDetail, OrderItem } from '@models/supply-request.model';
-import { OrderSupplySuggestionDto } from '@services/supply.service';
+import { OrderSupplySuggestionDto } from '@requests/services/supply.service';
 import { formatDate } from '@utils/format.utils';
 import { mapSuggestedLotsToLotItems } from './lot-mapper.utils';
 import { mapRequestType } from '@utils/request-mapper.utils';

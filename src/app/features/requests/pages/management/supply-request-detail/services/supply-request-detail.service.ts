@@ -7,17 +7,17 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, of, forkJoin } from 'rxjs';
 import { switchMap, catchError, tap, delay, map } from 'rxjs/operators';
-import { OrderService } from '@services/order.service';
+import { OrderService } from '@requests/services/order.service';
 import { OrderDto } from '@models/order.model';
-import { SupplyService, OrderSupplySuggestionDto, CreateSupplyDto, CreateSupplyDetailDto, SupplyDto } from '@services/supply.service';
-import { InventoryService, LotDetailDto } from '@services/inventory.service';
+import { SupplyService, OrderSupplySuggestionDto, CreateSupplyDto, CreateSupplyDetailDto, SupplyDto } from '@requests/services/supply.service';
+import { InventoryService, LotDetailDto } from '@inventory/services/inventory.service';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { BaseRequestDto } from '@models/workflow-approval.model';
 import { SupplyRequestDetail, OrderItem } from '@models/supply-request.model';
 import { mapOrderToRequestDetail, applySuggestionToItems, capOrderItemDischargeToApprovedQuantity } from '../../utils/supply-request.mapper';
 import { mapLotDetailsToLotItems } from '@utils/lot.utils';
-import { mapWorkflowStepsToApprovalSteps } from '@utils/approval-workflow.utils';
+import { mapWorkflowStepsToApprovalSteps } from '@requests/utils/approval-workflow.utils';
 import { mapApprovalHistory, mapRequestStatus } from '@utils/request-mapper.utils';
 import { ConfigService } from '@services/config.service';
 import { ToastService } from '@services/toast.service';
@@ -402,7 +402,7 @@ export class SupplyRequestDetailService {
       }),
       delay(1500),
       tap(() => {
-        this.router.navigate(['/requests-management', orderId, 'workflow-approval']);
+        this.router.navigate(['/requests/requests-management', orderId, 'workflow-approval']);
       })
     );
   }
@@ -430,7 +430,7 @@ export class SupplyRequestDetailService {
       }),
       delay(1500),
       tap(() => {
-        this.router.navigate(['/requests-management', supply.orderId, 'workflow-approval']);
+        this.router.navigate(['/requests/requests-management', supply.orderId, 'workflow-approval']);
       }),
       map(() => supply.id),
       catchError((error) => {

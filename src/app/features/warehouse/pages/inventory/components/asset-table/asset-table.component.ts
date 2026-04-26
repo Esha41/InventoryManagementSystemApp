@@ -1,4 +1,6 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Edit2, Trash2, Eye } from 'lucide-angular';
@@ -20,6 +22,8 @@ import { trackById } from '@utils/trackby.utils';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AssetTableComponent {
+  readonly PERMISSIONS = PERMISSIONS;
+
   @Input() assets: AssetDto[] = [];
   @Input() getAssetItemName: (asset: AssetDto) => string = () => '';
 

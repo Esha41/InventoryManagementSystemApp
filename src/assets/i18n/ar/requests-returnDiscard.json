@@ -1,0 +1,95 @@
+{
+  "returnRequest": {
+    "pageTitle": "إدارة الطلبات المتكاملة",
+    "title": "طلب إرجاع",
+    "reason": "السبب",
+    "priority": "الأولوية",
+    "department": "الوحدة",
+    "requester": "المقدم",
+    "requestPurpose": "الغرض من الطلب",
+    "requestPurposeNotes": "ملاحظات الغرض من الطلب",
+    "notes": "ملاحظات",
+    "returnItems": "مواد الإرجاع",
+    "addItem": "إضافة مادة",
+    "item": "مادة",
+    "quantity": "الكمية",
+    "itemNotes": "ملاحظات مادة",
+    "sendRequest": "تنفيذ",
+    "selectDepartment": "اختر الوحدة",
+    "selectRequester": "اختر المقدم (اختياري)",
+    "selectRequestPurpose": "اختر الغرض من الطلب",
+    "selectItem": "اختر مادة",
+    "enterQuantity": "أدخل الكمية",
+    "enterReason": "أدخل سبب الإرجاع",
+    "enterNotes": "أدخل ملاحظات إضافية (اختياري)",
+    "itemNotesPlaceholder": "ملاحظات مادة (اختياري)",
+    "requestPurposeNotesPlaceholder": "أدخل ملاحظات للغرض المحدد من الطلب",
+    "high": "عالية",
+    "medium": "متوسطة",
+    "low": "منخفضة",
+    "errors": {
+      "failedToLoadDepartments": "فشل تحميل الوحدات",
+      "failedToLoadRequestPurposes": "فشل تحميل أغراض الطلب",
+      "failedToLoadItems": "فشل تحميل المواد",
+      "failedToLoadUsers": "فشل تحميل المستخدمين",
+      "filesRequired": "مطلوب ملف مرفق واحد على الأقل",
+      "requestPurposeNotesRequired": "ملاحظات الغرض من الطلب مطلوبة",
+      "fileSizeExceeded": "حجم الملف يتجاوز الحد الأقصى المسموح به وهو",
+      "invalidFileFormat": "الملف \"{{fileName}}\" له تنسيق غير صالح. التنسيقات المسموحة: JPEG، JPG، PNG، PDF، XLSX، DOCX."
+    },
+    "success": {
+      "created": "تم إنشاء طلب الإرجاع بنجاح"
+    },
+    "confirmDialog": {
+      "title": "تأكيد الطلب",
+      "message": "هل أنت متأكد أنك تريد تنفيذ طلب الإرجاع هذا؟"
+    }
+  },
+  "discardRequest": {
+    "title": "طلب إتلاف",
+    "reason": "السبب",
+    "priority": "الأولوية",
+    "department": "الوحدة",
+    "requester": "المقدم",
+    "requestPurpose": "الغرض من الطلب",
+    "requestPurposeNotes": "ملاحظات الغرض من الطلب",
+    "notes": "ملاحظات",
+    "discardItems": "مواد الإتلاف",
+    "addItem": "إضافة مادة",
+    "item": "مادة",
+    "quantity": "الكمية",
+    "itemNotes": "ملاحظات مادة",
+    "sendRequest": "تنفيذ",
+    "selectDepartment": "اختر الوحدة",
+    "selectRequester": "اختر المقدم (اختياري)",
+    "selectRequestPurpose": "اختر الغرض من الطلب",
+    "selectItem": "اختر مادة",
+    "enterQuantity": "أدخل الكمية",
+    "reasonPlaceholder": "أدخل سبب الإتلاف",
+    "notesPlaceholder": "أدخل ملاحظات إضافية (اختياري)",
+    "quantityPlaceholder": "أدخل الكمية",
+    "itemNotesPlaceholder": "ملاحظات مادة (اختياري)",
+    "requestPurposeNotesPlaceholder": "أدخل ملاحظات للغرض المحدد من الطلب",
+    "high": "عالية",
+    "medium": "متوسطة",
+    "low": "منخفضة",
+    "errors": {
+      "failedToLoadDepartments": "فشل تحميل الوحدات",
+      "failedToLoadRequestPurposes": "فشل تحميل أغراض الطلب",
+      "failedToLoadItems": "فشل تحميل المواد",
+      "failedToLoadUsers": "فشل تحميل المستخدمين",
+      "correctFormErrors": "يرجى تصحيح أخطاء النموذج",
+      "filesRequired": "مطلوب ملف مرفق واحد على الأقل",
+      "requestPurposeNotesRequired": "ملاحظات الغرض من الطلب مطلوبة",
+      "fileSizeExceeded": "حجم الملف يتجاوز الحد الأقصى المسموح به وهو",
+      "invalidFileFormat": "الملف \"{{fileName}}\" له تنسيق غير صالح. التنسيقات المسموحة: JPEG، JPG، PNG، PDF، XLSX، DOCX."
+    },
+    "success": {
+      "created": "تم إنشاء طلب الإتلاف بنجاح"
+    },
+    "confirmDialog": {
+      "title": "تأكيد الطلب",
+      "message": "هل أنت متأكد أنك تريد تنفيذ طلب الإتلاف هذا؟"
+    }
+  }
+}

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
-import { Cartridge } from '../cartridge-list/cartridge-list.component';
+import { Cartridge } from '@models/cartridge.model';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { getFileSizeFromFile, removeFile, validateFile, MAX_FILE_SIZE_MB, showFileValidationErrors } from '@utils/file.utils';
 import { ToastService } from '@services/toast.service';

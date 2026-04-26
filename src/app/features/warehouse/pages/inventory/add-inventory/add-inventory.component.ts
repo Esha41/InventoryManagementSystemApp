@@ -1,15 +1,17 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { LucideAngularModule, Save, X, Plus, Trash2, ArrowLeft, ArrowRight } from 'lucide-angular';
-import { InventoryService } from '@services/inventory.service';
+import { InventoryService } from '@inventory/services/inventory.service';
 import { LookupService, SupplierDto, ManufacturerDto, CountryDto, LookupItem } from '@services/lookup.service';
-import { AmmunitionService } from '@services/ammunition.service';
-import { WeaponService } from '@services/weapon.service';
-import { ExplosiveService } from '@services/explosive.service';
+import { AmmunitionService } from '@assets/services/ammunition.service';
+import { WeaponService } from '@assets/services/weapon.service';
+import { ExplosiveService } from '@assets/services/explosive.service';
 import { CreateInventoryDto, CreateInventoryDetailDto, ItemType } from '@models/inventory.model';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { ToastService } from '@services/toast.service';
@@ -43,6 +45,8 @@ import { AppDatePipe } from '@shared/pipes/app-date.pipe';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddInventoryComponent implements OnInit, OnDestroy {
+  readonly PERMISSIONS = PERMISSIONS;
+
   readonly Save = Save;
   readonly X = X;
   readonly Plus = Plus;

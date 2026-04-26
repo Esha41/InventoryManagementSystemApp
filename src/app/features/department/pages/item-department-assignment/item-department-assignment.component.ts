@@ -5,6 +5,7 @@ import {
   ChangeDetectorRef,
   ChangeDetectionStrategy
 } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -25,7 +26,7 @@ import { LoadingStateComponent, PaginationComponent, RowsPerPageComponent } from
 import { DepartmentAssignmentsTableComponent } from './components/department-assignments-table/department-assignments-table.component';
 import { AssignmentModalComponent, AssignmentFormData } from './components/assignment-modal/assignment-modal.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
-import { ProfileDataService } from '@services/profile-data.service';
+import { ProfileDataService } from '@profile/services/profile-data.service';
 import { TranslationMap } from '@models/common.types';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { defaultPageSize } from '@constants/app.constants';
@@ -52,6 +53,8 @@ import { defaultPageSize } from '@constants/app.constants';
   providers: [ItemDepartmentAssignmentFacade]
 })
 export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
+  readonly PERMISSIONS = PERMISSIONS;
+
   readonly Plus = Plus;
   readonly Search = Search;
   readonly ChevronDown = ChevronDown;

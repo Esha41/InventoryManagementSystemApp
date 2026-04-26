@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AuthenticatedUser, ClaimDto } from '@models/auth.model';
+import { IUserProfileProvider } from '@core/interfaces/user-profile-provider.interface';
 import { UserMeResponse } from '@profile/models/profile.model';
 import { StorageService } from '@services/storage.service';
 
@@ -60,7 +61,7 @@ export interface ProfileData {
 @Injectable({
   providedIn: 'root'
 })
-export class ProfileDataService {
+export class ProfileDataService implements IUserProfileProvider {
   private readonly PROFILE_STORAGE_KEY = 'user_profile_data';
 
   constructor(private storageService: StorageService) { }

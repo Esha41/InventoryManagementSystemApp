@@ -5,7 +5,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, Calendar, Edit3 } from 'lucide-angular';
 import { RequestDetail } from '@models/workflow-approval.model';
-import { ReturnService } from '@services/return.service';
+import { ReturnService } from '@requests/services/return.service';
 import { WorkflowApprovalStateService } from '../../services/workflow-approval-state.service';
 import { WorkflowApprovalPermissionsService } from '../../services/workflow-approval-permissions.service';
 import { ToastService } from '@services/toast.service';

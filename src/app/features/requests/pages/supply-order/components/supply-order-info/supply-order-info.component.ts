@@ -9,7 +9,7 @@ import {
   resolveUsagePurpose,
   resolveDepartmentName,
   resolveRequesterName
-} from '@utils/supply-order-format.utils';
+} from '@requests/utils/supply-order-format.utils';
 
 /**
  * Supply Order Info Component

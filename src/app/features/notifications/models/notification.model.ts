@@ -59,16 +59,16 @@ export interface NotificationActionKeys {
 }
 
 /**
- * Request detail union type
+ * Request detail union type for notification deep-links
  */
-export type RequestDetail = OrderDto | ReturnDto | DiscardDto;
+export type NotificationRequestDetail = OrderDto | ReturnDto | DiscardDto;
 
 /**
  * Notification detail result from service
  */
 export interface NotificationDetailResult {
   type: NotificationDetailType;
-  detail: RequestDetail | null;
+  detail: NotificationRequestDetail | null;
   error: string | null;
 }
 

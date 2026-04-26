@@ -5,11 +5,11 @@ import { Subject, takeUntil } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule } from 'lucide-angular';
 
-import { AssetService } from '@services/asset.service';
+import { AssetService } from '@assets/services/asset.service';
 import { ToastService } from '@services/toast.service';
 import { AssetDto, AssetStatus, getAssetStatusLabel } from '@models/asset.model';
-import { AssetDetailsComponent as SharedAssetDetailsComponent } from '@shared/components/asset-details/asset-details.component';
-import { WarehouseDetailLayoutComponent } from '@shared/components/warehouse-detail-layout/warehouse-detail-layout.component';
+import { AssetDetailsComponent as SharedAssetDetailsComponent } from '@assets/components/asset-details/asset-details.component';
+import { WarehouseDetailLayoutComponent } from '@components/warehouse-detail-layout/warehouse-detail-layout.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { formatDateShort } from '@utils/format.utils';
 

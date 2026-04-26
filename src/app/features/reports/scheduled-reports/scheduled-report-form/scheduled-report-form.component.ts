@@ -5,7 +5,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Save, X, ArrowLeft, ArrowRight, Plus, Trash2, Mail } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
-import { ReportService, Report, CreateScheduledReportDto, CreateScheduledReportRecipientDto, ScheduledReport } from '@services/report.service';
+import { ReportService, Report, CreateScheduledReportDto, CreateScheduledReportRecipientDto, ScheduledReport } from '@reports/services/report.service';
 import { BackendUserService } from '@services/backend-user.service';
 import { LoadingStateComponent } from '@components/index';
 import { ButtonComponent } from '@components/button/button.component';
@@ -270,7 +270,7 @@ export class ScheduledReportFormComponent implements OnInit {
         )
         .subscribe((success: boolean) => {
           if (success) {
-            this.router.navigate(['/scheduled-reports']);
+            this.router.navigate(['/reports/scheduled-reports']);
           }
         });
     } else {
@@ -287,7 +287,7 @@ export class ScheduledReportFormComponent implements OnInit {
         )
         .subscribe((id: string) => {
           if (id) {
-            this.router.navigate(['/scheduled-reports']);
+            this.router.navigate(['/reports/scheduled-reports']);
           }
         });
     }
@@ -305,7 +305,7 @@ export class ScheduledReportFormComponent implements OnInit {
   }
 
   onCancel(): void {
-    this.router.navigate(['/scheduled-reports']);
+    this.router.navigate(['/reports/scheduled-reports']);
   }
 
   clearError(): void {

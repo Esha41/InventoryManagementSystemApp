@@ -1,9 +1,10 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, Optional } from '@angular/core';
 import { catchError, of, take } from 'rxjs';
-import { HelpCenterService } from '@services/help-center.service';
+import { HelpCenterService } from '@help-center/services/help-center.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
-import { OnboardingTourService } from '@features/onboarding/services/onboarding-tour.service';
+import { ONBOARDING_TOUR } from '@core/tokens/onboarding-tour.token';
+import { IOnboardingTourProvider } from '@core/interfaces/onboarding-tour-provider.interface';
 import { HelpCenterTermsDto, TermsAcceptanceStatusDto } from '@models/help-center.model';
 import { ErrorHandler } from '@utils/error-handler.utils';
 
@@ -15,7 +16,7 @@ import { ErrorHandler } from '@utils/error-handler.utils';
 })
 export class TermsAcceptanceFacade {
   private readonly helpCenter = inject(HelpCenterService);
-  private readonly onboarding = inject(OnboardingTourService);
+  private readonly onboarding = inject(ONBOARDING_TOUR, { optional: true }) as IOnboardingTourProvider | null;
   private readonly toast = inject(ToastService);
   private readonly i18n = inject(TranslationService);
 
@@ -35,7 +36,7 @@ export class TermsAcceptanceFacade {
           this.pendingTerms.set(status.terms);
           this.showModal.set(true);
         } else {
-          this.onboarding.checkAndStartTour();
+          this.onboarding?.checkAndStartTour();
         }
       });
   }
@@ -52,7 +53,7 @@ export class TermsAcceptanceFacade {
           this.accepting.set(false);
           this.showModal.set(false);
           this.pendingTerms.set(null);
-          this.onboarding.checkAndStartTour();
+          this.onboarding?.checkAndStartTour();
         },
         error: err => {
           this.accepting.set(false);

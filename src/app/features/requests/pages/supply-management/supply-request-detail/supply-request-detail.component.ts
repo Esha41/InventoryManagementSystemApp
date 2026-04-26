@@ -209,7 +209,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   }
 
   goBack(): void {
-    this.router.navigate(['/supply-request-management']);
+    this.router.navigate(['/requests/supply-request-management']);
   }
 
   get errorTitle(): string {

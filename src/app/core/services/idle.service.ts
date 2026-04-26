@@ -153,12 +153,15 @@ export class IdleService implements OnDestroy {
     this.stop();
     this.configService.log('Auto-logout due to inactivity');
 
-    this.storageService.set('sessionExpired', true);
-
+    // logout() / clearSession() both wipe storage, so sessionExpired must be set AFTER.
     this.backendAuth.logout().subscribe({
-      next: () => this.router.navigate(['/auth/login']),
+      next: () => {
+        this.storageService.set('sessionExpired', true);
+        this.router.navigate(['/auth/login']);
+      },
       error: () => {
         this.backendAuth.clearSession();
+        this.storageService.set('sessionExpired', true);
         this.router.navigate(['/auth/login']);
       }
     });

@@ -4,7 +4,7 @@
  * Following Angular best practices for data transformation
  */
 
-import { BaseRequestDto } from '@services/unified-request.service';
+import { UnifiedListRequestDto } from '@models/unified-list-request.model';
 import { OrderDto } from '@models/order.model';
 import { ReturnDto } from '@models/return.model';
 import { DiscardDto } from '@models/discard.model';
@@ -99,7 +99,7 @@ function normalizeItemType(itemType: number | string | undefined): number | unde
 /**
  * Normalize BaseRequestDto to ensure all enums are numbers
  */
-function normalizeBaseRequestDto(request: BaseRequestDto): BaseRequestDto {
+function normalizeBaseRequestDto(request: UnifiedListRequestDto): UnifiedListRequestDto {
     return {
         ...request,
         requestType: normalizeRequestType(request.requestType),
@@ -117,7 +117,7 @@ function normalizeBaseRequestDto(request: BaseRequestDto): BaseRequestDto {
  * Map BaseRequestDto to OrderDto
  * Transforms the unified structure to Order-specific structure
  */
-export function mapToOrderDto(base: BaseRequestDto): OrderDto {
+export function mapToOrderDto(base: UnifiedListRequestDto): OrderDto {
     // Normalize enums first
     const normalized = normalizeBaseRequestDto(base);
 
@@ -198,7 +198,7 @@ export function mapToOrderDto(base: BaseRequestDto): OrderDto {
  * Map BaseRequestDto to ReturnDto
  * Transforms the unified structure to Return-specific structure
  */
-export function mapToReturnDto(base: BaseRequestDto): ReturnDto {
+export function mapToReturnDto(base: UnifiedListRequestDto): ReturnDto {
     // Normalize enums first
     const normalized = normalizeBaseRequestDto(base);
 
@@ -264,7 +264,7 @@ export function mapToReturnDto(base: BaseRequestDto): ReturnDto {
  * Map BaseRequestDto to DiscardDto
  * Transforms the unified structure to Discard-specific structure
  */
-export function mapToDiscardDto(base: BaseRequestDto): DiscardDto {
+export function mapToDiscardDto(base: UnifiedListRequestDto): DiscardDto {
     // Normalize enums first
     const normalized = normalizeBaseRequestDto(base);
 
@@ -331,10 +331,10 @@ export function mapToDiscardDto(base: BaseRequestDto): DiscardDto {
  * Returns an object with arrays for each request type
  * Handles both string and numeric enum values
  */
-export function separateRequestsByType(requests: BaseRequestDto[]): {
-    orders: BaseRequestDto[];
-    returns: BaseRequestDto[];
-    discards: BaseRequestDto[];
+export function separateRequestsByType(requests: UnifiedListRequestDto[]): {
+    orders: UnifiedListRequestDto[];
+    returns: UnifiedListRequestDto[];
+    discards: UnifiedListRequestDto[];
 } {
     // Normalize all requests first
     const normalizedRequests = requests.map(r => normalizeBaseRequestDto(r));

@@ -1,0 +1,26 @@
+{
+  "workflowReturnApprovedSummary": {
+    "title": "ملخص طلب الإرجاع",
+    "subtitle": "الكميات و Lot أو أرقام البواليص والأرقام التسلسلية كما سُجّلت عند معالجة الإرجاع.",
+    "item": "المادة",
+    "itemNo": "رقم المادة",
+    "sectionWeapons": "أسلحة",
+    "sectionAmmunition": "ذخيرة",
+    "sectionExplosives": "متفجرات",
+    "returnedQty": "الكمية المُرجَعة",
+    "receivedQty": "الكمية المستلمة",
+    "colBatch": "رقم البوليصة",
+    "colLot": "Lot",
+    "notes": "ملاحظات",
+    "serialDetails": "الأرقام التسلسلية",
+    "serial": "التسلسل",
+    "batch": "رقم البوليصة",
+    "attachmentsTitle": "المرفقات",
+    "fileName": "الملف",
+    "fileSource": "المصدر",
+    "open": "فتح",
+    "sourceRequest": "الطلب",
+    "sourceProcessing": "سطر المعالجة",
+    "loadError": "تعذر تحميل بيانات تتبع الإرجاع."
+  }
+}

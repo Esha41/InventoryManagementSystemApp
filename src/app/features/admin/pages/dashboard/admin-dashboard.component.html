@@ -38,7 +38,7 @@
                 <p class="section-subtitle">{{ 'adminDashboard.quickActionsDescription' | translate }}</p>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                <a [routerLink]="['/manage-admins']" class="quick-action-card">
+                <a [routerLink]="['/admin/manage-admins']" class="quick-action-card">
                     <div class="quick-action-icon">
                         <lucide-angular [img]="Users" class="icon"></lucide-angular>
                     </div>
@@ -49,7 +49,7 @@
                     </div>
                 </a>
 
-                <a [routerLink]="['/admin-roles']" class="quick-action-card">
+                <a [routerLink]="['/admin/roles']" class="quick-action-card">
                     <div class="quick-action-icon">
                         <lucide-angular [img]="Badge" class="icon"></lucide-angular>
                     </div>
@@ -59,7 +59,7 @@
                     </div>
                 </a>
 
-                <a [routerLink]="['/role-permissions']" class="quick-action-card">
+                <a [routerLink]="['/admin/role-permissions']" class="quick-action-card">
                     <div class="quick-action-icon">
                         <lucide-angular [img]="Settings" class="icon"></lucide-angular>
                     </div>
@@ -70,7 +70,7 @@
                     </div>
                 </a>
 
-                <a [routerLink]="['/ldap-settings']" class="quick-action-card">
+                <a [routerLink]="['/settings/ldap-settings']" class="quick-action-card">
                     <div class="quick-action-icon">
                         <lucide-angular [img]="Settings" class="icon"></lucide-angular>
                     </div>
@@ -81,7 +81,7 @@
                     </div>
                 </a>
 
-                <a [routerLink]="['/email-settings']" class="quick-action-card">
+                <a [routerLink]="['/settings/email-settings']" class="quick-action-card">
                     <div class="quick-action-icon">
                         <lucide-angular [img]="Mail" class="icon"></lucide-angular>
                     </div>
@@ -92,7 +92,7 @@
                     </div>
                 </a>
 
-                <a [routerLink]="['/admin-import-export']" class="quick-action-card">
+                <a [routerLink]="['/admin/import-export']" class="quick-action-card">
                     <div class="quick-action-icon">
                         <lucide-angular [img]="Upload" class="icon"></lucide-angular>
                     </div>
@@ -113,7 +113,7 @@
                     </div>
                 </a>
 
-                <a [routerLink]="['/stock-notification-settings']" class="quick-action-card">
+                <a [routerLink]="['/settings/stock-notification-settings']" class="quick-action-card">
                     <div class="quick-action-icon">
                         <lucide-angular [img]="Mail" class="icon"></lucide-angular>
                     </div>
@@ -124,6 +124,17 @@
                     </div>
                 </a>
 
+                <ng-container *appHasPermission="PERMISSIONS.SETTINGS.ORDER_AUTO_REJECT.PAGE">
+                    <a [routerLink]="['/settings/order-auto-reject-settings']" class="quick-action-card">
+                        <div class="quick-action-icon">
+                            <lucide-angular [img]="Timer" class="icon"></lucide-angular>
+                        </div>
+                        <div class="quick-action-content">
+                            <h3 class="quick-action-title">{{ 'nav.orderAutoRejectSettings' | translate }}</h3>
+                            <p class="quick-action-description">{{ 'adminDashboard.orderAutoRejectDescription' | translate }}</p>
+                        </div>
+                    </a>
+                </ng-container>
 
             </div>
         </div>
@@ -138,7 +149,7 @@
         </div>
 
         <!-- Delegation Management: plain permission DelegationManagement (see Role Permissions → System Features) -->
-        <ng-container *appHasPermission="'DelegationManagement'">
+        <ng-container *appHasPermission="PERMISSIONS.ADMIN.DELEGATION_MANAGEMENT">
             <div class="delegations-section">
                 <div class="section-header">
                     <h2 class="section-title">{{ 'DELEGATION.ADMIN_TITLE' | translate }}</h2>

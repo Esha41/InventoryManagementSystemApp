@@ -4,6 +4,8 @@
  */
 
 import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Plus, Download, Upload, FileText } from 'lucide-angular';
@@ -35,6 +37,8 @@ type ViewMode = 'available' | 'deleted';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AssetListHeaderComponent {
+  readonly PERMISSIONS = PERMISSIONS;
+
   @Input() activeTab: AssetType = 'ammunition';
   @Input() ammunitionViewMode: ViewMode = 'available';
   @Input() explosivesViewMode: ViewMode = 'available';

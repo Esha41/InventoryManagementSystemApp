@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
+import { HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { APIOperationResponse } from '@models/api-response.model';
 import {
   DraftSupplyListItemDto,
   InventoryDashboardSummaryDto,
@@ -43,40 +43,36 @@ export class MonitoringService {
 
   constructor(private apiService: ApiService) { }
 
-  /**
-   * Get the count of lots expiring in the next 30 days, optionally scoped to a depot.
-   */
-  getExpiringLotsCount(depotId?: number): Observable<number> {
-    const params = depotId ? `?depotId=${depotId}` : '';
-    return this.apiService.get<number>(`${this.baseEndpoint}/expiring-lots/count${params}`);
+  private buildCountParams(depotId?: number, depotIds?: number[]): HttpParams | undefined {
+    if (depotIds && depotIds.length > 0) {
+      let p = new HttpParams();
+      for (const id of depotIds) {
+        p = p.append('depotIds', String(id));
+      }
+      return p;
+    }
+    if (depotId != null) {
+      return new HttpParams().set('depotId', String(depotId));
+    }
+    return undefined;
   }
 
-  /**
-   * Get the list of lots that are about to expire in the next 30 days with their details
-   */
+  getExpiringLotsCount(depotId?: number, depotIds?: number[]): Observable<number> {
+    return this.apiService.get<number>(`${this.baseEndpoint}/expiring-lots/count`, this.buildCountParams(depotId, depotIds));
+  }
+
   getExpiringLots(): Observable<ExpiringLotDto[]> {
     return this.apiService.get<ExpiringLotDto[]>(`${this.baseEndpoint}/expiring-lots`);
   }
 
-  /**
-   * Get the count of items below minimum stock level, optionally scoped to a depot.
-   */
-  getLowStockItemsCount(depotId?: number): Observable<number> {
-    const params = depotId ? `?depotId=${depotId}` : '';
-    return this.apiService.get<number>(`${this.baseEndpoint}/low-stock/count${params}`);
+  getLowStockItemsCount(depotId?: number, depotIds?: number[]): Observable<number> {
+    return this.apiService.get<number>(`${this.baseEndpoint}/low-stock/count`, this.buildCountParams(depotId, depotIds));
   }
 
-  /**
-   * Get the list of items that are below minimum stock level with their details
-   */
   getLowStockItems(): Observable<any[]> {
     return this.apiService.get<any[]>(`${this.baseEndpoint}/low-stock`);
   }
 
-  /**
-   * Combined weapon asset + supply pipeline metrics (single round-trip).
-   * Query params align with inventory items summary: repeated depotIds.
-   */
   getInventoryDashboardSummary(depotIds?: number[]): Observable<InventoryDashboardSummaryDto> {
     let params = '';
     if (depotIds && depotIds.length > 0) {
@@ -85,7 +81,6 @@ export class MonitoringService {
     return this.apiService.get<InventoryDashboardSummaryDto>(`${this.baseEndpoint}/dashboard/inventory-summary${params}`);
   }
 
-  /** Draft Supply + AssetSupply rows (same rules as dashboard pipeline draft count). */
   getDraftSuppliesList(depotIds?: number[]): Observable<DraftSupplyListItemDto[]> {
     let params = '';
     if (depotIds && depotIds.length > 0) {
@@ -94,7 +89,6 @@ export class MonitoringService {
     return this.apiService.get<DraftSupplyListItemDto[]>(`${this.baseEndpoint}/dashboard/draft-supplies${params}`);
   }
 
-  /** Approved orders not fully fulfilled (same rules as dashboard awaiting count). */
   getOrdersAwaitingFulfillmentList(depotIds?: number[]): Observable<OrderAwaitingFulfillmentListItemDto[]> {
     let params = '';
     if (depotIds && depotIds.length > 0) {

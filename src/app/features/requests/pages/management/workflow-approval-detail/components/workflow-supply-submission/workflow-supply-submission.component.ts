@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, User, AlertTriangle } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
-import { SupplyDto } from '@services/supply.service';
+import { SupplyDto } from '@requests/services/supply.service';
 import { LookupItem } from '@services/lookup.service';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { DropdownOption } from '@components/dropdown/dropdown.component';
@@ -16,10 +16,11 @@ import { WorkflowApprovalNavigationService } from '../../services/workflow-appro
 import { ToastService } from '@services/toast.service';
 import { ConfigService } from '@services/config.service';
 import { getRankDisplayName as getRankDisplayNameHelper } from '../../utils/workflow-approval-helpers';
-import { EmployeeService } from '@services/employee.service';
+import { EmployeeService } from '@admin/services/employee.service';
 import { EmployeeDto } from '@core/models/asset.model';
 import { getCurrentLang } from '@utils/localization.utils';
-import { EmployeeFormModalComponent } from '@components/employee-form-modal/employee-form-modal.component';
+import { EmployeeFormModalComponent } from '@admin/components/employee-form-modal/employee-form-modal.component';
+import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 
 @Component({
@@ -38,7 +39,7 @@ import { BackendAuthService } from '@services/backend-auth.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WorkflowSupplySubmissionComponent implements OnInit, OnDestroy, OnChanges {
-  private static readonly EMPLOYEE_CREATE_PERMISSION = 'Permissions.Employee.Create';
+  private static readonly EMPLOYEE_CREATE_PERMISSION = PERMISSIONS.ADMIN.LOOKUP.EMPLOYEE.CREATE;
   @Input() supplyId: number | null = null;
   @Input() supplyData: SupplyDto | null = null;
   @Input() ranks: LookupItem[] = [];

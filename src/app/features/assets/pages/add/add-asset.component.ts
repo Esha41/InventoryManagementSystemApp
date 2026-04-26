@@ -1,4 +1,6 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, Optional, Inject } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -7,7 +9,8 @@ import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { CardComponent } from '@components/card/card.component';
 import { LucideAngularModule, Save, X } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
-import { OnboardingTourService } from '@features/onboarding/services/onboarding-tour.service';
+import { ONBOARDING_TOUR } from '@core/tokens/onboarding-tour.token';
+import { IOnboardingTourProvider } from '@core/interfaces/onboarding-tour-provider.interface';
 import { LookupService, NatureOptionDto } from '@services/lookup.service';
 import { LookupItem } from '@models/lookup.model';
 import { AmmunitionCreateDto, AmmunitionReadDto } from '@models/ammunition.model';
@@ -43,6 +46,8 @@ interface AssetForm {
   image?: File;
 
   // Ammunition specific
+  /** AmmunitionType enum as string: '1' | '2' | '3' */
+  ammunitionType: string;
   bulletDiameter: string;
   bulletDiameterUnitId: string;
   isLinked: string;
@@ -57,6 +62,8 @@ interface AssetForm {
   projectailMaterialId: string;
 
   // Weapon specific
+  /** WeaponCaliberCategory as string: '1' | '2' | '3' */
+  weaponCaliberCategory: string;
   caliber: string;
   caliberUnitId: string;
   yearOfManufacture: string;
@@ -81,6 +88,8 @@ type AssetType = 'ammunition' | 'weapon' | 'explosive';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
+  readonly PERMISSIONS = PERMISSIONS;
+
   readonly Save = Save;
   readonly X = X;
 
@@ -114,6 +123,13 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     { label: 'common.yes', value: 'true' }
   ];
 
+  /** AmmunitionType / WeaponCaliberCategory (Small=1, Medium=2, Large=3) */
+  readonly ammunitionTypeClassOptions: { label: string; value: string }[] = [
+    { label: 'newIssueRequest.ammunitionTypeSmall', value: '1' },
+    { label: 'newIssueRequest.ammunitionTypeMedium', value: '2' },
+    { label: 'newIssueRequest.ammunitionTypeLarge', value: '3' }
+  ];
+
   loading = false;
   submitting = false;
   errorMessage: string | null = null;
@@ -131,7 +147,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     private route: ActivatedRoute,
     private translateService: TranslateService,
     private cdr: ChangeDetectorRef,
-    private onboardingTourService: OnboardingTourService
+    @Optional() @Inject(ONBOARDING_TOUR) private onboardingTourService: IOnboardingTourProvider | null
   ) { }
 
   assetForm: AssetForm = this.getInitialForm();
@@ -156,6 +172,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
       image: undefined,
 
       // Ammunition
+      ammunitionType: '',
       bulletDiameter: '',
       bulletDiameterUnitId: '',
       isLinked: 'false',
@@ -169,7 +186,8 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
       projectileColorId: '',
       projectailMaterialId: '',
 
-      // Weapon
+      // Weapon (default Small = 1)
+      weaponCaliberCategory: '1',
       caliber: '',
       caliberUnitId: '',
       yearOfManufacture: '',
@@ -185,7 +203,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => this.onboardingTourService.checkAndStartPageTour('add-asset'), 300);
+    setTimeout(() => this.onboardingTourService?.checkAndStartPageTour('add-asset'), 300);
   }
 
   ngOnInit(): void {
@@ -370,6 +388,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.assetForm.referenceNo?.trim()) dto.referenceNo = this.assetForm.referenceNo.trim();
     if (this.assetForm.classificationId) dto.classificationId = parseInt(this.assetForm.classificationId);
     if (this.assetForm.typeId) dto.typeId = parseInt(this.assetForm.typeId);
+    if (this.assetForm.ammunitionType) dto.ammunitionType = parseInt(this.assetForm.ammunitionType, 10);
     if (this.assetForm.notes?.trim()) dto.notes = this.assetForm.notes.trim();
     if (this.assetForm.price) dto.price = parseFloat(this.assetForm.price);
     if (this.assetForm.minimumQuantity) dto.minimumQuantity = parseInt(this.assetForm.minimumQuantity);
@@ -410,6 +429,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.assetForm.notes?.trim()) dto.notes = this.assetForm.notes.trim();
     if (this.assetForm.classificationId) dto.classificationId = parseInt(this.assetForm.classificationId);
     if (this.assetForm.typeId) dto.typeId = parseInt(this.assetForm.typeId);
+    if (this.assetForm.weaponCaliberCategory) dto.caliberCategory = parseInt(this.assetForm.weaponCaliberCategory, 10);
     if (this.assetForm.caliber?.trim()) dto.caliber = this.assetForm.caliber.trim();
     if (this.assetForm.caliberUnitId) dto.caliberUnitId = parseInt(this.assetForm.caliberUnitId);
     if (this.assetForm.yearOfManufacture) dto.yearOfManufacture = parseInt(this.assetForm.yearOfManufacture);
@@ -502,7 +522,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
                 queryParams['page'] = parsed;
               }
             }
-            this.router.navigate(['/asset-list'], { queryParams });
+            this.router.navigate(['/assets/asset-list'], { queryParams });
           }, 800);
         } else {
           const rawMsg = 'Failed to create asset';
@@ -538,6 +558,10 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
 
     // Ammunition-specific: numeric fields must be > 0 when provided
     if (this.activeTab === 'ammunition') {
+      if (!this.assetForm.ammunitionType) {
+        this.fieldErrors['ammunitionType'] = this.translateService.instant('addAsset.errors.ammunitionTypeRequired');
+        return false;
+      }
       const bulletVal = parseFloat(this.assetForm.bulletDiameter);
       if (this.assetForm.bulletDiameter !== '' && this.assetForm.bulletDiameter != null && !isNaN(bulletVal) && bulletVal <= 0) {
         this.fieldErrors['bulletDiameter'] = this.translateService.instant('addAsset.errors.bulletDiameterMustBePositive');
@@ -551,6 +575,13 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
       const weightVal = parseFloat(this.assetForm.totalWeight);
       if (this.assetForm.totalWeight !== '' && this.assetForm.totalWeight != null && !isNaN(weightVal) && weightVal <= 0) {
         this.fieldErrors['totalWeight'] = this.translateService.instant('addAsset.errors.totalWeightMustBePositive');
+        return false;
+      }
+    }
+
+    if (this.activeTab === 'weapon') {
+      if (!this.assetForm.weaponCaliberCategory) {
+        this.fieldErrors['weaponCaliberCategory'] = this.translateService.instant('addAsset.errors.ammunitionTypeRequired');
         return false;
       }
     }

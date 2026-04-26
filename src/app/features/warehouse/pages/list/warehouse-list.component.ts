@@ -1,4 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -20,6 +22,8 @@ import { trackByStringId } from '@utils/trackby.utils';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WarehouseListComponent implements OnInit, OnDestroy {
+  readonly PERMISSIONS = PERMISSIONS;
+
   warehouses: WarehouseSummaryDto[] = [];
   loading = true;
   error: string | null = null;

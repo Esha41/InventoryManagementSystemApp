@@ -1,11 +1,13 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Package, Plus, CheckCircle, Clock } from 'lucide-angular';
 import { SupplyItemDisplay } from '@models/supply-order.model';
 import { formatNumber as formatNumberUtil, formatDate as formatDateUtil } from '@utils/format.utils';
-import { getSupplyItemDisplayName } from '@utils/supply-order-format.utils';
+import { getSupplyItemDisplayName } from '@requests/utils/supply-order-format.utils';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { TranslationService } from '@services/translation.service';
 
@@ -29,6 +31,8 @@ import { TranslationService } from '@services/translation.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SupplyItemsListComponent {
+  readonly PERMISSIONS = PERMISSIONS;
+
   readonly Package = Package;
   readonly Plus = Plus;
   readonly CheckCircle = CheckCircle;

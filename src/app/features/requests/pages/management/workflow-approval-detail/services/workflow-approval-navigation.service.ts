@@ -17,7 +17,7 @@ export class WorkflowApprovalNavigationService {
    * Navigate back to requests management page
    */
   goBack(): void {
-    this.router.navigate(['/requests-management']);
+    this.router.navigate(['/requests/requests-management']);
   }
 
   /**
@@ -29,9 +29,9 @@ export class WorkflowApprovalNavigationService {
     }
 
     if (isWeaponOrder) {
-      this.router.navigate(['/requests-management', requestId, 'weapon-supply-selection']);
+      this.router.navigate(['/requests/requests-management', requestId, 'weapon-supply-selection']);
     } else {
-      this.router.navigate(['/requests-management', requestId, 'supply-request-detail']);
+      this.router.navigate(['/requests/requests-management', requestId, 'supply-request-detail']);
     }
   }
 
@@ -50,7 +50,7 @@ export class WorkflowApprovalNavigationService {
     }
 
     // Navigate with query param to indicate this is an orderId, not a supplyId
-    this.router.navigate(['/supply-order', requestId], { queryParams: { byOrder: true } });
+    this.router.navigate(['/requests/supply-order', requestId], { queryParams: { byOrder: true } });
   }
 
   /**
@@ -62,7 +62,7 @@ export class WorkflowApprovalNavigationService {
     }
 
     if (isWeaponOrder) {
-      this.router.navigate(['/requests-management', requestId, 'weapon-supply-selection']);
+      this.router.navigate(['/requests/requests-management', requestId, 'weapon-supply-selection']);
     } else {
       this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.notWeaponOrder']).subscribe(translations => {
         this.toastService.error(
@@ -82,7 +82,7 @@ export class WorkflowApprovalNavigationService {
     }
 
     if (isWeaponOrder) {
-      this.router.navigate(['/requests-management', requestId, 'weapon-supply-review']);
+      this.router.navigate(['/requests/requests-management', requestId, 'weapon-supply-review']);
     } else {
       this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.notWeaponOrder']).subscribe(translations => {
         this.toastService.error(
@@ -98,7 +98,7 @@ export class WorkflowApprovalNavigationService {
    */
   navigateToProcessReturnItems(requestId: number): void {
     if (!requestId) return;
-    this.router.navigate(['/requests-management', requestId, 'process-return-items']);
+    this.router.navigate(['/requests/requests-management', requestId, 'process-return-items']);
   }
 
   /**
@@ -131,7 +131,7 @@ export class WorkflowApprovalNavigationService {
       }
       
       // Pass requestId and tab (itemType) as query parameters
-      this.router.navigate(['/asset-list', itemId], {
+      this.router.navigate(['/assets/asset-list', itemId], {
         queryParams: queryParams
       });
     }

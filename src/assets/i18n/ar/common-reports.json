@@ -1,0 +1,163 @@
+{
+  "accessDenied": {
+    "title": "تم رفض الوصول",
+    "message": "ليس لديك صلاحية لعرض هذه الصفحة. يرجى التواصل مع المسؤول أو اختيار وحدة أخرى.",
+    "goHome": "الانتقال إلى الرئيسية",
+    "logout": "تسجيل الخروج"
+  },
+  "COMMON": {
+    "SAVE": "حفظ",
+    "CANCEL": "إلغاء"
+  },
+  "reportDesigner": {
+    "createReport": "إنشاء تقرير جديد",
+    "importReport": "استيراد تقرير",
+    "noReports": "لا توجد تقارير",
+    "noReportsDescription": "لم تقم بإنشاء أي تقارير بعد. انقر على الزر أدناه لإنشاء أول تقرير لك.",
+    "deleteReport": "حذف التقرير",
+    "deleteReportMessage": "هل أنت متأكد أنك تريد حذف هذا التقرير؟",
+    "deleteReportDescription": "سيؤدي هذا إلى حذف \"{{name}}\" نهائياً. لا يمكن التراجع عن هذا الإجراء.",
+    "makePublic": "جعلها عامة",
+    "makePrivate": "جعلها خاصة",
+    "reportSetToPublic": "تم تعيين التقرير كعام وهو متاح لجميع المستخدمين.",
+    "reportSetToPublicWithRoles": "تم تعيين التقرير كعام وهو متاح لـ {{count}} دور محدد.",
+    "reportSetToPrivate": "تم تعيين التقرير كخاص (مسودة).",
+    "rolesUpdated": "تم تحديث أدوار التقرير. التقرير متاح الآن لـ {{count}} دور محدد.",
+    "rolesCleared": "تم مسح أدوار التقرير. التقرير متاح الآن لجميع المستخدمين.",
+    "selectRolesOnlyForPublished": "يمكنك اختيار الأدوار فقط للتقارير المنشورة. يرجى نشر التقرير أولاً.",
+    "selectRoles": "اختر الأدوار",
+    "noRoles": "لا توجد أدوار متاحة",
+    "noRolesFound": "لم يتم العثور على أدوار تطابق بحثك",
+    "roleSelectionInfo": "اختر الأدوار التي يمكنها الوصول إلى هذا التقرير عند نشره. إذا لم يتم اختيار أي أدوار، سيكون التقرير متاحاً لجميع المستخدمين المصادق عليهم.",
+    "selectTemplate": "اختر القالب",
+    "templatesSectionTitle": "قوالب التقارير",
+    "templatesSectionHint": "ابدأ من تخطيط جاهز في المصمم المرئي، ثم احفظ لإنشاء تقرير جديد.",
+    "openInDesigner": "فتح في المصمم",
+    "noTemplates": "لا توجد قوالب متاحة",
+    "import": {
+      "invalidFileType": "نوع الملف غير صالح. يُسمح فقط بملفات {{extensions}}.",
+      "fileTooLarge": "حجم الملف يتجاوز الحد الأقصى المسموح به وهو {{maxSize}}."
+    },
+    "errors": {
+      "reportNameExists": "تقرير بهذا الاسم موجود بالفعل، أعطِ اسماً آخر."
+    },
+    "table": {
+      "reportName": "اسم التقرير",
+      "status": "الحالة",
+      "roles": "الأدوار",
+      "createdDate": "تاريخ الإنشاء",
+      "actions": "الإجراءات"
+    },
+    "allUsers": "جميع المستخدمين",
+    "status": {
+      "published": "منشور",
+      "draft": "مسودة",
+      "archived": "مؤرشف"
+    },
+    "metadataDialog": {
+      "createTitle": "إنشاء تقرير جديد",
+      "importTitle": "استيراد تقرير",
+      "reportName": "اسم التقرير",
+      "reportNamePlaceholder": "أدخل اسم التقرير",
+      "url": "الرابط",
+      "urlPlaceholder": "أدخل الرابط (يتم إنشاؤه تلقائياً من الاسم)",
+      "urlHint": "يمكن أن يحتوي الرابط فقط على أحرف وأرقام وشرطات سفلية وشرطات",
+      "description": "الوصف",
+      "descriptionPlaceholder": "أدخل وصف التقرير (اختياري)",
+      "invalidUrl": "تنسيق الرابط غير صالح. يُسمح فقط بالأحرف والأرقام والشرطات السفلية والشرطات."
+    }
+  },
+  "reports": {
+    "designer": {
+      "title": "مصمم التقارير",
+      "subtitle": "إنشاء وتعديل التقارير المخصصة باستخدام المصمم المرئي"
+    }
+  },
+  "reportDashboard": {
+    "noReports": "لا توجد تقارير عامة",
+    "noReportsDescription": "لا توجد تقارير منشورة متاحة في الوقت الحالي.",
+    "viewReport": "عرض التقرير",
+    "noDescription": "لا يوجد وصف متاح",
+    "table": {
+      "reportName": "اسم التقرير",
+      "status": "الحالة",
+      "createdDate": "تاريخ الإنشاء",
+      "description": "الوصف",
+      "actions": "الإجراءات"
+    },
+    "advancedAnalytics": {
+      "title": "لوحة تحليلات متقدمة",
+      "subtitle": "مؤشرات الأداء الرئيسية والتحليلات في الوقت الفعلي لاتخاذ القرارات الاستراتيجية",
+      "lastUpdated": "آخر تحديث",
+      "lastRefresh": "آخر تحديث",
+      "autoRefresh": "التحديث التلقائي",
+      "kpis": {
+        "title": "مؤشرات الأداء الرئيسية",
+        "missionReadiness": "معدل جاهزية المهمة",
+        "stockAvailability": "توفر المخزون",
+        "orderCycleTime": "وقت دورة الطلب",
+        "consumptionForecast": "الاستهلاك مقابل التوقعات",
+        "totalUnits": "إجمالي الوحدات",
+        "missionReady": "جاهز للمهمة",
+        "underMaintenance": "قيد الصيانة",
+        "unavailable": "غير متاح",
+        "requiredItems": "العناصر المطلوبة",
+        "availableItems": "العناصر المتاحة",
+        "days": "أيام",
+        "min": "الحد الأدنى",
+        "max": "الحد الأقصى",
+        "consumptionRatio": "نسبة الاستهلاك",
+        "alerts": "التنبيهات",
+        "shortage": "النقص",
+        "dataPoints": "نقاط البيانات",
+        "status": "الحالة",
+        "variance": "التباين",
+        "average": "المتوسط",
+        "importExport": "إحصائيات الاستيراد/التصدير",
+        "totalImports": "إجمالي الاستيراد",
+        "totalExports": "إجمالي التصدير",
+        "importPercentage": "نسبة الاستيراد",
+        "lastImport": "آخر استيراد",
+        "operations": "العمليات",
+        "active": "نشط"
+      },
+      "charts": {
+        "title": "التصورات التفاعلية",
+        "importExport": "اتجاهات الاستيراد/التصدير",
+        "missionReadinessTrend": "اتجاه جاهزية المهمة",
+        "stockByWarehouse": "توفر المخزون حسب المستودع",
+        "orderCycleTimeTrend": "اتجاه وقت دورة الطلب",
+        "consumptionForecast": "الاستهلاك مقابل التوقعات"
+      },
+      "additionalCharts": {
+        "title": "رسوم بيانية تحليلية إضافية",
+        "orderStatusDistribution": "توزيع حالة الطلب",
+        "requestTrends": "اتجاهات الطلبات مع مرور الوقت",
+        "inventoryValue": "قيمة المخزون حسب المستودع",
+        "assetAssignmentStatus": "حالة تعيين الأصول",
+        "supplyFulfillmentStatus": "حالة تنفيذ الإمداد",
+        "departmentRequestVolume": "حجم طلبات القسم",
+        "notificationTrends": "اتجاهات الإشعارات مع مرور الوقت",
+        "notificationByType": "الإشعارات حسب نوع الكيان",
+        "notificationReadStatus": "حالة قراءة الإشعارات حسب الكيان",
+        "userLoginAnalytics": "تحليلات تسجيل دخول المستخدمين"
+      },
+      "customize": "تخصيص",
+      "customizePanel": {
+        "title": "تخصيص لوحة التحكم",
+        "presets": "إعدادات لوحة التحكم",
+        "visibleKpis": "مؤشرات الأداء المرئية",
+        "visibleCharts": "الرسوم البيانية المرئية",
+        "additionalCharts": "رسوم بيانية تحليلية إضافية"
+      },
+      "dashboard": "لوحة التحكم"
+    }
+  },
+  "server": {
+    "unauthorized": "لم يتم تسجيل الدخول أو انتهت جلستك. يُرجى تسجيل الدخول مرة أخرى.",
+    "forbidden": "ليس لديك صلاحية لتنفيذ هذا الإجراء.",
+    "invalidLogin": "جلستك غير صالحة. يُرجى تسجيل الدخول مرة أخرى.",
+    "unableToRefreshToken": "تعذّر تحديث جلستك. يُرجى تسجيل الدخول مرة أخرى.",
+    "roleSelectionRequired": "يُرجى اختيار دور للمتابعة."
+  }
+}

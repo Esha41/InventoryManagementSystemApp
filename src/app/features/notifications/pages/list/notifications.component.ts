@@ -18,7 +18,7 @@ import {
 import { combineLatest, Observable, Subject } from 'rxjs';
 import { debounceTime, finalize, map, shareReplay, startWith, takeUntil, tap } from 'rxjs/operators';
 import { Notification } from '@notifications/models/notification.model';
-import { NotificationService } from '@services/notification.service';
+import { NotificationService } from '@notifications/services/notification.service';
 import { ButtonComponent } from '@components/button/button.component';
 import { ModalComponent } from '@components/modal/modal.component';
 import { OrderDto } from '@models/order.model';
@@ -29,7 +29,7 @@ import {
   NotificationDetailType,
   MetadataDisplayItem
 } from '@notifications/models/notification.model';
-import { NOTIFICATION_ACTION_KEYS } from '@constants/notification.constants';
+import { NOTIFICATION_ACTION_KEYS } from '@notifications/constants/notification.constants';
 import {
   formatMetadataKey,
   getDisplayMetadata,
@@ -37,7 +37,7 @@ import {
   canProposeNewTime,
   getPriorityLabelTranslation,
   getStatusLabelTranslation
-} from '@utils/notification.utils';
+} from '@notifications/utils/notification.utils';
 import { formatTimeToMilitary } from '@utils/format.utils';
 import { NotificationDetailService } from '@notifications/services/notification-detail.service';
 import { TranslationService } from '@services/translation.service';

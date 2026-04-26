@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BatchForOrderDepotDto } from '@services/asset-supply.service';
+import { BatchForOrderDepotDto } from '@requests/services/asset-supply.service';
 
 /**
  * Holds depot and batch selection state when navigating between

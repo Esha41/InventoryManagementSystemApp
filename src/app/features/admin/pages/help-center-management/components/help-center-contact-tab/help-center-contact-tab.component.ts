@@ -20,9 +20,10 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Phone, Mail } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
 
-import { HelpCenterService } from '@services/help-center.service';
+import { HelpCenterService } from '@help-center/services/help-center.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
+import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { ButtonComponent } from '@components/button/button.component';
@@ -81,7 +82,7 @@ export class HelpCenterContactTabComponent implements OnInit, OnDestroy {
   }
 
   canEdit(): boolean {
-    return this.auth.hasPermission('helpcenter.edit');
+    return this.auth.hasPermission(PERMISSIONS.ADMIN.HELP_CENTER.EDIT);
   }
 
   load(): void {

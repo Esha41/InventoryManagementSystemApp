@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { Notification, RequestDetail, NotificationDetailType, NotificationDetailResult } from '@notifications/models/notification.model';
-import { OrderService } from '@services/order.service';
-import { ReturnService } from '@services/return.service';
-import { DiscardService } from '@services/discard.service';
-import { extractEntityIdFromMetadata, determineDetailType, handleDetailError } from '@utils/notification.utils';
+import { Notification, NotificationRequestDetail, NotificationDetailType, NotificationDetailResult } from '@notifications/models/notification.model';
+import { OrderService } from '@requests/services/order.service';
+import { ReturnService } from '@requests/services/return.service';
+import { DiscardService } from '@requests/services/discard.service';
+import { extractEntityIdFromMetadata, determineDetailType, handleDetailError } from '@notifications/utils/notification.utils';
 import { TranslateService } from '@ngx-translate/core';
+import { DiscardDto, OrderDto, ReturnDto } from '@models/index';
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +19,27 @@ export class NotificationDetailService {
     private readonly discardService: DiscardService,
     private readonly translateService: TranslateService
   ) { }
+
+  /**
+   * Resolves order / return / discard DTOs for email enrichment and other callers.
+   * Single place for request-feature HTTP used from the notifications feature.
+   */
+  loadEntityDtoForEmail(
+    entityType: string,
+    entityId: number
+  ): Observable<OrderDto | ReturnDto | DiscardDto | null> {
+    const t = entityType.toLowerCase();
+    switch (t) {
+      case 'order':
+        return this.orderService.getOrderById(entityId).pipe(catchError(() => of(null)));
+      case 'return':
+        return this.returnService.getReturnById(entityId).pipe(catchError(() => of(null)));
+      case 'discard':
+        return this.discardService.getDiscardById(entityId).pipe(catchError(() => of(null)));
+      default:
+        return of(null);
+    }
+  }
 
   /**
    * Load notification detail based on entity type
@@ -70,7 +92,7 @@ export class NotificationDetailService {
     return this.orderService.getOrderById(id).pipe(
       map(detail => ({
         type: 'order' as NotificationDetailType,
-        detail: detail as RequestDetail,
+        detail: detail as NotificationRequestDetail,
         error: null
       })),
       catchError(error => of({
@@ -88,7 +110,7 @@ export class NotificationDetailService {
     return this.returnService.getReturnById(id).pipe(
       map(detail => ({
         type: 'return' as NotificationDetailType,
-        detail: detail as RequestDetail,
+        detail: detail as NotificationRequestDetail,
         error: null
       })),
       catchError(error => of({
@@ -106,7 +128,7 @@ export class NotificationDetailService {
     return this.discardService.getDiscardById(id).pipe(
       map(detail => ({
         type: 'discard' as NotificationDetailType,
-        detail: detail as RequestDetail,
+        detail: detail as NotificationRequestDetail,
         error: null
       })),
       catchError(error => of({
@@ -124,21 +146,21 @@ export class NotificationDetailService {
     return this.orderService.getOrderById(id).pipe(
       map(detail => ({
         type: determineDetailType(detail),
-        detail: detail as RequestDetail,
+        detail: detail as NotificationRequestDetail,
         error: null
       })),
       catchError(() => {
         return this.returnService.getReturnById(id).pipe(
           map(detail => ({
             type: determineDetailType(detail),
-            detail: detail as RequestDetail,
+            detail: detail as NotificationRequestDetail,
             error: null
           })),
           catchError(() => {
             return this.discardService.getDiscardById(id).pipe(
               map(detail => ({
                 type: determineDetailType(detail),
-                detail: detail as RequestDetail,
+                detail: detail as NotificationRequestDetail,
                 error: null
               })),
               catchError(error => of({

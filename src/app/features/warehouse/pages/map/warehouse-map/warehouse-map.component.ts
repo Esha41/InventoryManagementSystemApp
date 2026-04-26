@@ -7,7 +7,7 @@ import { LucideAngularModule, ArrowLeft, ArrowRight, Trash2 } from 'lucide-angul
 import { LookupService } from '@services/lookup.service';
 import { LookupItem } from '@models/lookup.model';
 import { WarehouseLocationDto } from '@models/warehouse.model';
-import { OfflineMapService } from '@services/offline-map.service';
+import { OfflineMapService } from '@warehouse/services/offline-map.service';
 import * as L from 'leaflet';
 import { LoadingStateComponent } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';

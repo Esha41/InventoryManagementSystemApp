@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, X } from 'lucide-angular';
 import { ButtonComponent } from '@components/button/button.component';
@@ -70,6 +70,13 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
     { label: 'assetList.editModal.linked', value: true }
   ];
 
+  /** AmmunitionType / WeaponCaliberCategory (Small=1, Medium=2, Large=3) */
+  readonly ammunitionTypeClassOptions: { label: string; value: string }[] = [
+    { label: 'newIssueRequest.ammunitionTypeSmall', value: '1' },
+    { label: 'newIssueRequest.ammunitionTypeMedium', value: '2' },
+    { label: 'newIssueRequest.ammunitionTypeLarge', value: '3' }
+  ];
+
   readonly lookupOptionLabel = (option: DropdownOption<LookupItem> | LookupItem) =>
     getLookupDisplayName(unwrapDropdownOption(option), this.translateService);
 
@@ -81,9 +88,29 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     this.editForm = createAssetEditForm(this.fb);
+    this.updateCaliberCategoryValidators();
+  }
+
+  /** Ammunition: ammunitionType required. Weapon: caliberCategory required. Explosive: neither. */
+  private updateCaliberCategoryValidators(): void {
+    const at = this.editForm?.get('ammunitionType');
+    const cc = this.editForm?.get('caliberCategory');
+    if (!at || !cc) return;
+    at.clearValidators();
+    cc.clearValidators();
+    if (this.activeTab === 'ammunition') {
+      at.setValidators([Validators.required]);
+    } else if (this.activeTab === 'weapon') {
+      cc.setValidators([Validators.required]);
+    }
+    at.updateValueAndValidity({ emitEvent: false });
+    cc.updateValueAndValidity({ emitEvent: false });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['activeTab'] && this.editForm) {
+      this.updateCaliberCategoryValidators();
+    }
     if (changes['selectedAsset'] && this.selectedAsset && this.editForm) {
       // Use originalData when available (Asset from table) for correct IDs and entity-specific fields
       const source = ('originalData' in this.selectedAsset && this.selectedAsset.originalData)
@@ -101,6 +128,22 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
               : [];
         this.editForm.patchValue({ primaryPurposIds: ids });
       }
+      if (this.activeTab === 'ammunition' && source) {
+        const at = (source as AmmunitionReadDto).ammunitionType;
+        this.editForm.patchValue({
+          ammunitionType: at != null ? String(at) : '',
+          caliberCategory: '1'
+        });
+      } else if (this.activeTab === 'weapon' && source) {
+        const cc = (source as WeaponDto).caliberCategory;
+        this.editForm.patchValue({
+          caliberCategory: cc != null ? String(cc) : '1',
+          ammunitionType: ''
+        });
+      } else {
+        this.editForm.patchValue({ ammunitionType: '', caliberCategory: '1' });
+      }
+      this.updateCaliberCategoryValidators();
       this.cdr.markForCheck();
     }
     if (changes['imageState'] && this.imageState) {
@@ -125,7 +168,11 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
   }
 
   save(): void {
-    if (this.editForm.invalid) return;
+    this.editForm.markAllAsTouched();
+    if (this.editForm.invalid) {
+      this.cdr.markForCheck();
+      return;
+    }
 
     const formData = { ...this.editForm.value };
 
@@ -138,9 +185,23 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
       if (!primaryPurposIds?.length) {
         delete raw['primaryPurposIds'];
       }
+      delete raw['caliberCategory'];
+      const at = raw['ammunitionType'];
+      if (typeof at === 'string' && at !== '') {
+        raw['ammunitionType'] = parseInt(at, 10);
+      } else if (typeof at !== 'number') {
+        delete raw['ammunitionType'];
+      }
       dto = raw as unknown as AmmunitionCreateDto;
     } else if (this.activeTab === 'weapon') {
       const raw = formData as Record<string, unknown>;
+      delete raw['ammunitionType'];
+      const cc = raw['caliberCategory'];
+      if (typeof cc === 'string' && cc !== '') {
+        raw['caliberCategory'] = parseInt(cc, 10);
+      } else if (typeof cc !== 'number') {
+        delete raw['caliberCategory'];
+      }
       delete raw['primaryPurposId'];
       const primaryPurposIds = raw['primaryPurposIds'] as number[] | undefined;
       if (!primaryPurposIds?.length) {
@@ -149,6 +210,8 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
       dto = raw as unknown as CreateUpdateWeaponDto;
     } else {
       const raw = formData as Record<string, unknown>;
+      delete raw['ammunitionType'];
+      delete raw['caliberCategory'];
       delete raw['primaryPurposId'];
       const primaryPurposIds = raw['primaryPurposIds'] as number[] | undefined;
       if (!primaryPurposIds?.length) {

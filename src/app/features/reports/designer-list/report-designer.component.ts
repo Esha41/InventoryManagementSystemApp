@@ -8,8 +8,9 @@ import { TranslationService } from '@services/translation.service';
 import { ButtonComponent } from '@components/button/button.component';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
+import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
-import { ReportService, Report, ReportTemplate, ReportStatus } from '@services/report.service';
+import { ReportService, Report, ReportTemplate, ReportStatus } from '@reports/services/report.service';
 import { ToastService } from '@services/toast.service';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -109,7 +110,7 @@ export class ReportDesignerComponent implements OnInit {
 
   checkPermissions(): void {
     // Check permissions using BackendAuthService - ReportDesigner is a plain permission
-    const hasReportDesignerPermission = this.authService.hasPermission('ReportDesigner');
+    const hasReportDesignerPermission = this.authService.hasPermission(PERMISSIONS.REPORTS.DESIGNER);
     this.canCreateReport = hasReportDesignerPermission;
     this.canEditReport = hasReportDesignerPermission;
     this.canDeleteReport = hasReportDesignerPermission;
@@ -159,7 +160,7 @@ export class ReportDesignerComponent implements OnInit {
 
   onCreateReport(): void {
     this.prefetchDesignerChunk();
-    this.router.navigate(['/report-designer/designer'], {
+    this.router.navigate(['/reports/report-designer/designer'], {
       queryParams: {
         reportUrl: 'BaseReportTemplate',
         mode: 'create'
@@ -169,7 +170,7 @@ export class ReportDesignerComponent implements OnInit {
 
   openTemplateInDesigner(template: ReportTemplate): void {
     this.prefetchDesignerChunk();
-    this.router.navigate(['/report-designer/designer'], {
+    this.router.navigate(['/reports/report-designer/designer'], {
       queryParams: {
         reportUrl: template.url,
         mode: 'create'
@@ -281,7 +282,7 @@ export class ReportDesignerComponent implements OnInit {
 
   onEdit(report: Report): void {
     // Navigate to DevExpress Report Designer with the report URL
-    this.router.navigate(['/report-designer/designer'], {
+    this.router.navigate(['/reports/report-designer/designer'], {
       queryParams: { reportUrl: report.url }
     });
 

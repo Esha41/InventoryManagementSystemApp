@@ -11,7 +11,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
-import { SupplyService, WorkflowSupplySummaryDto } from '@services/supply.service';
+import { SupplyService, WorkflowSupplySummaryDto } from '@requests/services/supply.service';
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 import { ErrorHandler } from '@utils/error-handler.utils';
 

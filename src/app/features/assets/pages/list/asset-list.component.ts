@@ -1,9 +1,10 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, Optional, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { OnboardingTourService } from '@features/onboarding/services/onboarding-tour.service';
+import { ONBOARDING_TOUR } from '@core/tokens/onboarding-tour.token';
+import { IOnboardingTourProvider } from '@core/interfaces/onboarding-tour-provider.interface';
 import { Subject, combineLatest } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
@@ -24,10 +25,10 @@ import { AssetModalService } from './services/asset-modal.service';
 import { TranslationService } from '@services/translation.service';
 import { ImportDialogComponent } from '@components/import-dialog/import-dialog.component';
 import { ImportPreviewDialogComponent, PreviewData } from '@components/import-preview-dialog/import-preview-dialog.component';
-import { AmmunitionService } from '@services/ammunition.service';
-import { WeaponService } from '@services/weapon.service';
-import { ExplosiveService } from '@services/explosive.service';
-import { ImportExportService } from '@services/import-export.service';
+import { AmmunitionService } from '@assets/services/ammunition.service';
+import { WeaponService } from '@assets/services/weapon.service';
+import { ExplosiveService } from '@assets/services/explosive.service';
+import { ImportExportService } from '@admin/services/import-export.service';
 import { ToastService } from '@services/toast.service';
 import { IImportableService } from '@core/interfaces/importable-service.interface';
 import { APIOperationResponse } from '@models/api-response.model';
@@ -84,7 +85,7 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
     private readonly toastService: ToastService,
     private readonly propertyAccessor: AssetPropertyAccessor,
     private readonly cdr: ChangeDetectorRef,
-    private readonly onboardingTourService: OnboardingTourService
+    @Optional() @Inject(ONBOARDING_TOUR) private readonly onboardingTourService: IOnboardingTourProvider | null
   ) {}
 
   get isRTL(): boolean {
@@ -134,7 +135,7 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => this.onboardingTourService.checkAndStartPageTour('asset-list'), 300);
+    setTimeout(() => this.onboardingTourService?.checkAndStartPageTour('asset-list'), 300);
   }
 
   ngOnInit(): void {
@@ -211,7 +212,7 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.facade.paginationState.currentPage > 1) {
       queryParams['page'] = this.facade.paginationState.currentPage;
     }
-    this.router.navigate(['/add-asset'], { queryParams });
+    this.router.navigate(['/assets/add-asset'], { queryParams });
   }
 
   onView(assetId: string): void {
@@ -233,7 +234,7 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
       queryParams['includeDeleted'] = 'true';
       queryParams['weaponsView'] = 'deleted';
     }
-    this.router.navigate(['/asset-list', numericId], { queryParams });
+    this.router.navigate(['/assets/asset-list', numericId], { queryParams });
   }
 
   onEdit(assetId: string): void {

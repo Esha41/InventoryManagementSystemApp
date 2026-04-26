@@ -6,7 +6,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { UnifiedRequestService, BaseRequestDto } from '@services/unified-request.service';
+import { UnifiedRequestService, BaseRequestDto } from '@requests/services/unified-request.service';
 import { PaginatedList, PagedRequest, FilterData } from '@models/api-response.model';
 import { Request } from '../models/requests-management.model';
 import { mapBaseRequestToRequest } from '../utils/request-mapper.utils';

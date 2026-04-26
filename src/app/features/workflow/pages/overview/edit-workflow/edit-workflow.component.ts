@@ -1,4 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -7,7 +9,7 @@ import { Subject, takeUntil, Observable, forkJoin, throwError, of } from 'rxjs';
 import { map, catchError, switchMap, tap } from 'rxjs/operators';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { LucideAngularModule, Save, X, ArrowLeft, ArrowRight, GripVertical } from 'lucide-angular';
-import { WorkflowService } from '@services/workflow.service';
+import { WorkflowService } from '@workflow/services/workflow.service';
 import { BackendUserService } from '@services/backend-user.service';
 import { RoleDto, BackendUserDto, ApplicationEntityDto } from '@models/backend-user.model';
 import { PaginatedList } from '@models/api-response.model';
@@ -51,6 +53,8 @@ interface EditStepForm {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EditWorkflowComponent implements OnInit, OnDestroy {
+  readonly PERMISSIONS = PERMISSIONS;
+
   readonly Save = Save;
   readonly X = X;
   readonly ArrowLeft = ArrowLeft;

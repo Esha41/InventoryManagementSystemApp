@@ -4,7 +4,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, ChevronDown, ChevronUp, CheckCircle, Clock, AlertTriangle } from 'lucide-angular';
 import { WorkflowApprovalStep } from '@models/workflow-approval.model';
 import { getApprovalStatusBadgeClass } from '@utils/status-class.utils';
-import { getApproverName as getApproverNameUtil } from '@utils/supply-order-format.utils';
+import { getApproverName as getApproverNameUtil } from '@requests/utils/supply-order-format.utils';
 import { TranslationService } from '@services/translation.service';
 import { getLocalizedValue as getLocalizedValueHelper } from '../../../management/workflow-approval-detail/utils/workflow-approval-helpers';
 

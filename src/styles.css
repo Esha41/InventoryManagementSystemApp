@@ -61,6 +61,53 @@
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
+
+  /**
+   * Leading search field (icon + input). Use with dir=rtl on document for RTL.
+   * Wrapper → optional __icon / __icon--lg → input (+ __input-ps / __input-ps-lg) → optional __actions (inset-inline-end).
+   */
+  .app-search-field {
+    @apply relative min-w-0;
+  }
+
+  .app-search-field__icon {
+    @apply pointer-events-none absolute top-1/2 z-[1] flex h-4 w-4 -translate-y-1/2 items-center justify-center text-[var(--color-text-muted)];
+    inset-inline-start: var(--app-search-icon-inset);
+  }
+
+  .app-search-field__icon.app-search-field__icon--lg {
+    @apply h-5 w-5;
+  }
+
+  .app-search-field__input-ps {
+    padding-inline-start: var(--app-search-input-padding-start);
+  }
+
+  .app-search-field__input-ps-lg {
+    padding-inline-start: var(--app-search-input-padding-start-lg);
+  }
+
+  .app-search-field__actions {
+    @apply absolute top-1/2 z-10 flex -translate-y-1/2 items-center gap-1;
+    inset-inline-end: 0.5rem;
+  }
+
+  .app-search-field__input-surface {
+    @apply relative z-0 w-full min-w-0 box-border rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] py-3 text-[0.9375rem] text-[var(--color-text)] shadow-sm outline-none overflow-hidden text-ellipsis transition-[border-color,box-shadow] placeholder:text-[var(--color-text-muted)];
+  }
+
+  .app-search-field__input-surface:focus {
+    @apply border-[var(--color-brand)];
+    box-shadow: 0 0 0 3px var(--color-brand-alpha, rgba(200, 168, 127, 0.2));
+  }
+
+  .app-search-field__input-surface-sm {
+    @apply relative z-0 w-full min-w-0 box-border rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] py-2.5 text-sm text-[var(--color-text)] outline-none overflow-hidden text-ellipsis transition-all placeholder:text-[var(--color-text-muted)];
+  }
+
+  .app-search-field__input-surface-sm:focus {
+    @apply border-[var(--color-brand)] ring-2 ring-[var(--color-brand)];
+  }
 }
 
 /* Lock body scroll when mobile sidebar is open */
@@ -191,6 +238,12 @@ body:has(main.overflow-y-auto) {
     --app-scrollbar-thumb-hover: var(--color-brand);
     --app-scrollbar-thumb-active: var(--color-brand-dark);
     --app-scrollbar-track-edge: color-mix(in srgb, var(--color-border) 45%, transparent);
+
+    /* Leading search icon + text (logical inset / padding; RTL follows dir=) */
+    --app-search-icon-inset: 0.75rem;
+    --app-search-input-padding-start: 2.625rem;
+    /* h-4 w-4 icon; for h-5 w-5 use --lg */
+    --app-search-input-padding-start-lg: 2.875rem;
   }
 
   /* Dark Theme Variables */
@@ -680,6 +733,80 @@ tr.action-required-highlight {
 
 .dark-mode-logo {
   @apply logo-filter-brand;
+}
+
+/* Detail / inventory pages: high-contrast back controls (icon + optional label) */
+.detail-header-back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--color-text);
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.detail-header-back-btn:hover:not(:disabled) {
+  background-color: var(--color-background-hover);
+  border-color: var(--color-brand);
+  color: var(--color-text);
+  box-shadow: var(--shadow-md);
+}
+
+.detail-header-back-btn:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+.detail-header-back-btn:active:not(:disabled) {
+  box-shadow: var(--shadow-sm);
+}
+
+.detail-header-back-btn--icon-only {
+  min-width: 2.75rem;
+  padding: 0.5rem;
+}
+
+.detail-header-back-btn lucide-angular {
+  flex-shrink: 0;
+}
+
+.detail-back-text-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0.75rem 2rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text);
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.detail-back-text-btn:hover:not(:disabled) {
+  background-color: var(--color-background-hover);
+  border-color: var(--color-brand);
+  box-shadow: var(--shadow-md);
+}
+
+.detail-back-text-btn:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
 }
 
 /* ============================================

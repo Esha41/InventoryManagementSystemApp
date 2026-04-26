@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { ConfirmationType } from '@shared/components/confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationType } from '@components/confirmation-dialog/confirmation-dialog.component';
 
 export interface ConfirmationDialogState {
   isOpen: boolean;

@@ -15,7 +15,7 @@ import {
   getOrderAllowanceKey,
   formatOrderUsageDateFrom,
   formatOrderUsageDateTo
-} from '@utils/dashboard-order.utils';
+} from '@dashboard/utils/dashboard-order.utils';
 
 @Component({
   selector: 'app-order-details-modal',
@@ -65,7 +65,7 @@ export class OrderDetailsModalComponent implements OnInit, OnDestroy {
   }
 
   navigateToApproval(orderRequestId: number): void {
-    this.router.navigate(['/requests-management', orderRequestId, 'workflow-approval']);
+    this.router.navigate(['/requests/requests-management', orderRequestId, 'workflow-approval']);
   }
 
   // Formatting methods - delegated to utility functions

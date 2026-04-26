@@ -16,10 +16,8 @@
 
         <div class="space-y-4">
           <div class="flex flex-wrap items-end gap-2">
-            <div class="relative flex-1 min-w-[12rem]">
-              <div class="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none">
-                <lucide-angular [img]="Search" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
-              </div>
+              <div class="app-search-field flex-1 min-w-[12rem]">
+              <lucide-angular [img]="Search" class="app-search-field__icon app-search-field__icon--lg"></lucide-angular>
               <input
                 id="wam-search"
                 type="text"
@@ -30,7 +28,7 @@
                 [placeholder]="'weaponAssetMaster.filters.searchPlaceholder' | translate"
                 [attr.aria-label]="'weaponAssetMaster.filters.searchLabel' | translate"
                 autocomplete="off"
-                class="w-full ps-10 pe-28 py-2.5 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all"
+                class="app-search-field__input-ps-lg w-full pe-28 py-2.5 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all"
               />
               <div class="absolute inset-y-0 end-0 pe-2 flex items-center gap-1">
                 <button
@@ -310,8 +308,8 @@
                 <td class="px-3 py-3 align-top max-w-[14rem]">
                   <a
                     *ngIf="asset.itemId"
-                    [routerLink]="['/asset-list', asset.itemId]"
-                    [queryParams]="{ tab: 'weapon', returnTo: '/weapon-asset-master' }"
+                    [routerLink]="['/assets/asset-list', asset.itemId]"
+                    [queryParams]="{ tab: 'weapon', returnTo: '/assets/weapon-asset-master' }"
                     class="font-medium text-[var(--color-brand)] hover:underline truncate block"
                     [title]="itemName(asset)"
                     (click)="$event.stopPropagation()"
@@ -602,8 +600,8 @@
       <div class="bg-[var(--color-background)] px-6 py-4 border-t border-[var(--color-border)] flex items-stretch gap-2 w-full">
         <a
           *ngIf="viewModalAsset.itemId"
-          [routerLink]="['/asset-list', viewModalAsset.itemId]"
-          [queryParams]="{ tab: 'weapon', returnTo: '/weapon-asset-master' }"
+          [routerLink]="['/assets/asset-list', viewModalAsset.itemId]"
+          [queryParams]="{ tab: 'weapon', returnTo: '/assets/weapon-asset-master' }"
           class="flex-1 min-w-0 inline-flex items-center justify-center px-4 py-2 rounded-lg border border-[var(--color-border)] text-sm font-medium text-[var(--color-brand)] hover:bg-[var(--color-background-hover)] transition-colors text-center"
         >
           {{ 'weaponAssetMaster.viewModal.openCatalog' | translate }}

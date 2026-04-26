@@ -1,0 +1,16 @@
+/* Admin inventory summary (import/export tab) */
+
+.inventory-tabs-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.inventory-tabs-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.inventory-tabs-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}

@@ -1,4 +1,4 @@
-import { Cartridge } from './components/cartridge-list/cartridge-list.component';
+import { Cartridge } from '@models/cartridge.model';
 import { BackendUserDto } from '@models/backend-user.model';
 import { DropdownOption } from '@components/dropdown/dropdown.component';
 

@@ -1,13 +1,13 @@
 import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { UserDelegationService } from '../../../../../core/services/user-delegation.service';
-import { UserDelegation } from '../../../../../core/models/user-delegation';
+import { UserDelegationService } from '@admin/services/user-delegation.service';
+import { UserDelegation } from '@models/user-delegation';
 import { LucideAngularModule, Users, Calendar, User, AlertCircle, Filter, RefreshCw, ArrowRight, Ban, Network } from 'lucide-angular';
 import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 import { finalize } from 'rxjs/operators';
 import { ToastService } from '@services/toast.service';
-import { ConfirmationDialogComponent } from '@shared/components/confirmation-dialog/confirmation-dialog.component';
+import { ConfirmationDialogComponent } from '@components/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
     selector: 'app-admin-delegations',

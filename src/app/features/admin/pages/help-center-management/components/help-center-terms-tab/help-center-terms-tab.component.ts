@@ -21,7 +21,7 @@ import {
 } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
 
-import { HelpCenterService } from '@services/help-center.service';
+import { HelpCenterService } from '@help-center/services/help-center.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { BackendAuthService } from '@services/backend-auth.service';
@@ -34,6 +34,7 @@ import { PaginationComponent } from '@components/pagination/pagination.component
 import { CardComponent } from '@components/card/card.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { APP_CONSTANTS, defaultPageSize } from '@constants/app.constants';
+import { PERMISSIONS } from '@constants/permissions.constants';
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 import { adminBadgePositive, adminTotalPages } from '../../help-center-admin.utils';
 import { HELP_CENTER_TERMS_QUILL_MODULES } from '../../help-center-terms-quill.config';
@@ -131,13 +132,13 @@ export class HelpCenterTermsTabComponent implements OnInit, OnDestroy {
   }
 
   canCreate(): boolean {
-    return this.auth.hasPermission('helpcenter.create');
+    return this.auth.hasPermission(PERMISSIONS.ADMIN.HELP_CENTER.CREATE);
   }
   canEdit(): boolean {
-    return this.auth.hasPermission('helpcenter.edit');
+    return this.auth.hasPermission(PERMISSIONS.ADMIN.HELP_CENTER.EDIT);
   }
   canDelete(): boolean {
-    return this.auth.hasPermission('helpcenter.delete');
+    return this.auth.hasPermission(PERMISSIONS.ADMIN.HELP_CENTER.DELETE);
   }
 
   loadTermsVersions(): void {

@@ -4,23 +4,22 @@ import { FormsModule } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, ChevronDown, Inbox, Eye } from 'lucide-angular';
+import { PaginationComponent, RowsPerPageComponent } from '@components/index';
 import {
-  PaginationComponent,
-  RowsPerPageComponent,
   RequestFilterBarComponent,
   StatusFilter,
   PriorityFilter
-} from '@components/index';
+} from '@requests/components/request-filter-bar/request-filter-bar.component';
 import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 import { RequestsManagementService } from './services/requests-management.service';
 import { getRequestStatusClass } from './utils/ui-helpers.utils';
 import { Request } from './models/requests-management.model';
 import { Subject, takeUntil } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { RequestStatusUpdateService } from '@services/request-status-update.service';
+import { RequestStatusUpdateService } from '@requests/services/request-status-update.service';
 import { defaultPageSize } from '@constants/app.constants';
-import { AutoRejectCountdownService, OrderAutoRejectCountdownDto } from '@shared/services/auto-reject-countdown.service';
-import { AutoRejectCountdownComponent } from '@shared/components/auto-reject-countdown/auto-reject-countdown.component';
+import { AutoRejectCountdownService, OrderAutoRejectCountdownDto } from '@requests/services/auto-reject-countdown.service';
+import { AutoRejectCountdownComponent } from '@requests/components/auto-reject-countdown/auto-reject-countdown.component';
 
 
 @Component({
@@ -249,7 +248,7 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
   }
 
   openOrderDetails(order: Request): void {
-    this.router.navigate(['/requests-management', order.id, 'workflow-approval']);
+    this.router.navigate(['/requests/requests-management', order.id, 'workflow-approval']);
   }
 
   private loadAutoRejectCountdowns(): void {

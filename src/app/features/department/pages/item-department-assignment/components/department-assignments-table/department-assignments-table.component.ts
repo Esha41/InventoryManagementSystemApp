@@ -1,4 +1,6 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -16,6 +18,8 @@ import { getItemTypeName, getAssetDetailsTab } from '@utils/item-type.utils';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DepartmentAssignmentsTableComponent {
+  readonly PERMISSIONS = PERMISSIONS;
+
   readonly Plus = Plus;
   readonly Trash2 = Trash2;
 
@@ -44,11 +48,11 @@ export class DepartmentAssignmentsTableComponent {
 
   navigateToAssetDetails(assignment: ItemDepartmentAssignmentDto): void {
     const tab = getAssetDetailsTab(assignment.itemType);
-    const queryParams: { tab?: string; returnTo: string } = { returnTo: '/item-department-assignment' };
+    const queryParams: { tab?: string; returnTo: string } = { returnTo: '/department/item-department-assignment' };
     if (tab) {
       queryParams.tab = tab;
     }
-    this.router.navigate(['/asset-list', assignment.itemId], { queryParams });
+    this.router.navigate(['/assets/asset-list', assignment.itemId], { queryParams });
   }
 
   onDelete(assignment: ItemDepartmentAssignmentDto): void {

@@ -1,9 +1,9 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ModalComponent } from '@shared/components/modal/modal.component';
-import { ButtonComponent } from '@shared/components/button/button.component';
+import { ModalComponent } from '@components/modal/modal.component';
+import { ButtonComponent } from '@components/button/button.component';
 import { LucideAngularModule, FileText, Check } from 'lucide-angular';
-import { ReportService, ReportTemplate } from '@services/report.service';
+import { ReportService, ReportTemplate } from '@reports/services/report.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';

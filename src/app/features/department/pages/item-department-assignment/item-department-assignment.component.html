@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
       <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'itemDepartmentAssignment.title' | translate }}</h1>
-      <button *appHasPermission="'Permissions.ItemDepartmentAssignment.Create'" (click)="openAddModal()"
+      <button *appHasPermission="PERMISSIONS.DEPARTMENT.ITEM_DEPARTMENT_ASSIGNMENT.CREATE" (click)="openAddModal()"
         class="flex items-center gap-2 px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors w-full sm:w-auto justify-center">
         <lucide-icon [img]="Plus" [size]="20"></lucide-icon>
         {{ 'itemDepartmentAssignment.addAssignment' | translate }}

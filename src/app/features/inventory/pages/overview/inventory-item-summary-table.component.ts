@@ -23,7 +23,7 @@ import {
 import { ItemInventorySummaryDto, ItemType } from '@models/inventory.model';
 import { ActiveTab } from './inventory-dashboard.helpers';
 import { AssetDto } from '@models/asset.model';
-import { LotDetailDto } from '@services/inventory.service';
+import { LotDetailDto } from '@inventory/services/inventory.service';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
@@ -70,7 +70,6 @@ export class InventoryItemSummaryTableComponent implements OnInit, OnDestroy {
   @Input() itemSortDirection: 'asc' | 'desc' = 'asc';
   @Input() expandedItemId: number | null = null;
 
-  // ── Lot detail (ammunition / explosives) ──────────────────────────────────
   @Input() lotDetails: LotDetailDto[] = [];
   @Input() isLotsLoading = false;
   @Input() lotSortColumn: string | null = null;
@@ -80,7 +79,6 @@ export class InventoryItemSummaryTableComponent implements OnInit, OnDestroy {
   @Input() lotCurrentPage = 1;
   @Input() lotRowsPerPage = 10;
 
-  // ── Asset detail (weapons) ────────────────────────────────────────────────
   @Input() assetDetails: AssetDto[] = [];
   @Input() isAssetsLoading = false;
   @Input() assetSortColumn: string | null = null;
@@ -98,7 +96,6 @@ export class InventoryItemSummaryTableComponent implements OnInit, OnDestroy {
   @Input() sumReservedQtyFiltered = 0;
   @Input() sumRemainingQtyFiltered = 0;
   @Input() sumLotsFiltered = 0;
-  /** Drives weapon vs ammunition/explosive column layout (matches warehouse inventory summary). */
   @Input() activeTab: ActiveTab = 'all';
 
   @Output() readonly itemSort = new EventEmitter<string>();
@@ -159,17 +156,14 @@ export class InventoryItemSummaryTableComponent implements OnInit, OnDestroy {
     return item.itemType === ItemType.Weapon;
   }
 
-  /** Lot-style quantity columns apply to ammunition / explosives only (not the Weapons tab). */
   get showLotQuantityColumns(): boolean {
     return this.activeTab !== 'weapon';
   }
 
-  /** Main grid column count for expanded panel colspan. */
   get mainTableColumnCount(): number {
     return this.showLotQuantityColumns ? 9 : 5;
   }
 
-  /** In "All" tab, weapon rows still hide per-row lot metrics like warehouse. */
   showLotMetricForRow(item: ItemInventorySummaryDto): boolean {
     return this.showLotQuantityColumns && !this.isWeaponItem(item);
   }

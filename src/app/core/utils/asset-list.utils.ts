@@ -1,7 +1,7 @@
 import { Asset, AssetFilterState, AssetSortState } from '../models/asset-list.model';
 import { AmmunitionReadDto, LookupDto } from '../models/ammunition.model';
 import { LookupItem } from '../models/lookup.model';
-import { DropdownOption } from '../../shared/components/dropdown/dropdown.component';
+import { DropdownOption } from '@components/dropdown/dropdown.component';
 import { getLocalizedName, getCurrentLang } from './localization.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { unwrapDropdownOption } from './dropdown.utils';

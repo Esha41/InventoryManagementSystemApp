@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { LucideAngularModule, Plus, Pencil, Trash2, Megaphone, Calendar, AlertCircle } from 'lucide-angular';
-import { AnnouncementService } from '@services/announcement.service';
+import { AnnouncementService } from '@admin/services/announcement.service';
 import { BackendUserService } from '@services/backend-user.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';

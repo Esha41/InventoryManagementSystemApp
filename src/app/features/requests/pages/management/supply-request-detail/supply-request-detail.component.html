@@ -134,7 +134,7 @@
           <div *ngIf="isOrderItemsExpanded" class="px-6 pb-6">
             <!-- Add Item Button -->
             <div class="mb-4 flex justify-end">
-              <button *appHasPermission="'Order.Create'" (click)="openAddItemModal()"
+              <button *appHasPermission="PERMISSIONS.REQUESTS.ORDER.CREATE_CLAIM" (click)="openAddItemModal()"
                 class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] transition-colors">
                 <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
                 {{ 'supplyRequestDetail.addItem' | translate }}
@@ -159,13 +159,13 @@
                     <td class="px-4 py-2 text-[var(--color-text)]">{{ formatNumber(item.approvedQuantity) }}</td>
                     <td class="px-4 py-2">
                       <ng-container *ngIf="canIncreaseQuantity || canDecreaseQuantity">
-                      <button *appHasPermission="'Order.Edit'" type="button"
+                      <button *appHasPermission="PERMISSIONS.REQUESTS.ORDER.EDIT" type="button"
                         (click)="openEditItemModal(item); $event.stopPropagation()"
                         class="text-sm text-[var(--color-info)] hover:opacity-80 me-3">
                         {{ 'common.edit' | translate }}
                       </button>
                     </ng-container>
-                      <button *appHasPermission="'Order.Delete'" type="button"
+                      <button *appHasPermission="PERMISSIONS.REQUESTS.ORDER.DELETE" type="button"
                         (click)="openRemoveItemModal(item); $event.stopPropagation()"
                         class="text-sm text-[var(--color-error)] hover:opacity-80">
                         {{ 'common.remove' | translate }}

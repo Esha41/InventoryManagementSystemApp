@@ -16,8 +16,8 @@ import { Subject, takeUntil, forkJoin, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Save, Loader2, Trash2 } from 'lucide-angular';
-import { BatchService } from '@services/batch.service';
-import { EmployeeService } from '@services/employee.service';
+import { BatchService } from '@warehouse/services/batch.service';
+import { EmployeeService } from '@admin/services/employee.service';
 import { LookupService, LookupItem } from '@services/lookup.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
@@ -27,12 +27,13 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
-import { EmployeeFormModalComponent } from '@components/employee-form-modal/employee-form-modal.component';
+import { EmployeeFormModalComponent } from '@admin/components/employee-form-modal/employee-form-modal.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { trackByIndex } from '@utils/trackby.utils';
 import { formatDateForInput } from '@utils/format.utils';
 import { FileUploadService } from '@services/file-upload.service';
+import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 
 export type BatchEditAssignMode = 'none' | 'department' | 'employee';
@@ -57,7 +58,7 @@ export type BatchEditAssignMode = 'none' | 'department' | 'employee';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
-  private static readonly EMPLOYEE_CREATE_PERMISSION = 'Permissions.Employee.Create';
+  private static readonly EMPLOYEE_CREATE_PERMISSION = PERMISSIONS.ADMIN.LOOKUP.EMPLOYEE.CREATE;
   @Input({ required: true }) batchId!: number;
   @Input({ required: true }) warehouseId!: number;
   /** When false, hide bottom save/cancel row (e.g. modal supplies footer actions). */

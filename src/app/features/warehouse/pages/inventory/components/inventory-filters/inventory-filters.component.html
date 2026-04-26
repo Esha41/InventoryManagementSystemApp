@@ -13,12 +13,10 @@
           <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
             {{ 'warehouseInventory.filtersSearch' | translate }}
           </label>
-          <div class="relative">
-            <div class="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none">
-              <lucide-angular [img]="Search" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
-            </div>
+          <div class="app-search-field">
+            <lucide-angular [img]="Search" class="app-search-field__icon app-search-field__icon--lg"></lucide-angular>
             <input type="text"
-              class="w-full ps-10 pe-24 py-2.5 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] focus:bg-[var(--color-background)] outline-none transition-all"
+              class="app-search-field__input-ps-lg w-full pe-24 py-2.5 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] focus:bg-[var(--color-background)] outline-none transition-all"
               [placeholder]="searchPlaceholderKey | translate" [formControl]="searchControl"
               (keydown.enter)="onSearchClick()" />
             <div class="absolute inset-y-0 end-0 pe-2 flex items-center gap-1">

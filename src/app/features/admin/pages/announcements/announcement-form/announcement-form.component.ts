@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
-import { AnnouncementService } from '@services/announcement.service';
+import { AnnouncementService } from '@admin/services/announcement.service';
 import { BackendUserService } from '@services/backend-user.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';

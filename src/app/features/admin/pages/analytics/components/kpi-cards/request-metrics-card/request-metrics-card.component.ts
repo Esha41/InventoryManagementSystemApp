@@ -2,7 +2,7 @@ import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, FileText } from 'lucide-angular';
-import { RequestMetrics } from '@services/admin-analytics.service';
+import { RequestMetrics } from '@admin/services/admin-analytics.service';
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 
 /**

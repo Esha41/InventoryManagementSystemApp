@@ -6,7 +6,7 @@ import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, Save, Loader2 } from 'lucide-angular';
 
-import { AssetService } from '@services/asset.service';
+import { AssetService } from '@assets/services/asset.service';
 import { ToastService } from '@services/toast.service';
 import { AssetDto, UpdateAssetDto } from '@models/asset.model';
 import { LookupService } from '@services/lookup.service';

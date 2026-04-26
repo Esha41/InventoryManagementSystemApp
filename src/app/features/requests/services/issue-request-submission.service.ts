@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
-import { OrderSubmissionService, OrderSubmissionData } from '@services/order-submission.service';
+import { OrderSubmissionService, OrderSubmissionData } from '@requests/services/order-submission.service';
 import {
   CartridgeState,
   UsageFormData,
@@ -10,7 +10,7 @@ import {
   RequestPurposeState,
   OrderSubmissionState
 } from '@requests/pages/new-issue/new-issue-request.state';
-import { getDepartmentIdForRequest as getDepartmentIdForRequestUtil } from '@utils/issue-request.utils';
+import { getDepartmentIdForRequest as getDepartmentIdForRequestUtil } from '@requests/utils/issue-request.utils';
 
 export interface SubmissionDialogConfig {
   title: string;

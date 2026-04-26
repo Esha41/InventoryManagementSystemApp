@@ -6,7 +6,7 @@ import { Subject, merge, takeUntil } from 'rxjs';
 import { startWith } from 'rxjs/operators';
 import { LucideAngularModule, X, Search, User } from 'lucide-angular';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
-import { UserDepotService } from '@services/user-depot.service';
+import { UserDepotService } from '@admin/services/user-depot.service';
 import { BackendUserService } from '@services/backend-user.service';
 import { ToastService } from '@services/toast.service';
 import { BackendUserDto } from '@models/backend-user.model';

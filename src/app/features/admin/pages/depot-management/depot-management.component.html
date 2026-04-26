@@ -79,17 +79,17 @@
         </div>
 
         <div class="flex justify-end gap-2 mt-2 pt-2 border-t border-[var(--color-border-muted)]">
-          <button *appHasPermission="'Depots.Edit'" (click)="openAssignUsersModal(depot)"
+          <button *appHasPermission="PERMISSIONS.ADMIN.DEPOTS.EDIT" (click)="openAssignUsersModal(depot)"
             class="p-2 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 rounded-lg transition-colors"
             [title]="'depot.assignUsers' | translate">
             <lucide-icon [img]="Users" [size]="18"></lucide-icon>
           </button>
-          <button *appHasPermission="'Depots.Edit'" (click)="openEditModal(depot)"
+          <button *appHasPermission="PERMISSIONS.ADMIN.DEPOTS.EDIT" (click)="openEditModal(depot)"
             class="p-2 text-[var(--color-info)] hover:bg-[var(--color-info)]/10 rounded-lg transition-colors"
             [title]="'depot.edit' | translate">
             <lucide-icon [img]="Edit" [size]="18"></lucide-icon>
           </button>
-          <button *appHasPermission="'Depots.Delete'" (click)="deleteDepot(depot)"
+          <button *appHasPermission="PERMISSIONS.ADMIN.DEPOTS.DELETE" (click)="deleteDepot(depot)"
             class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
             [title]="'depot.delete' | translate">
             <lucide-icon [img]="Trash2" [size]="18"></lucide-icon>
@@ -152,17 +152,17 @@
               }}</td>
             <td class="px-6 py-4 text-start">
               <div class="flex gap-2">
-                <button *appHasPermission="'Depots.Edit'" (click)="openAssignUsersModal(depot)"
+                <button *appHasPermission="PERMISSIONS.ADMIN.DEPOTS.EDIT" (click)="openAssignUsersModal(depot)"
                   class="p-2 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 rounded-lg transition-colors"
                   [title]="'depot.assignUsers' | translate">
                   <lucide-icon [img]="Users" [size]="18"></lucide-icon>
                 </button>
-                <button *appHasPermission="'Depots.Edit'" (click)="openEditModal(depot)"
+                <button *appHasPermission="PERMISSIONS.ADMIN.DEPOTS.EDIT" (click)="openEditModal(depot)"
                   class="p-2 text-[var(--color-info)] hover:bg-[var(--color-info)]/10 rounded-lg transition-colors"
                   [title]="'depot.edit' | translate">
                   <lucide-icon [img]="Edit" [size]="18"></lucide-icon>
                 </button>
-                <button *appHasPermission="'Depots.Delete'" (click)="deleteDepot(depot)"
+                <button *appHasPermission="PERMISSIONS.ADMIN.DEPOTS.DELETE" (click)="deleteDepot(depot)"
                   class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
                   [title]="'depot.delete' | translate">
                   <lucide-icon [img]="Trash2" [size]="18"></lucide-icon>

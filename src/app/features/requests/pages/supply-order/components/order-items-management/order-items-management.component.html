@@ -3,7 +3,7 @@
     <h2 class="text-lg font-semibold text-[var(--color-text)]">
       {{ 'supplyOrder.orderItemsManagement' | translate }}
     </h2>
-    <button *appHasPermission="'Order.Create'" (click)="onAddItemClick()"
+    <button *appHasPermission="PERMISSIONS.REQUESTS.ORDER.CREATE_CLAIM" (click)="onAddItemClick()"
       class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] transition-colors">
       <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
       {{ 'supplyOrder.addItem' | translate }}
@@ -28,13 +28,13 @@
           <td class="px-4 py-2 text-[var(--color-text)]">{{ formatNumber(item.quantity) }}</td>
           <td class="px-4 py-2">
             <ng-container *ngIf="canIncreaseQuantity || canDecreaseQuantity">
-              <button *appHasPermission="'Order.Edit'" type="button"
+              <button *appHasPermission="PERMISSIONS.REQUESTS.ORDER.EDIT" type="button"
                 (click)="onEditItemClick(item, $event)"
                 class="text-sm text-[var(--color-accent)] hover:text-[var(--color-accent)]/80 me-3">
                 {{ 'common.edit' | translate }}
               </button>
             </ng-container>
-            <button *appHasPermission="'Order.Delete'" type="button"
+            <button *appHasPermission="PERMISSIONS.REQUESTS.ORDER.DELETE" type="button"
               (click)="onRemoveItemClick(item, $event)"
               class="text-sm text-[var(--color-error)] hover:text-[var(--color-error)]/80">
               {{ 'common.remove' | translate }}

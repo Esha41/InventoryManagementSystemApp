@@ -4,7 +4,7 @@ import {
   CartridgeDataService,
   CartridgeLoadResult,
   CartridgePaginatedLoadResult
-} from '@services/cartridge-data.service';
+} from '@assets/services/cartridge-data.service';
 import { IssueCatalogPagedRequestBuilder } from './issue-catalog-paged-request.builder';
 import { FilterState } from '@requests/pages/new-issue/new-issue-request.state';
 

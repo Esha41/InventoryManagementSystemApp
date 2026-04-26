@@ -1,5 +1,6 @@
 import { inject } from '@angular/core';
 import { Router, CanActivateFn, ActivatedRouteSnapshot } from '@angular/router';
+import { map } from 'rxjs/operators';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { ConfigService } from '@services/config.service';
 
@@ -16,51 +17,56 @@ export const permissionGuard: CanActivateFn = (route: ActivatedRouteSnapshot, st
   const backendAuth = inject(BackendAuthService);
   const configService = inject(ConfigService);
 
-  // First check if user is authenticated
-  if (!backendAuth.isAuthenticated()) {
-    router.navigate(['/auth/login'], { queryParams: { returnUrl: state.url } });
-    return false;
-  }
+  const checkPermissions = (): boolean => {
+    const permissions = route.data['permissions'] as string[] | undefined;
+    const requireAll = route.data['requireAll'] as boolean | undefined;
 
-  // Get required permissions from route data
-  const permissions = route.data['permissions'] as string[] | undefined;
-  const requireAll = route.data['requireAll'] as boolean | undefined;
+    if (!permissions || permissions.length === 0) {
+      return true;
+    }
 
-  // If no permissions specified, allow access (just need to be authenticated)
-  if (!permissions || permissions.length === 0) {
-    return true;
-  }
+    const hasPermission = requireAll
+      ? backendAuth.hasAllPermissions(permissions)
+      : backendAuth.hasAnyPermission(permissions);
 
-  // Check if user has required permissions
-  const hasPermission = requireAll
-    ? backendAuth.hasAllPermissions(permissions)
-    : backendAuth.hasAnyPermission(permissions);
+    const user = backendAuth.getCurrentUser();
+    if (!hasPermission) {
+      configService.logWarning('Permission Guard: Access Denied', {
+        route: state.url,
+        requiredPermissions: permissions,
+        requireAll: requireAll || false,
+        userPermissions: user?.permissions?.map(p => `${p.id || ''}|${p.claimType || ''}`).filter(Boolean) || [],
+        permissionChecks: permissions.map(perm => ({
+          permission: perm,
+          hasPermission: backendAuth.hasPermission(perm)
+        })),
+        userName: user?.userName
+      });
+    }
 
-  // Debug logging for permission checks (respects enableLogging)
-  const user = backendAuth.getCurrentUser();
-  if (!hasPermission) {
-    configService.logWarning('Permission Guard: Access Denied', {
-      route: state.url,
-      requiredPermissions: permissions,
-      requireAll: requireAll || false,
-      userPermissions: user?.permissions?.map(p => `${p.id || ''}|${p.claimType || ''}`).filter(Boolean) || [],
-      permissionChecks: permissions.map(perm => ({
-        permission: perm,
-        hasPermission: backendAuth.hasPermission(perm)
-      })),
-      userName: user?.userName
+    if (hasPermission) {
+      return true;
+    }
+
+    router.navigate(['/access-denied'], {
+      queryParams: { returnUrl: state.url },
+      replaceUrl: true
     });
+
+    return false;
+  };
+
+  if (backendAuth.isAuthenticated()) {
+    return checkPermissions();
   }
 
-  if (hasPermission) {
-    return true;
-  }
-
-  // User doesn't have required permissions
-  router.navigate(['/access-denied'], {
-    queryParams: { returnUrl: state.url },
-    replaceUrl: true
-  });
-  
-  return false;
+  return backendAuth.restoreSessionSilently().pipe(
+    map(restored => {
+      if (!restored) {
+        router.navigate(['/auth/login'], { queryParams: { returnUrl: state.url } });
+        return false;
+      }
+      return checkPermissions();
+    })
+  );
 };

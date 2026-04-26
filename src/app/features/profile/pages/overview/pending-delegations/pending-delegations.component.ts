@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { UserDelegationService } from '@services/user-delegation.service';
+import { UserDelegationService } from '@admin/services/user-delegation.service';
 import { UserDelegation } from '@models/user-delegation';
 import { ConfirmationDialogComponent } from '@components/confirmation-dialog/confirmation-dialog.component';
 import { LucideAngularModule, CheckCircle, XCircle, Calendar, User, AlertCircle } from 'lucide-angular';

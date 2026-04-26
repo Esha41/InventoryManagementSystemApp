@@ -8,28 +8,14 @@ import { Observable, of, forkJoin } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { authInterceptor, errorInterceptor } from './core/interceptors/index';
 import { ConfigService } from './core/services/config.service';
+import { I18N_TRANSLATION_MODULES } from './core/constants/i18n-translation-modules';
+import { SHELL_INTEGRATION_PROVIDERS } from '@shell/shell-integration.providers';
 
 export class JsonTranslationLoader implements TranslateLoader {
   constructor(private http: HttpClient) { }
 
   getTranslation(lang: string): Observable<any> {
-    // List of translation module files to load and merge
-    const translationModules = [
-      'common',
-      'dashboard',
-      'requests',
-      'inventory',
-      'supply',
-      'admin',
-      'auth',
-      'allowance',
-      'notifications',
-      'add-weapon-asset',
-      'scheduledReports',
-      'announcements',
-      'onboarding',
-      'help-center'
-    ];
+    const translationModules = [...I18N_TRANSLATION_MODULES];
 
     // Load all modular translation files
     const moduleTranslations = translationModules.map(module =>
@@ -103,6 +89,7 @@ export const appConfig: ApplicationConfig = {
       deps: [ConfigService],
       multi: true
     },
+    ...SHELL_INTEGRATION_PROVIDERS,
     importProvidersFrom(
       TranslateModule.forRoot({
         fallbackLang: 'en',

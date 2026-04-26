@@ -413,7 +413,7 @@
                     </div>
                 </button>
 
-                <button *appHasPermission="'Asset.Create'" type="submit" [disabled]="submitting"
+                <button *appHasPermission="PERMISSIONS.ASSETS.ASSET.CREATE_CLAIM" type="submit" [disabled]="submitting"
                     class="px-6 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                     <div class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
                         <lucide-angular [img]="Save" class="w-4 h-4"></lucide-angular>
@@ -708,7 +708,7 @@
                     </div>
                 </button>
 
-                <button *appHasPermission="'Asset.Create'" type="submit" [disabled]="submitting"
+                <button *appHasPermission="PERMISSIONS.ASSETS.ASSET.CREATE_CLAIM" type="submit" [disabled]="submitting"
                     class="px-6 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                     <div class="flex items-center gap-2" [class.flex-row-reverse]="isRTL">
                         <lucide-angular *ngIf="!shouldShowNextButton" [img]="Save" class="w-4 h-4"></lucide-angular>

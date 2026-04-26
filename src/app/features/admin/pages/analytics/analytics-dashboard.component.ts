@@ -4,7 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { combineLatest, catchError, of } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, LayoutDashboard, TrendingUp, RefreshCw } from 'lucide-angular';
-import { AdminAnalyticsService, InventoryMetrics, RequestMetrics } from '@services/admin-analytics.service';
+import { AdminAnalyticsService, InventoryMetrics, RequestMetrics } from '@admin/services/admin-analytics.service';
 import { LoggingService } from '@services/logging.service';
 import { InventoryOverviewCardComponent } from './components/kpi-cards/inventory-overview-card/inventory-overview-card.component';
 import { RequestMetricsCardComponent } from './components/kpi-cards/request-metrics-card/request-metrics-card.component';

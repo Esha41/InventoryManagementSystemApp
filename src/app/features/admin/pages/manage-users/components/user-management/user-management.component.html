@@ -1,7 +1,7 @@
 <div class="space-y-6">
   <!-- Header with Add Button -->
   <div class="flex items-center justify-end">
-    <button *appHasPermission="'SystemUsers.Create'" (click)="onAddUser()"
+    <button *appHasPermission="PERMISSIONS.ADMIN.SYSTEM_USERS.CREATE" (click)="onAddUser()"
       class="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors">
       <lucide-angular [img]="UserPlus" class="h-4 w-4"></lucide-angular>
       {{ 'manageAdmins.addUser' | translate }}
@@ -123,7 +123,7 @@
         <!-- Actions -->
         <div
           class="flex items-center justify-end gap-2 mt-1 pt-2 border-t border-[var(--color-border-muted)] border-dashed">
-          <ng-container *appHasPermission="'SystemUsers.Edit'">
+          <ng-container *appHasPermission="PERMISSIONS.ADMIN.SYSTEM_USERS.EDIT">
             <button *ngIf="statusFilter !== 'deleted'" [disabled]="isUserSuperAdmin(user)"
               (click)="onToggleStatus(user)"
               class="p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -133,7 +133,7 @@
             </button>
           </ng-container>
 
-          <ng-container *appHasPermission="'SystemUsers.Edit'">
+          <ng-container *appHasPermission="PERMISSIONS.ADMIN.SYSTEM_USERS.EDIT">
             <button *ngIf="statusFilter !== 'deleted'" [disabled]="!canManageUser(user)" (click)="onEdit(user)"
               class="p-2 text-[var(--color-accent)] bg-[var(--color-accent)]/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               [title]="'manageAdmins.editUser' | translate">
@@ -141,21 +141,21 @@
             </button>
           </ng-container>
 
-          <ng-container *appHasPermission="'SystemUsers.Delete'">
+          <ng-container *appHasPermission="PERMISSIONS.ADMIN.SYSTEM_USERS.DELETE">
             <button *ngIf="statusFilter !== 'deleted'" [disabled]="isUserSuperAdmin(user)" (click)="onDelete(user)"
               class="p-2 text-[var(--color-error)] bg-[var(--color-error)]/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               [title]="'manageAdmins.deleteUserTitle' | translate">
               <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
             </button>
           </ng-container>
-          <ng-container *appHasPermission="'SystemUsers.Edit'">
+          <ng-container *appHasPermission="PERMISSIONS.ADMIN.SYSTEM_USERS.EDIT">
             <button *ngIf="statusFilter === 'deleted'" (click)="onRestore(user)"
               class="p-2 text-[var(--color-success)] bg-[var(--color-success)]/10 rounded-lg transition-colors"
               [title]="'manageAdmins.restoreUser' | translate">
               <lucide-angular [img]="RotateCcw" class="h-4 w-4"></lucide-angular>
             </button>
           </ng-container>
-          <ng-container *appHasPermission="'SystemUsers.Delete'">
+          <ng-container *appHasPermission="PERMISSIONS.ADMIN.SYSTEM_USERS.DELETE">
             <button *ngIf="statusFilter === 'deleted'" [disabled]="isUserSuperAdmin(user)" (click)="onPermanentDelete(user)"
               class="p-2 text-[var(--color-error)] bg-[var(--color-error)]/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               [title]="'manageAdmins.permanentDeleteUserTitle' | translate">
@@ -240,7 +240,7 @@
             </td>
             <td class="px-6 py-4 text-center align-middle">
               <div class="inline-flex items-center gap-2">
-                <ng-container *appHasPermission="'SystemUsers.Edit'">
+                <ng-container *appHasPermission="PERMISSIONS.ADMIN.SYSTEM_USERS.EDIT">
                   <button *ngIf="statusFilter !== 'deleted'" [disabled]="isUserSuperAdmin(user)"
                     (click)="onToggleStatus(user)"
                     class="p-2 transition-colors rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
@@ -249,14 +249,14 @@
                     <lucide-angular [img]="Power" class="h-4 w-4"></lucide-angular>
                   </button>
                 </ng-container>
-                <ng-container *appHasPermission="'SystemUsers.Edit'">
+                <ng-container *appHasPermission="PERMISSIONS.ADMIN.SYSTEM_USERS.EDIT">
                   <button *ngIf="statusFilter !== 'deleted'" [disabled]="!canManageUser(user)" (click)="onEdit(user)"
                     class="p-2 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     [title]="'manageAdmins.editUser' | translate">
                     <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
                   </button>
                 </ng-container>
-                <ng-container *appHasPermission="'SystemUsers.Delete'">
+                <ng-container *appHasPermission="PERMISSIONS.ADMIN.SYSTEM_USERS.DELETE">
                   <button *ngIf="statusFilter !== 'deleted'" [disabled]="isUserSuperAdmin(user)"
                     (click)="onDelete(user)"
                     class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -264,14 +264,14 @@
                     <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
                   </button>
                 </ng-container>
-                <ng-container *appHasPermission="'SystemUsers.Edit'">
+                <ng-container *appHasPermission="PERMISSIONS.ADMIN.SYSTEM_USERS.EDIT">
                   <button *ngIf="statusFilter === 'deleted'" (click)="onRestore(user)"
                     class="p-2 text-[var(--color-success)] hover:bg-[var(--color-success)]/10 rounded-lg transition-colors"
                     [title]="'manageAdmins.restoreUser' | translate">
                     <lucide-angular [img]="RotateCcw" class="h-4 w-4"></lucide-angular>
                   </button>
                 </ng-container>
-                <ng-container *appHasPermission="'SystemUsers.Delete'">
+                <ng-container *appHasPermission="PERMISSIONS.ADMIN.SYSTEM_USERS.DELETE">
                   <button *ngIf="statusFilter === 'deleted'" [disabled]="isUserSuperAdmin(user)"
                     (click)="onPermanentDelete(user)"
                     class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"

@@ -4,11 +4,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, ArrowRight } from 'lucide-angular';
 import { Subject, takeUntil, catchError, combineLatest } from 'rxjs';
-import { AmmunitionService } from '@services/ammunition.service';
-import { WeaponService } from '@services/weapon.service';
-import { ExplosiveService } from '@services/explosive.service';
-import { CartridgeMapperService } from '@services/cartridge-mapper.service';
-import { Cartridge } from '@requests/pages/new-issue/components/cartridge-list/cartridge-list.component';
+import { AmmunitionService } from '@assets/services/ammunition.service';
+import { WeaponService } from '@assets/services/weapon.service';
+import { ExplosiveService } from '@assets/services/explosive.service';
+import { CartridgeMapperService } from '@assets/services/cartridge-mapper.service';
+import { Cartridge } from '@models/cartridge.model';
 import { CartridgeDetailsComponent } from '@requests/pages/new-issue/components/cartridge-details/cartridge-details.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ToastService } from '@services/toast.service';
@@ -266,9 +266,9 @@ export class ItemDetailComponent implements OnInit, OnDestroy {
   goBack(): void {
     // Navigate back to the approval page if requestId is available, otherwise go to requests list
     if (this.requestId) {
-      this.router.navigate(['/requests-management', this.requestId, 'workflow-approval']);
+      this.router.navigate(['/requests/requests-management', this.requestId, 'workflow-approval']);
     } else {
-      this.router.navigate(['/requests-management']);
+      this.router.navigate(['/requests/requests-management']);
     }
   }
 }

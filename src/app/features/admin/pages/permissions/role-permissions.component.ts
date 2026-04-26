@@ -1,4 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
@@ -13,7 +15,7 @@ import { ButtonComponent } from '@components/button/button.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { LoadingStateComponent } from '@components/index';
-import { ProfileDataService } from '@services/profile-data.service';
+import { ProfileDataService } from '@profile/services/profile-data.service';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { defaultPageSize } from '@constants/app.constants';
 
@@ -62,6 +64,8 @@ interface PermissionInfo {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RolePermissionsComponent implements OnInit, OnDestroy {
+  readonly PERMISSIONS = PERMISSIONS;
+
   // ============================================================================
   // ICONS
   // ============================================================================
@@ -103,15 +107,15 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
   // ============================================================================
   private readonly permissionDescriptions: { [key: string]: PermissionInfo } = {
     'dashboard_view': { key: 'dashboard_view', label: 'View', description: 'Access main dashboard page', page: '/dashboard' },
-    'request_create': { key: 'request_create', label: 'Create', description: 'Create new issue, return, or discard requests', page: '/new-issue-request' },
-    'request_view': { key: 'request_view', label: 'View', description: 'View requests list and details', page: '/requests-management' },
-    'request_manage': { key: 'request_manage', label: 'Manage', description: 'Edit, approve, and manage all requests', page: '/supply-request-management' },
-    'asset_create': { key: 'asset_create', label: 'Create', description: 'Add new ammunition/assets to inventory', page: '/add-asset' },
-    'asset_view': { key: 'asset_view', label: 'View', description: 'View ammunition inventory list', page: '/asset-list' },
+    'request_create': { key: 'request_create', label: 'Create', description: 'Create new issue, return, or discard requests', page: '/requests/new-issue-request' },
+    'request_view': { key: 'request_view', label: 'View', description: 'View requests list and details', page: '/requests/requests-management' },
+    'request_manage': { key: 'request_manage', label: 'Manage', description: 'Edit, approve, and manage all requests', page: '/requests/supply-request-management' },
+    'asset_create': { key: 'asset_create', label: 'Create', description: 'Add new ammunition/assets to inventory', page: '/assets/add-asset' },
+    'asset_view': { key: 'asset_view', label: 'View', description: 'View ammunition inventory list', page: '/assets/asset-list' },
     'inventory_view': { key: 'inventory_view', label: 'View', description: 'View warehouse inventory', page: '/warehouse' },
-    'user_view': { key: 'user_view', label: 'View', description: 'View system users list', page: '/manage-admins' },
-    'role_view': { key: 'role_view', label: 'View', description: 'View roles list', page: '/admin-roles' },
-    'role_edit': { key: 'role_edit', label: 'Edit', description: 'Edit role permissions', page: '/role-permissions' },
+    'user_view': { key: 'user_view', label: 'View', description: 'View system users list', page: '/admin/manage-admins' },
+    'role_view': { key: 'role_view', label: 'View', description: 'View roles list', page: '/admin/roles' },
+    'role_edit': { key: 'role_edit', label: 'Edit', description: 'Edit role permissions', page: '/admin/role-permissions' },
     'CanChangePassword': { key: 'CanChangePassword', label: 'Change Password', description: 'Allow users to change their own password', page: '' },
     'CanGenerateReport': { key: 'CanGenerateReport', label: 'Generate Reports', description: 'Generate and export system reports', page: '' },
     'CanImportData': { key: 'CanImportData', label: 'Import Data', description: 'Import data into the system', page: '' },

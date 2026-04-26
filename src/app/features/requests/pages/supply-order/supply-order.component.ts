@@ -6,8 +6,8 @@ import { LucideAngularModule, AlertTriangle } from 'lucide-angular';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
-import { ModalComponent } from '@shared/components/modal/modal.component';
-import { ConfirmDialogComponent } from '@shared/components/confirm-dialog/confirm-dialog.component';
+import { ModalComponent } from '@components/modal/modal.component';
+import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { AddLotModalComponent } from './components/add-lot-modal/add-lot-modal.component';
 import { AddOrderItemModalComponent } from './components/add-order-item-modal/add-order-item-modal.component';
 import { EditOrderItemModalComponent } from './components/edit-order-item-modal/edit-order-item-modal.component';
@@ -17,7 +17,7 @@ import { OrderItemsManagementComponent } from './components/order-items-manageme
 import { ApprovalWorkflowComponent } from './components/approval-workflow/approval-workflow.component';
 import { SupplyItemsListComponent } from './components/supply-items-list/supply-items-list.component';
 import { OrderDto, OrderRequestItemDto } from '@models/order.model';
-import { SupplyDto } from '@services/supply.service';
+import { SupplyDto } from '@requests/services/supply.service';
 import { ToastService } from '@services/toast.service';
 import { APIOperationResponse } from '@models/api-response.model';
 import { SupplyItemDisplay } from '@models/supply-order.model';
@@ -28,7 +28,8 @@ import { HasPermissionDirective } from '@core/directives/has-permission.directiv
 import { TranslateService } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
 import { SupplyOrderDataService } from '@requests/services/supply-order-data.service';
-import { getLocalizedOrderItemName, getSupplyItemDisplayName } from '@utils/supply-order-format.utils';
+import { getLocalizedOrderItemName, getSupplyItemDisplayName } from '@requests/utils/supply-order-format.utils';
+import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { ConfigService } from '@services/config.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
@@ -59,6 +60,7 @@ import { ErrorHandler } from '@utils/error-handler.utils';
 export class SupplyOrderComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
+  readonly PERMISSIONS = PERMISSIONS;
   readonly AlertTriangle = AlertTriangle;
 
   orderId: number = 0;
@@ -103,11 +105,11 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   ) { }
 
   get canIncreaseQuantity(): boolean {
-    return this.authService.hasPermission('Order.Edit') && this.authService.hasPermission('Order.IncreaseQuantity');
+    return this.authService.hasPermission(PERMISSIONS.REQUESTS.ORDER.EDIT) && this.authService.hasPermission(PERMISSIONS.REQUESTS.ORDER.INCREASE_QUANTITY);
   }
 
   get canDecreaseQuantity(): boolean {
-    return this.authService.hasPermission('Order.Edit') && this.authService.hasPermission('Order.DecreaseQuantity');
+    return this.authService.hasPermission(PERMISSIONS.REQUESTS.ORDER.EDIT) && this.authService.hasPermission(PERMISSIONS.REQUESTS.ORDER.DECREASE_QUANTITY);
   }
 
   ngOnInit(): void {
@@ -122,7 +124,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           translations['toast.error']
         );
       });
-      this.router.navigate(['/supply-order']);
+      this.router.navigate(['/requests/supply-order']);
       return;
     }
 
@@ -310,9 +312,9 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     const byOrder = this.route.snapshot.queryParams['byOrder'] === 'true';
 
     if (byOrder && this.orderId) {
-      this.router.navigate(['/requests-management', this.orderId, 'workflow-approval']);
+      this.router.navigate(['/requests/requests-management', this.orderId, 'workflow-approval']);
     } else {
-      this.router.navigate(['/supply-order']);
+      this.router.navigate(['/requests/supply-order']);
     }
   }
 

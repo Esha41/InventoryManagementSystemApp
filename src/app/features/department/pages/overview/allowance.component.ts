@@ -22,6 +22,7 @@ import { ToastService } from '@services/toast.service';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { getLocalizedName, getCurrentLang, type Localizable } from '@utils/localization.utils';
 import { TranslationService } from '@services/translation.service';
+import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { UserContextService } from '@services/user-context.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
@@ -52,6 +53,8 @@ import { AllowanceService } from './services/allowance.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AllowanceComponent implements OnInit, OnDestroy {
+  readonly PERMISSIONS = PERMISSIONS;
+
   private readonly lookupService = inject(LookupService);
   private readonly apiService = inject(ApiService);
   private readonly translateService = inject(TranslateService);
@@ -105,7 +108,7 @@ export class AllowanceComponent implements OnInit, OnDestroy {
   }
 
   private initializeUserContext(): void {
-    const hasPermission = this.backendAuthService.hasPermission('AllowanceItemViewAllDepartments');
+    const hasPermission = this.backendAuthService.hasPermission(PERMISSIONS.DEPARTMENT.ALLOWANCE_VIEW_ALL_DEPARTMENTS);
     this.isAdminUser = this.userContextService.isAdminUser() || hasPermission;
     const currentUser = this.backendAuthService.getCurrentUser();
     if (currentUser?.departmentId) {
@@ -457,7 +460,7 @@ export class AllowanceComponent implements OnInit, OnDestroy {
           );
         });
         // Navigate back to list after successful submission
-        this.router.navigate(['/allowance']);
+        this.router.navigate(['/department/allowance']);
       },
       error: (error: unknown) => {
         this.isLoading = false;
@@ -499,7 +502,7 @@ export class AllowanceComponent implements OnInit, OnDestroy {
   }
 
   onBack(): void {
-    this.router.navigate(['/allowance'], { queryParams: this.getBackQueryParams() });
+    this.router.navigate(['/department/allowance'], { queryParams: this.getBackQueryParams() });
   }
 
   /** Preserve pagination when navigating back to list (Angular best practice: URL-driven state) */
@@ -542,7 +545,7 @@ export class AllowanceComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
           // Redirect back to list if unauthorized
           setTimeout(() => {
-            this.router.navigate(['/allowance']);
+            this.router.navigate(['/department/allowance']);
           }, 2000);
           return;
         }
