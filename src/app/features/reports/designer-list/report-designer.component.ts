@@ -8,6 +8,7 @@ import { TranslationService } from '@services/translation.service';
 import { ButtonComponent } from '@components/button/button.component';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
+import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { ReportService, Report, ReportTemplate, ReportStatus } from '@reports/services/report.service';
 import { ToastService } from '@services/toast.service';
@@ -109,7 +110,7 @@ export class ReportDesignerComponent implements OnInit {
 
   checkPermissions(): void {
     // Check permissions using BackendAuthService - ReportDesigner is a plain permission
-    const hasReportDesignerPermission = this.authService.hasPermission('ReportDesigner');
+    const hasReportDesignerPermission = this.authService.hasPermission(PERMISSIONS.REPORTS.DESIGNER);
     this.canCreateReport = hasReportDesignerPermission;
     this.canEditReport = hasReportDesignerPermission;
     this.canDeleteReport = hasReportDesignerPermission;

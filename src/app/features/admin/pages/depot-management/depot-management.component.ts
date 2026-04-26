@@ -1,4 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -44,6 +46,8 @@ import { trackById } from '@utils/trackby.utils';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DepotManagementComponent implements OnInit, OnDestroy {
+  readonly PERMISSIONS = PERMISSIONS;
+
   readonly Plus = Plus;
   readonly Edit = Edit;
   readonly Trash2 = Trash2;

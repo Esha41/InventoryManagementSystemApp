@@ -20,6 +20,7 @@ import { EmployeeService } from '@admin/services/employee.service';
 import { EmployeeDto } from '@core/models/asset.model';
 import { getCurrentLang } from '@utils/localization.utils';
 import { EmployeeFormModalComponent } from '@admin/components/employee-form-modal/employee-form-modal.component';
+import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 
 @Component({
@@ -38,7 +39,7 @@ import { BackendAuthService } from '@services/backend-auth.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WorkflowSupplySubmissionComponent implements OnInit, OnDestroy, OnChanges {
-  private static readonly EMPLOYEE_CREATE_PERMISSION = 'Permissions.Employee.Create';
+  private static readonly EMPLOYEE_CREATE_PERMISSION = PERMISSIONS.ADMIN.LOOKUP.EMPLOYEE.CREATE;
   @Input() supplyId: number | null = null;
   @Input() supplyData: SupplyDto | null = null;
   @Input() ranks: LookupItem[] = [];

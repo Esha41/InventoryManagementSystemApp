@@ -1,4 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
@@ -43,6 +45,8 @@ import { AppDatePipe } from '@shared/pipes/app-date.pipe';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddInventoryComponent implements OnInit, OnDestroy {
+  readonly PERMISSIONS = PERMISSIONS;
+
   readonly Save = Save;
   readonly X = X;
   readonly Plus = Plus;

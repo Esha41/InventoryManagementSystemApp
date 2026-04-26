@@ -155,7 +155,7 @@
 
               <!-- Submit Button -->
               <div class="flex justify-center pt-6">
-                <app-button *appHasPermission="['AllowanceItem.Create', 'AllowanceItem.Edit']" appPermissionMode="any"
+                <app-button *appHasPermission="[PERMISSIONS.DEPARTMENT.ALLOWANCE_ITEM.CREATE_CLAIM, PERMISSIONS.DEPARTMENT.ALLOWANCE_ITEM.EDIT]" appPermissionMode="any"
                   type="submit" variant="primary" size="md" class="px-12" [disabled]="isLoading">
                   {{ isLoading ? ('allowance.sending' | translate) : ('allowance.send' | translate) }}
                 </app-button>

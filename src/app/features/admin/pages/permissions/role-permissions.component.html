@@ -118,7 +118,7 @@
                     translate }}</p>
                 </div>
               </div>
-              <app-button *appHasPermission="'Roles.Edit'" [variant]="'primary'" (click)="onSavePermissions()"
+              <app-button *appHasPermission="PERMISSIONS.ADMIN.ROLES.EDIT_CLAIM" [variant]="'primary'" (click)="onSavePermissions()"
                 [disabled]="isSaving || isLoading">
                 <span class="flex items-center gap-2">
                   <lucide-angular [img]="Save" class="h-4 w-4"></lucide-angular>

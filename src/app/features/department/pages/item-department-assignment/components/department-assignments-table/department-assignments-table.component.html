@@ -3,7 +3,7 @@
     <h3 class="text-sm font-semibold text-[var(--color-text)] uppercase tracking-wider">
       {{ 'itemDepartmentAssignment.assignmentDetails' | translate }}
     </h3>
-    <button *appHasPermission="'Permissions.ItemDepartmentAssignment.Create'"
+    <button *appHasPermission="PERMISSIONS.DEPARTMENT.ITEM_DEPARTMENT_ASSIGNMENT.CREATE"
       (click)="onAddItems()"
       class="flex items-center gap-2 px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors">
       <lucide-icon [img]="Plus" [size]="18"></lucide-icon>
@@ -45,7 +45,7 @@
             </td>
             <td class="px-4 py-3 text-sm text-[var(--color-text)] text-start">{{ assignment.notes || '-' }}</td>
             <td class="px-4 py-3 text-center">
-              <button *appHasPermission="'Permissions.ItemDepartmentAssignment.Delete'" (click)="onDelete(assignment)"
+              <button *appHasPermission="PERMISSIONS.DEPARTMENT.ITEM_DEPARTMENT_ASSIGNMENT.DELETE" (click)="onDelete(assignment)"
                 class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
                 [title]="'common.delete' | translate">
                 <lucide-icon [img]="Trash2" [size]="18"></lucide-icon>

@@ -1,4 +1,6 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -16,6 +18,8 @@ import { getItemTypeName, getAssetDetailsTab } from '@utils/item-type.utils';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DepartmentAssignmentsTableComponent {
+  readonly PERMISSIONS = PERMISSIONS;
+
   readonly Plus = Plus;
   readonly Trash2 = Trash2;
 

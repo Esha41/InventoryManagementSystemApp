@@ -1,4 +1,6 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Plus } from 'lucide-angular';
@@ -26,6 +28,8 @@ import { HasPermissionDirective } from '@core/directives/has-permission.directiv
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OrderItemsManagementComponent {
+  readonly PERMISSIONS = PERMISSIONS;
+
   readonly Plus = Plus;
 
   @Input() orderItems: OrderRequestItemDto[] = [];

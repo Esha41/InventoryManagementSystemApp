@@ -14,7 +14,7 @@
       </h1>
     </div>
     <ng-container *ngIf="showViewOnMap && hasData">
-      <button *appHasPermission="'WarehouseMapView'" (click)="onMapView()"
+      <button *appHasPermission="PERMISSIONS.WAREHOUSE.MAP.VIEW" (click)="onMapView()"
         class="px-4 py-2 bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] text-white rounded-lg transition-colors">
         {{ 'warehouseInventory.viewOnMap' | translate }}
       </button>

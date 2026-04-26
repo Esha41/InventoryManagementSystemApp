@@ -1,4 +1,6 @@
 import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, Optional, Inject } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -86,6 +88,8 @@ type AssetType = 'ammunition' | 'weapon' | 'explosive';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
+  readonly PERMISSIONS = PERMISSIONS;
+
   readonly Save = Save;
   readonly X = X;
 

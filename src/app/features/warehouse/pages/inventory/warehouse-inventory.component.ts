@@ -1,4 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -48,6 +50,8 @@ import { WarehouseInventoryViewModelService } from '../../services/warehouse-inv
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WarehouseInventoryComponent implements OnInit {
+  readonly PERMISSIONS = PERMISSIONS;
+
   readonly store = inject(WarehouseInventoryStore);
   readonly orchestrator = inject(WarehouseInventoryFacadeService);
   readonly formatterService = inject(WarehouseInventoryFormatterService);

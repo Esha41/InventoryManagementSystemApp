@@ -1,4 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
@@ -41,6 +43,8 @@ import { defaultPageSize } from '@constants/app.constants';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AdminRolesComponent implements OnInit, OnDestroy {
+  readonly PERMISSIONS = PERMISSIONS;
+
   readonly Badge = Badge;
   readonly Plus = Plus;
   readonly Edit = Edit;

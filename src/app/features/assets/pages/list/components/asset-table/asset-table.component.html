@@ -129,24 +129,24 @@
               <lucide-angular [img]="Eye" class="h-4 w-4"></lucide-angular>
             </button>
             <ng-container *ngIf="showEditDelete">
-              <button *appHasPermission="'Ammunition.Edit'" (click)="onEdit(asset.id)"
+              <button *appHasPermission="PERMISSIONS.ASSETS.AMMUNITION.EDIT" (click)="onEdit(asset.id)"
                 class="flex-shrink-0 min-w-[2.75rem] min-h-[2.75rem] flex items-center justify-center p-2 text-[var(--color-info)] bg-[var(--color-info)]/10 rounded-lg transition-colors">
                 <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
               </button>
-              <button *appHasPermission="'Ammunition.Delete'" (click)="onDelete(asset.id)"
+              <button *appHasPermission="PERMISSIONS.ASSETS.AMMUNITION.DELETE" (click)="onDelete(asset.id)"
                 class="flex-shrink-0 min-w-[2.75rem] min-h-[2.75rem] flex items-center justify-center p-2 text-[var(--color-error)] bg-[var(--color-error)]/10 rounded-lg transition-colors">
                 <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
               </button>
             </ng-container>
             <ng-container *ngIf="showRestore">
-              <button *appHasPermission="['Ammunition.Edit', 'Explosive.Edit', 'Weapon.Edit']" appPermissionMode="any" (click)="onRestore(asset.id)"
+              <button *appHasPermission="[PERMISSIONS.ASSETS.AMMUNITION.EDIT, 'Explosive.Edit', 'Weapon.Edit']" appPermissionMode="any" (click)="onRestore(asset.id)"
                 class="flex-shrink-0 min-w-[2.75rem] min-h-[2.75rem] flex items-center justify-center p-2 text-[var(--color-success)] bg-[var(--color-success)]/10 rounded-lg transition-colors"
                 [title]="'assetList.actions.restore' | translate">
                 <lucide-angular [img]="RotateCcw" class="h-4 w-4"></lucide-angular>
               </button>
             </ng-container>
             <ng-container *ngIf="showPermanentDelete">
-              <button *appHasPermission="['Ammunition.Delete', 'Explosive.Delete', 'Weapon.Delete']" appPermissionMode="any" (click)="onPermanentDelete(asset.id)"
+              <button *appHasPermission="[PERMISSIONS.ASSETS.AMMUNITION.DELETE, 'Explosive.Delete', 'Weapon.Delete']" appPermissionMode="any" (click)="onPermanentDelete(asset.id)"
                 class="flex-shrink-0 min-w-[2.75rem] min-h-[2.75rem] flex items-center justify-center p-2 text-[var(--color-error)] bg-[var(--color-error)]/10 rounded-lg transition-colors"
                 [title]="'assetList.actions.permanentDelete' | translate">
                 <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
@@ -259,13 +259,13 @@
                   </button>
 
                   <ng-container *ngIf="showEditDelete">
-                    <button *appHasPermission="'Ammunition.Edit'" (click)="onEdit(asset.id)"
+                    <button *appHasPermission="PERMISSIONS.ASSETS.AMMUNITION.EDIT" (click)="onEdit(asset.id)"
                       class="p-2 rounded-lg hover:bg-[var(--color-background)] transition-colors group"
                       [title]="'common.edit' | translate">
                       <lucide-angular [img]="Edit"
                         class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-blue-600"></lucide-angular>
                     </button>
-                    <button *appHasPermission="'Ammunition.Delete'" (click)="onDelete(asset.id)"
+                    <button *appHasPermission="PERMISSIONS.ASSETS.AMMUNITION.DELETE" (click)="onDelete(asset.id)"
                       class="p-2 rounded-lg hover:bg-red-50 transition-colors group"
                       [title]="'common.delete' | translate">
                       <lucide-angular [img]="Trash2"
@@ -273,7 +273,7 @@
                     </button>
                   </ng-container>
                   <ng-container *ngIf="showRestore">
-                    <button *appHasPermission="['Ammunition.Edit', 'Explosive.Edit', 'Weapon.Edit']" appPermissionMode="any" (click)="onRestore(asset.id)"
+                    <button *appHasPermission="[PERMISSIONS.ASSETS.AMMUNITION.EDIT, 'Explosive.Edit', 'Weapon.Edit']" appPermissionMode="any" (click)="onRestore(asset.id)"
                       class="p-2 rounded-lg hover:bg-green-50 transition-colors group"
                       [title]="'assetList.actions.restore' | translate">
                       <lucide-angular [img]="RotateCcw"
@@ -281,7 +281,7 @@
                     </button>
                   </ng-container>
                   <ng-container *ngIf="showPermanentDelete">
-                    <button *appHasPermission="['Ammunition.Delete', 'Explosive.Delete', 'Weapon.Delete']" appPermissionMode="any" (click)="onPermanentDelete(asset.id)"
+                    <button *appHasPermission="[PERMISSIONS.ASSETS.AMMUNITION.DELETE, 'Explosive.Delete', 'Weapon.Delete']" appPermissionMode="any" (click)="onPermanentDelete(asset.id)"
                       class="p-2 rounded-lg hover:bg-red-50 transition-colors group"
                       [title]="'assetList.actions.permanentDelete' | translate">
                       <lucide-angular [img]="Trash2"

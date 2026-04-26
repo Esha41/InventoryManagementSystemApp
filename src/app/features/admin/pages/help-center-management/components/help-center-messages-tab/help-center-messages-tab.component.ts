@@ -31,6 +31,7 @@ import { PaginationComponent } from '@components/pagination/pagination.component
 import { CardComponent } from '@components/card/card.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { APP_CONSTANTS, defaultPageSize } from '@constants/app.constants';
+import { PERMISSIONS } from '@constants/permissions.constants';
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 import { adminBadgePositive, adminTotalPages } from '../../help-center-admin.utils';
 
@@ -106,7 +107,7 @@ export class HelpCenterMessagesTabComponent implements OnInit, OnDestroy {
   badgePositive = adminBadgePositive;
 
   canDelete(): boolean {
-    return this.auth.hasPermission('helpcenter.delete');
+    return this.auth.hasPermission(PERMISSIONS.ADMIN.HELP_CENTER.DELETE);
   }
 
   private emitUnreadCount(): void {

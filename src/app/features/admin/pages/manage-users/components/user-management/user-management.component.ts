@@ -1,4 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
 import { CardComponent } from '@components/card/card.component';
@@ -43,6 +45,8 @@ import { defaultPageSize } from '@constants/app.constants';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserManagementComponent implements OnInit, OnDestroy {
+  readonly PERMISSIONS = PERMISSIONS;
+
   readonly UserPlus = UserPlus;
   readonly UserIcon = UserIcon;
   readonly Power = Power;

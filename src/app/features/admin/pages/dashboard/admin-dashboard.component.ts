@@ -1,4 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -32,6 +34,8 @@ import { HasPermissionDirective } from '@core/directives/has-permission.directiv
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AdminDashboardComponent implements OnInit, OnDestroy {
+  readonly PERMISSIONS = PERMISSIONS;
+
     private readonly destroy$ = new Subject<void>();
 
     // Icons

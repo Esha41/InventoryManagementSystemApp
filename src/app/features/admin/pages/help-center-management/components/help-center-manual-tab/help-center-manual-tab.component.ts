@@ -22,6 +22,7 @@ import {
 import { FileUploadService } from '@services/file-upload.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
+import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
@@ -75,11 +76,11 @@ export class HelpCenterManualTabComponent implements OnInit, OnDestroy {
   }
 
   canEdit(): boolean {
-    return this.auth.hasPermission('helpcenter.edit');
+    return this.auth.hasPermission(PERMISSIONS.ADMIN.HELP_CENTER.EDIT);
   }
 
   canDelete(): boolean {
-    return this.auth.hasPermission('helpcenter.delete');
+    return this.auth.hasPermission(PERMISSIONS.ADMIN.HELP_CENTER.DELETE);
   }
 
   loadFiles(): void {

@@ -1,4 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, ArrowRight } from 'lucide-angular';
@@ -23,6 +25,8 @@ export type WarehouseDetailTab = 'overview' | 'stock';
   styleUrls: ['./warehouse-detail-layout.component.css']
 })
 export class WarehouseDetailLayoutComponent {
+  readonly PERMISSIONS = PERMISSIONS;
+
   readonly ArrowLeft = ArrowLeft;
   readonly ArrowRight = ArrowRight;
 

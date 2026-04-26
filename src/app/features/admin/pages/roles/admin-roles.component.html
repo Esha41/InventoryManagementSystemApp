@@ -5,7 +5,7 @@
       <div>
         <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ 'adminRoles.title' | translate }}</h1>
       </div>
-      <button *appHasPermission="'Roles.Create'" (click)="onAddRole()"
+      <button *appHasPermission="PERMISSIONS.ADMIN.ROLES.CREATE" (click)="onAddRole()"
         class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors w-full sm:w-auto">
         {{ 'adminRoles.addRole' | translate }}
       </button>
@@ -65,13 +65,13 @@
           <!-- Actions -->
           <div
             class="flex items-center justify-end gap-2 pt-2 border-t border-[var(--color-border-muted)] border-dashed">
-            <button *appHasPermission="'Roles.Edit'" (click)="onEditRole(role)"
+            <button *appHasPermission="PERMISSIONS.ADMIN.ROLES.EDIT_CLAIM" (click)="onEditRole(role)"
               class="p-2 text-[var(--color-accent)] bg-[var(--color-accent)]/10 rounded-lg active:scale-95 transition-all"
               [title]="'adminRoles.edit' | translate">
               <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
             </button>
 
-            <button *appHasPermission="'Roles.Delete'" (click)="onDeleteRole(role)" [disabled]="role.isDefaultRole"
+            <button *appHasPermission="PERMISSIONS.ADMIN.ROLES.DELETE" (click)="onDeleteRole(role)" [disabled]="role.isDefaultRole"
               class="p-2 rounded-lg active:scale-95 transition-all disabled:opacity-50 disabled:bg-transparent"
               [class]="role.isDefaultRole ? 'text-gray-400' : 'text-[var(--color-error)] bg-[var(--color-error)]/10'"
               [title]="'adminRoles.delete' | translate">
@@ -101,12 +101,12 @@
               </td>
               <td class="px-6 py-4 text-end">
                 <div class="inline-flex items-center gap-2">
-                  <button *appHasPermission="'Roles.Edit'" (click)="onEditRole(role)"
+                  <button *appHasPermission="PERMISSIONS.ADMIN.ROLES.EDIT_CLAIM" (click)="onEditRole(role)"
                     class="p-2 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors"
                     [title]="'adminRoles.edit' | translate">
                     <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
                   </button>
-                  <button *appHasPermission="'Roles.Delete'" (click)="onDeleteRole(role)"
+                  <button *appHasPermission="PERMISSIONS.ADMIN.ROLES.DELETE" (click)="onDeleteRole(role)"
                     [disabled]="role.isDefaultRole" [class.opacity-50]="role.isDefaultRole"
                     [class.cursor-not-allowed]="role.isDefaultRole"
                     class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors disabled:hover:bg-transparent"

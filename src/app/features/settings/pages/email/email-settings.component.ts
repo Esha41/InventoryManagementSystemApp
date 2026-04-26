@@ -1,4 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
@@ -27,6 +29,8 @@ import { HasPermissionDirective } from '@core/directives/has-permission.directiv
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EmailSettingsComponent implements OnInit, OnDestroy {
+  readonly PERMISSIONS = PERMISSIONS;
+
   emailConfig: EmailConfigurationDto = {};
   isLoading = false;
   isSaving = false;

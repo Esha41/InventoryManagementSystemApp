@@ -1,4 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { Subject, takeUntil } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -42,6 +44,8 @@ interface AddStepForm {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddWorkflowComponent implements OnInit, OnDestroy {
+  readonly PERMISSIONS = PERMISSIONS;
+
   readonly Save = Save;
   readonly X = X;
   readonly ArrowLeft = ArrowLeft;

@@ -29,6 +29,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
 import { SupplyOrderDataService } from '@requests/services/supply-order-data.service';
 import { getLocalizedOrderItemName, getSupplyItemDisplayName } from '@requests/utils/supply-order-format.utils';
+import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { ConfigService } from '@services/config.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
@@ -59,6 +60,7 @@ import { ErrorHandler } from '@utils/error-handler.utils';
 export class SupplyOrderComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
+  readonly PERMISSIONS = PERMISSIONS;
   readonly AlertTriangle = AlertTriangle;
 
   orderId: number = 0;
@@ -103,11 +105,11 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
   ) { }
 
   get canIncreaseQuantity(): boolean {
-    return this.authService.hasPermission('Order.Edit') && this.authService.hasPermission('Order.IncreaseQuantity');
+    return this.authService.hasPermission(PERMISSIONS.REQUESTS.ORDER.EDIT) && this.authService.hasPermission(PERMISSIONS.REQUESTS.ORDER.INCREASE_QUANTITY);
   }
 
   get canDecreaseQuantity(): boolean {
-    return this.authService.hasPermission('Order.Edit') && this.authService.hasPermission('Order.DecreaseQuantity');
+    return this.authService.hasPermission(PERMISSIONS.REQUESTS.ORDER.EDIT) && this.authService.hasPermission(PERMISSIONS.REQUESTS.ORDER.DECREASE_QUANTITY);
   }
 
   ngOnInit(): void {

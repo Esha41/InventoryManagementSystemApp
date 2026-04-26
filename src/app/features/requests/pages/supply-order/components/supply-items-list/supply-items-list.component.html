@@ -3,7 +3,7 @@
     <h2 class="text-lg font-semibold text-[var(--color-text)]">
       {{ 'supplyOrder.orderItems' | translate }}
     </h2>
-    <button *appHasPermission="'Order.Edit'" (click)="onAddLotClick()"
+    <button *appHasPermission="PERMISSIONS.REQUESTS.ORDER.EDIT" (click)="onAddLotClick()"
       class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] transition-colors">
       <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
       {{ 'supplyOrder.addLot' | translate }}
@@ -101,11 +101,11 @@
           <!-- Action Buttons -->
           <div class="flex gap-2 mt-3">
             <div *ngIf="!item.isEditing" class="flex gap-2">
-              <button *appHasPermission="'Order.Edit'" (click)="onEditItem(item)"
+              <button *appHasPermission="PERMISSIONS.REQUESTS.ORDER.EDIT" (click)="onEditItem(item)"
                 class="px-3 py-1.5 text-xs font-medium text-[var(--color-accent)] bg-[var(--color-accent)]/10 border border-[var(--color-accent)]/30 rounded-lg hover:bg-[var(--color-accent)]/20 transition-colors">
                 {{ 'common.edit' | translate }}
               </button>
-              <button *appHasPermission="'Order.Delete'" (click)="onDeleteItem(item)" [disabled]="deletingItem"
+              <button *appHasPermission="PERMISSIONS.REQUESTS.ORDER.DELETE" (click)="onDeleteItem(item)" [disabled]="deletingItem"
                 class="px-3 py-1.5 text-xs font-medium text-[var(--color-error)] bg-[var(--color-error)]/10 border border-[var(--color-error)]/30 rounded-lg hover:bg-[var(--color-error)]/20 transition-colors disabled:opacity-50">
                 {{ 'common.delete' | translate }}
               </button>

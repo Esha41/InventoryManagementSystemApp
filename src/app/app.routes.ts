@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { PERMISSIONS } from '@constants/permissions.constants';
 import { MainLayoutComponent } from '@shell/layouts/main-layout/main-layout.component';
 import { AuthLayoutComponent } from '@layouts/auth-layout/auth-layout.component';
 import { authGuard, permissionGuard } from '@guards/index';
@@ -25,7 +26,7 @@ export const routes: Routes = [
         path: 'inventory-summary',
         loadComponent: () => import('@warehouse/pages/summary/warehouse-inventory-summary.component').then(m => m.WarehouseInventorySummaryComponent),
         canActivate: [permissionGuard],
-        data: { permissions: ['inventorySummaryReportPage'] }
+        data: { permissions: [PERMISSIONS.INVENTORY.SUMMARY_REPORT.PAGE] }
       },
       {
         path: 'access-denied',

@@ -14,6 +14,7 @@ import { LookupService, LookupItem } from '@services/lookup.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { StorageService } from '@services/storage.service';
+import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 
 // Models
@@ -52,7 +53,9 @@ export type WeaponAssignMode = 'none' | 'department' | 'employee';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddWeaponAssetComponent implements OnInit, OnDestroy {
-    private static readonly EMPLOYEE_CREATE_PERMISSION = 'Permissions.Employee.Create';
+  readonly PERMISSIONS = PERMISSIONS;
+
+    private static readonly EMPLOYEE_CREATE_PERMISSION = PERMISSIONS.ADMIN.LOOKUP.EMPLOYEE.CREATE;
     // Icons
     readonly Save = Save;
     readonly X = X;

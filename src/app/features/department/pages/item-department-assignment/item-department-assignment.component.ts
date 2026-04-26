@@ -5,6 +5,7 @@ import {
   ChangeDetectorRef,
   ChangeDetectionStrategy
 } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -52,6 +53,8 @@ import { defaultPageSize } from '@constants/app.constants';
   providers: [ItemDepartmentAssignmentFacade]
 })
 export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
+  readonly PERMISSIONS = PERMISSIONS;
+
   readonly Plus = Plus;
   readonly Search = Search;
   readonly ChevronDown = ChevronDown;

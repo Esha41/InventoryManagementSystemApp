@@ -28,6 +28,7 @@ import { LoadingStateComponent } from '@components/loading-state/loading-state.c
 import { EmployeeFormModalComponent } from '@admin/components/employee-form-modal/employee-form-modal.component';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { FocusOnInitDirective } from '@core/directives/focus-on-init.directive';
+import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 
 @Component({
@@ -53,7 +54,7 @@ import { BackendAuthService } from '@services/backend-auth.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
-  private static readonly EMPLOYEE_CREATE_PERMISSION = 'Permissions.Employee.Create';
+  private static readonly EMPLOYEE_CREATE_PERMISSION = PERMISSIONS.ADMIN.LOOKUP.EMPLOYEE.CREATE;
   private destroy$ = new Subject<void>();
 
   readonly ArrowLeft = ArrowLeft;

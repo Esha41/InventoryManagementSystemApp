@@ -1,4 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
@@ -62,6 +64,8 @@ interface PermissionInfo {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RolePermissionsComponent implements OnInit, OnDestroy {
+  readonly PERMISSIONS = PERMISSIONS;
+
   // ============================================================================
   // ICONS
   // ============================================================================

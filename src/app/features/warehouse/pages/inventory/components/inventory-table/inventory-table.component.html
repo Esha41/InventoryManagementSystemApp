@@ -125,7 +125,7 @@
         <div class="inline-flex items-center gap-2">
           <!-- Edit Button - Only for inventory items (not static) -->
           <ng-container *ngIf="!isStaticItem(detail)">
-            <button *appHasPermission="'Inventory.Edit'" (click)="editItem.emit(detail)"
+            <button *appHasPermission="PERMISSIONS.WAREHOUSE.INVENTORY.EDIT" (click)="editItem.emit(detail)"
               class="p-2 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors"
               [title]="'warehouseInventory.edit' | translate">
               <lucide-angular [img]="Edit2" class="h-4 w-4"></lucide-angular>
@@ -134,7 +134,7 @@
 
           <!-- Delete Button - Only for inventory items (not static) -->
           <ng-container *ngIf="!isStaticItem(detail)">
-            <button *appHasPermission="'Inventory.Delete'" (click)="deleteItem.emit(detail)"
+            <button *appHasPermission="PERMISSIONS.WAREHOUSE.INVENTORY.DELETE" (click)="deleteItem.emit(detail)"
               class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
               [title]="'warehouseInventory.delete' | translate">
               <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>

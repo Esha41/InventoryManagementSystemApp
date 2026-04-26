@@ -1,4 +1,6 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -18,6 +20,8 @@ import { formatDateTimeExtended } from '@utils/format.utils';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ReviewFormComponent {
+  readonly PERMISSIONS = PERMISSIONS;
+
   readonly Eye = Eye;
   @Input() requesterName: string = '';
   @Input() requesterComments: string = '';

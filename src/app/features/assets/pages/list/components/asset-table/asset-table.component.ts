@@ -4,6 +4,8 @@
  */
 
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, ViewChild } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Eye, Edit, Trash2, RotateCcw, ArrowUp, ArrowDown, ArrowUpDown, Image } from 'lucide-angular';
@@ -37,6 +39,8 @@ import { ExplosiveDto } from '@models/explosive.model';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AssetTableComponent {
+  readonly PERMISSIONS = PERMISSIONS;
+
   @Input() assets: Asset[] = [];
   @Input() activeTab: AssetType = 'ammunition';
   @Input() loading = false;

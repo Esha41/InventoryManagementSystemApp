@@ -201,7 +201,7 @@
     <app-button variant="outline" (clicked)="onPrevious()">
       {{ 'newIssueRequest.previous' | translate }}
     </app-button>
-    <app-button *appHasPermission="'Order.Create'" variant="primary" (clicked)="onNext()"
+    <app-button *appHasPermission="PERMISSIONS.REQUESTS.ORDER.CREATE_CLAIM" variant="primary" (clicked)="onNext()"
       class="bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand-dark)]">
       {{ 'newIssueRequest.submit' | translate }}
     </app-button>

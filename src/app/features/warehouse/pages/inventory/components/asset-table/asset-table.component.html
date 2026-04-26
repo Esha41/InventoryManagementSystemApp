@@ -43,14 +43,14 @@
       <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium w-36">
         <div class="inline-flex items-center gap-2">
           <!-- Edit Button -->
-          <button *appHasPermission="'Asset.Edit'" (click)="editAsset.emit(asset)"
+          <button *appHasPermission="PERMISSIONS.ASSETS.ASSET.EDIT_CLAIM" (click)="editAsset.emit(asset)"
             class="p-2 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors"
             [title]="'warehouseInventory.edit' | translate">
             <lucide-angular [img]="Edit2" class="h-4 w-4"></lucide-angular>
           </button>
 
           <!-- Delete Button -->
-          <button *appHasPermission="'Asset.Delete'" (click)="deleteAsset.emit(asset)"
+          <button *appHasPermission="PERMISSIONS.ASSETS.ASSET.DELETE" (click)="deleteAsset.emit(asset)"
             class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
             [title]="'warehouseInventory.delete' | translate">
             <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>

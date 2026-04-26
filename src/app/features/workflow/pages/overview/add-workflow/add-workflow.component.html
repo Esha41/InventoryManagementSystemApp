@@ -179,7 +179,7 @@
           <lucide-angular [img]="X" class="h-4 w-4"></lucide-angular>
           <span>{{ 'common.cancel' | translate }}</span>
         </button>
-        <button *appHasPermission="'workflow.create'" type="submit" [disabled]="submitting || !workflowForm.name"
+        <button *appHasPermission="PERMISSIONS.WORKFLOW.CREATE" type="submit" [disabled]="submitting || !workflowForm.name"
           class="flex items-center justify-center gap-2 px-6 py-2 bg-[var(--color-brand)] text-white rounded-lg font-medium hover:bg-[var(--color-brand-dark)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
           <lucide-angular [img]="Save" class="h-4 w-4" *ngIf="!submitting"></lucide-angular>
           <span *ngIf="submitting">{{ 'common.saving' | translate }}...</span>

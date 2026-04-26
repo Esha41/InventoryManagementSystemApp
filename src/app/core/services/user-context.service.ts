@@ -6,17 +6,18 @@ import { BackendUserDto } from '@models/backend-user.model';
 import { ApiService } from './api.service';
 import { StorageService } from './storage.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
+import { PERMISSIONS } from '@constants/permissions.constants';
 import { APIOperationResponse } from '@models/api-response.model';
 import { decodeJwtPayload } from '@utils/jwt.util';
 
 const ADMIN_ROLE_KEYWORDS = ['admin', 'administrator', 'superadmin', 'super admin'];
 const ADMIN_PERMISSION_HINTS = [
-  'Permissions.Roles.Page',
-  'Permissions.Roles.View',
-  'Permissions.Roles.Edit',
-  'Permissions.Roles.Create',
-  'Permissions.Roles.Delete',
-  'Permissions.Roles.Manage'
+  PERMISSIONS.ADMIN.ROLES.API_PAGE,
+  PERMISSIONS.ADMIN.ROLES.API_VIEW,
+  PERMISSIONS.ADMIN.ROLES.API_EDIT,
+  PERMISSIONS.ADMIN.ROLES.API_CREATE,
+  PERMISSIONS.ADMIN.ROLES.API_DELETE,
+  PERMISSIONS.ADMIN.ROLES.API_MANAGE
 ];
 
 @Injectable({

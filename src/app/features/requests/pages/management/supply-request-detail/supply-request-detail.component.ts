@@ -15,6 +15,7 @@ import { AmmunitionService } from '@assets/services/ammunition.service';
 import { SupplyOrderDataService } from '@requests/services/supply-order-data.service';
 import { ToastService } from '@services/toast.service';
 import { ConfigService } from '@services/config.service';
+import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 
 // Models
@@ -68,6 +69,8 @@ import { trackByKey } from '@utils/trackby.utils';
 })
 export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
+
+  readonly PERMISSIONS = PERMISSIONS;
 
   // Icons
   readonly ArrowLeft = ArrowLeft;
@@ -141,11 +144,11 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   ) { }
 
   get canIncreaseQuantity(): boolean {
-    return this.authService.hasPermission('Order.Edit') && this.authService.hasPermission('Order.IncreaseQuantity');
+    return this.authService.hasPermission(PERMISSIONS.REQUESTS.ORDER.EDIT) && this.authService.hasPermission(PERMISSIONS.REQUESTS.ORDER.INCREASE_QUANTITY);
   }
 
   get canDecreaseQuantity(): boolean {
-    return this.authService.hasPermission('Order.Edit') && this.authService.hasPermission('Order.DecreaseQuantity');
+    return this.authService.hasPermission(PERMISSIONS.REQUESTS.ORDER.EDIT) && this.authService.hasPermission(PERMISSIONS.REQUESTS.ORDER.DECREASE_QUANTITY);
   }
 
   ngOnInit(): void {

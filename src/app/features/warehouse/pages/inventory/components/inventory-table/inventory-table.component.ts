@@ -1,4 +1,6 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Edit2, Trash2, Eye, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-angular';
@@ -31,6 +33,8 @@ export type WarehouseInventoryTableSortColumn =
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class InventoryTableComponent {
+  readonly PERMISSIONS = PERMISSIONS;
+
   @Input() items: InventoryDetailDto[] = [];
   @Input() isStaticItem: (detail: InventoryDetailDto) => boolean = () => false;
   @Input() getItemName: (detail: InventoryDetailDto) => string = () => '';

@@ -124,7 +124,7 @@
                     </div>
                 </a>
 
-                <ng-container *appHasPermission="'orderAutoRejectSettings.page'">
+                <ng-container *appHasPermission="PERMISSIONS.SETTINGS.ORDER_AUTO_REJECT.PAGE">
                     <a [routerLink]="['/settings/order-auto-reject-settings']" class="quick-action-card">
                         <div class="quick-action-icon">
                             <lucide-angular [img]="Timer" class="icon"></lucide-angular>
@@ -149,7 +149,7 @@
         </div>
 
         <!-- Delegation Management: plain permission DelegationManagement (see Role Permissions → System Features) -->
-        <ng-container *appHasPermission="'DelegationManagement'">
+        <ng-container *appHasPermission="PERMISSIONS.ADMIN.DELEGATION_MANAGEMENT">
             <div class="delegations-section">
                 <div class="section-header">
                     <h2 class="section-title">{{ 'DELEGATION.ADMIN_TITLE' | translate }}</h2>

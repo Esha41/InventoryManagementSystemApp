@@ -20,6 +20,7 @@ import {
 import { mapToOrderDto, mapToReturnDto, mapToDiscardDto, separateRequestsByType } from '@utils/request-type-mapper.utils';
 import { FilterData, PaginatedList, PagedRequest } from '@models/api-response.model';
 import { RequestType } from '@utils/request-type-mapper.utils';
+import { PERMISSIONS } from '@constants/permissions.constants';
 
 /**
  * Dashboard Data Service
@@ -102,7 +103,7 @@ export class DashboardDataService {
                 ...this.buildOrderItemNameFieldsFromOrder(order),
                 items: mapRequestItems(order.requestItems)
               }],
-              permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
+              permissions: [PERMISSIONS.REQUESTS.DASHBOARD.ORDER_VIEW, PERMISSIONS.REQUESTS.DASHBOARD.ORDER_PAGE],
               orderRequestId: order.id,
               isMyTurn: order.isMyTurn
             } as DashboardCard;
@@ -117,7 +118,7 @@ export class DashboardDataService {
                 ...this.buildOrderItemNameFieldsFromReturn(ret),
                 items: mapRequestItems(ret.requestItems)
               }],
-              permissions: ['Permissions.Return.View', 'Permissions.Return.Page'],
+              permissions: [PERMISSIONS.REQUESTS.DASHBOARD.RETURN_VIEW, PERMISSIONS.REQUESTS.DASHBOARD.RETURN_PAGE],
               returnRequestId: ret.id,
               isMyTurn: ret.isMyTurn
             } as DashboardCard;
@@ -132,7 +133,7 @@ export class DashboardDataService {
                 ...this.buildOrderItemNameFieldsFromDiscard(discard),
                 items: mapRequestItems(discard.requestItems)
               }],
-              permissions: ['Permissions.Discard.View', 'Permissions.Discard.Page'],
+              permissions: [PERMISSIONS.REQUESTS.DASHBOARD.DISCARD_VIEW, PERMISSIONS.REQUESTS.DASHBOARD.DISCARD_PAGE],
               discardRequestId: discard.id,
               isMyTurn: discard.isMyTurn
             } as DashboardCard;
@@ -171,7 +172,7 @@ export class DashboardDataService {
         ...this.buildOrderItemNameFieldsFromOrder(order),
         items: mapRequestItems(order.requestItems)
       }],
-      permissions: ['Permissions.Order.View', 'Permissions.Order.Page'],
+      permissions: [PERMISSIONS.REQUESTS.DASHBOARD.ORDER_VIEW, PERMISSIONS.REQUESTS.DASHBOARD.ORDER_PAGE],
       orderRequestId: order.id,
       isMyTurn: order.isMyTurn
     }));
@@ -196,7 +197,7 @@ export class DashboardDataService {
         ...this.buildOrderItemNameFieldsFromReturn(ret),
         items: mapRequestItems(ret.requestItems)
       }],
-      permissions: ['Permissions.Return.View', 'Permissions.Return.Page'],
+      permissions: [PERMISSIONS.REQUESTS.DASHBOARD.RETURN_VIEW, PERMISSIONS.REQUESTS.DASHBOARD.RETURN_PAGE],
       returnRequestId: ret.id,
       isMyTurn: ret.isMyTurn
     }));
@@ -297,7 +298,7 @@ export class DashboardDataService {
         ...this.buildOrderItemNameFieldsFromDiscard(discard),
         items: mapRequestItems(discard.requestItems)
       }],
-      permissions: ['Permissions.Discard.View', 'Permissions.Discard.Page'],
+      permissions: [PERMISSIONS.REQUESTS.DASHBOARD.DISCARD_VIEW, PERMISSIONS.REQUESTS.DASHBOARD.DISCARD_PAGE],
       discardRequestId: discard.id,
       isMyTurn: discard.isMyTurn
     }));

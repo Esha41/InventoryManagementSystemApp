@@ -37,6 +37,7 @@ import { PaginationComponent } from '@components/pagination/pagination.component
 import { CardComponent } from '@components/card/card.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { APP_CONSTANTS, defaultPageSize } from '@constants/app.constants';
+import { PERMISSIONS } from '@constants/permissions.constants';
 import { adminBadgePositive, adminTotalPages } from '../../help-center-admin.utils';
 import { HELP_CENTER_ARTICLES_QUILL_MODULES } from '../../help-center-terms-quill.config';
 import { richTextRequired } from '@core/validators/rich-text-required.validator';
@@ -111,13 +112,13 @@ export class HelpCenterArticlesTabComponent implements OnInit, OnDestroy {
   badgePositive = adminBadgePositive;
 
   canCreate(): boolean {
-    return this.auth.hasPermission('helpcenter.create');
+    return this.auth.hasPermission(PERMISSIONS.ADMIN.HELP_CENTER.CREATE);
   }
   canEdit(): boolean {
-    return this.auth.hasPermission('helpcenter.edit');
+    return this.auth.hasPermission(PERMISSIONS.ADMIN.HELP_CENTER.EDIT);
   }
   canDelete(): boolean {
-    return this.auth.hasPermission('helpcenter.delete');
+    return this.auth.hasPermission(PERMISSIONS.ADMIN.HELP_CENTER.DELETE);
   }
 
   articleContentInvalid(): boolean {

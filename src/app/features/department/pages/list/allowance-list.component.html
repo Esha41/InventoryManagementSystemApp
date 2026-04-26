@@ -54,7 +54,7 @@
             </button>
           </div>
         </div>
-        <app-button *appHasPermission="'AllowanceItem.Create'" variant="primary" (click)="onAddAllowance()"
+        <app-button *appHasPermission="PERMISSIONS.DEPARTMENT.ALLOWANCE_ITEM.CREATE_CLAIM" variant="primary" (click)="onAddAllowance()"
           class="w-full lg:w-auto lg:flex-shrink-0">
           <span class="flex items-center gap-2 justify-center" [class.flex-row-reverse]="isRTL">
             <lucide-angular [img]="Plus" class="h-4 w-4 flex-shrink-0"></lucide-angular>
@@ -130,13 +130,13 @@
 
           <!-- Actions -->
           <div class="flex items-center justify-end gap-2">
-            <button *appHasPermission="'AllowanceItem.Edit'" (click)="onEdit(allowance)"
+            <button *appHasPermission="PERMISSIONS.DEPARTMENT.ALLOWANCE_ITEM.EDIT" (click)="onEdit(allowance)"
               class="p-2 text-[var(--color-info)] bg-[var(--color-info)]/10 rounded-lg active:scale-95 transition-transform"
               [title]="'allowance.edit' | translate">
               <lucide-angular [img]="Edit2" class="h-4 w-4"></lucide-angular>
             </button>
 
-            <button *appHasPermission="'AllowanceItem.Delete'" (click)="onDelete(allowance)"
+            <button *appHasPermission="PERMISSIONS.DEPARTMENT.ALLOWANCE_ITEM.DELETE" (click)="onDelete(allowance)"
               class="p-2 text-[var(--color-error)] bg-[var(--color-error)]/10 rounded-lg active:scale-95 transition-transform"
               [title]="'allowance.delete' | translate">
               <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
@@ -223,14 +223,14 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" style="text-align: center;">
                   <div class="flex items-center justify-center gap-2 mx-auto w-fit">
                     <!-- Edit Button -->
-                    <button *appHasPermission="'AllowanceItem.Edit'" (click)="onEdit(allowance)"
+                    <button *appHasPermission="PERMISSIONS.DEPARTMENT.ALLOWANCE_ITEM.EDIT" (click)="onEdit(allowance)"
                       class="p-2 text-[var(--color-info)] hover:text-[var(--color-info)]/80 hover:bg-[var(--color-info)]/10 rounded-lg transition-colors"
                       [title]="'allowance.edit' | translate">
                       <lucide-angular [img]="Edit2" class="h-4 w-4"></lucide-angular>
                     </button>
 
                     <!-- Delete Button -->
-                    <button *appHasPermission="'AllowanceItem.Delete'" (click)="onDelete(allowance)"
+                    <button *appHasPermission="PERMISSIONS.DEPARTMENT.ALLOWANCE_ITEM.DELETE" (click)="onDelete(allowance)"
                       class="p-2 text-[var(--color-error)] hover:text-[var(--color-error)]/80 hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
                       [title]="'allowance.delete' | translate">
                       <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>

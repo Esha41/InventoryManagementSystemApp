@@ -87,14 +87,14 @@
 
           <!-- Primary: Add Inventory / Add Weapon — top-right on desktop, first on stacked mobile -->
           <ng-container *ngIf="store.activeTab() !== 'batch'">
-            <button *appHasPermission="'Inventory.Create'" (click)="orchestrator.onAddInventory()"
+            <button *appHasPermission="PERMISSIONS.WAREHOUSE.INVENTORY.CREATE_CLAIM" (click)="orchestrator.onAddInventory()"
               class="order-first sm:order-last px-6 py-3 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors shadow-sm w-full sm:w-auto justify-center flex">
               + {{ 'warehouseInventory.addInventory' | translate }}
             </button>
           </ng-container>
 
           <ng-container *ngIf="store.activeTab() === 'batch'">
-            <button *appHasPermission="'Asset.Create'" (click)="orchestrator.onAddWeaponAsset()"
+            <button *appHasPermission="PERMISSIONS.ASSETS.ASSET.CREATE_CLAIM" (click)="orchestrator.onAddWeaponAsset()"
               class="order-first sm:order-last px-6 py-3 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors shadow-sm w-full sm:w-auto justify-center flex">
               + {{ 'warehouseInventory.addWeaponAsset' | translate }}
             </button>

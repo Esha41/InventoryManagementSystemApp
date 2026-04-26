@@ -4,6 +4,7 @@ import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, filter } from 'rxjs';
 import { LucideAngularModule, LayoutDashboard, House, Boxes, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Badge, FileText, Plus, TrendingUp, File, RotateCcw, Settings, Warehouse, ClipboardList, Package, Building2, GitBranch, Mail, Upload, BarChart3, Database, Calendar, Megaphone, BookMarked, Clock } from 'lucide-angular';
+import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { TranslationService } from '@services/translation.service';
 
@@ -67,20 +68,20 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       label: 'nav.dashboard',
       icon: House,
       route: '/dashboard',
-      permissions: ['dashboard_view']
+      permissions: [PERMISSIONS.DASHBOARD.VIEW]
     },
     {
       label: 'nav.inventoryDashboard',
       icon: Boxes,
       route: '/inventory-dashboard',
-      permissions: ['inventoryDashboard']
+      permissions: [PERMISSIONS.INVENTORY.DASHBOARD_MENU]
     },
 
     {
       label: 'nav.analytics',
       icon: TrendingUp,
       route: '/admin/analytics-dashboard',
-      permissions: ['analytics.page']
+      permissions: [PERMISSIONS.ADMIN.ANALYTICS.PAGE]
     },
     // Temporarily commented out - not needed for now but accessible from other routes
     // {
@@ -98,56 +99,56 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     {
       label: 'nav.department',
       icon: Building2,
-      permissions: ['allowanceitem.page', 'Permissions.ItemDepartmentAssignment.Page'],
+      permissions: [PERMISSIONS.DEPARTMENT.ALLOWANCE_ITEM.PAGE, PERMISSIONS.DEPARTMENT.ITEM_DEPARTMENT_ASSIGNMENT.PAGE],
       children: [
         {
           label: 'nav.allowance',
           route: '/department/allowance',
-          permissions: ['allowanceitem.page']
+          permissions: [PERMISSIONS.DEPARTMENT.ALLOWANCE_ITEM.PAGE]
         },
         {
           label: 'nav.itemDepartmentAssignment',
           route: '/department/item-department-assignment',
-          permissions: ['Permissions.ItemDepartmentAssignment.Page']
+          permissions: [PERMISSIONS.DEPARTMENT.ITEM_DEPARTMENT_ASSIGNMENT.PAGE]
         }
       ]
     },
     {
       label: 'nav.requestManagement',
       icon: ClipboardList,
-      permissions: ['order.page', 'return.page', 'discard.page'],
+      permissions: [PERMISSIONS.REQUESTS.ORDER.PAGE, PERMISSIONS.REQUESTS.RETURN_REQUEST.PAGE_NAV, PERMISSIONS.REQUESTS.DISCARD.PAGE_NAV],
       children: [
         {
           label: 'nav.newIssueRequest',
           route: '/requests/new-issue-request',
-          permissions: ['order.page']
+          permissions: [PERMISSIONS.REQUESTS.ORDER.PAGE]
         },
         {
           label: 'nav.newReturnRequest',
           route: '/requests/return-request',
-          permissions: ['return.page']
+          permissions: [PERMISSIONS.REQUESTS.RETURN_REQUEST.PAGE_NAV]
         },
         {
           label: 'nav.newDiscardRequest',
           route: '/requests/discard-request',
-          permissions: ['discard.page']
+          permissions: [PERMISSIONS.REQUESTS.DISCARD.PAGE_NAV]
         }
       ]
     },
     {
       label: 'nav.requestsManagement',
       icon: FileText,
-      permissions: ['order.page', 'request.page', 'requestReciever.page'],
+      permissions: [PERMISSIONS.REQUESTS.ORDER.PAGE, PERMISSIONS.REQUESTS.REQUEST.PAGE, PERMISSIONS.REQUESTS.RECEIVER.PAGE],
       children: [
         {
           label: 'nav.requestsOverview',
           route: '/requests/requests-management',
-          permissions: ['viewrequest.page', 'request.page', 'requestReciever.page']
+          permissions: [PERMISSIONS.REQUESTS.VIEW_REQUEST.PAGE, PERMISSIONS.REQUESTS.REQUEST.PAGE, PERMISSIONS.REQUESTS.RECEIVER.PAGE]
         },
         {
           label: 'nav.orderReport',
           route: '/requests/requests-management/order-report',
-          permissions: ['viewrequest.page', 'request.page', 'requestReciever.page']
+          permissions: [PERMISSIONS.REQUESTS.VIEW_REQUEST.PAGE, PERMISSIONS.REQUESTS.REQUEST.PAGE, PERMISSIONS.REQUESTS.RECEIVER.PAGE]
         }
       ]
     },
@@ -166,19 +167,19 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       label: 'nav.addAsset',
       icon: Plus,
       route: '/assets/add-asset',
-      permissions: ['ammunition.create', 'weapon.create', 'explosive.create']
+      permissions: [PERMISSIONS.ASSETS.AMMUNITION.CREATE, PERMISSIONS.ASSETS.WEAPON.CREATE, PERMISSIONS.ASSETS.EXPLOSIVE.CREATE]
     },
     {
       label: 'nav.assetList',
       icon: List,
       route: '/assets/asset-list',
-      permissions: ['ammunition.page', 'weapon.page', 'explosive.page']
+      permissions: [PERMISSIONS.ASSETS.AMMUNITION.PAGE, PERMISSIONS.ASSETS.WEAPON.PAGE, PERMISSIONS.ASSETS.EXPLOSIVE.PAGE]
     },
     {
       label: 'nav.weaponAssetMaster',
       icon: Package,
       route: '/assets/weapon-asset-master',
-      permissions: ['asset.page', 'asset.view']
+      permissions: [PERMISSIONS.ASSETS.ASSET.PAGE, PERMISSIONS.ASSETS.ASSET.VIEW]
     },
     // Temporarily commented out - contains dummy data, will be implemented later
     // {
@@ -191,151 +192,151 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       label: 'nav.warehouse',
       icon: Warehouse,
       route: '/warehouse',
-      permissions: ['warehousepage.page', 'warehousepage.view']
+      permissions: [PERMISSIONS.WAREHOUSE.PAGE.PAGE, PERMISSIONS.WAREHOUSE.PAGE.VIEW]
     },
     {
       label: 'nav.depotManagement',
       icon: Warehouse,
-      route: '/depot-management',
-      permissions: ['depots.page']
+      route: '/admin/depot-management',
+      permissions: [PERMISSIONS.ADMIN.DEPOTS.PAGE]
     },
     {
       label: 'nav.reports',
       icon: BarChart3,
       permissions: [
-        'inventorySummaryReportPage',
-        'lowStockReportPage',
-        'expiringLotsReportPage',
-        'ReportDashboard'
+        PERMISSIONS.INVENTORY.SUMMARY_REPORT.PAGE,
+        PERMISSIONS.INVENTORY.LOW_STOCK_REPORT.PAGE,
+        PERMISSIONS.INVENTORY.EXPIRING_LOTS_REPORT.PAGE,
+        PERMISSIONS.REPORTS.DASHBOARD
       ],
       children: [
         {
           label: 'nav.inventoryReports',
-          permissions: ['inventorySummaryReportPage', 'lowStockReportPage', 'expiringLotsReportPage'],
+          permissions: [PERMISSIONS.INVENTORY.SUMMARY_REPORT.PAGE, PERMISSIONS.INVENTORY.LOW_STOCK_REPORT.PAGE, PERMISSIONS.INVENTORY.EXPIRING_LOTS_REPORT.PAGE],
           children: [
             {
               label: 'nav.inventorySummary',
               route: '/inventory-summary',
-              permissions: ['inventorySummaryReportPage']
+              permissions: [PERMISSIONS.INVENTORY.SUMMARY_REPORT.PAGE]
             },
             {
               label: 'nav.lowStock',
               route: '/inventory-dashboard/low-stock',
-              permissions: ['lowStockReportPage']
+              permissions: [PERMISSIONS.INVENTORY.LOW_STOCK_REPORT.PAGE]
             },
             {
               label: 'nav.expiringLots',
               route: '/inventory-dashboard/expiring-lots',
-              permissions: ['expiringLotsReportPage']
+              permissions: [PERMISSIONS.INVENTORY.EXPIRING_LOTS_REPORT.PAGE]
             }
           ]
         },
         {
           label: 'nav.reportDashboard',
           route: '/reports/report-dashboard',
-          permissions: ['ReportDashboard']
+          permissions: [PERMISSIONS.REPORTS.DASHBOARD]
         }
       ]
     },
     {
       label: 'nav.biTool',
       icon: FileText,
-      permissions: ['ReportDesigner', 'ScheduledReports'],
+      permissions: [PERMISSIONS.REPORTS.DESIGNER, PERMISSIONS.REPORTS.SCHEDULED],
       children: [
         {
           label: 'nav.reportDesigner',
           route: '/reports/report-designer',
-          permissions: ['ReportDesigner']
+          permissions: [PERMISSIONS.REPORTS.DESIGNER]
         },
         {
           label: 'nav.scheduledReports',
           route: '/reports/scheduled-reports',
-          permissions: ['ScheduledReports']
+          permissions: [PERMISSIONS.REPORTS.SCHEDULED]
         }
       ]
     },
     {
       label: 'nav.admin',
       isHeader: true,
-      permissions: ['systemusers.page', 'admindashboard.page']
+      permissions: [PERMISSIONS.ADMIN.SYSTEM_USERS.PAGE, PERMISSIONS.ADMIN.DASHBOARD.PAGE]
     },
     {
       label: 'nav.adminDashboard',
       icon: Badge,
       route: '/admin/dashboard',
-      permissions: ['admindashboard.page', 'admindashboard.view']
+      permissions: [PERMISSIONS.ADMIN.DASHBOARD.PAGE, PERMISSIONS.ADMIN.DASHBOARD.VIEW]
     },
     {
       label: 'nav.manageAdmins',
       icon: Users,
       route: '/admin/manage-admins',
-      permissions: ['systemusers.page']
+      permissions: [PERMISSIONS.ADMIN.SYSTEM_USERS.PAGE]
     },
     {
       label: 'nav.lookupTables',
       icon: Database,
       route: '/admin/lookup-tables',
-      permissions: ['Permissions.LookupTables.Page']
+      permissions: [PERMISSIONS.ADMIN.LOOKUP_TABLES.PAGE]
     },
     {
       label: 'nav.adminRoles',
       icon: Badge,
       route: '/admin/roles',
-      permissions: ['roles.page']
+      permissions: [PERMISSIONS.ADMIN.ROLES.PAGE]
     },
     {
       label: 'nav.rolePermissions',
       icon: Settings,
       route: '/admin/role-permissions',
-      permissions: ['roles.page']
+      permissions: [PERMISSIONS.ADMIN.ROLES.PAGE]
     },
     {
       label: 'nav.ldapSettings',
       icon: Settings,
       route: '/settings/ldap-settings',
-      permissions: ['ldapSettings.page']
+      permissions: [PERMISSIONS.SETTINGS.LDAP.PAGE_NAV]
     },
     {
       label: 'nav.emailSettings',
       icon: Mail,
       route: '/settings/email-settings',
-      permissions: ['emailsettings.page']
+      permissions: [PERMISSIONS.SETTINGS.EMAIL.PAGE]
     },
     {
       label: 'nav.adminImportExport',
       icon: Upload,
       route: '/admin/import-export',
-      permissions: ['canImportData']
+      permissions: [PERMISSIONS.ADMIN.IMPORT_DATA.CAN_IMPORT]
     },
     {
       label: 'nav.workflow',
       icon: GitBranch,
       route: '/workflow',
-      permissions: ['workflow.page']
+      permissions: [PERMISSIONS.WORKFLOW.PAGE]
     },
     {
       label: 'nav.stockNotificationSettings',
       icon: Mail,
       route: '/settings/stock-notification-settings',
-      permissions: ['stockNotificationSettingsPage']
+      permissions: [PERMISSIONS.SETTINGS.STOCK_NOTIFICATIONS.PAGE]
     },
     {
       label: 'nav.orderAutoRejectSettings',
       icon: Clock,
       route: '/settings/order-auto-reject-settings',
-      permissions: ['orderAutoRejectSettings.page']
+      permissions: [PERMISSIONS.SETTINGS.ORDER_AUTO_REJECT.PAGE]
     },
     {
       label: 'nav.helpCenterAdmin',
       icon: BookMarked,
       route: '/admin/help-center',
-      permissions: ['helpcenter.page', 'helpcenter.view']
+      permissions: [PERMISSIONS.ADMIN.HELP_CENTER.PAGE, PERMISSIONS.ADMIN.HELP_CENTER.VIEW]
     },
     {
       label: 'nav.announcements',
       icon: Megaphone,
       route: '/admin/announcements',
-      permissions: ['announcements.page', 'announcements.view']
+      permissions: [PERMISSIONS.ADMIN.ANNOUNCEMENTS.PAGE, PERMISSIONS.ADMIN.ANNOUNCEMENTS.VIEW]
     }
   ];
 

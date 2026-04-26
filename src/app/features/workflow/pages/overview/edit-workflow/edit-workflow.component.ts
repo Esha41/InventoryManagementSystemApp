@@ -1,4 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { PERMISSIONS } from '@constants/permissions.constants';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -49,6 +51,8 @@ interface EditStepForm {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EditWorkflowComponent implements OnInit, OnDestroy {
+  readonly PERMISSIONS = PERMISSIONS;
+
   readonly Save = Save;
   readonly X = X;
   readonly ArrowLeft = ArrowLeft;

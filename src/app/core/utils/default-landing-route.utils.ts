@@ -1,3 +1,4 @@
+import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 
 /**
@@ -6,22 +7,22 @@ import { BackendAuthService } from '@services/backend-auth.service';
  * Keeps inventory-only users off `/dashboard` (they lack `dashboard_view` and would hit access denied).
  */
 export function getDefaultLandingUrl(auth: BackendAuthService): string {
-  if (auth.hasPermission('dashboard_view')) {
+  if (auth.hasPermission(PERMISSIONS.DASHBOARD.VIEW)) {
     return '/dashboard';
   }
   if (
-    auth.hasPermission('Permissions.AdminDashboard.Page') ||
-    auth.hasPermission('admindashboard.page') ||
-    auth.hasPermission('Permissions.AdminDashboard.View')
+    auth.hasPermission(PERMISSIONS.ADMIN.DASHBOARD.API_PAGE) ||
+    auth.hasPermission(PERMISSIONS.ADMIN.DASHBOARD.PAGE) ||
+    auth.hasPermission(PERMISSIONS.ADMIN.DASHBOARD.API_VIEW)
   ) {
     return '/admin/dashboard';
   }
-  if (auth.hasPermission('InventoryDashboard')) {
+  if (auth.hasPermission(PERMISSIONS.INVENTORY.DASHBOARD)) {
     return '/inventory-dashboard';
   }
   if (
-    auth.hasPermission('Permissions.SystemUsers.Page') ||
-    auth.hasPermission('systemusers.page')
+    auth.hasPermission(PERMISSIONS.ADMIN.SYSTEM_USERS.API_PAGE) ||
+    auth.hasPermission(PERMISSIONS.ADMIN.SYSTEM_USERS.PAGE)
   ) {
     return '/admin/manage-admins';
   }

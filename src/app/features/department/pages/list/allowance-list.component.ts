@@ -16,6 +16,7 @@ import { WeaponDto } from '@models/weapon.model';
 import { ExplosiveService } from '@assets/services/explosive.service';
 import { ExplosiveDto } from '@models/explosive.model';
 import { API_ENDPOINTS, defaultPageSize } from '@constants/app.constants';
+import { PERMISSIONS } from '@constants/permissions.constants';
 import { ButtonComponent } from '@components/button/button.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { TranslationService } from '@services/translation.service';
@@ -57,6 +58,8 @@ import { ErrorHandler } from '@utils/error-handler.utils';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AllowanceListComponent implements OnInit, OnDestroy {
+  readonly PERMISSIONS = PERMISSIONS;
+
   readonly Plus = Plus;
   readonly Edit2 = Edit2;
   readonly Trash2 = Trash2;
@@ -132,7 +135,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
 
   private initializeUserContext(): void {
     // Check if user can view all departments (SuperAdmin or has permission)
-    const hasPermission = this.backendAuthService.hasPermission('AllowanceItemViewAllDepartments');
+    const hasPermission = this.backendAuthService.hasPermission(PERMISSIONS.DEPARTMENT.ALLOWANCE_VIEW_ALL_DEPARTMENTS);
     // Align with backend: Only SuperAdmin or explicit permission grants view all
     this.isAdminUser = this.backendAuthService.isSuperAdmin() || hasPermission;
 
