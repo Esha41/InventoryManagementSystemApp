@@ -67,7 +67,7 @@
     "statuses": {
       "Pending": "قيد الإجراء",
       "Approved": "تمت الموافقة",
-      "Rejected": "تم الرفض",
+      "Rejected": "مرفوض",
       "Returned": "أرجاع للمعاينة",
       "ReturnedForReview": "أرجاع للمعاينة",
       "Submitted": "تم التقديم",

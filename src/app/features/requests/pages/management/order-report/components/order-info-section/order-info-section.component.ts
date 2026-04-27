@@ -4,6 +4,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { OrderSummary } from '@models/order-report.model';
 import { mapOrderPriorityToString } from '@utils/priority.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { getApprovalStatusBadgeClass } from '@utils/status-class.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 
@@ -23,6 +24,28 @@ export class OrderInfoSectionComponent {
   @Input() isRTL: boolean = false;
 
   constructor(private translate: TranslateService) {}
+
+  getOrderSummaryStatusClass(statusKey: string): string {
+    if (!statusKey) {
+      return 'text-[var(--color-text-muted)] bg-[var(--color-background-muted)] border-[var(--color-border)]';
+    }
+
+    const key = statusKey.toLowerCase();
+    if (key.includes('approved') || key.includes('completed')) {
+      return getApprovalStatusBadgeClass('Approved');
+    }
+    if (key.includes('rejected') || key.includes('cancelled')) {
+      return getApprovalStatusBadgeClass('Rejected');
+    }
+    if (key.includes('returned')) {
+      return getApprovalStatusBadgeClass('ReturnedForReview');
+    }
+    if (key.includes('underprocess') || key.includes('pending') || key.includes('new')) {
+      return getApprovalStatusBadgeClass('Pending');
+    }
+
+    return 'text-[var(--color-text-muted)] bg-[var(--color-background-muted)] border-[var(--color-border)]';
+  }
 
   getPriorityColorClass(priority: string): string {
     const priorityLabel = priority.toLowerCase();

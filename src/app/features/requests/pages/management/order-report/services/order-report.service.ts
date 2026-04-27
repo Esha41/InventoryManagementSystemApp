@@ -297,7 +297,7 @@ export class OrderReportService {
       step: '1',
       role: requesterRoleName,
       approver: requesterApproverName,
-      status: 'approved',
+      status: 'submitted',
       date: requestDate || null, // Raw date for pipe formatting
       notes: 'Request submitted'
     };
@@ -324,22 +324,20 @@ export class OrderReportService {
       const approverBase = this.getLocalizedApproverName(step);
       const extras: string[] = [];
       if (step.isDelegation === true || step.isDelegation === 1) {
-        extras.push(this.translate.instant('workflowApprovalDetail.actedThroughDelegation'));
-      }
-      if (
-        step.changedByRoleId &&
-        step.applicationRoleId &&
-        String(step.changedByRoleId) !== String(step.applicationRoleId)
-      ) {
-        const performedName =
+        const changedByRoleName =
           currentLang === 'ar'
             ? step.changedByRoleNameAr || step.changedByRoleName
             : step.changedByRoleName || step.changedByRoleNameAr;
-        if (performedName) {
-          extras.push(`${this.translate.instant('workflowApprovalDetail.performedAsRole')}: ${performedName}`);
-        }
+        const delegationMessage = this.translate.instant(this.getDelegationMessageKey(step.status));
+        const delegationByRoleLabel = this.translate.instant('workflowApprovalDetail.delegationByRoleLabel');
+
+        extras.push(
+          changedByRoleName
+            ? `${delegationMessage} ${delegationByRoleLabel} ${changedByRoleName}`
+            : delegationMessage
+        );
       }
-      const approverLine = [approverBase, ...extras].filter(Boolean).join(' — ');
+      const approverLine = [approverBase, ...extras].filter(Boolean).join('\n');
 
       return {
         step: (step.steporder ? (step.steporder + 1) : (index + 2)).toString(),
@@ -347,6 +345,7 @@ export class OrderReportService {
         approver: approverLine,
         status: step.status?.toLowerCase() as
           | 'pending'
+          | 'submitted'
           | 'approved'
           | 'rejected'
           | 'in-progress'
@@ -356,6 +355,20 @@ export class OrderReportService {
         notes: step.comments || ''
       };
     });
+  }
+
+  private getDelegationMessageKey(status?: string): string {
+    switch (status) {
+      case 'Approved':
+        return 'workflowApprovalDetail.approvedThroughDelegation';
+      case 'Rejected':
+        return 'workflowApprovalDetail.rejectedThroughDelegation';
+      case 'Returned':
+      case 'ReturnedForReview':
+        return 'workflowApprovalDetail.returnedThroughDelegation';
+      default:
+        return 'workflowApprovalDetail.actedThroughDelegation';
+    }
   }
 
   private buildFallbackApprovalSteps(
@@ -415,7 +428,7 @@ export class OrderReportService {
       step: '1',
       role: requesterRoleName,
       approver: requesterApproverName,
-      status: 'approved',
+      status: 'submitted',
       date: requestDate || null, // Raw date for pipe formatting
       notes: 'Request submitted'
     };

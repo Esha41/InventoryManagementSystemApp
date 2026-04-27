@@ -116,7 +116,7 @@
       },
       "noApprovalHistory": "No approval history available yet.",
       "list": {
-        "title": "Orders",
+        "title": "Requests",
         "count": "{{count}} orders",
         "empty": "No orders available yet.",
         "unknown": "Unknown department"

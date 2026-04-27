@@ -7,6 +7,7 @@ import { OrderDto } from '@models/order.model';
 import { mapOrderStatusFromApi } from '@utils/status.utils';
 import { mapOrderPriorityToString } from '@utils/priority.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { getApprovalStatusBadgeClass } from '@utils/status-class.utils';
 import { TranslateService } from '@ngx-translate/core';
 
 /**
@@ -92,6 +93,24 @@ export class OrderListComponent implements OnChanges, OnInit {
         return 'dashboard.statusLabels.returnedForReview';
       default:
         return 'dashboard.statusLabels.new';
+    }
+  }
+
+  getOrderListStatusClass(status: number | string): string {
+    const label = mapOrderStatusFromApi(status);
+    switch (label) {
+      case 'Approved':
+        return getApprovalStatusBadgeClass('Approved');
+      case 'Rejected':
+      case 'Cancelled':
+        return getApprovalStatusBadgeClass('Rejected');
+      case 'Returned for Review':
+        return getApprovalStatusBadgeClass('ReturnedForReview');
+      case 'New':
+      case 'In Progress':
+        return getApprovalStatusBadgeClass('Pending');
+      default:
+        return 'text-[var(--color-text-muted)] bg-[var(--color-background-muted)] border-[var(--color-border)]';
     }
   }
 

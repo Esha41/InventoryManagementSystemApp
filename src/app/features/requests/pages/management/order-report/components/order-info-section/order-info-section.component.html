@@ -35,7 +35,10 @@
     <div class="print-info-item">
       <span class="print-info-label">{{ 'requestsManagement.orderReport.labels.status' | translate
         }}:</span>
-      <span class="print-info-value">{{ orderSummary.status | translate }}</span>
+      <span class="print-info-value inline-flex items-center px-2.5 py-1 rounded-md border text-xs font-semibold w-fit"
+        [ngClass]="getOrderSummaryStatusClass(orderSummary.status)">
+        {{ orderSummary.status | translate }}
+      </span>
     </div>
     <div class="print-info-item">
       <span class="print-info-label">{{ 'requestsManagement.orderReport.labels.requestDate' | translate

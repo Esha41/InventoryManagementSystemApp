@@ -7,9 +7,10 @@
     <div *ngFor="let step of workflow; let i = index" class="approval-card">
       <div class="approval-card-header">
         <span class="approval-step-number">{{ step.step }}</span>
-        <span class="approval-status" [ngClass]="'status-' + step.status">
+        <span class="approval-status border" [ngClass]="getStepStatusClass(step.status)">
           <ng-container [ngSwitch]="step.status">
-            <span *ngSwitchCase="'approved'">{{ 'requestsManagement.orderReport.workflowStatus.approved' | translate }}</span>
+            <span *ngSwitchCase="'submitted'">{{ 'common.statuses.Submitted' | translate }}</span>
+            <span *ngSwitchCase="'approved'">{{ 'common.statuses.Approved' | translate }}</span>
             <span *ngSwitchCase="'rejected'">{{ 'common.statuses.Rejected' | translate }}</span>
             <span *ngSwitchCase="'pending'">{{ 'common.statuses.Pending' | translate }}</span>
             <span *ngSwitchCase="'in-progress'">{{ 'common.statuses.Processing' | translate }}</span>
@@ -22,7 +23,7 @@
       </div>
       <div class="approval-card-body">
         <div class="approval-role">{{ step.role }}</div>
-        <div class="approval-approver">{{ step.approver }}</div>
+        <div class="approval-approver whitespace-pre-line">{{ step.approver }}</div>
         <div class="approval-date" *ngIf="step.date">{{ step.date | appDateTime }}</div>
         <div class="approval-notes"
           *ngIf="step.notes && step.notes.trim() !== '' && step.notes !== 'Request submitted'">
