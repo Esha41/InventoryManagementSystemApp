@@ -8,7 +8,7 @@ import { TranslationService } from '@services/translation.service';
 import { ReportService } from '@reports/services/report.service';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { ConfigService } from '@services/config.service';
-import { take } from 'rxjs/operators';
+import { UserContextService } from '@services/user-context.service';
 
 @Component({
   selector: 'app-report-viewer',
@@ -38,6 +38,7 @@ export class ReportViewerComponent implements OnInit {
     private translationService: TranslationService,
     private reportService: ReportService,
     private authService: BackendAuthService,
+    private userContextService: UserContextService,
     private configService: ConfigService
   ) {
     this.host = this.configService.reportingHost;
@@ -53,7 +54,7 @@ export class ReportViewerComponent implements OnInit {
     const departmentId = currentUser?.departmentId;
     
     // Get superadmin status from claims
-    const isSuperAdmin = this.authService.isSuperAdmin();
+    const isSuperAdmin = this.authService.isSuperAdmin() ||  this.userContextService.isAdminUser() ;
     
     // Build query parameters
     const queryParams: string[] = [];
