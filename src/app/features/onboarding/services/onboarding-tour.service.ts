@@ -9,6 +9,7 @@ import { IOnboardingTourProvider } from '@core/interfaces/onboarding-tour-provid
 import { OnboardingApiService } from './onboarding-api.service';
 import { getTourSteps } from '../config/tour-steps.config';
 import { getPageTourSteps } from '../config/page-tour-steps.config';
+import { environment } from '@environments/environment';
 
 const ONBOARDING_CACHE_PREFIX = 'onboarding_completed_';
 const PAGE_TOUR_CACHE_PREFIX = 'page_tour_completed_';
@@ -23,6 +24,7 @@ export class OnboardingTourService implements IOnboardingTourProvider, OnDestroy
   private tourInProgress = false;
   private pageTourInProgress = false;
   private isRestartingForLangSwitch = false;
+  private readonly isTourEnabled = environment.enableOnboardingTour === true;
 
   constructor(
     private onboardingApi: OnboardingApiService,
@@ -37,6 +39,8 @@ export class OnboardingTourService implements IOnboardingTourProvider, OnDestroy
   }
 
   checkAndStartTour(): void {
+    if (!this.isTourEnabled) return;
+
     const user = this.authService.getCurrentUser();
     if (!user?.id) return;
 
@@ -61,6 +65,7 @@ export class OnboardingTourService implements IOnboardingTourProvider, OnDestroy
   }
 
   startTour(): void {
+    if (!this.isTourEnabled) return;
     if (this.tourInProgress) return;
     this.tourInProgress = true;
 
@@ -126,6 +131,7 @@ export class OnboardingTourService implements IOnboardingTourProvider, OnDestroy
   }
 
   checkAndStartPageTour(pageKey: string): void {
+    if (!this.isTourEnabled) return;
     if (this.tourInProgress || this.pageTourInProgress) return;
 
     const user = this.authService.getCurrentUser();

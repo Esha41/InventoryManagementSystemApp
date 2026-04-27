@@ -44,17 +44,17 @@
                 <div class="flex-1">
                   <p class="font-semibold text-[var(--color-text)] mb-1">{{ getApproverName(approval) ||
                     ('workflowApprovalDetail.unknownApprover' | translate) }}</p>
-                  <p class="text-xs text-[var(--color-text-muted)]"
-                    *ngIf="approval.applicationRoleName || approval.applicationRoleNameAr">
-                    {{ getLocalizedValue(approval.applicationRoleName, approval.applicationRoleNameAr) }}
-                  </p>
-                  <p class="text-xs text-amber-700 dark:text-amber-400 mt-1"
+                  <p class="text-xs text-amber-700 dark:text-amber-400 mt-1 mb-1"
                     *ngIf="approval.isDelegation === true || approval.isDelegation === 1">
                     {{ getDelegationMessageKey(approval) | translate }}
                     <ng-container *ngIf="approval.changedByRoleName || approval.changedByRoleNameAr">
                       {{ 'workflowApprovalDetail.delegationByRoleLabel' | translate }}
                       {{ getLocalizedValue(approval.changedByRoleName, approval.changedByRoleNameAr) }}
                     </ng-container>
+                  </p>
+                  <p class="text-xs text-[var(--color-text-muted)]"
+                    *ngIf="approval.applicationRoleName || approval.applicationRoleNameAr">
+                    {{ getLocalizedValue(approval.applicationRoleName, approval.applicationRoleNameAr) }}
                   </p>
                   <p class="text-xs text-[var(--color-text-muted)] mt-1"
                     *ngIf="approval.eligibleParallelRoleNamesEn || approval.eligibleParallelRoleNamesAr">

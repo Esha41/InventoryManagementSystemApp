@@ -9,6 +9,7 @@ export const environment: Environment = {
   notificationHubUrl: 'https://localhost:7148/hubs/notification',
   idleWarningAfterMinutes: 15,
   idleLogoutCountdownSeconds: 60,
-  persistAuthAcrossSessions: true
+  persistAuthAcrossSessions: true,
+  enableOnboardingTour: true
 };
 

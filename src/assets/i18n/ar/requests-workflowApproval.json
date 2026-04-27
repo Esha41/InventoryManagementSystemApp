@@ -220,5 +220,10 @@
     "update": "تحديث",
     "processReturnItems": "مراجعة وإكمال الطلب",
     "goToProcessReturnItems": "مراجعة وإكمال الطلب"
+    ,"approvedThroughDelegation": "تمت الموافقة بالإنـابـة"
+    ,"rejectedThroughDelegation": "تم الرفض بالإنـابـة"
+    ,"returnedThroughDelegation": "تم الإرجاع بالإنـابـة"
+    ,"actedThroughDelegation": "تم الإجراء بالإنـابـة"
+    ,"delegationByRoleLabel": "بواسطة"
   }
 }

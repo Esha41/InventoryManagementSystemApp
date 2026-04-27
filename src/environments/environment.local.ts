@@ -10,5 +10,6 @@ export const environment: Environment = {
   mockData: false,
   debugMode: true,
   idleWarningAfterMinutes: 15,
-  idleLogoutCountdownSeconds: 60
+  idleLogoutCountdownSeconds: 60,
+  enableOnboardingTour: false
 };

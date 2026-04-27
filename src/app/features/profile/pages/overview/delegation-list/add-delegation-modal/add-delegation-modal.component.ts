@@ -8,6 +8,7 @@ import { CreateUserDelegation } from '@models/user-delegation';
 import { DelegationScope, getAvailableDelegationScopes } from '@models/delegation-scope.enum';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { LucideAngularModule, X } from 'lucide-angular';
+import { TranslationService } from '@services/translation.service';
 
 @Component({
     selector: 'app-add-delegation-modal',
@@ -39,6 +40,7 @@ export class AddDelegationModalComponent implements OnInit {
     constructor(
         private fb: FormBuilder,
         private delegationService: UserDelegationService,
+        private translationService: TranslationService,
         private cdr: ChangeDetectorRef
     ) {
         this.form = this.fb.group({
@@ -60,13 +62,23 @@ export class AddDelegationModalComponent implements OnInit {
                 if (users && users.length > 0) {
                     this.users = users;
                     this.userOptions = users.map(user => ({
-                        label: user.nameEn || user.userName || 'Unknown User',
+                        label: this.getUserDisplayLabel(user),
                         value: user.id
                     }));
                     this.cdr.markForCheck();
                 }
             }
         });
+    }
+
+    private getUserDisplayLabel(user: BackendUserDto): string {
+        const isArabic = this.translationService.getCurrentLanguage() === 'ar';
+        const name = isArabic
+            ? (user.nameAr || user.fullNameAR || user.nameEn || user.fullNameEN || user.userName)
+            : (user.nameEn || user.fullNameEN || user.nameAr || user.fullNameAR || user.userName);
+
+        const militaryId = user.militaryId || user.militoryId;
+        return militaryId ? `${name} (${militaryId})` : (name || 'Unknown User');
     }
 
     submit(): void {

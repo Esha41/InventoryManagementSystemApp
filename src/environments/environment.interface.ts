@@ -24,4 +24,5 @@ export interface Environment {
   /** Seconds shown in the modal before logout if the user takes no action. */
   idleLogoutCountdownSeconds?: number;
   persistAuthAcrossSessions?: boolean;
+  enableOnboardingTour?: boolean;
 }
