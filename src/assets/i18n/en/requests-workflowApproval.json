@@ -219,5 +219,10 @@
     "update": "Update",
     "processReturnItems": "Review and complete the request",
     "goToProcessReturnItems": "Review & complete the request"
+    ,"approvedThroughDelegation": "Approved through delegation"
+    ,"rejectedThroughDelegation": "Rejected through delegation"
+    ,"returnedThroughDelegation": "Returned through delegation"
+    ,"actedThroughDelegation": "Processed through delegation"
+    ,"delegationByRoleLabel": "By"
   }
 }

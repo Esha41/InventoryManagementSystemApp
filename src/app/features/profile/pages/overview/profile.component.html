@@ -29,12 +29,6 @@
       containerClass="max-w-2xl mx-auto" contentClass="bg-white rounded-2xl shadow-custom-lg border border-red-200 p-8">
     </app-error-state>
 
-    <!-- Delegation Section -->
-    <div *ngIf="!loading && currentUser"
-      class="bg-[var(--color-background)] rounded-xl shadow-custom-lg border-2 border-[var(--color-border)] overflow-hidden">
-      <app-delegation-list></app-delegation-list>
-    </div>
-
     <!-- Profile Content -->
     <div *ngIf="!loading && currentUser" class="space-y-6">
       <!-- Profile Header Card -->
@@ -286,6 +280,12 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Delegation Section -->
+    <div *ngIf="!loading && currentUser"
+      class="bg-[var(--color-background)] rounded-xl shadow-custom-lg border-2 border-[var(--color-border)] overflow-hidden">
+      <app-delegation-list></app-delegation-list>
     </div>
 
     <!-- Onboarding Tour Section -->
