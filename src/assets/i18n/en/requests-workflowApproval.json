@@ -224,5 +224,6 @@
     ,"returnedThroughDelegation": "Returned through delegation"
     ,"actedThroughDelegation": "Processed through delegation"
     ,"delegationByRoleLabel": "By"
+    ,"performedAsRole": "Performed as"
   }
 }

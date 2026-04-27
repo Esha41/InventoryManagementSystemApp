@@ -121,19 +121,42 @@ export class WorkflowApprovalTimelineComponent implements OnDestroy {
   }
 
   showPerformedAsRole(approval: WorkflowApprovalStep): boolean {
-    if (
-      approval.isPending ||
-      approval.isDelegation === true ||
-      approval.isDelegation === 1 ||
-      !approval.changedByRoleId ||
-      !approval.applicationRoleId
-    ) {
+    if (approval.isPending || approval.isDelegation === true || approval.isDelegation === 1) {
       return false;
     }
-    if (!approval.changedByRoleName && !approval.changedByRoleNameAr) {
-      return false;
+
+    return (
+      approval.status === 'Approved' ||
+      approval.status === 'Rejected' ||
+      approval.status === 'Returned' ||
+      approval.status === 'ReturnedForReview'
+    );
+  }
+
+  getPerformedAsRoleValue(approval: WorkflowApprovalStep): string {
+    return (
+      this.getLocalizedValue(approval.changedByRoleName, approval.changedByRoleNameAr) ||
+      this.getLocalizedValue(approval.applicationRoleName, approval.applicationRoleNameAr) ||
+      ''
+    );
+  }
+
+  getNonDelegationActionKey(approval: WorkflowApprovalStep): string {
+    switch (approval.status) {
+      case 'Approved':
+        return 'common.statuses.Approved';
+      case 'Rejected':
+        return 'common.statuses.Rejected';
+      case 'Returned':
+      case 'ReturnedForReview':
+        return 'common.statuses.ReturnedForReview';
+      default:
+        return 'common.statuses.Pending';
     }
-    return String(approval.changedByRoleId) !== String(approval.applicationRoleId);
+  }
+
+  getByLabel(): string {
+    return this.translateService.instant('workflowApprovalDetail.delegationByRoleLabel');
   }
 
   /**

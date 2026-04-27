@@ -225,5 +225,6 @@
     ,"returnedThroughDelegation": "تم الإرجاع بالإنـابـة"
     ,"actedThroughDelegation": "تم الإجراء بالإنـابـة"
     ,"delegationByRoleLabel": "بواسطة"
+    ,"performedAsRole": "تم التنفيذ بواسطة"
   }
 }

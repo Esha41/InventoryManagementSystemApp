@@ -336,6 +336,19 @@ export class OrderReportService {
             ? `${delegationMessage} ${delegationByRoleLabel} ${changedByRoleName}`
             : delegationMessage
         );
+      } else {
+        const actionLabel = this.translate.instant(this.getNonDelegationActionKey(step.status));
+        const byLabel = this.translate.instant('workflowApprovalDetail.delegationByRoleLabel');
+        const performedRoleName =
+          currentLang === 'ar'
+            ? step.changedByRoleNameAr || step.changedByRoleName || step.applicationRoleNameAr || step.applicationRoleName
+            : step.changedByRoleName || step.changedByRoleNameAr || step.applicationRoleName || step.applicationRoleNameAr;
+
+        extras.push(
+          performedRoleName
+            ? `${actionLabel} ${byLabel} ${performedRoleName}`
+            : actionLabel
+        );
       }
       const approverLine = [approverBase, ...extras].filter(Boolean).join('\n');
 
@@ -368,6 +381,20 @@ export class OrderReportService {
         return 'workflowApprovalDetail.returnedThroughDelegation';
       default:
         return 'workflowApprovalDetail.actedThroughDelegation';
+    }
+  }
+
+  private getNonDelegationActionKey(status?: string): string {
+    switch (status) {
+      case 'Approved':
+        return 'common.statuses.Approved';
+      case 'Rejected':
+        return 'common.statuses.Rejected';
+      case 'Returned':
+      case 'ReturnedForReview':
+        return 'common.statuses.ReturnedForReview';
+      default:
+        return 'common.statuses.Pending';
     }
   }
 
