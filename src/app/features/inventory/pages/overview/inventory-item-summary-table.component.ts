@@ -188,12 +188,16 @@ export class InventoryItemSummaryTableComponent implements OnInit, OnDestroy {
 
   getItemTypeBadgeClass(type: number): string {
     const base =
-      'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border border-[var(--color-border)] bg-[var(--color-background-soft)]';
+      'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border';
     switch (type) {
-      case ItemType.Ammunition: return `${base} text-[var(--color-info)]`;
-      case ItemType.Weapon:     return `${base} text-[var(--color-error)]`;
-      case ItemType.Explosive:  return `${base} text-[var(--color-warning)]`;
-      default:                  return `${base} text-[var(--color-text-muted)]`;
+      case ItemType.Ammunition:
+        return `${base} border-[color-mix(in_srgb,var(--color-info)_35%,var(--color-border))] bg-[color-mix(in_srgb,var(--color-info)_14%,var(--color-background))] text-[var(--color-info)]`;
+      case ItemType.Weapon:
+        return `${base} border-[color-mix(in_srgb,var(--color-error)_35%,var(--color-border))] bg-[color-mix(in_srgb,var(--color-error)_14%,var(--color-background))] text-[var(--color-error)]`;
+      case ItemType.Explosive:
+        return `${base} border-[color-mix(in_srgb,var(--color-warning)_35%,var(--color-border))] bg-[color-mix(in_srgb,var(--color-warning)_14%,var(--color-background))] text-[var(--color-warning)]`;
+      default:
+        return `${base} border-[var(--color-border)] bg-[var(--color-background-soft)] text-[var(--color-text-muted)]`;
     }
   }
 

@@ -52,7 +52,7 @@
   background-color: var(--color-info);
   border-color: var(--color-info);
   color: var(--color-text-inverse);
-  opacity: 0.2;
+  opacity: 1;
 }
 
 /* Loading Animation */

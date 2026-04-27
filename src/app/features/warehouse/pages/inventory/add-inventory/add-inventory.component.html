@@ -3,8 +3,11 @@
   <div class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
     <div class="page-container py-4">
       <div class="flex flex-col items-start">
-        <button (click)="onCancel()"
-          class="flex items-center gap-2 shrink-0 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors self-start">
+        <button
+          type="button"
+          (click)="onCancel()"
+          class="detail-header-back-btn"
+          [attr.aria-label]="'addInventory.backToInventory' | translate">
           <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
           <span class="font-medium">{{ 'addInventory.backToInventory' | translate }}</span>
         </button>

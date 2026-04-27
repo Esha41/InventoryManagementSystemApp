@@ -33,11 +33,11 @@ export class ButtonComponent {
 
   // Computed signal for button classes
   buttonClasses = computed(() => {
-    const baseClasses = 'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2';
+    const baseClasses = 'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--color-background)]';
 
     const variantClasses = {
       primary: 'bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand-dark)] focus:ring-[var(--color-brand)]',
-      secondary: 'bg-[var(--color-text-muted)] text-white hover:bg-[var(--color-text)] focus:ring-[var(--color-text-muted)]',
+      secondary: 'bg-[var(--color-secondary)] text-[var(--color-secondary-text)] hover:bg-[var(--color-secondary-hover)] focus:ring-[var(--color-secondary)]',
       outline: 'border-2 border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-background-hover)] focus:ring-[var(--color-border)]',
       ghost: 'text-[var(--color-text)] hover:bg-[var(--color-background-hover)] focus:ring-[var(--color-background-active)]',
       danger: 'bg-[var(--color-error)] text-white hover:opacity-90 focus:ring-[var(--color-error)]'

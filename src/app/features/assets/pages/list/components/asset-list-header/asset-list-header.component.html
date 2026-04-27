@@ -5,21 +5,18 @@
   <div *ngIf="showAddButton"
     class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2 w-full sm:w-auto sm:justify-end">
       <button type="button" *appHasPermission="assetExportPerms" appPermissionMode="any" (click)="onExportClick()"
-        class="flex items-center justify-center gap-2 px-4 py-2.5 min-h-[2.75rem] rounded-lg text-white bg-[var(--color-success)] hover:opacity-90 transition-colors shadow-sm text-sm font-medium whitespace-nowrap"
-        [class.flex-row-reverse]="isRTL">
-        <lucide-angular [img]="Upload" class="w-4 h-4 flex-shrink-0"></lucide-angular>
+        class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white bg-[var(--color-success)] hover:opacity-90 transition-colors">
+        <lucide-angular [img]="Upload" class="h-3.5 w-3.5"></lucide-angular>
         <span>{{ 'common.exportToExcel' | translate }}</span>
       </button>
       <button type="button" *appHasPermission="assetCreatePerms" appPermissionMode="any" (click)="onImportClick()"
-        class="flex items-center justify-center gap-2 px-4 py-2.5 min-h-[2.75rem] rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm text-sm font-medium whitespace-nowrap"
-        [class.flex-row-reverse]="isRTL">
-        <lucide-angular [img]="Download" class="w-4 h-4 flex-shrink-0"></lucide-angular>
+        class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+        <lucide-angular [img]="Download" class="h-3.5 w-3.5"></lucide-angular>
         <span>{{ 'common.import' | translate }}</span>
       </button>
       <button type="button" *appHasPermission="assetCreatePerms" appPermissionMode="any" (click)="onTemplateClick()"
-        class="flex items-center justify-center gap-2 px-4 py-2.5 min-h-[2.75rem] rounded-lg text-white bg-gray-600 hover:bg-gray-700 transition-colors shadow-sm text-sm font-medium whitespace-nowrap"
-        [class.flex-row-reverse]="isRTL">
-        <lucide-angular [img]="FileText" class="w-4 h-4 flex-shrink-0"></lucide-angular>
+        class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-background-muted)] transition-colors">
+        <lucide-angular [img]="FileText" class="h-3.5 w-3.5"></lucide-angular>
         <span>{{ 'common.downloadTemplate' | translate }}</span>
       </button>
       <app-button *appHasPermission="assetCreatePerms" appPermissionMode="any" variant="primary" (click)="onAddClick()"
