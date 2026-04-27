@@ -54,7 +54,7 @@ export class ReportViewerComponent implements OnInit {
     const departmentId = currentUser?.departmentId;
     
     // Get superadmin status from claims
-    const isSuperAdmin = this.authService.isSuperAdmin() ||  this.userContextService.isAdminUser() ;
+    const isSuperAdmin = this.userContextService.isAdminUser() ;
     
     // Build query parameters
     const queryParams: string[] = [];
