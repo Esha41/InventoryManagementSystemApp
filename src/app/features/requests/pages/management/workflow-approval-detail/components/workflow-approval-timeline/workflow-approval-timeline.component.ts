@@ -125,6 +125,14 @@ export class WorkflowApprovalTimelineComponent implements OnDestroy {
       return false;
     }
 
+    if (!approval.changedByRoleId) {
+      return false;
+    }
+
+    if (approval.applicationRoleId && String(approval.changedByRoleId) === String(approval.applicationRoleId)) {
+      return false;
+    }
+
     return (
       approval.status === 'Approved' ||
       approval.status === 'Rejected' ||

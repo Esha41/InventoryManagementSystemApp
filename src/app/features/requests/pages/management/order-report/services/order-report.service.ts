@@ -337,18 +337,20 @@ export class OrderReportService {
             : delegationMessage
         );
       } else {
-        const actionLabel = this.translate.instant(this.getNonDelegationActionKey(step.status));
-        const byLabel = this.translate.instant('workflowApprovalDetail.delegationByRoleLabel');
-        const performedRoleName =
-          currentLang === 'ar'
-            ? step.changedByRoleNameAr || step.changedByRoleName || step.applicationRoleNameAr || step.applicationRoleName
-            : step.changedByRoleName || step.changedByRoleNameAr || step.applicationRoleName || step.applicationRoleNameAr;
+        if (step.changedByRoleId && String(step.changedByRoleId) !== String(step.applicationRoleId || '')) {
+          const actionLabel = this.translate.instant(this.getNonDelegationActionKey(step.status));
+          const byLabel = this.translate.instant('workflowApprovalDetail.delegationByRoleLabel');
+          const performedRoleName =
+            currentLang === 'ar'
+              ? step.changedByRoleNameAr || step.changedByRoleName || step.applicationRoleNameAr || step.applicationRoleName
+              : step.changedByRoleName || step.changedByRoleNameAr || step.applicationRoleName || step.applicationRoleNameAr;
 
-        extras.push(
-          performedRoleName
-            ? `${actionLabel} ${byLabel} ${performedRoleName}`
-            : actionLabel
-        );
+          extras.push(
+            performedRoleName
+              ? `${actionLabel} ${byLabel} ${performedRoleName}`
+              : actionLabel
+          );
+        }
       }
       const approverLine = [approverBase, ...extras].filter(Boolean).join('\n');
 
