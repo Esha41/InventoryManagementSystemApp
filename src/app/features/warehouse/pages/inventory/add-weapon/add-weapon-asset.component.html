@@ -569,69 +569,7 @@
                         </app-dropdown>
                     </div>
 
-                    <!-- Assignment (optional, applies to all items): employee OR department -->
-                    <div class="md:col-span-2 mt-4 mb-2">
-                        <h4
-                            class="text-sm font-semibold text-[var(--color-text)] uppercase tracking-wide border-b border-[var(--color-border)] pb-2">
-                            {{ 'addWeaponAsset.assignment.section' | translate }}
-                        </h4>
-                        <p class="text-xs text-[var(--color-text-muted)] mt-2">{{ 'addWeaponAsset.assignment.bulkModeHint' | translate }}</p>
-                        <p class="text-xs text-[var(--color-text-muted)]">{{ 'addWeaponAsset.assignment.modeHint' | translate }}</p>
-                    </div>
-
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
-                            {{ 'addWeaponAsset.assignment.assignType' | translate }}
-                        </label>
-                        <app-dropdown class="w-full" formControlName="assignMode"
-                            [options]="assignModeDropdownOptions" optionValue="value"
-                            [showSearch]="false"
-                            (selectionChange)="onBulkAssignModeChange()"
-                            placeholder="{{ 'addWeaponAsset.assignment.selectAssignType' | translate }}">
-                        </app-dropdown>
-                    </div>
-
-                    <div *ngIf="bulkForm.get('assignMode')?.value === 'department'" class="md:col-span-2">
-                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
-                            {{ 'addWeaponAsset.assignment.department' | translate }} <span class="text-[var(--color-error)]">*</span>
-                        </label>
-                        <app-dropdown class="w-full" formControlName="assignToDepartmentId"
-                            [options]="departments" optionValue="id" [optionLabelFn]="departmentOptionLabel"
-                            [placeholderSelectable]="false"
-                            (selectionChange)="onBulkAssignmentDepartmentChange($event)"
-                            placeholder="{{ 'addWeaponAsset.assignment.selectDepartment' | translate }}">
-                        </app-dropdown>
-                    </div>
-
-                    <div *ngIf="bulkForm.get('assignMode')?.value === 'employee'" class="md:col-span-2">
-                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
-                            {{ 'addWeaponAsset.assignment.employee' | translate }} <span class="text-[var(--color-error)]">*</span>
-                        </label>
-                        <app-dropdown class="w-full" formControlName="assignToEmployeeId"
-                            [options]="employeeDropdownOptions" optionValue="value"
-                            [placeholderSelectable]="false"
-                            [addActionLabel]="canCreateEmployee ? ('addWeaponAsset.assignment.addPerson' | translate) : undefined"
-                            (addActionClick)="openAddEmployeeModal()"
-                            (selectionChange)="onBulkAssignmentEmployeeChange($event)"
-                            placeholder="{{ 'addWeaponAsset.assignment.selectEmployee' | translate }}">
-                        </app-dropdown>
-                        <p *ngIf="selectedEmployeeCannotAssign(bulkForm.get('assignToEmployeeId')?.value)"
-                            class="text-sm text-[var(--color-error)] mt-2">
-                            {{ 'addWeaponAsset.assignment.employeeCannotAssign' | translate }}
-                        </p>
-                    </div>
-
-                    <div *ngIf="bulkForm.get('assignMode')?.value !== 'none'" class="md:col-span-2">
-                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
-                            {{ 'addWeaponAsset.assignment.notes' | translate }}
-                        </label>
-                        <textarea formControlName="assignmentNotes" rows="2"
-                            class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
-                            [placeholder]="'addWeaponAsset.assignment.notesPlaceholder' | translate"></textarea>
-                        <p class="mt-1 text-xs text-[var(--color-text-muted)]">
-                            {{ 'addWeaponAsset.assignment.notesHint' | translate }}
-                        </p>
-                    </div>
+                 
                 </div>
             </div>
 
