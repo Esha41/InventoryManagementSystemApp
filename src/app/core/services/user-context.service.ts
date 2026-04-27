@@ -10,14 +10,11 @@ import { PERMISSIONS } from '@constants/permissions.constants';
 import { APIOperationResponse } from '@models/api-response.model';
 import { decodeJwtPayload } from '@utils/jwt.util';
 
-const ADMIN_ROLE_KEYWORDS = ['admin', 'administrator', 'superadmin', 'super admin'];
 const ADMIN_PERMISSION_HINTS = [
-  PERMISSIONS.ADMIN.ROLES.API_PAGE,
-  PERMISSIONS.ADMIN.ROLES.API_VIEW,
-  PERMISSIONS.ADMIN.ROLES.API_EDIT,
-  PERMISSIONS.ADMIN.ROLES.API_CREATE,
-  PERMISSIONS.ADMIN.ROLES.API_DELETE,
-  PERMISSIONS.ADMIN.ROLES.API_MANAGE
+  PERMISSIONS.ADMIN.SYSTEM_USERS.API_PAGE,
+  PERMISSIONS.ADMIN.SYSTEM_USERS.VIEW,
+  PERMISSIONS.ADMIN.DASHBOARD.API_PAGE,
+  PERMISSIONS.ADMIN.DASHBOARD.API_VIEW
 ];
 
 @Injectable({
@@ -77,11 +74,9 @@ export class UserContextService {
       return false;
     }
 
-    const hasAdminRole = (authUser.roles || []).some(role =>
-      ADMIN_ROLE_KEYWORDS.some(keyword => role?.toLowerCase().includes(keyword))
-    );
-
-    if (hasAdminRole) {
+    // Keep this intentionally strict: "admin user" means super-admin or explicit admin permissions,
+    // not a fuzzy match on role names.
+    if (this.authService.isSuperAdmin()) {
       return true;
     }
 

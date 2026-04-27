@@ -7,9 +7,6 @@ import { AssetDetailsComponent } from '@assets/components/asset-details/asset-de
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ErrorBannerComponent } from '../error-banner/error-banner.component';
 import { FilterState, FilterOptions, CartridgeState, CatalogPaginationState } from '../../new-issue-request.state';
-// Removed incorrect import
-import { IssueRequestFilterService as FilterService } from '@requests/services/issue-request-filter.service'; // Direct service
-import { IssueRequestCartridgeManagementService } from '@requests/services/issue-request-cartridge-management.service';
 
 @Component({
     selector: 'app-step-selection',
@@ -55,10 +52,7 @@ export class StepSelectionComponent {
 
     allowanceError: string | null = null;
 
-    constructor(
-        private cdr: ChangeDetectorRef,
-        private filterService: FilterService
-    ) { }
+    constructor(private cdr: ChangeDetectorRef) { }
 
     // Filter Handlers
     onItemTypeChange(value: string): void {

@@ -4,20 +4,12 @@ import { FilterState, ExtendedFilterState } from '@requests/pages/new-issue/new-
 
 export type { ExtendedFilterState };
 
-/**
- * Service responsible for filtering cartridges based on filter state
- * Extracted from NewIssueRequestComponent to follow single responsibility principle
- */
+
 @Injectable({
   providedIn: 'root'
 })
 export class IssueRequestFilterService {
-  /**
-   * Filters cartridges based on the provided filter state
-   * @param cartridges - Array of cartridges to filter
-   * @param filterState - Filter state containing all filter criteria
-   * @returns Filtered array of cartridges
-   */
+
   filterCartridges(cartridges: Cartridge[], filterState: ExtendedFilterState | FilterState): Cartridge[] {
     return cartridges.filter(cartridge => {
       // Common Search
@@ -73,11 +65,7 @@ export class IssueRequestFilterService {
     });
   }
 
-  /**
-   * Clears all filter values for the current item type
-   * @param filterState - Filter state to clear
-   * @param itemType - Current item type to determine which filters to clear
-   */
+ 
   clearFilters(filterState: ExtendedFilterState | FilterState, itemType: string): void {
     // Reset based on current type
     if (itemType === 'Ammunition') {
