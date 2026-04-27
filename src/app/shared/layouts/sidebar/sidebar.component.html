@@ -5,15 +5,15 @@
   aria-hidden="true"></div>
 
 <aside data-onboarding="sidebar"
-  class="bg-[var(--color-background)] shadow-custom-lg transition-all duration-300 ease-in-out flex flex-col h-full fixed inset-y-0 z-50 md:relative md:z-20 md:translate-x-0 w-[85vw] max-w-64 md:w-64 will-change-transform"
+  class="bg-[var(--color-sidebar-bg)] shadow-custom-lg transition-all duration-300 ease-in-out flex flex-col h-full fixed inset-y-0 z-50 md:relative md:z-20 md:translate-x-0 w-[85vw] max-w-64 md:w-64 will-change-transform"
   [class.left-0]="!isRTL" [class.right-0]="isRTL" [class.translate-x-0]="mobileOpen"
   [class.-translate-x-full]="!mobileOpen && !isRTL" [class.translate-x-full]="!mobileOpen && isRTL"
   [class.md:w-64]="!isCollapsed" [class.md:w-20]="isCollapsed">
   <!-- Toggle Button Section - min-h for touch targets -->
-  <div class="h-14 min-h-[3.5rem] md:h-16 flex items-center justify-end px-3 md:px-4 border-b border-[var(--color-border)] shrink-0">
+  <div class="h-14 min-h-[3.5rem] md:h-16 flex items-center justify-end px-3 md:px-4 border-b border-[var(--color-sidebar-border)] shrink-0">
     <!-- Show Logo on Mobile Drawer -->
     <div class="md:hidden flex-1 flex items-center">
-      <span class="font-bold text-xl text-[var(--color-brand)] tracking-wider">EMDAD</span>
+      <span class="font-bold text-xl text-[var(--color-text)] tracking-wider">EMDAD</span>
     </div>
 
     <button (click)="toggleCollapse()"
@@ -52,7 +52,7 @@
           [attr.data-onboarding]="item.label === 'nav.requestManagement' ? 'request-management' : item.label === 'nav.requestsManagement' ? 'approval-management' : null"
           (mouseenter)="showTooltip($event)" (mouseleave)="hideTooltip()">
           <button (click)="toggleSubmenu(item.label)"
-            class="w-full flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[var(--color-background-active)] text-[var(--color-text-muted)]">
+            class="w-full flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[var(--color-sidebar-active)] text-[var(--color-text-muted)]">
             <lucide-angular [img]="item.icon" class="h-5 w-5 flex-shrink-0" [class.mr-3]="!isRTL"
               [class.ml-3]="isRTL"></lucide-angular>
             <ng-container *ngIf="item.label === 'nav.requestManagement'; else regularParentLabel">
@@ -90,7 +90,7 @@
               <!-- Nested submenu (child with children) -->
               <div *ngIf="!child.isHeader && hasChildren(child)" class="mb-1">
                 <button (click)="toggleSubmenu(child.label)"
-                  class="w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200 hover:bg-[var(--color-background-active)] text-[var(--color-text-muted)] text-sm">
+                  class="w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200 hover:bg-[var(--color-sidebar-active)] text-[var(--color-text-muted)] text-sm">
                   <span class="font-medium flex-1" [class.text-left]="!isRTL" [class.text-right]="isRTL">{{ child.label
                     | translate }}</span>
                   <lucide-angular [img]="isSubmenuExpanded(child.label) ? ChevronUp : ChevronDown"
@@ -101,9 +101,9 @@
                   [class.ml-4]="!isRTL" [class.mr-4]="isRTL">
                   <li *ngFor="let nestedChild of child.children">
                     <a *ngIf="nestedChild.route" [routerLink]="nestedChild.route"
-                      routerLinkActive="bg-[var(--color-background-hover)] text-[var(--color-text)]"
+                      routerLinkActive="bg-[var(--color-sidebar-hover)] text-[var(--color-text)]"
                       [routerLinkActiveOptions]="{ exact: true }"
-                      class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-[var(--color-background-active)] text-[var(--color-text-muted)] text-sm">
+                      class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-[var(--color-sidebar-active)] text-[var(--color-text-muted)] text-sm">
                       <span class="font-medium">{{ nestedChild.label | translate }}</span>
                     </a>
                   </li>
@@ -111,9 +111,9 @@
               </div>
               <!-- Regular submenu item (no nested children) -->
               <a *ngIf="!child.isHeader && !hasChildren(child) && child.route" [routerLink]="child.route"
-                routerLinkActive="bg-[var(--color-background-hover)] text-[var(--color-text)]"
+                routerLinkActive="bg-[var(--color-sidebar-hover)] text-[var(--color-text)]"
                 [routerLinkActiveOptions]="{ exact: true }"
-                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-[var(--color-background-active)] text-[var(--color-text-muted)] text-sm">
+                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-[var(--color-sidebar-active)] text-[var(--color-text-muted)] text-sm">
                 <span class="font-medium">{{ child.label | translate }}</span>
               </a>
             </li>
@@ -125,7 +125,7 @@
           (mouseenter)="showTooltip($event)" (mouseleave)="hideTooltip()">
           <a [routerLink]="item.route" routerLinkActive="bg-[var(--color-background-hover)] text-[var(--color-text)]"
             [routerLinkActiveOptions]="{ exact: false }"
-            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[var(--color-background-active)] text-[var(--color-text-muted)]">
+            class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[var(--color-sidebar-active)] text-[var(--color-text-muted)]">
             <lucide-angular [img]="item.icon" class="h-5 w-5 flex-shrink-0"></lucide-angular>
             <span class="font-medium flex-1 transition-opacity duration-300" [class.opacity-0]="isCollapsed"
               [class.opacity-100]="!isCollapsed" [class.hidden]="isCollapsed">

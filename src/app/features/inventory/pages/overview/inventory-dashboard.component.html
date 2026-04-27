@@ -22,7 +22,7 @@
 
       <!-- Active depot badges -->
       <div *ngIf="selectedDepotIds.length > 0" class="mt-3 flex flex-wrap gap-2">
-        <span *ngFor="let dId of selectedDepotIds" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[var(--color-brand)]/10 text-[var(--color-brand)] border border-[var(--color-brand)]/20">
+        <span *ngFor="let dId of selectedDepotIds" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[var(--color-brand)] text-[var(--color-text-inverse)] border border-[var(--color-brand)]/30">
           <lucide-angular [img]="Warehouse" class="w-3.5 h-3.5"></lucide-angular>
           {{ getDepotNameById(dId) }}
         </span>

@@ -168,6 +168,11 @@ body:has(main.overflow-y-auto) {
     --color-text-inverse: #FFFFFF;
     /* White text for dark backgrounds */
 
+    /* Secondary UI (buttons, chips, etc.) */
+    --color-secondary: #8B909A;
+    --color-secondary-hover: #23272E;
+    --color-secondary-text: #FFFFFF;
+
     /* Border Colors */
     --color-border: #E5E7EB;
     /* Default border */
@@ -224,6 +229,12 @@ body:has(main.overflow-y-auto) {
     --color-navbar-fg: #f8fafc;
     --color-navbar-fg-muted: #cbd5e1;
     --color-navbar-border: rgb(255 255 255 / 0.14);
+
+    /* Sidebar */
+    --color-sidebar-bg: var(--color-background);
+    --color-sidebar-border: var(--color-border);
+    --color-sidebar-hover: var(--color-background-hover);
+    --color-sidebar-active: var(--color-background-active);
 
     /* Transitions */
     --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -294,8 +305,13 @@ body:has(main.overflow-y-auto) {
     /* Muted text */
     --color-text-light: #6B7280;
     /* Lighter text */
-    --color-text-inverse: #1A1D24;
-    /* Dark text for light backgrounds */
+    --color-text-inverse: #FFFFFF;
+    /* Inverse text (on brand/dark surfaces) */
+
+    /* Secondary UI (buttons, chips, etc.) */
+    --color-secondary: #4B5563;
+    --color-secondary-hover: #6B7280;
+    --color-secondary-text: #FFFFFF;
 
     /* Border Colors */
     --color-border: #4B5563;
@@ -324,6 +340,12 @@ body:has(main.overflow-y-auto) {
     --app-scrollbar-thumb-hover: color-mix(in srgb, var(--color-brand-light) 88%, #ffffff 12%);
     --app-scrollbar-thumb-active: color-mix(in srgb, var(--color-brand-light) 72%, #ffffff 28%);
     --app-scrollbar-track-edge: color-mix(in srgb, var(--color-border) 35%, transparent);
+
+    /* Sidebar (slightly lifted surface vs page background) */
+    --color-sidebar-bg: var(--color-background-soft);
+    --color-sidebar-border: color-mix(in srgb, var(--color-border) 70%, transparent);
+    --color-sidebar-hover: color-mix(in srgb, var(--color-background-hover) 85%, #ffffff 15%);
+    --color-sidebar-active: var(--color-background-active);
   }
 }
 

@@ -17,6 +17,7 @@
     "department": "الوحدة",
     "requester": "المقدم",
     "items": "المواد",
+    "quantity": "الكمية",
     "noItems": "لا توجد مواد",
     "viewDetails": "عرض التفاصيل",
     "returnDetails": "تفاصيل طلب الإرجاع",
@@ -39,8 +40,8 @@
     "numberOfOtherRanks": "عدد الرتب الأخرى",
     "requestPurpose": "غرض الطلب",
     "depot": "المستودع",
-    "itemName": "اسم مادة",
-    "itemNo": "رقم مادة",
+    "itemName": "اسم المادة",
+    "itemNo": "رقم المادة",
     "nsn": "NSN",
     "priorityLabels": {
       "normal": "عادية",
