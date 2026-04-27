@@ -2,83 +2,134 @@
   <div class="page-container space-y-6">
     <!-- Header -->
     <div class="mb-6">
-      <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ 'newIssueRequest.newOrderIssue' | translate
-        }}</h1>
+      <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ 'newIssueRequest.newOrderIssue' | translate }}</h1>
     </div>
 
     <!-- Stepper -->
-    <app-stepper data-onboarding="issue-stepper" [steps]="steps" [currentStep]="currentStep" (stepChange)="onStepChange($event)">
+    <app-stepper data-onboarding="issue-stepper"
+      [steps]="facade.steps"
+      [currentStep]="facade.currentStep"
+      (stepChange)="facade.onStepChange($event)">
     </app-stepper>
 
-    <app-error-banner *ngIf="orderSubmissionState.orderSubmitError && currentStep === 3"
-      [error]="orderSubmissionState.orderSubmitError">
+    <app-error-banner
+      *ngIf="facade.orderSubmissionState.orderSubmitError && facade.currentStep === 3"
+      [error]="facade.orderSubmissionState.orderSubmitError">
     </app-error-banner>
 
     <!-- Step 0: Allowance Selection -->
-    <app-allowance-selection *ngIf="currentStep === 0" [fromReserve]="fromReserve"
-      (fromReserveChange)="onFromReserveChange($event)" (next)="onNext()">
+    <app-allowance-selection *ngIf="facade.currentStep === 0"
+      [fromReserve]="facade.fromReserve"
+      (fromReserveChange)="facade.onFromReserveChange($event)"
+      (next)="facade.onNext()">
     </app-allowance-selection>
 
     <!-- Step 1: Selection -->
-    <app-step-selection *ngIf="currentStep === 1" [cartridgeState]="cartridgeState" [filterState]="filterState"
-      [filterOptions]="filterOptions" [fromReserve]="fromReserve" [canProceed]="canProceedFromSelection"
-      [selectedCartridges]="selectedCartridges" [displayedItemTypeOptions]="displayedItemTypeOptions"
-      [serverSideCatalog]="fromReserve === 'No'" [catalogPagination]="cartridgeState.catalogPagination"
-      [appliedSearchTerm]="filterState.searchTerm" (next)="onNext()"
-      (previous)="onPrevious()" (retryLoad)="retryLoadCartridges()" (filterChange)="onFilterSidebarChange()"
-      (applyCatalogSearch)="applyCatalogSearch($event)" (catalogPageNext)="onCatalogPageNext()"
-      (catalogPagePrev)="onCatalogPagePrev()" (itemTypeChange)="onItemTypeChange($event)"
-      (clearFilters)="onClearFilters()" (addSelection)="onCartridgeAdded($event)"
-      (removeSelection)="onRemoveSelectedCartridge($event)">
+    <app-step-selection *ngIf="facade.currentStep === 1"
+      [cartridgeState]="facade.cartridgeState"
+      [filterState]="facade.filterState"
+      [filterOptions]="facade.filterOptions"
+      [fromReserve]="facade.fromReserve"
+      [canProceed]="facade.canProceedFromSelection"
+      [selectedCartridges]="facade.selectedCartridges"
+      [displayedItemTypeOptions]="facade.displayedItemTypeOptions"
+      [serverSideCatalog]="facade.fromReserve === 'No'"
+      [catalogPagination]="facade.cartridgeState.catalogPagination"
+      [appliedSearchTerm]="facade.filterState.searchTerm"
+      (next)="facade.onNext()"
+      (previous)="facade.onPrevious()"
+      (retryLoad)="facade.retryLoadCartridges()"
+      (filterChange)="facade.onFilterSidebarChange()"
+      (applyCatalogSearch)="facade.applyCatalogSearch($event)"
+      (catalogPageNext)="facade.onCatalogPageNext()"
+      (catalogPagePrev)="facade.onCatalogPagePrev()"
+      (itemTypeChange)="facade.onItemTypeChange($event)"
+      (clearFilters)="facade.onClearFilters()"
+      (addSelection)="facade.onCartridgeAdded($event)"
+      (removeSelection)="facade.onRemoveSelectedCartridge($event)">
     </app-step-selection>
 
     <!-- Step 2: Usage -->
-    <app-usage-form *ngIf="currentStep === 2" [fromReserve]="fromReserve" [usePurpose]="usageFormData.usePurpose"
-      [selectedUsePurposeId]="requestPurposeState.selectedRequestPurposeId"
-      [usePurposeOptions]="displayedUsePurposeOptions" [usageLocation]="usageFormData.usageLocation"
-      [numberOfOfficers]="usageFormData.numberOfOfficers" [numberOfOtherRanks]="usageFormData.numberOfOtherRanks"
-      [usageDateFrom]="usageFormData.usageDateFrom" [usageTimeFrom]="usageFormData.usageTimeFrom"
-      [usageDateTo]="usageFormData.usageDateTo" [usageTimeTo]="usageFormData.usageTimeTo"
-      [requestPurposeNotes]="usageFormData.requestPurposeNotes"
-      [orderPriority]="usageFormData.orderPriority" [orderPriorities]="filterOptions.orderPriorities"
-      [requesterComments]="reviewFormData.requesterComments" [selectedFiles]="usageFormFiles"
-      [totalReserve]="selectedTotalReserve" [availableReserve]="selectedAvailableReserve"
-      [orderedQuantity]="selectedOrderedQuantity" [usedQuantity]="selectedUsedQuantity"
-      [reserveDetailsByItem]="selectedItemsReserveDetails" [selectedCartridges]="selectedCartridges"
-      (removeCartridge)="onRemoveSelectedCartridge($event)" (usePurposeChange)="usageFormData.usePurpose = $event"
-      (selectedUsePurposeIdChange)="onUsePurposeIdChange($event)"
-      (usageLocationChange)="usageFormData.usageLocation = $event"
-      (numberOfOfficersChange)="usageFormData.numberOfOfficers = $event"
-      (numberOfOtherRanksChange)="usageFormData.numberOfOtherRanks = $event"
-      (usageDateFromChange)="usageFormData.usageDateFrom = $event"
-      (usageTimeFromChange)="usageFormData.usageTimeFrom = $event"
-      (usageDateToChange)="usageFormData.usageDateTo = $event" (usageTimeToChange)="usageFormData.usageTimeTo = $event"
-      (requestPurposeNotesChange)="usageFormData.requestPurposeNotes = $event"
-      (orderPriorityChange)="usageFormData.orderPriority = $event"
-      (requesterCommentsChange)="reviewFormData.requesterComments = $event" (filesChange)="usageFormFiles = $event"
-      (previous)="onPrevious()" (next)="onNext()">
+    <app-usage-form *ngIf="facade.currentStep === 2"
+      [fromReserve]="facade.fromReserve"
+      [usePurpose]="facade.usageFormData.usePurpose"
+      [selectedUsePurposeId]="facade.requestPurposeState.selectedRequestPurposeId"
+      [usePurposeOptions]="facade.displayedUsePurposeOptions"
+      [usageLocation]="facade.usageFormData.usageLocation"
+      [numberOfOfficers]="facade.usageFormData.numberOfOfficers"
+      [numberOfOtherRanks]="facade.usageFormData.numberOfOtherRanks"
+      [usageDateFrom]="facade.usageFormData.usageDateFrom"
+      [usageTimeFrom]="facade.usageFormData.usageTimeFrom"
+      [usageDateTo]="facade.usageFormData.usageDateTo"
+      [usageTimeTo]="facade.usageFormData.usageTimeTo"
+      [requestPurposeNotes]="facade.usageFormData.requestPurposeNotes"
+      [orderPriority]="facade.usageFormData.orderPriority"
+      [orderPriorities]="facade.filterOptions.orderPriorities"
+      [requesterComments]="facade.reviewFormData.requesterComments"
+      [selectedFiles]="facade.usageFormFiles"
+      [totalReserve]="facade.selectedTotalReserve"
+      [availableReserve]="facade.selectedAvailableReserve"
+      [orderedQuantity]="facade.selectedOrderedQuantity"
+      [usedQuantity]="facade.selectedUsedQuantity"
+      [reserveDetailsByItem]="facade.selectedItemsReserveDetails"
+      [selectedCartridges]="facade.selectedCartridges"
+      (removeCartridge)="facade.onRemoveSelectedCartridge($event)"
+      (usePurposeChange)="facade.usageFormData.usePurpose = $event"
+      (selectedUsePurposeIdChange)="facade.onUsePurposeIdChange($event)"
+      (usageLocationChange)="facade.usageFormData.usageLocation = $event"
+      (numberOfOfficersChange)="facade.usageFormData.numberOfOfficers = $event"
+      (numberOfOtherRanksChange)="facade.usageFormData.numberOfOtherRanks = $event"
+      (usageDateFromChange)="facade.usageFormData.usageDateFrom = $event"
+      (usageTimeFromChange)="facade.usageFormData.usageTimeFrom = $event"
+      (usageDateToChange)="facade.usageFormData.usageDateTo = $event"
+      (usageTimeToChange)="facade.usageFormData.usageTimeTo = $event"
+      (requestPurposeNotesChange)="facade.usageFormData.requestPurposeNotes = $event"
+      (orderPriorityChange)="facade.usageFormData.orderPriority = $event"
+      (requesterCommentsChange)="facade.reviewFormData.requesterComments = $event"
+      (filesChange)="facade.usageFormFiles = $event"
+      (previous)="facade.onPrevious()"
+      (next)="facade.onNext()">
     </app-usage-form>
 
     <!-- Step 3: Review -->
-    <app-review-form *ngIf="currentStep === 3" [requesterName]="currentRequesterName"
-      [requesterComments]="reviewFormData.requesterComments" [orderType]="reviewFormData.orderType"
-      [orderPriority]="usageFormData.orderPriority" [fromReserve]="fromReserve" [usePurpose]="usageFormData.usePurpose"
-      [usageLocation]="usageFormData.usageLocation" [numberOfOfficers]="usageFormData.numberOfOfficers"
-      [numberOfOtherRanks]="usageFormData.numberOfOtherRanks" [usageDateFrom]="usageFormData.usageDateFrom"
-      [usageTimeFrom]="usageFormData.usageTimeFrom" [usageDateTo]="usageFormData.usageDateTo"
-      [usageTimeTo]="usageFormData.usageTimeTo" [selectedCartridges]="selectedCartridges" [files]="usageFormFiles"
-      (previous)="onPrevious()" (next)="onNext()">
+    <app-review-form *ngIf="facade.currentStep === 3"
+      [requesterName]="facade.currentRequesterName"
+      [requesterComments]="facade.reviewFormData.requesterComments"
+      [orderType]="facade.reviewFormData.orderType"
+      [orderPriority]="facade.usageFormData.orderPriority"
+      [fromReserve]="facade.fromReserve"
+      [usePurpose]="facade.usageFormData.usePurpose"
+      [usageLocation]="facade.usageFormData.usageLocation"
+      [numberOfOfficers]="facade.usageFormData.numberOfOfficers"
+      [numberOfOtherRanks]="facade.usageFormData.numberOfOtherRanks"
+      [usageDateFrom]="facade.usageFormData.usageDateFrom"
+      [usageTimeFrom]="facade.usageFormData.usageTimeFrom"
+      [usageDateTo]="facade.usageFormData.usageDateTo"
+      [usageTimeTo]="facade.usageFormData.usageTimeTo"
+      [selectedCartridges]="facade.selectedCartridges"
+      [files]="facade.usageFormFiles"
+      (previous)="facade.onPrevious()"
+      (next)="facade.onNext()">
     </app-review-form>
 
     <!-- Step 4: Send -->
-    <app-order-success *ngIf="currentStep === 4" [orderNumber]="orderSubmissionState.orderNumber"
-      [createdOrderId]="orderSubmissionState.createdOrderId" (trackOrder)="onTrackOrder()">
+    <app-order-success *ngIf="facade.currentStep === 4"
+      [orderNumber]="facade.orderSubmissionState.orderNumber"
+      [createdOrderId]="facade.orderSubmissionState.createdOrderId"
+      (trackOrder)="facade.onTrackOrder()">
     </app-order-success>
   </div>
 
   <!-- Confirmation Dialog -->
-  <app-confirmation-dialog [isOpen]="showConfirmDialog" [title]="confirmDialogConfig.title"
-    [message]="confirmDialogConfig.message" [type]="confirmDialogConfig.type"
-    [confirmText]="confirmDialogConfig.confirmText" [cancelText]="confirmDialogConfig.cancelText"
-    [closeOnBackdrop]="true" (confirmed)="onConfirmSubmit()" (cancelled)="onCancelConfirm()"></app-confirmation-dialog>
+  <app-confirmation-dialog
+    [isOpen]="facade.showConfirmDialog"
+    [title]="facade.confirmDialogConfig.title"
+    [message]="facade.confirmDialogConfig.message"
+    [type]="facade.confirmDialogConfig.type"
+    [confirmText]="facade.confirmDialogConfig.confirmText"
+    [cancelText]="facade.confirmDialogConfig.cancelText"
+    [closeOnBackdrop]="true"
+    (confirmed)="facade.onConfirmSubmit()"
+    (cancelled)="facade.onCancelConfirm()">
+  </app-confirmation-dialog>
 </div>

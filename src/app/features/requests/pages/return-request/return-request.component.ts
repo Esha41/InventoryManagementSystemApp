@@ -18,7 +18,7 @@ import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { PaginatedList } from '@models/api-response.model';
 import { LookupItem } from '@models/lookup.model';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, filter, take, switchMap } from 'rxjs';
 import { Observable } from 'rxjs';
 import { UserContextService } from '@services/user-context.service';
 import { BackendAuthService } from '@services/backend-auth.service';
@@ -169,14 +169,25 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
 
     this.backendAuthService.currentUser$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(user => this.applyAuthenticatedUserContext(user));
+      .subscribe(user => {
+        this.isAdminUser = this.userContextService.isAdminUser();
+        this.applyAuthenticatedUserContext(user);
+        this.cdr.markForCheck();
+      });
 
-    this.userContextService
-      .getCurrentUserDetails()
-      .pipe(takeUntil(this.destroy$))
+    // Wait for a real user before calling getCurrentUserDetails so that
+    // authService.getCurrentUser() is non-null and the API call is made.
+    this.backendAuthService.currentUser$
+      .pipe(
+        filter(user => !!user),
+        take(1),
+        switchMap(() => this.userContextService.getCurrentUserDetails()),
+        takeUntil(this.destroy$)
+      )
       .subscribe(details => {
         this.currentUserDetails = details;
         this.applyBackendUserDetails(details);
+        this.cdr.markForCheck();
       });
   }
 

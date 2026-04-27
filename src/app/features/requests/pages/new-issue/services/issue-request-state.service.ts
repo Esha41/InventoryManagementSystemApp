@@ -16,10 +16,7 @@ export interface QueryParamsState {
   pendingSelections: Array<{ id: number; quantity: number; itemType?: string }> | null;
 }
 
-/**
- * Service responsible for managing component state and query parameter persistence
- * Extracted from NewIssueRequestComponent to follow single responsibility principle
- */
+
 @Injectable({
   providedIn: 'root'
 })
@@ -29,11 +26,7 @@ export class IssueRequestStateService {
     private router: Router
   ) { }
 
-  /**
-   * Gets query parameters as observable
-   * @param stepsLength - Length of steps array to validate step parameter
-   * @returns Observable of query params state
-   */
+
   getQueryParamsState(stepsLength: number): Observable<QueryParamsState> {
     return this.route.queryParams.pipe(
       map(params => {
@@ -64,12 +57,7 @@ export class IssueRequestStateService {
     );
   }
 
-  /**
-   * Updates query parameters with current state
-   * @param step - Current step number
-   * @param fromReserve - From reserve value
-   * @param selectedEntries - Selected cartridge entries
-   */
+
   updateQueryParams(step: number, fromReserve: string, selectedEntries: Array<{ id: number; quantity: number; itemType?: string }>): void {
     const queryParams: IssueRequestQueryParams = {
       step: step,
@@ -108,11 +96,7 @@ export class IssueRequestStateService {
     });
   }
 
-  /**
-   * Restores selected entries from pending selections and updates cartridge state
-   * @param pendingSelections - Pending selections to restore
-   * @param cartridgeState - Cartridge state to update
-   */
+  
   restoreSelections(
     pendingSelections: Array<{ id: number; quantity: number; itemType?: string }> | null,
     cartridgeState: CartridgeState
