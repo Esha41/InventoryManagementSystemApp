@@ -276,7 +276,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
         activeTab: this.activeTab,
         filters: {
           searchText: this.itemSearchText,
-          caliberText: this.caliberFilterText,
+          caliberText: (this.caliberFilter ?? '').trim() || undefined,
           itemTypeFilter: this.itemTypeFilter,
           selectedItemCount: this.selectedItemFilterIds.length
         },
