@@ -342,6 +342,18 @@ export class WorkflowComponent implements OnInit, OnDestroy {
     return String(entityId);
   }
 
+  getParallelApproverRoles(step: WorkflowStepDto | null | undefined): string[] {
+    if (!step?.parallelRoles || step.parallelRoles.length === 0) return [];
+
+    return step.parallelRoles.map((role) => {
+      const roleName = getLocalizedName(
+        { name: role.roleName, nameAr: role.roleNameAr },
+        getCurrentLang(this.translate)
+      );
+      return roleName || role.roleName || role.roleId;
+    });
+  }
+
   getWorkflowName(workflow: BackendWorkflowDto | WorkflowDto | null | undefined): string {
     if (!workflow) return '';
     const name = (workflow as { workflowName?: string }).workflowName ?? (workflow as { name?: string }).name;

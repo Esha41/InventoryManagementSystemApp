@@ -147,6 +147,8 @@
     "stepHigherEntityRequired": "Higher approval entity is required when higher approval is selected.",
     "roleName": "Role Name",
     "roleNamePlaceholder": "Enter role name",
+    "parallelApproverRoles": "Parallel Approver Roles",
+    "parallelApproverRolesPlaceholder": "Select parallel approver roles",
     "applicationEntity": "Application Entity",
     "applicationEntityPlaceholder": "Enter application entity",
     "actions": "Actions",

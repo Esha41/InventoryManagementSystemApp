@@ -147,6 +147,8 @@
     "stepHigherEntityRequired": "كيان الموافقة الأعلى مطلوب عند اختيار الموافقة الأعلى.",
     "roleName": "اسم الدور",
     "roleNamePlaceholder": "أدخل اسم الدور",
+    "parallelApproverRoles": "أدوار الموافقة المتوازية",
+    "parallelApproverRolesPlaceholder": "اختر أدوار الموافقة المتوازية",
     "applicationEntity": "الكيان",
     "applicationEntityPlaceholder": "أدخل الكيان",
     "actions": "الإجراءات",
