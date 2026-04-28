@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Subject, merge, of, asyncScheduler } from 'rxjs';
+import { Subject, merge, of, asyncScheduler, forkJoin } from 'rxjs';
 import {
   catchError,
   switchMap,
@@ -35,6 +35,8 @@ import { PaginationComponent } from '@components/pagination/pagination.component
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { getLookupDropdownLabel } from '@utils/asset-list.utils';
+import { LookupItem } from '@models/lookup.model';
 import { TranslationService } from '@services/translation.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { defaultPageSize } from '@constants/app.constants';
@@ -51,6 +53,7 @@ import {
   sortItemSummaries as sortItemSummariesHelper,
   sortLotDetails as sortLotDetailsHelper,
   distinctCalibersFromItems,
+  isPlaceholderCaliberLabel,
   sumItemSummariesExcludingWeapon,
   sumItemSummariesField,
   sortAssetDetailsDtos,
@@ -107,6 +110,9 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   caliberFilter: string | null = null;
   itemTypeFilter: number | null = null;
   selectedItemFilterIds: number[] = [];
+
+  /** Caliber display labels from lookup API (merged into filter dropdown with {@link distinctCalibers}). */
+  caliberFilterCatalogLabels: string[] = [];
 
   lowStockCount = 0;
   expiringSoonCount = 0;
@@ -188,7 +194,10 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
     this.translate.onLangChange
       .pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.cdr.markForCheck());
+      .subscribe(() => {
+        this.loadCaliberFilterLookups();
+        this.cdr.markForCheck();
+      });
 
     merge(
       this.afterDepotsReady$,
@@ -224,6 +233,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     this.itemSummaries = result.itemSummaries;
     this._itemTypeCountMetrics = itemTypeTabAndStatCounts(this.itemSummaries);
     this.inventoryMonitoring = result.inventoryMonitoring ?? emptyInventoryMonitoring();
+    this.loadCaliberFilterLookups();
     this.itemCurrentPage = 1;
     this.expandedItemId = null;
     this.lotDetails = [];
@@ -334,7 +344,14 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   }
 
   get caliberDropdownOptions(): DropdownOption<string>[] {
-    return this.distinctCalibers.map(c => ({ label: c, value: c }));
+    const labels = new Set<string>();
+    for (const c of this.distinctCalibers) {
+      if (c && !isPlaceholderCaliberLabel(c)) labels.add(c);
+    }
+    for (const c of this.caliberFilterCatalogLabels) {
+      if (c && !isPlaceholderCaliberLabel(c)) labels.add(c);
+    }
+    return [...labels].sort((a, b) => a.localeCompare(b)).map(c => ({ label: c, value: c }));
   }
 
   get itemTypeCountMetrics() {
@@ -350,7 +367,57 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     this.expandedItemId = null;
     this.lotDetails = [];
     this.assetDetails = [];
+    this.loadCaliberFilterLookups();
     this.cdr.markForCheck();
+  }
+
+  /** Populate caliber filter labels from Caliber lookup (ammunition + weapon); explosives omit. */
+  private loadCaliberFilterLookups(): void {
+    if (this.activeTab === 'explosive') {
+      this.caliberFilterCatalogLabels = [];
+      this.cdr.markForCheck();
+      return;
+    }
+    if (this.activeTab === 'all') {
+      forkJoin({
+        ammo: this.lookupService.getCalibersByItemType(ItemType.Ammunition),
+        wpn: this.lookupService.getCalibersByItemType(ItemType.Weapon)
+      })
+        .pipe(
+          catchError(() => of({ ammo: [] as LookupItem[], wpn: [] as LookupItem[] })),
+          takeUntil(this.destroy$)
+        )
+        .subscribe(({ ammo, wpn }) => {
+          const merged = [...this.mapCalibersToFilterLabels(ammo), ...this.mapCalibersToFilterLabels(wpn)];
+          this.caliberFilterCatalogLabels = [...new Set(merged)].sort((a, b) => a.localeCompare(b));
+          this.cdr.markForCheck();
+        });
+      return;
+    }
+    const itemType =
+      this.activeTab === 'ammunition' ? ItemType.Ammunition : ItemType.Weapon;
+    this.lookupService
+      .getCalibersByItemType(itemType)
+      .pipe(
+        catchError(() => of([] as LookupItem[])),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(items => {
+        this.caliberFilterCatalogLabels = this.mapCalibersToFilterLabels(items).sort((a, b) =>
+          a.localeCompare(b)
+        );
+        this.cdr.markForCheck();
+      });
+  }
+
+  private mapCalibersToFilterLabels(items: LookupItem[]): string[] {
+    const out: string[] = [];
+    for (const it of items ?? []) {
+      if (it == null || it.isDeleted) continue;
+      const lab = getLookupDropdownLabel(it, this.translate).trim();
+      if (lab && !isPlaceholderCaliberLabel(lab)) out.push(lab);
+    }
+    return out;
   }
 
   get tabFilteredSummaries(): ItemInventorySummaryDto[] {
@@ -375,6 +442,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     const next = activeTabFromItemTypeDropdown(this.itemTypeFilter);
     this.activeTab = next.activeTab;
     this.itemTypeFilter = next.itemTypeFilter;
+    this.loadCaliberFilterLookups();
     this.cdr.markForCheck();
   }
 
@@ -393,6 +461,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     this.expandedItemId = null;
     this.lotDetails = [];
     this.assetDetails = [];
+    this.loadCaliberFilterLookups();
     this.cdr.markForCheck();
   }
 
