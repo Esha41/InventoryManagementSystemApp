@@ -12,6 +12,8 @@ import { OrderItem } from '@dashboard/pages/overview/components/status-card/stat
 export interface DashboardCard {
   title: string;
   status: CardStatus;
+
+  requestStatus?: number | string;
   orders: OrderItem[];
   permissions: string[];
   roles?: string[];
@@ -19,5 +21,6 @@ export interface DashboardCard {
   returnRequestId?: number;
   discardRequestId?: number;
   isMyTurn?: boolean;
+  priority?: number;
 }
 

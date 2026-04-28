@@ -68,6 +68,7 @@
       "Pending": "Pending",
       "Approved": "Approved",
       "Rejected": "Rejected",
+      "AutoRejected": "Auto-Rejected",
       "Returned": "Returned",
       "ReturnedForReview": "Returned for Review",
       "Submitted": "Submitted",

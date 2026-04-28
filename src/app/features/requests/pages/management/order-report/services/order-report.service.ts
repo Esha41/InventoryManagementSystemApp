@@ -308,8 +308,7 @@ export class OrderReportService {
     const workflowSteps = mapApprovalHistory(baseRequest.approvalHistory || [], requestStatus);
 
     const currentLang = getCurrentLang(this.translate);
-
-    return workflowSteps.map((step, index) => {
+    const mapped = workflowSteps.map((step, index) => {
       const parallelNote =
         step.eligibleParallelRoleNamesEn || step.eligibleParallelRoleNamesAr
           ? `${this.translate.instant('workflowApprovalDetail.parallelApproversLabel')}: ${
@@ -363,6 +362,8 @@ export class OrderReportService {
           | 'submitted'
           | 'approved'
           | 'rejected'
+          | 'auto-rejected'
+          | 'autorejected'
           | 'in-progress'
           | 'returned'
           | 'returnedforreview' || 'pending',
@@ -370,6 +371,19 @@ export class OrderReportService {
         notes: step.comments || ''
       };
     });
+
+    // If the request ended by system auto-reject, the backend may still include future/pending steps.
+    // For UX in Order Report, mark the last pending step as auto-rejected so the diagram reflects the terminal state.
+    if (requestStatus === 'AutoRejected') {
+      for (let i = mapped.length - 1; i >= 0; i--) {
+        if (mapped[i].status === 'pending') {
+          mapped[i] = { ...mapped[i], status: 'auto-rejected' };
+          break;
+        }
+      }
+    }
+
+    return mapped;
   }
 
   private getDelegationMessageKey(status?: string): string {
@@ -377,6 +391,8 @@ export class OrderReportService {
       case 'Approved':
         return 'workflowApprovalDetail.approvedThroughDelegation';
       case 'Rejected':
+        return 'workflowApprovalDetail.rejectedThroughDelegation';
+      case 'AutoRejected':
         return 'workflowApprovalDetail.rejectedThroughDelegation';
       case 'Returned':
       case 'ReturnedForReview':
@@ -392,6 +408,8 @@ export class OrderReportService {
         return 'common.statuses.Approved';
       case 'Rejected':
         return 'common.statuses.Rejected';
+      case 'AutoRejected':
+        return 'common.statuses.AutoRejected';
       case 'Returned':
       case 'ReturnedForReview':
         return 'common.statuses.ReturnedForReview';

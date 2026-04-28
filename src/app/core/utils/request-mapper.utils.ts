@@ -33,7 +33,96 @@ export enum RequestStatusEnum {
   UnderProcess = 2,
   Approved = 3,
   Rejected = 4,
-  ReturnedForReview = 6
+  Cancelled = 5,
+  ReturnedForReview = 6,
+  AutoRejected = 7
+}
+
+
+export interface StatusMetadata {
+  id: RequestStatusEnum;
+  translationKey: string;
+  badgeClass: string; // 'Approved' | 'Rejected' | 'AutoRejected' | 'Pending' | 'Returned'
+  cardStatus: string; // 'new' | 'on-progress' | 'completed' | 'declined' | 'returned'
+}
+
+export const STATUS_METADATA: Record<RequestStatusEnum, StatusMetadata> = {
+  [RequestStatusEnum.New]: {
+    id: RequestStatusEnum.New,
+    translationKey: 'dashboard.statusLabels.new',
+    badgeClass: 'Pending',
+    cardStatus: 'new'
+  },
+  [RequestStatusEnum.UnderProcess]: {
+    id: RequestStatusEnum.UnderProcess,
+    translationKey: 'dashboard.statusLabels.underProcess',
+    badgeClass: 'Pending',
+    cardStatus: 'on-progress'
+  },
+  [RequestStatusEnum.Approved]: {
+    id: RequestStatusEnum.Approved,
+    translationKey: 'requestsManagement.orderReport.workflowStatus.completed',
+    badgeClass: 'Approved',
+    cardStatus: 'completed'
+  },
+  [RequestStatusEnum.Rejected]: {
+    id: RequestStatusEnum.Rejected,
+    translationKey: 'dashboard.statusLabels.rejected',
+    badgeClass: 'Rejected',
+    cardStatus: 'declined'
+  },
+  [RequestStatusEnum.Cancelled]: {
+    id: RequestStatusEnum.Cancelled,
+    translationKey: 'dashboard.statusLabels.cancelled',
+    badgeClass: 'Pending',
+    cardStatus: 'new'
+  },
+  [RequestStatusEnum.ReturnedForReview]: {
+    id: RequestStatusEnum.ReturnedForReview,
+    translationKey: 'dashboard.statusLabels.returnedForReview',
+    badgeClass: 'Returned',
+    cardStatus: 'returned'
+  },
+  [RequestStatusEnum.AutoRejected]: {
+    id: RequestStatusEnum.AutoRejected,
+    translationKey: 'dashboard.statusLabels.autoRejected',
+    badgeClass: 'AutoRejected',
+    cardStatus: 'declined'
+  }
+};
+
+
+export function getStatusMetadata(status: number | string | null | undefined): StatusMetadata {
+  if (status === null || status === undefined) {
+    return STATUS_METADATA[RequestStatusEnum.New];
+  }
+
+  let statusNum: RequestStatusEnum;
+
+  if (typeof status === 'number') {
+    statusNum = status as RequestStatusEnum;
+  } else {
+    const lower = status.toLowerCase().trim();
+    if (lower === 'new' || lower === 'pending' || lower === '1') {
+      statusNum = RequestStatusEnum.New;
+    } else if (lower === 'underprocess' || lower === 'under process' || lower === 'inprogress' || lower === 'in progress' || lower === '2') {
+      statusNum = RequestStatusEnum.UnderProcess;
+    } else if (lower === 'approved' || lower === 'completed' || lower === 'confirmed' || lower === '3') {
+      statusNum = RequestStatusEnum.Approved;
+    } else if (lower === 'rejected' || lower === 'declined' || lower === '4') {
+      statusNum = RequestStatusEnum.Rejected;
+    } else if (lower === 'cancelled' || lower === '5') {
+      statusNum = RequestStatusEnum.Cancelled;
+    } else if (lower === 'returned' || lower === 'returnedforreview' || lower === '6') {
+      statusNum = RequestStatusEnum.ReturnedForReview;
+    } else if (lower === 'autorejected' || lower === 'auto rejected' || lower === 'auto-rejected' || lower === '7') {
+      statusNum = RequestStatusEnum.AutoRejected;
+    } else {
+      statusNum = RequestStatusEnum.New;
+    }
+  }
+
+  return STATUS_METADATA[statusNum] || STATUS_METADATA[RequestStatusEnum.New];
 }
 
 /**
@@ -72,10 +161,7 @@ export function mapRequestType(type: number | string): RequestType {
   return 'Order';
 }
 
-/**
- * Map numeric or string priority to string
- * Backend RequestPriority enum: Normal = 1, Urgent = 2, VeryUrgent = 3
- */
+
 export function mapPriority(priority: number | string): Priority {
   // Handle numeric type
   if (typeof priority === 'number') {
@@ -120,6 +206,8 @@ export function mapRequestStatus(status: number | string): RequestStatus {
         return 'Approved';
       case RequestStatusEnum.Rejected:
         return 'Rejected';
+      case RequestStatusEnum.AutoRejected:
+        return 'AutoRejected';
       case RequestStatusEnum.New:
       case RequestStatusEnum.UnderProcess:
       default:
@@ -136,6 +224,9 @@ export function mapRequestStatus(status: number | string): RequestStatus {
     if (statusLower === 'rejected' || statusLower === 'declined' || statusLower === '4') {
       return 'Rejected';
     }
+    if (statusLower === 'autorejected' || statusLower === 'auto rejected' || statusLower === 'auto-rejected' || statusLower === '7') {
+      return 'AutoRejected';
+    }
     if (statusLower === 'new' || statusLower === '1') {
       return 'Pending'; // New maps to Pending in RequestStatus type
     }
@@ -151,12 +242,15 @@ export function mapRequestStatus(status: number | string): RequestStatus {
 /**
  * Map numeric approval status to string
  */
-export function mapApprovalStatus(status: number): 'Pending' | 'Approved' | 'Rejected' | 'Returned' {
+export function mapApprovalStatus(status: number): 'Pending' | 'Approved' | 'Rejected' | 'AutoRejected' | 'Returned' {
   switch (status) {
     case RequestStatusEnum.Approved:
       return 'Approved';
     case RequestStatusEnum.Rejected:
       return 'Rejected';
+    case RequestStatusEnum.AutoRejected:
+      return 'AutoRejected';
+    case RequestStatusEnum.Cancelled:
     case RequestStatusEnum.ReturnedForReview:
       return 'Returned';
     case RequestStatusEnum.New:
@@ -220,7 +314,9 @@ export function mapApprovalHistory(history: any[], requestStatus?: RequestStatus
           if (lower === 'underprocess' || lower === 'under process' || lower === 'inprogress' || lower === 'in progress') return RequestStatusEnum.UnderProcess;
           if (lower === 'approved' || lower === 'completed') return RequestStatusEnum.Approved;
           if (lower === 'rejected' || lower === 'declined') return RequestStatusEnum.Rejected;
+          if (lower === 'cancelled') return RequestStatusEnum.Cancelled;
           if (lower === 'returnedforreview' || lower === 'returned') return RequestStatusEnum.ReturnedForReview;
+          if (lower === 'autorejected' || lower === 'auto rejected' || lower === 'auto-rejected') return RequestStatusEnum.AutoRejected;
         }
         return 0;
       };

@@ -7,7 +7,7 @@ export interface Request {
   creationDate: string; // Actual creation date from backend
   priority: 'Normal' | 'Urgent' | 'VeryUrgent' | 'Very Urgent' | 'Critical';
   requestType: 'Order' | 'Return' | 'Discard';
-  status: 'New' | 'Pending' | 'Confirmed' | 'Rejected' | 'Returned' | 'ReturnedForReview';
+  status: 'New' | 'Pending' | 'Confirmed' | 'Rejected' | 'AutoRejected' | 'Returned' | 'ReturnedForReview';
   isMyTurn: boolean;
 }
 

@@ -68,6 +68,7 @@
       "Pending": "قيد الإجراء",
       "Approved": "تمت الموافقة",
       "Rejected": "مرفوض",
+      "AutoRejected": "مرفوض تلقائيًا",
       "Returned": "أرجاع للمعاينة",
       "ReturnedForReview": "أرجاع للمعاينة",
       "Submitted": "تم التقديم",

@@ -21,15 +21,18 @@
             <app-request-filter-bar
               [showStatusFilter]="true"
               [showPriorityFilter]="true"
+              [showAutoRejectFilter]="true"
               [showSearchBar]="true"
               [showResultCount]="true"
               [statusFilter]="selectedStatusFilter"
               [priorityFilter]="selectedPriorityFilter"
+              [autoRejectFilter]="selectedAutoRejectFilter"
               [searchQuery]="searchQuery"
               [resultCount]="filteredCardsCount"
               [useSearchButton]="true"
               (statusFilterChange)="onStatusFilterChange($event)"
               (priorityFilterChange)="onPriorityFilterChange($event)"
+              (autoRejectFilterChange)="onAutoRejectFilterChange($event)"
               (searchTriggered)="onSearchChange($event)"
               (filtersCleared)="onFiltersCleared()">
             </app-request-filter-bar>
@@ -94,11 +97,14 @@
         *ngFor="let card of paginatedCards; trackBy: trackByCard"
         [title]="card.title"
         [status]="card.status"
+        [requestStatus]="card.requestStatus"
         [orders]="card.orders"
         [orderRequestId]="card.orderRequestId || null"
         [returnRequestId]="card.returnRequestId || null"
         [discardRequestId]="card.discardRequestId || null"
         [isMyTurn]="card.isMyTurn || false"
+        [priority]="card.priority"
+        [countdown]="getAutoRejectCountdown(card)"
         (viewOrderDetails)="onViewOrderDetails($event)"
         (viewDetails)="onViewDetails($event)"
         (viewDiscardDetails)="onViewDiscardDetails($event)">
@@ -129,11 +135,17 @@
               <span class="text-sm font-semibold text-[var(--color-text)] truncate">
                 {{ card.orders[0].orderId || card.title }}
               </span>
-              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium
-                           flex-shrink-0 whitespace-nowrap"
-                [ngClass]="getStatusBadgeClass(card.status)">
-                {{ getStatusTranslationKey(card.status) | translate }}
-              </span>
+              <div class="flex items-center gap-1.5 flex-shrink-0">
+                <span *ngIf="card.priority"
+                  class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap"
+                  [ngClass]="getPriorityBadgeClass(card.priority)">
+                  {{ getPriorityTranslationKey(card.priority) | translate }}
+                </span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap"
+                  [ngClass]="getStatusBadgeClass(card.status)">
+                  {{ getRequestStatusTranslationKey(card) | translate }}
+                </span>
+              </div>
             </div>
             <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-[var(--color-text-muted)] mb-2.5">
               <span class="truncate">{{ displayDepartment(card.orders[0]) }}</span>
@@ -142,12 +154,15 @@
                 {{ formatApprovalDateTime(card.orders[0].requestDate) || '—' }}
               </span>
             </div>
-            <div class="flex items-center justify-between">
-              <span *ngIf="card.isMyTurn"
-                class="text-[10px] font-bold text-[var(--color-brand)] uppercase tracking-wide animate-pulse">
-                {{ 'requestsManagement.actionRequired' | translate }}
-              </span>
-              <span *ngIf="!card.isMyTurn"></span>
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span *ngIf="card.isMyTurn"
+                  class="text-[10px] font-bold text-[var(--color-brand)] uppercase tracking-wide animate-pulse">
+                  {{ 'requestsManagement.actionRequired' | translate }}
+                </span>
+                <app-auto-reject-countdown [countdown]="getAutoRejectCountdown(card)">
+                </app-auto-reject-countdown>
+              </div>
               <button (click)="onTableAction(card)"
                 class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium
                        text-[var(--color-brand)] bg-[var(--color-brand)]/8
@@ -162,12 +177,13 @@
 
       <!-- Desktop table (>= md) -->
       <div class="hidden md:block overflow-x-auto">
-        <table class="w-full min-w-[700px]">
+        <table class="w-full min-w-[850px]">
           <thead>
             <tr class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
               <th *ngFor="let col of [
                     {key:'orderNumber', label:'dashboard.orderNumber'},
                     {key:'usageDate',   label:'dashboard.requestDate'},
+                    {key:'priority',    label:'requestsManagement.priority'},
                     {key:'department',  label:'dashboard.department'},
                     {key:'requester',   label:'dashboard.requester'},
                     {key:'status',      label:'dashboard.status'}
@@ -192,6 +208,11 @@
                   </lucide-angular>
                 </div>
               </th>
+              <!-- Auto-reject days column (no sort — loaded separately) -->
+              <th class="px-5 py-3 text-start text-[11px] font-semibold text-[var(--color-text-muted)]
+                         uppercase tracking-wider whitespace-nowrap">
+                {{ 'autoRejectCountdown.daysLeftLabel' | translate }}
+              </th>
               <th class="px-5 py-3 text-end text-[11px] font-semibold text-[var(--color-text-muted)]
                          uppercase tracking-wider w-16">
                 {{ 'common.actions' | translate }}
@@ -201,12 +222,20 @@
           <tbody class="divide-y divide-[var(--color-border)]">
             <tr *ngFor="let card of paginatedCards; trackBy: trackByCard"
               class="group hover:bg-[var(--color-background-muted)] transition-colors"
-              [class.action-required-highlight]="card.isMyTurn">
+              [class.action-required-highlight]="card.isMyTurn"
+              [ngClass]="card.priority === 3 ? 'border-s-[3px] border-s-red-400' : ''">
               <td class="px-5 py-3.5 text-sm font-medium text-[var(--color-text)] whitespace-nowrap">
                 {{ card.orders[0].orderId || card.title }}
               </td>
               <td class="px-5 py-3.5 text-sm text-[var(--color-text-muted)] whitespace-nowrap">
                 {{ formatApprovalDateTime(card.orders[0].requestDate) || '—' }}
+              </td>
+              <td class="px-5 py-3.5">
+                <span *ngIf="card.priority"
+                  class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap"
+                  [ngClass]="getPriorityBadgeClass(card.priority)">
+                  {{ getPriorityTranslationKey(card.priority) | translate }}
+                </span>
               </td>
               <td class="px-5 py-3.5 text-sm text-[var(--color-text)] whitespace-nowrap max-w-[200px] truncate">
                 {{ displayDepartment(card.orders[0]) }}
@@ -218,12 +247,18 @@
                 <div class="flex items-center gap-2">
                   <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap"
                     [ngClass]="getStatusBadgeClass(card.status)">
-                    {{ getStatusTranslationKey(card.status) | translate }}
+                    {{ getRequestStatusTranslationKey(card) | translate }}
                   </span>
                   <span *ngIf="card.isMyTurn" class="action-required-badge animate-action-glow whitespace-nowrap">
                     {{ 'requestsManagement.actionRequired' | translate }}
                   </span>
                 </div>
+              </td>
+              <!-- Auto-reject days remaining -->
+              <td class="px-5 py-3.5">
+                <app-auto-reject-countdown
+                  [countdown]="getAutoRejectCountdown(card)">
+                </app-auto-reject-countdown>
               </td>
               <td class="px-5 py-3.5 text-end">
                 <button (click)="onTableAction(card)"

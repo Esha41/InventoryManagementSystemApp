@@ -53,6 +53,7 @@
       "underProcess": "In Progress",
       "approved": "Approved",
       "rejected": "Rejected",
+      "autoRejected": "Auto-Rejected",
       "cancelled": "Cancelled",
       "completed": "Completed",
       "returned": "Returned for Review",

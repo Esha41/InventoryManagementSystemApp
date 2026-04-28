@@ -362,7 +362,7 @@ export class WorkflowApprovalPermissionsService {
     if (!requestDetail || requestDetail.requestType !== 'Order') {
       return false;
     }
-    if (requestDetail.status === 'Rejected') {
+    if (requestDetail.status === 'Rejected' || requestDetail.status === 'AutoRejected') {
       return false;
     }
     try {
@@ -603,6 +603,9 @@ export class WorkflowApprovalPermissionsService {
    */
   canSubmitSupply(requestDetail: RequestDetail | null, isWeaponOrder: boolean): boolean {
     if (!requestDetail || requestDetail.requestType !== 'Order') {
+      return false;
+    }
+    if (requestDetail.status === 'Rejected' || requestDetail.status === 'AutoRejected') {
       return false;
     }
 

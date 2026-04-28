@@ -41,7 +41,7 @@
   </div>
 
   <!-- Divider (wide screens) -->
-  <div *ngIf="showSearchBar && (showStatusFilter || showPriorityFilter)"
+  <div *ngIf="showSearchBar && (showStatusFilter || showPriorityFilter || showAutoRejectFilter)"
     class="hidden xl:block w-px h-9 bg-[var(--color-border)] flex-shrink-0 xl:self-auto"
     aria-hidden="true">
   </div>
@@ -50,7 +50,7 @@
   <div
     class="flex flex-col sm:flex-row sm:flex-wrap lg:flex-nowrap sm:items-end gap-3 min-w-0 xl:w-auto xl:flex-shrink-0">
 
-    <button *ngIf="showStatusFilter || showPriorityFilter"
+    <button *ngIf="showStatusFilter || showPriorityFilter || showAutoRejectFilter"
       type="button"
       (click)="clearAllFilters()"
       [disabled]="!hasActiveFilters"
@@ -98,6 +98,24 @@
             [placeholderSelectable]="false"
             [showSearch]="false"
             [placeholder]="'requestsManagement.filterPriorityPlaceholder' | translate">
+          </app-dropdown>
+        </div>
+      </div>
+
+      <div *ngIf="showAutoRejectFilter" class="rfb-dropdown-field flex flex-col gap-1 min-w-0 sm:min-w-[10rem] flex-1 sm:flex-initial">
+        <span class="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)] ps-0.5">
+          {{ 'autoRejectCountdown.filter.label' | translate }}
+        </span>
+        <div class="rfb-dropdown-wrap min-w-0 w-full">
+          <app-dropdown class="rfb-dropdown"
+            [ngModel]="autoRejectFilter"
+            (ngModelChange)="onAutoRejectChange($event)"
+            [options]="autoRejectFilterOptions"
+            [optionLabelFn]="autoRejectFilterLabelFn"
+            optionValue="value"
+            [placeholderSelectable]="false"
+            [showSearch]="false"
+            [placeholder]="'autoRejectCountdown.filter.label' | translate">
           </app-dropdown>
         </div>
       </div>

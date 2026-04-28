@@ -8,6 +8,8 @@ import { CardStatus } from '@utils/dashboard.utils';
 
 export type PriorityFilter = 'all' | 'Normal' | 'Urgent' | 'VeryUrgent';
 export type StatusFilter = CardStatus | 'all' | 'action-required';
+/** Filter orders by auto-reject days remaining */
+export type AutoRejectFilter = 'all' | 'expiring-1day' | 'expiring-3days' | 'expiring-7days';
 
 @Component({
     selector: 'app-request-filter-bar',
@@ -29,16 +31,19 @@ export class RequestFilterBarComponent {
     @Input() showPriorityFilter = false;
     @Input() showSearchBar = true;
     @Input() showResultCount = true;
+    @Input() showAutoRejectFilter = false;
     @Input() searchPlaceholder = 'dashboard.searchOrders';
     @Input() useSearchButton = false;
 
     @Input() statusFilter: StatusFilter = 'all';
     @Input() priorityFilter: PriorityFilter = 'all';
+    @Input() autoRejectFilter: AutoRejectFilter = 'all';
     @Input() searchQuery = '';
     @Input() resultCount = 0;
 
     @Output() statusFilterChange = new EventEmitter<StatusFilter>();
     @Output() priorityFilterChange = new EventEmitter<PriorityFilter>();
+    @Output() autoRejectFilterChange = new EventEmitter<AutoRejectFilter>();
     @Output() searchQueryChange = new EventEmitter<string>();
     @Output() searchTriggered = new EventEmitter<string>();
     @Output() filtersCleared = new EventEmitter<void>();
@@ -64,6 +69,13 @@ export class RequestFilterBarComponent {
         { label: 'dashboard.priorityLabels.veryUrgent', value: 'VeryUrgent' }
     ];
 
+    readonly autoRejectFilterOptions: DropdownOption<AutoRejectFilter>[] = [
+        { label: 'dashboard.filters.all', value: 'all' },
+        { label: 'autoRejectCountdown.filter.expiring1Day', value: 'expiring-1day' },
+        { label: 'autoRejectCountdown.filter.expiring3Days', value: 'expiring-3days' },
+        { label: 'autoRejectCountdown.filter.expiring7Days', value: 'expiring-7days' }
+    ];
+
     constructor(private readonly translate: TranslateService) { }
 
     readonly statusFilterLabelFn = (option: DropdownOption<StatusFilter> | StatusFilter): string => {
@@ -80,6 +92,13 @@ export class RequestFilterBarComponent {
         return '';
     };
 
+    readonly autoRejectFilterLabelFn = (option: DropdownOption<AutoRejectFilter> | AutoRejectFilter): string => {
+        if (typeof option === 'object' && option !== null && 'label' in option) {
+            return this.translate.instant(option.label as string);
+        }
+        return '';
+    };
+
     onStatusChange(value: StatusFilter): void {
         this.statusFilter = value;
         this.statusFilterChange.emit(value);
@@ -88,6 +107,11 @@ export class RequestFilterBarComponent {
     onPriorityChange(value: PriorityFilter): void {
         this.priorityFilter = value;
         this.priorityFilterChange.emit(value);
+    }
+
+    onAutoRejectChange(value: AutoRejectFilter): void {
+        this.autoRejectFilter = value;
+        this.autoRejectFilterChange.emit(value);
     }
 
     onSearchChange(value: string): void {
@@ -110,8 +134,9 @@ export class RequestFilterBarComponent {
     get hasActiveFilters(): boolean {
         const statusActive = this.showStatusFilter && this.statusFilter !== 'all';
         const priorityActive = this.showPriorityFilter && this.priorityFilter !== 'all';
+        const autoRejectActive = this.showAutoRejectFilter && this.autoRejectFilter !== 'all';
         const searchActive = this.showSearchBar && !!this.searchQuery?.trim();
-        return statusActive || priorityActive || searchActive;
+        return statusActive || priorityActive || autoRejectActive || searchActive;
     }
 
     clearAllFilters(): void {

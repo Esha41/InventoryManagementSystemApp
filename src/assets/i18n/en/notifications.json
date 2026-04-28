@@ -161,6 +161,14 @@
   "autoRejectCountdown": {
     "title": "Time until possible auto-rejection",
     "daysLeft": "{{days}}d left",
-    "expired": "Overdue"
+    "expired": "Overdue",
+    "daysLeftLabel": "Days Left",
+    "filter": {
+      "label": "Days Remaining",
+      "overdue": "Overdue",
+      "expiring1Day": "Expiring today",
+      "expiring3Days": "Expiring in 3 days",
+      "expiring7Days": "Expiring in 7 days"
+    }
   }
 }

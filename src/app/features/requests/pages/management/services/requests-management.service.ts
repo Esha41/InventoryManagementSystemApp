@@ -51,6 +51,16 @@ export class RequestsManagementService {
       if (statusFilter === 'action-required') {
         filters.push({ field: 'IsMyTurn', operator: 'eq', value: 'true' });
       } else {
+        // Include AutoRejected (7) under declined/rejected filter.
+        if (statusFilter === 'declined') {
+          filters.push({
+            logic: 'or',
+            filters: [
+              { field: 'Status', operator: 'eq', value: '4' },
+              { field: 'Status', operator: 'eq', value: '7' }
+            ]
+          });
+        } else {
         const statusMap: Record<string, number> = {
           new: 1,
           'on-progress': 2,
@@ -61,6 +71,7 @@ export class RequestsManagementService {
         const statusValue = statusMap[statusFilter];
         if (statusValue) {
           filters.push({ field: 'Status', operator: 'eq', value: statusValue.toString() });
+        }
         }
       }
     }

@@ -98,6 +98,11 @@ export function getRequestStatusClass(status: string): string {
     case 'Rejected':
     case 'rejected':
       return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300';
+    case 'AutoRejected':
+    case 'Auto-Rejected':
+    case 'auto-rejected':
+    case 'autorejected':
+      return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-300';
     case 'Returned':
     case 'ReturnedForReview':
     case 'returned':
