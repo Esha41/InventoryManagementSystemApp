@@ -71,10 +71,11 @@
           </button>
         </div>
 
-        <div *ngIf="editSteps.length > 0" class="edit-steps-table-wrapper" [class.has-open-dropdown]="hasOpenDropdown">
-          <div class="edit-steps-table-scroll-container" [class.dropdown-open]="hasOpenDropdown">
-            <table class="edit-steps-table min-w-full border text-sm">
-              <thead class="bg-[var(--color-background-muted)] border-b-2 border-[var(--color-border)]">
+        <div *ngIf="editSteps.length > 0" class="w-full max-w-full relative overflow-hidden">
+          <div
+            class="w-full max-w-full border border-[var(--color-border,#e5e7eb)] rounded-lg relative bg-[var(--color-background)] max-h-[1600px] overflow-y-auto overflow-x-auto box-border">
+            <table class="min-w-[1600px] w-full m-0 border-collapse [table-layout:auto] box-border text-sm">
+              <thead class="bg-[var(--color-background-muted)] sticky top-0 z-[5] border-b-2 border-[var(--color-border)]">
                 <tr>
                   <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text-muted)]"
                     style="min-width: 60px;">#</th>
@@ -133,18 +134,18 @@
                     </span>
                   </td>
                   <td class="px-4 py-3">
-                    <app-dropdown class="w-full" [(ngModel)]="s.roleId" name="erole-{{i}}" [options]="roles"
+                    <app-dropdown class="w-full min-w-0" [(ngModel)]="s.roleId" name="erole-{{i}}" [options]="roles"
                       optionLabel="name" optionValue="id" [placeholder]="'workflow.selectRole' | translate">
                     </app-dropdown>
                   </td>
                   <td class="px-4 py-3">
-                    <app-dropdown class="w-full" [(ngModel)]="s.parallelRoleIds" name="eparallel-{{i}}"
+                    <app-dropdown class="w-full min-w-0" [(ngModel)]="s.parallelRoleIds" name="eparallel-{{i}}"
                       [options]="roles" optionLabel="name" optionValue="id" [multiple]="true"
                       [placeholder]="'workflow.parallelApproverRolesPlaceholder' | translate">
                     </app-dropdown>
                   </td>
                   <td class="px-4 py-3">
-                    <app-dropdown class="w-full" [(ngModel)]="s.applicationEntityId" name="eentity-{{i}}"
+                    <app-dropdown class="w-full min-w-0" [(ngModel)]="s.applicationEntityId" name="eentity-{{i}}"
                       [options]="allApplicationEntities" optionLabel="name" optionValue="id"
                       [placeholder]="'workflow.selectEntity' | translate">
                     </app-dropdown>
@@ -170,13 +171,13 @@
                     </app-dropdown>
                   </td> -->
                   <td class="px-4 py-3">
-                    <label class="inline-flex items-center gap-2 text-sm">
+                    <label class="inline-flex items-center gap-2 text-sm whitespace-nowrap">
                       <input type="checkbox" [(ngModel)]="s.canReturn" name="ecanReturn-{{i}}" class="h-4 w-4" />
                       <span>{{ 'workflow.canReturn' | translate }}</span>
                     </label>
                   </td>
                   <td class="px-4 py-3">
-                    <app-dropdown class="w-full" [(ngModel)]="s.skipToStepIds" (ngModelChange)="onSkipToStepChange(i)"
+                    <app-dropdown class="w-full min-w-0" [(ngModel)]="s.skipToStepIds" (ngModelChange)="onSkipToStepChange(i)"
                       name="eskipTo-{{i}}" [options]="s.availableNextSteps || []" optionLabel="displayName"
                       optionValue="id" [multiple]="true"
                       [disabled]="!s.workflowStepId || !s.availableNextSteps || s.availableNextSteps.length === 0"
@@ -184,14 +185,14 @@
                     </app-dropdown>
                   </td>
                   <td class="px-4 py-3">
-                    <app-dropdown class="w-full" [(ngModel)]="s.notifyingRoleIds"
+                    <app-dropdown class="w-full min-w-0" [(ngModel)]="s.notifyingRoleIds"
                       (ngModelChange)="onNotifyingRolesChange(i)" name="enotifyingRoles-{{i}}" [options]="roles"
                       optionLabel="name" optionValue="id" [multiple]="true"
                       placeholder="{{ 'workflow.selectNotifyingRoles' | translate }}">
                     </app-dropdown>
                   </td>
                   <td class="px-4 py-3">
-                    <app-dropdown class="w-full" [(ngModel)]="s.notifyingUserIds" name="enotifyingUsers-{{i}}"
+                    <app-dropdown class="w-full min-w-0" [(ngModel)]="s.notifyingUserIds" name="enotifyingUsers-{{i}}"
                       [options]="s.availableUsers || []" optionLabel="userName" optionValue="id" [multiple]="true"
                       [disabled]="!s.availableUsers || s.availableUsers.length === 0"
                       placeholder="{{ (s.availableUsers && s.availableUsers.length > 0) ? ('workflow.selectUsers' | translate) : ('common.loadingUsers' | translate) }}">

@@ -11,7 +11,6 @@ import { trackById } from '@utils/trackby.utils';
   standalone: true,
   imports: [CommonModule, TranslateModule],
   templateUrl: './workflow-detail.component.html',
-  styleUrls: ['./workflow-detail.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WorkflowDetailComponent implements OnInit {

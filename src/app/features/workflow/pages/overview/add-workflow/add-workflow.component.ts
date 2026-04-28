@@ -41,7 +41,6 @@ interface AddStepForm {
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, DragDropModule, DropdownComponent, HasPermissionDirective],
   templateUrl: './add-workflow.component.html',
-  styleUrls: ['./add-workflow.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddWorkflowComponent implements OnInit, OnDestroy {
@@ -84,10 +83,7 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
     { label: 'workflow.inactive', value: 'Inactive' as const }
   ];
 
-  hasOpenDropdown = false;
   private readonly destroy$ = new Subject<void>();
-  private mutationObserver?: MutationObserver;
-  private positioningInterval?: ReturnType<typeof setInterval>;
 
   constructor(
     private workflowService: WorkflowService,
@@ -104,109 +100,10 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    if (this.mutationObserver) {
-      this.mutationObserver.disconnect();
-    }
-    if (this.positioningInterval) {
-      clearInterval(this.positioningInterval);
-    }
-    document.removeEventListener('click', this.handleDocumentClick.bind(this));
-    document.removeEventListener('scroll', this.repositionDropdowns.bind(this), true);
-  }
-
-  private handleDocumentClick(event: MouseEvent): void {
-    setTimeout(() => {
-      this.checkAndPositionDropdowns();
-    }, 0);
-  }
-
-  private checkAndPositionDropdowns(): void {
-    const openDropdowns = document.querySelectorAll('.app-dropdown-open');
-    this.hasOpenDropdown = openDropdowns.length > 0;
-
-    if (this.hasOpenDropdown) {
-      this.repositionDropdowns();
-      if (!this.positioningInterval) {
-        document.addEventListener('scroll', this.repositionDropdowns.bind(this), true);
-        this.positioningInterval = setInterval(() => {
-          if (this.hasOpenDropdown) {
-            this.repositionDropdowns();
-          } else {
-            clearInterval(this.positioningInterval);
-            this.positioningInterval = undefined;
-            document.removeEventListener('scroll', this.repositionDropdowns.bind(this), true);
-          }
-        }, 100);
-      }
-    } else {
-      if (this.positioningInterval) {
-        clearInterval(this.positioningInterval);
-        this.positioningInterval = undefined;
-        document.removeEventListener('scroll', this.repositionDropdowns.bind(this), true);
-      }
-      document.querySelectorAll<HTMLElement>('.app-dropdown-panel').forEach((panel) => {
-        panel.style.position = '';
-        panel.style.top = '';
-        panel.style.left = '';
-        panel.style.width = '';
-        panel.style.maxWidth = '';
-      });
-    }
-  }
-
-  private repositionDropdowns(): void {
-    const scrollContainer = document.querySelector('.steps-table-scroll-container');
-    if (!scrollContainer) return;
-
-    const openDropdowns = document.querySelectorAll('.app-dropdown-open');
-    openDropdowns.forEach((trigger: Element) => {
-      const dropdown = trigger.closest('.app-dropdown');
-      if (!dropdown) return;
-
-      const panel = dropdown.querySelector('.app-dropdown-panel') as HTMLElement;
-      if (!panel) return;
-
-      if (scrollContainer.contains(dropdown)) {
-        const triggerRect = trigger.getBoundingClientRect();
-
-        const top = triggerRect.bottom + 8;
-        const left = triggerRect.left;
-        const width = triggerRect.width;
-
-        panel.style.position = 'fixed';
-        panel.style.top = `${top}px`;
-        panel.style.left = `${left}px`;
-        panel.style.width = `${width}px`;
-        panel.style.maxWidth = `${width}px`;
-        panel.style.minWidth = `${width}px`;
-        panel.style.zIndex = '10000';
-        panel.style.right = 'auto';
-      }
-    });
   }
 
   ngOnInit(): void {
     this.workflowForm.status = 'Active';
-
-    setTimeout(() => {
-      this.mutationObserver = new MutationObserver(() => {
-        this.checkAndPositionDropdowns();
-      });
-
-      const stepsContainer = document.querySelector('.steps-table-wrapper');
-      if (stepsContainer) {
-        this.mutationObserver.observe(stepsContainer, {
-          childList: true,
-          subtree: true,
-          attributes: true,
-          attributeFilter: ['class']
-        });
-      }
-
-      document.addEventListener('click', this.handleDocumentClick.bind(this));
-
-      this.checkAndPositionDropdowns();
-    }, 0);
     this.backendUserService.getAllRolesSimple().pipe(takeUntil(this.destroy$)).subscribe({
       next: roles => { this.roles = roles; this.cdr.markForCheck(); },
       error: (err) => { this.configService.logError('Failed to load roles', err); this.roles = []; this.cdr.markForCheck(); }

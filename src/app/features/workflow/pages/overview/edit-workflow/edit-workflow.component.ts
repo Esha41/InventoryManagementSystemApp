@@ -49,7 +49,6 @@ interface EditStepForm {
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, DragDropModule, DropdownComponent, HasPermissionDirective],
   templateUrl: './edit-workflow.component.html',
-  styleUrls: ['./edit-workflow.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EditWorkflowComponent implements OnInit, OnDestroy {
@@ -89,10 +88,6 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
   allUsers: Array<{ id: string; userName: string; roles?: string[] }> = [];
 
   hasOpenDropdown = false;
-  private mutationObserver?: MutationObserver;
-  private positioningInterval?: ReturnType<typeof setInterval>;
-  private boundRepositionDropdowns?: () => void;
-  private boundHandleDocumentClick?: () => void;
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -129,15 +124,11 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
       this.loadApplicationEntities();
     });
 
-    setTimeout(() => {
-      this.initializeDropdowns();
-    }, 0);
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    this.cleanupDropdownPositioning();
   }
 
   private loadApplicationEntities(): void {
@@ -227,116 +218,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     });
   }
 
-  private initializeDropdowns(): void {
-    const stepsContainer = document.querySelector('.edit-steps-table-wrapper');
-    if (!stepsContainer) return;
-
-    this.mutationObserver = new MutationObserver(() => {
-      this.checkAndPositionDropdowns();
-    });
-
-    this.mutationObserver.observe(stepsContainer, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['class']
-    });
-
-    this.boundHandleDocumentClick = () => {
-      setTimeout(() => this.checkAndPositionDropdowns(), 0);
-    };
-    document.addEventListener('click', this.boundHandleDocumentClick);
-
-    this.checkAndPositionDropdowns();
-  }
-
-  private cleanupDropdownPositioning(): void {
-    if (this.mutationObserver) {
-      this.mutationObserver.disconnect();
-      this.mutationObserver = undefined;
-    }
-    if (this.positioningInterval) {
-      clearInterval(this.positioningInterval);
-      this.positioningInterval = undefined;
-    }
-    if (this.boundRepositionDropdowns) {
-      document.removeEventListener('scroll', this.boundRepositionDropdowns, true);
-    }
-    if (this.boundHandleDocumentClick) {
-      document.removeEventListener('click', this.boundHandleDocumentClick);
-      this.boundHandleDocumentClick = undefined;
-    }
-    this.resetDropdownPanels();
-  }
-
-  private resetDropdownPanels(): void {
-    document.querySelectorAll<HTMLElement>('.app-dropdown-panel').forEach((panel) => {
-      panel.style.position = '';
-      panel.style.top = '';
-      panel.style.left = '';
-      panel.style.width = '';
-      panel.style.maxWidth = '';
-    });
-  }
-
-  private checkAndPositionDropdowns(): void {
-    const openDropdowns = document.querySelectorAll('.app-dropdown-open');
-    this.hasOpenDropdown = openDropdowns.length > 0;
-
-    if (this.hasOpenDropdown) {
-      this.repositionDropdowns();
-      if (!this.positioningInterval) {
-        if (!this.boundRepositionDropdowns) {
-          this.boundRepositionDropdowns = this.repositionDropdowns.bind(this);
-        }
-        document.addEventListener('scroll', this.boundRepositionDropdowns, true);
-        this.positioningInterval = setInterval(() => {
-          if (this.hasOpenDropdown) {
-            this.repositionDropdowns();
-          } else {
-            this.stopPositioningInterval();
-          }
-        }, 100);
-      }
-    } else {
-      this.stopPositioningInterval();
-      this.resetDropdownPanels();
-    }
-  }
-
-  private stopPositioningInterval(): void {
-    if (this.positioningInterval) {
-      clearInterval(this.positioningInterval);
-      this.positioningInterval = undefined;
-      if (this.boundRepositionDropdowns) {
-        document.removeEventListener('scroll', this.boundRepositionDropdowns, true);
-      }
-    }
-  }
-
-  private repositionDropdowns(): void {
-    const scrollContainer = document.querySelector('.edit-steps-table-scroll-container');
-    if (!scrollContainer) return;
-
-    document.querySelectorAll<HTMLElement>('.app-dropdown-open').forEach((trigger) => {
-      const dropdown = trigger.closest('.app-dropdown');
-      const panel = dropdown?.querySelector('.app-dropdown-panel') as HTMLElement;
-
-      if (!panel || !scrollContainer.contains(dropdown)) return;
-
-      const rect = trigger.getBoundingClientRect();
-      Object.assign(panel.style, {
-        position: 'fixed',
-        top: `${rect.bottom + 8}px`,
-        left: `${rect.left}px`,
-        width: `${rect.width}px`,
-        minWidth: `${rect.width}px`,
-        maxWidth: `${rect.width}px`,
-        zIndex: '10000',
-        right: 'auto'
-      });
-    });
-  }
+  // Dropdown positioning is handled internally by `app-dropdown` (fixed panel when inside clipping scrollers).
 
   addEditStep(): void {
     const newStep = {
