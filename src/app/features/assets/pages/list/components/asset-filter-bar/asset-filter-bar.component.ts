@@ -6,12 +6,15 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Search, FilterX, X, ChevronDown } from 'lucide-angular';
 import { CardComponent } from '@components/card/card.component';
-import { DropdownComponent } from '@components/dropdown/dropdown.component';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { AssetType, AssetFilterState } from '@models/asset-list.model';
+import { LookupItem } from '@models/lookup.model';
 import { AssetFilterOptions } from '../../models/asset-filter-options.model';
+import { getLookupDropdownLabel, filterRenderableLookupItems } from '@utils/asset-list.utils';
+import { unwrapDropdownOption } from '@utils/dropdown.utils';
 
 @Component({
   selector: 'app-asset-filter-bar',
@@ -30,6 +33,7 @@ import { AssetFilterOptions } from '../../models/asset-filter-options.model';
 })
 export class AssetFilterBarComponent {
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly translateService = inject(TranslateService);
 
   @Input() activeTab: AssetType = 'ammunition';
   @Input() filterState!: AssetFilterState;
@@ -45,6 +49,17 @@ export class AssetFilterBarComponent {
   readonly FilterX = FilterX;
   readonly X = X;
   readonly ChevronDown = ChevronDown;
+
+  readonly lookupOptionLabel = (option: DropdownOption<LookupItem> | LookupItem) =>
+    getLookupDropdownLabel(unwrapDropdownOption(option), this.translateService);
+
+  get calibersAmmunitionForFilter(): LookupItem[] {
+    return filterRenderableLookupItems(this.filterOptions?.calibersAmmunition, this.translateService);
+  }
+
+  get calibersWeaponForFilter(): LookupItem[] {
+    return filterRenderableLookupItems(this.filterOptions?.calibersWeapon, this.translateService);
+  }
 
   showMoreFilters = false;
 

@@ -101,7 +101,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   activeTab: ActiveTab = 'all';
 
   itemSearchText = '';
-  caliberFilterText = '';
+  caliberFilter: string | null = null;
   itemTypeFilter: number | null = null;
   selectedItemFilterIds: number[] = [];
 
@@ -298,6 +298,10 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     }));
   }
 
+  get caliberDropdownOptions(): DropdownOption<string>[] {
+    return this.distinctCalibers.map(c => ({ label: c, value: c }));
+  }
+
   get itemTypeCountMetrics() {
     return this._itemTypeCountMetrics;
   }
@@ -306,6 +310,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     this.activeTab = tab;
     this.itemTypeFilter = null;
     this.selectedItemFilterIds = [];
+    this.caliberFilter = null;
     this.itemCurrentPage = 1;
     this.expandedItemId = null;
     this.lotDetails = [];
@@ -322,7 +327,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  onCaliberFilterInput(): void {
+  onCaliberFilterChange(): void {
     this.itemCurrentPage = 1;
     this.cdr.markForCheck();
   }
@@ -346,7 +351,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   clearTableFilters(): void {
     this.activeTab = 'all';
     this.itemSearchText = '';
-    this.caliberFilterText = '';
+    this.caliberFilter = null;
     this.itemTypeFilter = null;
     this.selectedItemFilterIds = [];
     this.itemCurrentPage = 1;
@@ -360,7 +365,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     return filterItemSummaries(this.itemSummaries, {
       selectedItemFilterIds: this.selectedItemFilterIds,
       searchText: this.itemSearchText,
-      caliberText: this.caliberFilterText,
+      caliberSelection: this.caliberFilter,
       itemType: this.itemTypeFilter,
       activeTab: this.activeTab
     });
@@ -374,7 +379,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     return hasActiveItemTableFilters(
       this.activeTab,
       this.itemSearchText,
-      this.caliberFilterText,
+      this.caliberFilter,
       this.itemTypeFilter,
       this.selectedItemFilterIds
     );

@@ -22,7 +22,8 @@ import { ToastService } from '@services/toast.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
-import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { getLookupDropdownLabel, filterRenderableLookupItems } from '@utils/asset-list.utils';
+import { unwrapDropdownOption } from '@utils/dropdown.utils';
 import { getExplosiveTypeOptions } from '@utils/explosive.utils';
 import { ItemType } from '@models/inventory.model';
 
@@ -64,7 +65,7 @@ interface AssetForm {
   // Weapon specific
   /** WeaponCaliberCategory as string: '1' | '2' | '3' */
   weaponCaliberCategory: string;
-  caliber: string;
+  caliberId: string;
   caliberUnitId: string;
   yearOfManufacture: string;
   countryOfManufactureId: string;
@@ -113,11 +114,15 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
   classifications: LookupItem[] = [];
   itemTypes: LookupItem[] = [];
   countries: LookupItem[] = [];
-
-  // Enum Options
+  calibers: LookupItem[] = [];
   explosiveTypeOptions = getExplosiveTypeOptions();
 
-  readonly lookupOptionLabel = (option: DropdownOption<LookupItem> | LookupItem) => this.getLocalizedName(this.unwrapOption(option));
+  readonly lookupOptionLabel = (option: DropdownOption<LookupItem> | LookupItem) =>
+    getLookupDropdownLabel(unwrapDropdownOption(option), this.translateService);
+
+  get calibersForDropdown(): LookupItem[] {
+    return filterRenderableLookupItems(this.calibers, this.translateService);
+  }
   readonly linkedOptions = [
     { label: 'common.no', value: 'false' },
     { label: 'common.yes', value: 'true' }
@@ -188,7 +193,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
 
       // Weapon (default Small = 1)
       weaponCaliberCategory: '1',
-      caliber: '',
+      caliberId: '',
       caliberUnitId: '',
       yearOfManufacture: '',
       countryOfManufactureId: '',
@@ -275,6 +280,24 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
           console.error('Error loading units:', error);
         }
       });
+
+    if (tab === 'ammunition' || tab === 'weapon') {
+      this.lookupService
+        .getCalibersByItemType(tab === 'ammunition' ? ItemType.Ammunition : ItemType.Weapon)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (rows) => {
+            this.calibers = rows;
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.calibers = [];
+            this.cdr.markForCheck();
+          }
+        });
+    } else {
+      this.calibers = [];
+    }
   }
 
   loadLookupData(): void {
@@ -321,21 +344,6 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
       });
   }
 
-  private getLocalizedName(entity: LookupItem | string | number | { nameAr?: string; nameEn?: string; nameEN?: string; label?: string } | null | undefined): string {
-    if (!entity) return '';
-    if (typeof entity === 'string') return entity;
-    if (typeof entity === 'number') return String(entity);
-    if (typeof entity === 'object' && 'label' in entity && typeof entity.label === 'string') return entity.label;
-    return getLocalizedName(entity, getCurrentLang(this.translateService));
-  }
-
-  private unwrapOption<T>(option: DropdownOption<T> | T): T {
-    if (option && typeof option === 'object' && option !== null && 'value' in option) {
-      return option.value as T;
-    }
-    return option as T;
-  }
-
   onSubmit(): void {
     this.formSubmitted = true;
     if (!this.validateForm()) {
@@ -366,7 +374,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
 
     if (this.assetForm.partNo?.trim()) dto.partNo = this.assetForm.partNo.trim();
     if (this.assetForm.armNumber?.trim()) dto.armNumber = this.assetForm.armNumber.trim();
-    if (this.assetForm.caliber?.trim()) dto.caliber = this.assetForm.caliber.trim();
+    if (this.assetForm.caliberId) dto.caliberId = parseInt(this.assetForm.caliberId, 10);
     if (this.assetForm.primer?.trim()) dto.primer = this.assetForm.primer.trim();
     if (this.assetForm.nsn?.trim()) dto.nsn = this.assetForm.nsn.trim();
 
@@ -430,7 +438,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.assetForm.classificationId) dto.classificationId = parseInt(this.assetForm.classificationId);
     if (this.assetForm.typeId) dto.typeId = parseInt(this.assetForm.typeId);
     if (this.assetForm.weaponCaliberCategory) dto.caliberCategory = parseInt(this.assetForm.weaponCaliberCategory, 10);
-    if (this.assetForm.caliber?.trim()) dto.caliber = this.assetForm.caliber.trim();
+    if (this.assetForm.caliberId) dto.caliberId = parseInt(this.assetForm.caliberId, 10);
     if (this.assetForm.caliberUnitId) dto.caliberUnitId = parseInt(this.assetForm.caliberUnitId);
     if (this.assetForm.yearOfManufacture) dto.yearOfManufacture = parseInt(this.assetForm.yearOfManufacture);
     if (this.assetForm.countryOfManufactureId) dto.countryOfManufactureId = parseInt(this.assetForm.countryOfManufactureId);

@@ -203,8 +203,15 @@
             </div>
             <div class="alf-col-field alf-col-field--line">
               <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'addAsset.caliber' | translate }}</label>
-              <input type="text" [(ngModel)]="filterState.columnFilters.caliber" (keydown)="onColumnFilterKeydown($event)"
-                class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
+              <app-dropdown class="w-full"
+                [(ngModel)]="filterState.columnFilters.caliberId" name="colFilterCaliberAmmo"
+                [options]="calibersAmmunitionForFilter" optionValue="id"
+                [optionLabelFn]="lookupOptionLabel"
+                [placeholderSelectable]="true" [placeholderValue]="null"
+                [placeholder]="'addAsset.selectCaliber' | translate"
+                [noDataText]="'common.noData' | translate"
+                (selectionChange)="onFilterChange()">
+              </app-dropdown>
             </div>
           </div>
           <div class="alf-more-filters__actions-row w-full flex flex-wrap items-end gap-4">
@@ -273,8 +280,15 @@
             </div>
             <div class="alf-col-field alf-col-field--line">
               <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'addAsset.caliber' | translate }}</label>
-              <input type="text" [(ngModel)]="filterState.columnFilters.caliber" (keydown)="onColumnFilterKeydown($event)"
-                class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
+              <app-dropdown class="w-full"
+                [(ngModel)]="filterState.columnFilters.caliberId" name="colFilterCaliberWeapon"
+                [options]="calibersWeaponForFilter" optionValue="id"
+                [optionLabelFn]="lookupOptionLabel"
+                [placeholderSelectable]="true" [placeholderValue]="null"
+                [placeholder]="'addAsset.selectCaliber' | translate"
+                [noDataText]="'common.noData' | translate"
+                (selectionChange)="onFilterChange()">
+              </app-dropdown>
             </div>
             <div class="alf-more-filters__actions flex flex-wrap gap-2 w-full sm:w-auto sm:ms-auto">
               <button

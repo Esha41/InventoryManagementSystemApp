@@ -10,6 +10,7 @@ import { AmmunitionReadDto } from '@models/ammunition.model';
 import { WeaponDto } from '@models/weapon.model';
 import { ExplosiveDto } from '@models/explosive.model';
 import { AssetDetailsData } from './asset-details.component';
+import { isAmmunition, isExplosive, isWeapon } from '@utils/asset-property.utils';
 
 /**
  * Service for asset details business logic
@@ -97,18 +98,18 @@ export class AssetDetailsService {
    * Determine asset type from asset data
    */
   detectAssetType(asset: AssetDetailsData): 'ammunition' | 'weapon' | 'explosive' | null {
-    if (!asset) return null;
-
-    if ('explosiveType' in asset) {
+    if (!asset) {
+      return null;
+    }
+    if (isExplosive(asset)) {
       return 'explosive';
     }
-    if ('caliber' in asset && !('armNumber' in asset)) {
-      return 'weapon';
-    }
-    if ('armNumber' in asset) {
+    if (isAmmunition(asset)) {
       return 'ammunition';
     }
-
+    if (isWeapon(asset)) {
+      return 'weapon';
+    }
     return null;
   }
 

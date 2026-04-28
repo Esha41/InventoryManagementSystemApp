@@ -12,43 +12,80 @@ import { LookupItem } from '../models/lookup.model';
 import { TranslateService } from '@ngx-translate/core';
 import { getLookupDisplayName } from './asset-list.utils';
 import { getExplosiveTypeName } from './explosive.utils';
-import { ItemType } from '../models/inventory.model';
+import { ItemType, BaseItemDto } from '../models/inventory.model';
 import { formatDateShort } from './format.utils';
 
 export type AssetUnion = Asset | AmmunitionReadDto | WeaponDto | ExplosiveDto | null;
+
+/** Map API itemType (number or JsonStringEnumConverter name) to ItemType */
+export function normalizeCatalogItemType(raw: unknown): ItemType | null {
+  if (raw == null) return null;
+  if (typeof raw === 'number' && raw >= 1 && raw <= 3 && Number.isInteger(raw)) {
+    return raw as ItemType;
+  }
+  if (typeof raw === 'string') {
+    const t = raw.trim().toLowerCase();
+    if (t === '1' || t === 'ammunition') return ItemType.Ammunition;
+    if (t === '2' || t === 'weapon') return ItemType.Weapon;
+    if (t === '3' || t === 'explosive') return ItemType.Explosive;
+  }
+  return null;
+}
+
+function assetCore(
+  asset: AssetUnion
+): AmmunitionReadDto | WeaponDto | ExplosiveDto | undefined {
+  if (asset === null) return undefined;
+  return (asset as Asset).originalData ?? (asset as AmmunitionReadDto | WeaponDto | ExplosiveDto);
+}
+
+function resolvedCatalogItemType(asset: AssetUnion): ItemType | null {
+  const core = assetCore(asset);
+  let raw: unknown;
+  if (core && typeof core === 'object' && 'itemType' in core) {
+    raw = (core as BaseItemDto).itemType;
+  } else if (asset && typeof asset === 'object' && 'itemType' in asset) {
+    raw = (asset as BaseItemDto).itemType;
+  } else {
+    return null;
+  }
+  return normalizeCatalogItemType(raw);
+}
 
 /**
  * Type guards for narrowing union types
  */
 export function isAmmunition(asset: AssetUnion): asset is AmmunitionReadDto {
-  return asset !== null && 'armNumber' in asset;
+  if (asset === null) return false;
+  const kind = resolvedCatalogItemType(asset);
+  if (kind !== null) return kind === ItemType.Ammunition;
+  const core = assetCore(asset);
+  return 'armNumber' in asset && !('explosiveType' in (core ?? {}));
 }
 
 export function isWeapon(asset: AssetUnion): asset is WeaponDto {
-  return asset !== null && 'caliber' in asset && !('armNumber' in asset) && !('explosiveType' in asset);
+  if (asset === null) return false;
+  const kind = resolvedCatalogItemType(asset);
+  if (kind !== null) return kind === ItemType.Weapon;
+  const core = assetCore(asset);
+  return 'caliberCategory' in (core ?? {}) && !('explosiveType' in (core ?? {}));
 }
 
 export function isExplosive(asset: AssetUnion): asset is ExplosiveDto {
   if (!asset) return false;
-  // Check itemType first if available (most reliable)
-  if ('itemType' in asset) {
-    const itemType = (asset as any).itemType;
-    if (typeof itemType === 'number') {
-      return itemType === ItemType.Explosive;
-    }
-    if (typeof itemType === 'string') {
-      return itemType === 'Explosive' || itemType === '3' || itemType.toLowerCase() === 'explosive';
-    }
-  }
-  // Fallback: check for explosive-specific properties
-  // If it has unNumber and is NOT ammunition or weapon, it's likely an explosive
+  const kind = resolvedCatalogItemType(asset);
+  if (kind !== null) return kind === ItemType.Explosive;
   if ('unNumber' in asset && !isAmmunition(asset) && !isWeapon(asset)) {
     return true;
   }
-  // Check for other explosive-specific properties
-  return ('explosiveType' in asset) || 
-         ('netExplosiveQuantity' in asset) ||
-         ('distribution' in asset && 'referenceNo' in asset && !isAmmunition(asset));
+  return (
+    'explosiveType' in asset ||
+    'netExplosiveQuantity' in asset ||
+    ('distribution' in asset &&
+      'referenceNo' in asset &&
+      !isAmmunition(asset) &&
+      !isWeapon(asset))
+  );
 }
 
 /**
@@ -191,19 +228,43 @@ export class AssetPropertyAccessor {
 
   getAmmunitionCaliber(asset: AssetUnion): string {
     if (isExplosive(asset)) return '-';
-    if (!isAmmunition(asset)) return '-';
-    const raw = (asset as AmmunitionReadDto).caliber;
-    if (raw != null && String(raw).trim() !== '' && raw !== '-') return String(raw).trim();
-    const ammoWithOd = asset as AssetUnion & { originalData?: AmmunitionReadDto };
-    if (ammoWithOd.originalData?.caliber != null && String(ammoWithOd.originalData.caliber).trim() !== '') {
-      return String(ammoWithOd.originalData.caliber).trim();
+    const dto = this.resolveAmmunitionReadDto(asset);
+    if (dto) {
+      const label = this.normalizeDetailLabel(
+        this.getLookupName(dto.caliber as LookupDto | null | undefined)
+      );
+      if (label) return label;
+    }
+    const shell = (asset as Asset)?.caliber;
+    if (typeof shell === 'string') {
+      const t = shell.trim();
+      if (t && t !== '-') return t;
     }
     return '-';
   }
 
   // Weapon properties
   getCaliber(asset: AssetUnion): string {
-    return isWeapon(asset) ? (asset.caliber || '-') : '-';
+    const dto = this.resolveWeaponDto(asset);
+    if (dto) {
+      const label = this.normalizeDetailLabel(
+        this.getLookupName(dto.caliber as LookupDto | null | undefined)
+      );
+      if (label) return label;
+    }
+    const shell = (asset as Asset)?.caliber;
+    if (typeof shell === 'string') {
+      const t = shell.trim();
+      if (t && t !== '-') return t;
+    }
+    return '-';
+  }
+
+  /** Treat empty / placeholder display names as missing so fallbacks can apply */
+  private normalizeDetailLabel(raw: string): string {
+    const t = (raw ?? '').trim();
+    if (!t || t === '-') return '';
+    return t;
   }
 
   getModel(asset: AssetUnion): string {

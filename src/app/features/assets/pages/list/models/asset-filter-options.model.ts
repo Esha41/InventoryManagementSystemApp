@@ -53,6 +53,8 @@ export interface AssetFilterOptions {
   explosiveClassification: FilterOption[];
   explosiveHazardDivision: FilterOption[];
   explosiveCompatibility: FilterOption[];
+  calibersAmmunition: LookupItem[];
+  calibersWeapon: LookupItem[];
 }
 
 /**
@@ -70,4 +72,6 @@ export interface AssetLookups {
   classifications: LookupItem[];
   itemTypes: LookupItem[];
   countries: LookupItem[];
+  calibersAmmunition: LookupItem[];
+  calibersWeapon: LookupItem[];
 }

@@ -36,6 +36,7 @@ import { ImportResult } from '@models/import-result.model';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { mapImportResultToPreviewData } from '@core/utils/asset-master-import-preview.utils';
 import { AssetType } from '@models/asset-list.model';
+import { LookupItem } from '@models/lookup.model';
 
 @Component({
   selector: 'app-asset-list',
@@ -126,6 +127,12 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
   get classifications() { return this.facade.lookups?.classifications ?? []; }
   get itemTypes() { return this.facade.lookups?.itemTypes ?? []; }
   get countries() { return this.facade.lookups?.countries ?? []; }
+  get calibersWeapon(): LookupItem[] {
+    return this.facade.lookups?.calibersWeapon ?? [];
+  }
+  get calibersAmmunition(): LookupItem[] {
+    return this.facade.lookups?.calibersAmmunition ?? [];
+  }
 
   ngOnDestroy(): void {
     this.destroy$.next();

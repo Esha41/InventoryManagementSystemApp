@@ -6,16 +6,42 @@ import { LucideAngularModule, X } from 'lucide-angular';
 import { ButtonComponent } from '@components/button/button.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { AssetType, AssetImageState, Asset } from '@models/asset-list.model';
-import { AmmunitionReadDto, AmmunitionCreateDto, LookupDto } from '@models/ammunition.model';
+import { AmmunitionReadDto, AmmunitionCreateDto } from '@models/ammunition.model';
 import { WeaponDto, CreateUpdateWeaponDto } from '@models/weapon.model';
 import { ExplosiveDto, CreateUpdateExplosiveDto } from '@models/explosive.model';
 import { LookupItem } from '@models/lookup.model';
 import { ItemType } from '@models/inventory.model';
 import { createAssetEditForm } from '@utils/asset-list-form.utils';
 import { unwrapDropdownOption } from '@utils/dropdown.utils';
-import { getLookupDisplayName } from '@utils/asset-list.utils';
+import { getLookupDropdownLabel, filterRenderableLookupItems } from '@utils/asset-list.utils';
 import { createInitialImageState } from '@utils/asset-list.state';
 import { getExplosiveTypeOptions } from '@utils/explosive.utils';
+
+/**
+ * API uses JsonStringEnumConverter (e.g. "Small"); edit dropdowns use '1' | '2' | '3'.
+ */
+function parseSmallMediumLargeEnum(value: unknown): number | null {
+  if (value == null || value === '') return null;
+  if (typeof value === 'number' && Number.isInteger(value) && value >= 1 && value <= 3) {
+    return value;
+  }
+  if (typeof value === 'string') {
+    const t = value.trim();
+    if (/^[1-3]$/.test(t)) return parseInt(t, 10);
+    const lower = t.toLowerCase();
+    if (lower === 'small') return 1;
+    if (lower === 'medium') return 2;
+    if (lower === 'large') return 3;
+    const n = parseInt(t, 10);
+    if (!Number.isNaN(n) && n >= 1 && n <= 3) return n;
+  }
+  return null;
+}
+
+function caliberClassApiToFormSelectValue(value: unknown): string {
+  const n = parseSmallMediumLargeEnum(value);
+  return n != null ? String(n) : '';
+}
 
 @Component({
   selector: 'app-asset-edit-modal',
@@ -49,6 +75,8 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
   @Input() classifications: LookupItem[] = [];
   @Input() itemTypes: LookupItem[] = [];
   @Input() countries: LookupItem[] = [];
+  @Input() calibersWeapon: LookupItem[] = [];
+  @Input() calibersAmmunition: LookupItem[] = [];
   @Input() imageState: AssetImageState = createInitialImageState();
 
   @Output() closed = new EventEmitter<void>();
@@ -78,7 +106,12 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
   ];
 
   readonly lookupOptionLabel = (option: DropdownOption<LookupItem> | LookupItem) =>
-    getLookupDisplayName(unwrapDropdownOption(option), this.translateService);
+    getLookupDropdownLabel(unwrapDropdownOption(option), this.translateService);
+
+  get caliberOptionsForTab(): LookupItem[] {
+    const raw = this.activeTab === 'weapon' ? this.calibersWeapon : this.calibersAmmunition;
+    return filterRenderableLookupItems(raw, this.translateService);
+  }
 
   constructor(
     private fb: FormBuilder,
@@ -128,16 +161,23 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
               : [];
         this.editForm.patchValue({ primaryPurposIds: ids });
       }
+      if (this.activeTab === 'ammunition' || this.activeTab === 'weapon') {
+        const cid =
+          this.activeTab === 'weapon'
+            ? (source as WeaponDto).caliberId ?? (source as WeaponDto).caliber?.id ?? null
+            : (source as AmmunitionReadDto).caliberId ?? (source as AmmunitionReadDto).caliber?.id ?? null;
+        this.editForm.patchValue({ caliberId: cid }, { emitEvent: false });
+      }
       if (this.activeTab === 'ammunition' && source) {
         const at = (source as AmmunitionReadDto).ammunitionType;
         this.editForm.patchValue({
-          ammunitionType: at != null ? String(at) : '',
+          ammunitionType: caliberClassApiToFormSelectValue(at) || '1',
           caliberCategory: '1'
         });
       } else if (this.activeTab === 'weapon' && source) {
         const cc = (source as WeaponDto).caliberCategory;
         this.editForm.patchValue({
-          caliberCategory: cc != null ? String(cc) : '1',
+          caliberCategory: caliberClassApiToFormSelectValue(cc) || '1',
           ammunitionType: ''
         });
       } else {
@@ -186,20 +226,27 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
         delete raw['primaryPurposIds'];
       }
       delete raw['caliberCategory'];
-      const at = raw['ammunitionType'];
-      if (typeof at === 'string' && at !== '') {
-        raw['ammunitionType'] = parseInt(at, 10);
-      } else if (typeof at !== 'number') {
+      const atParsed = parseSmallMediumLargeEnum(raw['ammunitionType']);
+      if (atParsed != null) {
+        raw['ammunitionType'] = atParsed;
+      } else {
         delete raw['ammunitionType'];
+      }
+      delete raw['caliber'];
+      const cid = raw['caliberId'];
+      if (cid === '' || cid === undefined || cid === null) {
+        delete raw['caliberId'];
+      } else if (typeof cid === 'string') {
+        raw['caliberId'] = parseInt(cid, 10);
       }
       dto = raw as unknown as AmmunitionCreateDto;
     } else if (this.activeTab === 'weapon') {
       const raw = formData as Record<string, unknown>;
       delete raw['ammunitionType'];
-      const cc = raw['caliberCategory'];
-      if (typeof cc === 'string' && cc !== '') {
-        raw['caliberCategory'] = parseInt(cc, 10);
-      } else if (typeof cc !== 'number') {
+      const ccParsed = parseSmallMediumLargeEnum(raw['caliberCategory']);
+      if (ccParsed != null) {
+        raw['caliberCategory'] = ccParsed;
+      } else {
         delete raw['caliberCategory'];
       }
       delete raw['primaryPurposId'];
@@ -207,11 +254,20 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
       if (!primaryPurposIds?.length) {
         delete raw['primaryPurposIds'];
       }
+      delete raw['caliber'];
+      const cid = raw['caliberId'];
+      if (cid === '' || cid === undefined || cid === null) {
+        delete raw['caliberId'];
+      } else if (typeof cid === 'string') {
+        raw['caliberId'] = parseInt(cid, 10);
+      }
       dto = raw as unknown as CreateUpdateWeaponDto;
     } else {
       const raw = formData as Record<string, unknown>;
       delete raw['ammunitionType'];
       delete raw['caliberCategory'];
+      delete raw['caliber'];
+      delete raw['caliberId'];
       delete raw['primaryPurposId'];
       const primaryPurposIds = raw['primaryPurposIds'] as number[] | undefined;
       if (!primaryPurposIds?.length) {

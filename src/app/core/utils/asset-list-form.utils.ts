@@ -44,8 +44,8 @@ export function createAssetEditForm(fb: FormBuilder): FormGroup {
     caliberCategory: ['1'],
     notes: [''],
 
-    // Weapon
-    caliber: [''],
+    // Weapon / Ammunition catalog caliber (lookup)
+    caliberId: [null as number | null],
     caliberUnitId: [null as number | null],
     yearOfManufacture: [null as number | null],
     countryOfManufactureId: [null as number | null],

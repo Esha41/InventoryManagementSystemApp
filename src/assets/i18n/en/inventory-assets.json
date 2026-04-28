@@ -153,6 +153,7 @@
     "netExplosiveQuantity": "Net Explosive Quantity",
     "selectActionType": "Select Action Type",
     "enterCaliber": "Enter caliber",
+    "selectCaliber": "Select caliber",
     "enterUnNumber": "Enter UN number",
     "hccRequired": "HCC is required",
     "bulletDiameterRequired": "Bullet diameter is required",
