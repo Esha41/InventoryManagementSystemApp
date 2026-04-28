@@ -1,17 +1,20 @@
 import { Injectable } from '@angular/core';
 import { Observable, forkJoin, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
+import { TranslateService } from '@ngx-translate/core';
 import { InventoryService } from './inventory.service';
 import { AssetService } from '@assets/services/asset.service';
 import { ItemInventorySummaryDto, ItemType } from '@models/inventory.model';
 import { AssetDto, AssetStatus } from '@models/asset.model';
+import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 
 @Injectable({ providedIn: 'root' })
 export class InventorySummaryDataService {
     constructor(
         private readonly inventoryService: InventoryService,
-        private readonly assetService: AssetService
+        private readonly assetService: AssetService,
+        private readonly translate: TranslateService
     ) { }
 
     loadAllItems(): Observable<ItemInventorySummaryDto[]> {
@@ -102,6 +105,10 @@ export class InventorySummaryDataService {
             return null;
         }
 
+        const lang = getCurrentLang(this.translate);
+        const caliberRaw = weapon.caliber ? getLocalizedName(weapon.caliber, lang).trim() : '';
+        const caliberUnitRaw = weapon.caliberUnit ? getLocalizedName(weapon.caliberUnit, lang).trim() : '';
+
         return {
             itemId,
             itemName: weapon.name || '',
@@ -109,6 +116,8 @@ export class InventorySummaryDataService {
             itemType: ItemType.Weapon,
             nsn: weapon.nsn || '',
             partNo: weapon.partNo || '',
+            ...(caliberRaw ? { caliber: caliberRaw } : {}),
+            ...(caliberUnitRaw ? { caliberUnitName: caliberUnitRaw } : {}),
             totalQuantity: itemAssets.length,
             usedQuantity: 0,
             reservedQuantityByOrdersOnProcessing: 0,

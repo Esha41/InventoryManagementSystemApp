@@ -80,7 +80,7 @@ export function sortLotDetails(
   return sortByColumn(lots, column, direction);
 }
 
-function isPlaceholderCaliberLabel(text: string): boolean {
+export function isPlaceholderCaliberLabel(text: string): boolean {
   const t = text.trim();
   if (!t) return true;
   return /^[\-–—]+$/.test(t);
