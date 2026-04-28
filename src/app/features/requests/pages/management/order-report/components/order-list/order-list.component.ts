@@ -108,7 +108,7 @@ export class OrderListComponent implements OnChanges, OnInit {
       case 'In Progress':
         return 'bg-yellow-100 text-yellow-800 border border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300';
       case 'Auto-Rejected':
-        return 'bg-orange-100 text-orange-800 border border-orange-200 dark:bg-orange-900/20 dark:text-orange-300';
+        return 'bg-red-100 text-red-800 border border-red-200 dark:bg-red-900/20 dark:text-red-300';
       case 'Rejected':
         return 'bg-red-100 text-red-800 border border-red-200 dark:bg-red-900/20 dark:text-red-300';
       case 'Cancelled':
