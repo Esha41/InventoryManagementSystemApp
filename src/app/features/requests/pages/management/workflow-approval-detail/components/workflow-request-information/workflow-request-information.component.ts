@@ -94,6 +94,29 @@ export class WorkflowRequestInformationComponent implements OnDestroy {
     }
   }
 
+  private normalizePriorityToNumber(priority?: number | string | null): number | undefined {
+    if (priority === null || priority === undefined) return undefined;
+    if (typeof priority === 'number') return priority;
+
+    const raw = String(priority).trim();
+    if (!raw) return undefined;
+
+    const asNumber = Number(raw);
+    if (!Number.isNaN(asNumber)) return asNumber;
+
+    const key = raw.toLowerCase().replace(/\s+/g, '');
+    if (key === 'normal') return 1;
+    if (key === 'urgent') return 2;
+    if (key === 'veryurgent') return 3;
+    if (key === 'critical') return 4;
+    return undefined;
+  }
+
+  isVeryUrgentOrCritical(priority?: number | string | null): boolean {
+    const n = this.normalizePriorityToNumber(priority);
+    return n === 3 || n === 4;
+  }
+
   /**
    * Download a request file (order/return/discard files)
    */

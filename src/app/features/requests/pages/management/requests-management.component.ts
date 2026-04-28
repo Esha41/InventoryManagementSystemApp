@@ -222,6 +222,9 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
         return 'requestsManagement.orderReport.workflowStatus.completed';
       case 'rejected':
         return 'dashboard.statusLabels.rejected';
+      case 'auto-rejected':
+      case 'autorejected':
+        return 'dashboard.statusLabels.autoRejected';
       case 'returned':
       case 'returnedforreview':
         return 'dashboard.statusLabels.returnedForReview';

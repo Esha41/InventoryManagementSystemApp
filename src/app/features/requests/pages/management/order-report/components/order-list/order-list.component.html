@@ -72,7 +72,7 @@
       class="space-y-2.5 overflow-y-auto pe-2 custom-scrollbar flex-1 min-h-0">
       <li *ngFor="let order of filteredOrders; trackBy: trackByOrderId">
         <button (click)="selectOrder(order)"
-          class="w-full group rounded-lg sm:rounded-xl border-2 px-3 sm:px-4 py-2.5 sm:py-3.5 text-start transition-all duration-200 hover:shadow-custom-md"
+          class="w-full group rounded-lg sm:rounded-xl border-2 px-3 sm:px-4 py-2 sm:py-2.5 text-start transition-all duration-200 hover:shadow-custom-md"
           [ngClass]="order.id === selectedOrderId 
             ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/10 shadow-custom-md' 
             : 'border-[var(--color-border)] hover:border-[var(--color-primary)]/30 bg-[var(--color-background)]'">
@@ -86,7 +86,7 @@
               </p>
             </div>
             <span
-              class="rounded-md sm:rounded-lg border px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-semibold shrink-0 whitespace-nowrap"
+              class="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium shrink-0 whitespace-nowrap"
               [ngClass]="getOrderListStatusClass(order.status)">
               {{ getOrderListStatusTranslationKey(order.status) | translate }}
             </span>

@@ -35,6 +35,8 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
       statusValue = 3;
     } else if (orderStatusLower === 'rejected' || orderStatusLower === 'declined' || orderStatusLower === '4') {
       statusValue = 4;
+    } else if (orderStatusLower === 'autorejected' || orderStatusLower === 'auto rejected' || orderStatusLower === 'auto-rejected' || orderStatusLower === '7') {
+      statusValue = 7;
     } else {
       const parsed = parseInt(order.status, 10);
       statusValue = isNaN(parsed) ? 1 : parsed;
@@ -58,6 +60,8 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
         statusValue = 3;
       } else if (statusLower === 'rejected' || statusLower === 'declined' || statusLower === '4') {
         statusValue = 4;
+      } else if (statusLower === 'autorejected' || statusLower === 'auto rejected' || statusLower === 'auto-rejected' || statusLower === '7') {
+        statusValue = 7;
       } else {
         const parsed = parseInt(baseRequestStatus, 10);
         if (!isNaN(parsed)) {

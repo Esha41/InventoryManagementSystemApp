@@ -71,6 +71,7 @@ export class WorkflowApprovalTimelineComponent implements OnDestroy {
     switch (status) {
       case 'Approved': return this.CheckCircle;
       case 'Rejected': return this.AlertTriangle;
+      case 'AutoRejected': return this.AlertTriangle;
       case 'Pending': return this.Clock;
       case 'Returned':
       case 'ReturnedForReview': return this.CheckCircle;
@@ -112,6 +113,8 @@ export class WorkflowApprovalTimelineComponent implements OnDestroy {
         return 'workflowApprovalDetail.approvedThroughDelegation';
       case 'Rejected':
         return 'workflowApprovalDetail.rejectedThroughDelegation';
+      case 'AutoRejected':
+        return 'workflowApprovalDetail.rejectedThroughDelegation';
       case 'Returned':
       case 'ReturnedForReview':
         return 'workflowApprovalDetail.returnedThroughDelegation';
@@ -136,6 +139,7 @@ export class WorkflowApprovalTimelineComponent implements OnDestroy {
     return (
       approval.status === 'Approved' ||
       approval.status === 'Rejected' ||
+      approval.status === 'AutoRejected' ||
       approval.status === 'Returned' ||
       approval.status === 'ReturnedForReview'
     );
@@ -155,6 +159,8 @@ export class WorkflowApprovalTimelineComponent implements OnDestroy {
         return 'common.statuses.Approved';
       case 'Rejected':
         return 'common.statuses.Rejected';
+      case 'AutoRejected':
+        return 'common.statuses.AutoRejected';
       case 'Returned':
       case 'ReturnedForReview':
         return 'common.statuses.ReturnedForReview';

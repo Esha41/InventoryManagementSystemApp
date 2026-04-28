@@ -25,11 +25,12 @@
               [ngClass]="{
                 'approved': approval.status === 'Approved',
                 'pending': approval.status === 'Pending',
-                'rejected': approval.status === 'Rejected',
+                'rejected': approval.status === 'Rejected' || approval.status === 'AutoRejected',
                 'submitted': approval.status === 'Submitted',
                 'border-[var(--color-success)]': approval.status === 'Approved' || approval.status === 'Submitted',
                 'border-amber-300': approval.status === 'Pending',
                 'border-red-300': approval.status === 'Rejected',
+                'border-orange-300': approval.status === 'AutoRejected',
                 'border-purple-300': approval.status === 'ReturnedForReview' || approval.status === 'Returned'
               }">
               <lucide-angular [img]="getApprovalStatusIcon(approval.status)" class="h-6 w-6">
@@ -85,6 +86,10 @@
                       {{ approval.approvedDateTime || formatApprovalDateTime(approval.changedAt) }}
                     </span>
                     <span *ngIf="approval.status === 'Rejected'">
+                      {{ 'workflowApprovalDetail.rejectedAt' | translate }}:
+                      {{ approval.approvedDateTime || formatApprovalDateTime(approval.changedAt) }}
+                    </span>
+                    <span *ngIf="approval.status === 'AutoRejected'">
                       {{ 'workflowApprovalDetail.rejectedAt' | translate }}:
                       {{ approval.approvedDateTime || formatApprovalDateTime(approval.changedAt) }}
                     </span>

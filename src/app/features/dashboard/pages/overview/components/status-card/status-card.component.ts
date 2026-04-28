@@ -2,8 +2,11 @@ import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, Change
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
-import { formatTimeToMilitary, formatDateTimeExtended } from '@utils/format.utils';
+import { formatTimeToMilitary, formatDate } from '@utils/format.utils';
 import { localizedBilingualLabel } from '@utils/localization.utils';
+import { AutoRejectCountdownComponent } from '@requests/components/auto-reject-countdown/auto-reject-countdown.component';
+import { OrderAutoRejectCountdownDto } from '@requests/services/auto-reject-countdown.service';
+import { getRequestStatusTranslationKey } from '@utils/status.utils';
 
 export interface OrderItem {
   orderId: string;
@@ -33,7 +36,7 @@ export type StatusType = 'new-issue' | 'on-progress' | 'completed' | 'new' | 'de
 @Component({
   selector: 'app-status-card',
   standalone: true,
-  imports: [CommonModule, TranslateModule],
+  imports: [CommonModule, TranslateModule, AutoRejectCountdownComponent],
   templateUrl: './status-card.component.html',
   styleUrls: ['./status-card.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -43,11 +46,17 @@ export class StatusCardComponent implements OnInit, OnDestroy {
 
   @Input() title: string = '';
   @Input() status: StatusType = 'new-issue';
+  /** Raw backend request status (number/string) for accurate label translation. */
+  @Input() requestStatus: number | string | null | undefined;
   @Input() orders: OrderItem[] = [];
   @Input() orderRequestId: number | null = null;
   @Input() returnRequestId: number | null = null;
   @Input() discardRequestId: number | null = null;
   @Input() isMyTurn: boolean = false;
+  /** Auto-reject countdown for order cards (null/undefined = not applicable) */
+  @Input() countdown: OrderAutoRejectCountdownDto | null | undefined;
+  /** Numeric priority: 1=Normal, 2=Urgent, 3=VeryUrgent */
+  @Input() priority: number | undefined;
   @Output() viewOrderDetails = new EventEmitter<number>();
   @Output() viewDetails = new EventEmitter<number>();
   @Output() viewDiscardDetails = new EventEmitter<number>();
@@ -118,6 +127,9 @@ export class StatusCardComponent implements OnInit, OnDestroy {
 
   /** Status dot fill (matches previous BEM color tokens). */
   getDotBg(): string {
+    if (this.isAutoRejected()) {
+      return 'bg-[#f97316]';
+    }
     switch (this.status) {
       case 'new-issue':
       case 'new':
@@ -137,6 +149,9 @@ export class StatusCardComponent implements OnInit, OnDestroy {
 
   /** Accent bar under header (matches previous divider tokens). */
   getDividerBg(): string {
+    if (this.isAutoRejected()) {
+      return 'bg-[#f97316]';
+    }
     switch (this.status) {
       case 'new-issue':
       case 'new':
@@ -155,6 +170,12 @@ export class StatusCardComponent implements OnInit, OnDestroy {
   }
 
   getStatusTranslationKey(): string {
+    // Prefer raw backend status to distinguish AutoRejected (7) from Rejected (4).
+    if (this.requestStatus !== null && this.requestStatus !== undefined) {
+      return getRequestStatusTranslationKey(this.requestStatus);
+    }
+
+    // Fallback (legacy): derive label from card status.
     switch (this.status) {
       case 'new-issue':
       case 'new':
@@ -170,6 +191,14 @@ export class StatusCardComponent implements OnInit, OnDestroy {
       default:
         return 'dashboard.statusLabels.new';
     }
+  }
+
+  private isAutoRejected(): boolean {
+    const s = this.requestStatus;
+    if (s === null || s === undefined) return false;
+    if (typeof s === 'number') return s === 7;
+    const lower = String(s).toLowerCase().trim();
+    return lower === '7' || lower === 'autorejected' || lower === 'auto rejected' || lower === 'auto-rejected';
   }
 
   getNumberLabelKey(): string {
@@ -189,14 +218,33 @@ export class StatusCardComponent implements OnInit, OnDestroy {
     return !!this.orderRequestId && !this.returnRequestId && !this.discardRequestId;
   }
 
+  isVeryUrgent(): boolean {
+    return this.priority === 3;
+  }
+
+  getPriorityBadgeClass(): string {
+    switch (this.priority) {
+      case 3: return 'bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/20 dark:text-red-300';
+      case 2: return 'bg-orange-100 text-orange-700 border border-orange-200 dark:bg-orange-900/20 dark:text-orange-300';
+      case 1: return 'bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-300';
+      default: return '';
+    }
+  }
+
+  getPriorityTranslationKey(): string {
+    switch (this.priority) {
+      case 3: return 'dashboard.priorityLabels.veryUrgent';
+      case 2: return 'dashboard.priorityLabels.urgent';
+      case 1: return 'dashboard.priorityLabels.normal';
+      default: return '';
+    }
+  }
+
   /**
-   * Format approval date-time for display
-   * Formats date as dd/MM/yyyy and time as HHmm (military format)
-   * Handles both Date objects and string formats
-   * Matches the format used in workflow-approval-detail component
+   * Format request date for display (date only).
    */
   formatApprovalDateTime(dateTime: string | Date | undefined): string {
-    return formatDateTimeExtended(dateTime);
+    return formatDate(dateTime);
   }
 }
 

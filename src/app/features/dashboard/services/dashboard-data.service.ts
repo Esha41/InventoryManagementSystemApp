@@ -97,6 +97,7 @@ export class DashboardDataService {
             return {
               title: getRequestTitle(order, order.orderNo),
               status: mapRequestStatusToCardStatus(order.status),
+              requestStatus: order.status,
               orders: [{
                 orderId: getRequestTitle(order, order.orderNo),
                 requestDate: order.creationDate ? (typeof order.creationDate === 'string' ? order.creationDate : order.creationDate.toISOString()) : '',
@@ -105,13 +106,15 @@ export class DashboardDataService {
               }],
               permissions: [PERMISSIONS.REQUESTS.DASHBOARD.ORDER_VIEW, PERMISSIONS.REQUESTS.DASHBOARD.ORDER_PAGE],
               orderRequestId: order.id,
-              isMyTurn: order.isMyTurn
+              isMyTurn: order.isMyTurn,
+              priority: typeof base.priority === 'number' ? base.priority : undefined
             } as DashboardCard;
           } else if (typeNum === 2 || typeNum === RequestType.Return) {
             const ret = mapToReturnDto(base);
             return {
               title: getRequestTitle(ret),
               status: mapRequestStatusToCardStatus(ret.status),
+              requestStatus: ret.status,
               orders: [{
                 orderId: getRequestTitle(ret),
                 requestDate: ret.creationDate ? (typeof ret.creationDate === 'string' ? ret.creationDate : ret.creationDate.toISOString()) : '',
@@ -120,13 +123,15 @@ export class DashboardDataService {
               }],
               permissions: [PERMISSIONS.REQUESTS.DASHBOARD.RETURN_VIEW, PERMISSIONS.REQUESTS.DASHBOARD.RETURN_PAGE],
               returnRequestId: ret.id,
-              isMyTurn: ret.isMyTurn
+              isMyTurn: ret.isMyTurn,
+              priority: typeof base.priority === 'number' ? base.priority : undefined
             } as DashboardCard;
           } else if (typeNum === 3 || typeNum === RequestType.Discard) {
             const discard = mapToDiscardDto(base);
             return {
               title: getRequestTitle(discard),
               status: mapRequestStatusToCardStatus(discard.status),
+              requestStatus: discard.status,
               orders: [{
                 orderId: getRequestTitle(discard),
                 requestDate: discard.creationDate ? (typeof discard.creationDate === 'string' ? discard.creationDate : discard.creationDate.toISOString()) : '',
@@ -135,7 +140,8 @@ export class DashboardDataService {
               }],
               permissions: [PERMISSIONS.REQUESTS.DASHBOARD.DISCARD_VIEW, PERMISSIONS.REQUESTS.DASHBOARD.DISCARD_PAGE],
               discardRequestId: discard.id,
-              isMyTurn: discard.isMyTurn
+              isMyTurn: discard.isMyTurn,
+              priority: typeof base.priority === 'number' ? base.priority : undefined
             } as DashboardCard;
           }
           return null;
@@ -166,6 +172,7 @@ export class DashboardDataService {
     return displayableRequests.map(order => ({
       title: getRequestTitle(order, order.orderNo),
       status: mapRequestStatusToCardStatus(order.status),
+      requestStatus: order.status,
       orders: [{
         orderId: getRequestTitle(order, order.orderNo),
         requestDate: order.creationDate ? (typeof order.creationDate === 'string' ? order.creationDate : order.creationDate.toISOString()) : '',
@@ -191,6 +198,7 @@ export class DashboardDataService {
     return displayableRequests.map(ret => ({
       title: getRequestTitle(ret),
       status: mapRequestStatusToCardStatus(ret.status),
+      requestStatus: ret.status,
       orders: [{
         orderId: getRequestTitle(ret),
         requestDate: (ret as any).creationDate ? (typeof (ret as any).creationDate === 'string' ? (ret as any).creationDate : (ret as any).creationDate.toISOString()) : '',
@@ -212,7 +220,8 @@ export class DashboardDataService {
     searchQuery: string,
     statusFilter: string,
     priorityFilter: string,
-    sortState: { column: string | null; direction: 'asc' | 'desc' }
+    sortState: { column: string | null; direction: 'asc' | 'desc' },
+    autoRejectFilter: string = 'all'
   ): Observable<PaginatedList<DashboardCard>> {
     const filters: FilterData[] = [];
 
@@ -224,6 +233,16 @@ export class DashboardDataService {
       if (statusFilter === 'action-required') {
         filters.push({ field: 'IsMyTurn', operator: 'eq', value: 'true' });
       } else {
+        // Include AutoRejected (7) under declined/rejected filter.
+        if (statusFilter === 'declined') {
+          filters.push({
+            logic: 'or',
+            filters: [
+              { field: 'Status', operator: 'eq', value: '4' },
+              { field: 'Status', operator: 'eq', value: '7' }
+            ]
+          });
+        } else {
         const dashboardStatusToBackendStatus: Record<string, number> = {
           new: 1,
           'on-progress': 2,
@@ -234,6 +253,7 @@ export class DashboardDataService {
         const statusValue = dashboardStatusToBackendStatus[statusFilter];
         if (statusValue) {
           filters.push({ field: 'Status', operator: 'eq', value: statusValue.toString() });
+        }
         }
       }
     }
@@ -251,29 +271,44 @@ export class DashboardDataService {
       }
     }
 
+    // Auto-reject days-remaining filter (server-side; dashboard applies this client-side after countdown load)
+    if (autoRejectFilter && autoRejectFilter !== 'all') {
+      const autoRejectFilterMap: Record<string, FilterData> = {
+        'expiring-1day':  { field: 'DaysRemaining', operator: 'lte', value: '1' },
+        'expiring-3days': { field: 'DaysRemaining', operator: 'lte', value: '3' },
+        'expiring-7days': { field: 'DaysRemaining', operator: 'lte', value: '7' }
+      };
+      const arFilter = autoRejectFilterMap[autoRejectFilter];
+      if (arFilter) {
+        filters.push(arFilter);
+      }
+    }
+
     const pagedRequest: PagedRequest = {
       page: page,
       pageSize: rowsPerPage,
       filter: filters.length > 0 ? (filters.length === 1 ? filters[0] : { logic: 'and', filters }) : undefined
     };
 
-    // Sorting mapping
-    if (sortState.column) {
-      const columnMap: Record<string, string> = {
-        'orderNumber': 'RequestNo',
-        'usageDate': 'CreationDate',
-        'department': 'Department.NameEn',
-        'requester': 'Requester.UserName',
-        'status': 'Status'
-      };
-      const backendColumn = columnMap[sortState.column];
-      if (backendColumn) {
-        if (!pagedRequest.filter) {
-          pagedRequest.filter = {};
-        }
-        pagedRequest.filter.sortField = backendColumn;
-        pagedRequest.filter.sortDirection = sortState.direction === 'asc' ? 1 : 2;
+    // Sorting — default to Priority desc (VeryUrgent first) when no explicit column chosen
+    const columnMap: Record<string, string> = {
+      'orderNumber': 'RequestNo',
+      'usageDate': 'CreationDate',
+      'department': 'Department.NameEn',
+      'requester': 'Requester.UserName',
+      'status': 'Status',
+      'priority': 'Priority'
+    };
+
+    const sortColumn = sortState.column ?? 'priority';
+    const sortDir = sortState.column ? sortState.direction : 'desc';
+    const backendColumn = columnMap[sortColumn];
+    if (backendColumn) {
+      if (!pagedRequest.filter) {
+        pagedRequest.filter = {};
       }
+      pagedRequest.filter.sortField = backendColumn;
+      pagedRequest.filter.sortDirection = sortDir === 'asc' ? 1 : 2;
     }
 
     return this.loadPaginatedDashboardCards(pagedRequest);
@@ -292,6 +327,7 @@ export class DashboardDataService {
     return displayableRequests.map(discard => ({
       title: getRequestTitle(discard),
       status: mapRequestStatusToCardStatus(discard.status),
+      requestStatus: discard.status,
       orders: [{
         orderId: getRequestTitle(discard),
         requestDate: (discard as any).creationDate ? (typeof (discard as any).creationDate === 'string' ? (discard as any).creationDate : (discard as any).creationDate.toISOString()) : '',

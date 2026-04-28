@@ -23,10 +23,13 @@ import { DashboardFilterService } from '@dashboard/services/dashboard-filter.ser
 import { DashboardCard } from '@models/dashboard.model';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
-import { RequestFilterBarComponent, StatusFilter, PriorityFilter } from '@requests/components/request-filter-bar/request-filter-bar.component';
+import { RequestFilterBarComponent, StatusFilter, PriorityFilter, AutoRejectFilter } from '@requests/components/request-filter-bar/request-filter-bar.component';
+import { AutoRejectCountdownService, OrderAutoRejectCountdownDto } from '@requests/services/auto-reject-countdown.service';
+import { AutoRejectCountdownComponent } from '@requests/components/auto-reject-countdown/auto-reject-countdown.component';
 import { formatTimeToMilitary, formatDateTimeExtended } from '@utils/format.utils';
 import { defaultPageSize } from '@constants/app.constants';
 import { localizedBilingualLabel } from '@utils/localization.utils';
+import { getRequestStatusTranslationKey } from '@utils/status.utils';
 
 @Component({
   selector: 'app-dashboard',
@@ -40,7 +43,8 @@ import { localizedBilingualLabel } from '@utils/localization.utils';
     RequestDetailsModalComponent,
     PaginationComponent,
     RowsPerPageComponent,
-    RequestFilterBarComponent
+    RequestFilterBarComponent,
+    AutoRejectCountdownComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
@@ -68,6 +72,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   searchQuery: string = '';
   selectedStatusFilter: StatusFilter = 'all';
   selectedPriorityFilter: PriorityFilter = 'all';
+  selectedAutoRejectFilter: AutoRejectFilter = 'all';
+
+  // Auto-reject countdowns keyed by order request id
+  countdownByRequestId: Record<number, OrderAutoRejectCountdownDto> = {};
 
   // Sort state
   sortState: { column: string | null; direction: 'asc' | 'desc' } = {
@@ -80,6 +88,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   visibleCards: DashboardCard[] = [];
   totalItems = 0;
   isLoading = false;
+
+
+  private rawVisibleCards: DashboardCard[] = [];
+  private rawTotalItems = 0;
 
 
 
@@ -166,6 +178,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
+  getRequestStatusTranslationKey(card: DashboardCard): string {
+    // Prefer raw backend status to distinguish AutoRejected (7) from Rejected (4).
+    const raw = card.requestStatus ?? card.status;
+    return getRequestStatusTranslationKey(raw);
+  }
+
   // Helper for handling view details click in table
   onTableAction(card: DashboardCard): void {
     if (card.orderRequestId) {
@@ -189,7 +207,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private readonly userContextService: UserContextService,
     private readonly requestStatusUpdateService: RequestStatusUpdateService,
     private readonly dashboardDataService: DashboardDataService,
-    private readonly dashboardFilterService: DashboardFilterService
+    private readonly dashboardFilterService: DashboardFilterService,
+    private readonly autoRejectCountdownService: AutoRejectCountdownService
   ) { }
 
   get paginatedCards(): DashboardCard[] {
@@ -266,21 +285,81 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.searchQuery,
       this.selectedStatusFilter,
       this.selectedPriorityFilter,
-      this.sortState
+      this.sortState,
+      'all'
     )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
+          this.rawVisibleCards = response.items;
+          this.rawTotalItems = response.totalCount;
+          // Apply client-side auto-reject filter after countdowns load (or immediately if none).
           this.visibleCards = response.items;
           this.totalItems = response.totalCount;
           this.isLoading = false;
           this.cdr.markForCheck();
+          this.loadAutoRejectCountdowns();
         },
         error: () => {
           this.isLoading = false;
           this.cdr.markForCheck();
         }
       });
+  }
+
+  private loadAutoRejectCountdowns(): void {
+    const orderIds = this.visibleCards
+      .filter(c => !!c.orderRequestId)
+      .map(c => c.orderRequestId as number);
+    if (orderIds.length === 0) {
+      this.countdownByRequestId = {};
+      this.applyAutoRejectFilter();
+      this.cdr.markForCheck();
+      return;
+    }
+    this.autoRejectCountdownService.getBulk(orderIds)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(rows => {
+        this.countdownByRequestId = this.autoRejectCountdownService.mapByRequestId(rows);
+        this.applyAutoRejectFilter();
+        this.cdr.markForCheck();
+      });
+  }
+
+  private applyAutoRejectFilter(): void {
+    if (this.selectedAutoRejectFilter === 'all') {
+      this.visibleCards = this.rawVisibleCards;
+      this.totalItems = this.rawTotalItems;
+      return;
+    }
+
+    const maxDays =
+      this.selectedAutoRejectFilter === 'expiring-1day' ? 1 :
+      this.selectedAutoRejectFilter === 'expiring-3days' ? 3 :
+      this.selectedAutoRejectFilter === 'expiring-7days' ? 7 :
+      undefined;
+
+    const filtered = this.rawVisibleCards.filter(card => {
+      if (!card.orderRequestId) return false; // auto-reject applies to orders only
+      const cd = this.countdownByRequestId[card.orderRequestId];
+      if (!cd || cd.state === 'none') return false;
+
+      if (maxDays != null) {
+        // "Expiring within N days" — include warning/running; exclude expired.
+        return cd.state !== 'expired' && cd.daysRemaining <= maxDays;
+      }
+
+      return true;
+    });
+
+    this.visibleCards = filtered;
+    // Note: server-side pagination/counts won't match; show filtered count for UX.
+    this.totalItems = filtered.length;
+  }
+
+  getAutoRejectCountdown(card: DashboardCard): OrderAutoRejectCountdownDto | null {
+    if (!card.orderRequestId) return null;
+    return this.countdownByRequestId[card.orderRequestId] ?? null;
   }
 
   ngOnDestroy(): void {
@@ -306,12 +385,37 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.loadAllRequests();
   }
 
+  onAutoRejectFilterChange(filter: AutoRejectFilter): void {
+    this.selectedAutoRejectFilter = filter;
+    this.currentPage = 1;
+    this.loadAllRequests();
+  }
+
   onFiltersCleared(): void {
     this.selectedStatusFilter = 'all';
     this.selectedPriorityFilter = 'all';
+    this.selectedAutoRejectFilter = 'all';
     this.searchQuery = '';
     this.currentPage = 1;
     this.loadAllRequests();
+  }
+
+  getPriorityBadgeClass(priority: number | undefined): string {
+    switch (priority) {
+      case 3: return 'bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/20 dark:text-red-300';
+      case 2: return 'bg-orange-100 text-orange-700 border border-orange-200 dark:bg-orange-900/20 dark:text-orange-300';
+      case 1: return 'bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-300';
+      default: return 'bg-[var(--color-background-muted)] text-[var(--color-text-muted)]';
+    }
+  }
+
+  getPriorityTranslationKey(priority: number | undefined): string {
+    switch (priority) {
+      case 3: return 'dashboard.priorityLabels.veryUrgent';
+      case 2: return 'dashboard.priorityLabels.urgent';
+      case 1: return 'dashboard.priorityLabels.normal';
+      default: return '';
+    }
   }
 
   sortByColumn(column: string): void {
@@ -319,7 +423,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.sortState.direction = this.sortState.direction === 'asc' ? 'desc' : 'asc';
     } else {
       this.sortState.column = column;
-      this.sortState.direction = 'asc';
+      // Default priority sort descending (VeryUrgent first)
+      this.sortState.direction = column === 'priority' ? 'desc' : 'asc';
     }
     this.currentPage = 1;
     this.loadAllRequests();

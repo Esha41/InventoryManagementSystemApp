@@ -1,6 +1,9 @@
 /**
  * Status utility functions
+ * Uses centralized STATUS_METADATA from request-mapper.utils for single source of truth
  */
+
+import { RequestStatusEnum, getStatusMetadata } from './request-mapper.utils';
 
 /**
  * Approval status types
@@ -16,7 +19,6 @@ export enum SubmissionStatus {
   Approved = 2,
   Rejected = 3
 }
-
 
 /**
  * Get text representation of submission status
@@ -59,165 +61,43 @@ export function getSubmissionStatusClass(status: number): string {
  * For handling request statuses (Orders, Returns, Discards)
  */
 
-// Request Status values (matching REQUEST_STATUS constants)
-const REQUEST_STATUS_NEW = 1;
-const REQUEST_STATUS_UNDER_PROCESS = 2;
-/** Workflow / order status: approved (completed). */
-export const REQUEST_STATUS_APPROVED = 3;
-const REQUEST_STATUS_REJECTED = 4;
-const REQUEST_STATUS_CANCELLED = 5;
-const REQUEST_STATUS_RETURNED_FOR_REVIEW = 6;
-
 export type CardStatus = 'new' | 'on-progress' | 'completed' | 'declined' | 'returned' | 'action-required';
-export type DisplayableStatus = typeof REQUEST_STATUS_NEW | typeof REQUEST_STATUS_UNDER_PROCESS | typeof REQUEST_STATUS_APPROVED | typeof REQUEST_STATUS_REJECTED;
+export type DisplayableStatus = typeof RequestStatusEnum[keyof typeof RequestStatusEnum];
+
+// Re-export approved constant for backward compatibility
+export const REQUEST_STATUS_APPROVED = RequestStatusEnum.Approved;
 
 /**
  * Check if a request status should be displayed on the dashboard
- * Shows New, UnderProcess, Approved, and Rejected statuses
- * Handles both number and string status values for robustness
+ * Uses centralized metadata for single source of truth
  */
 export function isDisplayableRequestStatus(status: number | string | null | undefined): boolean {
-  // Handle null/undefined
   if (status === null || status === undefined) {
     return false;
   }
 
-  // Convert to number if it's a string
-  let statusNum: number;
-  if (typeof status === 'string') {
-    // Try to parse string status values
-    const lowerStatus = status.toLowerCase().trim();
-    if (lowerStatus === 'new' || lowerStatus === 'pending') {
-      statusNum = REQUEST_STATUS_NEW;
-    } else if (lowerStatus === 'underprocess' || lowerStatus === 'under process' || lowerStatus === 'inprogress' || lowerStatus === 'in progress') {
-      statusNum = REQUEST_STATUS_UNDER_PROCESS;
-    } else if (lowerStatus === 'approved' || lowerStatus === 'completed') {
-      statusNum = REQUEST_STATUS_APPROVED;
-    } else if (lowerStatus === 'rejected' || lowerStatus === 'declined') {
-      statusNum = REQUEST_STATUS_REJECTED;
-    } else if (lowerStatus === 'returned' || lowerStatus === 'returnedforreview') {
-      statusNum = REQUEST_STATUS_RETURNED_FOR_REVIEW;
-    } else {
-      // Try to parse as number
-      statusNum = parseInt(status, 10);
-      if (isNaN(statusNum)) {
-        return false;
-      }
-    }
-  } else {
-    statusNum = status;
-  }
-
-  return statusNum === REQUEST_STATUS_NEW ||
-    statusNum === REQUEST_STATUS_UNDER_PROCESS ||
-    statusNum === REQUEST_STATUS_APPROVED ||
-    statusNum === REQUEST_STATUS_REJECTED ||
-    statusNum === REQUEST_STATUS_RETURNED_FOR_REVIEW;
+  const metadata = getStatusMetadata(status);
+  return metadata !== null;
 }
 
 /**
  * Map request status to dashboard card status
- * Handles both number and string status values for robustness
+ * Uses centralized metadata for single source of truth
  */
 export function mapRequestStatusToCardStatus(status: number | string | null | undefined): CardStatus {
-  // Handle null/undefined
   if (status === null || status === undefined) {
     return 'new';
   }
 
-  // Convert to number if it's a string
-  let statusNum: number;
-  if (typeof status === 'string') {
-    // Try to parse string status values
-    const lowerStatus = status.toLowerCase().trim();
-    if (lowerStatus === 'new' || lowerStatus === 'pending') {
-      statusNum = REQUEST_STATUS_NEW;
-    } else if (lowerStatus === 'underprocess' || lowerStatus === 'under process' || lowerStatus === 'inprogress' || lowerStatus === 'in progress') {
-      statusNum = REQUEST_STATUS_UNDER_PROCESS;
-    } else if (lowerStatus === 'approved' || lowerStatus === 'completed') {
-      statusNum = REQUEST_STATUS_APPROVED;
-    } else if (lowerStatus === 'rejected' || lowerStatus === 'declined') {
-      statusNum = REQUEST_STATUS_REJECTED;
-    } else if (lowerStatus === 'returned' || lowerStatus === 'returnedforreview') {
-      statusNum = REQUEST_STATUS_RETURNED_FOR_REVIEW;
-    } else {
-      // Try to parse as number
-      statusNum = parseInt(status, 10);
-      if (isNaN(statusNum)) {
-        return 'new'; // Default to 'new' if can't parse
-      }
-    }
-  } else {
-    statusNum = status;
-  }
-
-  switch (statusNum) {
-    case REQUEST_STATUS_UNDER_PROCESS:
-      return 'on-progress';
-    case REQUEST_STATUS_RETURNED_FOR_REVIEW:
-      return 'returned';
-    case REQUEST_STATUS_APPROVED:
-      return 'completed';
-    case REQUEST_STATUS_REJECTED:
-      return 'declined';
-    case REQUEST_STATUS_NEW:
-    default:
-      return 'new';
-  }
+  return getStatusMetadata(status).cardStatus as CardStatus;
 }
 
 /**
  * Get translation key for request status
- * Handles both number and string status values for robustness
+ * Uses centralized metadata for single source of truth
  */
 export function getRequestStatusTranslationKey(status?: number | string | null): string {
-  // Handle null/undefined
-  if (status === null || status === undefined) {
-    return 'dashboard.statusLabels.new';
-  }
-
-  // Convert to number if it's a string
-  let statusNum: number;
-  if (typeof status === 'string') {
-    const lowerStatus = status.toLowerCase().trim();
-    if (lowerStatus === 'new' || lowerStatus === 'pending' || lowerStatus === '1') {
-      statusNum = REQUEST_STATUS_NEW;
-    } else if (lowerStatus === 'underprocess' || lowerStatus === 'under process' || lowerStatus === 'inprogress' || lowerStatus === 'in progress' || lowerStatus === '2') {
-      statusNum = REQUEST_STATUS_UNDER_PROCESS;
-    } else if (lowerStatus === 'approved' || lowerStatus === 'completed' || lowerStatus === 'confirmed' || lowerStatus === '3') {
-      statusNum = REQUEST_STATUS_APPROVED;
-    } else if (lowerStatus === 'rejected' || lowerStatus === 'declined' || lowerStatus === '4') {
-      statusNum = REQUEST_STATUS_REJECTED;
-    } else if (lowerStatus === 'cancelled' || lowerStatus === '5') {
-      statusNum = REQUEST_STATUS_CANCELLED;
-    } else if (lowerStatus === 'returned' || lowerStatus === 'returnedforreview' || lowerStatus === '6') {
-      statusNum = REQUEST_STATUS_RETURNED_FOR_REVIEW;
-    } else {
-      // Try to parse as number
-      statusNum = parseInt(status, 10);
-      if (isNaN(statusNum)) {
-        return 'dashboard.statusLabels.new'; // Default if can't parse
-      }
-    }
-  } else {
-    statusNum = status;
-  }
-
-  switch (statusNum) {
-    case REQUEST_STATUS_UNDER_PROCESS:
-      return 'dashboard.statusLabels.underProcess';
-    case REQUEST_STATUS_APPROVED:
-      return 'requestsManagement.orderReport.workflowStatus.completed';
-    case REQUEST_STATUS_REJECTED:
-      return 'dashboard.statusLabels.rejected';
-    case REQUEST_STATUS_CANCELLED:
-      return 'dashboard.statusLabels.cancelled';
-    case REQUEST_STATUS_RETURNED_FOR_REVIEW:
-      return 'dashboard.statusLabels.returnedForReview';
-    case REQUEST_STATUS_NEW:
-    default:
-      return 'dashboard.statusLabels.new';
-  }
+  return getStatusMetadata(status).translationKey;
 }
 
 /**
@@ -227,17 +107,26 @@ export function getRequestStatusTranslationKey(status?: number | string | null):
 
 /**
  * Map order status number to string
- * Maps to backend RequestStatus enum: New=1, UnderProcess=2, Approved=3, Rejected=4, Cancelled=5
+ * Maps to backend RequestStatus enum: New=1, UnderProcess=2, Approved=3, Rejected=4, AutoRejected=7, Cancelled=5, ReturnedForReview=6
  */
 export function mapOrderStatusToString(status: number): string {
   switch (status) {
-    case 1: return 'New';
-    case 2: return 'In Progress';
-    case 3: return 'Approved';
-    case 4: return 'Rejected';
-    case 5: return 'Cancelled';
-    case 6: return 'Returned for Review';
-    default: return 'New';
+    case RequestStatusEnum.New:
+      return 'New';
+    case RequestStatusEnum.UnderProcess:
+      return 'In Progress';
+    case RequestStatusEnum.Approved:
+      return 'Approved';
+    case RequestStatusEnum.Rejected:
+      return 'Rejected';
+    case RequestStatusEnum.AutoRejected:
+      return 'Auto-Rejected';
+    case RequestStatusEnum.Cancelled:
+      return 'Cancelled';
+    case RequestStatusEnum.ReturnedForReview:
+      return 'Returned for Review';
+    default:
+      return 'New';
   }
 }
 
@@ -256,10 +145,10 @@ export function mapOrderStatusFromApi(status: string | number): string {
     if (lowerStatus === 'underprocess' || lowerStatus === 'under process') return 'In Progress';
     if (lowerStatus === 'approved') return 'Approved';
     if (lowerStatus === 'rejected') return 'Rejected';
+    if (lowerStatus === 'autorejected' || lowerStatus === 'auto rejected' || lowerStatus === 'auto-rejected') return 'Auto-Rejected';
     if (lowerStatus === 'cancelled') return 'Cancelled';
     if (lowerStatus === 'returned' || lowerStatus === 'returnedforreview') return 'Returned for Review';
     if (lowerStatus === 'pending') return 'New';
   }
   return 'New';
 }
-

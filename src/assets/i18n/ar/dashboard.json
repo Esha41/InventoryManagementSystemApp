@@ -53,6 +53,7 @@
       "underProcess": "قيد التنفيذ",
       "approved": "موافق عليه",
       "rejected": "مرفوض",
+      "autoRejected": "مرفوض تلقائيًا",
       "cancelled": "ملغي",
       "completed": "مكتمل",
       "returned": "أرجاع للمعاينة",

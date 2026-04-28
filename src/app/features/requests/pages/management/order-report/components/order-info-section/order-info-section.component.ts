@@ -31,6 +31,9 @@ export class OrderInfoSectionComponent {
     }
 
     const key = statusKey.toLowerCase();
+    if (key.includes('autorejected') || key.includes('auto-rejected') || key.includes('auto rejected')) {
+      return getApprovalStatusBadgeClass('AutoRejected');
+    }
     if (key.includes('approved') || key.includes('completed')) {
       return getApprovalStatusBadgeClass('Approved');
     }

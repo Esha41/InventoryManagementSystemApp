@@ -48,7 +48,36 @@ export function getDisplayApprovalHistory(
     comments: requestDetail.notes
   };
 
-  return [requesterStep, ...(requestDetail.approvalHistory || [])];
+  const steps: WorkflowApprovalStep[] = [requesterStep, ...(requestDetail.approvalHistory || [])];
+  return applyTerminalAutoRejectToTimeline(steps, requestDetail.status);
+}
+
+function applyTerminalAutoRejectToTimeline(
+  steps: WorkflowApprovalStep[],
+  requestStatus: RequestDetail['status'] | undefined
+): WorkflowApprovalStep[] {
+  if (requestStatus !== 'AutoRejected') {
+    return steps;
+  }
+
+
+  let lastPendingIndex = -1;
+  for (let i = steps.length - 1; i >= 0; i--) {
+    const s: WorkflowApprovalStep = steps[i];
+    if (s.status === 'Pending' && s.isPending === true) {
+      lastPendingIndex = i;
+      break;
+    }
+  }
+  if (lastPendingIndex === -1) {
+    return steps;
+  }
+
+  return steps.map((s, idx) =>
+    idx === lastPendingIndex
+      ? { ...s, status: 'AutoRejected', isPending: false }
+      : s
+  );
 }
 
 /**
@@ -222,6 +251,10 @@ export function hasPendingStep(requestDetail: RequestDetail | null): boolean {
   if (!requestDetail || !requestDetail.approvalHistory) {
     return false;
   }
+  
+  if (requestDetail.status === 'Rejected' || requestDetail.status === 'AutoRejected') {
+    return false;
+  }
   return requestDetail.approvalHistory.some(
     step => step.status === 'Pending' && step.isPending === true
   );
@@ -263,6 +296,9 @@ function normalizeStatusToEnum(status: string | undefined): RequestStatusEnum | 
   }
   if (statusLower === 'rejected' || statusLower === 'declined') {
     return RequestStatusEnum.Rejected;
+  }
+  if (statusLower === 'autorejected' || statusLower === 'auto rejected' || statusLower === 'auto-rejected' || statusLower === '7') {
+    return (RequestStatusEnum as any).AutoRejected ?? RequestStatusEnum.Rejected;
   }
   if (statusLower === 'new' || statusLower === 'pending') {
     return RequestStatusEnum.New;

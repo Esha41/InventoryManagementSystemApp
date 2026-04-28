@@ -136,7 +136,9 @@ function mapRequestType(type: number | string | null | undefined): 'Order' | 'Re
  * RequestStatus enum: 1=New, 2=UnderProcess, 3=Approved, 4=Rejected, 6=ReturnedForReview
  * Handles both number and string status values for robustness
  */
-function mapStatus(status: number | string | null | undefined): 'New' | 'Pending' | 'Confirmed' | 'Rejected' | 'Returned' | 'ReturnedForReview' {
+function mapStatus(
+  status: number | string | null | undefined
+): 'New' | 'Pending' | 'Confirmed' | 'Rejected' | 'AutoRejected' | 'Returned' | 'ReturnedForReview' {
   // Handle null/undefined
   if (status === null || status === undefined) {
     return 'New';
@@ -155,6 +157,8 @@ function mapStatus(status: number | string | null | undefined): 'New' | 'Pending
       statusNum = 3;
     } else if (lowerStatus === 'rejected' || lowerStatus === 'declined') {
       statusNum = 4;
+    } else if (lowerStatus === 'autorejected' || lowerStatus === 'auto rejected' || lowerStatus === 'auto-rejected') {
+      statusNum = 7;
     } else if (lowerStatus === 'returned' || lowerStatus === 'returnedforreview') {
       statusNum = 6;
     } else {
@@ -173,6 +177,7 @@ function mapStatus(status: number | string | null | undefined): 'New' | 'Pending
     case 2: return 'Pending';
     case 3: return 'Confirmed';
     case 4: return 'Rejected';
+    case 7: return 'AutoRejected';
     case 6: return 'Returned';
     default: return 'New';
   }

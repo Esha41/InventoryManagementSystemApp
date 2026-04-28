@@ -44,7 +44,16 @@ export interface OrderReportApprovalStep {
   step: string;
   role: string;
   approver: string;
-  status: 'pending' | 'submitted' | 'approved' | 'rejected' | 'in-progress' | 'returned' | 'returnedforreview';
+  status:
+    | 'pending'
+    | 'submitted'
+    | 'approved'
+    | 'rejected'
+    | 'auto-rejected'
+    | 'autorejected'
+    | 'in-progress'
+    | 'returned'
+    | 'returnedforreview';
   date: string | Date | null; // Raw date for pipe formatting
   notes: string;
 }

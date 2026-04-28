@@ -63,16 +63,29 @@ function normalizeStatus(status: number | string): number {
         return status;
     }
 
+    const raw = String(status).trim();
+    if (!raw) return 1;
+
+    // Normalize to a stable key (case-insensitive; ignore spaces/hyphens/underscores).
+    const key = raw.toLowerCase().replace(/[\s\-_]+/g, '');
+
+    // If it is numeric-like (e.g. "7"), accept it.
+    const numeric = parseInt(key, 10);
+    if (!Number.isNaN(numeric)) {
+        return numeric;
+    }
+
     const statusMap: { [key: string]: number } = {
-        'New': 1,
-        'UnderProcess': 2,
-        'Approved': 3,
-        'Rejected': 4,
-        'Cancelled': 5,
-        'ReturnedForReview': 6
+        new: 1,
+        underprocess: 2,
+        approved: 3,
+        rejected: 4,
+        cancelled: 5,
+        returnedforreview: 6,
+        autorejected: 7
     };
 
-    return statusMap[status] || 1; // Default to New
+    return statusMap[key] || 1; // Default to New
 }
 
 /**

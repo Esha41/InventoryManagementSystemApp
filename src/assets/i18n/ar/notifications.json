@@ -161,6 +161,14 @@
   "autoRejectCountdown": {
     "title": "الوقت المتبقي قبل احتمال الرفض التلقائي",
     "daysLeft": "متبقي {{days}} يوم",
-    "expired": "متأخر"
+    "expired": "متأخر",
+    "daysLeftLabel": "الأيام المتبقية",
+    "filter": {
+      "label": "الأيام المتبقية",
+      "overdue": "متأخر",
+      "expiring1Day": "ينتهي اليوم",
+      "expiring3Days": "ينتهي خلال 3 أيام",
+      "expiring7Days": "ينتهي خلال 7 أيام"
+    }
   }
 }

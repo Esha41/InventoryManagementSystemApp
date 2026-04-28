@@ -20,21 +20,22 @@ export class ApprovalWorkflowComponent {
   @Input() workflow: OrderReportApprovalStep[] = [];
   @Input() isRTL: boolean = false;
 
-  getStepStatusClass(status: OrderReportApprovalStep['status']): string {
-    switch (status) {
-      case 'approved':
-      case 'submitted':
-        return getApprovalStatusBadgeClass('Approved');
-      case 'rejected':
-        return getApprovalStatusBadgeClass('Rejected');
-      case 'returned':
-      case 'returnedforreview':
-        return getApprovalStatusBadgeClass('ReturnedForReview');
-      case 'pending':
-      case 'in-progress':
-        return getApprovalStatusBadgeClass('Pending');
-      default:
-        return 'text-[var(--color-text-muted)] bg-[var(--color-background-muted)] border-[var(--color-border)]';
-    }
+  private readonly statusMap: Record<string, string> = {
+    'approved': 'Approved',
+    'submitted': 'Approved',
+    'rejected': 'Rejected',
+    'auto-rejected': 'AutoRejected',
+    'autorejected': 'AutoRejected',
+    'returned': 'Returned',
+    'returnedforreview': 'ReturnedForReview',
+    'pending': 'Pending',
+    'in-progress': 'Pending',
+  };
+
+  getStepStatusClass(status: string): string {
+    const badgeClass = this.statusMap[status.toLowerCase()];
+    return badgeClass
+      ? getApprovalStatusBadgeClass(badgeClass)
+      : 'text-[var(--color-text-muted)] bg-[var(--color-background-muted)] border-[var(--color-border)]';
   }
 }
