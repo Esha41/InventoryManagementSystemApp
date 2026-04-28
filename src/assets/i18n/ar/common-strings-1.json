@@ -52,6 +52,14 @@
     "noFileChosen": "لم يتم اختيار ملف",
     "noImage": "لا توجد صورة",
     "noResultsFound": "لم يتم العثور على نتائج",
-    "notAvailable": "غير متوفر"
+    "notAvailable": "غير متوفر",
+    "dataTypes": {
+      "ammunition": "الذخاير",
+      "weapon": "الأسلحة",
+      "explosive": "المتفجرات",
+      "issue": "الإصدارات",
+      "returns": "الأرجاعات",
+      "discard": "الإتلاف"
+    }
   }
 }

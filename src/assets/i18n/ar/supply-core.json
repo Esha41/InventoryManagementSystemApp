@@ -38,7 +38,7 @@
       "requestItems": "مواد الطلب",
       "item": "مادة",
       "items": "مواد",
-      "itemName": "اسم المادة",
+      "itemName": "اسم الماده",
       "itemCode": "رمز المادة",
       "quantity": "الكمية",
       "noItemsFound": "لم يتم العثور على مواد لهذا الطلب",
