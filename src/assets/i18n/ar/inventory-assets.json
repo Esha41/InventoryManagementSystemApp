@@ -83,7 +83,7 @@
     "minimumQuantityPlaceholder": "أدخل الحد الأدنى للكمية (اختياري)",
     "criticalQuantity": "الكمية الحرجة",
     "criticalQuantityPlaceholder": "أدخل الكمية الحرجة (اختياري)",
-    "enterAmmunitionName": "أدخل اسم المادة",
+    "enterAmmunitionName": "أدخل اسم الماده",
     "enterWeaponName": "أدخل اسم السلاح",
     "enterExplosiveName": "أدخل اسم المتفجر",
     "enterItemNumber": "أدخل رقم المادة الفريد (مثل: AMM-001)",
@@ -208,7 +208,7 @@
       "classification": "التصنيف"
     },
     "placeholders": {
-      "name": "أدخل اسم المادة",
+      "name": "أدخل اسم الماده",
       "itemNo": "أدخل رقم مادة",
       "partNo": "Enter part number",
       "nsn": "أدخل NSN",
@@ -335,8 +335,8 @@
       "restore": "استعادة",
       "permanentDelete": "حذف نهائي"
     },
-    "noItems": "لم يتم العثور على مواد",
-    "noItemsDescription": "حاول تعديل المرشحات أو إضافة عنصر جديد",
+    "noItems": "لم يتم العثور على أي مواد",
+    "noItemsDescription": "حاول تعديل الفلاتر أو إضافة مودة جديدة",
     "noAmmunitionItems": "لم يتم العثور على مواد ذخيرة",
     "noWeaponItems": "لم يتم العثور على مواد أسلحة",
     "noExplosiveItems": "لم يتم العثور على مواد متفجرات",

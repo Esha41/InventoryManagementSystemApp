@@ -41,7 +41,7 @@
     "quantityMinError": "يجب أن تكون الكمية على الأقل {{min}}.",
     "quantityMaxError": "لا يمكن أن تتجاوز الكمية {{max}} (يمكنك التقليل فقط).",
     "notesPlaceholder": "أضف أي ملاحظات (اختياري)",
-    "itemName": "اسم المادة",
+    "itemName": "اسم الماده",
     "itemCode": "رقم المادة",
     "nsn": "NSN",
     "quantity": "الكمية",

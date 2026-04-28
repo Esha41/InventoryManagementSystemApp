@@ -40,7 +40,7 @@
     "numberOfOtherRanks": "عدد الرتب الأخرى",
     "requestPurpose": "غرض الطلب",
     "depot": "المستودع",
-    "itemName": "اسم المادة",
+    "itemName": "اسم الماده",
     "itemNo": "رقم المادة",
     "nsn": "NSN",
     "priorityLabels": {
@@ -61,7 +61,7 @@
     },
     "filters": {
       "all": "الكل",
-      "filterByStatus": "تصفية حسب الحالة"
+      "filterByStatus": "فلترة حسب الحالة"
     },
     "searchOrders": "البحث....",
     "goToApprovalPage": "الانتقال إلى صفحة الموافقة",
@@ -92,7 +92,7 @@
     "weaponsAndPipeline": {
       "sectionTitle": "الأسلحة",
       "weaponAssetsTotal": "أصول الأسلحة",
-      "assigned": "العهد مُسنَدة",
+      "assigned": "مُكلف",
       "inDepot": "في المستودع",
       "draftSupplies": "طلبات بانتظار الصرف",
       "ordersAwaiting": "طلبات تم صرفها جزئيا"
@@ -123,7 +123,7 @@
       "totalsHint": "إجماليات الجدول تعكس القائمة المصفاة أعلاه.",
       "totalsRow": "الإجماليات",
       "cols": {
-        "itemName": "اسم المادة",
+        "itemName": "اسم الماده",
         "itemNo": "رقم المادة",
         "type": "النوع",
         "caliber": "العيار",
@@ -203,7 +203,7 @@
     },
     "expiringLots": {
       "title": "Lots قريبة من الانتهاء",
-      "itemName": "اسم المادة",
+      "itemName": "اسم الماده",
       "itemNo": "رقم المادة",
       "lot": "lot",
       "batchNo": "Batch No",
@@ -218,7 +218,7 @@
     },
     "lowStock": {
       "title": "المخزون المنخفض",
-      "itemName": "اسم المادة",
+      "itemName": "اسم الماده",
       "itemNo": "رقم المادة",
       "nsn": "NSN",
       "minimumQuantity": "مخزون منخفض",
@@ -255,7 +255,7 @@
   },
   "inventorySummary": {
     "title": "ملخص المخزون",
-    "itemName": "اسم مادة",
+    "itemName": "اسم الماده",
     "itemNo": "رقم المادة",
     "type": "النوع",
     "nsn": "NSN",
@@ -281,7 +281,7 @@
     "noLots": "لا يوجد lot متاح لهذه المادة",
     "noAssets": "لا توجد أصول متاحة لهذه المادة",
     "noItems": "لا توجد مواد مخزون متاحة",
-    "searchPlaceholder": "البحث باسم مادة، رقم مادة، NSN، أو Part No...",
+    "searchPlaceholder": "البحث باسم الماده، رقم مادة، NSN، أو Part No...",
     "noResults": "لا توجد مواد تطابق معايير البحث",
     "exportWithDetails": "تصدير مع تفاصيل Lots",
     "exportingWithDetails": "جارٍ تحميل تفاصيل Lots للتصدير. الرجاء الانتظار..."
