@@ -7,7 +7,7 @@
     "newIssue": "إصدار جديد",
     "newIssueOrders": "طلبات الإصدار الجديدة",
     "newReturns": "الإرجاعات الجديدة",
-    "onProgress": "قيد التنفيذ",
+    "onProgress": "قيد الاجراء",
     "completed": "مكتمل",
     "orderId": "رقم الطلب",
     "orderNumber": "رقم الطلب",
@@ -50,7 +50,7 @@
     },
     "statusLabels": {
       "new": "جديد",
-      "underProcess": "قيد التنفيذ",
+      "underProcess": "قيد الاجراء",
       "approved": "موافق عليه",
       "rejected": "مرفوض",
       "autoRejected": "مرفوض تلقائيًا",
