@@ -128,7 +128,7 @@ export class StatusCardComponent implements OnInit, OnDestroy {
   /** Status dot fill (matches previous BEM color tokens). */
   getDotBg(): string {
     if (this.isAutoRejected()) {
-      return 'bg-[#f97316]';
+      return 'bg-[#ef4444]';
     }
     switch (this.status) {
       case 'new-issue':
@@ -150,7 +150,7 @@ export class StatusCardComponent implements OnInit, OnDestroy {
   /** Accent bar under header (matches previous divider tokens). */
   getDividerBg(): string {
     if (this.isAutoRejected()) {
-      return 'bg-[#f97316]';
+      return 'bg-[#ef4444]';
     }
     switch (this.status) {
       case 'new-issue':

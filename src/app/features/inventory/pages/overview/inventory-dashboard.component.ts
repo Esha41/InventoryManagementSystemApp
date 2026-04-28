@@ -19,7 +19,8 @@ import {
   Warehouse,
   Search,
   Shield,
-  FilterX
+  FilterX,
+  FileDown
 } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { MonitoringService } from '@services/monitoring.service';
@@ -61,6 +62,7 @@ import { InventoryItemSummaryTableComponent } from './inventory-item-summary-tab
 import { InventoryDashboardStatCardsComponent } from './components/inventory-dashboard-stat-cards/inventory-dashboard-stat-cards.component';
 import { InventoryDashboardWeaponPipelineComponent } from './components/inventory-dashboard-weapon-pipeline/inventory-dashboard-weapon-pipeline.component';
 import { InventoryDashboardSummaryDto } from '@models/inventory-dashboard-monitoring.model';
+import { InventoryDashboardExportService } from '@inventory/services/inventory-dashboard-export.service';
 import {
   emptyInventoryMonitoring,
   enterInventoryDashboard$,
@@ -93,6 +95,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   private loadingPipelineWired = false;
 
   isLoading = false;
+  isExporting = false;
   errorMessage: string | null = null;
 
   depots: DepotDto[] = [];
@@ -138,6 +141,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   readonly Search = Search;
   readonly Shield = Shield;
   readonly FilterX = FilterX;
+  readonly FileDown = FileDown;
 
   constructor(
     private readonly authService: BackendAuthService,
@@ -148,6 +152,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     private readonly lookupService: LookupService,
     private readonly translate: TranslateService,
     private readonly translationService: TranslationService,
+    private readonly exportService: InventoryDashboardExportService,
     private readonly cdr: ChangeDetectorRef,
     private readonly router: Router
   ) {}
@@ -248,6 +253,36 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
   onRefresh(): void {
     this.manualRefresh$.next();
+  }
+
+  onExport(): void {
+    if (this.isLoading || this.isExporting || this.sortedItemSummaries.length === 0) return;
+
+    this.isExporting = true;
+    this.cdr.markForCheck();
+    try {
+      this.exportService.exportItemSummariesToExcel(this.sortedItemSummaries, {
+        depotLabel: this.selectedDepotLabel,
+        activeTab: this.activeTab,
+        filters: {
+          searchText: this.itemSearchText,
+          caliberText: this.caliberFilterText,
+          itemTypeFilter: this.itemTypeFilter,
+          selectedItemCount: this.selectedItemFilterIds.length
+        },
+        totals: {
+          itemCount: this.filteredItemCount,
+          totalQuantity: this.sumTotalQtyFiltered,
+          usedQuantity: this.sumUsedQtyFiltered,
+          reservedQuantity: this.sumReservedQtyFiltered,
+          remainingQuantity: this.sumRemainingQtyFiltered,
+          totalLots: this.sumLotsFiltered
+        }
+      });
+    } finally {
+      this.isExporting = false;
+      this.cdr.markForCheck();
+    }
   }
 
   onDepotFilterChange(depotIds: number[] | null): void {
@@ -603,11 +638,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   }
 
   get selectedDepotLabel(): string {
-    if (this.selectedDepotIds.length === 0) return '';
-    if (this.selectedDepotIds.length === 1) {
-      const d = this.depots.find(x => x.id === this.selectedDepotIds[0]);
-      return d ? this.getDepotName(d) : '';
-    }
-    return `${this.selectedDepotIds.length} ${this.translate.instant('inventoryDashboard.filter.depots')}`;
+    return this.selectedDepotLabels;
   }
 }

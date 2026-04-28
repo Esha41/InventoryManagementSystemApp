@@ -52,16 +52,19 @@
 
   <!-- Asset Details Content -->
   <div *ngIf="asset && !loading() && !error()" class="bg-[var(--color-background)] rounded-lg p-4 sm:p-6 md:p-8 shadow-sm">
-    <div *ngIf="showInlineHeader" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-      <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-[var(--color-text)]">{{ 'newIssueRequest.reviewYourSelection' | translate }}
-      </h2>
+    <div *ngIf="showInlineHeader" class="flex flex-col sm:flex-row sm:items-center gap-4 mb-6 rtl:sm:flex-row-reverse">
       <button
         type="button"
         (click)="onClose()"
-        class="detail-header-back-btn detail-header-back-btn--icon-only self-start"
+        class="detail-header-back-btn detail-header-back-btn--icon-only self-start sm:self-auto"
         [attr.aria-label]="'common.back' | translate">
         <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
       </button>
+      <h2 class="flex-1 text-lg sm:text-xl md:text-2xl font-bold text-[var(--color-text)] sm:text-center">
+        {{ 'newIssueRequest.reviewYourSelection' | translate }}
+      </h2>
+      <!-- Spacer to keep title centered on desktop -->
+      <span class="hidden sm:block w-10" aria-hidden="true"></span>
     </div>
     <ng-container *ngTemplateOutlet="assetDetailsContent"></ng-container>
   </div>
@@ -470,7 +473,7 @@
     </div>
 
     <!-- Go Back Button -->
-    <div class="flex justify-center sm:justify-end mt-6 md:mt-8">
+    <div class="flex justify-start rtl:justify-end mt-6 md:mt-8">
       <button
         type="button"
         (click)="isPage ? onBack() : onClose()"

@@ -8,7 +8,7 @@ const BADGE_CLASS_MAP: Record<string, string> = {
   'Pending': 'bg-amber-50 text-amber-700 border-amber-200',
   'Approved': 'bg-emerald-50 text-emerald-700 border-emerald-200',
   'Rejected': 'bg-red-50 text-red-700 border-red-200',
-  'AutoRejected': 'bg-orange-50 text-orange-700 border-orange-200',
+  'AutoRejected': 'bg-red-50 text-red-700 border-red-200',
   'Returned': 'bg-purple-50 text-purple-700 border-purple-200',
   'ReturnedForReview': 'bg-purple-50 text-purple-700 border-purple-200',
 };
@@ -17,7 +17,7 @@ const APPROVAL_BADGE_CLASS_MAP: Record<string, string> = {
   'Pending': 'text-amber-700 bg-amber-50 border-amber-200',
   'Approved': 'text-emerald-700 bg-emerald-50 border-emerald-200',
   'Rejected': 'text-red-700 bg-red-50 border-red-200',
-  'AutoRejected': 'text-orange-700 bg-orange-50 border-orange-200',
+  'AutoRejected': 'text-red-700 bg-red-50 border-red-200',
   'Returned': 'text-purple-700 bg-purple-50 border-purple-200',
   'ReturnedForReview': 'text-purple-700 bg-purple-50 border-purple-200',
   'Submitted': 'text-emerald-700 bg-emerald-50 border-emerald-200',

@@ -136,11 +136,6 @@
                 {{ card.orders[0].orderId || card.title }}
               </span>
               <div class="flex items-center gap-1.5 flex-shrink-0">
-                <span *ngIf="card.priority"
-                  class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap"
-                  [ngClass]="getPriorityBadgeClass(card.priority)">
-                  {{ getPriorityTranslationKey(card.priority) | translate }}
-                </span>
                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap"
                   [ngClass]="getStatusBadgeClass(card.status)">
                   {{ getRequestStatusTranslationKey(card) | translate }}
@@ -183,7 +178,6 @@
               <th *ngFor="let col of [
                     {key:'orderNumber', label:'dashboard.orderNumber'},
                     {key:'usageDate',   label:'dashboard.requestDate'},
-                    {key:'priority',    label:'requestsManagement.priority'},
                     {key:'department',  label:'dashboard.department'},
                     {key:'requester',   label:'dashboard.requester'},
                     {key:'status',      label:'dashboard.status'}
@@ -229,13 +223,6 @@
               </td>
               <td class="px-5 py-3.5 text-sm text-[var(--color-text-muted)] whitespace-nowrap">
                 {{ formatApprovalDateTime(card.orders[0].requestDate) || '—' }}
-              </td>
-              <td class="px-5 py-3.5">
-                <span *ngIf="card.priority"
-                  class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap"
-                  [ngClass]="getPriorityBadgeClass(card.priority)">
-                  {{ getPriorityTranslationKey(card.priority) | translate }}
-                </span>
               </td>
               <td class="px-5 py-3.5 text-sm text-[var(--color-text)] whitespace-nowrap max-w-[200px] truncate">
                 {{ displayDepartment(card.orders[0]) }}
