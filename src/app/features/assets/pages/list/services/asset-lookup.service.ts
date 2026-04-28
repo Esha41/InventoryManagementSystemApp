@@ -37,7 +37,9 @@ export class AssetLookupService {
       materials: this.lookupService.getProjectailMaterials(),
       classifications: this.lookupService.getLookupItems('Classification'),
       itemTypes: this.lookupService.getLookupItems('ItemType'),
-      countries: this.lookupService.getCountries()
+      countries: this.lookupService.getCountries(),
+      calibersAmmunition: this.lookupService.getCalibersByItemType(ItemType.Ammunition),
+      calibersWeapon: this.lookupService.getCalibersByItemType(ItemType.Weapon)
     });
   }
 
@@ -90,7 +92,9 @@ export class AssetLookupService {
       explosiveType: explosiveOptions.explosiveType,
       explosiveClassification: explosiveOptions.explosiveClassification,
       explosiveHazardDivision: explosiveOptions.explosiveHazardDivision,
-      explosiveCompatibility: explosiveOptions.explosiveCompatibility
+      explosiveCompatibility: explosiveOptions.explosiveCompatibility,
+      calibersAmmunition: lookups.calibersAmmunition ?? [],
+      calibersWeapon: lookups.calibersWeapon ?? []
     };
   }
 }

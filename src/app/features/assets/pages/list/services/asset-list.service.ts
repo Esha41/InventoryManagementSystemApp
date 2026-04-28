@@ -51,13 +51,19 @@ function buildSearchFilters(searchTerm: string): FilterData {
     { field: 'ItemNo', operator: 'contains', value: term },
     { field: 'PartNo', operator: 'contains', value: term },
     { field: 'Nsn', operator: 'contains', value: term },
-    { field: 'Caliber', operator: 'contains', value: term }
+    {
+      logic: 'or',
+      filters: [
+        { field: 'LookupCaliber.NameEn', operator: 'contains', value: term },
+        { field: 'LookupCaliber.NameAr', operator: 'contains', value: term }
+      ]
+    }
   ];
   maybeAppendExactPriceToOrGroup(filters, term);
   return { logic: 'or', filters };
 }
 
-/** Weapons: buildSearchFilters + Caliber (substring) */
+/** Weapons: buildSearchFilters + caliber lookup names */
 function buildWeaponSearchFilters(searchTerm: string): FilterData {
   const term = searchTerm.trim();
   const filters: FilterData[] = [
@@ -65,7 +71,13 @@ function buildWeaponSearchFilters(searchTerm: string): FilterData {
     { field: 'ItemNo', operator: 'contains', value: term },
     { field: 'PartNo', operator: 'contains', value: term },
     { field: 'Nsn', operator: 'contains', value: term },
-    { field: 'Caliber', operator: 'contains', value: term }
+    {
+      logic: 'or',
+      filters: [
+        { field: 'LookupCaliber.NameEn', operator: 'contains', value: term },
+        { field: 'LookupCaliber.NameAr', operator: 'contains', value: term }
+      ]
+    }
   ];
   maybeAppendExactPriceToOrGroup(filters, term);
   return { logic: 'or', filters };
@@ -114,6 +126,13 @@ function appendOrEnArContains(
   });
 }
 
+function appendCaliberIdColumnFilter(filters: FilterData[], caliberId: string | number | null | undefined): void {
+  if (caliberId == null) return;
+  const n = typeof caliberId === 'number' ? caliberId : Number(String(caliberId).trim());
+  if (!Number.isFinite(n) || n <= 0) return;
+  filters.push({ field: 'CaliberId', operator: 'eq', value: String(n) });
+}
+
 function appendAmmunitionColumnFilters(filters: FilterData[], cf: AssetColumnFilters): void {
   appendContainsFilter(filters, 'Name', cf.name);
   appendContainsFilter(filters, 'ItemNo', cf.itemNo);
@@ -121,7 +140,7 @@ function appendAmmunitionColumnFilters(filters: FilterData[], cf: AssetColumnFil
   appendContainsFilter(filters, 'Nsn', cf.nsn);
   appendContainsFilter(filters, 'ArmNumber', cf.armNumber);
   appendContainsFilter(filters, 'UNNumber', cf.unNumber);
-  appendContainsFilter(filters, 'Caliber', cf.caliber);
+  appendCaliberIdColumnFilter(filters, cf.caliberId);
 }
 
 function appendWeaponColumnFilters(filters: FilterData[], cf: AssetColumnFilters): void {
@@ -130,7 +149,7 @@ function appendWeaponColumnFilters(filters: FilterData[], cf: AssetColumnFilters
   appendContainsFilter(filters, 'PartNo', cf.partNo);
   appendContainsFilter(filters, 'Nsn', cf.nsn);
   appendContainsFilter(filters, 'UNNumber', cf.unNumber);
-  appendContainsFilter(filters, 'Caliber', cf.caliber);
+  appendCaliberIdColumnFilter(filters, cf.caliberId);
   appendOrEnArContains(filters, 'Type.NameEn', 'Type.NameAr', cf.weaponType);
 }
 
@@ -260,7 +279,7 @@ export class AssetListService {
         nsn: 'Nsn',
         weaponType: 'Type.NameEn',
         primaryPurpose: 'BaseItemPrimaryPurposes.Min(PrimaryPurpos.NameEn)',
-        caliber: 'Caliber',
+        caliber: 'LookupCaliber.NameEn',
         price: 'Price',
         minimumQuantity: 'MinimumQuantity'
       };
@@ -393,7 +412,7 @@ export class AssetListService {
         nsn: 'Nsn',
         caseType: 'CaseType.NameEn',
         primaryPurpose: 'BaseItemPrimaryPurposes.Min(PrimaryPurpos.NameEn)',
-        caliber: 'Caliber',
+        caliber: 'LookupCaliber.NameEn',
         price: 'Price',
         minimumQuantity: 'MinimumQuantity'
       };

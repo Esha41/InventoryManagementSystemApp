@@ -38,22 +38,29 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
 
   private readonly destroy$ = new Subject<void>();
 
-  // Item type options for dropdown
+  // Item type options for ItemType & Unit (Ammunition, Weapon, Explosive)
   itemTypeOptions: DropdownOption<number>[] = [
     { value: 1, label: '' },
     { value: 2, label: '' },
     { value: 3, label: '' }
   ];
 
+  caliberItemTypeOptions: DropdownOption<number>[] = [
+    { value: 1, label: '' },
+    { value: 2, label: '' }
+  ];
+
   constructor(private fb: FormBuilder, private translateService: TranslateService) {
     // Subscribe to translation changes (including initial load)
     this.translateService.onTranslationChange.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.updateItemTypeTranslations();
+      this.updateCaliberItemTypeTranslations();
     });
 
     // Subscribe to language changes
     this.translateService.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.updateItemTypeTranslations();
+      this.updateCaliberItemTypeTranslations();
     });
   }
 
@@ -65,9 +72,10 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
       'lookupFormModal.selectItemType',
       'lookupFormModal.ammunition',
       'lookupFormModal.weapon',
-      'lookupFormModal.explosive'
+      'lookupFormModal.explosive',
     ]).pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.updateItemTypeTranslations();
+      this.updateCaliberItemTypeTranslations();
     });
   }
 
@@ -125,8 +133,8 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
       code: ['', this.tableConfig?.hasCode ? [Validators.required, Validators.maxLength(50)] : [Validators.maxLength(50)]]
     };
 
-    // Add ItemType field for ItemType and Unit lookup tables
-    if (this.tableConfig?.name === 'ItemType' || this.tableConfig?.name === 'Unit') {
+    // Add ItemType field for ItemType, Unit, and Caliber lookup tables (Caliber: ammunition or weapon only in UI)
+    if (this.tableConfig?.name === 'ItemType' || this.tableConfig?.name === 'Unit' || this.tableConfig?.name === 'Caliber') {
       formConfig['itemType'] = [null, [Validators.required]];
     }
 
@@ -145,8 +153,8 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
         code: this.lookupItem.code || ''
       };
 
-      // Add ItemType if it exists in the lookup item (for ItemType and Unit tables)
-      if ((this.tableConfig?.name === 'ItemType' || this.tableConfig?.name === 'Unit') && (this.lookupItem as any).itemType !== undefined) {
+      // Add ItemType if it exists (ItemType, Unit, and Caliber tables)
+      if ((this.tableConfig?.name === 'ItemType' || this.tableConfig?.name === 'Unit' || this.tableConfig?.name === 'Caliber') && (this.lookupItem as any).itemType !== undefined) {
         let itemTypeValue = (this.lookupItem as any).itemType;
 
         // Convert string enum to number if needed
@@ -193,8 +201,8 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
       code: this.tableConfig?.hasCode ? formValue.code?.trim() : undefined
     };
 
-    // Add ItemType if this is an ItemType or Unit lookup
-    if (this.tableConfig?.name === 'ItemType' || this.tableConfig?.name === 'Unit') {
+    // Add ItemType if this is an ItemType, Unit, or Caliber lookup
+    if (this.tableConfig?.name === 'ItemType' || this.tableConfig?.name === 'Unit' || this.tableConfig?.name === 'Caliber') {
       dto.itemType = formValue.itemType;
     }
 
@@ -232,6 +240,13 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
       { value: 1, label: this.translateService.instant('lookupFormModal.ammunition') },
       { value: 2, label: this.translateService.instant('lookupFormModal.weapon') },
       { value: 3, label: this.translateService.instant('lookupFormModal.explosive') }
+    ];
+  }
+
+  private updateCaliberItemTypeTranslations(): void {
+    this.caliberItemTypeOptions = [
+      { value: 1, label: this.translateService.instant('lookupFormModal.ammunition') },
+      { value: 2, label: this.translateService.instant('lookupFormModal.weapon') }
     ];
   }
 }

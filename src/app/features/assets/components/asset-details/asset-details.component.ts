@@ -27,7 +27,7 @@ import { AssetDetailsFormatterService } from './asset-details-formatter.service'
 import { AmmunitionReadDto } from '@models/ammunition.model';
 import { WeaponDto } from '@models/weapon.model';
 import { ExplosiveDto } from '@models/explosive.model';
-import { ItemType } from '@models/inventory.model';
+import { isAmmunition, isExplosive, isWeapon } from '@utils/asset-property.utils';
 
 export type AssetDetailsData = AmmunitionReadDto | WeaponDto | ExplosiveDto | null;
 
@@ -76,8 +76,9 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
   readonly isWeapon = computed(() => {
     const type = this._assetType();
     const asset = this._asset();
-    return type === 'weapon' ||
-      (asset !== null && 'caliber' in asset && !('armNumber' in asset) && !('explosiveType' in asset));
+    if (type === 'weapon') return true;
+    if (asset === null) return false;
+    return isWeapon(asset);
   });
 
   readonly isExplosive = computed(() => {
@@ -85,9 +86,7 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
     const asset = this._asset();
     if (type === 'explosive') return true;
     if (asset === null) return false;
-    const it = (asset as { itemType?: ItemType }).itemType;
-    if (it === ItemType.Explosive) return true;
-    return 'explosiveType' in asset;
+    return isExplosive(asset);
   });
 
   readonly isAmmunition = computed(() => {
@@ -95,13 +94,7 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
     const asset = this._asset();
     if (type === 'ammunition') return true;
     if (asset === null) return false;
-    if ('itemType' in asset) {
-      const it = (asset as { itemType?: ItemType }).itemType;
-      if (it === ItemType.Explosive || it === ItemType.Weapon) return false;
-      if (it === ItemType.Ammunition) return true;
-    }
-    if ('explosiveType' in asset) return false;
-    return 'armNumber' in asset;
+    return isAmmunition(asset);
   });
 
   readonly currentAssetId = computed(() => {

@@ -77,7 +77,8 @@ export interface AssetColumnFilters {
   itemNo: string;
   partNo: string;
   nsn: string;
-  caliber: string;
+  /** Caliber lookup id; null = no filter */
+  caliberId: string | number | null;
   /** Weapon: weapon type label (partial match EN/AR) */
   weaponType: string;
   armNumber: string;
@@ -90,7 +91,7 @@ export function createEmptyColumnFilters(): AssetColumnFilters {
     itemNo: '',
     partNo: '',
     nsn: '',
-    caliber: '',
+    caliberId: null,
     weaponType: '',
     armNumber: '',
     unNumber: ''
@@ -98,7 +99,9 @@ export function createEmptyColumnFilters(): AssetColumnFilters {
 }
 
 export function hasAnyColumnFilter(filters: AssetColumnFilters): boolean {
-  return Object.values(filters).some(v => (v ?? '').trim().length > 0);
+  const { caliberId, ...rest } = filters;
+  if (caliberId != null && String(caliberId).trim() !== '') return true;
+  return Object.values(rest).some(v => (v ?? '').trim().length > 0);
 }
 
 /**

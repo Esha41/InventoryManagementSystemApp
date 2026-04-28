@@ -141,13 +141,18 @@
               <!-- Caliber -->
               <div class="w-full min-w-[200px] lg:max-w-xs lg:flex-none">
                 <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.caliber' | translate }}</label>
-                <input type="text" [(ngModel)]="caliberFilterText" (ngModelChange)="onCaliberFilterInput()"
-                  [placeholder]="'inventoryDashboard.itemSummary.filters.caliberPlaceholder' | translate"
-                  [attr.list]="'inventory-caliber-options'"
-                  class="block w-full min-h-[42px] box-border px-3 py-2 text-sm leading-normal border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent" />
-                <datalist id="inventory-caliber-options">
-                  <option *ngFor="let c of distinctCalibers" [value]="c"></option>
-                </datalist>
+                <app-dropdown class="block w-full min-h-[42px]"
+                  [(ngModel)]="caliberFilter"
+                  (ngModelChange)="onCaliberFilterChange()"
+                  [options]="caliberDropdownOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  [placeholderSelectable]="true"
+                  [placeholderValue]="null"
+                  [showSearch]="true"
+                  [placeholder]="'inventoryDashboard.itemSummary.filters.allCalibers' | translate"
+                  [noDataText]="'common.noData' | translate">
+                </app-dropdown>
               </div>
 
               <!-- Item type (only shown in "All" tab) -->

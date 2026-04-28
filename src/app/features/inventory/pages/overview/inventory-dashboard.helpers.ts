@@ -7,7 +7,8 @@ export type ActiveTab = 'all' | 'ammunition' | 'weapon' | 'explosive';
 export interface ItemSummaryFilterState {
   selectedItemFilterIds: number[];
   searchText: string;
-  caliberText: string;
+  /** Selected catalog caliber display string; null = no filter */
+  caliberSelection: string | null;
   itemType: number | null;
   activeTab: ActiveTab;
 }
@@ -41,9 +42,10 @@ export function filterItemSummaries(
         (i.partNo || '').toLowerCase().includes(q)
     );
   }
-  const cal = f.caliberText.trim().toLowerCase();
-  if (cal) {
-    list = list.filter(i => (i.caliber || '').toLowerCase().includes(cal));
+  const sel = (f.caliberSelection ?? '').trim();
+  if (sel) {
+    const norm = sel.toLowerCase();
+    list = list.filter(i => (i.caliber || '').trim().toLowerCase() === norm);
   }
   return list;
 }
@@ -78,11 +80,17 @@ export function sortLotDetails(
   return sortByColumn(lots, column, direction);
 }
 
+function isPlaceholderCaliberLabel(text: string): boolean {
+  const t = text.trim();
+  if (!t) return true;
+  return /^[\-–—]+$/.test(t);
+}
+
 export function distinctCalibersFromItems(items: ItemInventorySummaryDto[]): string[] {
   const set = new Set<string>();
   for (const i of items) {
     const c = (i.caliber || '').trim();
-    if (c) set.add(c);
+    if (c && !isPlaceholderCaliberLabel(c)) set.add(c);
   }
   return [...set].sort((a, b) => a.localeCompare(b));
 }
@@ -149,14 +157,14 @@ export function filterItemSummariesByActiveTab(
 export function hasActiveItemTableFilters(
   activeTab: ActiveTab,
   itemSearchText: string,
-  caliberFilterText: string,
+  caliberFilter: string | null | undefined,
   itemTypeFilter: number | null,
   selectedItemFilterIds: number[]
 ): boolean {
   return (
     activeTab !== 'all' ||
     !!itemSearchText.trim() ||
-    !!caliberFilterText.trim() ||
+    !!(caliberFilter ?? '').trim() ||
     itemTypeFilter !== null ||
     selectedItemFilterIds.length > 0
   );

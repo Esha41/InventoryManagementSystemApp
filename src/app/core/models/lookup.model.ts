@@ -10,7 +10,7 @@ export interface LookupItem {
   nameEn: string;
   code?: string;
   depotCode?: string;
-  itemType?: number; // For ItemTypeLookup: 1=Ammunition, 2=Weapon, 3=Explosive
+  itemType?: number; // ItemTypeLookup / Unit: 1=Ammunition, 2=Weapon, 3=Explosive; Caliber: 1=Ammunition, 2=Weapon only
   isDeleted?: boolean;
   /** Employee-specific: department display name */
   departmentName?: string;
@@ -35,7 +35,7 @@ export interface CreateUpdateLookupDto {
   nameAr: string;
   nameEn: string;
   code?: string;
-  itemType?: number; // For ItemTypeLookup: 1=Ammunition, 2=Weapon, 3=Explosive
+  itemType?: number;
 }
 
 export type RequestPurposeType = 'discard' | 'return' | 'order';
@@ -70,6 +70,7 @@ export const LOOKUP_TABLES: LookupTableConfig[] = [
   { name: 'Country', displayName: 'Countries', displayNameKey: 'lookupManagement.countries', displayNameKeySingular: 'lookupManagement.country', apiEndpoint: 'Country', hasCode: true, pagePermission: PERMISSIONS.ADMIN.LOOKUP.COUNTRIES.PAGE, createPermission: PERMISSIONS.ADMIN.LOOKUP.COUNTRIES.CREATE, editPermission: PERMISSIONS.ADMIN.LOOKUP.COUNTRIES.EDIT, deletePermission: PERMISSIONS.ADMIN.LOOKUP.COUNTRIES.DELETE },
   { name: 'HazardDivision', displayName: 'Hazard Divisions', displayNameKey: 'lookupManagement.hazardDivisions', displayNameKeySingular: 'lookupManagement.hazardDivision', apiEndpoint: 'HazardDivision', hasCode: false, pagePermission: PERMISSIONS.ADMIN.LOOKUP.HAZARD_DIVISIONS.PAGE, createPermission: PERMISSIONS.ADMIN.LOOKUP.HAZARD_DIVISIONS.CREATE, editPermission: PERMISSIONS.ADMIN.LOOKUP.HAZARD_DIVISIONS.EDIT, deletePermission: PERMISSIONS.ADMIN.LOOKUP.HAZARD_DIVISIONS.DELETE },
   { name: 'ItemType', displayName: 'Item Types', displayNameKey: 'lookupManagement.itemTypes', displayNameKeySingular: 'lookupManagement.itemType', apiEndpoint: 'ItemType', hasCode: false, pagePermission: PERMISSIONS.ADMIN.LOOKUP.ITEM_TYPES.PAGE, createPermission: PERMISSIONS.ADMIN.LOOKUP.ITEM_TYPES.CREATE, editPermission: PERMISSIONS.ADMIN.LOOKUP.ITEM_TYPES.EDIT, deletePermission: PERMISSIONS.ADMIN.LOOKUP.ITEM_TYPES.DELETE },
+  { name: 'Caliber', displayName: 'Calibers', displayNameKey: 'lookupManagement.calibers', displayNameKeySingular: 'lookupManagement.caliber', apiEndpoint: 'Caliber', hasCode: false, pagePermission: PERMISSIONS.ADMIN.LOOKUP.CALIBERS.PAGE, createPermission: PERMISSIONS.ADMIN.LOOKUP.CALIBERS.CREATE, editPermission: PERMISSIONS.ADMIN.LOOKUP.CALIBERS.EDIT, deletePermission: PERMISSIONS.ADMIN.LOOKUP.CALIBERS.DELETE },
   { name: 'Manufacturer', displayName: 'Manufacturers', displayNameKey: 'lookupManagement.manufacturers', displayNameKeySingular: 'lookupManagement.manufacturer', apiEndpoint: 'Manufacturer', hasCode: false, pagePermission: PERMISSIONS.ADMIN.LOOKUP.MANUFACTURERS.PAGE, createPermission: PERMISSIONS.ADMIN.LOOKUP.MANUFACTURERS.CREATE, editPermission: PERMISSIONS.ADMIN.LOOKUP.MANUFACTURERS.EDIT, deletePermission: PERMISSIONS.ADMIN.LOOKUP.MANUFACTURERS.DELETE },
   { name: 'NatureOption', displayName: 'Nature Options', displayNameKey: 'lookupManagement.natureOptions', displayNameKeySingular: 'lookupManagement.natureOption', apiEndpoint: 'NatureOption', hasCode: false, pagePermission: PERMISSIONS.ADMIN.LOOKUP.NATURE_OPTIONS.PAGE, createPermission: PERMISSIONS.ADMIN.LOOKUP.NATURE_OPTIONS.CREATE, editPermission: PERMISSIONS.ADMIN.LOOKUP.NATURE_OPTIONS.EDIT, deletePermission: PERMISSIONS.ADMIN.LOOKUP.NATURE_OPTIONS.DELETE },
   { name: 'PrimaryPurpos', displayName: 'Primary Purposes', displayNameKey: 'lookupManagement.primaryPurposes', displayNameKeySingular: 'lookupManagement.primaryPurpose', apiEndpoint: 'PrimaryPurpos', hasCode: false, pagePermission: PERMISSIONS.ADMIN.LOOKUP.PRIMARY_PURPOSES.PAGE, createPermission: PERMISSIONS.ADMIN.LOOKUP.PRIMARY_PURPOSES.CREATE, editPermission: PERMISSIONS.ADMIN.LOOKUP.PRIMARY_PURPOSES.EDIT, deletePermission: PERMISSIONS.ADMIN.LOOKUP.PRIMARY_PURPOSES.DELETE },

@@ -142,6 +142,17 @@ export class LookupService {
     );
   }
 
+  /**
+   * Caliber lookup rows for Weapon (itemType=2) or Ammunition (itemType=1).
+   */
+  getCalibersByItemType(itemType?: number): Observable<LookupItem[]> {
+    const endpoint = `${this.baseUrl}/Caliber/byItemType`;
+    const params = itemType !== undefined ? new HttpParams().set('itemType', itemType.toString()) : undefined;
+    return this.apiService.get<LookupItem[]>(endpoint, params).pipe(
+      map(response => (Array.isArray(response) ? response : []))
+    );
+  }
+
   getNsns(): Observable<LookupItem[]> {
     return this.getLookupItems('Nsn');
   }

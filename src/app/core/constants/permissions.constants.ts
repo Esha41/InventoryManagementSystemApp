@@ -78,6 +78,12 @@ export const PERMISSIONS = {
         EDIT: 'Permissions.ItemTypes.Edit',
         DELETE: 'Permissions.ItemTypes.Delete'
       },
+      CALIBERS: {
+        PAGE: 'Permissions.Calibers.Page',
+        CREATE: 'Permissions.Calibers.Create',
+        EDIT: 'Permissions.Calibers.Edit',
+        DELETE: 'Permissions.Calibers.Delete'
+      },
       MANUFACTURERS: {
         PAGE: 'Permissions.Manufacturers.Page',
         CREATE: 'Permissions.Manufacturers.Create',

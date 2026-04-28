@@ -23,6 +23,43 @@ export function getLookupDisplayName(
 }
 
 /**
+ * Label for lookup rows in dropdowns (never uses "-" for missing values; use in tables via {@link getLookupDisplayName}).
+ */
+export function getLookupDropdownLabel(
+  lookup: LookupDto | LookupItem | string | null | undefined,
+  translateService: TranslateService
+): string {
+  if (lookup == null || lookup === '') return '';
+  if (typeof lookup === 'string') return lookup.trim();
+  if (typeof lookup === 'number') return String(lookup);
+  if (typeof lookup === 'object') {
+    const currentLang = getCurrentLang(translateService);
+    const text = getLocalizedName(lookup, currentLang).trim();
+    if (text.length > 0) return text;
+    const code = (lookup as LookupItem).code?.trim();
+    if (code) return code;
+    return '';
+  }
+  return '';
+}
+
+/** Lookup rows suitable for dropdowns: has id, not deleted, has a displayable name. */
+export function filterRenderableLookupItems(
+  items: LookupItem[] | null | undefined,
+  translateService: TranslateService
+): LookupItem[] {
+  if (!items?.length) return [];
+  const lang = getCurrentLang(translateService);
+  return items.filter(item => {
+    if (item == null || item.id == null) return false;
+    if (item.isDeleted) return false;
+    const name = getLocalizedName(item, lang).trim();
+    if (name.length > 0) return true;
+    return !!(item.code?.trim());
+  });
+}
+
+/**
  * Gets unit name by ID from units array
  */
 export function getUnitNameById(
@@ -42,12 +79,10 @@ export function createFilterOptions(
   items: LookupItem[],
   translateService: TranslateService
 ): Array<{ label: string; value: number }> {
-  return items
-    .filter(item => item.id != null)
-    .map(item => ({
-      label: getLookupDisplayName(item, translateService),
-      value: item.id!
-    }));
+  return filterRenderableLookupItems(items, translateService).map(item => ({
+    label: getLookupDropdownLabel(item, translateService),
+    value: item.id!
+  }));
 }
 
 /** Catalog item DTO shape for primary purpose (ammunition / weapon / explosive). */

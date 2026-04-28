@@ -121,7 +121,8 @@ export class LookupManagementService {
       (item.departmentName && item.departmentName.toLowerCase().includes(search)) ||
       (item.rankName && item.rankName.toLowerCase().includes(search)) ||
       (item.phone && item.phone !== '-' && item.phone.toLowerCase().includes(search)) ||
-      (item.email && item.email !== '-' && item.email.toLowerCase().includes(search))
+      (item.email && item.email !== '-' && item.email.toLowerCase().includes(search)) ||
+      this.getItemTypeName(item).toLowerCase().includes(search)
     );
   }
 

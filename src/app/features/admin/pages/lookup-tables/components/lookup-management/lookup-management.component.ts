@@ -293,6 +293,10 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
       code: this.selectedLookupItem.code
     };
 
+    if (this.selectedTable.name === 'Caliber') {
+      dto.itemType = this.lookupManagementService.getItemType(this.selectedLookupItem);
+    }
+
     this.lookupManagementService.deleteLookupItem(
       this.selectedTable,
       this.selectedLookupItem.id!,

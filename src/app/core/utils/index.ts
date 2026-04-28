@@ -42,6 +42,8 @@ export * from './asset-list.mapper';
 // Export asset-list.utils but exclude unwrapDropdownOption to avoid conflict with dropdown.utils
 export {
   getLookupDisplayName,
+  getLookupDropdownLabel,
+  filterRenderableLookupItems,
   getUnitNameById,
   createFilterOptions,
   assetMatchesCatalogPrimaryPurpose,

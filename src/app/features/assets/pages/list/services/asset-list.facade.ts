@@ -85,7 +85,9 @@ export class AssetListFacade {
     explosiveType: [],
     explosiveClassification: [],
     explosiveHazardDivision: [],
-    explosiveCompatibility: []
+    explosiveCompatibility: [],
+    calibersAmmunition: [],
+    calibersWeapon: []
   });
 
   // Public streams

@@ -141,6 +141,7 @@
         "searchPlaceholder": "Name, item no., NSN, part no.",
         "caliber": "Caliber",
         "caliberPlaceholder": "Filter by caliber",
+        "allCalibers": "All calibers",
         "itemType": "Item type",
         "allTypes": "All types",
         "clear": "Clear filters"

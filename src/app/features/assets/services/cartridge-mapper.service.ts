@@ -49,6 +49,12 @@ export class CartridgeMapperService {
       hazardDivision: getLocalizedName(dto.hazardDivision, currentLang),
       capabilityGroup: getLocalizedName(dto.compatibility, currentLang),
       bulletDiameterLabel,
+      caliber:
+        dto.caliber != null
+          ? typeof dto.caliber === 'object'
+            ? getLocalizedName(dto.caliber, currentLang)
+            : String(dto.caliber)
+          : undefined,
       linkedLabel,
       linkedLabelAr: linkedLabelAr || undefined,
       linkedLabelEn: linkedLabelEn || undefined,
@@ -105,7 +111,12 @@ export class CartridgeMapperService {
 
       // Weapon specific - backend sends enum as string (JsonStringEnumConverter)
       weaponType: dto.weaponType ? getWeaponTypeName(dto.weaponType) : undefined,
-      caliber: dto.caliber,
+      caliber:
+        dto.caliber != null
+          ? typeof dto.caliber === 'object'
+            ? getLocalizedName(dto.caliber, currentLang)
+            : String(dto.caliber)
+          : undefined,
       actionType: dto.actionType ? getActionTypeName(dto.actionType) : undefined,
       barrelLength: dto.barrelLength,
       barrelLengthLabel: barrelLengthLabel,
