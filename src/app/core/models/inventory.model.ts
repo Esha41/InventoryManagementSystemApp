@@ -55,6 +55,7 @@ export interface InventoryDetailDto {
   currentQuantity: number;
   batchNo?: string;
   expiryDate?: Date | string;
+  yearOfManufacture?: number;
   readyForIssue: boolean;
   usedQuantity: number;
   reservedQuantityByOrdersOnProcessing: number;
