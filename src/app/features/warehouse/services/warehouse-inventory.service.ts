@@ -53,7 +53,7 @@ export class WarehouseInventoryService {
     let filterData: FilterData | undefined;
 
     if (input.activeTab === 'batch') {
-      const filters: any[] = [];
+      const filters: FilterData[] = [];
       if (searchTerm) {
         filters.push({
           logic: 'or',
@@ -65,7 +65,7 @@ export class WarehouseInventoryService {
       }
     } else {
       const itemType = input.activeTab === 'explosive' ? ItemType.Explosive : ItemType.Ammunition;
-      const filters: any[] = [
+      const filters: FilterData[] = [
         { field: 'Item.ItemType', operator: 'eq', value: itemType.toString() }
       ];
 

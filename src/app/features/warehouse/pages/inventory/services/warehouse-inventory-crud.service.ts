@@ -84,7 +84,7 @@ export class WarehouseInventoryCrudService {
     );
 
     // Pass removed file ids to backend (deleted during Inventory update)
-    (finalUpdateInventoryDto as any).removedFileIds = removedFileIds && removedFileIds.length ? removedFileIds : undefined;
+    finalUpdateInventoryDto.removedFileIds = removedFileIds && removedFileIds.length ? removedFileIds : undefined;
 
     const filesItemId = detail.itemId;
     return this.inventoryService.update(inventory.id, finalUpdateInventoryDto, files, filesItemId)
