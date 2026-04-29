@@ -13,6 +13,7 @@ export * from './auth-flow.service';
 export * from './token-refresh.service';
 export * from './session-heartbeat.service';
 export * from './backend-user.service';
+export * from './user-management';
 export * from './lookup.service';
 export * from './toast.service';
 export * from './file-upload.service';

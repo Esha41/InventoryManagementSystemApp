@@ -8,11 +8,11 @@ import { AuthSessionService } from './auth-session.service';
 import { SessionHeartbeatService } from './session-heartbeat.service';
 import { TokenRefreshService } from './token-refresh.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { APIOperationResponse } from '@models/api-response.model';
 import { LoginRequest, LoginResponse, AuthenticatedUser, ClaimDto, CaptchaResponse } from '@models/auth.model';
 import { ChangePasswordRequest } from '@models/change-password.model';
 import { USER_PROFILE_PROVIDER } from '../tokens/user-profile-provider.token';
 import { IUserProfileProvider } from '../interfaces/user-profile-provider.interface';
+import { parseGenerateCaptchaApiPayload } from '@utils/captcha-response-parser.util';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { decodeJwtPayload } from '@utils/jwt.util';
 
@@ -34,33 +34,17 @@ export class AuthFlowService {
     const endpoint = API_ENDPOINTS.AUTH.GENERATE_CAPTCHA;
     this.configService.log('Generating captcha', { endpoint, fullUrl: `${this.configService.apiUrl}${endpoint}` });
     return this.apiService.getRaw<unknown>(endpoint).pipe(
-      map(response => {
-        this.configService.log('Captcha response received', response);
-
-        if (response && typeof response === 'object' && 'succeeded' in response) {
-          const apiResponse = response as APIOperationResponse<CaptchaResponse>;
-          if (!apiResponse.succeeded) {
-            throw new Error(apiResponse.message || 'Failed to generate captcha');
+      tap(raw => this.configService.log('Captcha response received', raw)),
+      map(raw => {
+        try {
+          return parseGenerateCaptchaApiPayload(raw);
+        } catch (e) {
+          const err = e instanceof Error ? e : new Error(String(e));
+          if (err.message === 'Invalid captcha response format') {
+            this.configService.logError('Unexpected captcha response format', raw);
           }
-          if (!apiResponse.data || !(apiResponse.data as { captchaId?: string }).captchaId) {
-            if ((apiResponse.data as { captchaId?: string }).captchaId) {
-              return apiResponse.data as CaptchaResponse;
-            }
-            throw new Error('Invalid captcha response: missing captchaId');
-          }
-          return apiResponse.data as CaptchaResponse;
+          throw err;
         }
-
-        if (response && typeof response === 'object' && 'captchaId' in response) {
-          const directResponse = response as CaptchaResponse;
-          if (!directResponse.captchaId) {
-            throw new Error('Invalid captcha response: missing captchaId');
-          }
-          return directResponse;
-        }
-
-        this.configService.logError('Unexpected captcha response format', response);
-        throw new Error('Invalid captcha response format');
       }),
       catchError(error => {
         this.configService.logError('Failed to generate captcha', error);
