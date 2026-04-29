@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from 
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Package, History as HistoryIcon } from 'lucide-angular';
-import { RequestDetail } from '@models/workflow-approval.model';
+import { RequestDetail, RequestItem } from '@models/workflow-approval.model';
 import { WorkflowApprovalStateService } from '../../services/workflow-approval-state.service';
 import { WorkflowApprovalNavigationService } from '../../services/workflow-approval-navigation.service';
 
@@ -24,14 +24,14 @@ export class WorkflowRequestItemsComponent {
 
   @Input() requestDetail: RequestDetail | null = null;
   @Output() reviewClick = new EventEmitter<void>();
-  @Output() historyClick = new EventEmitter<any>();
+  @Output() historyClick = new EventEmitter<RequestItem>();
 
   constructor(
     private stateService: WorkflowApprovalStateService,
     private navigationService: WorkflowApprovalNavigationService
   ) { }
 
-  onHistoryClick(event: MouseEvent, item: any): void {
+  onHistoryClick(event: MouseEvent, item: RequestItem): void {
     event.stopPropagation();
     this.historyClick.emit(item);
   }
@@ -126,7 +126,7 @@ export class WorkflowRequestItemsComponent {
     if (state.requestId) {
       // Try to get itemType from the request item
       const item = this.requestItems.find(i => (i.itemId || i.id) === itemId);
-      const itemType = item && 'itemType' in item ? (item as any).itemType : undefined;
+      const itemType = item?.itemType;
       this.navigationService.navigateToItemDetails(itemId, state.requestId, itemType);
     }
   }

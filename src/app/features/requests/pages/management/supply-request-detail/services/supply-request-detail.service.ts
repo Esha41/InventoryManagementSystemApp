@@ -13,7 +13,7 @@ import { SupplyService, OrderSupplySuggestionDto, CreateSupplyDto, CreateSupplyD
 import { InventoryService, LotDetailDto } from '@inventory/services/inventory.service';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { BaseRequestDto } from '@models/workflow-approval.model';
+import { BaseRequestDto, WorkflowApprovalStep } from '@models/workflow-approval.model';
 import { SupplyRequestDetail, OrderItem } from '@models/supply-request.model';
 import { mapOrderToRequestDetail, applySuggestionToItems, capOrderItemDischargeToApprovedQuantity } from '../../utils/supply-request.mapper';
 import { mapLotDetailsToLotItems } from '@utils/lot.utils';
@@ -114,8 +114,8 @@ export class SupplyRequestDetailService {
     return this.apiService.get<BaseRequestDto[]>(
       API_ENDPOINTS.WORKFLOW_APPROVAL.ALL_BASE_REQUESTS
     ).pipe(
-      map((response: any) => {
-        const data: BaseRequestDto[] = Array.isArray(response) ? response : [];
+      map((response: BaseRequestDto[]) => {
+        const data = Array.isArray(response) ? response : [];
 
         const baseRequest = data.find(r => r.id === orderId);
 
@@ -123,23 +123,28 @@ export class SupplyRequestDetailService {
           const requestStatus = mapRequestStatus(baseRequest.status);
           const workflowSteps = mapApprovalHistory(baseRequest.approvalHistory, requestStatus);
 
+          const approvedDateValue = baseRequest.requestDate ?? requestDetail.requestDate;
+          const approvedDateStr = approvedDateValue instanceof Date
+            ? approvedDateValue.toISOString()
+            : approvedDateValue;
+
           // Add requester as the first step with localized names
-          const requesterStep: any = {
+          const requesterStep: WorkflowApprovalStep = {
             id: 0,
             approverName: baseRequest.requesterName || requestDetail.requesterName || 'Unknown Requester',
-            approverNameEn: baseRequest['requesterNameEn'] || requestDetail.requesterName,
-            approverNameAr: baseRequest['requesterNameAr'],
+            approverNameEn: baseRequest.requesterNameEn || requestDetail.requesterName,
+            approverNameAr: baseRequest.requesterNameAr,
             status: 'Approved',
             applicationRoleName: 'Requester (Order Requesting Entity)',
-            applicationRoleNameAr: baseRequest['requesterRoleNameAr'],
-            approvedDateTime: baseRequest.requestDate || requestDetail.requestDate,
-            approvedDate: baseRequest.requestDate || requestDetail.requestDate,
+            applicationRoleNameAr: baseRequest.requesterRoleNameAr,
+            approvedDateTime: approvedDateValue,
+            approvedDate: approvedDateStr,
             isPending: false,
             comments: ''
           };
 
           // Keep WorkflowApprovalStep format to preserve Arabic names
-          requestDetail.approvalWorkflow = [requesterStep, ...workflowSteps] as any;
+          requestDetail.approvalWorkflow = [requesterStep, ...workflowSteps];
         }
 
         return requestDetail;
@@ -193,7 +198,7 @@ export class SupplyRequestDetailService {
    */
   restoreExistingSelections(
     requestDetail: SupplyRequestDetail,
-    supplyDetails: any[]
+    supplyDetails: CreateSupplyDetailDto[]
   ): { restoredCount: number; notFoundCount: number } {
     if (!requestDetail || !supplyDetails || supplyDetails.length === 0) {
       return { restoredCount: 0, notFoundCount: 0 };
@@ -256,14 +261,14 @@ export class SupplyRequestDetailService {
    */
   loadLotsForExistingSelections(
     requestDetail: SupplyRequestDetail,
-    supplyDetails: any[],
+    supplyDetails: CreateSupplyDetailDto[],
     excludeSupplyId?: number
   ): Observable<void> {
     if (!requestDetail || !supplyDetails || supplyDetails.length === 0) {
       return of(undefined);
     }
 
-    const detailsByItem = new Map<number, any[]>();
+    const detailsByItem = new Map<number, CreateSupplyDetailDto[]>();
     supplyDetails.forEach(detail => {
       if (detail.itemId) {
         if (!detailsByItem.has(detail.itemId)) {
@@ -273,7 +278,7 @@ export class SupplyRequestDetailService {
       }
     });
 
-    const loadPromises: Observable<any>[] = [];
+    const loadPromises: Observable<{ item: OrderItem; lots: LotDetailDto[]; details: CreateSupplyDetailDto[] }>[] = [];
 
     detailsByItem.forEach((details, itemId) => {
       const item = requestDetail.items.find(i => i.itemId === itemId);
@@ -300,13 +305,13 @@ export class SupplyRequestDetailService {
           item.availableLots = mapLotDetailsToLotItems(lots);
 
           const selectionsByLot = new Map<string, number>();
-          details.forEach((detail: any) => {
+          details.forEach((detail) => {
             if (detail.lot != null && detail.lot !== '' && detail.quantity > 0) {
               selectionsByLot.set(String(detail.lot), detail.quantity);
             }
           });
 
-          item.availableLots.forEach((lot: any) => {
+          item.availableLots.forEach((lot) => {
             const selectedQty = selectionsByLot.get(String(lot.lotNumber));
             if (selectedQty !== undefined) {
               lot.selectedQuantity = selectedQty;
@@ -314,7 +319,7 @@ export class SupplyRequestDetailService {
           });
 
           item.totalSelectedForDischarge = item.availableLots.reduce(
-            (sum: number, lot: any) => sum + lot.selectedQuantity,
+            (sum: number, lot) => sum + lot.selectedQuantity,
             0
           );
           capOrderItemDischargeToApprovedQuantity(item);

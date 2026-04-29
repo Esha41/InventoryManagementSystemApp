@@ -1,857 +1,162 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { map, tap, catchError } from 'rxjs/operators';
-import { HttpParams } from '@angular/common/http';
-import { ApiService } from './api.service';
-import { ConfigService } from './config.service';
-import { API_ENDPOINTS } from '@constants/app.constants';
-import {
-  BackendUserDto,
-  CreateUserDto,
-  UpdateUserDto,
-  UpdateUserRolesDto,
-  UserRolesDto,
-  RoleDto,
-  CreateRoleDto,
-  UpdateRoleDto,
-  PermissionDto,
-  AssignPermissionsDto,
-  CrudPermission,
-  UserInRoleDto,
-  ApplicationEntityDto,
-  RawUserApiResponse,
-  RawRoleApiResponse
-} from '@models/backend-user.model';
-import { RoleApplicationEntityLinkDto } from '@models/backend-user.model';
-import { ApiResponse, PagedResponse, PagedRequest, PaginatedList, FilterData } from '@models/api-response.model';
-import { ErrorHandler } from '@utils/error-handler.utils';
+import { Injectable, inject } from '@angular/core';
+import { Observable } from 'rxjs';
 
-export interface UserSummaryDto {
-  totalUsers: number;
-  activeUsers: number;
-  inactiveUsers: number;
-}
+import {
+  ApplicationEntityDto,
+  CreateRoleDto,
+  CreateUserDto,
+  CrudPermission,
+  PermissionDto,
+  RoleDto,
+  UpdateRoleDto,
+  UpdateUserDto,
+  UserInRoleDto,
+  BackendUserDto
+} from '@models/backend-user.model';
+import {
+  PagedRequest,
+  PagedResponse,
+  PaginatedList
+} from '@models/api-response.model';
+
+import {
+  ApplicationEntitiesApiService,
+  PermissionsApiService,
+  RoleMembersApiService,
+  RolesApiService,
+  UserRolesApiService,
+  UsersApiService
+} from './user-management';
+
+// Re-export so existing imports of `UserSummaryDto` from this module keep working.
+export type { UserSummaryDto } from './user-management/users-api.service';
 
 /**
- * Backend User Service
- * Handles all user and role management operations with the backend
+ * Backward-compatible facade over split user-management services.
+ *
+ * @deprecated Inject the focused services from `./user-management` instead.
+ *             Scheduled for removal: Q2 2026 — see file header BACKEND_USER_SERVICE_MIGRATION.
  */
 @Injectable({
   providedIn: 'root'
 })
 export class BackendUserService {
-  private usersSubject = new BehaviorSubject<BackendUserDto[]>([]);
-  public users$ = this.usersSubject.asObservable();
+  private readonly users = inject(UsersApiService);
+  private readonly userRoles = inject(UserRolesApiService);
+  private readonly roles = inject(RolesApiService);
+  private readonly roleMembers = inject(RoleMembersApiService);
+  private readonly permissions = inject(PermissionsApiService);
+  private readonly applicationEntities = inject(ApplicationEntitiesApiService);
 
-  private rolesSubject = new BehaviorSubject<RoleDto[]>([]);
-  public roles$ = this.rolesSubject.asObservable();
+  readonly users$ = this.users.users$;
+  readonly roles$ = this.roles.roles$;
 
-  constructor(
-    private apiService: ApiService,
-    private configService: ConfigService
-  ) { }
-
-  private normalizeRole(role: Partial<RawRoleApiResponse> | RoleDto): RoleDto {
-    const raw = role as Partial<RawRoleApiResponse>;
-    const dept = raw.departmentId;
-    return {
-      id: String(raw.id ?? raw.roleId ?? ''),
-      name: raw.name ?? raw.roleName ?? '',
-      nameEn: raw.nameEn,
-      nameAr: raw.nameAr,
-      isDefaultRole: !!(raw.isDefaultRole ?? raw.isDefault),
-      isSuperAdmin: !!(raw.isSuperAdmin ?? raw.superAdmin),
-      isAdmin: !!(raw.isAdmin ?? raw.admin),
-      applicationEntityIds: Array.isArray(raw.applicationEntityIds) ? raw.applicationEntityIds : undefined,
-      ...(raw.isSelected !== undefined ? { isSelected: !!raw.isSelected } : {}),
-      ...(dept !== undefined && dept !== null ? { departmentId: dept } : {})
-    };
-  }
-
-  // ==================== USER MANAGEMENT ====================
-
-  /**
-   * Get all users
-   */
   getUsers(request?: PagedRequest): Observable<PaginatedList<BackendUserDto>> {
-    this.configService.log('Fetching users', request);
-
-    // Use GET /Users with query-string model binding for nested filters:
-    // Filter.Field, Filter.Operator, Filter.Value, Filter.Logic, Filter.Filters[0].Field, ...
-    let params = new HttpParams()
-      .set('Page', (request?.page ?? 1).toString())
-      .set('PageSize', (request?.pageSize ?? 10).toString());
-
-    params = this.appendFilterParams(params, 'Filter', request?.filter);
-
-    return this.apiService.get<PaginatedList<BackendUserDto>>(
-      API_ENDPOINTS.USERS.BASE,
-      params
-    ).pipe(
-      map(response => {
-        // Handle paginated response structure
-        const items = response.items || [];
-
-        // Normalize user data (similar to previous implementation but for paginated items)
-        const normalizedItems = items.map((rawUser: RawUserApiResponse) => {
-          const user = { ...rawUser } as BackendUserDto;
-
-          // Normalize militoryId (API typo) to militaryId
-          if (rawUser.militoryId && !user.militaryId) {
-            user.militaryId = rawUser.militoryId;
-          }
-
-          // Normalize roles
-          const rawRoles = Array.isArray(rawUser.roles) ? rawUser.roles : [];
-          if (rawRoles.length > 0) {
-            const mappedRoles: RoleDto[] = rawRoles.map((role: RawRoleApiResponse) => this.normalizeRole(role));
-            user.roles = mappedRoles;
-            // Extract role IDs
-            const roleIdsFromRoles = mappedRoles
-              .map(role => role.id)
-              .filter((id): id is string => !!id);
-            user.roleIds = roleIdsFromRoles.length > 0 ? roleIdsFromRoles : (Array.isArray(user.roleIds) ? user.roleIds : []);
-          } else {
-            user.roles = [];
-            user.roleIds = Array.isArray(user.roleIds) ? user.roleIds : [];
-          }
-
-          // Normalize department
-          const department = rawUser.department;
-          if (department) {
-            user.departmentId = department.id ?? user.departmentId;
-            user.departmentName = department.nameEn ?? department.nameAr ?? user.departmentName;
-            user.departmentNameEn = department.nameEn ?? user.departmentNameEn;
-            user.departmentNameAr = department.nameAr ?? user.departmentNameAr;
-          }
-
-          // Normalize rank
-          const rank = rawUser.rank;
-          if (rank) {
-            user.rankId = rank.id ?? user.rankId;
-            user.rankNameEn = rank.nameEn ?? rank.name ?? user.rankNameEn;
-            user.rankNameAr = rank.nameAr ?? user.rankNameAr;
-          }
-
-          // Normalize full names (API uses PascalCase)
-          if (!user.nameEn) {
-            user.nameEn = rawUser.fullNameEN ?? user.nameEn;
-          }
-          if (!user.nameAr) {
-            user.nameAr = rawUser.fullNameAR ?? user.nameAr;
-          }
-
-          return user;
-        });
-
-        return {
-          ...response,
-          items: normalizedItems
-        };
-      }),
-      tap(paginatedList => {
-        // Update local state with the items from the current page
-        this.usersSubject.next(paginatedList.items);
-        this.configService.log(`Fetched ${paginatedList.items.length} users (Page ${paginatedList.pageIndex})`);
-      }),
-      catchError(error => {
-        this.configService.logError('Failed to fetch users', error);
-        return throwError(() => new Error(
-          error.userMessage || 'Failed to fetch users'
-        ));
-      })
-    );
+    return this.users.getUsers(request);
   }
 
-  private appendFilterParams(params: HttpParams, prefix: string, filter?: FilterData): HttpParams {
-    if (!filter) return params;
-
-    const setIf = (key: string, value: unknown): void => {
-      if (value === undefined || value === null) return;
-      const str = String(value).trim();
-      if (str.length === 0) return;
-      params = params.set(key, str);
-    };
-
-    // Leaf properties (ASP.NET Core binding is case-insensitive; we match backend property names)
-    setIf(`${prefix}.Field`, filter.field);
-    setIf(`${prefix}.Operator`, filter.operator);
-    setIf(`${prefix}.Value`, filter.value);
-    setIf(`${prefix}.Logic`, filter.logic);
-
-    // Nested filters
-    if (Array.isArray(filter.filters) && filter.filters.length > 0) {
-      filter.filters.forEach((child, idx) => {
-        params = this.appendFilterParams(params, `${prefix}.Filters[${idx}]`, child);
-      });
-    }
-
-    return params;
+  getUsersSummary() {
+    return this.users.getUsersSummary();
   }
 
-  /**
-   * Get users summary (total, active, inactive)
-   */
-  getUsersSummary(): Observable<UserSummaryDto> {
-    return this.apiService.get<UserSummaryDto>(API_ENDPOINTS.USERS.BASE + '/Summary').pipe(
-      map(data => data || { totalUsers: 0, activeUsers: 0, inactiveUsers: 0 }),
-      catchError(error => {
-        this.configService.logError('Failed to fetch users summary', error);
-        return throwError(() => new Error('Failed to fetch users summary'));
-      })
-    );
-  }
-
-  /**
-   * Get user by ID
-   */
   getUserById(id: string): Observable<BackendUserDto> {
-    this.configService.log('Fetching user', { id });
-
-    return this.apiService.get<BackendUserDto>(
-      API_ENDPOINTS.USERS.BY_ID(id)
-    ).pipe(
-      map((userData: RawUserApiResponse & BackendUserDto) => {
-        if (!userData) {
-          throw new Error('Failed to fetch user');
-        }
-        // Normalize militoryId to militaryId for consistency
-        if (userData.militoryId && !userData.militaryId) {
-          (userData as BackendUserDto).militaryId = userData.militoryId;
-        }
-        return userData as BackendUserDto;
-      }),
-      catchError(error => {
-        this.configService.logError('Failed to fetch user', error);
-        return throwError(() => new Error(
-          error.userMessage || 'Failed to fetch user'
-        ));
-      })
-    );
+    return this.users.getUserById(id);
   }
 
-  /**
-   * Create new user
-   */
   createUser(user: CreateUserDto): Observable<BackendUserDto> {
-    this.configService.log('Creating user', { userName: user.userName });
-
-    return this.apiService.post<BackendUserDto>(
-      API_ENDPOINTS.USERS.BASE,
-      user
-    ).pipe(
-      map(newUser => {
-        if (!newUser) {
-          throw new Error('Failed to create user');
-        }
-        return newUser;
-      }),
-      tap(newUser => {
-        // Update local users list
-        const currentUsers = this.usersSubject.value;
-        this.usersSubject.next([...currentUsers, newUser]);
-        this.configService.log('User created successfully', { id: newUser.id });
-      }),
-      catchError(error => {
-        this.configService.logError('Failed to create user', error);
-        const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to create user');
-        return throwError(() => new Error(errorMessage));
-      })
-    );
+    return this.users.createUser(user);
   }
 
-  /**
-   * Update existing user
-   */
   updateUser(id: string, user: UpdateUserDto): Observable<BackendUserDto> {
-    this.configService.log('Updating user', { id });
-
-    return this.apiService.put<BackendUserDto>(
-      API_ENDPOINTS.USERS.BY_ID(id),
-      { ...user, id }
-    ).pipe(
-      map((userData: RawUserApiResponse & BackendUserDto) => {
-        if (!userData) {
-          throw new Error('Failed to update user');
-        }
-        // Normalize militoryId to militaryId for consistency
-        if (userData.militoryId && !userData.militaryId) {
-          (userData as BackendUserDto).militaryId = userData.militoryId;
-        }
-        return userData as BackendUserDto;
-      }),
-      tap(updatedUser => {
-        // Update local users list
-        const currentUsers = this.usersSubject.value;
-        const index = currentUsers.findIndex(u => u.id === id);
-        if (index !== -1) {
-          currentUsers[index] = updatedUser;
-          this.usersSubject.next([...currentUsers]);
-        }
-        this.configService.log('User updated successfully', { id });
-      }),
-      catchError(error => {
-        this.configService.logError('Failed to update user', error);
-        const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to update user');
-        return throwError(() => new Error(errorMessage));
-      })
-    );
+    return this.users.updateUser(id, user);
   }
 
-  /**
-   * Toggle user active status
-   */
   toggleUserStatus(id: string): Observable<boolean> {
-    this.configService.log('Toggling user status', { id });
-
-    return this.apiService.put<boolean>(
-      API_ENDPOINTS.USERS.TOGGLE_STATUS(id),
-      {}
-    ).pipe(
-      map(succeeded => {
-        if (!succeeded) {
-          throw new Error('Failed to toggle user status');
-        }
-        return true;
-      }),
-      tap(() => {
-        // Update local status
-        const currentUsers = this.usersSubject.value;
-        const index = currentUsers.findIndex(u => u.id === id);
-        if (index !== -1) {
-          currentUsers[index].isActive = !currentUsers[index].isActive;
-          this.usersSubject.next([...currentUsers]);
-        }
-        this.configService.log('User status toggled successfully', { id });
-      }),
-      catchError(error => {
-        this.configService.logError('Failed to toggle user status', error);
-        return throwError(() => new Error(
-          error.userMessage || 'Failed to toggle user status'
-        ));
-      })
-    );
+    return this.users.toggleUserStatus(id);
   }
 
-  /**
-   * Delete user
-   */
   deleteUser(id: string): Observable<boolean> {
-    this.configService.log('Deleting user', { id });
-
-    return this.apiService.delete<any>(
-      API_ENDPOINTS.USERS.BY_ID(id)
-    ).pipe(
-      map(() => {
-        return true;
-      }),
-      tap(() => {
-        // Remove from local users list
-        const currentUsers = this.usersSubject.value;
-        this.usersSubject.next(currentUsers.filter(u => u.id !== id));
-        this.configService.log('User deleted successfully', { id });
-      }),
-      catchError(error => {
-        this.configService.logError('Failed to delete user', error);
-        return throwError(() => new Error(
-          error.userMessage || 'Failed to delete user'
-        ));
-      })
-    );
+    return this.users.deleteUser(id);
   }
 
-  /**
-   * Restore deleted user
-   */
   restoreUser(id: string): Observable<boolean> {
-    this.configService.log('Restoring user', { id });
-
-    return this.apiService.putRaw<any>(
-      API_ENDPOINTS.USERS.RESTORE(id),
-      {}
-    ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to restore user');
-        }
-        return true;
-      }),
-      tap(() => {
-        this.configService.log('User restored successfully', { id });
-      }),
-      catchError(error => {
-        this.configService.logError('Failed to restore user', error);
-        return throwError(() => new Error(
-          error.userMessage || error.message || 'Failed to restore user'
-        ));
-      })
-    );
+    return this.users.restoreUser(id);
   }
 
-  /**
-   * Permanently delete a soft-deleted user (only if user has no transaction history)
-   */
   permanentDeleteUser(id: string): Observable<boolean> {
-    this.configService.log('Permanently deleting user', { id });
-
-    return this.apiService.delete<any>(
-      API_ENDPOINTS.USERS.PERMANENT_DELETE(id)
-    ).pipe(
-      map(() => true),
-      tap(() => {
-        const currentUsers = this.usersSubject.value;
-        this.usersSubject.next(currentUsers.filter(u => u.id !== id));
-        this.configService.log('User permanently deleted', { id });
-      }),
-      catchError(error => {
-        this.configService.logError('Failed to permanently delete user', error);
-        return throwError(() => new Error(
-          error.userMessage || error.message || 'Failed to permanently delete user'
-        ));
-      })
-    );
+    return this.users.permanentDeleteUser(id);
   }
 
-  /**
-   * Get user roles
-   */
+  // ==================== USER <-> ROLE ASSIGNMENTS ====================
+
   getUserRoles(userId: string): Observable<RoleDto[]> {
-    this.configService.log('Fetching user roles', { userId });
-
-    return this.apiService.get<RoleDto[]>(
-      API_ENDPOINTS.USERS.ROLES(userId)
-    ).pipe(
-      map((roles) => (roles || []).map((role) => this.normalizeRole(role))),
-      catchError(error => {
-        this.configService.logError('Failed to fetch user roles', error);
-        return throwError(() => new Error(
-          error.userMessage || 'Failed to fetch user roles'
-        ));
-      })
-    );
+    return this.userRoles.getUserRoles(userId);
   }
 
-  /**
-   * Update user roles
-   */
   updateUserRoles(userId: string, roleIds: string[]): Observable<boolean> {
-    this.configService.log('Updating user roles', { userId, roleIds });
-
-    const dto: UpdateUserRolesDto = { userId, roleIds };
-
-    return this.apiService.put<any>(
-      API_ENDPOINTS.USERS.UPDATE_ROLES(userId),
-      dto
-    ).pipe(
-      map(response => {
-        // Handle case where put returns boolean succeeded directly
-        if (typeof response === 'boolean' && !response) {
-          throw new Error('Failed to update user roles');
-        }
-        return true;
-      }),
-      tap(() => {
-        this.configService.log('User roles updated successfully', { userId });
-      }),
-      catchError(error => {
-        this.configService.logError('Failed to update user roles', error);
-        return throwError(() => new Error(
-          error.userMessage || 'Failed to update user roles'
-        ));
-      })
-    );
+    return this.userRoles.updateUserRoles(userId, roleIds);
   }
 
-  // ==================== ROLE MANAGEMENT ====================
-
-  /**
-   * Get all roles with pagination
-   */
   getRolesWithPagination(request: PagedRequest): Observable<PagedResponse<RoleDto>> {
-    this.configService.log('Fetching roles with pagination', request);
-
-    return this.apiService.post<PagedResponse<RoleDto>>(
-      API_ENDPOINTS.ROLES.BASE + '/GetRolesWithPagination',
-      request
-    ).pipe(
-      tap(response => {
-        if (response && response.succeeded && Array.isArray(response.data)) {
-          this.rolesSubject.next(response.data);
-          this.configService.log(`Fetched ${response.data.length} roles`);
-        }
-      }),
-      catchError(error => {
-        this.configService.logError('Failed to fetch roles', error);
-        return throwError(() => new Error(
-          error.userMessage || 'Failed to fetch roles'
-        ));
-      })
-    );
+    return this.roles.getRolesWithPagination(request);
   }
 
-  /**
-   * Get all roles using paginated endpoint
-   */
   getRoles(): Observable<RoleDto[]> {
-    this.configService.log('Fetching all roles');
-
-    const paginationRequest = {
-      page: 1,
-      pageSize: 1000
-    };
-
-    return this.apiService.post<PaginatedList<RoleDto>>(
-      API_ENDPOINTS.ROLES.PAGINATED,
-      paginationRequest
-    ).pipe(
-      map(data => {
-        if (!data) {
-          throw new Error('Failed to fetch roles');
-        }
-        return (data.items || []).map((role) => this.normalizeRole(role));
-      }),
-      tap(roles => {
-        this.rolesSubject.next(roles);
-        this.configService.log(`Fetched ${roles.length} roles`);
-      }),
-      catchError(error => {
-        this.configService.logError('Failed to fetch roles', error);
-        return throwError(() => new Error(
-          error.userMessage || 'Failed to fetch roles'
-        ));
-      })
-    );
+    return this.roles.getRoles();
   }
 
-  /**
-   * Get all roles using simple GET /Roles (no pagination)
-   */
   getAllRolesSimple(): Observable<RoleDto[]> {
-    this.configService.log('Fetching all roles (simple)');
-    return this.apiService.get<RoleDto[]>(
-      API_ENDPOINTS.ROLES.BASE
-    ).pipe(
-      map((roles) => (roles || []).map((role) => this.normalizeRole(role)))
-    );
+    return this.roles.getAllRolesSimple();
   }
 
-  /**
-   * Get application entities linked to a role
-   */
   getApplicationEntitiesByRole(roleId: string): Observable<number[]> {
-    this.configService.log('Fetching application entities for role', { roleId });
-    // Backend expects roleId in path: /Roles/getApplicationentities/{roleId}
-    return this.apiService.get<RoleApplicationEntityLinkDto[]>(
-      API_ENDPOINTS.ROLES.APPLICATION_ENTITIES_BY_ROLE(roleId)
-    ).pipe(
-      map(data => {
-        if (Array.isArray(data)) {
-          return data.map(x => x.applicationEntityId);
-        }
-        return [] as number[];
-      })
-    );
+    return this.roles.getApplicationEntitiesByRole(roleId);
   }
 
-  /**
-   * Get role by ID
-   */
   getRoleById(id: string): Observable<RoleDto> {
-    this.configService.log('Fetching role', { id });
-
-    return this.apiService.get<RoleDto>(
-      API_ENDPOINTS.ROLES.BY_ID(id)
-    ).pipe(
-      map(role => {
-        if (!role) {
-          throw new Error('Failed to fetch role');
-        }
-        return role;
-      }),
-      catchError(error => {
-        this.configService.logError('Failed to fetch role', error);
-        return throwError(() => new Error(
-          error.userMessage || 'Failed to fetch role'
-        ));
-      })
-    );
+    return this.roles.getRoleById(id);
   }
 
-  /**
-   * Create new role
-   */
   createRole(role: CreateRoleDto): Observable<RoleDto> {
-    this.configService.log('Creating role', { name: role.name });
-
-    return this.apiService.post<RoleDto>(
-      API_ENDPOINTS.ROLES.BASE,
-      role
-    ).pipe(
-      map(newRole => {
-        if (!newRole) {
-          throw new Error('Failed to create role');
-        }
-        return newRole;
-      }),
-      tap(newRole => {
-        // Update local roles list
-        const currentRoles = this.rolesSubject.value;
-        this.rolesSubject.next([...currentRoles, newRole]);
-        this.configService.log('Role created successfully', { id: newRole.id });
-      }),
-      catchError(error => {
-        this.configService.logError('Failed to create role', error);
-        return throwError(() => new Error(
-          error.userMessage || 'Failed to create role'
-        ));
-      })
-    );
+    return this.roles.createRole(role);
   }
 
-  /**
-   * Update existing role
-   */
   updateRole(id: string, role: UpdateRoleDto): Observable<RoleDto> {
-    this.configService.log('Updating role', { id });
-
-    return this.apiService.put<RoleDto>(
-      API_ENDPOINTS.ROLES.BY_ID(id),
-      { ...role, id }
-    ).pipe(
-      map(updatedRole => {
-        if (!updatedRole) {
-          throw new Error('Failed to update role');
-        }
-        return updatedRole;
-      }),
-      tap(updatedRole => {
-        // Update local roles list
-        const currentRoles = this.rolesSubject.value;
-        const index = currentRoles.findIndex(r => r.id === id);
-        if (index !== -1) {
-          currentRoles[index] = updatedRole;
-          this.rolesSubject.next([...currentRoles]);
-        }
-        this.configService.log('Role updated successfully', { id });
-      }),
-      catchError(error => {
-        this.configService.logError('Failed to update role', error);
-        return throwError(() => new Error(
-          error.userMessage || 'Failed to update role'
-        ));
-      })
-    );
+    return this.roles.updateRole(id, role);
   }
 
-  /**
-   * Delete role
-   */
   deleteRole(id: string): Observable<boolean> {
-    this.configService.log('Deleting role', { id });
-
-    return this.apiService.delete<any>(
-      API_ENDPOINTS.ROLES.BY_ID(id)
-    ).pipe(
-      map(() => {
-        return true;
-      }),
-      tap(() => {
-        // Remove from local roles list
-        const currentRoles = this.rolesSubject.value;
-        this.rolesSubject.next(currentRoles.filter(r => r.id !== id));
-        this.configService.log('Role deleted successfully', { id });
-      }),
-      catchError(error => {
-        this.configService.logError('Failed to delete role', error);
-        return throwError(() => new Error(
-          error.userMessage || 'Failed to delete role'
-        ));
-      })
-    );
+    return this.roles.deleteRole(id);
   }
 
-  /**
-   * Get role permissions
-   */
   getRolePermissions(roleId: string): Observable<PermissionDto[]> {
-    this.configService.log('Fetching role permissions', { roleId });
-
-    return this.apiService.get<PermissionDto[]>(
-      API_ENDPOINTS.ROLES.PERMISSIONS(roleId)
-    ).pipe(
-      map(permissions => {
-        return permissions || [];
-      }),
-      catchError(error => {
-        this.configService.logError('Failed to fetch role permissions', error);
-        return throwError(() => new Error(
-          error.userMessage || 'Failed to fetch role permissions'
-        ));
-      })
-    );
+    return this.permissions.getRolePermissions(roleId);
   }
 
-
-  // ========================================
-  // PERMISSION MANAGEMENT
-  // ========================================
-
-  /**
-   * Get plain permissions for a role
-   */
   getPlainPermissionsForRole(roleId: string): Observable<CrudPermission[]> {
-    this.configService.log('Fetching plain permissions for role', { roleId });
-
-    return this.apiService.get<CrudPermission[]>(
-      API_ENDPOINTS.ROLES.PERMISSIONS(roleId)
-    ).pipe(
-      map(permissions => {
-        return permissions || [];
-      }),
-      catchError(error => {
-        this.configService.logError('Failed to fetch plain permissions', error);
-        return throwError(() => new Error(
-          error.userMessage || 'Failed to fetch permissions'
-        ));
-      })
-    );
+    return this.permissions.getPlainPermissionsForRole(roleId);
   }
 
-  /**
-   * Get CRUD permissions for a role
-   */
   getCrudPermissionsForRole(roleId: string): Observable<CrudPermission[]> {
-    this.configService.log('Fetching CRUD permissions for role', { roleId });
-
-    return this.apiService.get<CrudPermission[]>(
-      API_ENDPOINTS.ROLES.CRUD_PERMISSIONS(roleId)
-    ).pipe(
-      map(permissions => {
-        return permissions || [];
-      }),
-      catchError(error => {
-        this.configService.logError('Failed to fetch CRUD permissions', error);
-        return throwError(() => new Error(
-          error.userMessage || 'Failed to fetch CRUD permissions'
-        ));
-      })
-    );
+    return this.permissions.getCrudPermissionsForRole(roleId);
   }
 
-  /**
-   * Assign permissions to a role
-   */
-  assignPermissionsToRole(roleId: string, permissions: string[]): Observable<{ data: boolean; message: string }> {
-    this.configService.log('Assigning permissions to role', { roleId, permissions });
-
-    const assignPermissionsDto: AssignPermissionsDto = {
-      entityId: roleId,
-      permissionsList: permissions
-    };
-
-    return this.apiService.postRaw<boolean>(
-      API_ENDPOINTS.ROLES.ASSIGN_PERMISSIONS,
-      assignPermissionsDto
-    ).pipe(
-      map(response => {
-        if (!response.succeeded) {
-          throw new Error(response.message || 'Failed to assign permissions');
-        }
-        return {
-          data: response.data ?? false,
-          message: response.message || 'Permissions assigned successfully.'
-        };
-      }),
-      tap(() => {
-        this.configService.log('Permissions assigned successfully');
-      }),
-      catchError(error => {
-        this.configService.logError('Failed to assign permissions', error);
-        return throwError(() => new Error(
-          error.userMessage || 'Failed to assign permissions'
-        ));
-      })
-    );
+  assignPermissionsToRole(
+    roleId: string,
+    permissionList: string[]
+  ): Observable<{ data: boolean; message: string }> {
+    return this.permissions.assignPermissionsToRole(roleId, permissionList);
   }
 
-  // ==================== APPLICATION ENTITIES ====================
-
-  /**
-   * Get all application entities
-   */
   getApplicationEntities(): Observable<ApplicationEntityDto[]> {
-    this.configService.log('Fetching application entities');
-    const endpoint = API_ENDPOINTS.APPLICATION_ENTITIES.BASE;
-
-    return this.apiService.get<ApplicationEntityDto[]>(
-      endpoint
-    ).pipe(
-      map((response: ApplicationEntityDto[] | Record<string, unknown>) => {
-        if (Array.isArray(response)) {
-          return response;
-        }
-        if (response && typeof response === 'object' && !Array.isArray(response)) {
-          return (response as { data?: ApplicationEntityDto[] })?.data ?? [];
-        }
-        return [];
-      }),
-      tap(entities => {
-        this.configService.log(`Fetched ${entities.length} application entities`);
-      }),
-      catchError(error => {
-        this.configService.logError('Failed to fetch application entities', error);
-        const err = error as { status?: number } | undefined;
-        const errorMessage = err?.status === 404
-          ? 'Application entities endpoint not found. Please check the API endpoint.'
-          : ErrorHandler.extractErrorMessage(error, 'Failed to fetch application entities');
-        return throwError(() => new Error(errorMessage));
-      })
-    );
+    return this.applicationEntities.getApplicationEntities();
   }
 
-  /**
-   * Get users in a role
-   */
   getUsersInRole(roleId: string): Observable<UserInRoleDto[]> {
-    this.configService.log('Fetching users in role', { roleId });
-
-    return this.apiService.get<UserInRoleDto[]>(
-      API_ENDPOINTS.ROLES.USERS_IN_ROLE(roleId)
-    ).pipe(
-      map(data => {
-        return data || [];
-      }),
-      catchError(error => {
-        this.configService.logError('Failed to fetch users in role', error);
-        return throwError(() => new Error(
-          error.userMessage || 'Failed to fetch users in role'
-        ));
-      })
-    );
+    return this.roleMembers.getUsersInRole(roleId);
   }
 
-  /**
-   * Remove users from a role
-   */
   removeUsersFromRole(roleId: string, userIds: string[]): Observable<boolean> {
-    this.configService.log('Removing users from role', { roleId, userIds });
-
-    return this.apiService.post<boolean>(
-      API_ENDPOINTS.ROLES.USERS_IN_ROLE(roleId),
-      { userIds }
-    ).pipe(
-      map(succeeded => {
-        return !!succeeded;
-      }),
-      tap(() => {
-        this.configService.log('Users removed from role successfully');
-      }),
-      catchError(error => {
-        this.configService.logError('Failed to remove users from role', error);
-        const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to remove users from role');
-        return throwError(() => new Error(errorMessage));
-      })
-    );
+    return this.roleMembers.removeUsersFromRole(roleId, userIds);
   }
 }
-

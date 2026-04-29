@@ -12,7 +12,7 @@ import { SupplyRequestDetailService } from './services/supply-request-detail.ser
 import { OrderItemManagementService } from './services/order-item-management.service';
 import { LotSelectionService } from './services/lot-selection.service';
 import { AmmunitionService } from '@assets/services/ammunition.service';
-import { SupplyOrderDataService } from '@requests/services/supply-order-data.service';
+import { SupplyOrderDataService, AvailableCatalogItemDto } from '@requests/services/supply-order-data.service';
 import { ToastService } from '@services/toast.service';
 import { ConfigService } from '@services/config.service';
 import { PERMISSIONS } from '@constants/permissions.constants';
@@ -122,7 +122,7 @@ export class SupplyRequestDetailComponent implements OnInit, OnDestroy {
   isRemoveItemModalOpen: boolean = false;
   selectedItemForEdit: OrderItem | null = null;
   selectedItemForRemove: OrderItem | null = null;
-  availableItems: any[] = [];
+  availableItems: AvailableCatalogItemDto[] = [];
   loadingItems: boolean = false;
   savingItem: boolean = false;
   allowedItemTypes: number[] = [1, 3]; // Default to both ammunition and explosives

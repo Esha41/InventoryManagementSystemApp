@@ -5,16 +5,16 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 import { LucideAngularModule, CheckCircle, XCircle, RotateCcw, ChevronDown } from 'lucide-angular';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
-import { RequestDetail } from '@models/workflow-approval.model';
+import { RequestDetail, WorkflowStepTransition } from '@models/workflow-approval.model';
 import { WorkflowApprovalActionsService } from '../../services/workflow-approval-actions.service';
-import { WorkflowApprovalDataService } from '../../services/workflow-approval-data.service';
+import { WorkflowApprovalDataService, WorkflowApprovalStepOption } from '../../services/workflow-approval-data.service';
 import { WorkflowApprovalStateService } from '../../services/workflow-approval-state.service';
 import { WorkflowApprovalPermissionsService } from '../../services/workflow-approval-permissions.service';
 import { validateFile, showFileValidationErrors, getFileSizeFromFile, MAX_FILE_SIZE_MB } from '@utils/file.utils';
 import { ToastService } from '@services/toast.service';
 import { takeUntil } from 'rxjs/operators';
 import { ErrorHandler } from '@utils/error-handler.utils';
-import { getTransitionDisplayName, getWorkflowStepDisplayName } from '../../utils/workflow-approval-helpers';
+import { getTransitionDisplayName } from '../../utils/workflow-approval-helpers';
 import { ConfirmationDialogComponent, ConfirmationType } from '@components/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
@@ -41,7 +41,7 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
   @Input() requestId!: number;
   @Input() requestDetail: RequestDetail | null = null;
   @Input() processing: boolean = false;
-  @Input() previousWorkflowSteps: any[] = [];
+  @Input() previousWorkflowSteps: WorkflowApprovalStepOption[] = [];
   @Input() loadingPreviousSteps: boolean = false;
   @Input() destroy$!: Subject<void>;
 
@@ -246,12 +246,18 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
     return this.stateService.hasTransitions();
   }
 
-  getCurrentStepTransitions(): any[] {
+  getCurrentStepTransitions(): WorkflowStepTransition[] {
     return this.stateService.getCurrentStepTransitions();
   }
 
-  getWorkflowStepDisplayNameFn = (step: any): string => {
-    return this.stateService.getWorkflowStepDisplayName(step);
+  getWorkflowStepDisplayNameFn = (
+    option: WorkflowApprovalStepOption | DropdownOption<WorkflowApprovalStepOption> | null | undefined
+  ): string => {
+    const step =
+      option && typeof option === 'object' && 'value' in option
+        ? (option as DropdownOption<WorkflowApprovalStepOption>).value
+        : option;
+    return this.stateService.getWorkflowStepDisplayName(step ?? undefined);
   };
 
   get isPickupDateAlreadySet(): boolean {
@@ -286,8 +292,14 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
     return this.translateService.instant(item.value === 'yes' ? 'common.yes' : 'common.no');
   };
 
-  getTransitionDisplayNameFn = (option: any): string => {
-    return getTransitionDisplayName(option, this.translateService);
+  getTransitionDisplayNameFn = (
+    option: WorkflowStepTransition | DropdownOption<WorkflowStepTransition> | null | undefined
+  ): string => {
+    const transition =
+      option && typeof option === 'object' && 'value' in option
+        ? (option as DropdownOption<WorkflowStepTransition>).value
+        : option;
+    return getTransitionDisplayName(transition, this.translateService);
   };
 
   /**

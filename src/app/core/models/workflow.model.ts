@@ -1,7 +1,9 @@
 /**
  * Workflow Models
- * Matches backend DTOs
+ * Matches Ettad.Workflows.Service.Dtos (JSON camelCase)
  */
+
+import type { RoleDto } from './backend-user.model';
 
 export interface WorkflowTypeItem {
   id: number;
@@ -34,7 +36,7 @@ export interface WorkflowDto {
 }
 
 /**
- * Raw workflow shape returned by backend 
+ * Full workflow returned by GET/POST/PUT Workflows APIs (matches backend WorkflowDto).
  */
 export interface BackendWorkflowDto {
   id: number;
@@ -46,6 +48,9 @@ export interface BackendWorkflowDto {
   isSpecialOrReserved?: boolean;
   workflowSteps?: WorkflowStepDto[];
 }
+
+/** Alias for callers that prefer an "API shape" name. */
+export type ApiWorkflowDto = BackendWorkflowDto;
 
 export interface CreateWorkflowDto {
   name: string;
@@ -92,6 +97,38 @@ export const WORKFLOW_TYPE_NAMES: { [key in WorkflowType]: { en: string; ar: str
   [WorkflowType.NormalOrderForTrainingPurpose_Weapon]: { en: 'Order For Training Purpose (Weapon)', ar: 'طلب للغرض التدريبي (سلاح)' },
   [WorkflowType.Return_Weapon]: { en: 'Return (Weapon)', ar: 'إرجاع (سلاح)' }
 };
+
+/**
+ * Normalize workflow type from API (number or JsonStringEnumConverter string) to numeric {@link WorkflowType}.
+ */
+export function workflowTypeToNumber(workflowType: number | string): number {
+  if (typeof workflowType === 'number') {
+    return workflowType;
+  }
+  const stringValue = String(workflowType);
+  switch (stringValue) {
+    case 'NormalOrder':
+      return WorkflowType.NormalOrder;
+    case 'OrderFromAllowance':
+      return WorkflowType.OrderFromAllowance;
+    case 'Return':
+      return WorkflowType.Return;
+    case 'Discard':
+      return WorkflowType.Discard;
+    case 'NormalOrderForTrainingPurpose':
+      return WorkflowType.NormalOrderForTrainingPurpose;
+    case 'NormalOrder_Weapon':
+      return WorkflowType.NormalOrder_Weapon;
+    case 'OrderFromAllowance_Weapon':
+      return WorkflowType.OrderFromAllowance_Weapon;
+    case 'NormalOrderForTrainingPurpose_Weapon':
+      return WorkflowType.NormalOrderForTrainingPurpose_Weapon;
+    case 'Return_Weapon':
+      return WorkflowType.Return_Weapon;
+    default:
+      return 0;
+  }
+}
 export interface BackendUpdateWorkflowDto extends BackendCreateWorkflowDto {
   id: number;
 }
@@ -128,7 +165,7 @@ export interface WorkflowStepTransitionDto {
   id?: number;
   sourceWorkflowStepId?: number;
   targetWorkflowStepId: number;
-  targetStep?: TargetStepDetailsDto;
+  targetStep?: TargetStepDetailsDto | null;
 }
 
 /** Target step details (backend TargetStepDetailsDto) */
@@ -137,12 +174,44 @@ export interface TargetStepDetailsDto {
   workflowId: number;
   stepOrder: number;
   applicationEntityId: number;
+  applicationRole?: RoleDto | null;
   requireHigherApproval?: boolean;
+  higherApprovalRole?: RoleDto | null;
   higherApplicationEntityId?: number | null;
   mustApprove?: boolean;
   reserveQty?: boolean;
   canSkip?: boolean;
   canReturn?: boolean;
+}
+
+/** Parallel approver role on a step (backend WorkflowStepParallelRoleDto) */
+export interface WorkflowStepParallelRoleDto {
+  id: number;
+  workflowStepId: number;
+  roleId: string;
+  roleName?: string | null;
+  roleNameAr?: string | null;
+}
+
+/** Approval line for a workflow step (backend WorkflowApprovalStepDto) */
+export interface WorkflowApprovalStepDto {
+  id: number;
+  workflowStepId: number;
+  targetRequestId: number;
+  requestType: number | string;
+  approverUserId?: string | null;
+  approverRoleId?: string | null;
+  isDelegation: boolean;
+  approvedDate?: string | null;
+  status: number | string;
+  comments?: string | null;
+  isCurrent: boolean;
+  returnToStepId?: number | null;
+  oldRequestStatus?: number | string | null;
+  newRequestStatus?: number | string | null;
+  changedBy?: string | null;
+  createdBy?: string | null;
+  changedAt?: string | null;
 }
 
 /** Step notifier (user or role) */
@@ -182,12 +251,7 @@ export interface WorkflowStepDto {
   allowedSkipTargetIds?: number[];
   transitions?: WorkflowStepTransitionDto[];
   notifiers?: WorkflowStepNotifier[];
-  parallelRoles?: Array<{
-    id: number;
-    workflowStepId: number;
-    roleId: string;
-    roleName?: string | null;
-    roleNameAr?: string | null;
-  }>;
+  parallelRoles?: WorkflowStepParallelRoleDto[];
+  approvalSteps?: WorkflowApprovalStepDto[];
 }
 

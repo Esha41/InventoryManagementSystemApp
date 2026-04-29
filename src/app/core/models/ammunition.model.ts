@@ -1,99 +1,95 @@
-// Import lookup DTOs
+import { ItemType } from './inventory.model';
+import type { FileUploadDto } from './file-upload.model';
+
 export interface LookupDto {
   id: number;
   nameAr: string;
   nameEn: string;
   isDeleted?: boolean;
+  nameAR?: string | null;
+  nameEN?: string | null;
 }
 
-export interface ImageDto {
+export interface CatalogBaseItemDto {
   id: number;
-  fileUrl: string;
-  fileName: string;
-  originalName: string;
-  isMain: boolean;
-  entity: string;
-  entityId: number;
-}
-
-export interface AmmunitionReadDto {
   name: string;
-  partNo: string;
-  id: number;
   itemNo: string;
-  lot: number;
-  batchNo: string;
-  hccId: number;
+  itemType: ItemType;
+  nsn?: string | null;
+  partNo?: string | null;
+  price?: number | null;
+  minimumQuantity?: number | null;
+  criticalQuantity?: number | null;
+  distribution?: string | null;
+  referenceNo?: string | null;
+  unNumber?: string | null;
+  notes?: string | null;
+  classificationId?: number | null;
+  typeId?: number | null;
+  isDeleted: boolean;
+  classification?: LookupDto | null;
+  type?: LookupDto | null;
+  images?: FileUploadDto[];
+  /** BaseItemPrimaryPurposes */
+  primaryPurposes?: LookupDto[];
+}
+
+
+export interface AmmunitionDto extends CatalogBaseItemDto {
+  ammunitionType?: number | string | null;
+  bulletDiameter?: number | null;
+  bulletDiameterUnitId?: number | null;
+  armNumber?: string | null;
+  caliberId?: number | null;
+  isLinked: boolean;
+  primer?: string | null;
+  totalWeight?: number | null;
+  natureOptionId?: number | null;
+  projectileColorId?: number | null;
+  projectailMaterialId?: number | null;
+  caseTypeId?: number | null;
+  propellantId?: number | null;
+  compatibilityId?: number | null;
+  hazardDivisionId?: number | null;
+  caliber?: LookupDto | null;
+  bulletDiameterUnit?: LookupDto | null;
+  natureOption?: LookupDto | null;
+  projectileColor?: LookupDto | null;
+  projectailMaterial?: LookupDto | null;
+  caseType?: LookupDto | null;
+  propellant?: LookupDto | null;
+  compatibility?: LookupDto | null;
+  hazardDivision?: LookupDto | null;
+}
+
+export interface AmmunitionReadDtoExtras {
+  lot?: number;
+  batchNo?: string;
+  hccId?: number;
   supplierId?: number;
   countryId?: number;
   manufacturerId?: number;
-  natureOptionId?: number;
-  bulletDiameter?: number;
-  bulletDiameterUnitId?: number;
-  armNumber?: string;
-  caliberId?: number | null;
-  /** Caliber lookup when CaliberId is set */
-  caliber?: LookupDto | null;
-  isLinked: boolean;
-  primer?: string;
-  totalWeight?: number;
-  nsn?: string;
   primaryPurposId?: number;
-  projectileColorId?: number;
-  projectailMaterialId?: number;
-  caseTypeId?: number;
-  propellantId?: number;
-  compatibilityId?: number;
-  hazardDivisionId?: number;
-  distribution?: string;
-  unNumber?: string;
-  referenceNo?: string;
-  classificationId?: number;
-  typeId?: number;
-  /** Backend enum: 1 = Small, 2 = Medium, 3 = Large */
-  ammunitionType?: number;
-  notes?: string;
-  readyForIssue: boolean;
+  /** Legacy single navigation when `primaryPurposes` is not populated */
+  primaryPurpos?: LookupDto;
+  readyForIssue?: boolean;
   expiryDate?: Date | string;
-  price?: number;
-  minimumQuantity?: number;
-  criticalQuantity?: number;
-  createdDate: Date;
+  createdDate?: Date;
   modifiedDate?: Date;
-  
-  // Navigation properties
   hcc?: LookupDto;
   supplier?: LookupDto;
   country?: LookupDto;
   manufacturer?: LookupDto;
-  natureOption?: LookupDto;
-  bulletDiameterUnit?: LookupDto;
-  /** Legacy single navigation; prefer primaryPurposes from catalog API */
-  primaryPurpos?: LookupDto;
-  /** Purposes linked to this catalog item (BaseItemPrimaryPurposes) */
-  primaryPurposes?: LookupDto[];
-  projectileColor?: LookupDto;
-  projectailMaterial?: LookupDto;
-  caseType?: LookupDto;
-  propellant?: LookupDto;
-  compatibility?: LookupDto;
-  hazardDivision?: LookupDto;
-  classification?: LookupDto;
-  type?: LookupDto;
-  
-  // Images array from response
-  images?: ImageDto[];
 }
+
+export type AmmunitionReadDto = AmmunitionDto & AmmunitionReadDtoExtras;
 
 export interface AmmunitionCreateDto {
   name: string;
   itemNo: string;
-  // All other fields are optional - only Name and ItemNo are required
   partNo?: string;
   armNumber?: string;
   caliberId?: number | null;
-  // Note: batchNo, readyForIssue, and expiryDate are NOT in backend CreateUpdateAmmunitionDto
-  // These fields are managed at the lot/inventory level, not the ammunition catalog level
   hccId?: number;
   supplierId?: number;
   countryId?: number;
@@ -105,7 +101,6 @@ export interface AmmunitionCreateDto {
   primer?: string;
   totalWeight?: number;
   nsn?: string;
-  /** Matches API PrimaryPurposIds (BaseItemPrimaryPurposes) */
   primaryPurposIds?: number[];
   projectileColorId?: number;
   projectailMaterialId?: number;
@@ -118,7 +113,6 @@ export interface AmmunitionCreateDto {
   referenceNo?: string;
   classificationId?: number;
   typeId?: number;
-  /** Backend enum: 1 = Small, 2 = Medium, 3 = Large */
   ammunitionType?: number;
   notes?: string;
   price?: number;
@@ -142,7 +136,6 @@ export interface AmmunitionUpdateDto {
   bulletDiameterUnitId?: number;
   armNumber?: string;
   caliberId?: number | null;
-  /** Caliber lookup when CaliberId is set */
   caliber?: LookupDto | null;
   isLinked: boolean;
   primer?: string;
@@ -157,4 +150,3 @@ export interface AmmunitionUpdateDto {
   hazardDivisionId?: number;
   readyForIssue: boolean;
 }
-

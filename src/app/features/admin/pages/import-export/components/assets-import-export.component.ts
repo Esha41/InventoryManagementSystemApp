@@ -19,12 +19,14 @@ import { ExplosiveDto } from '@models/explosive.model';
 import { getLookupDisplayName } from '@utils/asset-list.utils';
 import { TranslationService } from '@services/translation.service';
 import { LoadingStateComponent } from '@components/index';
-import { ImportPreviewDialogComponent } from '@components/import-preview-dialog/import-preview-dialog.component';
+import { ImportPreviewDialogComponent, PreviewData, PreviewRow } from '@components/import-preview-dialog/import-preview-dialog.component';
 import { IImportableService } from '@core/interfaces/importable-service.interface';
 import { ImportResult } from '@models/import-result.model';
 import { APIOperationResponse } from '@models/api-response.model';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { mapImportResultToPreviewData } from '@core/utils/asset-master-import-preview.utils';
+
+type LookupDisplayInput = Parameters<typeof getLookupDisplayName>[0];
 
 @Component({
   selector: 'app-assets-import-export',
@@ -52,7 +54,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
   loadingAssets = false;
   showImportModal = false;
   showPreviewModal = false;
-  previewData: any = null;
+  previewData: PreviewData | null = null;
   pendingImportFile: File | null = null; // Store file for import after preview confirmation
   isPreviewInProgress = false; // Prevent multiple simultaneous preview requests
   isImportInProgress = false; // Prevent multiple simultaneous import requests
@@ -104,20 +106,32 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
     this.loadingAssets = true;
     this.cdr.markForCheck();
 
-    const service = this.getService(this._activeTab);
+    const catalogService =
+      this._activeTab === 'ammunition'
+        ? this.ammunitionService
+        : this._activeTab === 'weapon'
+          ? this.weaponService
+          : this.explosiveService;
 
-    (service as any).getAll()
+    catalogService
+      .getAll()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (data: any) => {
-          // Service already returns the array directly, not wrapped in response
+        next: (data: unknown) => {
           if (Array.isArray(data)) {
-            this.assets = data;
-            this.filteredAssets = data;
-          } else if (data && data.succeeded && Array.isArray(data.data)) {
-            // Fallback: handle wrapped response if service returns it
-            this.assets = data.data;
-            this.filteredAssets = data.data;
+            this.assets = data as (AmmunitionReadDto | WeaponDto | ExplosiveDto)[];
+            this.filteredAssets = data as (AmmunitionReadDto | WeaponDto | ExplosiveDto)[];
+          } else if (
+            data &&
+            typeof data === 'object' &&
+            'succeeded' in data &&
+            (data as { succeeded?: boolean }).succeeded &&
+            'data' in data &&
+            Array.isArray((data as { data?: unknown }).data)
+          ) {
+            const wrapped = data as { data: (AmmunitionReadDto | WeaponDto | ExplosiveDto)[] };
+            this.assets = wrapped.data;
+            this.filteredAssets = wrapped.data;
           } else {
             this.assets = [];
             this.filteredAssets = [];
@@ -273,7 +287,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
       });
   }
 
-  onPreviewConfirmed(validRows: any[]): void {
+  onPreviewConfirmed(validRows: PreviewRow[]): void {
     this.showPreviewModal = false;
     this.previewData = null;
 
@@ -445,7 +459,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           header: this.translateService.instant('warehouseInventory.caliberUnit') || 'Bullet Diameter Unit',
           key: 'bulletDiameterUnit',
           width: 20,
-          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+          format: (value: LookupDisplayInput) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
           header: this.translateService.instant('warehouseInventory.totalWeight') || 'Total Weight',
@@ -469,49 +483,49 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           header: this.translateService.instant('assetList.table.caseType'),
           key: 'caseType',
           width: 20,
-          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+          format: (value: LookupDisplayInput) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
           header: this.translateService.instant('warehouseInventory.propellant') || 'Propellant',
           key: 'propellant',
           width: 20,
-          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+          format: (value: LookupDisplayInput) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
           header: this.translateService.instant('warehouseInventory.compatibility') || 'Compatibility',
           key: 'compatibility',
           width: 20,
-          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+          format: (value: LookupDisplayInput) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
           header: this.translateService.instant('assetList.table.hazardDivision'),
           key: 'hazardDivision',
           width: 20,
-          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+          format: (value: LookupDisplayInput) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
           header: this.translateService.instant('addAsset.nature') || 'Nature Option',
           key: 'natureOption',
           width: 20,
-          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+          format: (value: LookupDisplayInput) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
           header: this.translateService.instant('addAsset.primaryPurpose') || 'Primary Purpose',
           key: 'primaryPurpos',
           width: 20,
-          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+          format: (value: LookupDisplayInput) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
           header: this.translateService.instant('addAsset.projectileColor') || 'Projectile Color',
           key: 'projectileColor',
           width: 20,
-          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+          format: (value: LookupDisplayInput) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
           header: this.translateService.instant('addAsset.projectileMaterial') || 'Projectile Material',
           key: 'projectailMaterial',
           width: 20,
-          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+          format: (value: LookupDisplayInput) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
           header: this.translateService.instant('weapon.unNumber') || 'UN Number',
@@ -535,13 +549,13 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           header: this.translateService.instant('weapon.classification') || 'Classification',
           key: 'classification',
           width: 20,
-          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+          format: (value: LookupDisplayInput) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
           header: this.translateService.instant('weapon.type') || 'Type',
           key: 'type',
           width: 20,
-          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+          format: (value: LookupDisplayInput) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
           header: this.translateService.instant('weapon.notes') || 'Notes',
@@ -581,7 +595,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           header: this.translateService.instant('weapon.caliberUnit') || 'Caliber Unit',
           key: 'caliberUnit',
           width: 20,
-          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+          format: (value: LookupDisplayInput) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
           header: this.translateService.instant('weapon.yearOfManufacture') || 'Year Of Manufacture',
@@ -593,7 +607,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           header: this.translateService.instant('weapon.countryOfManufacture') || 'Country Of Manufacture',
           key: 'countryOfManufacture',
           width: 25,
-          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+          format: (value: LookupDisplayInput) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
           header: this.translateService.instant('weapon.model') || 'Model',
@@ -623,13 +637,13 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           header: this.translateService.instant('weapon.classification') || 'Classification',
           key: 'classification',
           width: 20,
-          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+          format: (value: LookupDisplayInput) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
           header: this.translateService.instant('weapon.type') || 'Type',
           key: 'type',
           width: 20,
-          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+          format: (value: LookupDisplayInput) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
           header: this.translateService.instant('weapon.notes') || 'Notes',
@@ -675,7 +689,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           header: this.translateService.instant('addAsset.unit') || 'Unit',
           key: 'unit',
           width: 15,
-          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+          format: (value: LookupDisplayInput) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
           header: this.translateService.instant('weapon.distribution') || 'Distribution',
@@ -693,25 +707,25 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           header: this.translateService.instant('warehouseInventory.compatibility') || 'Compatibility',
           key: 'compatibility',
           width: 20,
-          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+          format: (value: LookupDisplayInput) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
           header: this.translateService.instant('assetList.table.hazardDivision') || 'Hazard Division',
           key: 'hazardDivision',
           width: 20,
-          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+          format: (value: LookupDisplayInput) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
           header: this.translateService.instant('weapon.classification') || 'Classification',
           key: 'classification',
           width: 20,
-          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+          format: (value: LookupDisplayInput) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
           header: this.translateService.instant('weapon.type') || 'Type',
           key: 'type',
           width: 20,
-          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+          format: (value: LookupDisplayInput) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
           header: this.translateService.instant('weapon.notes') || 'Notes',

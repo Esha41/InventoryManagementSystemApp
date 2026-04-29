@@ -36,7 +36,8 @@ import {
   canConfirmPickup,
   canProposeNewTime,
   getPriorityLabelTranslation,
-  getStatusLabelTranslation
+  getStatusLabelTranslation,
+  asNotificationMetadata
 } from '@notifications/utils/notification.utils';
 import { formatTimeToMilitary } from '@utils/format.utils';
 import { NotificationDetailService } from '@notifications/services/notification-detail.service';
@@ -258,11 +259,11 @@ export class NotificationsComponent implements OnInit, OnDestroy {
 
     this.selectedNotification = notification;
     this.cdr.markForCheck();
-    const metadata = notification.metadata as Record<string, any> | null;
+    const metadata = asNotificationMetadata(notification.metadata ?? null);
 
     this.proposeForm.patchValue({
-      pickupDate: metadata?.['pickupDate'] ?? '',
-      pickupTime: metadata?.['pickupTime'] ?? ''
+      pickupDate: (metadata?.['pickupDate'] as string | number | undefined) ?? '',
+      pickupTime: (metadata?.['pickupTime'] as string | number | undefined) ?? ''
     });
 
     this.isProposeModalOpen = true;

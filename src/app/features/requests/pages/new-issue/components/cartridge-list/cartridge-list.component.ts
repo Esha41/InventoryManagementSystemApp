@@ -30,11 +30,11 @@ export class CartridgeListComponent implements OnChanges {
   @Input() natureOptions: string[] = [];
 
   // Weapon Options
-  @Input() weaponTypeOptions: string[] = [];
+  @Input() weaponTypeOptions: Array<DropdownOption<string>> = [];
   @Input() caliberOptions: string[] = []; // If we have predefined calibers
 
   // Explosive Options
-  @Input() explosiveTypeOptions: string[] = [];
+  @Input() explosiveTypeOptions: Array<DropdownOption<string>> = [];
 
   // Selected Values
   @Input() selectedItemType: string = '';

@@ -1,0 +1,19 @@
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
+import { ItemDetailsResolvedContext } from '../../models/item-details-resolved-context';
+import { ItemPropertyMapperService } from '../../services/item-property-mapper.service';
+
+@Component({
+  selector: 'app-ammunition-details',
+  standalone: true,
+  imports: [CommonModule, TranslateModule],
+  templateUrl: './ammunition-details.component.html',
+  styleUrls: ['./ammunition-details.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class AmmunitionDetailsComponent {
+  @Input({ required: true }) ctx!: ItemDetailsResolvedContext;
+
+  constructor(public mapper: ItemPropertyMapperService) {}
+}

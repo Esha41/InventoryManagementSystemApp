@@ -1,74 +1,17 @@
-import { RankDto } from './rank.model';
-import { DepartmentDto } from './lookup.model';
-import { RequestItemDto } from './common.model';
+import type { RequestManagementBaseRequestDto } from './request-management-base.model';
+import type { OrderSpecificDto } from './order.model';
+import type { ReturnSpecificDto } from './return.model';
 
-
-export interface UnifiedListRequestDto {
-  id: number;
-  requestNo: string;
-  requestType: number;
-  reason?: string;
-  priority: number;
-  status: number;
-  notes?: string;
-  departmentId: number;
-  departmentName?: string;
-  departmentNameAr?: string;
-  departmentNameEn?: string;
-  requesterId?: string;
-  requesterName?: string;
-  requesterNameAr?: string;
-  requesterNameEn?: string;
-  requesterRoleNameAr?: string;
-  requestPurposeId: number;
-  requestPurposeName?: string;
-  requestPurposeNameAr?: string;
-  requestPurposeNameEn?: string;
-  requestDate: string | Date;
-  creationDate: string | Date;
-
-  department?: {
-    id: number;
-    code: string;
-    nameAr: string;
-    nameEn: string;
-    isDeleted: boolean;
-  };
-
-  requester?: {
-    id: string;
-    userName: string;
-    fullNameEN: string;
-    fullNameAR: string;
-    militoryId?: string | null;
-    email?: string;
-    rank?: RankDto;
-    department?: DepartmentDto;
-  };
-
-  requestPurpose?: {
-    id: number;
-    nameAr: string;
-    nameEn: string;
-    requestType: number;
-  };
-
-  requestItems?: RequestItemDto[];
-
-  usageDateFrom?: string | Date;
-  usageDateTo?: string | Date;
-  usageTimeFrom?: string;
-  usageTimeTo?: string;
-  usagePurpose?: string;
-  usageLocation?: string;
-  isFromAllowance?: boolean;
-  annualDiscard?: boolean;
-  numberOfOfficer?: number;
-  numberOfOtherRank?: number;
-  depotId?: number;
-  depotNameAr?: string;
-  depotNameEn?: string;
-  receiverId?: string;
-  receiverName?: string;
-  isMyTurn?: boolean;
-}
+/**
+ * Polymorphic item returned by Request Management unified list/detail (`OrderDto` | `ReturnDto` | `DiscardDto`).
+ * Modeled as base + optional type-specific fields present on the concrete CLR type.
+ *
+ * Backend references:
+ * - `ettadbackend/Ettad.RequestManagement.Service/Common/Dtos/BaseRequestDto.cs`
+ * - `ettadbackend/Ettad.RequestManagement.Service/Orders/Dto/OrderDto.cs`
+ * - `ettadbackend/Ettad.RequestManagement.Service/Returns/Dtos/ReturnDto.cs`
+ * - `ettadbackend/Ettad.RequestManagement.Service/Discards/Dtos/DiscardDto.cs`
+ */
+export type UnifiedListRequestDto = RequestManagementBaseRequestDto &
+  Partial<OrderSpecificDto> &
+  Partial<ReturnSpecificDto>;

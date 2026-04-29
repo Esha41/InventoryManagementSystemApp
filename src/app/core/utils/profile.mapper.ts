@@ -64,7 +64,6 @@ export function mapApiResponseToAuthenticatedUser(
     permissions: permissions || [],
     isLdapUser: apiUser.isLdapUser || false,
     ldapUserName: apiUser.ldapUserName ?? undefined,
-    organizationId: undefined, // Not in API response
     departmentId: departmentId,
     departmentName: departmentName,
     departmentNameEn: departmentNameEn,

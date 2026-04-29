@@ -1,12 +1,33 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ModalComponent } from '@components/modal/modal.component';
 import { ButtonComponent } from '@components/button/button.component';
 import { Subject, takeUntil } from 'rxjs';
 import { LookupItem, CreateUpdateLookupDto, LookupTableConfig } from '@models/lookup.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
+import type { LookupModalFormGroup } from './lookup-form-modal.models';
+
+const ITEM_TYPE_NAME_TO_VALUE: Record<string, number> = {
+  Ammunition: 1,
+  Weapon: 2,
+  Explosive: 3
+};
+
+function normalizeLookupItemType(item: LookupItem): number | null {
+  const raw = (item as LookupItem & { itemType?: number | string }).itemType;
+  if (raw === undefined || raw === null) {
+    return null;
+  }
+  if (typeof raw === 'number') {
+    return raw;
+  }
+  if (typeof raw === 'string') {
+    return ITEM_TYPE_NAME_TO_VALUE[raw] ?? null;
+  }
+  return null;
+}
 
 @Component({
   selector: 'app-lookup-form-modal',
@@ -32,7 +53,7 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
   @Output() closed = new EventEmitter<void>();
   @Output() saved = new EventEmitter<CreateUpdateLookupDto>();
 
-  lookupForm!: FormGroup;
+  lookupForm!: LookupModalFormGroup;
   isLoading = false;
   errorMessage = '';
 
@@ -127,18 +148,27 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private initializeForm(): void {
-    const formConfig: any = {
-      nameEn: ['', [Validators.required, Validators.maxLength(100)]],
-      nameAr: ['', [Validators.required, Validators.maxLength(100)]],
-      code: ['', this.tableConfig?.hasCode ? [Validators.required, Validators.maxLength(50)] : [Validators.maxLength(50)]]
-    };
+    const needsItemType =
+      this.tableConfig?.name === 'ItemType' ||
+      this.tableConfig?.name === 'Unit' ||
+      this.tableConfig?.name === 'Caliber';
 
-    // Add ItemType field for ItemType, Unit, and Caliber lookup tables (Caliber: ammunition or weapon only in UI)
-    if (this.tableConfig?.name === 'ItemType' || this.tableConfig?.name === 'Unit' || this.tableConfig?.name === 'Caliber') {
-      formConfig['itemType'] = [null, [Validators.required]];
-    }
+    const codeValidators = this.tableConfig?.hasCode
+      ? [Validators.required, Validators.maxLength(50)]
+      : [Validators.maxLength(50)];
 
-    this.lookupForm = this.fb.group(formConfig);
+    this.lookupForm = this.fb.group({
+      nameEn: this.fb.nonNullable.control('', {
+        validators: [Validators.required, Validators.maxLength(100)]
+      }),
+      nameAr: this.fb.nonNullable.control('', {
+        validators: [Validators.required, Validators.maxLength(100)]
+      }),
+      code: this.fb.nonNullable.control('', { validators: codeValidators }),
+      itemType: this.fb.control<number | null>(null, {
+        validators: needsItemType ? [Validators.required] : []
+      })
+    });
 
     if (this.lookupItem) {
       this.populateForm();
@@ -147,30 +177,17 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
 
   private populateForm(): void {
     if (this.lookupItem && this.lookupForm) {
-      const formValue: any = {
+      const needsItemType =
+        this.tableConfig?.name === 'ItemType' ||
+        this.tableConfig?.name === 'Unit' ||
+        this.tableConfig?.name === 'Caliber';
+
+      this.lookupForm.patchValue({
         nameEn: this.lookupItem.nameEn || '',
         nameAr: this.lookupItem.nameAr || '',
-        code: this.lookupItem.code || ''
-      };
-
-      // Add ItemType if it exists (ItemType, Unit, and Caliber tables)
-      if ((this.tableConfig?.name === 'ItemType' || this.tableConfig?.name === 'Unit' || this.tableConfig?.name === 'Caliber') && (this.lookupItem as any).itemType !== undefined) {
-        let itemTypeValue = (this.lookupItem as any).itemType;
-
-        // Convert string enum to number if needed
-        if (typeof itemTypeValue === 'string') {
-          const itemTypeMap: { [key: string]: number } = {
-            'Ammunition': 1,
-            'Weapon': 2,
-            'Explosive': 3
-          };
-          itemTypeValue = itemTypeMap[itemTypeValue] || 0;
-        }
-
-        formValue['itemType'] = itemTypeValue;
-      }
-
-      this.lookupForm.patchValue(formValue);
+        code: this.lookupItem.code || '',
+        ...(needsItemType ? { itemType: normalizeLookupItemType(this.lookupItem) } : { itemType: null })
+      });
     }
   }
 
@@ -194,16 +211,22 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
     this.isLoading = true;
     this.errorMessage = '';
 
-    const formValue = this.lookupForm.value;
-    const dto: any = {
-      nameEn: formValue.nameEn.trim(),
-      nameAr: formValue.nameAr.trim(),
-      code: this.tableConfig?.hasCode ? formValue.code?.trim() : undefined
+    const v = this.lookupForm.getRawValue();
+    const dto: CreateUpdateLookupDto = {
+      nameEn: v.nameEn.trim(),
+      nameAr: v.nameAr.trim(),
+      code: this.tableConfig?.hasCode ? v.code.trim() : undefined
     };
 
-    // Add ItemType if this is an ItemType, Unit, or Caliber lookup
-    if (this.tableConfig?.name === 'ItemType' || this.tableConfig?.name === 'Unit' || this.tableConfig?.name === 'Caliber') {
-      dto.itemType = formValue.itemType;
+    if (
+      this.tableConfig?.name === 'ItemType' ||
+      this.tableConfig?.name === 'Unit' ||
+      this.tableConfig?.name === 'Caliber'
+    ) {
+      const itemType = v.itemType;
+      if (itemType != null) {
+        dto.itemType = itemType;
+      }
     }
 
     this.saved.emit(dto);

@@ -90,7 +90,7 @@ export class DropdownComponent<T = Primitive>
     return this._required;
   }
 
-  @Input() trackByFn?: (option: DropdownOption<T> | T, index: number) => any;
+  @Input() trackByFn?: (option: DropdownOption<T> | T, index: number) => unknown;
   @Input() error = false;
   @Input() name: string | null = null;
   @Input() addActionLabel?: string;
@@ -243,11 +243,11 @@ export class DropdownComponent<T = Primitive>
     }
   }
 
-  registerOnChange(fn: any): void {
+  registerOnChange(fn: (value: T | null | T[]) => void): void {
     this.onChange = fn;
   }
 
-  registerOnTouched(fn: any): void {
+  registerOnTouched(fn: () => void): void {
     this.onTouched = fn;
   }
 
@@ -553,11 +553,12 @@ export class DropdownComponent<T = Primitive>
       typeof option === 'object' &&
       !Array.isArray(option)
     ) {
-      return (option as any)[this.optionValue];
+      const raw = (option as Record<string, unknown>)[this.optionValue];
+      return raw as T;
     }
 
     if (option && typeof option === 'object' && 'value' in option) {
-      return (option as any).value;
+      return (option as DropdownOption<T>).value;
     }
 
     return option as T;
@@ -577,7 +578,7 @@ export class DropdownComponent<T = Primitive>
     });
   }
 
-  trackOption = (index: number, option: DropdownOption<T> | T): any => {
+  trackOption = (index: number, option: DropdownOption<T> | T): unknown => {
     if (this.trackByFn) {
       return this.trackByFn(option, index);
     }

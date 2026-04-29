@@ -25,12 +25,15 @@ import { BackendAuthService } from '@services/backend-auth.service';
 import { BackendUserService } from '@services/backend-user.service';
 import { AuthenticatedUser } from '@models/auth.model';
 import { BackendUserDto } from '@models/backend-user.model';
-import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { getLocalizedName, getCurrentLang, Localizable } from '@utils/localization.utils';
 import { getFileSizeFromFile, removeFile, validateFile, MAX_FILE_SIZE_MB, showFileValidationErrors } from '@utils/file.utils';
 import { ConfirmationDialogComponent, ConfirmationType } from '@components/confirmation-dialog/confirmation-dialog.component';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { ONBOARDING_TOUR } from '@core/tokens/onboarding-tour.token';
 import { IOnboardingTourProvider } from '@core/interfaces/onboarding-tour-provider.interface';
+import { AmmunitionReadDto } from '@models/ammunition.model';
+import { WeaponDto } from '@models/weapon.model';
+import { ExplosiveDto } from '@models/explosive.model';
 
 interface ReturnItemForm {
   itemId: number | null;
@@ -43,6 +46,8 @@ interface RequestPurpose {
   nameAr: string;
   nameEn: string;
 }
+
+type CatalogListItem = AmmunitionReadDto | WeaponDto | ExplosiveDto;
 
 @Component({
   selector: 'app-return-request',
@@ -87,7 +92,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
   departments: LookupItem[] = [];
   requesters: LookupItem[] = [];
   requestPurposes: RequestPurpose[] = [];
-  items: any[] = [];
+  items: CatalogListItem[] = [];
   priorityOptions = [
     { value: 1, labelKey: 'common.priorityLevels.Normal' },
     { value: 2, labelKey: 'common.priorityLevels.Urgent' },
@@ -241,7 +246,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
           this.cdr.markForCheck();
         },
         error: () => {
-          this.translate.get(['toast.error', 'returnRequest.errors.failedToLoadDepartments']).subscribe((translations: any) => {
+          this.translate.get(['toast.error', 'returnRequest.errors.failedToLoadDepartments']).subscribe((translations: Record<string, string>) => {
             this.toastService.error(
               translations['returnRequest.errors.failedToLoadDepartments'] || 'Failed to load departments',
               translations['toast.error']
@@ -276,7 +281,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
           this.cdr.markForCheck();
         },
         error: () => {
-          this.translate.get(['toast.error', 'returnRequest.errors.failedToLoadUsers']).subscribe((translations: any) => {
+          this.translate.get(['toast.error', 'returnRequest.errors.failedToLoadUsers']).subscribe((translations: Record<string, string>) => {
             this.toastService.error(
               translations['returnRequest.errors.failedToLoadUsers'] || 'Failed to load users',
               translations['toast.error']
@@ -302,7 +307,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
           this.cdr.markForCheck();
         },
         error: () => {
-          this.translate.get(['toast.error', 'returnRequest.errors.failedToLoadRequestPurposes']).subscribe((translations: any) => {
+          this.translate.get(['toast.error', 'returnRequest.errors.failedToLoadRequestPurposes']).subscribe((translations: Record<string, string>) => {
             this.toastService.error(
               translations['returnRequest.errors.failedToLoadRequestPurposes'] || 'Failed to load request purposes',
               translations['toast.error']
@@ -316,7 +321,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
 
   private loadItems(): void {
     this.isLoadingItems = true;
-    let load$: Observable<any[]>;
+    let load$: Observable<CatalogListItem[]>;
 
     if (this.selectedItemType === 'Weapon') {
       load$ = this.weaponService.getAll();
@@ -339,7 +344,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
           this.cdr.markForCheck();
         },
         error: () => {
-          this.translate.get(['toast.error', 'returnRequest.errors.failedToLoadItems']).subscribe((translations: any) => {
+          this.translate.get(['toast.error', 'returnRequest.errors.failedToLoadItems']).subscribe((translations: Record<string, string>) => {
             this.toastService.error(
               translations['returnRequest.errors.failedToLoadItems'] || 'Failed to load items',
               translations['toast.error']
@@ -375,7 +380,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   getItemName(itemId: number): string {
-    const item = this.items.find(i => i.id === itemId || i.itemNo === itemId);
+    const item = this.items.find(i => i.id === itemId || String(i.itemNo) === String(itemId));
     return item ? (item.name || item.itemNo || 'Unknown') : 'Unknown';
   }
 
@@ -395,7 +400,9 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
     return purpose ? getLocalizedName(purpose, getCurrentLang(this.translate)) : 'Unknown';
   }
 
-  private getLocalizedName(entity: any): string {
+  private getLocalizedName(
+    entity: LookupItem | RequestPurpose | string | number | { label: string } | null | undefined
+  ): string {
     if (!entity) {
       return '';
     }
@@ -412,7 +419,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
       return entity.label;
     }
 
-    return getLocalizedName(entity, getCurrentLang(this.translate));
+    return getLocalizedName(entity as Localizable, getCurrentLang(this.translate));
   }
 
   private unwrapOption<T>(option: DropdownOption<T> | T | null): T | null {
@@ -447,7 +454,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
     this.itemDropdownSearchTerms = this.itemDropdownSearchTerms.map(() => '');
   }
 
-  onItemSelect(index: number, itemOption: any): void {
+  onItemSelect(index: number, itemOption: CatalogListItem): void {
     const optionValue = itemOption.id ?? itemOption.itemNo ?? null;
     this.returnItems[index].itemId = optionValue;
     this.closeItemDropdown(index);
@@ -458,7 +465,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
     }
   }
 
-  getItemOptionLabel(itemOption: any): string {
+  getItemOptionLabel(itemOption: CatalogListItem): string {
     return itemOption?.name || itemOption?.itemNo || 'Unknown';
   }
 
@@ -471,7 +478,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
     return selected ? this.getItemOptionLabel(selected) : '';
   }
 
-  getFilteredItems(index: number): any[] {
+  getFilteredItems(index: number): CatalogListItem[] {
     if (!this.items?.length) {
       return [];
     }
@@ -486,11 +493,11 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
     });
   }
 
-  isOptionSelected(option: any, itemId: any): boolean {
+  isOptionSelected(option: CatalogListItem, itemId: string | number | null): boolean {
     return this.isSameItem(option, itemId);
   }
 
-  private isSameItem(option: any, itemId: any): boolean {
+  private isSameItem(option: CatalogListItem, itemId: string | number | null): boolean {
     const optionValue = option?.id ?? option?.itemNo;
     if (optionValue === undefined || optionValue === null) {
       return false;
@@ -541,7 +548,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
       'returnRequest.confirmDialog.message',
       'common.yes',
       'common.cancel'
-    ]).subscribe((translations: any) => {
+    ]).subscribe((translations: Record<string, string>) => {
       this.confirmDialogTitle = translations['returnRequest.confirmDialog.title'] || 'Confirm Request';
       this.confirmDialogMessage = translations['returnRequest.confirmDialog.message'] || 'Are you sure you want to submit this return request?';
       this.confirmDialogConfirmText = translations['common.yes'] || 'Yes';
@@ -818,7 +825,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
   getFileSize = getFileSizeFromFile;
   MAX_FILE_SIZE_MB = MAX_FILE_SIZE_MB;
 
-  private toNumber(value: any): number | null {
+  private toNumber(value: unknown): number | null {
     if (value === null || value === undefined || value === '') return null;
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : null;

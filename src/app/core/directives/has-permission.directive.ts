@@ -40,7 +40,7 @@ export class HasPermissionDirective implements OnInit, OnDestroy, OnChanges {
   private hasView = false;
 
   constructor(
-    private templateRef: TemplateRef<any>,
+    private templateRef: TemplateRef<unknown>,
     private viewContainer: ViewContainerRef,
     private authService: BackendAuthService
   ) {}

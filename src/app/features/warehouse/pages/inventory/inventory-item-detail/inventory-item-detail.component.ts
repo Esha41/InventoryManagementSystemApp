@@ -451,11 +451,13 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
       return this.translateService.instant('warehouseInventory.tabs.explosive');
     }
 
-    const itemType: any = this.inventoryDetail.item.itemType;
+    // Backend may provide either numeric enum values or strings (e.g. "ammunition").
+    // Cast to `unknown` so TypeScript allows runtime narrowing.
+    const rawItemType = this.inventoryDetail.item.itemType as unknown;
     
     // Handle string values from backend
-    if (typeof itemType === 'string') {
-      const lowerType = itemType.toLowerCase();
+    if (typeof rawItemType === 'string') {
+      const lowerType = rawItemType.toLowerCase();
       if (lowerType === 'ammunition') {
         return this.translateService.instant('warehouseInventory.tabs.ammunition');
       }
@@ -468,7 +470,7 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
     }
     
     // Handle numeric/enum values
-    const numericValue = typeof itemType === 'number' ? itemType : (itemType as ItemType);
+    const numericValue = typeof rawItemType === 'number' ? rawItemType : Number(rawItemType);
     if (numericValue === ItemType.Ammunition || numericValue === 1) {
       return this.translateService.instant('warehouseInventory.tabs.ammunition');
     }

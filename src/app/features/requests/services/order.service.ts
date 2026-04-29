@@ -82,15 +82,22 @@ export class OrderService {
 
     return this.apiService.get<OrderDto>(`${this.endpoint}/${id}`, undefined, { headers }).pipe(
       map((order: OrderDto) => {
-        // Normalize nested object property names
-        if ((order as any).Department && !order.department) {
-          order.department = (order as any).Department;
+        // Normalize nested object property names (camelCase + PascalCase variants)
+        type OrderLegacyPascalFields = {
+          Department?: OrderDto['department'];
+          Requester?: OrderDto['requester'];
+          RequestPurpose?: OrderDto['requestPurpose'];
+        };
+        const legacy = order as unknown as OrderLegacyPascalFields;
+
+        if (legacy.Department && !order.department) {
+          order.department = legacy.Department;
         }
-        if ((order as any).Requester && !order.requester) {
-          order.requester = (order as any).Requester;
+        if (legacy.Requester && !order.requester) {
+          order.requester = legacy.Requester;
         }
-        if ((order as any).RequestPurpose && !order.requestPurpose) {
-          order.requestPurpose = (order as any).RequestPurpose;
+        if (legacy.RequestPurpose && !order.requestPurpose) {
+          order.requestPurpose = legacy.RequestPurpose;
         }
 
         // Populate flat properties

@@ -297,8 +297,8 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     const requesterStep: WorkflowApprovalStep = {
       id: 0,
       approverName: this.orderData.requesterName || 'Unknown Requester',
-      approverNameEn: this.baseRequestData?.['requesterNameEn'] || this.orderData.requesterName,
-      approverNameAr: this.baseRequestData?.['requesterNameAr'],
+      approverNameEn: this.baseRequestData?.requesterNameEn || this.orderData.requesterName,
+      approverNameAr: this.baseRequestData?.requesterNameAr,
       status: 'Approved',
       applicationRoleName: 'Requester (Order Requesting Entity)',
       approvedDateTime: requestDateString,

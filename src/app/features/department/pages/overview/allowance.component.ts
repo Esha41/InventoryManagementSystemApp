@@ -28,12 +28,8 @@ import { UserContextService } from '@services/user-context.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { trackById, trackByIndex } from '@utils/trackby.utils';
 import { ItemType } from '@models/inventory.model';
-import type {
-  AllowanceItem,
-  AllowanceItemType,
-  AllowanceApiItem,
-  AllowanceItemTypeKey,
-} from './models/allowance.model';
+import type { AllowanceItem, AllowanceItemType, AllowanceItemTypeKey } from './models/allowance.model';
+import type { AllowanceItemByDepartmentDto, AllowanceItemDetailDto } from '@models/allowance.model';
 import { AllowanceService } from './services/allowance.service';
 
 @Component({
@@ -100,7 +96,7 @@ export class AllowanceComponent implements OnInit, OnDestroy {
   errors: Record<string, string> = {};
   itemErrors: Record<number, Record<string, string>> = {};
   targetItemId: number | null = null;
-  allExistingItems: AllowanceApiItem[] = [];
+  allExistingItems: AllowanceItemDetailDto[] = [];
 
   constructor() {
     this.selectedYear = new Date().getFullYear().toString();
@@ -519,10 +515,10 @@ export class AllowanceComponent implements OnInit, OnDestroy {
 
   loadExistingAllowance(departmentId: number, year: number): void {
     const endpoint = API_ENDPOINTS.ALLOWANCE.BY_DEPARTMENT_AND_YEAR(departmentId, year);
-    type AllowanceResponseData = { items?: AllowanceApiItem[]; Items?: AllowanceApiItem[] };
+    type AllowanceResponseData = AllowanceItemByDepartmentDto & { Items?: AllowanceItemDetailDto[] };
     this.apiService.get<AllowanceResponseData>(endpoint).subscribe({
       next: (data) => {
-        const items = data?.items || data?.Items || [];
+        const items = data?.items ?? data?.Items ?? [];
 
         if (items && items.length > 0) {
           this.allExistingItems = items;
@@ -563,7 +559,7 @@ export class AllowanceComponent implements OnInit, OnDestroy {
     });
   }
 
-  private mapItemsToForm(items: AllowanceApiItem[]): void {
+  private mapItemsToForm(items: AllowanceItemDetailDto[]): void {
     const itemsMap = new Map(this.allItems.map((a) => [a.id, a]));
     let itemsToMap = items;
     if (this.targetItemId !== null) {

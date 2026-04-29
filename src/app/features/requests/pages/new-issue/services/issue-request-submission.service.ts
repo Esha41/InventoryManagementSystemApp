@@ -108,7 +108,7 @@ export class IssueRequestSubmissionService {
       'common.yes',
       'common.cancel'
     ]).pipe(
-      map((t: any) => ({
+      map((t: Record<string, string>) => ({
         title: t['newIssueRequest.confirmDialog.title'] || 'Confirm Request',
         message: t['newIssueRequest.confirmDialog.message'] || 'Are you sure you want to submit this order request?',
         type: 'success' as const,

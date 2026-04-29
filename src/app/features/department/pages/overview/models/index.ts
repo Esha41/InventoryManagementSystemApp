@@ -1,7 +1,7 @@
 export type {
   AllowanceItemType,
-  AllowanceApiItem,
   AllowanceItem,
   AllowanceItemTypeKey,
   AllowanceItemTypeOption,
 } from './allowance.model';
+export type { AllowanceItemDetailDto } from '@models/allowance.model';

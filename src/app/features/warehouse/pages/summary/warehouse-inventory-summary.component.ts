@@ -25,6 +25,8 @@ import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 import { trackById, trackByKey, trackByIndex } from '@utils/trackby.utils';
 import { defaultPageSize } from '@constants/app.constants';
 
+type ExpandChevronIcon = typeof ChevronDown | typeof ChevronLeft | typeof ChevronRight;
+
 @Component({
     selector: 'app-warehouse-inventory-summary',
     standalone: true,
@@ -148,11 +150,11 @@ export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
         this.router.navigate(['/inventory-dashboard']);
     }
 
-    getExpandIcon(isExpanded: boolean): any {
+    getExpandIcon(isExpanded: boolean): ExpandChevronIcon {
         if (isExpanded) {
-            return ChevronDown;
+            return this.ChevronDown;
         }
-        return this.isRTL ? ChevronLeft : ChevronRight;
+        return this.isRTL ? this.ChevronLeft : this.ChevronRight;
     }
 
     ngOnInit(): void {

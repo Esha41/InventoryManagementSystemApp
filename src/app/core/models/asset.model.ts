@@ -78,11 +78,7 @@ export interface AssetDto {
     notes?: string;
     isDeleted: boolean;
     /** Asset audit: when the record was created */
-    creationDate?: Date | string;
-    /** Asset audit: user id at creation */
-    createdBy?: string;
-    /** Resolved display name for createdBy (from API). */
-    createdByName?: string;
+    creationDate: Date | string;
     /** Current assignment: expected return (checkout). */
     expectedReturnDate?: Date | string;
     /** Current assignment: actual return when completed. */

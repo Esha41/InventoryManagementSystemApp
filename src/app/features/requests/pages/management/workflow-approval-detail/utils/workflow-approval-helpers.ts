@@ -1,13 +1,41 @@
-/**
- * Workflow Approval Helpers
- * Utility functions for formatting, display, and status handling
- */
 
 import { TranslateService } from '@ngx-translate/core';
-import { RequestDetail, WorkflowApprovalStep } from '@models/workflow-approval.model';
-import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { RequestDetail, WorkflowApprovalStep, WorkflowStepTransition } from '@models/workflow-approval.model';
+import { WorkflowStepDto } from '@models/workflow.model';
+import { getLocalizedName, getCurrentLang, Localizable } from '@utils/localization.utils';
 import { formatDateTimeExtended } from '@utils/format.utils';
 import { RequestStatusEnum } from '@utils/request-mapper.utils';
+import { LookupItem } from '@services/lookup.service';
+import { WorkflowApprovalStepOption } from '../services/workflow-approval-data.service';
+
+type WorkflowStepDisplayLike = WorkflowStepDto & {
+  applicationRole?: { name?: string; nameEn?: string; nameAr?: string } | null;
+  applicationRoleName?: string;
+  applicationRoleNameAr?: string | null;
+  stepOrder?: number | string;
+};
+
+type WorkflowStepTransitionTargetDisplayLike = {
+  stepOrder?: number | string;
+  applicationRole?: { name?: string; nameEn?: string; nameAr?: string } | null;
+  applicationRoleName?: string | null;
+  applicationRoleNameAr?: string | null;
+};
+
+type TransitionOptionLike =
+  | WorkflowStepTransition
+  | { value: WorkflowStepTransition }
+  | { value: unknown };
+
+type ApprovalStepWithPascalTransitions = WorkflowApprovalStep & {
+  Transitions?: unknown;
+};
+
+function isWorkflowStepTransitionLike(value: unknown): value is WorkflowStepTransition {
+  if (!value || typeof value !== 'object') return false;
+  const v = value as { targetWorkflowStepId?: unknown; sourceWorkflowStepId?: unknown };
+  return typeof v.targetWorkflowStepId === 'number' && typeof v.sourceWorkflowStepId === 'number';
+}
 
 /**
  * Get approval history with requester as the first step
@@ -100,7 +128,7 @@ export function formatApprovalDateTime(
  * Get workflow step display name (localized)
  */
 export function getWorkflowStepDisplayName(
-  step: any,
+  step: WorkflowStepDisplayLike | WorkflowApprovalStepOption | null | undefined,
   translateService: TranslateService
 ): string {
   if (!step) return '';
@@ -110,10 +138,12 @@ export function getWorkflowStepDisplayName(
   let roleNameEn: string | undefined;
   let roleNameAr: string | undefined;
 
+  const nestedRole = (step as WorkflowStepDisplayLike).applicationRole;
+
   // First check nested applicationRole object (has both EN and AR)
-  if (step.applicationRole) {
-    roleNameEn = step.applicationRole.name || step.applicationRole.nameEn;
-    roleNameAr = step.applicationRole.nameAr;
+  if (nestedRole) {
+    roleNameEn = nestedRole.nameEn ?? nestedRole.name;
+    roleNameAr = nestedRole.nameAr ?? nestedRole.name;
   }
 
   // Fallback to flat properties if nested object not available
@@ -121,7 +151,7 @@ export function getWorkflowStepDisplayName(
     roleNameEn = step.applicationRoleName;
   }
   if (!roleNameAr && step.applicationRoleNameAr) {
-    roleNameAr = step.applicationRoleNameAr;
+    roleNameAr = step.applicationRoleNameAr ?? undefined;
   }
 
   // Use getLocalizedValue helper for role name
@@ -138,18 +168,27 @@ export function getWorkflowStepDisplayName(
  * Get transition display name for dropdown
  */
 export function getTransitionDisplayName(
-  option: any,
+  option: TransitionOptionLike | null | undefined,
   translateService: TranslateService
 ): string {
   if (!option) return '';
 
-  const transition = typeof option === 'object' && 'value' in option ? option.value : option;
-  if (!transition || !transition.targetStep) {
+  const transition =
+    typeof option === 'object' && option !== null && 'value' in option
+      ? (option as { value: unknown }).value
+      : option;
+
+  if (!transition || typeof transition !== 'object') {
     return '';
   }
 
-  const targetStep = transition.targetStep;
-  const stepOrder = targetStep.stepOrder || '';
+  const targetStepUnknown = (transition as { targetStep?: unknown }).targetStep;
+  if (!targetStepUnknown || typeof targetStepUnknown !== 'object') {
+    return '';
+  }
+
+  const targetStep = targetStepUnknown as WorkflowStepTransitionTargetDisplayLike;
+  const stepOrder = targetStep.stepOrder ?? '';
 
   // Get role name - check nested applicationRole object for both EN and AR
   let roleNameEn: string | undefined;
@@ -157,8 +196,8 @@ export function getTransitionDisplayName(
 
   // First check nested applicationRole object (has both EN and AR)
   if (targetStep.applicationRole) {
-    roleNameEn = targetStep.applicationRole.name || targetStep.applicationRole.nameEn;
-    roleNameAr = targetStep.applicationRole.nameAr;
+    roleNameEn = targetStep.applicationRole.nameEn ?? targetStep.applicationRole.name;
+    roleNameAr = targetStep.applicationRole.nameAr ?? targetStep.applicationRole.name;
   }
 
   // Fallback to flat properties if nested object not available
@@ -166,7 +205,7 @@ export function getTransitionDisplayName(
     roleNameEn = targetStep.applicationRoleName;
   }
   if (!roleNameAr && targetStep.applicationRoleNameAr) {
-    roleNameAr = targetStep.applicationRoleNameAr;
+    roleNameAr = targetStep.applicationRoleNameAr ?? undefined;
   }
 
   // Use getLocalizedValue helper for role name
@@ -298,7 +337,7 @@ function normalizeStatusToEnum(status: string | undefined): RequestStatusEnum | 
     return RequestStatusEnum.Rejected;
   }
   if (statusLower === 'autorejected' || statusLower === 'auto rejected' || statusLower === 'auto-rejected' || statusLower === '7') {
-    return (RequestStatusEnum as any).AutoRejected ?? RequestStatusEnum.Rejected;
+    return RequestStatusEnum.AutoRejected ?? RequestStatusEnum.Rejected;
   }
   if (statusLower === 'new' || statusLower === 'pending') {
     return RequestStatusEnum.New;
@@ -338,7 +377,7 @@ export function hasHigherApproval(requestDetail: RequestDetail | null): boolean 
 /**
  * Get current step transitions
  */
-export function getCurrentStepTransitions(requestDetail: RequestDetail | null): any[] {
+export function getCurrentStepTransitions(requestDetail: RequestDetail | null): WorkflowStepTransition[] {
   if (!requestDetail || !requestDetail.approvalHistory) {
     return [];
   }
@@ -352,9 +391,12 @@ export function getCurrentStepTransitions(requestDetail: RequestDetail | null): 
   }
 
   // Check for transitions property (may be in different formats from backend)
-  const transitions = currentPendingStep.transitions ||
-    (currentPendingStep as any).Transitions ||
-    [];
+  const pascalTransitions = (currentPendingStep as ApprovalStepWithPascalTransitions).Transitions;
+  const normalizedPascalTransitions = Array.isArray(pascalTransitions)
+    ? pascalTransitions as WorkflowStepTransition[]
+    : [];
+
+  const transitions = currentPendingStep.transitions ?? normalizedPascalTransitions;
 
   if (!Array.isArray(transitions) || transitions.length === 0) {
     return [];
@@ -367,9 +409,9 @@ export function getCurrentStepTransitions(requestDetail: RequestDetail | null): 
  * Get rank display name (localized)
  */
 export function getRankDisplayName(
-  rank: any,
+  rank: Localizable | null | undefined,
   translateService: TranslateService
 ): string {
   if (!rank) return '';
-  return getLocalizedName(rank, getCurrentLang(translateService)) || rank.nameEn || '';
+  return getLocalizedName(rank, getCurrentLang(translateService)) || (rank.nameEn ?? '') || '';
 }

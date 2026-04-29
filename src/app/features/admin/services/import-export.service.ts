@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Observable, forkJoin, of, firstValueFrom } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
 import { ToastService } from '@services/toast.service';
 import { ExcelService, ExcelColumn } from '@services/excel.service';
 import { formatDateShort } from '@core/utils/format.utils';
+import type { ImportError, ImportResultToastPayload } from '@models/import-result.model';
 
 @Injectable({
   providedIn: 'root'
@@ -17,8 +16,8 @@ export class ImportExportService {
   /**
    * Parse date from various formats
    */
-  parseDate(dateValue: any): string | undefined {
-    if (!dateValue) return undefined;
+  parseDate(dateValue: unknown): string | undefined {
+    if (dateValue == null || dateValue === '') return undefined;
     if (dateValue instanceof Date) {
       return dateValue.toISOString().split('T')[0];
     }
@@ -69,13 +68,7 @@ export class ImportExportService {
   /**
    * Handle import result and show appropriate message
    */
-  handleImportResult(result: {
-    successCount: number;
-    failureCount: number;
-    errors?: any[];
-    /** Optional API message (e.g. batch import "X created, Y updated"). */
-    message?: string | null;
-  }): void {
+  handleImportResult(result: ImportResultToastPayload): void {
     if (result.errors && result.errors.length > 0) {
       let msg = `Imported ${result.successCount} items. ${result.failureCount} failed.`;
       if (result.failureCount <= 2 && result.errors[0]?.errorMessage) {
@@ -89,7 +82,7 @@ export class ImportExportService {
         if (reason.length > 300) reason = reason.substring(0, 300) + '...';
         msg += ` Reason: ${reason}`;
       } else {
-        const hasDuplicates = result.errors.some((e: any) =>
+        const hasDuplicates = result.errors.some((e: ImportError) =>
           e.errorMessage?.toLowerCase().includes('duplicate') ||
           e.errorMessage?.toLowerCase().includes('already exists')
         );

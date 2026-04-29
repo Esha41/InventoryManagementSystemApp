@@ -3,14 +3,14 @@
  * Maps backend DTOs to UI models for requests management page
  */
 
-import { BaseRequestDto } from '@models/workflow-approval.model';
+import type { UnifiedListRequestDto } from '@models/unified-list-request.model';
 import { Request } from '../models/requests-management.model';
 import { formatDate } from '@utils/format.utils';
 
 /**
- * Map BaseRequestDto to Request UI model
+ * Map unified Request Management list item to Request UI model.
  */
-export function mapBaseRequestToRequest(dto: BaseRequestDto): Request {
+export function mapBaseRequestToRequest(dto: UnifiedListRequestDto): Request {
   // Helper to convert date to string format that pipes can parse
   const dateToString = (date: string | Date | null | undefined): string => {
     if (!date) return '';
@@ -25,8 +25,8 @@ export function mapBaseRequestToRequest(dto: BaseRequestDto): Request {
     orderId: `#${dto.requestNo || dto.id.toString().padStart(4, '0')}`,
     // Keep raw date values (Date objects converted to ISO strings, or ISO strings) and let shared pipes handle formatting in the UI
     // requestDate falls back to creationDate if not available
-    requestDate: dateToString(dto.requestDate || dto.creationDate),
-    creationDate: dateToString(dto.creationDate || dto.requestDate),
+    requestDate: dateToString(dto.requestDate ?? dto.creationDate),
+    creationDate: dateToString(dto.creationDate ?? dto.requestDate),
     priority: mapPriority(dto.priority),
     requestType: mapRequestType(dto.requestType),
     status: mapStatus(dto.status),

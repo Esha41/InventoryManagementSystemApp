@@ -25,12 +25,15 @@ import { BackendAuthService } from '@services/backend-auth.service';
 import { BackendUserService } from '@services/backend-user.service';
 import { AuthenticatedUser } from '@models/auth.model';
 import { BackendUserDto } from '@models/backend-user.model';
-import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { getLocalizedName, getCurrentLang, Localizable } from '@utils/localization.utils';
 import { getFileSizeFromFile, removeFile, validateFile, MAX_FILE_SIZE_MB, showFileValidationErrors } from '@utils/file.utils';
 import { ConfirmationDialogComponent, ConfirmationType } from '@components/confirmation-dialog/confirmation-dialog.component';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { ONBOARDING_TOUR } from '@core/tokens/onboarding-tour.token';
 import { IOnboardingTourProvider } from '@core/interfaces/onboarding-tour-provider.interface';
+import { AmmunitionReadDto } from '@models/ammunition.model';
+import { WeaponDto } from '@models/weapon.model';
+import { ExplosiveDto } from '@models/explosive.model';
 
 interface DiscardItemForm {
   itemId: number | null;
@@ -43,6 +46,8 @@ interface RequestPurpose {
   nameAr: string;
   nameEn: string;
 }
+
+type CatalogListItem = AmmunitionReadDto | WeaponDto | ExplosiveDto;
 
 @Component({
   selector: 'app-discard-request',
@@ -89,7 +94,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
   departments: LookupItem[] = [];
   requesters: LookupItem[] = [];
   requestPurposes: RequestPurpose[] = [];
-  items: any[] = [];
+  items: CatalogListItem[] = [];
   priorityOptions = [
     { value: 1, labelKey: 'common.priorityLevels.Normal' },
     { value: 2, labelKey: 'common.priorityLevels.Urgent' },
@@ -240,7 +245,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
           this.cdr.markForCheck();
         },
         error: () => {
-          this.translate.get(['toast.error', 'discardRequest.errors.failedToLoadDepartments']).subscribe((translations: any) => {
+          this.translate.get(['toast.error', 'discardRequest.errors.failedToLoadDepartments']).subscribe((translations: Record<string, string>) => {
             this.toastService.error(
               translations['discardRequest.errors.failedToLoadDepartments'] || 'Failed to load departments',
               translations['toast.error']
@@ -275,7 +280,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
           this.cdr.markForCheck();
         },
         error: () => {
-          this.translate.get(['toast.error', 'discardRequest.errors.failedToLoadUsers']).subscribe((translations: any) => {
+          this.translate.get(['toast.error', 'discardRequest.errors.failedToLoadUsers']).subscribe((translations: Record<string, string>) => {
             this.toastService.error(
               translations['discardRequest.errors.failedToLoadUsers'] || 'Failed to load users',
               translations['toast.error']
@@ -301,7 +306,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
           this.cdr.markForCheck();
         },
         error: () => {
-          this.translate.get(['toast.error', 'discardRequest.errors.failedToLoadRequestPurposes']).subscribe((translations: any) => {
+          this.translate.get(['toast.error', 'discardRequest.errors.failedToLoadRequestPurposes']).subscribe((translations: Record<string, string>) => {
             this.toastService.error(
               translations['discardRequest.errors.failedToLoadRequestPurposes'] || 'Failed to load request purposes',
               translations['toast.error']
@@ -315,7 +320,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
 
   private loadItems(): void {
     this.isLoadingItems = true;
-    let load$: Observable<any[]>;
+    let load$: Observable<CatalogListItem[]>;
 
     if (this.selectedItemType === 'Weapon') {
       load$ = this.weaponService.getAll();
@@ -338,7 +343,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
           this.cdr.markForCheck();
         },
         error: () => {
-          this.translate.get(['toast.error', 'discardRequest.errors.failedToLoadItems']).subscribe((translations: any) => {
+          this.translate.get(['toast.error', 'discardRequest.errors.failedToLoadItems']).subscribe((translations: Record<string, string>) => {
             this.toastService.error(
               translations['discardRequest.errors.failedToLoadItems'] || 'Failed to load items',
               translations['toast.error']
@@ -423,7 +428,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
     this.itemDropdownSearchTerms = this.itemDropdownSearchTerms.map(() => '');
   }
 
-  onItemSelect(index: number, itemOption: any): void {
+  onItemSelect(index: number, itemOption: CatalogListItem): void {
     const optionValue = itemOption.id ?? itemOption.itemNo ?? null;
     this.discardItems[index].itemId = optionValue;
     this.closeItemDropdown(index);
@@ -432,7 +437,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
     if (this.isSubmitted && optionValue) this.clearItemError(index, 'itemId');
   }
 
-  getItemOptionLabel(itemOption: any): string {
+  getItemOptionLabel(itemOption: CatalogListItem): string {
     return itemOption?.name || itemOption?.itemNo || 'Unknown';
   }
 
@@ -444,7 +449,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
     return selected ? this.getItemOptionLabel(selected) : '';
   }
 
-  getFilteredItems(index: number): any[] {
+  getFilteredItems(index: number): CatalogListItem[] {
     if (!this.items?.length) return [];
 
     const term = (this.itemDropdownSearchTerms[index] || '').trim().toLowerCase();
@@ -457,25 +462,27 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
     });
   }
 
-  isOptionSelected(option: any, itemId: any): boolean {
+  isOptionSelected(option: CatalogListItem, itemId: string | number | null): boolean {
     return this.isSameItem(option, itemId);
   }
 
-  private isSameItem(option: any, itemId: any): boolean {
+  private isSameItem(option: CatalogListItem, itemId: string | number | null): boolean {
     const optionValue = option?.id ?? option?.itemNo;
     if (optionValue === undefined || optionValue === null) return false;
 
     return String(optionValue) === String(itemId);
   }
 
-  private getLocalizedName(entity: any): string {
+  private getLocalizedName(
+    entity: LookupItem | RequestPurpose | string | number | { label: string } | null | undefined
+  ): string {
     if (!entity) return '';
 
     if (typeof entity === 'string') return entity;
     if (typeof entity === 'number') return String(entity);
     if (typeof entity === 'object' && 'label' in entity && typeof entity.label === 'string') return entity.label;
 
-    return getLocalizedName(entity, getCurrentLang(this.translate));
+    return getLocalizedName(entity as Localizable, getCurrentLang(this.translate));
   }
 
   private unwrapOption<T>(option: DropdownOption<T> | T | null): T | null {
@@ -490,7 +497,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
     this.validateForm();
 
     if (Object.keys(this.errors).length > 0) {
-      this.translate.get(['toast.error', 'discardRequest.errors.correctFormErrors']).subscribe((translations: any) => {
+      this.translate.get(['toast.error', 'discardRequest.errors.correctFormErrors']).subscribe((translations: Record<string, string>) => {
         this.toastService.error(
           translations['discardRequest.errors.correctFormErrors'] || 'Please correct the form errors',
           translations['toast.error']
@@ -505,7 +512,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
       'discardRequest.confirmDialog.message',
       'common.yes',
       'common.cancel'
-    ]).subscribe((translations: any) => {
+    ]).subscribe((translations: Record<string, string>) => {
       this.confirmDialogTitle = translations['discardRequest.confirmDialog.title'] || 'Confirm Request';
       this.confirmDialogMessage = translations['discardRequest.confirmDialog.message'] || 'Are you sure you want to submit this discard request?';
       this.confirmDialogConfirmText = translations['common.yes'] || 'Yes';
@@ -778,7 +785,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
     }
   }
 
-  private toNumber(value: any): number | null {
+  private toNumber(value: unknown): number | null {
     if (value === null || value === undefined || value === '') return null;
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : null;

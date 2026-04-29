@@ -15,11 +15,9 @@ import {
   WORKFLOW_TYPE_NAMES,
   WorkflowTypeItem,
   WorkflowStepNotifierDto,
-  UpdateWorkflowStepNotifiersDto,
-  CreateWorkflowStepNotifierDto,
-  WorkflowStepDto
+  WorkflowStepDto,
+  workflowTypeToNumber
 } from '@models/workflow.model';
-import { ApiResponse } from '@models/api-response.model';
 
 /**
  * Workflow Service
@@ -49,26 +47,8 @@ export class WorkflowService {
   /**
    * Convert string enum value (from backend) to numeric ID
    */
-  private convertWorkflowTypeToId(workflowType: any): number {
-    if (typeof workflowType === 'number') {
-      return workflowType;
-    }
-
-    // Handle string enum values from backend
-    const stringValue = String(workflowType);
-    switch (stringValue) {
-      case 'NormalOrder': return WorkflowType.NormalOrder;
-      case 'OrderFromAllowance': return WorkflowType.OrderFromAllowance;
-      case 'Return': return WorkflowType.Return;
-      case 'Discard': return WorkflowType.Discard;
-      case 'NormalOrderForTrainingPurpose': return WorkflowType.NormalOrderForTrainingPurpose;
-      case 'NormalOrder_Weapon': return WorkflowType.NormalOrder_Weapon;
-      case 'OrderFromAllowance_Weapon': return WorkflowType.OrderFromAllowance_Weapon;
-      case 'NormalOrderForTrainingPurpose_Weapon': return WorkflowType.NormalOrderForTrainingPurpose_Weapon;
-      case 'Return_Weapon': return WorkflowType.Return_Weapon;
-      default:
-        return 0;
-    }
+  private convertWorkflowTypeToId(workflowType: number | string): number {
+    return workflowTypeToNumber(workflowType);
   }
 
   getWorkflowTypeNameById(id: number | string, lang: 'en' | 'ar'): string {
@@ -99,7 +79,7 @@ export class WorkflowService {
             approvalStages: Array.isArray(w.workflowSteps) ? w.workflowSteps.length : 0,
             status: status,
             workflowType: numericWorkflowType,
-            workflowTypeName: (w as any).workflowTypeName || undefined
+            workflowTypeName: w.workflowTypeName ?? undefined
           };
         });
 
@@ -145,17 +125,17 @@ export class WorkflowService {
   /**
    * Get workflow (backend shape) by id for view page
    */
-  getWorkflowDetailById(id: number): Observable<any> {
+  getWorkflowDetailById(id: number): Observable<BackendWorkflowDto> {
     this.configService.log('Fetching workflow detail', { id });
 
-    return this.apiService.get<any>(
+    return this.apiService.get<BackendWorkflowDto>(
       API_ENDPOINTS.WORKFLOWS.BY_ID(id)
     ).pipe(
       map(data => {
         if (!data) {
           throw new Error('Failed to fetch workflow');
         }
-        const steps = data.workflowSteps as WorkflowStepDto[] | undefined;
+        const steps = data.workflowSteps;
         if (steps?.length) {
           return {
             ...data,
@@ -210,7 +190,7 @@ export class WorkflowService {
   createBackendWorkflow(payload: BackendCreateWorkflowDto): Observable<boolean> {
     this.configService.log('Creating backend workflow', { name: payload.workflowName });
 
-    return this.apiService.post<any>(
+    return this.apiService.post<BackendWorkflowDto>(
       API_ENDPOINTS.WORKFLOWS.BASE,
       payload
     ).pipe(
@@ -231,7 +211,7 @@ export class WorkflowService {
   updateBackendWorkflow(payload: BackendUpdateWorkflowDto): Observable<boolean> {
     this.configService.log('Updating backend workflow', { id: payload.id });
 
-    return this.apiService.put<any>(
+    return this.apiService.put<BackendWorkflowDto>(
       API_ENDPOINTS.WORKFLOWS.BASE,
       payload
     ).pipe(
@@ -288,7 +268,7 @@ export class WorkflowService {
   deleteWorkflow(id: number): Observable<boolean> {
     this.configService.log('Deleting workflow', { id });
 
-    return this.apiService.delete<any>(
+    return this.apiService.delete<boolean>(
       API_ENDPOINTS.WORKFLOWS.BY_ID(id)
     ).pipe(
       map(() => {

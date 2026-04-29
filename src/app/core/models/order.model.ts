@@ -1,6 +1,4 @@
-import { RankDto } from './rank.model';
-import { DepartmentDto } from './lookup.model';
-import { OrderRequestItemDto } from './request-item.model';
+import type { RequestManagementBaseRequestDto } from './request-management-base.model';
 
 // Re-export for backward compatibility
 export { OrderRequestItemDto } from './request-item.model';
@@ -45,72 +43,53 @@ export interface CreateOrderDto {
 }
 
 /**
- * Order DTO for read operations
+ * Order-specific fields on read DTO (beyond `BaseRequestDto`).
+ * @see `ettadbackend/Ettad.RequestManagement.Service/Orders/Dto/OrderDto.cs`
  */
-export interface OrderDto {
-    id: number;
-    requestNo?: string;
-    orderNo: string;
-    requestType: number | string; // Can be number (1, 2, 3) or string ('Order', 'Return', 'Discard')
-    reason?: string;
-    priority: number | string; // Can be number (1, 2, 3) or string ('High', 'Medium', 'Low')
-    status: number | string; // Can be number (1, 2, 3, 4) or string ('New', 'UnderProcess', 'Approved', 'Rejected')
-    notes?: string;
-    requestPurposeNotes?: string;
-    departmentId: number;
-    requesterId?: string | null;
-    recieverId?: string | null;
-    depotId?: number | null;
-    requestPurposeId: number;
-    isFromAllowance: boolean;
-    usageDateFrom?: string;
+export interface OrderSpecificDto {
+    isFromAllowance?: boolean;
+    usageDateFrom?: string | Date;
     usageTimeFrom?: string;
-    usageDateTo?: string;
+    usageDateTo?: string | Date;
     usageTimeTo?: string;
     usagePurpose?: string;
     annualDiscard?: number | null;
     usageLocation?: string;
     numberOfOfficer?: number | null;
     numberOfOtherRank?: number | null;
-    supplyDate?: string | Date | null; // Date when the order should be supplied
+    supplyDate?: string | Date | null;
+}
+
+/**
+ * Flat display names hydrated client-side or from older list payloads — not on RequestManagement `BaseRequestDto`.
+ * @see `ettadbackend/Ettad.Workflow.Service/Dtos/BaseRequestDto.cs` for optional workflow-only flat names
+ */
+export interface OrderDtoHydratedDisplayFields {
     departmentNameAr?: string;
     departmentNameEn?: string;
     requesterName?: string;
     requesterNameEn?: string;
     requesterNameAr?: string;
-    recieverName?: string;
-    depotNameAr?: string;
-    depotNameEn?: string;
     requestPurposeNameAr?: string;
     requestPurposeNameEn?: string;
-    requestItems?: OrderRequestItemDto[];
-    creationDate?: string | Date;
-    isMyTurn?: boolean;
-    // Nested objects for localization
-    department?: {
-        id: number;
-        code: string;
-        nameAr: string;
-        nameEn: string;
-        isDeleted: boolean;
-    };
-    requester?: {
-        id: string;
-        userName: string;
-        fullNameEN: string;
-        fullNameAR: string;
-        militoryId?: string | null;
-        email?: string;
-        rank?: RankDto;
-        department?: DepartmentDto;
-    };
-    requestPurpose?: {
-        id: number;
-        nameAr: string;
-        nameEn: string;
-        requestType: number;
-    };
+    /** Optional enrichment from supply/list payloads (not on core `OrderDto` in Request Management). */
+    depotNameAr?: string;
+    depotNameEn?: string;
 }
+
+/**
+ * Order read DTO.
+ * Intersection type:
+ * - `RequestManagementBaseRequestDto` — `ettadbackend/Ettad.RequestManagement.Service/Common/Dtos/BaseRequestDto.cs`
+ * - `OrderSpecificDto` — `ettadbackend/Ettad.RequestManagement.Service/Orders/Dto/OrderDto.cs`
+ * - `OrderDtoHydratedDisplayFields` — client / workflow list enrichments
+ */
+export type OrderDto = RequestManagementBaseRequestDto &
+    OrderSpecificDto &
+    OrderDtoHydratedDisplayFields & {
+        /** Same as `requestNo` in API; kept for UI that labels this as order number. */
+        orderNo?: string;
+    };
 
 /**
  * Order status summary item for dashboard/analytics

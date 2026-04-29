@@ -1,6 +1,7 @@
 import { OrderDto } from '@models/order.model';
 import { ReturnDto } from '@models/return.model';
 import { DiscardDto } from '@models/discard.model';
+export type NotificationMetadata = Record<string, unknown>;
 
 /**
  * Base notification interface
@@ -16,7 +17,7 @@ export interface Notification {
   senderId?: string | null;
   entityType?: string | null;
   entityId?: number | null;
-  metadata?: Record<string, any> | null;
+  metadata?: NotificationMetadata | null;
 }
 
 /**

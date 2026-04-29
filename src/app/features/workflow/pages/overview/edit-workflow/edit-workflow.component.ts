@@ -13,7 +13,7 @@ import { WorkflowService } from '@workflow/services/workflow.service';
 import { BackendUserService } from '@services/backend-user.service';
 import { RoleDto, BackendUserDto, ApplicationEntityDto } from '@models/backend-user.model';
 import { PaginatedList } from '@models/api-response.model';
-import { WorkflowStepDto, WorkflowStepTransitionDto, WorkflowStepNotifier, BackendUpdateWorkflowDto } from '@models/workflow.model';
+import { WorkflowStepDto, WorkflowStepTransitionDto, WorkflowStepNotifier, BackendUpdateWorkflowDto, workflowTypeToNumber } from '@models/workflow.model';
 import { TranslationService } from '@services/translation.service';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { ToastService } from '@services/toast.service';
@@ -153,13 +153,14 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     this.workflowService.getWorkflowDetailById(this.workflowId).pipe(takeUntil(this.destroy$)).subscribe({
       next: wf => {
         const status = wf?.isActive ? 'Active' : 'Inactive';
+        const numericWorkflowType = workflowTypeToNumber(wf?.workflowType ?? 1);
         this.editForm = {
           id: wf?.id || this.workflowId!,
           name: wf?.workflowName || '',
           status: status as 'Active' | 'Inactive',
-          workflowType: wf?.workflowType || 1
+          workflowType: numericWorkflowType
         };
-        this.editWorkflowType = wf?.workflowType || 1;
+        this.editWorkflowType = numericWorkflowType;
         const steps: WorkflowStepDto[] = wf?.workflowSteps || [];
 
         const sortedSteps = [...steps].sort((a, b) => (a.stepOrder || 0) - (b.stepOrder || 0));

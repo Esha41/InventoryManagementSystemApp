@@ -13,9 +13,9 @@ import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialo
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { OrderItem } from '@models/supply-request.model';
 import { CreateRequestItemDto } from '@models/request-item.model';
-import { AmmunitionReadDto } from '@models/ammunition.model';
+import { AvailableCatalogItemDto } from '@requests/services/supply-order-data.service';
 import { unwrapDropdownOption } from '@utils/dropdown.utils';
-import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { getItemManagementOptionLabel } from '@requests/utils/supply-order-format.utils';
 
 @Component({
   selector: 'app-item-management-modals',
@@ -39,7 +39,7 @@ export class ItemManagementModalsComponent implements OnInit, OnChanges {
   @Input() isRemoveItemModalOpen: boolean = false;
   @Input() selectedItemForEdit: OrderItem | null = null;
   @Input() selectedItemForRemove: OrderItem | null = null;
-  @Input() availableItems: AmmunitionReadDto[] = [];
+  @Input() availableItems: AvailableCatalogItemDto[] = [];
   @Input() loadingItems: boolean = false;
   @Input() savingItem: boolean = false;
   @Input() allowedItemTypes: number[] = [1, 3]; // Default to both ammunition and explosives
@@ -172,13 +172,12 @@ export class ItemManagementModalsComponent implements OnInit, OnChanges {
     }
   }
 
-  readonly itemOptionLabel = (option: DropdownOption<AmmunitionReadDto> | AmmunitionReadDto | null): string => {
+  readonly itemOptionLabel = (option: DropdownOption<AvailableCatalogItemDto> | AvailableCatalogItemDto | null): string => {
     const item = unwrapDropdownOption(option);
     if (!item) {
       return '';
     }
-    const localizedName = getLocalizedName(item, getCurrentLang(this.translate));
-    return localizedName || item.itemNo || `Item #${item.id}`;
+    return getItemManagementOptionLabel(item, this.translate);
   };
 
   getItemProductId(item: OrderItem): string {

@@ -367,7 +367,6 @@ export class UserFormModalComponent implements OnInit, OnChanges, OnDestroy {
         isLdapUser: isLdapUser,
         ldapUserName: formValue.ldapUserName || undefined,
         extraEmployeesView: formValue.extraEmployeesView || undefined,
-        organizationId: 1,
         departmentId: formValue.departmentId || undefined,
         roleIds: formValue.roleIds || [], // Multiple roles as array
         // Map form field names to API field names
@@ -441,7 +440,6 @@ export class UserFormModalComponent implements OnInit, OnChanges, OnDestroy {
         isLdapUser: isLdapUser,
         ldapUserName: formValue.ldapUserName || undefined,
         extraEmployeesView: formValue.extraEmployeesView || undefined,
-        organizationId: this.user.organizationId,
         departmentId: formValue.departmentId || undefined,
         roleIds,
         // Map form field names to API field names

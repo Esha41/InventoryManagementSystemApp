@@ -7,6 +7,8 @@ import { SupplyService, SupplyDto } from '@requests/services/supply.service';
 import { InventoryService, LotDetailDto } from '@inventory/services/inventory.service';
 import { AmmunitionService } from '@assets/services/ammunition.service';
 import { ExplosiveService } from '@assets/services/explosive.service';
+import { AmmunitionReadDto } from '@models/ammunition.model';
+import { ExplosiveDto } from '@models/explosive.model';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';
@@ -19,6 +21,8 @@ import { mapApprovalHistory, mapRequestStatus } from '@utils/request-mapper.util
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
+
+export type AvailableCatalogItemDto = AmmunitionReadDto | ExplosiveDto;
 
 /**
  * Supply Order Data Service
@@ -130,18 +134,25 @@ export class SupplyOrderDataService {
    * Populate flat properties from nested objects
    * Also handles PascalCase property names from backend
    */
-  private populateOrderFlatProperties(order: OrderDto | any): void {
+  private populateOrderFlatProperties(order: OrderDto): void {
     if (!order) return;
 
     // Normalize nested object property names (handle both camelCase and PascalCase)
-    if ((order as any).Department && !order.department) {
-      order.department = (order as any).Department;
+    type OrderLegacyPascalFields = {
+      Department?: OrderDto['department'];
+      Requester?: OrderDto['requester'];
+      RequestPurpose?: OrderDto['requestPurpose'];
+    };
+    const legacy = order as unknown as OrderLegacyPascalFields;
+
+    if (legacy.Department && !order.department) {
+      order.department = legacy.Department;
     }
-    if ((order as any).Requester && !order.requester) {
-      order.requester = (order as any).Requester;
+    if (legacy.Requester && !order.requester) {
+      order.requester = legacy.Requester;
     }
-    if ((order as any).RequestPurpose && !order.requestPurpose) {
-      order.requestPurpose = (order as any).RequestPurpose;
+    if (legacy.RequestPurpose && !order.requestPurpose) {
+      order.requestPurpose = legacy.RequestPurpose;
     }
 
     // Populate department flat properties from nested object if missing
@@ -282,7 +293,7 @@ export class SupplyOrderDataService {
     return this.apiService.get<BaseRequestDto[]>(
       API_ENDPOINTS.WORKFLOW_APPROVAL.ALL_BASE_REQUESTS
     ).pipe(
-      map((response: any) => {
+      map((response: BaseRequestDto[]) => {
         const data: BaseRequestDto[] = Array.isArray(response) ? response : [];
 
         const baseRequest = data.find(r => r.id === orderId);
@@ -375,37 +386,38 @@ export class SupplyOrderDataService {
    *                           1=Ammunition, 2=Weapon, 3=Explosive
    *                           If not provided, all items are returned
    */
-  loadAvailableItems(existingItemIds: number[], allowedItemTypes?: number[]): Observable<any[]> {
-    const requests: Observable<any[]>[] = [];
+  loadAvailableItems(existingItemIds: number[], allowedItemTypes?: number[]): Observable<AvailableCatalogItemDto[]> {
+    const requests: Observable<AvailableCatalogItemDto[]>[] = [];
 
     // Map allowed types to service calls (Weapons removed)
-    const typeToService = {
+    const typeToService: Record<number, () => Observable<AvailableCatalogItemDto[]>> = {
       1: () => this.ammunitionService.getAll(), // Ammunition
-      3: () => this.explosiveService.getAll()   // Explosive
+      3: () => this.explosiveService.getAll(),  // Explosive
     };
 
     if (allowedItemTypes && allowedItemTypes.length > 0) {
       // Fetch only for specified types (excluding Weapons if passed)
       allowedItemTypes.forEach(type => {
-        const serviceCall = (typeToService as any)[type];
+        const serviceCall = typeToService[type];
         if (serviceCall) {
           requests.push(serviceCall().pipe(
-            catchError(() => of([])) // Silence errors for specific service and return empty
+            // Silence errors for specific service and return empty
+            catchError(() => of<AvailableCatalogItemDto[]>([]))
           ));
         }
       });
     } else {
       // If none specified, fetch Ammunition and Explosives only
-      requests.push(this.ammunitionService.getAll().pipe(catchError(() => of([]))));
-      requests.push(this.explosiveService.getAll().pipe(catchError(() => of([]))));
+      requests.push(this.ammunitionService.getAll().pipe(catchError(() => of<AvailableCatalogItemDto[]>([]))));
+      requests.push(this.explosiveService.getAll().pipe(catchError(() => of<AvailableCatalogItemDto[]>([]))));
     }
 
     if (requests.length === 0) return of([]);
 
     return forkJoin(requests).pipe(
-      map((results: any[][]) => {
+      map((results: AvailableCatalogItemDto[][]) => {
         // Flatten combined results
-        const items = results.reduce((acc, val) => acc.concat(val), []);
+        const items = results.reduce<AvailableCatalogItemDto[]>((acc, val) => acc.concat(val), []);
 
         // Filter out items already in the order
         return (items || []).filter(item => !existingItemIds.includes(item.id));

@@ -5,6 +5,8 @@
  */
 
 import { OrderDto, OrderRequestItemDto } from '@models/order.model';
+import { AmmunitionReadDto } from '@models/ammunition.model';
+import { ExplosiveDto } from '@models/explosive.model';
 import { SupplyItemDisplay } from '@models/supply-order.model';
 import { WorkflowApprovalStep } from '@models/workflow-approval.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
@@ -167,14 +169,16 @@ export function getLocalizedOrderItemName(
   if (!item) return '';
 
   const lang = getCurrentLang(translateService);
-  const anyItem: any = item as any;
+  type OrderRequestItemWithMaybeNestedItem = OrderRequestItemDto & {
+    item?: { nameEn?: string | null; nameAr?: string | null; name?: string | null } | null;
+  };
+  const typed = item as OrderRequestItemWithMaybeNestedItem;
 
-  // Prefer localizing the nested item object if available
-  const localized =
-    getLocalizedName(anyItem.item ?? anyItem, lang) ||
-    anyItem.itemName;
+  // Prefer localizing the nested item object if available; otherwise fall back to itemName.
+  const localizedFromNested = getLocalizedName(typed.item ?? null, lang);
+  const localized = localizedFromNested || typed.itemName;
 
-  const id = anyItem.itemId || anyItem.id || 0;
+  const id = typed.itemId || typed.id || 0;
 
   return localized || getItemDisplayName(id);
 }
@@ -187,13 +191,15 @@ export function getSupplyItemDisplayName(
   translateService: TranslateService
 ): string {
   const lang = getCurrentLang(translateService);
-  const anyItem: any = item as any;
+  type SupplyItemDisplayWithMaybeNestedItem = SupplyItemDisplay & {
+    item?: { nameEn?: string | null; nameAr?: string | null; name?: string | null } | null;
+  };
+  const typed = item as SupplyItemDisplayWithMaybeNestedItem;
 
-  const localized =
-    getLocalizedName(anyItem.item ?? anyItem, lang) ||
-    anyItem.itemName;
+  const localizedFromNested = getLocalizedName(typed.item ?? null, lang);
+  const localized = localizedFromNested || typed.itemName;
 
-  const id = anyItem.itemId || anyItem.id || 0;
+  const id = typed.itemId || (typed as { id?: number }).id || 0;
 
   return localized || getItemDisplayName(id);
 }
@@ -215,16 +221,38 @@ export function getDepartmentName(orderData: OrderDto | null, translateService: 
   return nameEn || nameAr || 'N/A';
 }
 
+export type ItemManagementOptionSource = OrderRequestItemDto | AmmunitionReadDto | ExplosiveDto;
+
+function isOrderRequestItemOption(item: ItemManagementOptionSource): item is OrderRequestItemDto {
+  return 'itemId' in item;
+}
+
 /**
  * Get item management option label
  */
-export function getItemManagementOptionLabel(item: any, translateService: TranslateService): string {
+export function getItemManagementOptionLabel(
+  item: ItemManagementOptionSource | null | undefined,
+  translateService: TranslateService
+): string {
   if (!item) return '';
 
-  const lang = getCurrentLang(translateService);
-  const localizedName = getLocalizedName(item, lang);
+  if (!isOrderRequestItemOption(item)) {
+    const lang = getCurrentLang(translateService);
+    const localizedName = getLocalizedName(
+      { nameEn: item.name, nameAr: item.name, name: item.name },
+      lang
+    );
+    return localizedName || item.itemNo || `Item #${item.id}`;
+  }
 
-  return localizedName || item?.itemNo || `Item #${item?.id}`;
+  const lang = getCurrentLang(translateService);
+  type OrderRequestItemOptionLike = OrderRequestItemDto & {
+    item?: { nameEn?: string | null; nameAr?: string | null; name?: string | null } | null;
+  };
+  const typed = item as OrderRequestItemOptionLike;
+  const localizedName = getLocalizedName(typed.item ?? null, lang);
+
+  return localizedName || typed.itemNo || `Item #${typed.id}`;
 }
 
 /**

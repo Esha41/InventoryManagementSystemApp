@@ -98,7 +98,7 @@ export class OrderItemTrackingModalComponent implements OnInit, OnDestroy, OnCha
                     this.history = data;
                     this.cdr.markForCheck();
                 },
-                error: (err: any) => {
+                error: (err: unknown) => {
                     console.error('Failed to load history', err);
                     this.error = true;
                     this.cdr.markForCheck();
@@ -106,7 +106,7 @@ export class OrderItemTrackingModalComponent implements OnInit, OnDestroy, OnCha
             });
     }
 
-    getActionLabelKey(actionType: any): string {
+    getActionLabelKey(actionType: string | number): string {
         let key: string | undefined;
 
         if (typeof actionType === 'string' && isNaN(Number(actionType))) {
@@ -120,7 +120,7 @@ export class OrderItemTrackingModalComponent implements OnInit, OnDestroy, OnCha
         return key ? `ORDER_TRACKING.ACTION_${key.toUpperCase()}` : 'ORDER_TRACKING.ACTION_UNKNOWN';
     }
 
-    getActionColorClass(actionType: any): string {
+    getActionColorClass(actionType: string | number): string {
         // Normalize to number for switch case
         let typeVal: number;
 

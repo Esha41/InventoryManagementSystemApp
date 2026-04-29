@@ -4,9 +4,9 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { ModalComponent } from '@components/modal/modal.component';
-import { DropdownComponent } from '@components/dropdown/dropdown.component';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { OrderRequestItemDto, CreateRequestItemDto } from '@models/order.model';
-import { SupplyOrderDataService } from '@requests/services/supply-order-data.service';
+import { SupplyOrderDataService, AvailableCatalogItemDto } from '@requests/services/supply-order-data.service';
 import { ToastService } from '@services/toast.service';
 import { APIOperationResponse } from '@models/api-response.model';
 import { getItemManagementOptionLabel } from '@requests/utils/supply-order-format.utils';
@@ -42,7 +42,7 @@ export class AddOrderItemModalComponent implements OnInit, OnDestroy, OnChanges 
   @Output() itemAdded = new EventEmitter<void>();
 
   addItemForm!: FormGroup;
-  availableItems: any[] = [];
+  availableItems: AvailableCatalogItemDto[] = [];
   loadingItems: boolean = false;
   savingItem: boolean = false;
 
@@ -94,7 +94,7 @@ export class AddOrderItemModalComponent implements OnInit, OnDestroy, OnChanges 
           this.loadingItems = false;
           this.cdr.markForCheck();
         },
-        error: (error: any) => {
+        error: (error: unknown) => {
           const errorMessage = error instanceof Error ? error.message : 'Failed to load items';
           this.translateService.get(['supplyOrder.toast.failedToLoadItems', 'toast.error']).subscribe(translations => {
             this.toastService.error(errorMessage, translations['toast.error']);
@@ -119,8 +119,11 @@ export class AddOrderItemModalComponent implements OnInit, OnDestroy, OnChanges 
     return [1, 3];
   }
 
-  itemManagementOptionLabel = (item: any): string => {
-    return getItemManagementOptionLabel(item, this.translateService);
+  itemManagementOptionLabel = (
+    item: DropdownOption<AvailableCatalogItemDto> | AvailableCatalogItemDto | null
+  ): string => {
+    const row = item && typeof item === 'object' && item !== null && 'value' in item ? item.value : item;
+    return getItemManagementOptionLabel(row, this.translateService);
   };
 
 
@@ -143,7 +146,7 @@ export class AddOrderItemModalComponent implements OnInit, OnDestroy, OnChanges 
     this.proceedToAddItem(formValue);
   }
 
-  private proceedToAddItem(formValue: any): void {
+  private proceedToAddItem(formValue: { itemId: number; quantity: number; notes?: string }): void {
     const itemDto: CreateRequestItemDto = {
       itemId: formValue.itemId,
       quantity: formValue.quantity,
@@ -170,7 +173,7 @@ export class AddOrderItemModalComponent implements OnInit, OnDestroy, OnChanges 
           this.savingItem = false;
           this.cdr.markForCheck();
         },
-        error: (error: any) => {
+        error: (error: unknown) => {
           const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, 'Failed to add item', this.translateService);
           this.translateService.get(['toast.error']).subscribe(translations => {
             this.toastService.error(errorMessage, translations['toast.error']);

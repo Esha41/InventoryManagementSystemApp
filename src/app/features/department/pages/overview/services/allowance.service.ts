@@ -7,11 +7,8 @@ import { AmmunitionService } from '@assets/services/ammunition.service';
 import { WeaponService } from '@assets/services/weapon.service';
 import { ExplosiveService } from '@assets/services/explosive.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import type {
-  AllowanceItemType,
-  AllowanceApiItem,
-  AllowanceItemTypeKey
-} from '../models/allowance.model';
+import type { AllowanceItemType, AllowanceItemTypeKey } from '../models/allowance.model';
+import type { AllowanceItemByDepartmentDto, AllowanceItemDetailDto } from '@models/allowance.model';
 import type { AmmunitionReadDto } from '@models/ammunition.model';
 import type { WeaponDto } from '@models/weapon.model';
 import type { ExplosiveDto } from '@models/explosive.model';
@@ -46,12 +43,13 @@ export class AllowanceService {
     return this.ammunitionService.getAll<AmmunitionReadDto>();
   }
 
-  getExistingAllowance(departmentId: number, year: number): Observable<AllowanceApiItem[]> {
+  getExistingAllowance(departmentId: number, year: number): Observable<AllowanceItemDetailDto[]> {
     const endpoint = API_ENDPOINTS.ALLOWANCE.BY_DEPARTMENT_AND_YEAR(departmentId, year);
-    type AllowanceResponseData = { items?: AllowanceApiItem[]; Items?: AllowanceApiItem[] };
+    type AllowanceResponseData = AllowanceItemByDepartmentDto & { Items?: AllowanceItemDetailDto[] };
     return this.apiService.get<AllowanceResponseData>(endpoint).pipe(
       map((data) => {
-        return data?.items || data?.Items || [];
+        if (!data) return [];
+        return data.items ?? data.Items ?? [];
       })
     );
   }

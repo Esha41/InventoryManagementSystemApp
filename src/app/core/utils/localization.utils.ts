@@ -3,13 +3,16 @@
  * Supports multiple naming conventions used across the application
  */
 export interface Localizable {
-  nameEn?: string | null;
-  nameAr?: string | null;
-  nameEN?: string | null;  // Alternative casing
-  nameAR?: string | null;  // Alternative casing
-  fullNameEN?: string | null;  // For user names
-  fullNameAR?: string | null;  // For user names
-  name?: string | null;  // Fallback generic name
+  // Note: some backend DTOs model these as `string | null | undefined` even when
+  // our UI only cares about the localized string. Accept `undefined` explicitly
+  // so we can pass DTO-shaped objects without type assertions.
+  nameEn?: string | null | undefined;
+  nameAr?: string | null | undefined;
+  nameEN?: string | null | undefined;  // Alternative casing
+  nameAR?: string | null | undefined;  // Alternative casing
+  fullNameEN?: string | null | undefined;  // For user names
+  fullNameAR?: string | null | undefined;  // For user names
+  name?: string | null | undefined;  // Fallback generic name
 }
 
 /**
@@ -71,7 +74,9 @@ export const getLocalizedName = (
  * Helper to get current language from TranslateService
  * Can be used when TranslateService is available in component
  */
-export const getCurrentLang = (translateService: any): string => {
+export const getCurrentLang = (
+  translateService: { currentLang?: string | null; defaultLang?: string | null } | null | undefined
+): string => {
   return translateService?.currentLang || translateService?.defaultLang || 'en';
 }
 

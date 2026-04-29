@@ -167,17 +167,45 @@ export interface BaseRequestDto {
   requestDate: string | Date;
   creationDate?: string | Date; // Actual creation date from backend audit fields
   departmentName?: string;
+  departmentNameAr?: string;
+  departmentNameEn?: string;
   requesterName?: string;
   requesterNameEn?: string;
   requesterNameAr?: string;
+  requesterRoleNameAr?: string;
   requesterUserName?: string;
   requestPurposeName?: string;
   requestPurposeNotes?: string;
+  requestPurposeNameAr?: string;
+  requestPurposeNameEn?: string;
   requestItems?: RequestItemDto[];
   approvalHistory?: WorkflowApprovalStep[];
   files?: FileUploadDto[];
+  usageLocation?: string;
+  usagePurpose?: string;
+  usageDateFrom?: string | Date;
+  usageTimeFrom?: string;
+  usageDateTo?: string | Date;
+  usageTimeTo?: string;
+  numberOfOfficer?: number;
+  numberOfOtherRank?: number;
+  isFromAllowance?: boolean;
+  supplyDate?: string | Date | null;
+  deliveryDate?: string | Date | null;
+  returnToDepotId?: number;
+  returnToDepot?: {
+    nameAr?: string;
+    nameEn?: string;
+  };
+  // Present for some order/return detail payloads (nested localization object).
+  department?: {
+    id: number;
+    code: string;
+    nameAr: string;
+    nameEn: string;
+    isDeleted: boolean;
+  };
   isMyTurn?: boolean;
-  [key: string]: any;
 }
 
 

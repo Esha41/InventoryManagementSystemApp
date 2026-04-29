@@ -6,6 +6,21 @@
 import { RequestType, Priority, RequestStatus, RequestItem, WorkflowApprovalStep, RequestDetail, BaseRequestDto } from '@models/workflow-approval.model';
 import { formatTimeToMilitary, formatDateShort } from '@utils/format.utils';
 
+type LooseRecord = Record<string, unknown>;
+
+const asRecord = (value: unknown): LooseRecord | null =>
+  value !== null && typeof value === 'object' ? (value as LooseRecord) : null;
+
+const readField = <T>(obj: LooseRecord, ...keys: string[]): T | undefined => {
+  for (const key of keys) {
+    const value = obj[key];
+    if (value !== undefined && value !== null) {
+      return value as T;
+    }
+  }
+  return undefined;
+};
+
 /**
  * Request Type enum values (matching backend)
  */
@@ -263,28 +278,31 @@ export function mapApprovalStatus(status: number): 'Pending' | 'Approved' | 'Rej
 /**
  * Map request items from backend format
  */
-export function mapRequestItems(items: any[]): RequestItem[] {
+export function mapRequestItems(items: unknown[]): RequestItem[] {
   if (!items || items.length === 0) {
     return [];
   }
 
   return items
-    .filter(item => item && (item.id || item.itemId))
-    .map(item => ({
-      id: item.id || 0, // RequestItem ID
-      itemId: item.itemId || item.id || undefined, // Item/Ammunition ID (prefer itemId, fallback to id)
-      itemName: item.itemName || item.name || 'Unknown Item',
-      itemNo: item.itemNo || item.itemCode || item.code || '-',
-      quantity: item.quantity || item.requestedQuantity || 0,
-      unit: item.unit || item.unitName || '-',
-      nsn: item.nsn || undefined, // National Stock Number
-      itemType:
-        item.itemType != null && item.itemType !== ''
-          ? Number(item.itemType)
-          : item.item?.itemType != null
-            ? Number(item.item.itemType)
-            : undefined
-    }));
+    .map(item => asRecord(item))
+    .filter((item): item is LooseRecord => !!item && !!(item['id'] || item['itemId']))
+    .map(item => {
+      const nestedItem = asRecord(item['item']);
+      const rawItemType = item['itemType'] ?? nestedItem?.['itemType'];
+      const parsedItemType =
+        rawItemType != null && rawItemType !== '' ? Number(rawItemType) : undefined;
+
+      return {
+        id: Number(item['id'] ?? 0), // RequestItem ID
+        itemId: Number(item['itemId'] ?? item['id']) || undefined, // Item ID (prefer itemId, fallback to id)
+        itemName: String(item['itemName'] ?? item['name'] ?? 'Unknown Item'),
+        itemNo: String(item['itemNo'] ?? item['itemCode'] ?? item['code'] ?? '-'),
+        quantity: Number(item['quantity'] ?? item['requestedQuantity'] ?? 0),
+        unit: String(item['unit'] ?? item['unitName'] ?? '-'),
+        nsn: typeof item['nsn'] === 'string' ? item['nsn'] : undefined,
+        itemType: Number.isFinite(parsedItemType) ? parsedItemType : undefined
+      };
+    });
 }
 
 /**
@@ -292,21 +310,22 @@ export function mapRequestItems(items: any[]): RequestItem[] {
  * @param history - Approval history array from backend
  * @param requestStatus - Optional base request status to filter pending steps if approved
  */
-export function mapApprovalHistory(history: any[], requestStatus?: RequestStatus): WorkflowApprovalStep[] {
+export function mapApprovalHistory(history: unknown[], requestStatus?: RequestStatus): WorkflowApprovalStep[] {
   if (!history || history.length === 0) {
     return [];
   }
 
   const mappedHistory = history
-    .filter(h => h && (h.id || h.workflowApprovalstepId || h.workflowStepId || h.workflowstepId))
+    .map(h => asRecord(h))
+    .filter((h): h is LooseRecord => !!h && !!(h['id'] || h['workflowApprovalstepId'] || h['workflowStepId'] || h['workflowstepId']))
     .map((h, index) => {
       // Backend now properly sets IsPending flag - trust it first
       // Fallback to checking changedBy and status if IsPending is not explicitly set
-      const backendIsPending = h.isPending === true || h.IsPending === true;
-      const hasChangedBy = !!h.changedBy || !!h.ChangedBy;
+      const backendIsPending = h['isPending'] === true || h['IsPending'] === true;
+      const hasChangedBy = !!h['changedBy'] || !!h['ChangedBy'];
 
       // Handle both string and number status values (backend might return either)
-      const normalizeStatus = (status: any): number => {
+      const normalizeStatus = (status: unknown): number => {
         if (typeof status === 'number') return status;
         if (typeof status === 'string') {
           const lower = status.toLowerCase();
@@ -321,8 +340,8 @@ export function mapApprovalHistory(history: any[], requestStatus?: RequestStatus
         return 0;
       };
 
-      const oldStatusNum = normalizeStatus(h.oldRequestStatus || h.OldRequestStatus);
-      const newStatusNum = normalizeStatus(h.newRequestStatus || h.NewRequestStatus);
+      const oldStatusNum = normalizeStatus(readField<unknown>(h, 'oldRequestStatus', 'OldRequestStatus'));
+      const newStatusNum = normalizeStatus(readField<unknown>(h, 'newRequestStatus', 'NewRequestStatus'));
 
       const isNewOrUnderProcess = oldStatusNum === RequestStatusEnum.New ||
         oldStatusNum === RequestStatusEnum.UnderProcess ||
@@ -340,16 +359,15 @@ export function mapApprovalHistory(history: any[], requestStatus?: RequestStatus
         ? 'Pending'
         : mapApprovalStatus(newStatusNum || oldStatusNum || 0);
 
-      const changedByVal = h.changedBy ?? h.ChangedBy;
-      const approverNameEn = h.approverNameEn ?? h.ApproverNameEn;
-      const approverNameAr = h.approverNameAr ?? h.ApproverNameAr;
+      const changedByVal = readField<string>(h, 'changedBy', 'ChangedBy');
+      const approverNameEn = readField<string>(h, 'approverNameEn', 'ApproverNameEn');
+      const approverNameAr = readField<string>(h, 'approverNameAr', 'ApproverNameAr');
 
       let approverName: string;
       if (isPending) {
         approverName =
-          h.applicationRoleName ||
-          h.ApplicationRoleName ||
-          h.applicationRoleId ||
+          readField<string>(h, 'applicationRoleName', 'ApplicationRoleName') ||
+          readField<string>(h, 'applicationRoleId', 'ApplicationRoleId') ||
           'Pending Approval';
       } else if (approverNameEn || approverNameAr) {
         approverName = (approverNameEn || approverNameAr) as string;
@@ -357,41 +375,45 @@ export function mapApprovalHistory(history: any[], requestStatus?: RequestStatus
         approverName = getApproverName(changedByVal);
       }
 
-      const isDel = h.isDelegation ?? h.IsDelegation;
+      const isDel = readField<unknown>(h, 'isDelegation', 'IsDelegation');
       const isDelegationFlag = isDel === true || isDel === 1 || String(isDel).toLowerCase() === 'true';
 
       return {
-        id: h.id || index,
-        workflowApprovalstepId: h.workflowApprovalstepId || h.WorkflowApprovalStepId,
-        workflowStepId: h.workflowStepId || h.workflowstepId || h.WorkflowStepId,
-        oldRequestStatus: h.oldRequestStatus || h.OldRequestStatus,
-        newRequestStatus: h.newRequestStatus || h.NewRequestStatus,
-        comments: h.comments || h.Comments,
+        id: Number(readField<number | string>(h, 'id') ?? index),
+        workflowApprovalstepId: readField<number>(h, 'workflowApprovalstepId', 'WorkflowApprovalStepId'),
+        workflowStepId: readField<number>(h, 'workflowStepId', 'workflowstepId', 'WorkflowStepId'),
+        oldRequestStatus: readField<number>(h, 'oldRequestStatus', 'OldRequestStatus'),
+        newRequestStatus: readField<number>(h, 'newRequestStatus', 'NewRequestStatus'),
+        comments: readField<string>(h, 'comments', 'Comments'),
         changedBy: changedByVal,
         approverName: approverName,
         approverNameEn: approverNameEn,
         approverNameAr: approverNameAr,
-        changedAt: h.changedAt || h.ChangedAt,
-        steporder: h.steporder || h.stepOrder || h.StepOrder || index + 1,
-        applicationRoleId: h.applicationRoleId || h.ApplicationRoleId,
+        changedAt: readField<string | Date>(h, 'changedAt', 'ChangedAt'),
+        steporder: Number(readField<number | string>(h, 'steporder', 'stepOrder', 'StepOrder') ?? index + 1),
+        applicationRoleId: readField<string>(h, 'applicationRoleId', 'ApplicationRoleId'),
         status: status,
-        approvedDate: h.changedAt && !isPending ? formatApprovalDate(h.changedAt) : undefined,
-        approvedDateTime: h.changedAt && !isPending ? formatApprovalDateTime(h.changedAt) : undefined,
-        applicationRoleName: h.applicationRoleName || h.ApplicationRoleName,
-        applicationRoleNameAr: h.applicationRoleNameAr || h.ApplicationRoleNameAr,
+        approvedDate: readField<string | Date>(h, 'changedAt', 'ChangedAt') && !isPending
+          ? formatApprovalDate(readField<string | Date>(h, 'changedAt', 'ChangedAt'))
+          : undefined,
+        approvedDateTime: readField<string | Date>(h, 'changedAt', 'ChangedAt') && !isPending
+          ? formatApprovalDateTime(readField<string | Date>(h, 'changedAt', 'ChangedAt'))
+          : undefined,
+        applicationRoleName: readField<string>(h, 'applicationRoleName', 'ApplicationRoleName'),
+        applicationRoleNameAr: readField<string>(h, 'applicationRoleNameAr', 'ApplicationRoleNameAr'),
         isPending: isPending,
-        requireHigherApproval: h.requireHigherApproval || h.RequireHigherApproval || false,
-        higherApprovalRoleId: h.higherApprovalRoleId || h.HigherApprovalRoleId,
-        isCurrentUserApprover: h.isCurrentUserApprover || h.IsCurrentUserApprover || false,
-        canReturn: h.canReturn || h.CanReturn || false,
+        requireHigherApproval: Boolean(readField<unknown>(h, 'requireHigherApproval', 'RequireHigherApproval')),
+        higherApprovalRoleId: readField<string>(h, 'higherApprovalRoleId', 'HigherApprovalRoleId'),
+        isCurrentUserApprover: Boolean(readField<unknown>(h, 'isCurrentUserApprover', 'IsCurrentUserApprover')),
+        canReturn: Boolean(readField<unknown>(h, 'canReturn', 'CanReturn')),
         isDelegation: isDelegationFlag,
-        changedByRoleId: h.changedByRoleId ?? h.ChangedByRoleId,
-        changedByRoleName: h.changedByRoleName ?? h.ChangedByRoleName,
-        changedByRoleNameAr: h.changedByRoleNameAr ?? h.ChangedByRoleNameAr,
-        eligibleParallelRoleNamesEn: h.eligibleParallelRoleNamesEn ?? h.EligibleParallelRoleNamesEn,
-        eligibleParallelRoleNamesAr: h.eligibleParallelRoleNamesAr ?? h.EligibleParallelRoleNamesAr,
-        files: h.files || h.Files || [],
-        transitions: h.transitions || h.Transitions || []
+        changedByRoleId: readField<string>(h, 'changedByRoleId', 'ChangedByRoleId'),
+        changedByRoleName: readField<string>(h, 'changedByRoleName', 'ChangedByRoleName'),
+        changedByRoleNameAr: readField<string>(h, 'changedByRoleNameAr', 'ChangedByRoleNameAr'),
+        eligibleParallelRoleNamesEn: readField<string>(h, 'eligibleParallelRoleNamesEn', 'EligibleParallelRoleNamesEn'),
+        eligibleParallelRoleNamesAr: readField<string>(h, 'eligibleParallelRoleNamesAr', 'EligibleParallelRoleNamesAr'),
+        files: (readField<WorkflowApprovalStep['files']>(h, 'files', 'Files') ?? []),
+        transitions: (readField<WorkflowApprovalStep['transitions']>(h, 'transitions', 'Transitions') ?? [])
       };
     })
     // Sort chronologically by ID (which represents creation order)
@@ -502,36 +524,36 @@ export function mapToRequestDetail(data: BaseRequestDto): RequestDetail {
     reason: data.reason,
     notes: data.notes,
     departmentName: data.departmentName,
-    departmentNameAr: data['departmentNameAr'],
-    departmentNameEn: data['departmentNameEn'],
+    departmentNameAr: data.departmentNameAr,
+    departmentNameEn: data.departmentNameEn,
     requesterName: data.requesterName,
-    requesterNameEn: data['requesterNameEn'],
-    requesterNameAr: data['requesterNameAr'],
+    requesterNameEn: data.requesterNameEn,
+    requesterNameAr: data.requesterNameAr,
     requesterId: data.requesterId,
     requesterUserName: data.requesterUserName,
     requestPurposeName: data.requestPurposeName,
-    requestPurposeNameAr: data['requestPurposeNameAr'],
-    requestPurposeNameEn: data['requestPurposeNameEn'],
-    requestPurposeNotes: data.requestPurposeNotes ?? data['requestPurposeNotes'],
+    requestPurposeNameAr: data.requestPurposeNameAr,
+    requestPurposeNameEn: data.requestPurposeNameEn,
+    requestPurposeNotes: data.requestPurposeNotes,
     requestItems: mapRequestItems(data.requestItems || []),
     approvalHistory: mapApprovalHistory(data.approvalHistory || [], requestStatus),
     // Usage-related fields
-    usageLocation: data['usageLocation'],
-    usagePurpose: data['usagePurpose'],
-    usageDateFrom: data['usageDateFrom'] ? formatRequestDate(data['usageDateFrom']) : undefined,
-    usageTimeFrom: data['usageTimeFrom'],
-    usageDateTo: data['usageDateTo'] ? formatRequestDate(data['usageDateTo']) : undefined,
-    usageTimeTo: data['usageTimeTo'],
-    numberOfOfficer: data['numberOfOfficer'],
-    numberOfOtherRank: data['numberOfOtherRank'],
-    isFromAllowance: data['isFromAllowance'],
+    usageLocation: data.usageLocation,
+    usagePurpose: data.usagePurpose,
+    usageDateFrom: data.usageDateFrom ? formatRequestDate(data.usageDateFrom) : undefined,
+    usageTimeFrom: data.usageTimeFrom,
+    usageDateTo: data.usageDateTo ? formatRequestDate(data.usageDateTo) : undefined,
+    usageTimeTo: data.usageTimeTo,
+    numberOfOfficer: data.numberOfOfficer,
+    numberOfOtherRank: data.numberOfOtherRank,
+    isFromAllowance: data.isFromAllowance,
     creationDate: data.creationDate,
-    supplyDate: data['supplyDate'] ?? undefined,
+    supplyDate: data.supplyDate ?? undefined,
     // Return-specific fields
-    returnToDepotId: data['returnToDepotId'],
-    returnToDepotNameAr: data['returnToDepot']?.nameAr,
-    returnToDepotNameEn: data['returnToDepot']?.nameEn,
-    deliveryDate: data['deliveryDate'] ?? undefined,
+    returnToDepotId: data.returnToDepotId,
+    returnToDepotNameAr: data.returnToDepot?.nameAr,
+    returnToDepotNameEn: data.returnToDepot?.nameEn,
+    deliveryDate: data.deliveryDate ?? undefined,
     isMyTurn: data.isMyTurn === true,
   };
 }

@@ -5,6 +5,7 @@
 
 import { OrderDto } from '@models/order.model';
 import { OrderSummary, OrderReportItem, OrderReportApprovalStep, WorkflowDetail } from '@models/order-report.model';
+import { WorkflowApprovalStep } from '@models/workflow-approval.model';
 import { mapOrderStatusToString, mapOrderStatusFromApi } from '@utils/status.utils';
 import { getRequestStatusTranslationKey } from '@utils/status.utils';
 import { mapOrderPriorityToString } from '@utils/priority.utils';
@@ -227,7 +228,7 @@ export function mapItemStatus(orderStatus: number | string): string {
 /**
  * Map approval status from API response
  */
-export function mapApprovalStatus(status: any): 'pending' | 'approved' | 'rejected' | 'in-progress' | 'returned' | 'returnedforreview' {
+export function mapApprovalStatus(status: number | string | unknown): 'pending' | 'approved' | 'rejected' | 'in-progress' | 'returned' | 'returnedforreview' {
   if (!status) return 'pending';
 
   const statusStr = String(status).toLowerCase();
@@ -253,11 +254,11 @@ export function mapApprovalStatus(status: any): 'pending' | 'approved' | 'reject
  * Map API approval records to OrderReportApprovalStep array
  */
 export function mapApprovalRecordsToSteps(
-  approvalRecords: any[],
+  approvalRecords: WorkflowApprovalStep[],
   orders: OrderDto[],
   formatDateTime: (date?: string, time?: string) => string
 ): OrderReportApprovalStep[] {
-  return approvalRecords.map((item: any, index: number) => {
+  return approvalRecords.map((item: WorkflowApprovalStep, index: number) => {
     const step = item.higherApprovalRoleId || `Step ${index + 1}`;
     const role = item.applicationRoleName || 'N/A';
     const approver = item.changedBy || 'N/A';
@@ -266,16 +267,20 @@ export function mapApprovalRecordsToSteps(
     let date = 'Pending';
     if (item.changedAt) {
       try {
-        const dateObj = new Date(item.changedAt);
+        const changedAtStr = typeof item.changedAt === 'string'
+          ? item.changedAt
+          : item.changedAt.toISOString();
+
+        const dateObj = new Date(changedAtStr);
         if (!isNaN(dateObj.getTime())) {
           // Extract time in military format if it's a datetime string
-          const timeStr = item.changedAt.includes('T')
+          const timeStr = changedAtStr.includes('T')
             ? formatTimeToMilitary(dateObj)
             : '';
-          date = formatDateTime(item.changedAt, timeStr);
+          date = formatDateTime(changedAtStr, timeStr);
         }
       } catch {
-        date = item.changedAt;
+        date = typeof item.changedAt === 'string' ? item.changedAt : item.changedAt.toISOString();
       }
     }
 
@@ -287,7 +292,9 @@ export function mapApprovalRecordsToSteps(
       approver,
       status,
       date,
-      notes: item.comments || item.notes || item.comment || item.reason || ''
+      // `WorkflowApprovalStep` model only defines `comments` (see `workflow-approval.model.ts`).
+      // Keep this mapping robust for any backend variations.
+      notes: item.comments || ''
     };
   });
 }
@@ -489,11 +496,11 @@ export function generateQrCodeData(orderSummary: OrderSummary, localizedUsagePur
 /**
  * Filter approval records by order ID
  */
-export function filterApprovalRecordsByOrderId(
-  dataArray: any[],
+export function filterApprovalRecordsByOrderId<T extends { id?: number; orderId?: number; requestId?: number; requestNo?: string }>(
+  dataArray: T[],
   orderId: number
-): any[] {
-  return dataArray.filter((item: any) => {
+): T[] {
+  return dataArray.filter((item: T) => {
     // Exact ID match (most reliable)
     if (item.id === orderId) {
       return true;

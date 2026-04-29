@@ -1,54 +1,40 @@
 /**
- * Explosive models matching backend DTOs
+ * Explosive models matching backend inventory DTOs
  */
 
-import { BaseItemDto } from './inventory.model';
-import { LookupDto } from './ammunition.model';
+import { CatalogBaseItemDto, LookupDto } from './ammunition.model';
 
 /**
- * Explosive DTO (extends BaseItem)
+ * Matches Ettad.Inventory.Service.Explosives.Dtos.ExplosiveDto (extends catalog base).
  */
-export interface ExplosiveDto extends BaseItemDto {
-  armNumber?: string;
-  explosiveType?: number;
-  unNumber?: string;
-  netExplosiveQuantity?: number;
-  netExplosiveQuantityUnitId?: number;
-  totalWeight?: number;
-  totalWeightUnitId?: number;
-  hazardDivisionId?: number;
-  compatibilityId?: number;
-  distribution?: string;
-  referenceNo?: string;
-  notes?: string;
-  classificationId?: number;
-  typeId?: number;
-  unitId?: number; // Unit lookup ID
-
-  /** Linked catalog purposes (BaseItemPrimaryPurposes) */
-  primaryPurposes?: LookupDto[];
-  /** Legacy single navigation when list not populated */
+export interface ExplosiveDto extends CatalogBaseItemDto {
+  armNumber?: string | null;
+  compatibilityId?: number | null;
+  unitId?: number | null;
+  hazardDivisionId?: number | null;
+  compatibility?: LookupDto | null;
+  unit?: LookupDto | null;
+  hazardDivision?: LookupDto | null;
+  /** Legacy single navigation when `primaryPurposes` is not populated */
   primaryPurpos?: LookupDto;
 
-  // Navigation properties
-  netExplosiveQuantityUnit?: LookupDto;
-  totalWeightUnit?: LookupDto;
-  unit?: LookupDto; // Unit navigation property
-  hazardDivision?: LookupDto;
-  compatibility?: LookupDto;
-  classification?: LookupDto;
-  type?: LookupDto;
-  
-  // Images array from response
-  images?: Array<{
-    id: number;
-    fileUrl: string;
-    fileName: string;
-    originalName: string;
-    isMain: boolean;
-    entity: string;
-    entityId: number;
-  }>;
+  /**
+   * Not on inventory ExplosiveDto; optional on payloads / forms (e.g. type enum or UI-only).
+   */
+  explosiveType?: number | string | null;
+  netExplosiveQuantity?: number | null;
+  netExplosiveQuantityUnitId?: number | null;
+  netExplosiveQuantityUnit?: LookupDto | null;
+  totalWeight?: number | null;
+  totalWeightUnitId?: number | null;
+  totalWeightUnit?: LookupDto | null;
+
+  /** Optional on catalog; may appear when merged with inventory / legacy API. */
+  batchNo?: string | null;
+  hccId?: number | null;
+  hcc?: LookupDto | null;
+  readyForIssue?: boolean;
+  expiryDate?: Date | string;
 }
 
 /**
@@ -64,7 +50,6 @@ export interface CreateUpdateExplosiveDto {
   nsn?: string;
   readyForIssue?: boolean;
   expiryDate?: Date | string;
-
   explosiveType?: number;
   unNumber?: string;
   netExplosiveQuantity?: number;
@@ -81,7 +66,6 @@ export interface CreateUpdateExplosiveDto {
   notes?: string;
   classificationId?: number;
   typeId?: number;
-  unitId?: number; // Unit lookup ID
-  /** Matches API PrimaryPurposIds (BaseItemPrimaryPurposes) */
+  unitId?: number;
   primaryPurposIds?: number[];
 }

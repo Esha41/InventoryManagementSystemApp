@@ -14,6 +14,7 @@ import { NotificationHubPayload } from '@core/notifications/notification-hub.typ
 import { AppNotificationsBootstrap } from '@core/notifications/app-notifications-bootstrap.token';
 import { mapHubPayloadToNotification, resolveNotificationActionEndpoint } from './notification-hub.mapper';
 import { NotificationEmailService } from './notification-email.service';
+import { asNotificationMetadata } from '@notifications/utils/notification.utils';
 
 /**
  * In-app notifications: list state, SignalR hub subscription, read/actions.
@@ -178,7 +179,7 @@ export class NotificationService implements OnDestroy, AppNotificationsBootstrap
           );
           this.applyNotificationUpdate(id, {
             metadata: {
-              ...(notification?.metadata ?? {}),
+              ...(asNotificationMetadata(notification?.metadata ?? null) ?? {}),
               confirmed: true
             }
           });
@@ -203,7 +204,7 @@ export class NotificationService implements OnDestroy, AppNotificationsBootstrap
 
     const applySuccessUpdates = () => {
       const updatedMetadata = {
-        ...(notification?.metadata ?? {}),
+        ...(asNotificationMetadata(notification?.metadata ?? null) ?? {}),
         pickupDate: payload.pickupDate,
         pickupTime: payload.pickupTime,
         proposedDate: payload.pickupDate,

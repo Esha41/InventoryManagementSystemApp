@@ -37,6 +37,16 @@ export default tseslint.config(
     rules: {
       '@angular-eslint/directive-selector': ['error', { type: 'attribute', prefix: 'app', style: 'camelCase' }],
       '@angular-eslint/component-selector': ['error', { type: 'element', prefix: 'app', style: 'kebab-case' }],
+      /** Bump to `'error'` once remaining explicit `any` usages are cleared (strict TS hygiene). */
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+          destructuredArrayIgnorePattern: '^_'
+        }
+      ],
     },
   },
   {
@@ -86,5 +96,23 @@ export default tseslint.config(
     files: ['**/*.html'],
     extends: [...angular.configs.templateRecommended, ...angular.configs.templateAccessibility],
     rules: {},
+  },
+  {
+    files: ['src/**/*.ts'],
+    ignores: ['src/app/core/**', 'src/app/shared/**'],
+    rules: {
+      'no-restricted-imports': [
+        'warn',
+        {
+          paths: [
+            {
+              name: '@services/backend-user.service',
+              message:
+                'Deprecated BackendUserService — import UsersApiService, UserRolesApiService, RolesApiService, RoleMembersApiService, PermissionsApiService, or ApplicationEntitiesApiService from @services/user-management (or @services). Scheduled removal Q2 2026. See backend-user.service.ts (BACKEND_USER_SERVICE_MIGRATION).',
+            },
+          ],
+        },
+      ],
+    },
   },
 );

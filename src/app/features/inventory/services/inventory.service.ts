@@ -161,7 +161,7 @@ export class InventoryService implements IImportableService {
   /**
    * Import inventory from Excel file
    */
-  importData(file: File, language: string = 'en', depotId?: number): Observable<APIOperationResponse<any>> {
+  importData(file: File, language: string = 'en', depotId?: number): Observable<APIOperationResponse<ImportResult>> {
     this.config.log('Importing inventory from Excel', { fileName: file.name, depotId, language });
 
     const formData = new FormData();
@@ -170,13 +170,13 @@ export class InventoryService implements IImportableService {
       formData.append('depotId', depotId.toString());
     }
 
-    return this.apiService.postRaw<any>(`${this.endpoint}/Import`, formData, { params: { language } });
+    return this.apiService.postRaw<ImportResult>(`${this.endpoint}/Import`, formData, { params: { language } });
   }
 
   /**
    * Preview inventory import from Excel file (validation only)
    */
-  importPreview(file: File, language: string = 'en', depotId?: number): Observable<APIOperationResponse<any>> {
+  importPreview(file: File, language: string = 'en', depotId?: number): Observable<APIOperationResponse<ImportResult>> {
     this.config.log('Previewing inventory import', { fileName: file.name, depotId, language });
 
     const formData = new FormData();
@@ -185,7 +185,7 @@ export class InventoryService implements IImportableService {
       formData.append('depotId', depotId.toString());
     }
 
-    return this.apiService.postRaw<any>(`${this.endpoint}/ImportPreview`, formData, { params: { language } });
+    return this.apiService.postRaw<ImportResult>(`${this.endpoint}/ImportPreview`, formData, { params: { language } });
   }
 
   /**
@@ -317,8 +317,8 @@ export class InventoryService implements IImportableService {
       observe: 'body'
     }).pipe(
       map(blob => {
-        this.config.log('Template downloaded successfully', { depotId, size: (blob as any).size });
-        return blob as Blob;
+        this.config.log('Template downloaded successfully', { depotId, size: blob.size });
+        return blob;
       }),
       catchError(err => {
         this.config.logError('Failed to download template', err);

@@ -1,0 +1,55 @@
+<div class="space-y-4">
+  <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'newIssueRequest.caliberSpecifications' | translate }}</h4>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+    <div *ngIf="mapper.getTotalWeight(ctx)">
+      <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.totalWeight' | translate }}</p>
+      <p class="text-[var(--color-text)]">{{ mapper.getTotalWeight(ctx) }}</p>
+    </div>
+
+    <div *ngIf="mapper.getBulletDiameter(ctx)">
+      <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.viewModal.bulletDiameter' | translate }}</p>
+      <p class="text-[var(--color-text)]">{{ mapper.getBulletDiameter(ctx) }}</p>
+    </div>
+
+    <div *ngIf="mapper.getProjectileMaterial(ctx)">
+      <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.projectileMaterial' | translate }}</p>
+      <p class="text-[var(--color-text)]">{{ mapper.getProjectileMaterial(ctx) }}</p>
+    </div>
+
+    <div *ngIf="mapper.getCaseType(ctx)">
+      <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.caseType' | translate }}</p>
+      <p class="text-[var(--color-text)]">{{ mapper.getCaseType(ctx) }}</p>
+    </div>
+
+    <div *ngIf="mapper.getPrimer(ctx)">
+      <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.primer' | translate }}</p>
+      <p class="text-[var(--color-text)]">{{ mapper.getPrimer(ctx) }}</p>
+    </div>
+
+    <div *ngIf="mapper.getPropellant(ctx)">
+      <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.propellant' | translate }}</p>
+      <p class="text-[var(--color-text)]">{{ mapper.getPropellant(ctx) }}</p>
+    </div>
+
+    <div *ngIf="mapper.getCaliberCategory(ctx)">
+      <p class="text-[var(--color-text-muted)] mb-1">{{ 'addAsset.ammunitionSizeClass' | translate }}</p>
+      <p class="text-[var(--color-text)]">{{ mapper.getCaliberCategory(ctx) }}</p>
+    </div>
+
+    <div *ngIf="mapper.getNature(ctx)">
+      <p class="text-[var(--color-text-muted)] mb-1">Nature</p>
+      <p class="text-[var(--color-text)]">{{ mapper.getNature(ctx) }}</p>
+    </div>
+
+    <div *ngIf="mapper.getLinked(ctx)">
+      <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.viewModal.isLinked' | translate }}</p>
+      <p class="text-[var(--color-text)]">{{ mapper.getLinked(ctx) }}</p>
+    </div>
+
+    <div *ngIf="mapper.getUnNumberForAmmunition(ctx)">
+      <p class="text-[var(--color-text-muted)] mb-1">{{ 'explosive.unNumber' | translate }}</p>
+      <p class="text-[var(--color-text)]">{{ mapper.getUnNumberForAmmunition(ctx) }}</p>
+    </div>
+  </div>
+</div>

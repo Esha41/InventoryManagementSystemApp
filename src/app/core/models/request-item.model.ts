@@ -3,22 +3,13 @@
  * Consolidates all request item-related interfaces from Order, Return, and Discard services
  */
 
+import type { RequestManagementRequestItemDto } from './request-management-base.model';
+
 /**
- * Base request item DTO used across multiple services
- * Used for displaying request items in lists and details
+ * Base request item DTO (read) — matches Request Management `RequestItemDto`.
+ * @see `ettadbackend/Ettad.RequestManagement.Service/Common/Dtos/RequestItemDto.cs`
  */
-export interface RequestItemDto {
-    id: number;
-    itemId: number;
-    itemName?: string;
-    itemNo?: string;
-    quantity: number;
-    requestId?: number;
-    unit?: string;
-    notes?: string;
-    nsn?: string;
-    itemType?: number; // 1=Ammunition, 2=Weapon, 3=Explosive
-}
+export interface RequestItemDto extends RequestManagementRequestItemDto {}
 
 /**
  * DTO for creating or updating request items

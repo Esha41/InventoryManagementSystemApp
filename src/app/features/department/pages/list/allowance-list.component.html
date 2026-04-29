@@ -124,7 +124,7 @@
             <div>
               <span class="text-[var(--color-text-muted)] block mb-0.5">{{ 'allowance.table.reservedQuantity' |
                 translate }}</span>
-              <span class="text-[var(--color-text)]">{{ allowance.reservedQuantityByDraftSupplies | number }}</span>
+              <span class="text-[var(--color-text)]">{{ allowance.reservedQuantityByOrdersOnProcessing | number }}</span>
             </div>
           </div>
 
@@ -215,7 +215,7 @@
                   {{ allowance.usedQuantityFromAllowance | number }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
-                  {{ allowance.reservedQuantityByDraftSupplies | number }}
+                  {{ allowance.reservedQuantityByOrdersOnProcessing | number }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)] text-end">
                   {{ allowance.remainingQuantityFromAllowance | number }}

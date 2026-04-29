@@ -2,7 +2,8 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrateg
 import { CommonModule } from '@angular/common';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { EChartsOption } from 'echarts';
-import { AdminAnalyticsService, TopRequestedItems } from '@admin/services/admin-analytics.service';
+import { AdminAnalyticsService } from '@admin/services/admin-analytics.service';
+import type { RequestedItem, TopRequestedItems } from '@admin/models/admin-analytics.model';
 import { Subject, takeUntil } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, TrendingUp, RefreshCw, AlertCircle } from 'lucide-angular';
@@ -53,7 +54,7 @@ export class TopRequestedItemsChartComponent implements OnInit, OnDestroy {
                     this.error = false;
                     this.cdr.markForCheck();
                 },
-                error: (err: any) => {
+                error: (err: unknown) => {
                     console.error('Error loading top requested items:', err);
                     this.loading = false;
                     this.error = true;
@@ -63,8 +64,8 @@ export class TopRequestedItemsChartComponent implements OnInit, OnDestroy {
     }
 
     private initChart(data: TopRequestedItems): void {
-        const itemNames = data.items.map((item: any) => item.itemName);
-        const requestCounts = data.items.map((item: any) => item.requestCount);
+        const itemNames = data.items.map((item: RequestedItem) => item.itemName);
+        const requestCounts = data.items.map((item: RequestedItem) => item.requestCount);
 
         this.chartOptions = {
             tooltip: {

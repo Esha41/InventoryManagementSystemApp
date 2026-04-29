@@ -528,7 +528,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges, OnD
       const combined = [...this.selectedFiles, ...newlySelected];
       const seen = new Set<string>();
       this.selectedFiles = combined.filter(f => {
-        const key = `${f.name}::${f.size}::${(f as any).lastModified ?? 0}`;
+        const key = `${f.name}::${f.size}::${f.lastModified ?? 0}`;
         if (seen.has(key)) return false;
         seen.add(key);
         return true;

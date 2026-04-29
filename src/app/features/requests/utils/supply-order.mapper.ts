@@ -16,8 +16,16 @@ export function mapSupplyDetailsToDisplay(supply: SupplyDto, currentLang: string
   return supply.supplyDetails.map((detail: SupplyDetailDto) => {
     const itemId = detail.itemId;
     const itemName = detail.item?.name || `Item #${itemId}`;
-    const depot = detail.depot || (detail as any).Depot;
-    const expiryDateRaw = detail.expiryDate ?? (detail as any).ExpiryDate;
+
+    // Some legacy API responses may use PascalCase for these fields.
+    type SupplyDetailLegacyFields = {
+      Depot?: SupplyDetailDto['depot'];
+      ExpiryDate?: SupplyDetailDto['expiryDate'] | Date | string;
+    };
+
+    const legacy = detail as unknown as SupplyDetailLegacyFields;
+    const depot = detail.depot ?? legacy.Depot;
+    const expiryDateRaw = detail.expiryDate ?? legacy.ExpiryDate;
     const depotName = depot ? getLocalizedName(depot, currentLang) : undefined;
     const depotNameAr = depot ? getLocalizedName(depot, 'ar') : undefined;
     const depotNameEn = depot ? getLocalizedName(depot, 'en') : undefined;
