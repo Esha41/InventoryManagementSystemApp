@@ -1,7 +1,7 @@
 
 export const APP_CONSTANTS = {
   APP_NAME: 'Ettad',
-  VERSION: '1.2.2',
+  VERSION: '1.3.0',
   DEFAULT_PAGE_SIZE: 10,
   PAGE_SIZE_OPTIONS: [10, 25, 50, 100],
 } as const;
