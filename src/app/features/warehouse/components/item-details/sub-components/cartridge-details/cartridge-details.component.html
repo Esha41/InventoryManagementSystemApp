@@ -1,0 +1,52 @@
+<div class="space-y-6">
+  <app-ammunition-details *ngIf="ctx.isAmmunition" [ctx]="ctx" />
+  <app-weapon-details *ngIf="ctx.isWeapon" [ctx]="ctx" />
+  <app-explosive-details *ngIf="ctx.isExplosive" [ctx]="ctx" />
+
+  <div class="space-y-4" *ngIf="ctx.isAmmunition || ctx.isExplosive">
+    <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'newIssueRequest.classifications' | translate }}</h4>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+      <div *ngIf="mapper.getHazardDivision(ctx)">
+        <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.hazardDivision' | translate }}</p>
+        <p class="text-[var(--color-text)]">{{ mapper.getHazardDivision(ctx) }}</p>
+      </div>
+
+      <div *ngIf="mapper.getCapabilityGroup(ctx)">
+        <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.capabilityGroup' | translate }}</p>
+        <p class="text-[var(--color-text)]">{{ mapper.getCapabilityGroup(ctx) }}</p>
+      </div>
+
+      <div *ngIf="mapper.getClassification(ctx)">
+        <p class="text-[var(--color-text-muted)] mb-1">Classification</p>
+        <p class="text-[var(--color-text)]">{{ mapper.getClassification(ctx) }}</p>
+      </div>
+
+      <div *ngIf="mapper.getType(ctx)">
+        <p class="text-[var(--color-text-muted)] mb-1">Type</p>
+        <p class="text-[var(--color-text)]">{{ mapper.getType(ctx) }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="space-y-4" *ngIf="ctx.isAmmunition || ctx.isExplosive">
+    <h4 class="text-base font-bold text-[var(--color-text)]">Additional Information</h4>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+      <div *ngIf="mapper.getDistribution(ctx)">
+        <p class="text-[var(--color-text-muted)] mb-1">Distribution</p>
+        <p class="text-[var(--color-text)]">{{ mapper.getDistribution(ctx) }}</p>
+      </div>
+
+      <div *ngIf="mapper.getReferenceNo(ctx)">
+        <p class="text-[var(--color-text-muted)] mb-1">Reference No</p>
+        <p class="text-[var(--color-text)]">{{ mapper.getReferenceNo(ctx) }}</p>
+      </div>
+
+      <div *ngIf="mapper.getNotes(ctx)" class="col-span-2">
+        <p class="text-[var(--color-text-muted)] mb-1">{{ 'common.comments' | translate }}</p>
+        <p class="text-[var(--color-text)]">{{ mapper.getNotes(ctx) }}</p>
+      </div>
+    </div>
+  </div>
+</div>
