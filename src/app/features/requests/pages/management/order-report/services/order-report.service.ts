@@ -7,7 +7,7 @@ import { BackendUserService } from '@services/backend-user.service';
 import { ToastService } from '@services/toast.service';
 import { OrderDto } from '@models/order.model';
 import { RoleDto } from '@models/backend-user.model';
-import { BaseRequestDto } from '@models/workflow-approval.model';
+import { BaseRequestDto, WorkflowApprovalStep } from '@models/workflow-approval.model';
 import { OrderSummary, OrderReportItem, OrderReportApprovalStep } from '@models/order-report.model';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { 
@@ -49,7 +49,7 @@ export class OrderReportService {
   loadOrders(): Observable<OrderDto[]> {
     return this.apiService.get<OrderDto[]>('/Request/user-actions')
       .pipe(
-        map((res: any) => Array.isArray(res) ? res as OrderDto[] : []),
+        map((res: OrderDto[]) => Array.isArray(res) ? res : []),
         map((orders: OrderDto[]) => {
           // Sort orders by ID
           return orders.sort((a, b) => (a.id || 0) - (b.id || 0));
@@ -66,15 +66,15 @@ export class OrderReportService {
    * Load approval workflow for an order
    */
   loadApprovalWorkflow(
-    orderId: number, 
-    orders: OrderDto[], 
+    orderId: number,
+    orders: OrderDto[],
     orderSummary: OrderSummary
   ): Observable<OrderReportApprovalStep[]> {
-    return this.apiService.get<any>(
+    return this.apiService.get<BaseRequestDto>(
       API_ENDPOINTS.WORKFLOW_APPROVAL.BASE_REQUEST_BY_ID(orderId)
     )
       .pipe(
-        map((response: any) => this.extractSingleBaseRequest(response)),
+        map((response: BaseRequestDto) => this.extractSingleBaseRequest(response)),
         tap((baseRequest) => this.syncOrderWithDepartment(orderId, baseRequest, orders)),
         map((baseRequest) => this.buildApprovalWorkflowFromSingle(
           baseRequest, 
@@ -164,7 +164,7 @@ export class OrderReportService {
   /**
    * Get localized role name from step
    */
-  getLocalizedRoleName(step: any): string {
+  getLocalizedRoleName(step: WorkflowApprovalStep): string {
     const currentLang = getCurrentLang(this.translate);
 
     if (currentLang === 'ar' && step.applicationRoleNameAr) {
@@ -181,7 +181,7 @@ export class OrderReportService {
   /**
    * Get localized approver name from step
    */
-  getLocalizedApproverName(step: any): string {
+  getLocalizedApproverName(step: WorkflowApprovalStep): string {
     const currentLang = getCurrentLang(this.translate);
 
     if (step.isPending) {
@@ -230,15 +230,16 @@ export class OrderReportService {
 
   // Private helper methods
 
-  private extractSingleBaseRequest(response: any): BaseRequestDto | null {
+  private extractSingleBaseRequest(response: BaseRequestDto | unknown): BaseRequestDto | null {
     if (!response) return null;
     if (Array.isArray(response)) {
-      return response[0] || null;
+      return (response[0] as BaseRequestDto) || null;
     }
-    if (response?.data) {
-      return Array.isArray(response.data) ? (response.data[0] || null) : response.data;
+    if (typeof response === 'object' && response !== null && 'data' in response) {
+      const data = (response as { data?: unknown }).data;
+      return Array.isArray(data) ? ((data[0] as BaseRequestDto) || null) : (data as BaseRequestDto);
     }
-    return response as BaseRequestDto;
+    return (response as BaseRequestDto);
   }
 
   private syncOrderWithDepartment(
@@ -249,12 +250,12 @@ export class OrderReportService {
     if (!baseRequest) return;
     const order = orders.find(o => o.id === orderId);
     if (order && (!order.department && !order.departmentNameEn && !order.departmentNameAr)) {
-      if (baseRequest['departmentNameEn'] || baseRequest['departmentNameAr'] || baseRequest['departmentName']) {
-        order.departmentNameEn = baseRequest['departmentNameEn'] || baseRequest['departmentName'];
-        order.departmentNameAr = baseRequest['departmentNameAr'];
+      if (baseRequest.departmentNameEn || baseRequest.departmentNameAr || baseRequest.departmentName) {
+        order.departmentNameEn = baseRequest.departmentNameEn || baseRequest.departmentName;
+        order.departmentNameAr = baseRequest.departmentNameAr;
       }
-      if (baseRequest['department']) {
-        order.department = baseRequest['department'];
+      if (baseRequest.department) {
+        order.department = baseRequest.department;
       }
     }
   }
@@ -503,12 +504,12 @@ export class OrderReportService {
     }
 
     if ((!updatedSummary.department || updatedSummary.department === 'N/A') &&
-      (baseRequest['departmentNameEn'] || baseRequest['departmentNameAr'] || baseRequest['departmentName'])) {
+      (baseRequest.departmentNameEn || baseRequest.departmentNameAr || baseRequest.departmentName)) {
       const currentLang = getCurrentLang(this.translate);
       updatedSummary.department = getLocalizedName(
         {
-          nameEn: baseRequest['departmentNameEn'] || baseRequest['departmentName'],
-          nameAr: baseRequest['departmentNameAr']
+          nameEn: baseRequest.departmentNameEn || baseRequest.departmentName,
+          nameAr: baseRequest.departmentNameAr
         },
         currentLang
       ) || 'N/A';

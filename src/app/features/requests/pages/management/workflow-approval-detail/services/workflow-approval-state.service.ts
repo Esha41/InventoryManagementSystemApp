@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { RequestDetail } from '@models/workflow-approval.model';
+import { RequestDetail, WorkflowStepTransition } from '@models/workflow-approval.model';
 import { WorkflowApprovalPermissionsService } from './workflow-approval-permissions.service';
-import { WorkflowApprovalDataService } from './workflow-approval-data.service';
+import { WorkflowApprovalDataService, WorkflowApprovalStepOption } from './workflow-approval-data.service';
+import { SupplyDto } from '@requests/services/supply.service';
 import { TranslateService } from '@ngx-translate/core';
 import { 
   hasHigherApproval, 
@@ -21,8 +22,8 @@ export interface WorkflowApprovalState {
   isPickupDateAlreadySet: boolean;
   isDepotSelected: boolean;
   isSuperAdmin: boolean;
-  supplyData: any | null;
-  previousWorkflowSteps: any[];
+  supplyData: SupplyDto | null;
+  previousWorkflowSteps: WorkflowApprovalStepOption[];
   loadingPreviousSteps: boolean;
   isReturnDepotSet: boolean;
   isReturnDeliveryDateSet: boolean;
@@ -284,12 +285,12 @@ export class WorkflowApprovalStateService {
     return isLastApprovalCompleted(state.requestDetail);
   }
 
-  getCurrentStepTransitions(): any[] {
+  getCurrentStepTransitions(): WorkflowStepTransition[] {
     const state = this.getState();
     return getCurrentStepTransitions(state.requestDetail);
   }
 
-  getWorkflowStepDisplayName(step: any): string {
+  getWorkflowStepDisplayName(step: WorkflowApprovalStepOption | null | undefined): string {
     return getWorkflowStepDisplayName(step, this.translateService);
   }
 

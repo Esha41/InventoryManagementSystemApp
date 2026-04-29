@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, EMPTY } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
-import { UnifiedRequestService, BaseRequestDto } from '@requests/services/unified-request.service';
+import { UnifiedRequestService } from '@requests/services/unified-request.service';
 import { OrderService } from '@requests/services/order.service';
 import { OrderDto } from '@models/order.model';
 import { ReturnService } from '@requests/services/return.service';
@@ -21,6 +21,20 @@ import { mapToOrderDto, mapToReturnDto, mapToDiscardDto, separateRequestsByType 
 import { FilterData, PaginatedList, PagedRequest } from '@models/api-response.model';
 import { RequestType } from '@utils/request-type-mapper.utils';
 import { PERMISSIONS } from '@constants/permissions.constants';
+
+/** Serialized order payload may include PascalCase navigation names from the API. */
+type OrderFromApi = OrderDto & {
+  Department?: OrderDto['department'];
+  Requester?: OrderDto['requester'];
+  RequestPurpose?: OrderDto['requestPurpose'];
+};
+
+function formatDashboardRequestDate(d: string | Date | undefined | null): string {
+  if (d === undefined || d === null) {
+    return '';
+  }
+  return typeof d === 'string' ? d : d.toISOString();
+}
 
 /**
  * Dashboard Data Service
@@ -100,7 +114,7 @@ export class DashboardDataService {
               requestStatus: order.status,
               orders: [{
                 orderId: getRequestTitle(order, order.orderNo),
-                requestDate: order.creationDate ? (typeof order.creationDate === 'string' ? order.creationDate : order.creationDate.toISOString()) : '',
+                requestDate: formatDashboardRequestDate(order.creationDate),
                 ...this.buildOrderItemNameFieldsFromOrder(order),
                 items: mapRequestItems(order.requestItems)
               }],
@@ -117,7 +131,7 @@ export class DashboardDataService {
               requestStatus: ret.status,
               orders: [{
                 orderId: getRequestTitle(ret),
-                requestDate: ret.creationDate ? (typeof ret.creationDate === 'string' ? ret.creationDate : ret.creationDate.toISOString()) : '',
+                requestDate: formatDashboardRequestDate(ret.creationDate),
                 ...this.buildOrderItemNameFieldsFromReturn(ret),
                 items: mapRequestItems(ret.requestItems)
               }],
@@ -134,7 +148,7 @@ export class DashboardDataService {
               requestStatus: discard.status,
               orders: [{
                 orderId: getRequestTitle(discard),
-                requestDate: discard.creationDate ? (typeof discard.creationDate === 'string' ? discard.creationDate : discard.creationDate.toISOString()) : '',
+                requestDate: formatDashboardRequestDate(discard.creationDate),
                 ...this.buildOrderItemNameFieldsFromDiscard(discard),
                 items: mapRequestItems(discard.requestItems)
               }],
@@ -175,7 +189,7 @@ export class DashboardDataService {
       requestStatus: order.status,
       orders: [{
         orderId: getRequestTitle(order, order.orderNo),
-        requestDate: order.creationDate ? (typeof order.creationDate === 'string' ? order.creationDate : order.creationDate.toISOString()) : '',
+        requestDate: formatDashboardRequestDate(order.creationDate),
         ...this.buildOrderItemNameFieldsFromOrder(order),
         items: mapRequestItems(order.requestItems)
       }],
@@ -201,7 +215,7 @@ export class DashboardDataService {
       requestStatus: ret.status,
       orders: [{
         orderId: getRequestTitle(ret),
-        requestDate: (ret as any).creationDate ? (typeof (ret as any).creationDate === 'string' ? (ret as any).creationDate : (ret as any).creationDate.toISOString()) : '',
+        requestDate: formatDashboardRequestDate(ret.creationDate),
         ...this.buildOrderItemNameFieldsFromReturn(ret),
         items: mapRequestItems(ret.requestItems)
       }],
@@ -330,7 +344,7 @@ export class DashboardDataService {
       requestStatus: discard.status,
       orders: [{
         orderId: getRequestTitle(discard),
-        requestDate: (discard as any).creationDate ? (typeof (discard as any).creationDate === 'string' ? (discard as any).creationDate : (discard as any).creationDate.toISOString()) : '',
+        requestDate: formatDashboardRequestDate(discard.creationDate),
         ...this.buildOrderItemNameFieldsFromDiscard(discard),
         items: mapRequestItems(discard.requestItems)
       }],
@@ -394,7 +408,13 @@ export class DashboardDataService {
     };
   }
 
-  private extractRequesterBilingual(request: OrderDto | ReturnDto | DiscardDto | any): { en: string; ar: string } {
+  private extractRequesterBilingual(
+    request: (OrderDto | ReturnDto | DiscardDto) & {
+      requesterName?: string;
+      requesterNameEn?: string;
+      requesterNameAr?: string;
+    }
+  ): { en: string; ar: string } {
     if (!request) return { en: '', ar: '' };
     if (request.requester) {
       const en = (request.requester.fullNameEN ?? request.requesterNameEn ?? '').trim();
@@ -418,15 +438,16 @@ export class DashboardDataService {
   getOrderById(orderRequestId: number, cachedOrder?: OrderDto | null): Observable<OrderDto> {
     return this.orderService.getOrderById(orderRequestId).pipe(
       map((order) => {
+        const raw = order as OrderFromApi;
         // Ensure nested objects are preserved for localization
-        if (order && !order.department && (order as any).Department) {
-          order.department = (order as any).Department;
+        if (order && !order.department && raw.Department) {
+          order.department = raw.Department;
         }
-        if (order && !order.requester && (order as any).Requester) {
-          order.requester = (order as any).Requester;
+        if (order && !order.requester && raw.Requester) {
+          order.requester = raw.Requester;
         }
-        if (order && !order.requestPurpose && (order as any).RequestPurpose) {
-          order.requestPurpose = (order as any).RequestPurpose;
+        if (order && !order.requestPurpose && raw.RequestPurpose) {
+          order.requestPurpose = raw.RequestPurpose;
         }
 
         // Ensure flat properties are populated from nested objects if not already present

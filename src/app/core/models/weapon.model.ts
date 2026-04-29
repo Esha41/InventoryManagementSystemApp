@@ -1,51 +1,32 @@
 /**
- * Weapon models matching backend DTOs
+ * Weapon models matching backend inventory DTOs
  */
 
-import { BaseItemDto } from './inventory.model';
-import { LookupDto } from './ammunition.model';
+import { CatalogBaseItemDto, LookupDto } from './ammunition.model';
 
 /**
- * Weapon DTO (extends BaseItem)
+ * Matches Ettad.Inventory.Service.Weapons.Dtos.WeaponDto (extends catalog base).
  */
-export interface WeaponDto extends BaseItemDto {
-  /** Backend WeaponCaliberCategory: 1 = Small, 2 = Medium, 3 = Large */
-  caliberCategory?: number;
+export interface WeaponDto extends CatalogBaseItemDto {
+  /** Backend WeaponCaliberCategory: 1 = Small, 2 = Medium, 3 = Large (JSON may be string). */
+  caliberCategory?: number | string | null;
   caliberId?: number | null;
-  /** Caliber lookup when CaliberId is set (JSON property "caliber") */
+  caliberUnitId?: number | null;
+  yearOfManufacture?: number | null;
+  countryOfManufactureId?: number | null;
+  model?: string | null;
   caliber?: LookupDto | null;
-  caliberUnitId?: number;
-  yearOfManufacture?: number;
-  countryOfManufactureId?: number;
-  model?: string;
-  distribution?: string;
-  referenceNo?: string;
-  unNumber?: string;
-  notes?: string;
-  classificationId?: number;
-  typeId?: number;
-
-  /** Linked catalog purposes (BaseItemPrimaryPurposes) */
-  primaryPurposes?: LookupDto[];
-  /** Legacy single navigation when list not populated */
+  caliberUnit?: LookupDto | null;
+  countryOfManufacture?: LookupDto | null;
+  /** Legacy single navigation when `primaryPurposes` is not populated */
   primaryPurpos?: LookupDto;
 
-  // Navigation properties
-  caliberUnit?: LookupDto;
-  countryOfManufacture?: LookupDto;
-  classification?: LookupDto;
-  type?: LookupDto;
-  
-  // Images array from response
-  images?: Array<{
-    id: number;
-    fileUrl: string;
-    fileName: string;
-    originalName: string;
-    isMain: boolean;
-    entity: string;
-    entityId: number;
-  }>;
+  /** Optional on catalog; may appear when merged with inventory / legacy API. */
+  batchNo?: string | null;
+  hccId?: number | null;
+  hcc?: LookupDto | null;
+  readyForIssue?: boolean;
+  expiryDate?: Date | string;
 }
 
 /**
@@ -65,13 +46,11 @@ export interface CreateUpdateWeaponDto {
   notes?: string;
   classificationId?: number;
   typeId?: number;
-  /** Backend WeaponCaliberCategory: 1 = Small, 2 = Medium, 3 = Large */
   caliberCategory?: number;
   caliberId?: number | null;
   caliberUnitId?: number;
   yearOfManufacture?: number;
   countryOfManufactureId?: number;
   model?: string;
-  /** Matches API PrimaryPurposIds (BaseItemPrimaryPurposes) */
   primaryPurposIds?: number[];
 }

@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil, catchError, of, forkJoin } from 'rxjs';
 import { map, delay, switchMap } from 'rxjs/operators';
-import { LucideAngularModule, User, Users, Mail, Building2, Shield, Hash, Navigation2, Award, Lock, RotateCcw } from 'lucide-angular';
+import { LucideAngularModule, User, Users, Mail, Building2, Shield, Hash, Award, Lock, RotateCcw } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { AuthenticatedUser, UserRoleDetail } from '@models/auth.model';
 import { ChangePasswordRequest } from '@profile/models/change-password.model';
@@ -47,7 +47,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
   readonly Building2 = Building2;
   readonly Shield = Shield;
   readonly Hash = Hash;
-  readonly Navigation2 = Navigation2;
   readonly Award = Award;
   readonly Lock = Lock;
   readonly RotateCcw = RotateCcw;

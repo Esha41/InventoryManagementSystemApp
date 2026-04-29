@@ -4,25 +4,13 @@ import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, ArrowRight } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
-import { MonitoringService } from '@services/monitoring.service';
+import { MonitoringService, LowStockItemDto } from '@services/monitoring.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { TranslationService } from '@services/translation.service';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { defaultPageSize } from '@constants/app.constants';
-
-export interface LowStockItemDto {
-  itemId: number;
-  itemName: string;
-  itemNo?: string;
-  nsn?: string;
-  minimumQuantity?: number;
-  totalStock: number;
-  holdQuantity: number;
-  suppliedQuantity: number;
-  remaining: number;
-}
 
 @Component({
   selector: 'app-low-stock',

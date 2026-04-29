@@ -13,7 +13,7 @@ export interface ExpiringLotDto {
   itemId: number;
   itemName: string;
   itemNo?: string;
-  lot: number;
+  lot: string;
   batchNo?: string;
   expiryDate?: string;
   daysUntilExpiry?: number;
@@ -33,6 +33,18 @@ export interface ExpiringLotDto {
     nameAr?: string;
     nameEn?: string;
   };
+}
+
+export interface LowStockItemDto {
+  itemId: number;
+  itemName: string;
+  itemNo?: string;
+  nsn?: string;
+  minimumQuantity?: number;
+  totalStock: number;
+  holdQuantity: number;
+  suppliedQuantity: number;
+  remaining: number;
 }
 
 @Injectable({
@@ -69,8 +81,8 @@ export class MonitoringService {
     return this.apiService.get<number>(`${this.baseEndpoint}/low-stock/count`, this.buildCountParams(depotId, depotIds));
   }
 
-  getLowStockItems(): Observable<any[]> {
-    return this.apiService.get<any[]>(`${this.baseEndpoint}/low-stock`);
+  getLowStockItems(): Observable<LowStockItemDto[]> {
+    return this.apiService.get<LowStockItemDto[]>(`${this.baseEndpoint}/low-stock`);
   }
 
   getInventoryDashboardSummary(depotIds?: number[]): Observable<InventoryDashboardSummaryDto> {

@@ -109,7 +109,10 @@ export class TranslationService {
   /**
    * Get instant translation for a key
    */
-  getTranslation(key: string, params?: any): string {
+  getTranslation(
+    key: string,
+    params?: Record<string, string | number | boolean | null | undefined>
+  ): string {
     return this.translate.instant(key, params);
   }
 

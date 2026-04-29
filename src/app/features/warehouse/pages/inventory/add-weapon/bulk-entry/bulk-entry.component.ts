@@ -46,6 +46,14 @@ interface BulkAssetData {
     assignmentNotes?: string;
 }
 
+interface BulkEntryFormValue {
+    deliveryReceipt: string;
+    items: Array<{
+        serialNumber: string;
+        rfid: string;
+    }>;
+}
+
 @Component({
     selector: 'app-bulk-entry',
     standalone: true,
@@ -208,7 +216,7 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
             return;
         }
 
-        const formValue = this.bulkEntryForm.value;
+        const formValue = this.bulkEntryForm.getRawValue() as BulkEntryFormValue;
         const mode = this.bulkData.assignMode ?? 'none';
         const assignmentNotes = this.bulkData.assignmentNotes?.trim();
         const assignmentPayload: Pick<CreateAssetDto, 'assignToEmployeeId' | 'assignToDepartmentId' | 'assignmentNotes'> = {};
@@ -224,7 +232,7 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
             }
         }
 
-        const createDtos: CreateAssetDto[] = formValue.items.map((item: any) => ({
+        const createDtos: CreateAssetDto[] = formValue.items.map((item) => ({
             itemId: this.bulkData.itemId,
             batchNumber: this.bulkData.batchNumber,
             depotId: this.warehouseId,
@@ -323,7 +331,7 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
             const combined = [...this.deliveryReceiptFiles, ...newlySelected];
             const seen = new Set<string>();
             this.deliveryReceiptFiles = combined.filter(f => {
-                const key = `${f.name}::${f.size}::${(f as any).lastModified ?? 0}`;
+                const key = `${f.name}::${f.size}::${f.lastModified}`;
                 if (seen.has(key)) return false;
                 seen.add(key);
                 return true;

@@ -1,15 +1,49 @@
 import { Injectable } from '@angular/core';
 import { Cartridge } from '@models/cartridge.model';
+import { AmmunitionReadDto, LookupDto } from '@models/ammunition.model';
+import { WeaponDto } from '@models/weapon.model';
+import { ExplosiveDto } from '@models/explosive.model';
 import { getLocalizedName } from '@utils/localization.utils';
 import { getWeaponTypeName, getActionTypeName } from '@utils/weapon.utils';
 import { getExplosiveTypeName } from '@utils/explosive.utils';
+
+/** Catalog JSON may expose bilingual name fields beyond AmmunitionReadDto. */
+type AmmunitionCatalogDto = AmmunitionReadDto & {
+  nameAr?: string | null;
+  nameAR?: string | null;
+  nameEn?: string | null;
+  nameEN?: string | null;
+};
+
+type WeaponCatalogDto = WeaponDto & {
+  nameAr?: string | null;
+  nameAR?: string | null;
+  nameEn?: string | null;
+  nameEN?: string | null;
+  barrelLength?: number;
+  barrelLengthUnit?: LookupDto | null;
+  overallLength?: number;
+  overallLengthUnit?: LookupDto | null;
+  weight?: number;
+  weightUnit?: LookupDto | null;
+  weaponType?: string | number;
+  actionType?: string | number;
+  capacity?: number;
+};
+
+type ExplosiveCatalogDto = ExplosiveDto & {
+  nameAr?: string | null;
+  nameAR?: string | null;
+  nameEn?: string | null;
+  nameEN?: string | null;
+};
 
 @Injectable({
   providedIn: 'root'
 })
 export class CartridgeMapperService {
 
-  mapAmmunitionToCartridge(dto: any, currentLang: string = 'en'): Cartridge {
+  mapAmmunitionToCartridge(dto: AmmunitionCatalogDto, currentLang: string = 'en'): Cartridge {
     // Bullet diameter unit values should not be translated (always use English)
     const bulletDiameterLabel = this.buildMeasurementLabel(dto.bulletDiameter, dto.bulletDiameterUnit, currentLang, true);
 
@@ -19,9 +53,9 @@ export class CartridgeMapperService {
     const linkedLabel = currentLang === 'ar' ? linkedLabelAr : linkedLabelEn;
 
     // Nature labels - extract Arabic and English from natureOption
-    const natureOption = dto.natureOption || {};
-    const natureLabelAr = natureOption.nameAr || natureOption.nameAR || null;
-    const natureLabelEn = natureOption.nameEn || natureOption.nameEN || null;
+    const natureOption = dto.natureOption;
+    const natureLabelAr = natureOption?.nameAr ?? natureOption?.nameAR ?? null;
+    const natureLabelEn = natureOption?.nameEn ?? natureOption?.nameEN ?? null;
     const natureLabel = getLocalizedName(dto.natureOption, currentLang);
 
     // Extract Arabic and English names from DTO
@@ -44,7 +78,7 @@ export class CartridgeMapperService {
       totalWeight: dto.totalWeight ? `${dto.totalWeight} g` : undefined,
       projectileMaterial: getLocalizedName(dto.projectailMaterial, currentLang),
       caseType: getLocalizedName(dto.caseType, currentLang),
-      primer: dto.primer,
+      primer: dto.primer ?? undefined,
       propellant: getLocalizedName(dto.propellant, currentLang),
       hazardDivision: getLocalizedName(dto.hazardDivision, currentLang),
       capabilityGroup: getLocalizedName(dto.compatibility, currentLang),
@@ -68,11 +102,11 @@ export class CartridgeMapperService {
     };
   }
 
-  mapAmmunitionArrayToCartridges(dtos: any[], currentLang: string = 'en'): Cartridge[] {
+  mapAmmunitionArrayToCartridges(dtos: AmmunitionCatalogDto[], currentLang: string = 'en'): Cartridge[] {
     return (dtos || []).map(dto => this.mapAmmunitionToCartridge(dto, currentLang));
   }
 
-  mapWeaponToCartridge(dto: any, currentLang: string = 'en'): Cartridge {
+  mapWeaponToCartridge(dto: WeaponCatalogDto, currentLang: string = 'en'): Cartridge {
     const nameAr = dto.nameAr || dto.nameAR || null;
     const nameEn = dto.nameEn || dto.nameEN || null;
 
@@ -128,11 +162,11 @@ export class CartridgeMapperService {
     };
   }
 
-  mapWeaponArrayToCartridges(dtos: any[], currentLang: string = 'en'): Cartridge[] {
+  mapWeaponArrayToCartridges(dtos: WeaponCatalogDto[], currentLang: string = 'en'): Cartridge[] {
     return (dtos || []).map(dto => this.mapWeaponToCartridge(dto, currentLang));
   }
 
-  mapExplosiveToCartridge(dto: any, currentLang: string = 'en'): Cartridge {
+  mapExplosiveToCartridge(dto: ExplosiveCatalogDto, currentLang: string = 'en'): Cartridge {
     const nameAr = dto.nameAr || dto.nameAR || null;
     const nameEn = dto.nameEn || dto.nameEN || null;
 
@@ -164,17 +198,17 @@ export class CartridgeMapperService {
 
       // Explosive specific - backend sends enum as string (JsonStringEnumConverter)
       explosiveType: dto.explosiveType ? getExplosiveTypeName(dto.explosiveType) : undefined,
-      unNumber: dto.unNumber,
-      netExplosiveQuantity: dto.netExplosiveQuantity,
+      unNumber: dto.unNumber ?? undefined,
+      netExplosiveQuantity: dto.netExplosiveQuantity ?? undefined,
       netExplosiveQuantityLabel: netExplosiveQuantityLabel,
-      totalWeight: dto.totalWeight,
+      totalWeight: dto.totalWeight !== undefined && dto.totalWeight !== null ? String(dto.totalWeight) : undefined,
       totalWeightLabel: totalWeightLabel,
       hazardDivision: getLocalizedName(dto.hazardDivision, currentLang),
       capabilityGroup: getLocalizedName(dto.compatibility, currentLang)
     };
   }
 
-  mapExplosiveArrayToCartridges(dtos: any[], currentLang: string = 'en'): Cartridge[] {
+  mapExplosiveArrayToCartridges(dtos: ExplosiveCatalogDto[], currentLang: string = 'en'): Cartridge[] {
     return (dtos || []).map(dto => this.mapExplosiveToCartridge(dto, currentLang));
   }
 
@@ -202,7 +236,12 @@ export class CartridgeMapperService {
     return !this.isWeapon(cartridge) && !this.isExplosive(cartridge);
   }
 
-  private buildMeasurementLabel(value: any, unit: any, currentLang: string = 'en', useEnglishUnit: boolean = false): string | undefined {
+  private buildMeasurementLabel(
+    value: unknown,
+    unit: LookupDto | null | undefined,
+    currentLang: string = 'en',
+    useEnglishUnit: boolean = false
+  ): string | undefined {
     if (value === null || value === undefined) {
       return undefined;
     }
@@ -212,7 +251,7 @@ export class CartridgeMapperService {
     }
     // If useEnglishUnit is true, always use English unit name (for bullet diameter values)
     const unitName = useEnglishUnit
-      ? (unit?.nameEn || unit?.nameEN || unit?.name || '')
+      ? (unit?.nameEn ?? '')
       : getLocalizedName(unit, currentLang);
     return unitName ? `${numeric} ${unitName}` : `${numeric}`;
   }

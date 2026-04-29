@@ -9,16 +9,30 @@ import { formatLocation, determineCondition, calculateDaysUntilExpiry } from '@u
 import { getLocalizedName } from '@utils/localization.utils';
 
 /**
+ * Lot suggestion from backend (used internally for mapping)
+ */
+interface LotSuggestion {
+  lot: number | string;
+  inventoryDetailId: number;
+  availableQuantity: number;
+  suggestedQuantity: number;
+  expiryDate?: string | Date;
+  depot?: { nameEn?: string; nameAr?: string };
+  supplier?: { nameEn?: string; nameAr?: string };
+  manufacturer?: { nameEn?: string; nameAr?: string };
+}
+
+/**
  * Map suggested lots to LotItem format
  * Removes duplicates by lot number, keeping the first occurrence
  */
 export function mapSuggestedLotsToLotItems(
-  suggestions: any[],
+  suggestions: LotSuggestion[],
   existingSelections?: Map<string, number>,
   currentLang: string = 'en'
 ): LotItem[] {
   // Remove duplicate suggestions by lot number (keep first occurrence)
-  const uniqueSuggestions: any[] = [];
+  const uniqueSuggestions: LotSuggestion[] = [];
   const seenLots = new Set<string>();
 
   suggestions.forEach(suggestion => {
@@ -35,8 +49,13 @@ export function mapSuggestedLotsToLotItems(
     quantity: lotSuggestion.availableQuantity,
     expiryDate: lotSuggestion.expiryDate ? new Date(lotSuggestion.expiryDate) : undefined,
     location: formatLocation(lotSuggestion.depot),
-    condition: determineCondition(lotSuggestion.expiryDate),
-    daysUntilExpiry: calculateDaysUntilExpiry(lotSuggestion.expiryDate),
+    // Backend expiryDate can be `string | Date`; map utils expect `string | undefined`.
+    condition: determineCondition(
+      typeof lotSuggestion.expiryDate === 'string' ? lotSuggestion.expiryDate : undefined
+    ),
+    daysUntilExpiry: calculateDaysUntilExpiry(
+      typeof lotSuggestion.expiryDate === 'string' ? lotSuggestion.expiryDate : undefined
+    ),
     selectedQuantity: existingSelections?.get(String(lotSuggestion.lot ?? '')) ?? lotSuggestion.suggestedQuantity,
     depotName: lotSuggestion.depot ? getLocalizedName(lotSuggestion.depot, currentLang) : undefined,
     supplierName: lotSuggestion.supplier ? getLocalizedName(lotSuggestion.supplier, currentLang) : undefined,

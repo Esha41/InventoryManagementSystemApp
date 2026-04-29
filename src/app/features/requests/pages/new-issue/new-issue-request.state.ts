@@ -41,13 +41,13 @@ export interface FilterOptions {
   natureOptions: string[];
   orderPriorities: DropdownOption<string>[] | string[]; // Allow objects or strings
 
-  weaponTypeOptions?: any[]; // DropdownOption[]
-  explosiveTypeOptions?: any[]; // DropdownOption[]
+  weaponTypeOptions?: DropdownOption<string>[]; // DropdownOption[]
+  explosiveTypeOptions?: DropdownOption<string>[]; // DropdownOption[]
 }
 
 export interface ExtendedFilterOptions extends FilterOptions {
-  weaponTypeOptions?: string[];
-  explosiveTypeOptions?: string[];
+  weaponTypeOptions?: DropdownOption<string>[];
+  explosiveTypeOptions?: DropdownOption<string>[];
 }
 
 export interface CatalogPaginationState {
@@ -93,7 +93,17 @@ export interface ReserveDetailsState {
   orderedQuantity: number;
   usedQuantity: number;
   loadingReserveDetails: boolean;
-  reserveDetailsByItem: any[];
+  reserveDetailsByItem: ReserveDetailItem[];
+}
+
+export interface ReserveDetailItem {
+  itemId: number;
+  itemName: string;
+  itemNo?: string | null;
+  totalReserve: number;
+  availableReserve: number;
+  orderedQuantity: number;
+  usedQuantity: number;
 }
 
 export interface UserContextState {

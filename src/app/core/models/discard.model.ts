@@ -1,4 +1,4 @@
-import { DiscardItemDto } from './request-item.model';
+import type { RequestManagementBaseRequestDto } from './request-management-base.model';
 
 // Re-export for backward compatibility
 export { DiscardItemDto } from './request-item.model';
@@ -27,47 +27,8 @@ export interface CreateDiscardDto {
 }
 
 /**
- * Discard DTO for read operations
+ * Discard read DTO carries no extra members beyond base in Request Management.
+ * @see `ettadbackend/Ettad.RequestManagement.Service/Discards/Dtos/DiscardDto.cs`
+ * @see `ettadbackend/Ettad.RequestManagement.Service/Common/Dtos/BaseRequestDto.cs`
  */
-export interface DiscardDto {
-    id: number;
-    requestNo: string;
-    requestType: number;
-    reason?: string;
-    priority: number;
-    status: number;
-    notes?: string;
-    requestPurposeNotes?: string;
-    departmentId: number;
-    requesterId?: string;
-    recieverId?: number;
-    depotId?: number;
-    requestPurposeId: number;
-    // Nested objects from backend BaseRequestDto
-    department?: {
-        id: number;
-        code: string;
-        nameAr: string;
-        nameEn: string;
-        isDeleted: boolean;
-    };
-    requester?: {
-        id: string;
-        userName: string;
-        fullNameEN: string;
-        fullNameAR: string;
-        militoryId?: string | null;
-        email?: string;
-        rank?: unknown;
-        department?: unknown;
-    };
-    requestPurpose?: {
-        id: number;
-        nameAr: string;
-        nameEn: string;
-        requestType: number;
-    };
-    requestItems?: DiscardItemDto[];
-    creationDate?: string | Date; // From BaseRequestDto
-    isMyTurn?: boolean;
-}
+export type DiscardDto = RequestManagementBaseRequestDto;

@@ -4,15 +4,22 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Plus, Edit, Trash2 } from 'lucide-angular';
 import { ModalComponent } from '@components/modal/modal.component';
-import { DropdownComponent } from '@components/dropdown/dropdown.component';
-import { RequestDetail } from '@models/workflow-approval.model';
+import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
+import { RequestDetail, RequestItem } from '@models/workflow-approval.model';
 import { OrderItemManagementService } from '@requests/pages/management/supply-request-detail/services/order-item-management.service';
 import { WorkflowApprovalStateService } from '../../services/workflow-approval-state.service';
 import { WeaponService } from '@assets/services/weapon.service';
+import { WeaponDto } from '@models/weapon.model';
 import { CreateRequestItemDto } from '@models/request-item.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
+
+/** Line item as mapped for display/editing (DTO fields + optional UI-only keys). */
+type WeaponReviewLineItem = RequestItem & {
+  notes?: string | null;
+  productId?: string | null;
+};
 
 @Component({
   selector: 'app-weapon-review-items-modal',
@@ -46,10 +53,10 @@ export class WeaponReviewItemsModalComponent implements OnInit, OnDestroy {
   isAddItemModalOpen: boolean = false;
   isEditItemModalOpen: boolean = false;
   isRemoveItemModalOpen: boolean = false;
-  selectedItemForEdit: any = null;
-  selectedItemForRemove: any = null;
+  selectedItemForEdit: WeaponReviewLineItem | null = null;
+  selectedItemForRemove: WeaponReviewLineItem | null = null;
   savingItem: boolean = false;
-  availableWeapons: any[] = [];
+  availableWeapons: WeaponDto[] = [];
   loadingWeapons: boolean = false;
 
   addItemForm!: FormGroup;
@@ -132,26 +139,27 @@ export class WeaponReviewItemsModalComponent implements OnInit, OnDestroy {
 
   private loadAvailableWeapons(): void {
     this.loadingWeapons = true;
-    const existingItemIds = (this.requestDetail?.requestItems || []).map((item: any) => item.itemId || item.id);
+    const existingItemIds = (this.requestDetail?.requestItems || []).map((item: RequestItem) => item.itemId || item.id);
 
     this.weaponService.getAll()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (weapons) => {
+        next: (weapons: WeaponDto[]) => {
           // Filter out weapons already in the order
-          this.availableWeapons = (weapons || []).filter((weapon: any) => !existingItemIds.includes(weapon.id));
+          this.availableWeapons = (weapons || []).filter((weapon: WeaponDto) => !existingItemIds.includes(weapon.id));
           this.loadingWeapons = false;
           this.cdr.markForCheck();
         },
-        error: (error) => {
+        error: (error: unknown) => {
           this.loadingWeapons = false;
           this.cdr.markForCheck();
         }
       });
   }
 
-  getWeaponOptionLabel(weapon: any): string {
+  getWeaponOptionLabel(weaponOrOption: WeaponDto | DropdownOption<WeaponDto>): string {
     const currentLang = getCurrentLang(this.translate);
+    const weapon = 'value' in weaponOrOption ? weaponOrOption.value : weaponOrOption;
     return getLocalizedName(weapon, currentLang) || weapon.itemNo || `Weapon #${weapon.id}`;
   }
 
@@ -193,7 +201,7 @@ export class WeaponReviewItemsModalComponent implements OnInit, OnDestroy {
   }
 
   // Edit Weapon
-  openEditItemModal(item: any): void {
+  openEditItemModal(item: WeaponReviewLineItem): void {
     this.selectedItemForEdit = item;
     this.editItemForm.patchValue({
       quantity: item.quantity || 1,
@@ -216,7 +224,7 @@ export class WeaponReviewItemsModalComponent implements OnInit, OnDestroy {
     }
 
     const formValue = this.editItemForm.value;
-    const requestItemId = this.selectedItemForEdit.requestItemId || this.selectedItemForEdit.id;
+    const requestItemId = this.selectedItemForEdit.id;
 
     this.savingItem = true;
     this.orderItemManagementService.updateItemQuantity(this.orderId, requestItemId, formValue.quantity)
@@ -243,7 +251,7 @@ export class WeaponReviewItemsModalComponent implements OnInit, OnDestroy {
   }
 
   // Remove Weapon
-  openRemoveItemModal(item: any): void {
+  openRemoveItemModal(item: WeaponReviewLineItem): void {
     this.selectedItemForRemove = item;
     this.isRemoveItemModalOpen = true;
   }
@@ -256,7 +264,7 @@ export class WeaponReviewItemsModalComponent implements OnInit, OnDestroy {
   onConfirmRemoveItem(): void {
     if (!this.orderId || !this.selectedItemForRemove) return;
 
-    const requestItemId = this.selectedItemForRemove.requestItemId || this.selectedItemForRemove.id;
+    const requestItemId = this.selectedItemForRemove.id;
 
     this.orderItemManagementService.removeItem(this.orderId, requestItemId)
       .pipe(takeUntil(this.destroy$))
@@ -279,11 +287,11 @@ export class WeaponReviewItemsModalComponent implements OnInit, OnDestroy {
       });
   }
 
-  getItemProductId(item: any): string {
+  getItemProductId(item: WeaponReviewLineItem): string {
     return item.itemNo || item.productId || '-';
   }
 
-  getItemNSN(item: any): string {
+  getItemNSN(item: WeaponReviewLineItem): string {
     return item.nsn || '-';
   }
 }

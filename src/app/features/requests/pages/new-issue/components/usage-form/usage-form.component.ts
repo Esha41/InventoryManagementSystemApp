@@ -9,6 +9,7 @@ import { getFileSizeFromFile, removeFile, validateFile, MAX_FILE_SIZE_MB, showFi
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { formatDateForInput, formatDateShort } from '@core/utils/format.utils';
+import type { ReserveDetailItem } from '@requests/pages/new-issue/new-issue-request.state';
 
 // Export MAX_FILE_SIZE_MB for template use
 export const MAX_FILE_SIZE_MB_EXPORT = MAX_FILE_SIZE_MB;
@@ -111,10 +112,14 @@ export class UsageFormComponent {
   @Input() availableReserve: number = 0;
   @Input() orderedQuantity: number = 0;
   @Input() usedQuantity: number = 0;
-  @Input() reserveDetailsByItem: any[] = [];
+  @Input() reserveDetailsByItem: ReserveDetailItem[] = [];
   @Input() selectedCartridges: Cartridge[] = [];
   @Input() orderPriority: string = '';
-  @Input() orderPriorities: any[] = ['newIssueRequest.normalPriority', 'newIssueRequest.urgentPriority', 'newIssueRequest.veryUrgentPriority'];
+  @Input() orderPriorities: Array<DropdownOption<string>> | string[] = [
+    'newIssueRequest.normalPriority',
+    'newIssueRequest.urgentPriority',
+    'newIssueRequest.veryUrgentPriority'
+  ];
   @Input() requesterComments: string = '';
   @Input() selectedFiles: File[] = [];
   @Output() removeCartridge = new EventEmitter<number>();

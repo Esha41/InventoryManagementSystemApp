@@ -34,6 +34,10 @@ export interface DisplayableRequest {
   requestNo?: string;
   requesterName?: string;
   requestItems?: RequestItemBase[];
+  creationDate?: string | Date;
+  isMyTurn?: boolean;
+  /** Present on `OrderDto` after mapping; used as title fallback alongside `requestNo`. */
+  orderNo?: string;
 }
 
 /**
@@ -79,7 +83,9 @@ export interface RequestItem {
   notes?: string;
 }
 
-export function mapRequestItems(items?: any[]): RequestItem[] {
+export function mapRequestItems(
+  items?: Array<{ itemName?: string; itemNo?: string; quantity?: number; notes?: string | null }>
+): RequestItem[] {
   if (!items || items.length === 0) {
     return [];
   }

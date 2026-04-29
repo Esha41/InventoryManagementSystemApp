@@ -34,6 +34,29 @@ import { trackByIndex } from '@utils/trackby.utils';
 
 export type WeaponAssignMode = 'none' | 'department' | 'employee';
 
+interface AssetFormValue {
+    itemId: number | null;
+    batchNumber: string;
+    supplierId: number | null;
+    manufacturerId: number | null;
+    primaryPurposId: number | null;
+    serialNumber: string;
+    rfid: string;
+    purchaseDate: string;
+    warrantyExpiryDate: string;
+    purchasePrice: number | null;
+    notes: string;
+    assignMode: WeaponAssignMode;
+    assignToEmployeeId: number | null;
+    assignToDepartmentId: number | null;
+    assignmentNotes: string;
+}
+
+interface AssetFormRawValue {
+    deliveryReceipt: string;
+    assets: AssetFormValue[];
+}
+
 @Component({
     selector: 'app-add-weapon-asset',
     standalone: true,
@@ -660,18 +683,18 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
     }
 
     private submitSingleMode(): void {
-        const formValue = this.assetForm.value;
-        const createDtos: CreateAssetDto[] = formValue.assets.map((asset: any) => ({
-            itemId: asset.itemId,
-            batchNumber: asset.batchNumber?.trim(),
+        const formValue = this.assetForm.getRawValue() as AssetFormRawValue;
+        const createDtos: CreateAssetDto[] = formValue.assets.map((asset) => ({
+            itemId: asset.itemId!,
+            batchNumber: asset.batchNumber.trim(),
             depotId: this.warehouseId,
-            serialNumber: asset.serialNumber?.trim() || undefined,
-            rfid: asset.rfid?.trim() || undefined,
+            serialNumber: asset.serialNumber.trim() || undefined,
+            rfid: asset.rfid.trim() || undefined,
             purchaseDate: asset.purchaseDate || undefined,
             warrantyExpiryDate: asset.warrantyExpiryDate || undefined,
-            purchasePrice: asset.purchasePrice || undefined,
-            deliveryReceipt: (formValue.deliveryReceipt?.trim && formValue.deliveryReceipt.trim()) || undefined,
-            notes: asset.notes?.trim() || undefined,
+            purchasePrice: asset.purchasePrice ?? undefined,
+            deliveryReceipt: formValue.deliveryReceipt.trim() || undefined,
+            notes: asset.notes.trim() || undefined,
             supplierId: asset.supplierId ?? undefined,
             manufacturerId: asset.manufacturerId ?? undefined,
             primaryPurposId: asset.primaryPurposId ?? undefined,
@@ -809,7 +832,7 @@ export class AddWeaponAssetComponent implements OnInit, OnDestroy {
             // Deduplicate by name+size+lastModified
             const seen = new Set<string>();
             this.deliveryReceiptFiles = combined.filter(f => {
-                const key = `${f.name}::${f.size}::${(f as any).lastModified ?? 0}`;
+                const key = `${f.name}::${f.size}::${f.lastModified}`;
                 if (seen.has(key)) return false;
                 seen.add(key);
                 return true;

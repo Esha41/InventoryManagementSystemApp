@@ -7,9 +7,13 @@ import { formatDateShort } from './format.utils';
 import { getExplosiveTypeName } from './explosive.utils';
 import { TranslateService } from '@ngx-translate/core';
 
+function nilUndef<T>(v: T | null | undefined): T | undefined {
+  return v == null ? undefined : v;
+}
+
 /** Primary purpose(s) for catalog items (ammunition / weapon / explosive) from API. */
 function formatCatalogPrimaryPurposes(
-  dto: { primaryPurposes?: LookupDto[]; primaryPurpos?: LookupDto },
+  dto: { primaryPurposes?: LookupDto[] | null; primaryPurpos?: LookupDto | null },
   currentLang: string
 ): string {
   const list = dto.primaryPurposes;
@@ -54,9 +58,9 @@ export function mapAmmunitionToAsset(
         : new Date(dto.expiryDate).toISOString()
       : undefined,
     readyForIssue: dto.readyForIssue ?? true,
-    price: dto.price,
-    minimumQuantity: dto.minimumQuantity,
-    criticalQuantity: dto.criticalQuantity,
+    price: nilUndef(dto.price),
+    minimumQuantity: nilUndef(dto.minimumQuantity),
+    criticalQuantity: nilUndef(dto.criticalQuantity),
     imageUrl: undefined, // Will be set in loadAmmunitionImages() using image ID from response
     originalData: dto
   };
@@ -81,8 +85,8 @@ export function mapWeaponToAsset(dto: WeaponDto, currentLang: string): Asset {
     caliber: getLocalizedName(dto.caliber, currentLang) || '-',
     expiryDate: dto.expiryDate ? (formatDateShort(dto.expiryDate) || '-') : '-',
     readyForIssue: dto.readyForIssue ?? true,
-    price: dto.price,
-    minimumQuantity: dto.minimumQuantity,
+    price: nilUndef(dto.price),
+    minimumQuantity: nilUndef(dto.minimumQuantity),
     imageUrl: undefined, // Will be set in loadImagesFromResponse() using image ID from response
     originalData: dto
   };
@@ -115,17 +119,17 @@ export function mapExplosiveToAsset(dto: ExplosiveDto, currentLang: string): Ass
     armNumber: dto.armNumber || '-',
     primaryPurpose: formatCatalogPrimaryPurposes(dto, currentLang),
     explosiveType: explosiveTypeDisplay,
-    unNumber: dto.unNumber,
-    netExplosiveQuantity: dto.netExplosiveQuantity,
-    netExplosiveQuantityUnit: dto.netExplosiveQuantityUnit,
-    totalWeight: dto.totalWeight,
-    totalWeightUnit: dto.totalWeightUnit,
-    hazardDivision: dto.hazardDivision,
+    unNumber: nilUndef(dto.unNumber),
+    netExplosiveQuantity: nilUndef(dto.netExplosiveQuantity),
+    netExplosiveQuantityUnit: nilUndef(dto.netExplosiveQuantityUnit),
+    totalWeight: nilUndef(dto.totalWeight),
+    totalWeightUnit: nilUndef(dto.totalWeightUnit),
+    hazardDivision: nilUndef(dto.hazardDivision),
     compatibility: getLocalizedName(dto.compatibility, currentLang) || '-',
     expiryDate: dto.expiryDate ? (formatDateShort(dto.expiryDate) || '-') : '-',
     readyForIssue: dto.readyForIssue ?? true,
-    price: dto.price,
-    minimumQuantity: dto.minimumQuantity,
+    price: nilUndef(dto.price),
+    minimumQuantity: nilUndef(dto.minimumQuantity),
     imageUrl: undefined, // Will be set in loadImagesFromResponse() using image ID from response
     originalData: dto
   };

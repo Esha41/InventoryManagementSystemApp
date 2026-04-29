@@ -110,15 +110,33 @@ export function mapOrderToRequestDetail(order: OrderDto): SupplyRequestDetail {
 }
 
 /**
- * Get item type name from numeric ID
+ * Get item type name from numeric ID or enum string (Request Management serializes `ItemType` either way).
  */
-function getItemTypeName(itemType?: number): string {
-  const typeMap: { [key: number]: string } = {
+function getItemTypeName(itemType?: number | string): string {
+  const typeMap: Record<number, string> = {
     1: 'Ammunition',
     2: 'Weapon',
-    3: 'Explosive'
+    3: 'Explosive',
+    4: 'Accessory'
   };
-  return itemType ? typeMap[itemType] || 'Other' : 'Other';
+  if (itemType === undefined || itemType === null) {
+    return 'Other';
+  }
+  if (typeof itemType === 'number') {
+    return typeMap[itemType] || 'Other';
+  }
+  const key = itemType.trim();
+  const byName: Record<string, number> = {
+    Ammunition: 1,
+    Weapon: 2,
+    Explosive: 3,
+    Accessory: 4
+  };
+  const numeric = byName[key] ?? parseInt(key, 10);
+  if (!Number.isNaN(numeric) && typeMap[numeric]) {
+    return typeMap[numeric];
+  }
+  return 'Other';
 }
 
 /**

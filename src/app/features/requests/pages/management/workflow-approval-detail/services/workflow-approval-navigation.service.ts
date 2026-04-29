@@ -106,7 +106,7 @@ export class WorkflowApprovalNavigationService {
    */
   navigateToItemDetails(itemId: number, requestId: number, itemType?: number | string): void {
     if (itemId && itemId > 0) {
-      const queryParams: any = { requestId: requestId };
+      const queryParams: Record<string, string | number> = { requestId };
       
       // Convert itemType to tab query param if available
       if (itemType !== undefined && itemType !== null) {
@@ -126,7 +126,7 @@ export class WorkflowApprovalNavigationService {
           }
         }
         if (tabValue) {
-          queryParams.tab = tabValue;
+          queryParams['tab'] = tabValue;
         }
       }
       

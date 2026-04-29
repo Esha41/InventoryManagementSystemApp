@@ -29,8 +29,8 @@ export class DateUtils {
   /**
    * Check if date is valid
    */
-  static isValidDate(date: any): boolean {
-    return date instanceof Date && !isNaN(date.getTime());
+  static isValidDate(date: unknown): boolean {
+    return date instanceof Date && !Number.isNaN(date.getTime());
   }
 
   /**

@@ -38,21 +38,28 @@ function normalizeRequestType(requestType: number | string): number {
 }
 
 /**
- * Convert string priority to number
+ * Convert string priority to number.
+ * @see `ettadbackend/Project.Data/Enums/RequestPriority.cs` (Normal=1, Urgent=2, VeryUrgent=3)
  */
 function normalizePriority(priority: number | string): number {
     if (typeof priority === 'number') {
         return priority;
     }
 
+    const key = String(priority).trim().toLowerCase().replace(/[\s\-_]+/g, '');
+
     const priorityMap: { [key: string]: number } = {
-        'Critical': 0,
-        'High': 1,
-        'Medium': 2,
-        'Low': 3
+        normal: 1,
+        urgent: 2,
+        veryurgent: 3,
+        // legacy string labels
+        critical: 3,
+        high: 2,
+        medium: 2,
+        low: 1
     };
 
-    return priorityMap[priority] || 2; // Default to Medium
+    return priorityMap[key] ?? 1;
 }
 
 /**
@@ -90,6 +97,7 @@ function normalizeStatus(status: number | string): number {
 
 /**
  * Convert string item type to number
+ * @see `ettadbackend/Project.Data/Enums/ItemType.cs`
  */
 function normalizeItemType(itemType: number | string | undefined): number | undefined {
     if (itemType === undefined || itemType === null) {
@@ -103,7 +111,8 @@ function normalizeItemType(itemType: number | string | undefined): number | unde
     const itemTypeMap: { [key: string]: number } = {
         'Ammunition': 1,
         'Weapon': 2,
-        'Explosive': 3
+        'Explosive': 3,
+        'Accessory': 4
     };
 
     return itemTypeMap[itemType];
@@ -118,11 +127,12 @@ function normalizeBaseRequestDto(request: UnifiedListRequestDto): UnifiedListReq
         requestType: normalizeRequestType(request.requestType),
         priority: normalizePriority(request.priority),
         status: normalizeStatus(request.status),
+        requestPurposeNotes: request.requestPurposeNotes ?? '',
+        isMyTurn: request.isMyTurn ?? false,
         requestItems: request.requestItems?.map(item => ({
             ...item,
             itemType: normalizeItemType(item.itemType)
-        })),
-        isMyTurn: request.isMyTurn
+        }))
     };
 }
 
@@ -131,30 +141,30 @@ function normalizeBaseRequestDto(request: UnifiedListRequestDto): UnifiedListReq
  * Transforms the unified structure to Order-specific structure
  */
 export function mapToOrderDto(base: UnifiedListRequestDto): OrderDto {
-    // Normalize enums first
     const normalized = normalizeBaseRequestDto(base);
 
-    return {
+    const order: OrderDto = {
         id: normalized.id,
         requestNo: normalized.requestNo,
-        orderNo: normalized.requestNo, // Alias for compatibility
+        orderNo: normalized.requestNo,
         requestType: normalized.requestType,
         reason: normalized.reason,
         priority: normalized.priority,
         status: normalized.status,
         notes: normalized.notes,
+        requestPurposeNotes: normalized.requestPurposeNotes,
         departmentId: normalized.departmentId,
         requesterId: normalized.requesterId,
         requestPurposeId: normalized.requestPurposeId,
 
-        // Flattened navigation properties for convenience
         departmentNameAr: normalized.department?.nameAr,
         departmentNameEn: normalized.department?.nameEn,
         requesterName: normalized.requester?.fullNameEN || normalized.requester?.fullNameAR || normalized.requester?.userName,
+        requesterNameEn: normalized.requester?.fullNameEN,
+        requesterNameAr: normalized.requester?.fullNameAR,
         requestPurposeNameAr: normalized.requestPurpose?.nameAr,
         requestPurposeNameEn: normalized.requestPurpose?.nameEn,
 
-        // Nested objects for localization (similar to ReturnDto and DiscardDto)
         department: normalized.department ? {
             id: normalized.department.id,
             code: normalized.department.code,
@@ -169,22 +179,28 @@ export function mapToOrderDto(base: UnifiedListRequestDto): OrderDto {
             fullNameAR: normalized.requester.fullNameAR,
             militoryId: normalized.requester.militoryId,
             email: normalized.requester.email,
-            rank: normalized.requester.rank,
-            department: normalized.requester.department
+            rank: normalized.requester.rank ?? undefined,
+            department: normalized.requester.department ?? undefined
+        } : undefined,
+        requestPurpose: normalized.requestPurpose ? {
+            id: normalized.requestPurpose.id,
+            nameAr: normalized.requestPurpose.nameAr,
+            nameEn: normalized.requestPurpose.nameEn,
+            requestType: normalized.requestPurpose.requestType
         } : undefined,
 
-        // Request items
         requestItems: normalized.requestItems?.map(item => ({
             id: item.id,
             itemId: item.itemId,
             quantity: item.quantity,
+            requestId: item.requestId,
             notes: item.notes,
             itemName: item.itemName,
             itemNo: item.itemNo,
+            nsn: item.nsn,
             itemType: item.itemType
         })),
 
-        // Order-specific properties (mapped from BaseRequestDto if available)
         isFromAllowance: normalized.isFromAllowance ?? false,
         usageDateFrom: normalized.usageDateFrom,
         usageTimeFrom: normalized.usageTimeFrom,
@@ -195,16 +211,13 @@ export function mapToOrderDto(base: UnifiedListRequestDto): OrderDto {
         usageLocation: normalized.usageLocation,
         numberOfOfficer: normalized.numberOfOfficer,
         numberOfOtherRank: normalized.numberOfOtherRank,
-        depotNameAr: normalized.depotNameAr,
-        depotNameEn: normalized.depotNameEn,
-        recieverId: normalized.receiverId,
-        recieverName: normalized.receiverName,
-        depotId: normalized.depotId,
+        supplyDate: normalized.supplyDate,
 
-        // Audit fields from BaseRequestDto
         creationDate: normalized.creationDate,
         isMyTurn: normalized.isMyTurn
-    } as OrderDto;
+    };
+
+    return order;
 }
 
 /**
@@ -212,10 +225,9 @@ export function mapToOrderDto(base: UnifiedListRequestDto): OrderDto {
  * Transforms the unified structure to Return-specific structure
  */
 export function mapToReturnDto(base: UnifiedListRequestDto): ReturnDto {
-    // Normalize enums first
     const normalized = normalizeBaseRequestDto(base);
 
-    return {
+    const ret: ReturnDto = {
         id: normalized.id,
         requestNo: normalized.requestNo,
         requestType: normalized.requestType,
@@ -223,11 +235,11 @@ export function mapToReturnDto(base: UnifiedListRequestDto): ReturnDto {
         priority: normalized.priority,
         status: normalized.status,
         notes: normalized.notes,
+        requestPurposeNotes: normalized.requestPurposeNotes,
         departmentId: normalized.departmentId,
         requesterId: normalized.requesterId,
         requestPurposeId: normalized.requestPurposeId,
 
-        // Nested navigation objects (Return uses nested structure)
         department: normalized.department ? {
             id: normalized.department.id,
             code: normalized.department.code,
@@ -243,8 +255,8 @@ export function mapToReturnDto(base: UnifiedListRequestDto): ReturnDto {
             fullNameAR: normalized.requester.fullNameAR,
             militoryId: normalized.requester.militoryId,
             email: normalized.requester.email,
-            rank: normalized.requester.rank,
-            department: normalized.requester.department
+            rank: normalized.requester.rank ?? undefined,
+            department: normalized.requester.department ?? undefined
         } : undefined,
 
         requestPurpose: normalized.requestPurpose ? {
@@ -254,7 +266,6 @@ export function mapToReturnDto(base: UnifiedListRequestDto): ReturnDto {
             requestType: normalized.requestPurpose.requestType
         } : undefined,
 
-        // Request items
         requestItems: normalized.requestItems?.map(item => ({
             id: item.id,
             itemId: item.itemId,
@@ -267,10 +278,15 @@ export function mapToReturnDto(base: UnifiedListRequestDto): ReturnDto {
             itemType: item.itemType
         })),
 
-        // Audit fields from BaseRequestDto
         creationDate: normalized.creationDate,
-        isMyTurn: normalized.isMyTurn
-    } as ReturnDto;
+        isMyTurn: normalized.isMyTurn,
+
+        returnToDepotId: normalized.returnToDepotId,
+        deliveryDate: normalized.deliveryDate,
+        returnToDepot: normalized.returnToDepot ?? undefined
+    };
+
+    return ret;
 }
 
 /**
@@ -278,10 +294,9 @@ export function mapToReturnDto(base: UnifiedListRequestDto): ReturnDto {
  * Transforms the unified structure to Discard-specific structure
  */
 export function mapToDiscardDto(base: UnifiedListRequestDto): DiscardDto {
-    // Normalize enums first
     const normalized = normalizeBaseRequestDto(base);
 
-    return {
+    const discard: DiscardDto = {
         id: normalized.id,
         requestNo: normalized.requestNo,
         requestType: normalized.requestType,
@@ -289,11 +304,11 @@ export function mapToDiscardDto(base: UnifiedListRequestDto): DiscardDto {
         priority: normalized.priority,
         status: normalized.status,
         notes: normalized.notes,
+        requestPurposeNotes: normalized.requestPurposeNotes,
         departmentId: normalized.departmentId,
         requesterId: normalized.requesterId,
         requestPurposeId: normalized.requestPurposeId,
 
-        // Nested navigation objects (Discard uses nested structure)
         department: normalized.department ? {
             id: normalized.department.id,
             code: normalized.department.code,
@@ -309,8 +324,8 @@ export function mapToDiscardDto(base: UnifiedListRequestDto): DiscardDto {
             fullNameAR: normalized.requester.fullNameAR,
             militoryId: normalized.requester.militoryId,
             email: normalized.requester.email,
-            rank: normalized.requester.rank,
-            department: normalized.requester.department
+            rank: normalized.requester.rank ?? undefined,
+            department: normalized.requester.department ?? undefined
         } : undefined,
 
         requestPurpose: normalized.requestPurpose ? {
@@ -320,7 +335,6 @@ export function mapToDiscardDto(base: UnifiedListRequestDto): DiscardDto {
             requestType: normalized.requestPurpose.requestType
         } : undefined,
 
-        // Request items
         requestItems: normalized.requestItems?.map(item => ({
             id: item.id,
             itemId: item.itemId,
@@ -333,10 +347,11 @@ export function mapToDiscardDto(base: UnifiedListRequestDto): DiscardDto {
             itemType: item.itemType
         })),
 
-        // Audit fields from BaseRequestDto
         creationDate: normalized.creationDate,
         isMyTurn: normalized.isMyTurn
-    } as DiscardDto;
+    };
+
+    return discard;
 }
 
 /**
@@ -349,7 +364,6 @@ export function separateRequestsByType(requests: UnifiedListRequestDto[]): {
     returns: UnifiedListRequestDto[];
     discards: UnifiedListRequestDto[];
 } {
-    // Normalize all requests first
     const normalizedRequests = requests.map(r => normalizeBaseRequestDto(r));
 
     return {

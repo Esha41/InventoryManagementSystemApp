@@ -9,14 +9,16 @@ export interface ExcelColumn {
     header: string;
     key: string;
     width?: number;
-    format?: (value: any) => any;
+    format?: {
+        bivarianceHack(value: unknown): unknown;
+    }['bivarianceHack'];
 }
 
-export interface ExcelExportOptions {
+export interface ExcelExportOptions<TData extends object = object> {
     fileName: string;
     sheetName?: string;
     columns: ExcelColumn[];
-    data: any[];
+    data: TData[];
     includeTimestamp?: boolean;
 }
 
@@ -36,7 +38,7 @@ export class ExcelService {
     /**
      * Export data to Excel file (client-side)
      */
-    exportToExcel(options: ExcelExportOptions): void {
+    exportToExcel<TData extends object>(options: ExcelExportOptions<TData>): void {
         const {
             fileName,
             sheetName = 'Sheet1',
@@ -78,7 +80,7 @@ export class ExcelService {
      */
     exportMultipleSheets(
         fileName: string,
-        sheets: Array<{ sheetName: string; columns: ExcelColumn[]; data: any[] }>
+        sheets: Array<{ sheetName: string; columns: ExcelColumn[]; data: object[] }>
     ): void {
         const workbook = XLSX.utils.book_new();
 
@@ -112,7 +114,7 @@ export class ExcelService {
     downloadExcel(
         endpoint: string,
         fileName: string,
-        params?: any
+        params?: Record<string, string | number | boolean | readonly (string | number | boolean)[]>
     ): Observable<void> {
         const url = `${this.config.apiUrl}${endpoint}`;
 
@@ -140,9 +142,12 @@ export class ExcelService {
         });
     }
 
-    private transformData(data: any[], columns: ExcelColumn[]): any[] {
+    private transformData(
+        data: object[],
+        columns: ExcelColumn[]
+    ): Array<Record<string, unknown>> {
         return data.map(item => {
-            const row: any = {};
+            const row: Record<string, unknown> = {};
             columns.forEach(col => {
                 const value = this.getNestedValue(item, col.key);
                 row[col.header] = col.format ? col.format(value) : value;
@@ -151,8 +156,13 @@ export class ExcelService {
         });
     }
 
-    private getNestedValue(obj: any, path: string): any {
-        return path.split('.').reduce((current, prop) => current?.[prop], obj);
+    private getNestedValue(obj: object, path: string): unknown {
+        return path.split('.').reduce<unknown>((current, prop) => {
+            if (current !== null && typeof current === 'object' && prop in current) {
+                return (current as Record<string, unknown>)[prop];
+            }
+            return undefined;
+        }, obj);
     }
 
     private extractFileName(contentDisposition: string | null): string | null {

@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { API_ENDPOINTS } from '@constants/app.constants';
@@ -42,6 +43,17 @@ export interface EmailConfigurationDto {
   [key: string]: unknown;
 }
 
+function httpStatus(error: unknown): number | undefined {
+  if (error instanceof HttpErrorResponse) {
+    return error.status;
+  }
+  if (typeof error === 'object' && error !== null && 'status' in error) {
+    const s = (error as { status?: unknown }).status;
+    return typeof s === 'number' && Number.isFinite(s) ? s : undefined;
+  }
+  return undefined;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -65,13 +77,13 @@ export class EmailConfigurationService {
         catchError(error => {
           // If 404, return empty config (settings don't exist yet)
           // Check both HttpErrorResponse status and error message
-          const is404 = (error as any)?.status === 404 ||
+          const is404 = httpStatus(error) === 404 ||
             error?.message?.includes('404') ||
             error?.message?.includes('Resource not found') ||
             error?.message?.includes('Not Found');
 
           // If 403, also return empty config (user might not have permission to view, but can still configure)
-          const is403 = (error as any)?.status === 403 ||
+          const is403 = httpStatus(error) === 403 ||
             error?.message?.includes('403') ||
             error?.message?.includes('Forbidden');
 
@@ -106,7 +118,7 @@ export class EmailConfigurationService {
           let errorMessage = 'Failed to update email configuration';
 
           // Check for status code in HttpErrorResponse
-          const status = (error as any)?.status;
+          const status = httpStatus(error);
           const errorMsg = error instanceof Error ? error.message : String(error);
 
           if (status === 403 || errorMsg?.includes('403') || errorMsg?.includes('Forbidden')) {

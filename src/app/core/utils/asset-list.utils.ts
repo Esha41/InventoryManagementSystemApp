@@ -91,6 +91,17 @@ type CatalogPrimaryPurposeDto = Pick<
   'primaryPurposId' | 'primaryPurposes' | 'primaryPurpos'
 >;
 
+type AssetOriginalData = Partial<
+  AmmunitionReadDto & {
+    type: LookupDto;
+    classification: LookupDto;
+    countryOfManufacture: LookupDto;
+    hazardDivision: LookupDto;
+    compatibility: LookupDto;
+    caseType: LookupDto;
+  }
+>;
+
 /**
  * Whether a catalog asset matches a single primary-purpose id (junction list, legacy single nav, or scalar id).
  */
@@ -133,7 +144,7 @@ export function filterAssets(
     // Tab-specific filters
     if (activeTab === 'ammunition') {
       // Access original data for filtering by IDs
-      const originalData = asset.originalData as any;
+      const originalData = asset.originalData as AssetOriginalData | undefined;
 
       // Case Type filter
       if (filterState.selectedCaseType) {
@@ -158,7 +169,7 @@ export function filterAssets(
       }
     } else if (activeTab === 'weapon') {
       // Access original data for filtering by IDs
-      const originalData = asset.originalData as any;
+      const originalData = asset.originalData as AssetOriginalData | undefined;
 
       // Weapon Type filter
       if (filterState.selectedWeaponType) {
@@ -191,7 +202,7 @@ export function filterAssets(
       }
     } else if (activeTab === 'explosive') {
       // Access original data for filtering by IDs
-      const originalData = asset.originalData as any;
+      const originalData = asset.originalData as AssetOriginalData | undefined;
 
       // Explosive Type filter
       if (filterState.selectedExplosiveType) {
@@ -243,16 +254,18 @@ export function sortAssets(
   assets: Asset[],
   sortState: AssetSortState
 ): Asset[] {
+  const normalizeSortValue = (value: unknown): string | number => {
+    if (value === undefined || value === null) return '';
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') return value.toLowerCase();
+    if (value instanceof Date) return value.getTime();
+    return String(value).toLowerCase();
+  };
+
   const sorted = [...assets];
   sorted.sort((a, b) => {
-    let valA: any = a[sortState.column as keyof Asset];
-    let valB: any = b[sortState.column as keyof Asset];
-
-    if (valA === undefined || valA === null) valA = '';
-    if (valB === undefined || valB === null) valB = '';
-
-    if (typeof valA === 'string') valA = valA.toLowerCase();
-    if (typeof valB === 'string') valB = valB.toLowerCase();
+    const valA = normalizeSortValue(a[sortState.column as keyof Asset]);
+    const valB = normalizeSortValue(b[sortState.column as keyof Asset]);
 
     if (valA < valB) return sortState.direction === 'asc' ? -1 : 1;
     if (valA > valB) return sortState.direction === 'asc' ? 1 : -1;

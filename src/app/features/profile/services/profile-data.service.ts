@@ -44,9 +44,6 @@ export interface ProfileData {
   // Military
   militaryId?: string;
 
-  // Organization
-  organizationId?: number;
-
   // Additional
   extraEmployeesView?: string;
 
@@ -109,9 +106,6 @@ export class ProfileDataService implements IUserProfileProvider {
 
         // Military
         militaryId: user.militaryId,
-
-        // Organization
-        organizationId: user.organizationId,
 
         // Additional
         extraEmployeesView: apiResponse?.extraEmployeesView,
@@ -190,7 +184,6 @@ export class ProfileDataService implements IUserProfileProvider {
       permissions: profileData.permissions || [],
       isLdapUser: profileData.isLdapUser,
       ldapUserName: profileData.ldapUserName,
-      organizationId: profileData.organizationId,
       departmentId: profileData.departmentId,
       departmentName: profileData.departmentName,
       departmentNameEn: profileData.departmentNameEn,

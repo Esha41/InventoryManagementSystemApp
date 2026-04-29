@@ -57,7 +57,6 @@ export interface BackendUserDto {
   isLdapUser: boolean;
   ldapUserName?: string;
   extraEmployeesView?: string;
-  organizationId?: number;
   departmentId?: number;
   departmentName?: string;
   departmentNameEn?: string;
@@ -90,7 +89,6 @@ export interface CreateUserDto {
   isLdapUser: boolean;
   ldapUserName?: string;
   extraEmployeesView?: string;
-  organizationId?: number;
   roleIds: string[];
   /** Optional selected department identifier */
   departmentId?: number;
@@ -113,7 +111,6 @@ export interface UpdateUserDto {
   isLdapUser?: boolean;
   ldapUserName?: string;
   extraEmployeesView?: string;
-  organizationId?: number;
   roleIds: string[];
   /** Optional selected department identifier */
   departmentId?: number;

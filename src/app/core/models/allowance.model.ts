@@ -1,10 +1,8 @@
-/**
- * Allowance Models
- */
 
 import type { AmmunitionReadDto } from '@models/ammunition.model';
 import type { WeaponDto } from '@models/weapon.model';
 import type { ExplosiveDto } from '@models/explosive.model';
+import type { ItemType } from '@models/inventory.model';
 
 /** Union type for allowance item (ammunition, weapon, or explosive) - shared across list and form */
 export type AllowanceItemType = AmmunitionReadDto | WeaponDto | ExplosiveDto;
@@ -12,14 +10,14 @@ export type AllowanceItemType = AmmunitionReadDto | WeaponDto | ExplosiveDto;
 export interface AllowanceItemDto {
   id: number;
   itemId: number;
-  itemName?: string;
-  itemNo?: string;
+  itemName?: string | null;
+  itemNo?: string | null;
   departmentId: number;
   year: number;
   quantity: number;
-  itemType?: number;
+  itemType: ItemType;
   usedQuantityFromAllowance: number;
-  reservedQuantityByOrdersOnProcessing: number; // Backend API field name
+  reservedQuantityByOrdersOnProcessing: number;
   remainingQuantityFromAllowance: number;
 }
 
@@ -28,12 +26,12 @@ export interface AllowanceItemDetailDto {
   itemId: number;
   year: number;
   quantity: number;
-  itemType?: number;
-  itemName?: string;
-  itemNo?: string;
-  batchNo?: string;
+  itemType: ItemType;
+  itemName: string;
+  itemNo: string;
+  batchNo?: string | null;
   usedQuantityFromAllowance: number;
-  reservedQuantityByDraftSupplies: number;
+  reservedQuantityByOrdersOnProcessing: number;
   remainingQuantityFromAllowance: number;
 }
 
@@ -43,7 +41,7 @@ export interface AllowanceItemByDepartmentDto {
   departmentNameAr: string;
   departmentNameEn: string;
   year: number;
-  itemType?: number;
+  itemType?: ItemType | null;
   items: AllowanceItemDetailDto[];
 }
 
@@ -56,10 +54,10 @@ export interface AllowanceTableRow {
   itemName: string;
   itemNo: string;
   batchNo: string;
-  itemType: number;
+  itemType: ItemType;
   quantity: number;
   usedQuantityFromAllowance: number;
-  reservedQuantityByDraftSupplies: number;
+  reservedQuantityByOrdersOnProcessing: number;
   remainingQuantityFromAllowance: number;
   items: AllowanceItemDetailDto[];
 }
@@ -68,12 +66,13 @@ export interface AllowanceItemReserveDetailsDto {
   itemId: number;
   itemName: string;
   itemNo: string;
-  batchNo?: string;
+  batchNo?: string | null;
   originalQuantity: number;
   remainingQuantity: number;
-  reservedQuantityByDraftSupplies: number;
+  reservedQuantityByOrdersOnProcessing: number;
   usedQuantity: number;
 }
+
 
 export interface AllowanceReserveDetailsByItemDto {
   departmentId: number;

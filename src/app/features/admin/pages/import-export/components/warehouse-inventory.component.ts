@@ -19,15 +19,17 @@ import { TemplateGenerationService } from '@services/template-generation.service
 import { InventoryDetailDto } from '@models/inventory.model';
 import { AssetDto } from '@models/asset.model';
 import { LookupItem } from '@models/lookup.model';
-import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { getLocalizedName, getCurrentLang, Localizable } from '@utils/localization.utils';
 import { getLookupDisplayName } from '@utils/asset-list.utils';
 import { TranslationService } from '@services/translation.service';
-import { ImportPreviewDialogComponent } from '@components/import-preview-dialog/import-preview-dialog.component';
+import { ImportPreviewDialogComponent, PreviewData, PreviewRow } from '@components/import-preview-dialog/import-preview-dialog.component';
 import { saveAs } from 'file-saver';
 import { IImportableService } from '@core/interfaces/importable-service.interface';
 import { APIOperationResponse } from '@models/api-response.model';
-import { ImportResult } from '@models/import-result.model';
+import { ImportResult, ImportError } from '@models/import-result.model';
 import { ErrorHandler } from '@utils/error-handler.utils';
+
+type LookupDisplayInput = Parameters<typeof getLookupDisplayName>[0];
 
 @Component({
   selector: 'app-warehouse-inventory',
@@ -58,7 +60,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
   loadingWarehouseInventory = false;
   showImportModal = false;
   showPreviewModal = false;
-  previewData: any = null;
+  previewData: PreviewData | null = null;
   pendingImportFile: File | null = null; // Store file for import after preview confirmation
   pendingDepotId: number | null = null; // Store depot ID for import after preview confirmation
   isPreviewInProgress = false; // Prevent multiple simultaneous preview requests
@@ -306,18 +308,24 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
             const successfulRecords = Array.isArray(result.successfulRecords) ? result.successfulRecords : [];
             const errors = result.errors || [];
 
-            const errorsByRow = new Map<number, { errors: string[], rowData: any }>();
-            errors.forEach((error: any) => {
+            const errorsByRow = new Map<number, { errors: string[]; rowData: Record<string, unknown> }>();
+            errors.forEach((error: ImportError) => {
               const rowNum = error.rowNumber || 0;
               if (!errorsByRow.has(rowNum)) {
-                errorsByRow.set(rowNum, { errors: [], rowData: error.rowData || {} });
+                errorsByRow.set(rowNum, { errors: [], rowData: (error.rowData ?? {}) as Record<string, unknown> });
               }
               errorsByRow.get(rowNum)!.errors.push(error.errorMessage || 'Unknown error');
             });
 
-            const previewRows: any[] = [];
-            successfulRecords.forEach((record: any, index: number) => {
-              const rowNum = (record as any).rowNumber || (index + 2);
+            const previewRows: PreviewRow[] = [];
+            successfulRecords.forEach((record: unknown, index: number) => {
+              let rowNum = index + 2;
+              if (record && typeof record === 'object' && record !== null && 'rowNumber' in record) {
+                const rn = (record as { rowNumber?: unknown }).rowNumber;
+                if (typeof rn === 'number') {
+                  rowNum = rn;
+                }
+              }
               const errorInfo = errorsByRow.get(rowNum);
               previewRows.push({
                 rowNumber: rowNum,
@@ -346,7 +354,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
               invalidRows: previewRows.filter(r => !r.isValid).length,
               columns: result.importHeaders && result.importHeaders.length > 0
                 ? result.importHeaders
-                : (previewRows.length > 0 ? Object.keys(previewRows[0].data) : [])
+                : (previewRows.length > 0 ? Object.keys(previewRows[0].data as Record<string, unknown>) : [])
             };
             this.showPreviewModal = true;
           }
@@ -362,7 +370,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       });
   }
 
-  onPreviewConfirmed(validRows: any[]): void {
+  onPreviewConfirmed(validRows: PreviewRow[]): void {
     this.showPreviewModal = false;
     this.previewData = null;
 
@@ -447,10 +455,11 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           header: this.translateService.instant('warehouseInventory.itemName') || 'Item Name',
           key: 'item',
           width: 30,
-          format: (item: any) => {
-            if (!item) return '-';
+          format: (item: unknown) => {
+            if (!item || typeof item !== 'object') return '-';
             const lang = getCurrentLang(this.translateService);
-            return getLocalizedName(item, lang) || item.itemNo || '-';
+            const row = item as Localizable & { itemNo?: string };
+            return getLocalizedName(row, lang) || row.itemNo || '-';
           }
         },
         {
@@ -475,13 +484,13 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           header: this.translateService.instant('assetDetails.purchaseDate') || 'Purchase Date',
           key: 'purchaseDate',
           width: 15,
-          format: (date: any) => this.importExportService.formatDate(date)
+          format: (date: Date | string | null | undefined) => this.importExportService.formatDate(date ?? undefined)
         },
         {
           header: this.translateService.instant('assetDetails.warrantyExpiryDate') || 'Warranty Expiry Date',
           key: 'warrantyExpiryDate',
           width: 20,
-          format: (date: any) => this.importExportService.formatDate(date)
+          format: (date: Date | string | null | undefined) => this.importExportService.formatDate(date ?? undefined)
         },
         {
           header: this.translateService.instant('assetDetails.purchasePrice') || 'Purchase Price',
@@ -505,7 +514,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           header: 'Caliber Unit',
           key: 'item.caliberUnit',
           width: 20,
-          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+          format: (value: LookupDisplayInput) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
           header: this.translateService.instant('weapon.yearOfManufacture') || 'Year Of Manufacture',
@@ -517,7 +526,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           header: this.translateService.instant('weapon.countryOfManufacture') || 'Country Of Manufacture',
           key: 'item.countryOfManufacture',
           width: 25,
-          format: (value: any) => getLookupDisplayName(value, this.translateService) || '-'
+          format: (value: LookupDisplayInput) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
           header: this.translateService.instant('weapon.model') || 'Model',
@@ -587,10 +596,11 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           header: this.translateService.instant('warehouseInventory.itemName') || 'Item Name',
           key: 'item',
           width: 30,
-          format: (item: any) => {
-            if (!item) return '-';
+          format: (item: unknown) => {
+            if (!item || typeof item !== 'object') return '-';
             const lang = getCurrentLang(this.translateService);
-            return getLocalizedName(item, lang) || item.itemNo || '-';
+            const row = item as Localizable & { itemNo?: string };
+            return getLocalizedName(row, lang) || row.itemNo || '-';
           }
         },
         {
@@ -603,7 +613,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           header: this.translateService.instant('common.supplier') || 'Supplier',
           key: 'supplier',
           width: 20,
-          format: (supplier: any) => getLocalizedName(supplier, getCurrentLang(this.translateService)) || '-'
+          format: (supplier: Localizable | null | undefined) => getLocalizedName(supplier, getCurrentLang(this.translateService)) || '-'
         },
         {
           header: this.translateService.instant('warehouseInventory.lot') || 'Lot',
@@ -645,19 +655,19 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
           header: this.translateService.instant('warehouseInventory.expiryDate') || 'Expiry Date',
           key: 'expiryDate',
           width: 15,
-          format: (date: any) => this.importExportService.formatDate(date)
+          format: (date: Date | string | null | undefined) => this.importExportService.formatDate(date ?? undefined)
         },
         {
           header: this.translateService.instant('common.manufacturer') || 'Manufacturer',
           key: 'manufacturer',
           width: 20,
-          format: (manufacturer: any) => getLocalizedName(manufacturer, getCurrentLang(this.translateService)) || '-'
+          format: (manufacturer: Localizable | null | undefined) => getLocalizedName(manufacturer, getCurrentLang(this.translateService)) || '-'
         },
         {
           header: this.translateService.instant('common.country') || 'Country',
           key: 'country',
           width: 20,
-          format: (country: any) => getLocalizedName(country, getCurrentLang(this.translateService)) || '-'
+          format: (country: Localizable | null | undefined) => getLocalizedName(country, getCurrentLang(this.translateService)) || '-'
         }
       ];
 

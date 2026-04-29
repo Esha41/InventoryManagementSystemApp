@@ -1,5 +1,8 @@
 import { NotificationHubPayload } from '@core/notifications/notification-hub.types';
 import { Notification } from '@notifications/models/notification.model';
+import { extractRecord } from '@notifications/utils/notification.utils';
+
+export { extractEntityIdFromMetadata } from '@notifications/utils/notification.utils';
 
 export function mapHubPayloadToNotification(dto: NotificationHubPayload): Notification {
   const id = dto.id ?? dto.notificationId ?? 0;
@@ -43,40 +46,16 @@ export function mapHubPayloadToNotification(dto: NotificationHubPayload): Notifi
   };
 }
 
-export function extractEntityIdFromMetadata(notification: Notification): number | null {
-  if (!notification.metadata) {
-    return null;
-  }
-
-  const metadata = notification.metadata as Record<string, unknown>;
-  const possibleKeys = ['entityId', 'orderId', 'returnId', 'discardId', 'requestId', 'id'];
-
-  for (const key of possibleKeys) {
-    const value = metadata[key];
-    if (value != null) {
-      if (typeof value === 'number') {
-        return value;
-      }
-      const parsed = Number(value);
-      if (!isNaN(parsed)) {
-        return parsed;
-      }
-    }
-  }
-
-  return null;
-}
-
-  export function resolveNotificationActionEndpoint(
+export function resolveNotificationActionEndpoint(
   notification: Notification | undefined,
   keys: string[]
 ): string | null {
-  if (!notification?.metadata) {
+  const metadata = extractRecord(notification?.metadata ?? null);
+  if (!metadata) {
     return null;
   }
 
-  const metadata = notification.metadata as Record<string, unknown>;
-  const actions = (metadata['actions'] ?? metadata['actionUrls']) as Record<string, unknown> | undefined;
+  const actions = extractRecord(metadata['actions']) ?? extractRecord(metadata['actionUrls']);
 
   for (const key of keys) {
     const value =

@@ -1,10 +1,23 @@
-import { Notification, NotificationRequestDetail, NotificationDetailType } from '@notifications/models/notification.model';
+import { Notification, NotificationMetadata, NotificationRequestDetail, NotificationDetailType } from '@notifications/models/notification.model';
+
+/**
+ * Normalize unknown hub/backend metadata to a string-keyed object, or null if not an object.
+ */
+export function asNotificationMetadata(value: unknown): NotificationMetadata | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  if (typeof value !== 'object' || Array.isArray(value)) {
+    return null;
+  }
+  return value as NotificationMetadata;
+}
 
 /**
  * Extract entity ID from notification metadata
  */
 export function extractEntityIdFromMetadata(notification: Notification): number | null {
-  const metadata = notification.metadata as Record<string, unknown> | null;
+  const metadata = asNotificationMetadata(notification.metadata);
   if (!metadata) {
     return null;
   }
@@ -26,11 +39,11 @@ export function extractEntityIdFromMetadata(notification: Notification): number 
 /**
  * Extract record from unknown value
  */
-export function extractRecord(value: unknown): Record<string, any> | null {
+export function extractRecord(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return null;
   }
-  return value as Record<string, any>;
+  return value as Record<string, unknown>;
 }
 
 /**
@@ -88,7 +101,11 @@ export function hasMetadataAction(
     return false;
   }
 
-  const metadata = notification.metadata as Record<string, any>;
+  const metadata = asNotificationMetadata(notification.metadata);
+  if (!metadata) {
+    return false;
+  }
+
   const actions = extractRecord(metadata['actions']) ?? extractRecord(metadata['actionUrls']);
 
   for (const key of keys) {
@@ -229,7 +246,10 @@ export function canConfirmPickup(
     return false;
   }
 
-  const metadata = notification.metadata as Record<string, any>;
+  const metadata = asNotificationMetadata(notification.metadata);
+  if (!metadata) {
+    return false;
+  }
 
   if (metadata['confirmed'] === true) {
     return false;
@@ -250,7 +270,10 @@ export function canProposeNewTime(
     return false;
   }
 
-  const metadata = notification.metadata as Record<string, any>;
+  const metadata = asNotificationMetadata(notification.metadata);
+  if (!metadata) {
+    return false;
+  }
 
   if (metadata['allowReschedule'] === false) {
     return false;
@@ -267,11 +290,12 @@ export function getDisplayMetadata(
   hiddenKeys: ReadonlySet<string>,
   translateService: { instant: (key: string) => string }
 ): Array<{ key: string; value: string }> {
-  if (!notification?.metadata) {
+  const meta = asNotificationMetadata(notification?.metadata ?? null);
+  if (!meta) {
     return [];
   }
 
-  const iterable = Object.entries(notification.metadata)
+  const iterable = Object.entries(meta)
     .filter(([key]) => !hiddenKeys.has(key));
 
   return iterable
@@ -289,16 +313,18 @@ export function handleDetailError(
   error: unknown,
   translateService: { instant: (key: string) => string }
 ): string {
-  const errorObj = error as any;
-
-  // Check for permission/authorization errors
-  if (errorObj?.status === 403 || errorObj?.status === 401) {
-    return 'You do not have permission to view details for this notification.';
-  } else if (errorObj?.status === 404) {
-    return 'The requested details could not be found.';
-  } else if (errorObj?.message) {
-    return errorObj.message;
-  } else {
-    return translateService.instant('notifications.details.unknown');
+  if (typeof error === 'object' && error !== null) {
+    const err = error as { status?: unknown; message?: unknown };
+    const status = err.status;
+    if (status === 403 || status === 401) {
+      return 'You do not have permission to view details for this notification.';
+    }
+    if (status === 404) {
+      return 'The requested details could not be found.';
+    }
+    if (typeof err.message === 'string' && err.message.length > 0) {
+      return err.message;
+    }
   }
+  return translateService.instant('notifications.details.unknown');
 }

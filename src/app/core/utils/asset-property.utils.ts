@@ -1,8 +1,3 @@
-/**
- * Utility functions for safely accessing properties from union types
- * Follows Angular best practices by keeping business logic out of components
- */
-
 import { Injectable } from '@angular/core';
 import { AmmunitionReadDto, LookupDto } from '../models/ammunition.model';
 import { WeaponDto } from '../models/weapon.model';
@@ -16,6 +11,15 @@ import { ItemType, BaseItemDto } from '../models/inventory.model';
 import { formatDateShort } from './format.utils';
 
 export type AssetUnion = Asset | AmmunitionReadDto | WeaponDto | ExplosiveDto | null;
+type LegacyExplosiveLike = {
+  itemType?: unknown;
+  distribution?: string;
+  unNumber?: string;
+  referenceNo?: string;
+  classification?: LookupDto;
+  type?: LookupDto;
+  notes?: string;
+};
 
 /** Map API itemType (number or JsonStringEnumConverter name) to ItemType */
 export function normalizeCatalogItemType(raw: unknown): ItemType | null {
@@ -30,6 +34,11 @@ export function normalizeCatalogItemType(raw: unknown): ItemType | null {
     if (t === '3' || t === 'explosive') return ItemType.Explosive;
   }
   return null;
+}
+
+function asLegacyExplosiveLike(asset: AssetUnion): LegacyExplosiveLike | null {
+  if (!asset || typeof asset !== 'object') return null;
+  return asset as LegacyExplosiveLike;
 }
 
 function assetCore(
@@ -111,7 +120,7 @@ export class AssetPropertyAccessor {
     return getLookupDisplayName(lookup, this.translateService);
   }
 
-  private getUnitName(unit: LookupDto | LookupItem | number | undefined): string {
+  private getUnitName(unit: LookupDto | LookupItem | number | null | undefined): string {
     if (!unit) return '';
     if (typeof unit === 'number') {
       const unitItem = this._units.find(u => u.id === unit);
@@ -374,7 +383,7 @@ export class AssetPropertyAccessor {
     if (!asset || !('expiryDate' in asset)) return '-';
     if (!asset.expiryDate) return '-';
     try {
-      const formatted = formatDateShort(asset.expiryDate as any);
+      const formatted = formatDateShort(asset.expiryDate as string | Date);
       return formatted === 'N/A' ? '-' : formatted;
     } catch {
       return '-';
@@ -395,10 +404,11 @@ export class AssetPropertyAccessor {
       return asset.distribution || '-';
     }
     // Additional check: if itemType is "Explosive", treat as explosive
-    if (asset && 'itemType' in asset) {
-      const itemType = (asset as any).itemType;
+    const legacy = asLegacyExplosiveLike(asset);
+    if (legacy && 'itemType' in legacy) {
+      const itemType = legacy.itemType;
       if (typeof itemType === 'string' && itemType.toLowerCase() === 'explosive') {
-        return (asset as any).distribution || '-';
+        return legacy.distribution || '-';
       }
     }
     return '-';
@@ -412,10 +422,11 @@ export class AssetPropertyAccessor {
       return asset.unNumber || '-';
     }
     // Additional check: if itemType is "Explosive" (case-insensitive), treat as explosive
-    if (asset && 'itemType' in asset) {
-      const itemType = (asset as any).itemType;
+    const legacy = asLegacyExplosiveLike(asset);
+    if (legacy && 'itemType' in legacy) {
+      const itemType = legacy.itemType;
       if (typeof itemType === 'string' && itemType.toLowerCase() === 'explosive') {
-        return (asset as any).unNumber || '-';
+        return legacy.unNumber || '-';
       }
     }
     return '-';
@@ -429,10 +440,11 @@ export class AssetPropertyAccessor {
       return asset.referenceNo || '-';
     }
     // Additional check: if itemType is "Explosive", treat as explosive
-    if (asset && 'itemType' in asset) {
-      const itemType = (asset as any).itemType;
+    const legacy = asLegacyExplosiveLike(asset);
+    if (legacy && 'itemType' in legacy) {
+      const itemType = legacy.itemType;
       if (typeof itemType === 'string' && itemType.toLowerCase() === 'explosive') {
-        return (asset as any).referenceNo || '-';
+        return legacy.referenceNo || '-';
       }
     }
     return '-';
@@ -441,7 +453,7 @@ export class AssetPropertyAccessor {
   getClassification(asset: AssetUnion): string {
     if (!asset) return '-';
 
-    const pick = (a: { classification?: LookupDto } | null | undefined): string | null => {
+    const pick = (a: { classification?: LookupDto | null } | null | undefined): string | null => {
       if (!a?.classification) return null;
       const s = this.getLookupName(a.classification);
       return s && s !== '' ? s : null;
@@ -464,11 +476,12 @@ export class AssetPropertyAccessor {
       if (r2) return r2;
     }
 
-    if ('itemType' in asset) {
-      const itemType = (asset as any).itemType;
+    const legacy = asLegacyExplosiveLike(asset);
+    if (legacy && 'itemType' in legacy) {
+      const itemType = legacy.itemType;
       if (typeof itemType === 'string' && itemType.toLowerCase() === 'explosive') {
-        const legacy = this.getLookupName((asset as any).classification);
-        if (legacy && legacy !== '') return legacy;
+        const legacyClassification = this.getLookupName(legacy.classification);
+        if (legacyClassification && legacyClassification !== '') return legacyClassification;
       }
     }
     return '-';
@@ -477,7 +490,7 @@ export class AssetPropertyAccessor {
   getType(asset: AssetUnion): string {
     if (!asset) return '-';
 
-    const pick = (a: { type?: LookupDto } | null | undefined): string | null => {
+    const pick = (a: { type?: LookupDto | null } | null | undefined): string | null => {
       if (!a?.type) return null;
       const s = this.getLookupName(a.type);
       return s && s !== '' ? s : null;
@@ -500,11 +513,12 @@ export class AssetPropertyAccessor {
       if (r2) return r2;
     }
 
-    if ('itemType' in asset) {
-      const itemType = (asset as any).itemType;
+    const legacy = asLegacyExplosiveLike(asset);
+    if (legacy && 'itemType' in legacy) {
+      const itemType = legacy.itemType;
       if (typeof itemType === 'string' && itemType.toLowerCase() === 'explosive') {
-        const legacy = this.getLookupName((asset as any).type);
-        if (legacy && legacy !== '') return legacy;
+        const legacyType = this.getLookupName(legacy.type);
+        if (legacyType && legacyType !== '') return legacyType;
       }
     }
     return '-';
@@ -518,10 +532,11 @@ export class AssetPropertyAccessor {
       return asset.notes || '-';
     }
     // Additional check: if itemType is "Explosive", treat as explosive
-    if (asset && 'itemType' in asset) {
-      const itemType = (asset as any).itemType;
+    const legacy = asLegacyExplosiveLike(asset);
+    if (legacy && 'itemType' in legacy) {
+      const itemType = legacy.itemType;
       if (typeof itemType === 'string' && itemType.toLowerCase() === 'explosive') {
-        return (asset as any).notes || '-';
+        return legacy.notes || '-';
       }
     }
     return '-';
@@ -547,13 +562,13 @@ export class AssetPropertyAccessor {
 
   getPrimaryPurpose(asset: AssetUnion): string {
     if (!asset) return '-';
-    const fromList = (purposes: LookupDto[] | undefined): string | null => {
+    const fromList = (purposes: LookupDto[] | null | undefined): string | null => {
       if (!purposes?.length) return null;
       const parts = purposes.map(p => this.getLookupName(p)).filter(Boolean);
       return parts.length > 0 ? parts.join(', ') : null;
     };
     const fromPurposesOrLegacy = (
-      purposes: LookupDto[] | undefined,
+      purposes: LookupDto[] | null | undefined,
       legacy: LookupDto | undefined
     ): string | null => {
       const multi = fromList(purposes);

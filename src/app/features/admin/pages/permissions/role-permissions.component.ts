@@ -2,13 +2,13 @@ import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRe
 import { PERMISSIONS } from '@constants/permissions.constants';
 
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { FormBuilder, FormControl, FormRecord, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { LucideAngularModule, Badge, Save, RefreshCw, Search, ChevronDown, ChevronUp, X } from 'lucide-angular';
 
 import { BackendUserService } from '@services/backend-user.service';
 import { ToastService } from '@services/toast.service';
-import { RoleDto, CrudPermission } from '@models/backend-user.model';
+import { RoleDto, CrudPermission, CheckBox } from '@models/backend-user.model';
 import { CardComponent } from '@components/card/card.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
@@ -96,7 +96,8 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
 
   rowsPerPage = defaultPageSize;
 
-  permissionForm: FormGroup;
+  permissionForm: FormRecord<FormControl<boolean>>;
+
   private destroy$ = new Subject<void>();
 
   // Super admin check
@@ -134,7 +135,7 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
     private authService: BackendAuthService,
     private cdr: ChangeDetectorRef
   ) {
-    this.permissionForm = this.fb.group({});
+    this.permissionForm = new FormRecord<FormControl<boolean>>({});
   }
 
   // ============================================================================
@@ -426,32 +427,26 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
   // PERMISSION FORM
   // ============================================================================
   private createPermissionForm(): void {
-    const formControls: { [key: string]: any } = {};
+    const controls: Record<string, FormControl<boolean>> = {};
 
-    // Add CRUD permissions to form
-    this.permissions.forEach(group => {
-      group.permissionsList.forEach(perm => {
-        const controlKey = this.sanitizeControlName(perm.displayValue);
-        formControls[controlKey] = [perm.isSelected || false];
-      });
-    });
+    const addGroups = (groups: CrudPermission[]): void => {
+      for (const group of groups) {
+        for (const perm of group.permissionsList) {
+          const controlKey = this.sanitizeControlName(perm.displayValue);
+          controls[controlKey] = this.fb.control(perm.isSelected ?? false, { nonNullable: true });
+        }
+      }
+    };
 
-    // Add Plain permissions to form
-    this.plainPermissions.forEach(group => {
-      group.permissionsList.forEach(perm => {
-        const controlKey = this.sanitizeControlName(perm.displayValue);
-        formControls[controlKey] = [perm.isSelected || false];
-      });
-    });
+    addGroups(this.permissions);
+    addGroups(this.plainPermissions);
 
-    this.permissionForm = this.fb.group(formControls);
+    this.permissionForm = new FormRecord(controls);
   }
 
-  sanitizeControlName(name: any): string {
-    if (typeof name !== 'string') {
-      name = String(name);
-    }
-    return name.replace(/\./g, '_').replace(/\s+/g, '_');
+  sanitizeControlName(name: string | number | boolean | null | undefined): string {
+    const s = typeof name === 'string' ? name : String(name ?? '');
+    return s.replace(/\./g, '_').replace(/\s+/g, '_');
   }
 
   // ============================================================================
@@ -615,7 +610,7 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
   }
 
 
-  isFirstPermissionOfType(group: CrudPermission, permType: string, currentPerm: any): boolean {
+  isFirstPermissionOfType(group: CrudPermission, permType: string, currentPerm: CheckBox): boolean {
     const permissionsOfType = group.permissionsList.filter(p =>
       this.getPermissionInfo(p.displayValue).label === permType
     );

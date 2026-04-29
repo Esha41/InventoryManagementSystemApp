@@ -1,6 +1,4 @@
-import { RankDto } from './rank.model';
-import { DepartmentDto } from './lookup.model';
-import { ReturnItemDto } from './request-item.model';
+import type { RequestManagementBaseRequestDto, RequestManagementDepotDto } from './request-management-base.model';
 import { FileUploadDto } from './file-upload.model';
 
 // Re-export for backward compatibility
@@ -30,50 +28,23 @@ export interface CreateReturnDto {
 }
 
 /**
- * Return DTO for read operations
+ * Return-specific fields on read DTO.
+ * Intersection: `RequestManagementBaseRequestDto` & `ReturnSpecificDto`.
+ * @see `ettadbackend/Ettad.RequestManagement.Service/Returns/Dtos/ReturnDto.cs`
  */
-export interface ReturnDto {
-    id: number;
-    requestNo: string;
-    requestType: number;
-    reason?: string;
-    priority: number;
-    status: number;
-    notes?: string;
-    requestPurposeNotes?: string;
-    departmentId: number;
-    requesterId?: string;
-    recieverId?: number;
-    depotId?: number;
-    requestPurposeId: number;
-    // Nested objects from backend BaseRequestDto
-    department?: {
-        id: number;
-        code: string;
-        nameAr: string;
-        nameEn: string;
-        isDeleted: boolean;
-    };
-    requester?: {
-        id: string;
-        userName: string;
-        fullNameEN: string;
-        fullNameAR: string;
-        militoryId?: string | null;
-        email?: string;
-        rank?: RankDto;
-        department?: DepartmentDto;
-    };
-    requestPurpose?: {
-        id: number;
-        nameAr: string;
-        nameEn: string;
-        requestType: number;
-    };
-    requestItems?: ReturnItemDto[];
-    creationDate?: string | Date; // From BaseRequestDto
-    isMyTurn?: boolean;
+export interface ReturnSpecificDto {
+    returnToDepotId?: number | null;
+    deliveryDate?: string | Date | null;
+    returnToDepot?: RequestManagementDepotDto | null;
 }
+
+/**
+ * Return DTO for read operations.
+ * Intersection type:
+ * - `RequestManagementBaseRequestDto` — `ettadbackend/Ettad.RequestManagement.Service/Common/Dtos/BaseRequestDto.cs`
+ * - `ReturnSpecificDto` — `ettadbackend/Ettad.RequestManagement.Service/Returns/Dtos/ReturnDto.cs`
+ */
+export type ReturnDto = RequestManagementBaseRequestDto & ReturnSpecificDto;
 
 /** Return tracking row after items are processed (backend GET /Return/{id}/tracking-lines). */
 export interface ReturnTrackingLineDto {

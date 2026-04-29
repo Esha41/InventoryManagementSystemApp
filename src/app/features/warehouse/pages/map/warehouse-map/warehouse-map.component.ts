@@ -237,16 +237,25 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
     };
 
     // Create custom tile layer that loads from local assets first (completely offline capable)
+    type TileLayerPrivateHandlers = L.TileLayer & {
+      _tileOnLoad: (done: L.DoneCallback, tile: HTMLElement) => void;
+      _tileOnError: (done: L.DoneCallback, tile: HTMLElement) => void;
+    };
+
+    type OfflineTileLayerConstructor = new (url: string, options?: L.TileLayerOptions) => L.TileLayer;
+
     const OfflineTileLayer = L.TileLayer.extend({
       createTile: function (coords: L.Coords, done: L.DoneCallback): HTMLElement {
         const tile = document.createElement('img');
 
         L.DomEvent.on(tile, 'load', () => {
-          (this as any)._tileOnLoad(done, tile);
+          const layer = this as unknown as TileLayerPrivateHandlers;
+          layer._tileOnLoad(done, tile);
         });
 
         L.DomEvent.on(tile, 'error', () => {
-          (this as any)._tileOnError(done, tile);
+          const layer = this as unknown as TileLayerPrivateHandlers;
+          layer._tileOnError(done, tile);
         });
 
         // Get the online tile URL (for fallback only)
@@ -266,7 +275,8 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     // Add tile layer with offline support (uses bundled tiles from assets/map-tiles/)
-    const customTileLayer = new (OfflineTileLayer as any)(
+    const OfflineTileLayerCtor = OfflineTileLayer as unknown as OfflineTileLayerConstructor;
+    const customTileLayer = new OfflineTileLayerCtor(
       'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', // Only used as fallback if online
       {
         attribution: '© OpenStreetMap contributors',

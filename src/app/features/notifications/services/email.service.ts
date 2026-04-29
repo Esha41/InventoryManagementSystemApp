@@ -93,6 +93,14 @@ export class EmailService {
     return lines.join('\n');
   }
 
+  /** Coerce unknown API/entity payloads to a string-keyed record for safe reads. */
+  private asEntityRecord(value: unknown): Record<string, unknown> | null {
+    if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+      return null;
+    }
+    return value as Record<string, unknown>;
+  }
+
   /**
    * Build plain text details from a details object
    */
@@ -113,11 +121,11 @@ export class EmailService {
    * Build plain text representation of entity details (order, return, discard)
    */
   private buildEntityPlainText(entityDetails?: unknown, entityType?: string): string[] {
-    if (!entityDetails || !entityType || typeof entityDetails !== 'object') {
+    const entity = this.asEntityRecord(entityDetails);
+    if (!entity || !entityType) {
       return [];
     }
 
-    const entity = entityDetails as Record<string, unknown>;
     const lines: string[] = [];
 
     switch (entityType.toLowerCase()) {
@@ -144,8 +152,8 @@ export class EmailService {
         if (orderItems && Array.isArray(orderItems) && orderItems.length > 0) {
           lines.push('  Items:');
           orderItems.forEach((item: unknown) => {
-            const i = item as Record<string, unknown>;
-            lines.push(`    - ${i['itemName'] || i['name'] || `Item #${i['itemId']}`}: ${i['quantity'] ?? 0}`);
+            const i = this.asEntityRecord(item);
+            lines.push(`    - ${i?.['itemName'] || i?.['name'] || `Item #${i?.['itemId']}`}: ${i?.['quantity'] ?? 0}`);
           });
         }
         break;
@@ -173,8 +181,8 @@ export class EmailService {
         if (returnItems && Array.isArray(returnItems) && returnItems.length > 0) {
           lines.push('  Items:');
           returnItems.forEach((item: unknown) => {
-            const i = item as Record<string, unknown>;
-            lines.push(`    - ${i['itemName'] || i['name'] || `Item #${i['itemId']}`}: ${i['quantity'] ?? 0}`);
+            const i = this.asEntityRecord(item);
+            lines.push(`    - ${i?.['itemName'] || i?.['name'] || `Item #${i?.['itemId']}`}: ${i?.['quantity'] ?? 0}`);
           });
         }
         break;
@@ -202,8 +210,8 @@ export class EmailService {
         if (discardItems && Array.isArray(discardItems) && discardItems.length > 0) {
           lines.push('  Items:');
           discardItems.forEach((item: unknown) => {
-            const i = item as Record<string, unknown>;
-            lines.push(`    - ${i['itemName'] || i['name'] || `Item #${i['itemId']}`}: ${i['quantity'] ?? 0}`);
+            const i = this.asEntityRecord(item);
+            lines.push(`    - ${i?.['itemName'] || i?.['name'] || `Item #${i?.['itemId']}`}: ${i?.['quantity'] ?? 0}`);
           });
         }
         break;
@@ -234,51 +242,60 @@ export class EmailService {
   /**
    * Build order details HTML
    */
-  private buildOrderDetails(order: any): string {
+  private buildOrderDetails(order: unknown): string {
+    const o = this.asEntityRecord(order);
+    if (!o) {
+      return '';
+    }
+
     let html = '';
 
-    if (order.orderNo || order.requestNo) {
-      html += `<div class="detail-row"><span class="detail-label">Order Number:</span><span>${this.escapeHtml(order.orderNo || order.requestNo || `#${order.id}`)}</span></div>`;
+    if (o['orderNo'] || o['requestNo']) {
+      html += `<div class="detail-row"><span class="detail-label">Order Number:</span><span>${this.escapeHtml(String(o['orderNo'] ?? o['requestNo'] ?? `#${o['id'] ?? ''}`))}</span></div>`;
     }
-    if (order.departmentNameEn || order.departmentNameAr) {
-      html += `<div class="detail-row"><span class="detail-label">Department:</span><span>${this.escapeHtml(order.departmentNameEn || order.departmentNameAr)}</span></div>`;
+    if (o['departmentNameEn'] || o['departmentNameAr']) {
+      html += `<div class="detail-row"><span class="detail-label">Department:</span><span>${this.escapeHtml(String(o['departmentNameEn'] ?? o['departmentNameAr'] ?? ''))}</span></div>`;
     }
-    if (order.requesterName) {
-      html += `<div class="detail-row"><span class="detail-label">Requester:</span><span>${this.escapeHtml(order.requesterName)}</span></div>`;
+    if (o['requesterName']) {
+      html += `<div class="detail-row"><span class="detail-label">Requester:</span><span>${this.escapeHtml(String(o['requesterName']))}</span></div>`;
     }
-    if (order.priority !== undefined) {
-      const priorityLabel = order.priority === 1 ? 'High' : order.priority === 2 ? 'Medium' : 'Low';
+    if (o['priority'] !== undefined) {
+      const priorityLabel = o['priority'] === 1 ? 'High' : o['priority'] === 2 ? 'Medium' : 'Low';
       html += `<div class="detail-row"><span class="detail-label">Priority:</span><span>${priorityLabel}</span></div>`;
     }
-    if (order.status !== undefined) {
+    if (o['status'] !== undefined) {
       const statusLabels = ['New', 'In Progress', 'Approved', 'Rejected', 'Cancelled'];
-      html += `<div class="detail-row"><span class="detail-label">Status:</span><span>${statusLabels[order.status] || `Status ${order.status}`}</span></div>`;
+      const status = typeof o['status'] === 'number' ? o['status'] : Number(o['status']);
+      html += `<div class="detail-row"><span class="detail-label">Status:</span><span>${statusLabels[status] || `Status ${String(o['status'])}`}</span></div>`;
     }
-    if (order.requestPurposeNameEn || order.requestPurposeNameAr) {
-      html += `<div class="detail-row"><span class="detail-label">Request Purpose:</span><span>${this.escapeHtml(order.requestPurposeNameEn || order.requestPurposeNameAr)}</span></div>`;
+    if (o['requestPurposeNameEn'] || o['requestPurposeNameAr']) {
+      html += `<div class="detail-row"><span class="detail-label">Request Purpose:</span><span>${this.escapeHtml(String(o['requestPurposeNameEn'] ?? o['requestPurposeNameAr'] ?? ''))}</span></div>`;
     }
-    if (order.usageDateFrom) {
-      const fromDate = new Date(order.usageDateFrom).toLocaleString();
-      const toDate = order.usageDateTo ? new Date(order.usageDateTo).toLocaleString() : '';
-      const fromTime = order.usageTimeFrom || '';
-      const toTime = order.usageTimeTo || '';
+    if (o['usageDateFrom']) {
+      const fromDate = new Date(o['usageDateFrom'] as string | number | Date).toLocaleString();
+      const toDate = o['usageDateTo'] ? new Date(o['usageDateTo'] as string | number | Date).toLocaleString() : '';
+      const fromTime = String(o['usageTimeFrom'] ?? '');
+      const toTime = String(o['usageTimeTo'] ?? '');
       const dateRange = toDate
         ? `${fromDate} ${fromTime} - ${toDate} ${toTime}`
         : `${fromDate} ${fromTime}`;
       html += `<div class="detail-row"><span class="detail-label">Usage Date:</span><span>${dateRange}</span></div>`;
     }
-    if (order.usageLocation) {
-      html += `<div class="detail-row"><span class="detail-label">Usage Location:</span><span>${this.escapeHtml(order.usageLocation)}</span></div>`;
+    if (o['usageLocation']) {
+      html += `<div class="detail-row"><span class="detail-label">Usage Location:</span><span>${this.escapeHtml(String(o['usageLocation']))}</span></div>`;
     }
-    if (order.notes) {
-      html += `<div class="detail-row"><span class="detail-label">Notes:</span><span>${this.escapeHtml(order.notes)}</span></div>`;
+    if (o['notes']) {
+      html += `<div class="detail-row"><span class="detail-label">Notes:</span><span>${this.escapeHtml(String(o['notes']))}</span></div>`;
     }
 
-    // Add items if available
-    if (order.requestItems && order.requestItems.length > 0) {
+    const requestItems = o['requestItems'];
+    if (Array.isArray(requestItems) && requestItems.length > 0) {
       html += '<div style="margin-top: 15px;"><h4 style="margin-bottom: 10px; color: #555;">Items:</h4><table style="width: 100%; border-collapse: collapse;"><thead><tr style="background-color: #f0f0f0;"><th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Item</th><th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Quantity</th></tr></thead><tbody>';
-      order.requestItems.forEach((item: any) => {
-        html += `<tr><td style="padding: 8px; border: 1px solid #ddd;">${this.escapeHtml(item.itemName || item.name || `Item #${item.itemId}`)}</td><td style="padding: 8px; border: 1px solid #ddd;">${item.quantity || 0}</td></tr>`;
+      requestItems.forEach((item: unknown) => {
+        const i = this.asEntityRecord(item);
+        const name = String(i?.['itemName'] ?? i?.['name'] ?? `Item #${i?.['itemId'] ?? ''}`);
+        const qty = i?.['quantity'] ?? 0;
+        html += `<tr><td style="padding: 8px; border: 1px solid #ddd;">${this.escapeHtml(name)}</td><td style="padding: 8px; border: 1px solid #ddd;">${String(qty)}</td></tr>`;
       });
       html += '</tbody></table></div>';
     }
@@ -289,41 +306,50 @@ export class EmailService {
   /**
    * Build return details HTML
    */
-  private buildReturnDetails(returnReq: any): string {
+  private buildReturnDetails(returnReq: unknown): string {
+    const r = this.asEntityRecord(returnReq);
+    if (!r) {
+      return '';
+    }
+
     let html = '';
 
-    if (returnReq.requestNo) {
-      html += `<div class="detail-row"><span class="detail-label">Return Number:</span><span>${this.escapeHtml(returnReq.requestNo || `#${returnReq.id}`)}</span></div>`;
+    if (r['requestNo']) {
+      html += `<div class="detail-row"><span class="detail-label">Return Number:</span><span>${this.escapeHtml(String(r['requestNo'] ?? `#${r['id'] ?? ''}`))}</span></div>`;
     }
-    if (returnReq.departmentName) {
-      html += `<div class="detail-row"><span class="detail-label">Department:</span><span>${this.escapeHtml(returnReq.departmentName)}</span></div>`;
+    if (r['departmentName']) {
+      html += `<div class="detail-row"><span class="detail-label">Department:</span><span>${this.escapeHtml(String(r['departmentName']))}</span></div>`;
     }
-    if (returnReq.requesterName) {
-      html += `<div class="detail-row"><span class="detail-label">Requester:</span><span>${this.escapeHtml(returnReq.requesterName)}</span></div>`;
+    if (r['requesterName']) {
+      html += `<div class="detail-row"><span class="detail-label">Requester:</span><span>${this.escapeHtml(String(r['requesterName']))}</span></div>`;
     }
-    if (returnReq.priority !== undefined) {
-      const priorityLabel = returnReq.priority === 1 ? 'High' : returnReq.priority === 2 ? 'Medium' : 'Low';
+    if (r['priority'] !== undefined) {
+      const priorityLabel = r['priority'] === 1 ? 'High' : r['priority'] === 2 ? 'Medium' : 'Low';
       html += `<div class="detail-row"><span class="detail-label">Priority:</span><span>${priorityLabel}</span></div>`;
     }
-    if (returnReq.status !== undefined) {
+    if (r['status'] !== undefined) {
       const statusLabels = ['New', 'In Progress', 'Approved', 'Rejected', 'Cancelled'];
-      html += `<div class="detail-row"><span class="detail-label">Status:</span><span>${statusLabels[returnReq.status] || `Status ${returnReq.status}`}</span></div>`;
+      const status = typeof r['status'] === 'number' ? r['status'] : Number(r['status']);
+      html += `<div class="detail-row"><span class="detail-label">Status:</span><span>${statusLabels[status] || `Status ${String(r['status'])}`}</span></div>`;
     }
-    if (returnReq.requestPurposeName) {
-      html += `<div class="detail-row"><span class="detail-label">Request Purpose:</span><span>${this.escapeHtml(returnReq.requestPurposeName)}</span></div>`;
+    if (r['requestPurposeName']) {
+      html += `<div class="detail-row"><span class="detail-label">Request Purpose:</span><span>${this.escapeHtml(String(r['requestPurposeName']))}</span></div>`;
     }
-    if (returnReq.reason) {
-      html += `<div class="detail-row"><span class="detail-label">Reason:</span><span>${this.escapeHtml(returnReq.reason)}</span></div>`;
+    if (r['reason']) {
+      html += `<div class="detail-row"><span class="detail-label">Reason:</span><span>${this.escapeHtml(String(r['reason']))}</span></div>`;
     }
-    if (returnReq.notes) {
-      html += `<div class="detail-row"><span class="detail-label">Notes:</span><span>${this.escapeHtml(returnReq.notes)}</span></div>`;
+    if (r['notes']) {
+      html += `<div class="detail-row"><span class="detail-label">Notes:</span><span>${this.escapeHtml(String(r['notes']))}</span></div>`;
     }
 
-    // Add items if available
-    if (returnReq.requestItems && returnReq.requestItems.length > 0) {
+    const requestItems = r['requestItems'];
+    if (Array.isArray(requestItems) && requestItems.length > 0) {
       html += '<div style="margin-top: 15px;"><h4 style="margin-bottom: 10px; color: #555;">Items:</h4><table style="width: 100%; border-collapse: collapse;"><thead><tr style="background-color: #f0f0f0;"><th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Item</th><th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Quantity</th></tr></thead><tbody>';
-      returnReq.requestItems.forEach((item: any) => {
-        html += `<tr><td style="padding: 8px; border: 1px solid #ddd;">${this.escapeHtml(item.itemName || item.name || `Item #${item.itemId}`)}</td><td style="padding: 8px; border: 1px solid #ddd;">${item.quantity || 0}</td></tr>`;
+      requestItems.forEach((item: unknown) => {
+        const i = this.asEntityRecord(item);
+        const name = String(i?.['itemName'] ?? i?.['name'] ?? `Item #${i?.['itemId'] ?? ''}`);
+        const qty = i?.['quantity'] ?? 0;
+        html += `<tr><td style="padding: 8px; border: 1px solid #ddd;">${this.escapeHtml(name)}</td><td style="padding: 8px; border: 1px solid #ddd;">${String(qty)}</td></tr>`;
       });
       html += '</tbody></table></div>';
     }
@@ -334,41 +360,50 @@ export class EmailService {
   /**
    * Build discard details HTML
    */
-  private buildDiscardDetails(discard: any): string {
+  private buildDiscardDetails(discard: unknown): string {
+    const d = this.asEntityRecord(discard);
+    if (!d) {
+      return '';
+    }
+
     let html = '';
 
-    if (discard.requestNo) {
-      html += `<div class="detail-row"><span class="detail-label">Discard Number:</span><span>${this.escapeHtml(discard.requestNo || `#${discard.id}`)}</span></div>`;
+    if (d['requestNo']) {
+      html += `<div class="detail-row"><span class="detail-label">Discard Number:</span><span>${this.escapeHtml(String(d['requestNo'] ?? `#${d['id'] ?? ''}`))}</span></div>`;
     }
-    if (discard.departmentName) {
-      html += `<div class="detail-row"><span class="detail-label">Department:</span><span>${this.escapeHtml(discard.departmentName)}</span></div>`;
+    if (d['departmentName']) {
+      html += `<div class="detail-row"><span class="detail-label">Department:</span><span>${this.escapeHtml(String(d['departmentName']))}</span></div>`;
     }
-    if (discard.requesterName) {
-      html += `<div class="detail-row"><span class="detail-label">Requester:</span><span>${this.escapeHtml(discard.requesterName)}</span></div>`;
+    if (d['requesterName']) {
+      html += `<div class="detail-row"><span class="detail-label">Requester:</span><span>${this.escapeHtml(String(d['requesterName']))}</span></div>`;
     }
-    if (discard.priority !== undefined) {
-      const priorityLabel = discard.priority === 1 ? 'High' : discard.priority === 2 ? 'Medium' : 'Low';
+    if (d['priority'] !== undefined) {
+      const priorityLabel = d['priority'] === 1 ? 'High' : d['priority'] === 2 ? 'Medium' : 'Low';
       html += `<div class="detail-row"><span class="detail-label">Priority:</span><span>${priorityLabel}</span></div>`;
     }
-    if (discard.status !== undefined) {
+    if (d['status'] !== undefined) {
       const statusLabels = ['New', 'In Progress', 'Approved', 'Rejected', 'Cancelled'];
-      html += `<div class="detail-row"><span class="detail-label">Status:</span><span>${statusLabels[discard.status] || `Status ${discard.status}`}</span></div>`;
+      const status = typeof d['status'] === 'number' ? d['status'] : Number(d['status']);
+      html += `<div class="detail-row"><span class="detail-label">Status:</span><span>${statusLabels[status] || `Status ${String(d['status'])}`}</span></div>`;
     }
-    if (discard.requestPurposeName) {
-      html += `<div class="detail-row"><span class="detail-label">Request Purpose:</span><span>${this.escapeHtml(discard.requestPurposeName)}</span></div>`;
+    if (d['requestPurposeName']) {
+      html += `<div class="detail-row"><span class="detail-label">Request Purpose:</span><span>${this.escapeHtml(String(d['requestPurposeName']))}</span></div>`;
     }
-    if (discard.reason) {
-      html += `<div class="detail-row"><span class="detail-label">Reason:</span><span>${this.escapeHtml(discard.reason)}</span></div>`;
+    if (d['reason']) {
+      html += `<div class="detail-row"><span class="detail-label">Reason:</span><span>${this.escapeHtml(String(d['reason']))}</span></div>`;
     }
-    if (discard.notes) {
-      html += `<div class="detail-row"><span class="detail-label">Notes:</span><span>${this.escapeHtml(discard.notes)}</span></div>`;
+    if (d['notes']) {
+      html += `<div class="detail-row"><span class="detail-label">Notes:</span><span>${this.escapeHtml(String(d['notes']))}</span></div>`;
     }
 
-    // Add items if available
-    if (discard.requestItems && discard.requestItems.length > 0) {
+    const requestItems = d['requestItems'];
+    if (Array.isArray(requestItems) && requestItems.length > 0) {
       html += '<div style="margin-top: 15px;"><h4 style="margin-bottom: 10px; color: #555;">Items:</h4><table style="width: 100%; border-collapse: collapse;"><thead><tr style="background-color: #f0f0f0;"><th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Item</th><th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Quantity</th></tr></thead><tbody>';
-      discard.requestItems.forEach((item: any) => {
-        html += `<tr><td style="padding: 8px; border: 1px solid #ddd;">${this.escapeHtml(item.itemName || item.name || `Item #${item.itemId}`)}</td><td style="padding: 8px; border: 1px solid #ddd;">${item.quantity || 0}</td></tr>`;
+      requestItems.forEach((item: unknown) => {
+        const i = this.asEntityRecord(item);
+        const name = String(i?.['itemName'] ?? i?.['name'] ?? `Item #${i?.['itemId'] ?? ''}`);
+        const qty = i?.['quantity'] ?? 0;
+        html += `<tr><td style="padding: 8px; border: 1px solid #ddd;">${this.escapeHtml(name)}</td><td style="padding: 8px; border: 1px solid #ddd;">${String(qty)}</td></tr>`;
       });
       html += '</tbody></table></div>';
     }

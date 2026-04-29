@@ -108,7 +108,8 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
       return '';
     }
     const name = getLocalizedName(item, getCurrentLang(this.translateService)) || '';
-    const itemNo = (item as any).itemNo ? ` (${(item as any).itemNo})` : '';
+    const itemNoValue = (item as { itemNo?: string }).itemNo;
+    const itemNo = itemNoValue ? ` (${itemNoValue})` : '';
     return `${name}${itemNo}`.trim();
   };
 
@@ -331,7 +332,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
   onItemChange(index: number): void {
     const itemFormGroup = this.itemsFormArray.at(index);
     const itemId = itemFormGroup.get('itemId')?.value;
-    const selectedItem = this.availableItems.find((i: any) => i.id === itemId);
+    const selectedItem = this.availableItems.find((i) => i.id === itemId);
     // Clear validation error when item is selected
     if (selectedItem) {
       itemFormGroup.get('itemId')?.setErrors(null);
@@ -635,7 +636,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
       const combined = [...this.deliveryReceiptFiles, ...newlySelected];
       const seen = new Set<string>();
       this.deliveryReceiptFiles = combined.filter(f => {
-        const key = `${f.name}::${f.size}::${(f as any).lastModified ?? 0}`;
+        const key = `${f.name}::${f.size}::${f.lastModified}`;
         if (seen.has(key)) return false;
         seen.add(key);
         return true;

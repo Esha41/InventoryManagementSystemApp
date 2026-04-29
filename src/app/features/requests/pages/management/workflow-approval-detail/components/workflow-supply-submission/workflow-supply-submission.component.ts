@@ -18,7 +18,7 @@ import { ConfigService } from '@services/config.service';
 import { getRankDisplayName as getRankDisplayNameHelper } from '../../utils/workflow-approval-helpers';
 import { EmployeeService } from '@admin/services/employee.service';
 import { EmployeeDto } from '@core/models/asset.model';
-import { getCurrentLang } from '@utils/localization.utils';
+import { getCurrentLang, Localizable } from '@utils/localization.utils';
 import { EmployeeFormModalComponent } from '@admin/components/employee-form-modal/employee-form-modal.component';
 import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
@@ -458,5 +458,5 @@ export class WorkflowSupplySubmissionComponent implements OnInit, OnDestroy, OnC
     });
   }
 
-  getRankDisplayNameFn = (rank: any) => getRankDisplayNameHelper(rank, this.translateService);
+  getRankDisplayNameFn = (rank: Localizable | null | undefined) => getRankDisplayNameHelper(rank, this.translateService);
 }

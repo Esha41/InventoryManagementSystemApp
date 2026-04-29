@@ -4,6 +4,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 import { LucideAngularModule, CheckCircle, AlertTriangle, Clock, FileText, Eye, ChevronDown, ChevronUp, Download } from 'lucide-angular';
 import { RequestDetail, WorkflowApprovalStep } from '@models/workflow-approval.model';
+import { FileUploadDto } from '@models/file-upload.model';
 import { WorkflowApprovalSupplyService } from '../../services/workflow-approval-supply.service';
 import {
   getDisplayApprovalHistory,
@@ -67,7 +68,7 @@ export class WorkflowApprovalTimelineComponent implements OnDestroy {
   /**
    * Get approval status icon based on status
    */
-  getApprovalStatusIcon(status: string): any {
+  getApprovalStatusIcon(status: string): typeof CheckCircle | typeof AlertTriangle | typeof Clock {
     switch (status) {
       case 'Approved': return this.CheckCircle;
       case 'Rejected': return this.AlertTriangle;
@@ -176,7 +177,7 @@ export class WorkflowApprovalTimelineComponent implements OnDestroy {
   /**
    * Download a file from approval history
    */
-  downloadApprovalFile(file: any): void {
+  downloadApprovalFile(file: FileUploadDto | null | undefined): void {
     if (!file || !file.id) {
       return;
     }

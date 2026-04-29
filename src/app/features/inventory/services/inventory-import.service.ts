@@ -18,7 +18,8 @@ export interface ItemWithIdAndNo {
 /** Row from Excel/JSON import - column names may vary (PascalCase from template or camelCase) */
 export type InventoryImportRow = Record<string, string | number | boolean | undefined> & { _rowNumber?: number };
 
-export interface ImportResult {
+/** Client-side summary after processing JSON/Excel rows (distinct from the backend `ImportResult<T>` API shape). */
+export interface InventoryClientImportResult {
   successCount: number;
   failureCount: number;
   errors: string[];
@@ -78,8 +79,8 @@ export class InventoryImportService {
   /**
    * Create duplicate key from inventory detail
    */
-  createDuplicateKey(itemId: number, lot: number, batchNo: string): string {
-    return `${itemId}_${lot}_${batchNo || ''}`;
+  createDuplicateKey(itemId: number, lot: string | number, batchNo: string): string {
+    return `${itemId}_${String(lot)}_${batchNo || ''}`;
   }
 
   /**
@@ -163,7 +164,7 @@ export class InventoryImportService {
 
     const detail: CreateInventoryDetailDto = {
       itemId: itemId,
-      lot: lot,
+      lot: String(lot),
       supplierId: this.parseOptionalId(row['Supplier ID'] ?? row['supplierId']),
       manufacturerId: this.parseOptionalId(row['Manufacturer ID'] ?? row['manufacturerId']),
       countryId: this.parseOptionalId(row['Country ID'] ?? row['countryId']),
@@ -187,7 +188,7 @@ export class InventoryImportService {
   async processImport(
     jsonData: InventoryImportRow[],
     depotId: number
-  ): Promise<ImportResult> {
+  ): Promise<InventoryClientImportResult> {
     const errors: string[] = [];
     let successCount = 0;
     let failureCount = 0;

@@ -48,6 +48,7 @@ import {
   createInitialReviewFormData,
   createInitialConfirmDialogConfig
 } from '../new-issue-request.state';
+import type { ReserveDetailItem } from '../new-issue-request.state';
 
 import {
   mapSelectedEntriesToCartridges,
@@ -156,7 +157,7 @@ export class IssueRequestFacade {
     );
   }
 
-  get selectedItemsReserveDetails(): any[] {
+  get selectedItemsReserveDetails(): ReserveDetailItem[] {
     return filterReserveDetailsBySelectedItems(
       this.reserveDetailsState.reserveDetailsByItem,
       this.cartridgeState.selectedEntries.map(e => e.id)
@@ -176,8 +177,8 @@ export class IssueRequestFacade {
     this.loadRequestPurposes();
     this.rebuildOrderPriorities();
 
-    this.filterOptions.weaponTypeOptions = getWeaponTypeOptions() as any;
-    this.filterOptions.explosiveTypeOptions = getExplosiveTypeOptions() as any;
+    this.filterOptions.weaponTypeOptions = getWeaponTypeOptions();
+    this.filterOptions.explosiveTypeOptions = getExplosiveTypeOptions();
 
     this.translate.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.rebuildRequestPurposeOptions();

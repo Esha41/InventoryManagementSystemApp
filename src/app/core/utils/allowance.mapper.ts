@@ -19,6 +19,12 @@ import { LookupItem } from '@models/lookup.model';
 import { getLocalizedName } from './localization.utils';
 import { ItemType } from '@models/inventory.model';
 
+interface AllowanceDisplayItem {
+  name?: string;
+  itemNo?: string;
+  batchNo?: string;
+}
+
 export interface ProcessedAllowanceData {
   departments: LookupItem[];
   allItems: AllowanceItemType[];
@@ -64,7 +70,7 @@ export function processAllowanceData(
   });
 
   // Helper function to get item by type
-  const getItemById = (itemId: number, itemType?: number): AllowanceItemType | undefined => {
+  const getItemById = (itemId: number, itemType?: ItemType): AllowanceItemType | undefined => {
     if (itemType === ItemType.Weapon) {
       return weaponMap.get(itemId);
     } else if (itemType === ItemType.Explosive) {
@@ -73,6 +79,19 @@ export function processAllowanceData(
       // Default to Ammunition (ItemType.Ammunition = 1)
       return ammunitionMap.get(itemId);
     }
+  };
+
+  const getDisplayFields = (item: AllowanceItemType | undefined): AllowanceDisplayItem => {
+    if (!item) {
+      return {};
+    }
+
+    const candidate = item as Partial<AllowanceDisplayItem>;
+    return {
+      name: candidate.name,
+      itemNo: candidate.itemNo,
+      batchNo: candidate.batchNo
+    };
   };
 
   const groupedItems = new Map<string, AllowanceItemDetailDto[]>();
@@ -86,9 +105,10 @@ export function processAllowanceData(
     }
 
     // Get item name and number from itemData or fallback to DTO
-    const itemName = item.itemName || (itemData ? getLocalizedName(itemData, currentLang) || (itemData as any).name || '' : '');
-    const itemNo = item.itemNo || (itemData as any)?.itemNo || '';
-    const batchNo = (itemData as any)?.batchNo || '';
+    const displayFields = getDisplayFields(itemData);
+    const itemName = item.itemName || (itemData ? getLocalizedName(itemData, currentLang) || displayFields.name || '' : '');
+    const itemNo = item.itemNo || displayFields.itemNo || '';
+    const batchNo = displayFields.batchNo || '';
 
     groupedItems.get(key)!.push({
       id: item.id,
@@ -100,7 +120,7 @@ export function processAllowanceData(
       itemNo: itemNo,
       batchNo: batchNo,
       usedQuantityFromAllowance: item.usedQuantityFromAllowance || 0,
-      reservedQuantityByDraftSupplies: item.reservedQuantityByOrdersOnProcessing || 0,
+      reservedQuantityByOrdersOnProcessing: item.reservedQuantityByOrdersOnProcessing || 0,
       remainingQuantityFromAllowance: item.remainingQuantityFromAllowance || 0
     });
   });
@@ -110,18 +130,23 @@ export function processAllowanceData(
     const key = `${item.departmentId}_${item.year}`;
 
     // Use itemName from DTO first (supports all item types), fallback to item lookup
-    const itemName = item.itemName || (itemData ? getLocalizedName(itemData, currentLang) || (itemData as any).name || '' : '');
-    const itemNo = item.itemNo || (itemData as any)?.itemNo || '';
-    const batchNo = (itemData as any)?.batchNo || '';
+    const displayFields = getDisplayFields(itemData);
+    const itemName = item.itemName || (itemData ? getLocalizedName(itemData, currentLang) || displayFields.name || '' : '');
+    const itemNo = item.itemNo || displayFields.itemNo || '';
+    const batchNo = displayFields.batchNo || '';
 
-    // Infer itemType if not provided by checking which map contains the item
-    let inferredItemType = item.itemType || ItemType.Ammunition;
-    if (!item.itemType) {
+    // Prefer API itemType; fall back to catalog maps only if value is missing/invalid
+    let inferredItemType: ItemType = item.itemType;
+    if (
+      item.itemType !== ItemType.Ammunition &&
+      item.itemType !== ItemType.Weapon &&
+      item.itemType !== ItemType.Explosive
+    ) {
       if (weaponMap.has(item.itemId)) {
         inferredItemType = ItemType.Weapon;
       } else if (explosiveMap.has(item.itemId)) {
         inferredItemType = ItemType.Explosive;
-      } else if (ammunitionMap.has(item.itemId)) {
+      } else {
         inferredItemType = ItemType.Ammunition;
       }
     }
@@ -138,7 +163,7 @@ export function processAllowanceData(
       itemType: inferredItemType,
       quantity: item.quantity,
       usedQuantityFromAllowance: item.usedQuantityFromAllowance || 0,
-      reservedQuantityByDraftSupplies: item.reservedQuantityByOrdersOnProcessing || 0,
+      reservedQuantityByOrdersOnProcessing: item.reservedQuantityByOrdersOnProcessing || 0,
       remainingQuantityFromAllowance: item.remainingQuantityFromAllowance || 0,
       items: groupedItems.get(key)!
     };

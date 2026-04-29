@@ -200,7 +200,7 @@ export class IssueRequestCatalogOrchestratorService {
     }
 
     this.loadCartridgesFromApi(ctx.filterState.selectedItemType, isAllowance, ctx.departmentId).subscribe({
-      next: (result: any) => {
+      next: (result: CartridgeLoadResult) => {
         ctx.cartridgeState.allCartridges = result.cartridges;
         this.buildFilterOptions(ctx);
         this.filterCartridges(ctx);
@@ -209,11 +209,12 @@ export class IssueRequestCatalogOrchestratorService {
         if (result.error) { ctx.cartridgeState.cartridgeError = result.error; } else { hooks.onLoadSuccess?.(); }
         ctx.cdr.markForCheck();
       },
-      error: (error: any) => {
+      error: (error: unknown) => {
+        const err = error as { error?: string } | null | undefined;
         ctx.cartridgeState.allCartridges = [];
         ctx.cartridgeState.filteredCartridges = [];
         ctx.cartridgeState.loadingCartridges = false;
-        ctx.cartridgeState.cartridgeError = error.error || 'Failed to load items. Please try again.';
+        ctx.cartridgeState.cartridgeError = err?.error || 'Failed to load items. Please try again.';
         ctx.cdr.markForCheck();
       }
     });

@@ -11,13 +11,33 @@ import { Cartridge } from '@models/cartridge.model';
 import { TranslateService } from '@ngx-translate/core';
 import { getCurrentLang } from '@utils/localization.utils';
 import { PagedRequest, PaginatedList } from '@models/api-response.model';
+import { AmmunitionReadDto } from '@models/ammunition.model';
+import { WeaponDto } from '@models/weapon.model';
+import { ExplosiveDto } from '@models/explosive.model';
+import {
+  AllowanceItemByDepartmentDto,
+  AllowanceItemDetailDto,
+  AllowanceReserveDetailsByItemDto,
+  AllowanceItemReserveDetailsDto
+} from '@models/allowance.model';
 
 export interface ReserveDetails {
   totalReserve: number;
   totalAvailableReserve: number;
   totalOrderedQuantity: number;
   totalUsedQuantity: number;
-  items: any[];
+  items: unknown[];
+}
+
+/** Normalized row for UI — mapped from {@link AllowanceItemReserveDetailsDto}. */
+export interface ReserveDetailByItemRow {
+  itemId: number;
+  itemName: string;
+  itemNo?: string | null;
+  totalReserve: number;
+  availableReserve: number;
+  orderedQuantity: number;
+  usedQuantity: number;
 }
 
 export interface CartridgeLoadResult {
@@ -40,10 +60,15 @@ export interface ReserveDetailsResult {
   availableReserve: number;
   orderedQuantity: number;
   usedQuantity: number;
-  reserveDetailsByItem: any[];
+  reserveDetailsByItem: ReserveDetailByItemRow[];
 }
 
 const GET_BY_ID_BATCH_SIZE = 12;
+
+/** Data inside {@link APIOperationResponse.data} for GET `AllowanceItem/department/{id}/year/{year}`. */
+type AllowanceByDepartmentPayload = AllowanceItemByDepartmentDto & {
+  Items?: AllowanceItemDetailDto[];
+};
 
 @Injectable({
   providedIn: 'root'
@@ -60,7 +85,7 @@ export class CartridgeDataService {
 
   loadAllAmmunition(): Observable<CartridgeLoadResult> {
     const currentLang = getCurrentLang(this.translateService);
-    return this.ammunitionService.getAll<any>().pipe(
+    return this.ammunitionService.getAll().pipe(
       map((items) => ({
         cartridges: this.mapperService.mapAmmunitionArrayToCartridges(items || [], currentLang)
       })),
@@ -75,7 +100,7 @@ export class CartridgeDataService {
 
   loadAllWeapons(): Observable<CartridgeLoadResult> {
     const currentLang = getCurrentLang(this.translateService);
-    return this.weaponService.getAll<any>().pipe(
+    return this.weaponService.getAll().pipe(
       map((items) => ({
         cartridges: this.mapperService.mapWeaponArrayToCartridges(items || [], currentLang)
       })),
@@ -90,7 +115,7 @@ export class CartridgeDataService {
 
   loadAllExplosives(): Observable<CartridgeLoadResult> {
     const currentLang = getCurrentLang(this.translateService);
-    return this.explosiveService.getAll<any>().pipe(
+    return this.explosiveService.getAll().pipe(
       map((items) => ({
         cartridges: this.mapperService.mapExplosiveArrayToCartridges(items || [], currentLang)
       })),
@@ -106,7 +131,7 @@ export class CartridgeDataService {
   loadAmmunitionPaginated(request: PagedRequest): Observable<CartridgePaginatedLoadResult> {
     const currentLang = getCurrentLang(this.translateService);
     return this.ammunitionService.getAllPaginated(request).pipe(
-      map((res: PaginatedList<any>) => ({
+      map((res: PaginatedList<AmmunitionReadDto>) => ({
         cartridges: this.mapperService.mapAmmunitionArrayToCartridges(res.items || [], currentLang),
         totalCount: res.totalCount,
         pageIndex: res.pageIndex,
@@ -131,7 +156,7 @@ export class CartridgeDataService {
   loadWeaponsPaginated(request: PagedRequest): Observable<CartridgePaginatedLoadResult> {
     const currentLang = getCurrentLang(this.translateService);
     return this.weaponService.getAllPaginated(request).pipe(
-      map((res: PaginatedList<any>) => ({
+      map((res: PaginatedList<WeaponDto>) => ({
         cartridges: this.mapperService.mapWeaponArrayToCartridges(res.items || [], currentLang),
         totalCount: res.totalCount,
         pageIndex: res.pageIndex,
@@ -156,7 +181,7 @@ export class CartridgeDataService {
   loadExplosivesPaginated(request: PagedRequest): Observable<CartridgePaginatedLoadResult> {
     const currentLang = getCurrentLang(this.translateService);
     return this.explosiveService.getAllPaginated(request).pipe(
-      map((res: PaginatedList<any>) => ({
+      map((res: PaginatedList<ExplosiveDto>) => ({
         cartridges: this.mapperService.mapExplosiveArrayToCartridges(res.items || [], currentLang),
         totalCount: res.totalCount,
         pageIndex: res.pageIndex,
@@ -186,7 +211,7 @@ export class CartridgeDataService {
     const currentYear = new Date().getFullYear();
     const endpoint = API_ENDPOINTS.ALLOWANCE.BY_DEPARTMENT_AND_YEAR(departmentId, currentYear);
 
-    return this.apiService.getRaw<any>(endpoint).pipe(
+    return this.apiService.getRaw<AllowanceByDepartmentPayload>(endpoint).pipe(
       switchMap((response) => {
         const allowanceItems = response.data?.items || response.data?.Items || [];
 
@@ -197,7 +222,7 @@ export class CartridgeDataService {
           });
         }
 
-        const itemIds = allowanceItems.map((item: any) => item.itemId);
+        const itemIds = allowanceItems.map((item) => item.itemId);
         return fetchDetailsFn(itemIds);
       }),
       catchError(() => {
@@ -249,7 +274,7 @@ export class CartridgeDataService {
 
   fetchAmmunitionDetails(itemIds: number[]): Observable<CartridgeLoadResult> {
     const currentLang = getCurrentLang(this.translateService);
-    return this.fetchByIdsBatched(itemIds, (id) => this.ammunitionService.getById<any>(id)).pipe(
+    return this.fetchByIdsBatched(itemIds, (id) => this.ammunitionService.getById<AmmunitionReadDto>(id)).pipe(
       map((items) => ({
         cartridges: this.mapperService.mapAmmunitionArrayToCartridges(items, currentLang)
       })),
@@ -264,7 +289,7 @@ export class CartridgeDataService {
 
   fetchWeaponDetails(itemIds: number[]): Observable<CartridgeLoadResult> {
     const currentLang = getCurrentLang(this.translateService);
-    return this.fetchByIdsBatched(itemIds, (id) => this.weaponService.getById<any>(id)).pipe(
+    return this.fetchByIdsBatched(itemIds, (id) => this.weaponService.getById<WeaponDto>(id)).pipe(
       map((items) => ({
         cartridges: this.mapperService.mapWeaponArrayToCartridges(items, currentLang)
       })),
@@ -279,7 +304,7 @@ export class CartridgeDataService {
 
   fetchExplosiveDetails(itemIds: number[]): Observable<CartridgeLoadResult> {
     const currentLang = getCurrentLang(this.translateService);
-    return this.fetchByIdsBatched(itemIds, (id) => this.explosiveService.getById<any>(id)).pipe(
+    return this.fetchByIdsBatched(itemIds, (id) => this.explosiveService.getById<ExplosiveDto>(id)).pipe(
       map((items) => ({
         cartridges: this.mapperService.mapExplosiveArrayToCartridges(items, currentLang)
       })),
@@ -298,7 +323,7 @@ export class CartridgeDataService {
   loadAmmunitionFacetSample(request: PagedRequest): Observable<{ bulletDiameters: string[]; natureOptions: string[] }> {
     const currentLang = getCurrentLang(this.translateService);
     return this.ammunitionService.getAllPaginated(request).pipe(
-      map((res: PaginatedList<any>) => {
+      map((res: PaginatedList<AmmunitionReadDto>) => {
         const cartridges = this.mapperService.mapAmmunitionArrayToCartridges(res.items || [], currentLang);
         return this.buildFilterOptions(cartridges);
       }),
@@ -310,21 +335,22 @@ export class CartridgeDataService {
     const currentYear = new Date().getFullYear();
     const endpoint = API_ENDPOINTS.ALLOWANCE.RESERVE_DETAILS(departmentId, currentYear);
 
-    return this.apiService.getRaw<any>(endpoint).pipe(
+    return this.apiService.getRaw<AllowanceReserveDetailsByItemDto>(endpoint).pipe(
       map((response) => {
         if (response.succeeded && response.data) {
+          const data = response.data;
           return {
-            totalReserve: response.data.totalOriginalQuantity || response.data.totalReserve || 0,
-            availableReserve: response.data.totalRemainingQuantity || response.data.totalAvailableReserve || 0,
-            orderedQuantity: response.data.totalReservedQuantityByOrdersOnProcessing || response.data.totalOrderedQuantity || 0,
-            usedQuantity: response.data.totalUsedQuantity || 0,
-            reserveDetailsByItem: (response.data.items || []).map((item: any) => ({
-              itemId: item.itemId,
-              itemName: item.itemName,
+            totalReserve: data.totalOriginalQuantity || 0,
+            availableReserve: data.totalRemainingQuantity || 0,
+            orderedQuantity: data.totalReservedQuantityByOrdersOnProcessing || 0,
+            usedQuantity: data.totalUsedQuantity || 0,
+            reserveDetailsByItem: (data.items || []).map((item: AllowanceItemReserveDetailsDto): ReserveDetailByItemRow => ({
+              itemId: Number(item.itemId),
+              itemName: item.itemName ?? '',
               itemNo: item.itemNo,
-              totalReserve: item.originalQuantity || item.totalReserve || 0,
-              availableReserve: item.remainingQuantity || item.availableReserve || 0,
-              orderedQuantity: item.reservedQuantityByOrdersOnProcessing || item.orderedQuantity || 0,
+              totalReserve: item.originalQuantity || 0,
+              availableReserve: item.remainingQuantity || 0,
+              orderedQuantity: item.reservedQuantityByOrdersOnProcessing || 0,
               usedQuantity: item.usedQuantity || 0
             }))
           };

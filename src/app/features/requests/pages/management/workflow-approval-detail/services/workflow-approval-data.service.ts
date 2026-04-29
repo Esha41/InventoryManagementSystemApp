@@ -12,6 +12,7 @@ import { SupplyService, SupplyDto } from '@requests/services/supply.service';
 import { LookupService, LookupItem } from '@services/lookup.service';
 import { AssetSupplyService } from '@requests/services/asset-supply.service';
 import { BaseRequestDto } from '@models/workflow-approval.model';
+import { RequestItemDto } from '@models/request-item.model';
 import { RequestTypeEnum } from '@utils/request-mapper.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { TranslateService } from '@ngx-translate/core';
@@ -21,6 +22,14 @@ export interface LoadRequestDetailResult {
   baseRequest: BaseRequestDto;
   isWeaponOrder: boolean;
   orderSupplyDate: string | Date | null;
+}
+
+export interface WorkflowApprovalStepOption {
+  id: number;
+  stepOrder: number;
+  applicationRoleId: string;
+  applicationRoleName?: string;
+  applicationRoleNameAr?: string;
 }
 
 @Injectable({
@@ -52,7 +61,7 @@ export class WorkflowApprovalDataService {
     return new Promise((resolve) => {
       let endpoint = '';
 
-      const requestTypeValue: any = baseRequest.requestType;
+      const requestTypeValue = baseRequest.requestType;
 
       if (typeof requestTypeValue === 'number') {
         switch (requestTypeValue) {
@@ -90,10 +99,10 @@ export class WorkflowApprovalDataService {
         return;
       }
 
-      this.apiService.get<any>(endpoint)
+      this.apiService.get<BaseRequestDto>(endpoint)
         .pipe(takeUntil(destroy$))
         .subscribe({
-          next: (detailData: any) => {
+          next: (detailData: BaseRequestDto) => {
 
             // Merge full details (including usage info) into baseRequest
             if (detailData) {
@@ -116,21 +125,28 @@ export class WorkflowApprovalDataService {
   /**
    * Check if order contains weapon items
    */
-  checkIfWeaponOrder(requestItems: any[]): boolean {
+  checkIfWeaponOrder(requestItems: RequestItemDto[]): boolean {
     if (!requestItems || requestItems.length === 0) {
       return false;
     }
 
-    return requestItems.every((item: any) => {
-      const itemType = item.itemType;
-      return itemType === 2 || itemType === 'Weapon' || itemType === '2';
+    return requestItems.every((item: RequestItemDto) => {
+      const rawItemType: unknown = item.itemType;
+      const normalizedItemType =
+        typeof rawItemType === 'number'
+          ? rawItemType
+          : typeof rawItemType === 'string'
+            ? (rawItemType.toLowerCase() === 'weapon' ? 2 : Number(rawItemType))
+            : undefined;
+
+      return normalizedItemType === 2;
     });
   }
 
   /**
    * Extract supply date from order data
    */
-  extractSupplyDate(detailData: any): string | Date | null {
+  extractSupplyDate(detailData: BaseRequestDto): string | Date | null {
     if (detailData?.supplyDate) {
       return detailData.supplyDate;
     }
@@ -197,14 +213,14 @@ export class WorkflowApprovalDataService {
   /**
    * Load previous workflow steps for return for review
    */
-  loadPreviousWorkflowSteps(requestId: number, destroy$: Subject<void>): Observable<any[]> {
+  loadPreviousWorkflowSteps(requestId: number, destroy$: Subject<void>): Observable<WorkflowApprovalStepOption[]> {
     return new Observable(observer => {
-      this.apiService.get<any[]>(
+      this.apiService.get<WorkflowApprovalStepOption[]>(
         `${API_ENDPOINTS.WORKFLOW_APPROVAL.BASE}/previous-steps/${requestId}`
       )
         .pipe(takeUntil(destroy$))
         .subscribe({
-          next: (response: any) => {
+          next: (response: WorkflowApprovalStepOption[]) => {
             const data = Array.isArray(response) ? response : [];
             observer.next(data);
             observer.complete();

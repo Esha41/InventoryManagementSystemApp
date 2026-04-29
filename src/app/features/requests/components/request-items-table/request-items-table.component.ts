@@ -2,6 +2,7 @@ import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Package } from 'lucide-angular';
+import { RequestItem } from '@models/workflow-approval.model';
 
 @Component({
     selector: 'app-request-items-table',
@@ -40,6 +41,6 @@ import { LucideAngularModule, Package } from 'lucide-angular';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RequestItemsTableComponent {
-    @Input() items: any[] = [];
+    @Input() items: RequestItem[] = [];
     readonly Package = Package;
 }

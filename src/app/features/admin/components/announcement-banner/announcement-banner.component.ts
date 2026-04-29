@@ -19,7 +19,6 @@ export class AnnouncementBannerComponent implements OnInit, OnDestroy {
     private readonly announcementService = inject(AnnouncementService);
     private readonly router = inject(Router);
     private readonly destroy$ = new Subject<void>();
-    private retryTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
     Megaphone = Megaphone;
     X = X;
@@ -50,10 +49,6 @@ export class AnnouncementBannerComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
-        if (this.retryTimeoutId != null) {
-            clearTimeout(this.retryTimeoutId);
-            this.retryTimeoutId = null;
-        }
         this.destroy$.next();
         this.destroy$.complete();
     }
@@ -77,14 +72,6 @@ export class AnnouncementBannerComponent implements OnInit, OnDestroy {
                 console.error('Failed to load announcements:', error);
                 this.announcements.set([]);
                 this.loading.set(false);
-                if (error?.status === 401) {
-                    this.retryTimeoutId = setTimeout(() => {
-                        this.retryTimeoutId = null;
-                        if (this.announcements().length === 0) {
-                            this.loadActiveAnnouncements();
-                        }
-                    }, 2000);
-                }
             }
         });
     }

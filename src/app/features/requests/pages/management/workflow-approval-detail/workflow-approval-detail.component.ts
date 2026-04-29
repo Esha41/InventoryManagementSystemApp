@@ -11,7 +11,7 @@ import { ToastService } from '@services/toast.service';
 import { SupplyService, SupplyDto, SubmitSupplyDto } from '@requests/services/supply.service';
 import { AssetSupplyService } from '@requests/services/asset-supply.service';
 import { LookupItem } from '@services/lookup.service';
-import { RequestDetail, BaseRequestDto, WorkflowApprovalStep, FileUploadDto } from '@models/workflow-approval.model';
+import { RequestDetail, BaseRequestDto, WorkflowApprovalStep, FileUploadDto, WorkflowStepTransition, RequestItem } from '@models/workflow-approval.model';
 import { mapToRequestDetail } from '@utils/request-mapper.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { getRequestStatusBadgeClass, getPriorityBadgeClass, getApprovalStatusBadgeClass } from '@utils/status-class.utils';
@@ -24,7 +24,7 @@ import { ConfirmationDialogComponent, ConfirmationType } from '@components/confi
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 import { UserDelegationService } from '@admin/services/user-delegation.service';
 // Import extracted services
-import { WorkflowApprovalDataService } from './services/workflow-approval-data.service';
+import { WorkflowApprovalDataService, WorkflowApprovalStepOption } from './services/workflow-approval-data.service';
 import { WorkflowApprovalPermissionsService } from './services/workflow-approval-permissions.service';
 import { WorkflowApprovalActionsService } from './services/workflow-approval-actions.service';
 import { WorkflowApprovalSupplyService } from './services/workflow-approval-supply.service';
@@ -35,14 +35,14 @@ import {
   getDisplayApprovalHistory,
   formatApprovalDateTime,
   getWorkflowStepDisplayName,
-  getTransitionDisplayName,
+  getTransitionDisplayName as getTransitionDisplayNameHelper,
   getLocalizedValue as getLocalizedValueHelper,
   getApproverName as getApproverNameHelper,
   resolveUsagePurpose,
   hasPendingStep as hasPendingStepHelper,
   isLastApprovalCompleted,
   hasHigherApproval,
-  getCurrentStepTransitions,
+  getCurrentStepTransitions as getCurrentStepTransitionsHelper,
   getRankDisplayName as getRankDisplayNameHelper
 } from './utils/workflow-approval-helpers';
 import { WorkflowSupplySubmissionComponent } from './components/workflow-supply-submission/workflow-supply-submission.component';
@@ -148,7 +148,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   processing: boolean = false;
 
   // Return for review (needed for loading previous steps)
-  previousWorkflowSteps: any[] = [];
+  previousWorkflowSteps: WorkflowApprovalStepOption[] = [];
   loadingPreviousSteps: boolean = false;
 
   // Confirmation dialog state (from service)
@@ -256,12 +256,12 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     return hasHigherApproval(this.requestDetail);
   }
 
-  getCurrentStepTransitions(): any[] {
-    return getCurrentStepTransitions(this.requestDetail);
+  getCurrentStepTransitions(): WorkflowStepTransition[] {
+    return getCurrentStepTransitionsHelper(this.requestDetail);
   }
 
-  getTransitionDisplayName = (option: any): string => {
-    return getTransitionDisplayName(option, this.translateService);
+  getTransitionDisplayName = (option: Parameters<typeof getTransitionDisplayNameHelper>[0]): string => {
+    return getTransitionDisplayNameHelper(option, this.translateService);
   }
 
   hasTransitions(): boolean {
@@ -308,12 +308,14 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   }
 
   // Bound functions for dropdown label generation to preserve 'this' context
-  getWorkflowStepDisplayNameFn = (step: any) => getWorkflowStepDisplayName(step, this.translateService);
+  getWorkflowStepDisplayNameFn = (step: Parameters<typeof getWorkflowStepDisplayName>[0]) =>
+    getWorkflowStepDisplayName(step, this.translateService);
 
   /**
    * Get rank display name for dropdown (using helper)
    */
-  getRankDisplayNameFn = (rank: any) => getRankDisplayNameHelper(rank, this.translateService);
+  getRankDisplayNameFn = (rank: Parameters<typeof getRankDisplayNameHelper>[0]) =>
+    getRankDisplayNameHelper(rank, this.translateService);
 
 
 
@@ -498,7 +500,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck(); // Update loading state immediately
     this.dataService.loadPreviousWorkflowSteps(this.requestId, this.destroy$)
       .subscribe({
-        next: (data: any[]) => {
+        next: (data: WorkflowApprovalStepOption[]) => {
           this.previousWorkflowSteps = data;
           this.loadingPreviousSteps = false;
           // Update state service
@@ -508,7 +510,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
           });
           this.cdr.markForCheck();
         },
-        error: (error: any) => {
+        error: (error: unknown) => {
           this.error = ErrorHandler.extractErrorMessage(error, 'Failed to load previous workflow steps');
           this.loadingPreviousSteps = false;
           this.cdr.markForCheck();
@@ -550,7 +552,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  openItemTracking(item: any): void {
+  openItemTracking(item: RequestItem): void {
     this.trackingItemId = item.itemId || item.id;
     this.trackingItemName = item.itemName;
     this.isTrackingModalOpen = true;
@@ -588,11 +590,19 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     // Use data service to load base request
     this.dataService.loadBaseRequest(this.requestId, this.destroy$)
       .subscribe({
-        next: (response: any) => {
+        next: (response: unknown) => {
           // Handle API response format: { succeeded: true, data: {...} } or direct BaseRequestDto
-          const baseRequest: BaseRequestDto = response?.succeeded && response?.data
-            ? response.data
-            : (response?.id ? response : null);
+          const responseObj =
+            typeof response === 'object' && response !== null
+              ? response as { succeeded?: boolean; data?: BaseRequestDto; id?: number }
+              : null;
+
+          const baseRequest: BaseRequestDto | null =
+            responseObj?.succeeded && responseObj?.data
+              ? responseObj.data
+              : responseObj?.id
+                ? (responseObj as BaseRequestDto)
+                : null;
 
           if (!baseRequest) {
             if (showLoading) {
@@ -612,7 +622,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
             // Check if weapon order
             if (baseRequest.requestItems && baseRequest.requestType === 'Order') {
               this.isWeaponOrder = this.dataService.checkIfWeaponOrder(baseRequest.requestItems);
-              this.orderSupplyDate = this.dataService.extractSupplyDate(baseRequest as any);
+              this.orderSupplyDate = this.dataService.extractSupplyDate(baseRequest);
 
               // Format pickup date if available
               if (this.isWeaponOrder && this.orderSupplyDate) {

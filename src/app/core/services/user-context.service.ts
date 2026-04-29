@@ -17,6 +17,14 @@ const ADMIN_PERMISSION_HINTS = [
   PERMISSIONS.ADMIN.DASHBOARD.API_VIEW
 ];
 
+type LooseRecord = Record<string, unknown>;
+
+const asRecord = (value: unknown): LooseRecord | null =>
+  value !== null && typeof value === 'object' ? (value as LooseRecord) : null;
+
+const asString = (value: unknown): string | undefined =>
+  typeof value === 'string' && value.trim() !== '' ? value : undefined;
+
 @Injectable({
   providedIn: 'root'
 })
@@ -61,7 +69,12 @@ export class UserContextService {
   primeCache(apiData: unknown): void {
     if (!apiData) return;
     try {
-      const dto = this.mapApiResponseToDto(apiData as any);
+      const apiRecord = asRecord(apiData);
+      if (!apiRecord) {
+        this.cachedUserDetails$ = undefined;
+        return;
+      }
+      const dto = this.mapApiResponseToDto(apiRecord);
       this.cachedUserDetails$ = of(dto).pipe(shareReplay(1));
     } catch {
       this.cachedUserDetails$ = undefined;
@@ -122,13 +135,7 @@ export class UserContextService {
       departmentName: (payload['DepartmentName'] || payload['departmentName']) as string | undefined,
       nameEn: (nameEn || undefined) as string | undefined,
       nameAr: (nameAr || undefined) as string | undefined,
-      isActive: String(payload['isActive'] || payload['IsActive'] || 'true').toLowerCase() === 'true',
-      organizationId: this.toNumber(
-        payload['OrganizationId'] ??
-        payload['organizationId'] ??
-        payload['OrgId'] ??
-        payload['orgId']
-      ) ?? undefined
+      isActive: String(payload['isActive'] || payload['IsActive'] || 'true').toLowerCase() === 'true'
     };
   }
 
@@ -137,7 +144,7 @@ export class UserContextService {
     return decodeJwtPayload<Record<string, unknown>>(token);
   }
 
-  private toNumber(value: any): number | null {
+  private toNumber(value: unknown): number | null {
     if (value === null || value === undefined || value === '') {
       return null;
     }
@@ -147,122 +154,151 @@ export class UserContextService {
 
   private fetchCurrentUserProfile(): Observable<BackendUserDto | null> {
     // Use /Users/me endpoint which returns more complete user data
-    return this.apiService.postRaw<any>(API_ENDPOINTS.USERS.ME, {}).pipe(
+    return this.apiService.postRaw<unknown>(API_ENDPOINTS.USERS.ME, {}).pipe(
       map(response => {
-        if (response?.succeeded && response.data) {
+        const responseRecord = asRecord(response);
+        const succeeded = responseRecord?.['succeeded'] === true;
+        const data = responseRecord?.['data'];
+        if (succeeded && data) {
+          const dataRecord = asRecord(data);
+          if (!dataRecord) {
+            throw new Error('Unexpected /Users/me payload shape');
+          }
           // Map the API response to BackendUserDto format
-          return this.mapApiResponseToDto(response.data);
+          return this.mapApiResponseToDto(dataRecord);
         }
-        throw new Error(response?.message || 'Failed to load current user profile');
+        const message = typeof responseRecord?.['message'] === 'string'
+          ? responseRecord['message']
+          : 'Failed to load current user profile';
+        throw new Error(message);
       })
     );
   }
 
-  private mapApiResponseToDto(apiData: any): BackendUserDto {
+  private mapApiResponseToDto(apiData: LooseRecord): BackendUserDto {
+    const department = asRecord(apiData['department']);
+    const departmentLegacy = asRecord(apiData['Department']);
+    const rank = asRecord(apiData['rank']);
+    const rankLegacy = asRecord(apiData['Rank']);
+
     const departmentId = this.toNumber(
-      apiData.department?.id ??
-      apiData.Department?.Id ??
-      apiData.departmentId ??
-      apiData.DepartmentId
+      department?.['id'] ??
+      departmentLegacy?.['Id'] ??
+      apiData['departmentId'] ??
+      apiData['DepartmentId']
     );
 
-    const departmentNameEn = (
-      apiData.department?.nameEn ??
-      apiData.department?.NameEn ??
-      apiData.Department?.NameEn
-    ) || undefined;
+    const departmentNameEn = asString(
+      department?.['nameEn'] ??
+      department?.['NameEn'] ??
+      departmentLegacy?.['NameEn']
+    );
 
-    const departmentNameAr = (
-      apiData.department?.nameAr ??
-      apiData.department?.NameAr ??
-      apiData.Department?.NameAr
-    ) || undefined;
+    const departmentNameAr = asString(
+      department?.['nameAr'] ??
+      department?.['NameAr'] ??
+      departmentLegacy?.['NameAr']
+    );
 
-    const departmentName = (
+    const departmentName = asString(
       departmentNameEn ??
       departmentNameAr ??
-      apiData.departmentName ??
-      apiData.DepartmentName
-    ) || undefined;
+      apiData['departmentName'] ??
+      apiData['DepartmentName']
+    );
 
-    const nameEn = (
-      apiData.fullNameEN ??
-      apiData.FullNameEN ??
-      apiData.fullNameEn ??
-      apiData.FullNameEn ??
-      apiData.nameEn ??
-      apiData.NameEn
-    ) || undefined;
+    const nameEn = asString(
+      apiData['fullNameEN'] ??
+      apiData['FullNameEN'] ??
+      apiData['fullNameEn'] ??
+      apiData['FullNameEn'] ??
+      apiData['nameEn'] ??
+      apiData['NameEn']
+    );
 
-    const nameAr = (
-      apiData.fullNameAR ??
-      apiData.FullNameAR ??
-      apiData.fullNameAr ??
-      apiData.FullNameAr ??
-      apiData.nameAr ??
-      apiData.NameAr
-    ) || undefined;
+    const nameAr = asString(
+      apiData['fullNameAR'] ??
+      apiData['FullNameAR'] ??
+      apiData['fullNameAr'] ??
+      apiData['FullNameAr'] ??
+      apiData['nameAr'] ??
+      apiData['NameAr']
+    );
 
     const roleIds: string[] = [];
-    const normalizedRoles: any[] = [];
+    const normalizedRoles: Array<{
+      id: string;
+      name: string;
+      nameAr: string;
+      isAdmin: boolean;
+      isDefaultRole: boolean;
+      isSuperAdmin: boolean;
+    }> = [];
 
-    const rolesArray = apiData.roles ?? apiData.Roles ?? [];
+    const rolesArray = apiData['roles'] ?? apiData['Roles'] ?? [];
     if (Array.isArray(rolesArray)) {
-      rolesArray.forEach((role: any) => {
-        const roleId = String(role.id ?? role.Id ?? '');
+      rolesArray.forEach((roleValue: unknown) => {
+        const role = asRecord(roleValue);
+        if (!role) return;
+        const roleId = String(role['id'] ?? role['Id'] ?? '');
         if (roleId !== '') {
           roleIds.push(roleId);
         }
+        const isSuperAdmin = Boolean(role['isSuperAdmin'] ?? role['IsSuperAdmin'] ?? false);
+        const isAdmin = Boolean(role['isAdmin'] ?? role['IsAdmin'] ?? isSuperAdmin);
         normalizedRoles.push({
           id: roleId,
-          name: role.name ?? role.Name ?? '',
-          nameAr: role.nameAr ?? role.NameAr ?? '',
-          isDefaultRole: role.isDefaultRole ?? role.IsDefaultRole ?? false,
-          isSuperAdmin: role.isSuperAdmin ?? role.IsSuperAdmin ?? false
+          name: String(role['name'] ?? role['Name'] ?? ''),
+          nameAr: String(role['nameAr'] ?? role['NameAr'] ?? ''),
+          isAdmin,
+          isDefaultRole: Boolean(role['isDefaultRole'] ?? role['IsDefaultRole'] ?? false),
+          isSuperAdmin
         });
       });
     }
 
-    const militaryId =
-      apiData.militaryId ??
-      apiData.MilitaryId ??
-      apiData.militoryId ??
-      apiData.MilitoryId;
-
-    const rankId = this.toNumber(
-      apiData.rankId ??
-      apiData.RankId ??
-      apiData.rank?.id ??
-      apiData.Rank?.Id
+    const militaryId = asString(
+      apiData['militaryId'] ??
+      apiData['MilitaryId'] ??
+      apiData['militoryId'] ??
+      apiData['MilitoryId']
     );
 
-    const rankNameEn =
-      apiData.rank?.nameEn ??
-      apiData.rank?.NameEn ??
-      apiData.Rank?.NameEn ??
-      apiData.rankNameEn ??
-      apiData.RankNameEn;
+    const rankId = this.toNumber(
+      apiData['rankId'] ??
+      apiData['RankId'] ??
+      rank?.['id'] ??
+      rankLegacy?.['Id']
+    );
 
-    const rankNameAr =
-      apiData.rank?.nameAr ??
-      apiData.rank?.NameAr ??
-      apiData.Rank?.NameAr ??
-      apiData.rankNameAr ??
-      apiData.RankNameAr;
+    const rankNameEn = asString(
+      rank?.['nameEn'] ??
+      rank?.['NameEn'] ??
+      rankLegacy?.['NameEn'] ??
+      apiData['rankNameEn'] ??
+      apiData['RankNameEn']
+    );
+
+    const rankNameAr = asString(
+      rank?.['nameAr'] ??
+      rank?.['NameAr'] ??
+      rankLegacy?.['NameAr'] ??
+      apiData['rankNameAr'] ??
+      apiData['RankNameAr']
+    );
 
     const defaultRoleId =
-      apiData.defaultRoleId ??
-      apiData.DefaultRoleId ??
+      apiData['defaultRoleId'] ??
+      apiData['DefaultRoleId'] ??
       undefined;
 
     return {
-      id: String(apiData.id ?? apiData.Id ?? ''),
-      userName: String(apiData.userName ?? apiData.UserName ?? ''),
-      email: String(apiData.email ?? apiData.Email ?? ''),
-      isLdapUser: Boolean(apiData.isLdapUser ?? apiData.IsLdapUser ?? false),
-      ldapUserName: apiData.ldapUserName ?? apiData.LdapUserName,
-      extraEmployeesView: apiData.extraEmployeesView ?? apiData.ExtraEmployeesView,
-      organizationId: this.toNumber(apiData.organizationId ?? apiData.OrganizationId) ?? undefined,
+      id: String(apiData['id'] ?? apiData['Id'] ?? ''),
+      userName: String(apiData['userName'] ?? apiData['UserName'] ?? ''),
+      email: String(apiData['email'] ?? apiData['Email'] ?? ''),
+      isLdapUser: Boolean(apiData['isLdapUser'] ?? apiData['IsLdapUser'] ?? false),
+      ldapUserName: asString(apiData['ldapUserName'] ?? apiData['LdapUserName']),
+      extraEmployeesView: asString(apiData['extraEmployeesView'] ?? apiData['ExtraEmployeesView']),
       departmentId: departmentId ?? undefined,
       departmentName: departmentName,
       departmentNameEn: departmentNameEn,
@@ -270,9 +306,9 @@ export class UserContextService {
       nameEn: nameEn,
       nameAr: nameAr,
       rankId: rankId ?? undefined,
-      rankNameEn: rankNameEn || undefined,
-      rankNameAr: rankNameAr || undefined,
-      isActive: Boolean(apiData.isActive ?? apiData.IsActive ?? true),
+      rankNameEn: rankNameEn,
+      rankNameAr: rankNameAr,
+      isActive: Boolean(apiData['isActive'] ?? apiData['IsActive'] ?? true),
       militaryId: militaryId || undefined,
       militoryId: militaryId || undefined,
       roles: normalizedRoles,

@@ -16,6 +16,30 @@ import { parseGenerateCaptchaApiPayload } from '@utils/captcha-response-parser.u
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { decodeJwtPayload } from '@utils/jwt.util';
 
+type JwtPayload = Record<string, unknown> & {
+  userId?: string;
+  userName?: string;
+  email?: string;
+  DepartmentId?: unknown;
+  departmentId?: unknown;
+  DeptId?: unknown;
+  DepartmentName?: string;
+  departmentName?: string;
+  DeptName?: string;
+  FullNameEN?: string;
+  fullNameEN?: string;
+  FullNameEn?: string;
+  fullNameEn?: string;
+  NameEn?: string;
+  nameEn?: string;
+  FullNameAR?: string;
+  fullNameAR?: string;
+  FullNameAr?: string;
+  fullNameAr?: string;
+  NameAr?: string;
+  nameAr?: string;
+};
+
 @Injectable({
   providedIn: 'root'
 })
@@ -153,7 +177,6 @@ export class AuthFlowService {
           permissions: [],
           departmentId: completeUser.departmentId,
           departmentName: completeUser.departmentName,
-          organizationId: completeUser.organizationId,
           nameEn: completeUser.nameEn,
           nameAr: completeUser.nameAr
         };
@@ -298,7 +321,7 @@ export class AuthFlowService {
         }
 
         const token = this.storageService.get<string>('auth_token');
-        const tokenPayload = decodeJwtPayload<Record<string, unknown>>(token) as any;
+        const tokenPayload = decodeJwtPayload<JwtPayload>(token);
 
         const user: AuthenticatedUser = {
           id: tokenPayload?.userId || '',
@@ -312,14 +335,10 @@ export class AuthFlowService {
         const departmentNameClaim = this.getClaimValue(claims, ['departmentname', 'deptname']);
         const fullNameEnClaim = this.getClaimValue(claims, ['fullnameen', 'nameen', 'full_name_en']);
         const fullNameArClaim = this.getClaimValue(claims, ['fullnamear', 'namear', 'full_name_ar']);
-        const organizationIdClaim = this.getClaimValue(claims, ['organizationid', 'orgid', 'organization']);
 
         const parsedDepartmentId =
           this.tryParseNumber(departmentIdClaim) ??
-          this.tryParseNumber(tokenPayload?.DepartmentId ?? tokenPayload?.departmentId ?? tokenPayload?.DeptId);
-        const parsedOrganizationId =
-          this.tryParseNumber(organizationIdClaim) ??
-          this.tryParseNumber(tokenPayload?.OrganizationId ?? tokenPayload?.organizationId ?? tokenPayload?.OrgId);
+          this.tryParseNumber(tokenPayload?.DepartmentId ?? tokenPayload?.departmentId ?? tokenPayload?.DeptId);    
         const resolvedDepartmentName =
           departmentNameClaim ??
           tokenPayload?.DepartmentName ??
@@ -347,9 +366,6 @@ export class AuthFlowService {
         }
         if (resolvedDepartmentName) {
           user.departmentName = resolvedDepartmentName;
-        }
-        if (parsedOrganizationId !== undefined) {
-          user.organizationId = parsedOrganizationId;
         }
         if (resolvedNameEn) {
           user.nameEn = resolvedNameEn;
@@ -417,8 +433,6 @@ export class AuthFlowService {
           (data['nameAr'] as string | undefined) ??
           (data['NameAr'] as string | undefined);
 
-        const organizationId = this.tryParseNumber(data['organizationId'] ?? data['OrganizationId']);
-
         const user: AuthenticatedUser = {
           id: (data['id'] as string) ?? (data['Id'] as string) ?? '',
           userName: (data['userName'] as string) ?? (data['UserName'] as string) ?? '',
@@ -429,7 +443,6 @@ export class AuthFlowService {
           departmentName: departmentName,
           departmentNameEn: departmentNameEn,
           departmentNameAr: departmentNameAr,
-          organizationId: organizationId ?? undefined,
           nameEn: nameEn,
           nameAr: nameAr
         };

@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, Input, OnChanges, SimpleChanges, ChangeDe
 import { CommonModule } from '@angular/common';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { EChartsOption } from 'echarts';
-import { AdminAnalyticsService, InventoryDistribution } from '@admin/services/admin-analytics.service';
+import type { CategoryDistribution, InventoryDistribution, InventoryPieSlice } from '@admin/models/admin-analytics.model';
 import { Subject, takeUntil, forkJoin, map } from 'rxjs';
 import { LucideAngularModule, RefreshCw, AlertCircle } from 'lucide-angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -66,17 +66,16 @@ export class InventoryDistributionChartComponent implements OnInit, OnDestroy, O
         const borderColor = isDarkMode ? '#1e293b' : '#ffffff';
 
         forkJoin(
-            this.distribution.categories.map((cat: any) => {
+            this.distribution.categories.map((cat: CategoryDistribution) => {
                 const translationKey = `adminDashboard.charts.${cat.name.toLowerCase()}`;
                 return this.translate.get(translationKey).pipe(
-                    map((translatedName: string) => ({
-                        // If translation is missing (returns key), use original name
+                    map((translatedName: string): InventoryPieSlice => ({
                         name: translatedName === translationKey ? cat.name : translatedName,
                         value: cat.value
                     }))
                 );
             })
-        ).subscribe((chartData: any[]) => {
+        ).subscribe((chartData: InventoryPieSlice[]) => {
             this.chartOptions = {
                 backgroundColor: backgroundColor,
                 tooltip: {

@@ -11,7 +11,7 @@ export const normalizeArrayResponse = <T>(
   const payload = response as APIOperationResponse<T[]>;
   if (Array.isArray(payload?.data)) return payload.data;
 
-  const nested = (payload as any)?.data?.items;
+  const nested = (payload.data as { items?: unknown } | undefined)?.items;
   if (Array.isArray(nested)) return nested as T[];
 
   return [];

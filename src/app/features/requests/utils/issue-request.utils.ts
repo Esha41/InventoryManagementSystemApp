@@ -1,5 +1,5 @@
 import { Cartridge } from '@models/cartridge.model';
-import { UserContextState } from '@requests/pages/new-issue/new-issue-request.state';
+import { ReserveDetailItem, UserContextState } from '@requests/pages/new-issue/new-issue-request.state';
 import { BackendUserDto } from '@models/backend-user.model';
 import { AuthenticatedUser } from '@models/auth.model';
 import { resolveUserDisplayName } from '@utils/user.utils';
@@ -58,9 +58,9 @@ export function mapSelectedEntriesToCartridges(
  * @returns Filtered array of reserve details
  */
 export function filterReserveDetailsBySelectedItems(
-  reserveDetailsByItem: any[],
+  reserveDetailsByItem: ReserveDetailItem[],
   selectedItemIds: number[]
-): any[] {
+): ReserveDetailItem[] {
   if (selectedItemIds.length === 0) {
     return reserveDetailsByItem;
   }
@@ -72,7 +72,7 @@ export function filterReserveDetailsBySelectedItems(
  * @param reserveDetails - Array of reserve details
  * @returns Total reserve quantity
  */
-export function computeTotalReserve(reserveDetails: any[]): number {
+export function computeTotalReserve(reserveDetails: ReserveDetailItem[]): number {
   return reserveDetails.reduce((sum, item) => sum + (item.totalReserve || 0), 0);
 }
 
@@ -81,7 +81,7 @@ export function computeTotalReserve(reserveDetails: any[]): number {
  * @param reserveDetails - Array of reserve details
  * @returns Available reserve quantity
  */
-export function computeAvailableReserve(reserveDetails: any[]): number {
+export function computeAvailableReserve(reserveDetails: ReserveDetailItem[]): number {
   return reserveDetails.reduce((sum, item) => sum + (item.availableReserve || 0), 0);
 }
 
@@ -90,7 +90,7 @@ export function computeAvailableReserve(reserveDetails: any[]): number {
  * @param reserveDetails - Array of reserve details
  * @returns Ordered quantity
  */
-export function computeOrderedQuantity(reserveDetails: any[]): number {
+export function computeOrderedQuantity(reserveDetails: ReserveDetailItem[]): number {
   return reserveDetails.reduce((sum, item) => sum + (item.orderedQuantity || 0), 0);
 }
 
@@ -99,7 +99,7 @@ export function computeOrderedQuantity(reserveDetails: any[]): number {
  * @param reserveDetails - Array of reserve details
  * @returns Used quantity
  */
-export function computeUsedQuantity(reserveDetails: any[]): number {
+export function computeUsedQuantity(reserveDetails: ReserveDetailItem[]): number {
   return reserveDetails.reduce((sum, item) => sum + (item.usedQuantity || 0), 0);
 }
 

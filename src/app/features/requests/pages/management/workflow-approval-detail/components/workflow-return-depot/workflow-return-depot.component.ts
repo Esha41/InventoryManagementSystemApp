@@ -5,6 +5,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, Warehouse, Edit3 } from 'lucide-angular';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
+import type { DropdownOption } from '@components/dropdown/dropdown.component';
 import { RequestDetail } from '@models/workflow-approval.model';
 import { DepotDto } from '@models/depot.model';
 import { LookupService } from '@services/lookup.service';
@@ -86,10 +87,13 @@ export class WorkflowReturnDepotComponent implements OnInit, OnChanges {
     return depot ? (getLocalizedName(depot, lang) || `Depot ${depot.id}`) : '';
   }
 
-  depotLabelFn = (option: any): string => {
+  depotLabelFn = (option: DepotDto | DropdownOption<DepotDto> | null | undefined): string => {
     if (!option) return '';
-    const depot = option?.value ?? option;
-    return getLocalizedName(depot, getCurrentLang(this.translateService)) || depot?.code || '';
+    const depot: DepotDto =
+      typeof option === 'object' && option !== null && 'value' in option
+        ? (option as DropdownOption<DepotDto>).value
+        : option;
+    return getLocalizedName(depot, getCurrentLang(this.translateService)) || depot.code || '';
   };
 
   constructor(
