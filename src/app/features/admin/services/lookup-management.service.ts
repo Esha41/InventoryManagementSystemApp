@@ -168,7 +168,7 @@ export class LookupManagementService {
    * Get the raw ItemType enum value
    */
   getItemType(item: LookupItem): number {
-    let itemType = item.itemType;
+    const itemType = item.itemType;
     if (itemType === undefined || itemType === null) return 0;
 
     if (typeof itemType === 'string') {

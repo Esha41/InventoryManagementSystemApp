@@ -541,7 +541,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
         this.cdr.markForCheck();
       },
       error: (error: unknown) => {
-        let errorMsg = ErrorHandler.extractAndTranslateErrorMessage(error, 'Failed to create asset. Please try again.', this.translateService);
+        const errorMsg = ErrorHandler.extractAndTranslateErrorMessage(error, 'Failed to create asset. Please try again.', this.translateService);
         this.errorMessage = errorMsg;
         this.toastService.error(errorMsg, this.translationService.getTranslation('toast.error'));
         this.submitting = false;

@@ -1,16 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Save, X, ArrowLeft, ArrowRight, Plus, Trash2, Mail } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
-import { ReportService, Report, CreateScheduledReportDto, CreateScheduledReportRecipientDto, ScheduledReport } from '@reports/services/report.service';
-import { BackendUserService } from '@services/backend-user.service';
-import { LoadingStateComponent } from '@components/index';
+import { ReportService, Report, CreateScheduledReportDto, CreateScheduledReportRecipientDto } from '@reports/services/report.service';
+import { UsersApiService } from '@services/user-management';import { LoadingStateComponent } from '@components/index';
 import { ButtonComponent } from '@components/button/button.component';
-import { catchError, finalize } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { catchError, finalize, switchMap } from 'rxjs/operators';
+import { of, Subject, takeUntil, EMPTY } from 'rxjs';
 
 interface UserOption {
   id: string;
@@ -38,7 +37,7 @@ interface RecipientForm {
   templateUrl: './scheduled-report-form.component.html',
   styleUrls: ['./scheduled-report-form.component.css']
 })
-export class ScheduledReportFormComponent implements OnInit {
+export class ScheduledReportFormComponent implements OnInit, OnDestroy {
   readonly Save = Save;
   readonly X = X;
   readonly ArrowLeft = ArrowLeft;
@@ -46,6 +45,8 @@ export class ScheduledReportFormComponent implements OnInit {
   readonly Plus = Plus;
   readonly Trash2 = Trash2;
   readonly Mail = Mail;
+
+  private readonly destroy$ = new Subject<void>();
 
   get isRTL(): boolean {
     return this.translationService.isRTL();
@@ -113,74 +114,39 @@ export class ScheduledReportFormComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private reportService: ReportService,
-    private backendUserService: BackendUserService,
+    private usersApi: UsersApiService,
     private translationService: TranslationService,
     private translateService: TranslateService
   ) { }
 
   ngOnInit(): void {
-    this.route.params.subscribe(params => {
-      if (params['id']) {
-        this.isEditMode = true;
-        this.scheduleId = params['id'];
-        this.loadScheduledReport(params['id']);
-      }
-    });
-
-    this.loadReports();
-    this.loadUsers();
-  }
-
-  loadReports(): void {
-    this.loading = true;
-    this.reportService.getPublicReports()
+    this.route.params
       .pipe(
-        catchError((err) => {
-          console.error('Error loading reports:', err);
-          return of([]);
+        switchMap(params => {
+          const id = params['id'] as string | undefined;
+          if (!id) {
+            this.isEditMode = false;
+            this.scheduleId = null;
+            return EMPTY;
+          }
+          this.isEditMode = true;
+          this.scheduleId = id;
+          this.loading = true;
+          this.errorMessage = null;
+          return this.reportService.getScheduledReportById(id).pipe(
+            catchError((err) => {
+              console.error('Error loading scheduled report:', err);
+              this.errorMessage = this.translateService.instant('common.error');
+              return of(null);
+            }),
+            finalize(() => {
+              this.loading = false;
+            })
+          );
         }),
-        finalize(() => {
-          this.loading = false;
-        })
+        takeUntil(this.destroy$)
       )
-      .subscribe((reports) => {
-        // Filter out deleted reports (extra safety check)
-        this.reports = reports.filter(report => !report.isDeleted);
-      });
-  }
-
-  loadUsers(): void {
-    // Fetch users with a large page size to get all users
-    this.backendUserService.getUsers({ page: 1, pageSize: 1000 })
-      .pipe(
-        catchError((err) => {
-          console.error('Error loading users:', err);
-          return of({ items: [], totalCount: 0, pageIndex: 1, totalPages: 1 });
-        })
-      )
-      .subscribe((response) => {
-        this.users = response.items.map(u => ({
-          id: u.id,
-          name: u.nameEn || u.nameAr || u.userName || u.email || '',
-          email: u.email || ''
-        }));
-      });
-  }
-
-  loadScheduledReport(id: string): void {
-    this.loading = true;
-    this.reportService.getScheduledReportById(id)
-      .pipe(
-        catchError((err) => {
-          console.error('Error loading scheduled report:', err);
-          this.errorMessage = this.translateService.instant('common.error');
-          return of(null);
-        }),
-        finalize(() => {
-          this.loading = false;
-        })
-      )
-      .subscribe((report) => {
+      .subscribe(report => {
         if (report) {
           this.formData = {
             scheduleName: report.scheduleName,
@@ -199,6 +165,52 @@ export class ScheduledReportFormComponent implements OnInit {
             }))
           };
         }
+      });
+
+    this.loadReports();
+    this.loadUsers();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  loadReports(): void {
+    this.loading = true;
+    this.reportService.getPublicReports()
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError((err) => {
+          console.error('Error loading reports:', err);
+          return of([]);
+        }),
+        finalize(() => {
+          this.loading = false;
+        })
+      )
+      .subscribe((reports) => {
+        // Filter out deleted reports (extra safety check)
+        this.reports = reports.filter(report => !report.isDeleted);
+      });
+  }
+
+  loadUsers(): void {
+    // Fetch users with a large page size to get all users
+    this.usersApi.getUsers({ page: 1, pageSize: 1000 })
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError((err) => {
+          console.error('Error loading users:', err);
+          return of({ items: [], totalCount: 0, pageIndex: 1, totalPages: 1 });
+        })
+      )
+      .subscribe((response) => {
+        this.users = response.items.map(u => ({
+          id: u.id,
+          name: u.nameEn || u.nameAr || u.userName || u.email || '',
+          email: u.email || ''
+        }));
       });
   }
 
@@ -259,7 +271,8 @@ export class ScheduledReportFormComponent implements OnInit {
     if (this.isEditMode && this.scheduleId) {
       this.reportService.updateScheduledReport(this.scheduleId, this.formData)
         .pipe(
-          catchError((err: any) => {
+          takeUntil(this.destroy$),
+          catchError((err: unknown) => {
             console.error('Error saving scheduled report:', err);
             this.errorMessage = this.translateService.instant('common.error');
             return of(false);
@@ -276,7 +289,8 @@ export class ScheduledReportFormComponent implements OnInit {
     } else {
       this.reportService.createScheduledReport(this.formData)
         .pipe(
-          catchError((err: any) => {
+          takeUntil(this.destroy$),
+          catchError((err: unknown) => {
             console.error('Error saving scheduled report:', err);
             this.errorMessage = this.translateService.instant('common.error');
             return of('');

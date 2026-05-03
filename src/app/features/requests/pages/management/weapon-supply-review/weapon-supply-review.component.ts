@@ -308,7 +308,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
           return;
         }
 
-        // eslint-disable-next-line eqeqeq
+         
         if (asset.batchId != batchId) {
           this.toastService.warning(
             this.translate.instant('weaponSupplyReview.assetNotInBatch')

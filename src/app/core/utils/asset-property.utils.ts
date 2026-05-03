@@ -583,13 +583,13 @@ export class AssetPropertyAccessor {
     };
 
     if (isExplosive(asset)) {
-      let r = tryResolve(asset as ExplosiveDto);
+      const r = tryResolve(asset as ExplosiveDto);
       if (r) return r;
     } else if (isAmmunition(asset)) {
-      let r = tryResolve(asset as AmmunitionReadDto);
+      const r = tryResolve(asset as AmmunitionReadDto);
       if (r) return r;
     } else if (isWeapon(asset)) {
-      let r = tryResolve(asset as WeaponDto);
+      const r = tryResolve(asset as WeaponDto);
       if (r) return r;
     }
 

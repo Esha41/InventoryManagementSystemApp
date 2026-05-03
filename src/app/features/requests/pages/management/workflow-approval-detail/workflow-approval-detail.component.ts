@@ -8,18 +8,15 @@ import { Subject, takeUntil, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { ToastService } from '@services/toast.service';
-import { SupplyService, SupplyDto, SubmitSupplyDto } from '@requests/services/supply.service';
+import { SupplyService, SupplyDto } from '@requests/services/supply.service';
 import { AssetSupplyService } from '@requests/services/asset-supply.service';
 import { LookupItem } from '@services/lookup.service';
-import { RequestDetail, BaseRequestDto, WorkflowApprovalStep, FileUploadDto, WorkflowStepTransition, RequestItem } from '@models/workflow-approval.model';
+import { RequestDetail, BaseRequestDto, FileUploadDto, WorkflowStepTransition, RequestItem } from '@models/workflow-approval.model';
 import { mapToRequestDetail } from '@utils/request-mapper.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
-import { getRequestStatusBadgeClass, getPriorityBadgeClass, getApprovalStatusBadgeClass } from '@utils/status-class.utils';
-import { HasPermissionDirective } from '@core/directives/has-permission.directive';
+import { getRequestStatusBadgeClass, getPriorityBadgeClass } from '@utils/status-class.utils';
 import { TranslationService } from '@services/translation.service';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
-import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
-import { validateFile, showFileValidationErrors } from '@utils/file.utils';
 import { ConfirmationDialogComponent, ConfirmationType } from '@components/confirmation-dialog/confirmation-dialog.component';
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 import { UserDelegationService } from '@admin/services/user-delegation.service';
@@ -32,12 +29,9 @@ import { WorkflowApprovalNavigationService } from './services/workflow-approval-
 import { WorkflowApprovalConfirmationService } from './services/workflow-approval-confirmation.service';
 import { WorkflowApprovalStateService } from './services/workflow-approval-state.service';
 import {
-  getDisplayApprovalHistory,
-  formatApprovalDateTime,
   getWorkflowStepDisplayName,
   getTransitionDisplayName as getTransitionDisplayNameHelper,
   getLocalizedValue as getLocalizedValueHelper,
-  getApproverName as getApproverNameHelper,
   resolveUsagePurpose,
   hasPendingStep as hasPendingStepHelper,
   isLastApprovalCompleted,
@@ -137,6 +131,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   private readonly REVIEW_WEAPON_SUPPLY_PERMISSION = 'ReviewWeaponSupply';
 
   requestId: number = 0;
+  /** Incremented on each full/silent detail load so async completions can ignore stale work. */
+  private detailLoadSeq = 0;
   requestDetail: RequestDetail | null = null;
   autoRejectCountdown: OrderAutoRejectCountdownDto | null = null;
   loading: boolean = true;
@@ -340,9 +336,11 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       .subscribe(params => {
         const id = parseInt(params['id'], 10);
         if (isNaN(id)) {
+          this.detailLoadSeq++;
           // Error will be translated in template
           this.error = 'INVALID_REQUEST_ID';
           this.loading = false;
+          this.cdr.markForCheck();
           return;
         }
         this.requestId = id;
@@ -353,9 +351,12 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.stateService.resetState();
   }
 
   loadRequestDetail(): void {
+    this.stateService.resetState();
+    this.stateService.updateState({ isSuperAdmin: this.authService.isSuperAdmin() });
     this.autoRejectCountdown = null;
     this.loading = true;
     this.error = null;
@@ -373,10 +374,12 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
    * Load depot selection status for weapon orders and update state.
    * Used to validate that depot is selected before approve when user has SelectDepots permission.
    */
-  private loadDepotSelectionStatus(): void {
+  private loadDepotSelectionStatus(detailSeq?: number): void {
+    const seq = detailSeq ?? this.detailLoadSeq;
     this.dataService.loadDepotSelectionStatus(this.requestId, this.destroy$)
       .subscribe({
         next: (isSelected: boolean) => {
+          if (seq !== this.detailLoadSeq) return;
           this.stateService.updateState({ isDepotSelected: isSelected });
           this.cdr.markForCheck();
         }
@@ -386,10 +389,12 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   /**
    * Load supply data for the order and populate pickup date and receiver info if available
    */
-  loadSupplyData(): void {
+  loadSupplyData(detailSeq?: number): void {
+    const seq = detailSeq ?? this.detailLoadSeq;
     this.dataService.loadSupplyData(this.requestId, this.destroy$)
       .subscribe({
         next: (supply: SupplyDto | null) => {
+          if (seq !== this.detailLoadSeq) return;
           if (supply) {
             this.supplyData = supply;
             this.supplyId = supply.id;
@@ -423,7 +428,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
           this.supplyData = null;
           this.supplyId = null;
           if (this.isWeaponOrder) {
-            this.resolveWeaponInitialSupplyForSummary();
+            this.resolveWeaponInitialSupplyForSummary(seq);
           } else {
             this.hasInitialSupplyForSummary = false;
             this.bumpWorkflowSupplySummaryRefresh();
@@ -433,13 +438,15 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       });
   }
 
-  private resolveWeaponInitialSupplyForSummary(): void {
+  private resolveWeaponInitialSupplyForSummary(detailSeq?: number): void {
+    const seq = detailSeq ?? this.detailLoadSeq;
     this.assetSupplyService.getByOrderId(this.requestId)
       .pipe(
         takeUntil(this.destroy$),
         catchError(() => of(null))
       )
       .subscribe(assetSupply => {
+        if (seq !== this.detailLoadSeq) return;
         if (assetSupply) {
           this.hasInitialSupplyForSummary = true;
           this.bumpWorkflowSupplySummaryRefresh();
@@ -453,6 +460,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
             catchError(() => of([]))
           )
           .subscribe(selections => {
+            if (seq !== this.detailLoadSeq) return;
             this.hasInitialSupplyForSummary = Array.isArray(selections) && selections.length > 0;
             this.bumpWorkflowSupplySummaryRefresh();
             this.cdr.markForCheck();
@@ -572,6 +580,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
    * @param showLoading - Whether to show full page loading state
    */
   private loadRequestDetailInternal(showLoading: boolean): void {
+    const loadSeq = ++this.detailLoadSeq;
     if (showLoading) {
       this.error = null;
       // Reset pickup date and depot selection state when loading new request
@@ -591,6 +600,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     this.dataService.loadBaseRequest(this.requestId, this.destroy$)
       .subscribe({
         next: (response: unknown) => {
+          if (loadSeq !== this.detailLoadSeq) return;
           // Handle API response format: { succeeded: true, data: {...} } or direct BaseRequestDto
           const responseObj =
             typeof response === 'object' && response !== null
@@ -607,6 +617,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
           if (!baseRequest) {
             if (showLoading) {
               this.translateService.get('workflowApprovalDetail.errors.requestNotFound').subscribe(translation => {
+                if (loadSeq !== this.detailLoadSeq) return;
                 this.error = translation || 'Request not found';
                 this.loading = false;
                 this.cdr.markForCheck();
@@ -619,6 +630,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
           this.orderFiles = baseRequest.files || [];
 
           this.dataService.loadRequestItems(baseRequest, this.requestId, this.destroy$).then(() => {
+            if (loadSeq !== this.detailLoadSeq) return;
             // Check if weapon order
             if (baseRequest.requestItems && baseRequest.requestType === 'Order') {
               this.isWeaponOrder = this.dataService.checkIfWeaponOrder(baseRequest.requestItems);
@@ -646,10 +658,10 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
             // Load supply data if needed (for Order requests)
             if (this.requestDetail.requestType === 'Order') {
-              this.loadSupplyData();
+              this.loadSupplyData(loadSeq);
               // Load depot selection status for weapon orders (for depot validation on approve)
               if (this.isWeaponOrder) {
-                this.loadDepotSelectionStatus();
+                this.loadDepotSelectionStatus(loadSeq);
               }
             }
 
@@ -665,11 +677,12 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
               this.loading = false;
             }
 
-            this.loadAutoRejectCountdownForOrder();
+            this.loadAutoRejectCountdownForOrder(loadSeq);
 
             // Trigger change detection for OnPush strategy
             this.cdr.markForCheck();
           }).catch(() => {
+            if (loadSeq !== this.detailLoadSeq) return;
             // Even on error, update with what we have
             this.requestDetail = mapToRequestDetail(baseRequest);
             // Update state service with request detail
@@ -682,9 +695,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
             });
             // Load supply data if needed
             if (this.requestDetail.requestType === 'Order') {
-              this.loadSupplyData();
+              this.loadSupplyData(loadSeq);
               if (this.isWeaponOrder) {
-                this.loadDepotSelectionStatus();
+                this.loadDepotSelectionStatus(loadSeq);
               }
             }
 
@@ -700,13 +713,14 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
               this.loading = false;
             }
 
-            this.loadAutoRejectCountdownForOrder();
+            this.loadAutoRejectCountdownForOrder(loadSeq);
 
             // Trigger change detection for OnPush strategy
             this.cdr.markForCheck();
           });
         },
         error: (error) => {
+          if (loadSeq !== this.detailLoadSeq) return;
           if (showLoading) {
             this.error = ErrorHandler.extractErrorMessage(error, 'Failed to load request details');
             this.loading = false;
@@ -719,7 +733,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       });
   }
 
-  private loadAutoRejectCountdownForOrder(): void {
+  private loadAutoRejectCountdownForOrder(detailSeq?: number): void {
+    const seq = detailSeq ?? this.detailLoadSeq;
     if (this.requestDetail?.requestType !== 'Order') {
       this.autoRejectCountdown = null;
       return;
@@ -728,6 +743,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       .getOne(this.requestId)
       .pipe(takeUntil(this.destroy$))
       .subscribe(c => {
+        if (seq !== this.detailLoadSeq) return;
         this.autoRejectCountdown = c;
         this.cdr.markForCheck();
       });

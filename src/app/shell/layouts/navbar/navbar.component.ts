@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { LucideAngularModule, Bell, User, Users, Globe, LogOut, ChevronDown, Moon, Sun, Menu, HelpCircle } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
 import { BackendAuthService } from '@services/backend-auth.service';
@@ -64,7 +64,15 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
     // Subscribe to current user changes and refresh user details
     this.authService.currentUser$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        debounceTime(100),
+        distinctUntilChanged(
+          (a, b) =>
+            (a?.id ?? '') === (b?.id ?? '') &&
+            (a?.permissions?.length ?? 0) === (b?.permissions?.length ?? 0)
+        ),
+        takeUntil(this.destroy$)
+      )
       .subscribe(user => {
         this.currentUser = user;
         // Refresh user details when user changes (force refresh to clear cache)

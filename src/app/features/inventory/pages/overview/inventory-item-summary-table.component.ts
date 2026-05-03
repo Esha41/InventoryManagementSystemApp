@@ -54,10 +54,10 @@ import { takeUntil } from 'rxjs/operators';
       }
       .item-summary-table-scroll {
         box-sizing: border-box;
+        -webkit-overflow-scrolling: touch;
       }
       .item-summary-main-table {
         width: 100%;
-        min-width: 100%;
         box-sizing: border-box;
       }
     `

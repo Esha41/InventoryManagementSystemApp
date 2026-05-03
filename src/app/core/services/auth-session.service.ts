@@ -1,4 +1,5 @@
-import { Inject, Injectable, Optional } from '@angular/core';
+import { Inject, Injectable, Injector, Optional } from '@angular/core';
+import { Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { StorageService } from './storage.service';
 import { ConfigService } from './config.service';
@@ -6,6 +7,7 @@ import { SessionHeartbeatService } from './session-heartbeat.service';
 import { AuthenticatedUser, AuthState } from '@models/auth.model';
 import { USER_PROFILE_PROVIDER } from '../tokens/user-profile-provider.token';
 import { IUserProfileProvider } from '../interfaces/user-profile-provider.interface';
+import { decodeJwtPayload } from '@utils/jwt.util';
 
 /**
  * Auth session state (storage + subjects). No dependency on auth flow or facade — avoids DI cycles.
@@ -31,7 +33,8 @@ export class AuthSessionService {
     private storageService: StorageService,
     private configService: ConfigService,
     @Optional() @Inject(USER_PROFILE_PROVIDER) private profileProvider: IUserProfileProvider | null,
-    private sessionHeartbeat: SessionHeartbeatService
+    private sessionHeartbeat: SessionHeartbeatService,
+    private injector: Injector
   ) {
     this.checkAuthStatus();
   }
@@ -65,8 +68,24 @@ export class AuthSessionService {
 
   /**
    * After refresh: update bearer, expiry, and rotated refresh token without rewriting `current_user` in storage.
+   * If the access token identity does not match the session user (split cookie vs storage), sign out locally.
    */
   applyRefreshedTokens(accessToken: string, expiresAt: Date, refreshToken?: string): void {
+    const current = this.getCurrentUser();
+    const payload = decodeJwtPayload<{ userId?: string; sub?: string }>(accessToken);
+    const tokenUserId = String(payload?.userId ?? payload?.sub ?? '').trim();
+    const sessionUserId = String(current?.id ?? '').trim();
+    if (sessionUserId !== '' && tokenUserId !== '' && sessionUserId !== tokenUserId) {
+      this.configService.logWarning('Access token user does not match session user after refresh; signing out', {
+        sessionUserId,
+        tokenUserId
+      });
+      this.clearSession();
+      const router = this.injector.get(Router);
+      void router.navigate(['/auth/login'], { queryParams: { sessionConflict: 'true' } });
+      return;
+    }
+
     this.storageService.set('auth_token', accessToken);
     this.storageService.set('token_expires_at', expiresAt);
     if (refreshToken) {

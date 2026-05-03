@@ -110,7 +110,7 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
     'dashboard_view': { key: 'dashboard_view', label: 'View', description: 'Access main dashboard page', page: '/dashboard' },
     'request_create': { key: 'request_create', label: 'Create', description: 'Create new issue, return, or discard requests', page: '/requests/new-issue-request' },
     'request_view': { key: 'request_view', label: 'View', description: 'View requests list and details', page: '/requests/requests-management' },
-    'request_manage': { key: 'request_manage', label: 'Manage', description: 'Edit, approve, and manage all requests', page: '/requests/supply-request-management' },
+    'request_manage': { key: 'request_manage', label: 'Manage', description: 'Edit, approve, and manage all requests', page: '/requests/requests-management' },
     'asset_create': { key: 'asset_create', label: 'Create', description: 'Add new ammunition/assets to inventory', page: '/assets/add-asset' },
     'asset_view': { key: 'asset_view', label: 'View', description: 'View ammunition inventory list', page: '/assets/asset-list' },
     'inventory_view': { key: 'inventory_view', label: 'View', description: 'View warehouse inventory', page: '/warehouse' },

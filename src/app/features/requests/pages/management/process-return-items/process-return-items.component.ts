@@ -8,7 +8,8 @@ import { LucideAngularModule, ArrowLeft, ArrowRight, Package, Trash2, Paperclip,
 import { AssetStatus, ASSET_STATUS_FORM_OPTIONS_ORDER, getAssetStatusLabel as assetStatusLabelKey } from '@models/asset.model';
 import { ReturnService, ProcessReturnItemsDto } from '@requests/services/return.service';
 import { FileUploadService, FileUploadDto } from '@services/file-upload.service';
-import { ReturnTrackingLineDto } from '@models/return.model';
+import { ReturnDto, ReturnTrackingLineDto } from '@models/return.model';
+import { RequestManagementDepotDto, RequestManagementRequestItemDto } from '@models/request-management-base.model';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
@@ -88,7 +89,7 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
   processing = false;
   requestNo = '';
   /** Return destination depot from API; display name resolved with current UI language. */
-  private returnToDepot: any = null;
+  private returnToDepot: RequestManagementDepotDto | null = null;
 
   ammoExplosiveRows: AmmoExplosiveRow[] = [];
   weaponLines: WeaponLine[] = [];
@@ -112,8 +113,8 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
     status => ({ value: status, label: assetStatusLabelKey(status) })
   );
 
-  // Raw request items for reference
-  requestItems: any[] = [];
+  /** Normalized from API request items for row initialization. */
+  requestItems: RequestManagementRequestItemDto[] = [];
 
   get isRTL(): boolean {
     return this.translationService.isRTL();
@@ -191,9 +192,9 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
     this.returnService.getReturnById(this.requestId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (returnData: any) => {
+        next: (returnData: ReturnDto) => {
           this.requestNo = returnData.requestNo || '';
-          this.requestItems = returnData.requestItems || [];
+          this.requestItems = returnData.requestItems ?? [];
           this.returnToDepot = returnData?.returnToDepot ?? null;
           this.initializeRows();
           this.loading = false;
@@ -278,7 +279,7 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
       const type = item.itemType;
       const isAmmoOrExplosive = type === 1 || type === 3 || type === 'Ammunition' || type === 'Explosive';
       const isWeapon = type === 2 || type === 'Weapon';
-      const itemName = item.itemName || item.name || 'Unknown Item';
+      const itemName = item.itemName ?? 'Unknown Item';
       const itemId = item.itemId || item.id;
       const requested = item.quantity != null ? Number(item.quantity) : null;
 

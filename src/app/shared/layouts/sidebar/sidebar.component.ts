@@ -83,19 +83,6 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       route: '/admin/analytics-dashboard',
       permissions: [PERMISSIONS.ADMIN.ANALYTICS.PAGE]
     },
-    // Temporarily commented out - not needed for now but accessible from other routes
-    // {
-    //   label: 'nav.supplyManagement',
-    //   icon: ClipboardList,
-    //   route: '/supply-request-management',
-    //   permissions: ['inventory.page', 'inventory.view']
-    // },
-    // {
-    //   label: 'nav.supplyOrder',
-    //   icon: Package,
-    //   route: '/supply-order',
-    //   permissions: ['supply.page', 'supply.view']
-    // },
     {
       label: 'nav.department',
       icon: Building2,

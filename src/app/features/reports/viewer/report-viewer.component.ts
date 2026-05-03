@@ -45,7 +45,7 @@ export class ReportViewerComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    let baseReportUrl = this.route.snapshot.queryParamMap.get('reportUrl') || '';
+    const baseReportUrl = this.route.snapshot.queryParamMap.get('reportUrl') || '';
     this.reportName = this.route.snapshot.queryParamMap.get('reportName') || 'Report';
     
     // Get departmentId(s) from user claims/token

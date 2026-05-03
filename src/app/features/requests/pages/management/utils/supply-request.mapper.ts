@@ -201,7 +201,7 @@ export function capOrderItemDischargeToApprovedQuantity(item: OrderItem): void {
     return;
   }
 
-  let sum = item.availableLots.reduce((s, lot) => s + (lot.selectedQuantity || 0), 0);
+  const sum = item.availableLots.reduce((s, lot) => s + (lot.selectedQuantity || 0), 0);
   const cap = item.approvedQuantity ?? 0;
 
   if (sum <= cap) {

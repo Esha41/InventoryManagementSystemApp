@@ -5,18 +5,6 @@ import { permissionGuard } from '@guards/permission.guard';
 // These routes are loaded under `path: ''` in app.routes.ts, preserving existing URLs.
 export const REQUESTS_ROUTES: Routes = [
   {
-    path: 'supply-request-management',
-    loadComponent: () => import('./pages/supply-management/supply-request-management.component').then(m => m.SupplyRequestManagementComponent),
-    canActivate: [permissionGuard],
-    data: { permissions: [PERMISSIONS.REQUESTS.REQUEST.PAGE, PERMISSIONS.REQUESTS.REQUEST.VIEW, PERMISSIONS.REQUESTS.ORDER.VIEW] }
-  },
-  {
-    path: 'supply-request-management/:id',
-    loadComponent: () => import('./pages/supply-management/supply-request-detail/supply-request-detail.component').then(m => m.SupplyRequestDetailComponent),
-    canActivate: [permissionGuard],
-    data: { permissions: [PERMISSIONS.REQUESTS.REQUEST.VIEW, PERMISSIONS.REQUESTS.ORDER.VIEW] }
-  },
-  {
     path: 'supply-order',
     loadComponent: () => import('./pages/supply-order/supply-order-list.component').then(m => m.SupplyOrderListComponent),
     canActivate: [permissionGuard],

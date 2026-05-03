@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -30,7 +30,7 @@ import { Subject, takeUntil, forkJoin } from 'rxjs';
   styleUrls: ['./edit-asset-modal.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class EditAssetModalComponent implements OnInit, OnChanges {
+export class EditAssetModalComponent implements OnInit, OnChanges, OnDestroy {
   @Input() isOpen = false;
   @Input() asset: AssetDto | null = null;
   @Input() loading = false;

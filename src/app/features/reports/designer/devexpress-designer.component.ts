@@ -22,7 +22,7 @@ import { LoadingStateComponent } from '@components/index';
   ],
   templateUrl: './devexpress-designer.component.html'
 })
-export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit {
+export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly ArrowLeft = ArrowLeft;
   readonly ArrowRight = ArrowRight;
 

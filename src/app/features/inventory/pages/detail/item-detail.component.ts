@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, ArrowRight } from 'lucide-angular';
-import { Subject, takeUntil, catchError, combineLatest } from 'rxjs';
+import { Subject, takeUntil, combineLatest, EMPTY, throwError, Observable } from 'rxjs';
+import { switchMap, tap, catchError, map } from 'rxjs/operators';
 import { AmmunitionService } from '@assets/services/ammunition.service';
 import { WeaponService } from '@assets/services/weapon.service';
 import { ExplosiveService } from '@assets/services/explosive.service';
@@ -69,36 +70,79 @@ export class ItemDetailComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    // Combine params and queryParams to get all route information at once
     combineLatest([this.route.params, this.route.queryParams])
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(([params, queryParams]) => {
-        const id = params['id'];
-        if (id) {
-          this.itemId = parseInt(id, 10);
-          if (!isNaN(this.itemId) && this.itemId > 0) {
-            // Get request ID from query params
-            const requestIdParam = queryParams['requestId'];
-            if (requestIdParam) {
-              this.requestId = parseInt(requestIdParam, 10);
-              if (isNaN(this.requestId) || this.requestId <= 0) {
-                this.requestId = null;
-              }
-            }
-            // Get item type from query params
-            const itemType = queryParams['itemType'];
-            this.loadItemDetails(itemType);
-          } else {
+      .pipe(
+        switchMap(([params, queryParams]) => {
+          const id = params['id'];
+          if (!id) {
+            this.error = 'Item ID not provided';
+            this.loading = false;
+            this.cdr.markForCheck();
+            return EMPTY;
+          }
+          const parsedId = parseInt(id, 10);
+          if (isNaN(parsedId) || parsedId <= 0) {
             this.error = 'Invalid item ID';
             this.loading = false;
             this.cdr.markForCheck();
+            return EMPTY;
           }
-        } else {
-          this.error = 'Item ID not provided';
-          this.loading = false;
+          this.itemId = parsedId;
+          const requestIdParam = queryParams['requestId'];
+          if (requestIdParam) {
+            this.requestId = parseInt(requestIdParam, 10);
+            if (isNaN(this.requestId) || this.requestId <= 0) {
+              this.requestId = null;
+            }
+          } else {
+            this.requestId = null;
+          }
+          const itemType = queryParams['itemType'];
+          this.loading = true;
+          this.error = null;
           this.cdr.markForCheck();
-        }
-      });
+
+          const detail$ = itemType ? this.fetchByItemType$(itemType) : this.tryLoadItem$();
+          return detail$.pipe(
+            tap((data) => {
+              if (data) {
+                const currentLang = this.translationService?.getCurrentLanguage() || 'en';
+                if (this.isWeapon(data)) {
+                  this.cartridge = this.cartridgeMapper.mapWeaponToCartridge(data, currentLang);
+                } else if (this.isExplosive(data)) {
+                  this.cartridge = this.cartridgeMapper.mapExplosiveToCartridge(data, currentLang);
+                } else {
+                  this.cartridge = this.cartridgeMapper.mapAmmunitionToCartridge(data, currentLang);
+                }
+                this.loading = false;
+                this.cdr.markForCheck();
+              } else {
+                this.error = 'Item not found';
+                this.loading = false;
+                this.cdr.markForCheck();
+              }
+            }),
+            catchError(() => {
+              this.error = 'Failed to load item details. Please try again.';
+              this.loading = false;
+              this.cdr.markForCheck();
+              this.translateService
+                .get(['toast.failedToLoadItemDetails', 'toast.error'])
+                .pipe(takeUntil(this.destroy$))
+                .subscribe(translations => {
+                  this.toastService.error(
+                    translations['toast.failedToLoadItemDetails'],
+                    translations['toast.error']
+                  );
+                });
+              return EMPTY;
+            }),
+            map(() => void 0)
+          );
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe();
   }
 
   ngOnDestroy(): void {
@@ -106,153 +150,30 @@ export class ItemDetailComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private loadItemDetails(itemType?: string): void {
-    this.loading = true;
-    this.error = null;
-    this.cdr.markForCheck();
-
-    // If itemType is provided, use the specific service
-    if (itemType) {
-      this.loadItemByType(itemType);
-      return;
-    }
-
-    // Otherwise, try all three services in sequence
-    this.tryLoadItem();
-  }
-
-  private tryLoadItem(): void {
-    // Try ammunition first
-    this.ammunitionService.getById<AmmunitionReadDto>(this.itemId)
-      .pipe(
-        takeUntil(this.destroy$),
-        catchError(() => {
-          // If ammunition fails, try weapon
-          return this.weaponService.getById<WeaponDto>(this.itemId).pipe(
-            catchError(() => {
-              // If weapon fails, try explosive
-              return this.explosiveService.getById<ExplosiveDto>(this.itemId).pipe(
-                catchError((err) => {
-                  // All three failed
-                  throw err;
-                })
-              );
-            })
-          );
-        })
-      )
-      .subscribe({
-        next: (data) => {
-          if (data) {
-            const currentLang = this.translationService?.getCurrentLanguage() || 'en';
-            // Determine which mapper to use based on the data structure
-            if (this.isWeapon(data)) {
-              this.cartridge = this.cartridgeMapper.mapWeaponToCartridge(data, currentLang);
-            } else if (this.isExplosive(data)) {
-              this.cartridge = this.cartridgeMapper.mapExplosiveToCartridge(data, currentLang);
-            } else {
-              // Default to ammunition mapper
-              this.cartridge = this.cartridgeMapper.mapAmmunitionToCartridge(data, currentLang);
-            }
-            this.loading = false;
-            this.cdr.markForCheck();
-          } else {
-            this.error = 'Item not found';
-            this.loading = false;
-            this.cdr.markForCheck();
-          }
-        },
-        error: (err) => {
-          this.error = 'Failed to load item details. Please try again.';
-          this.loading = false;
-          this.cdr.markForCheck();
-          this.translateService.get(['toast.failedToLoadItemDetails', 'toast.error']).subscribe(translations => {
-            this.toastService.error(translations['toast.failedToLoadItemDetails'], translations['toast.error']);
-          });
-        }
-      });
-  }
-
-  private loadItemByType(itemType: string): void {
+  private fetchByItemType$(itemType: string): Observable<ItemDto | null | undefined> {
     const normalizedType = itemType.toLowerCase();
 
     if (normalizedType === 'weapon' || normalizedType === '2') {
-      this.weaponService.getById<WeaponDto>(this.itemId)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (data) => {
-            if (data) {
-              const currentLang = this.translationService?.getCurrentLanguage() || 'en';
-              this.cartridge = this.cartridgeMapper.mapWeaponToCartridge(data, currentLang);
-              this.loading = false;
-              this.cdr.markForCheck();
-            } else {
-              this.error = 'Item not found';
-              this.loading = false;
-              this.cdr.markForCheck();
-            }
-          },
-          error: (err) => {
-            this.error = 'Failed to load item details. Please try again.';
-            this.loading = false;
-            this.cdr.markForCheck();
-            this.translateService.get(['toast.failedToLoadItemDetails', 'toast.error']).subscribe(translations => {
-              this.toastService.error(translations['toast.failedToLoadItemDetails'], translations['toast.error']);
-            });
-          }
-        });
-    } else if (normalizedType === 'explosive' || normalizedType === '3') {
-      this.explosiveService.getById<ExplosiveDto>(this.itemId)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (data) => {
-            if (data) {
-              const currentLang = this.translationService?.getCurrentLanguage() || 'en';
-              this.cartridge = this.cartridgeMapper.mapExplosiveToCartridge(data, currentLang);
-              this.loading = false;
-              this.cdr.markForCheck();
-            } else {
-              this.error = 'Item not found';
-              this.loading = false;
-              this.cdr.markForCheck();
-            }
-          },
-          error: (err) => {
-            this.error = 'Failed to load item details. Please try again.';
-            this.loading = false;
-            this.cdr.markForCheck();
-            this.translateService.get(['toast.failedToLoadItemDetails', 'toast.error']).subscribe(translations => {
-              this.toastService.error(translations['toast.failedToLoadItemDetails'], translations['toast.error']);
-            });
-          }
-        });
-    } else {
-      // Default to ammunition
-      this.ammunitionService.getById<AmmunitionReadDto>(this.itemId)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (data) => {
-            if (data) {
-              const currentLang = this.translationService?.getCurrentLanguage() || 'en';
-              this.cartridge = this.cartridgeMapper.mapAmmunitionToCartridge(data, currentLang);
-              this.loading = false;
-              this.cdr.markForCheck();
-            } else {
-              this.error = 'Item not found';
-              this.loading = false;
-              this.cdr.markForCheck();
-            }
-          },
-          error: (err) => {
-            this.error = 'Failed to load item details. Please try again.';
-            this.loading = false;
-            this.cdr.markForCheck();
-            this.translateService.get(['toast.failedToLoadItemDetails', 'toast.error']).subscribe(translations => {
-              this.toastService.error(translations['toast.failedToLoadItemDetails'], translations['toast.error']);
-            });
-          }
-        });
+      return this.weaponService.getById<WeaponDto>(this.itemId);
     }
+    if (normalizedType === 'explosive' || normalizedType === '3') {
+      return this.explosiveService.getById<ExplosiveDto>(this.itemId);
+    }
+    return this.ammunitionService.getById<AmmunitionReadDto>(this.itemId);
+  }
+
+  private tryLoadItem$(): Observable<ItemDto> {
+    return this.ammunitionService.getById<AmmunitionReadDto>(this.itemId).pipe(
+      catchError(() =>
+        this.weaponService.getById<WeaponDto>(this.itemId).pipe(
+          catchError(() =>
+            this.explosiveService.getById<ExplosiveDto>(this.itemId).pipe(
+              catchError((err) => throwError(() => err))
+            )
+          )
+        )
+      )
+    );
   }
 
   private isWeapon(data: ItemDto): data is WeaponDto {

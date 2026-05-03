@@ -1,6 +1,12 @@
-<div class="item-summary-table-scroll block w-full min-w-0 max-w-full overflow-x-auto">
-  <!-- Last col has no width so table-fixed absorbs rounding slack and fills 100% -->
-  <table [attr.dir]="tableDir" class="item-summary-main-table w-full min-w-full border-collapse table-fixed">
+<div
+  class="item-summary-table-scroll block w-full min-w-0 max-w-full overflow-x-auto overscroll-x-contain"
+  role="region"
+  [attr.aria-label]="'inventoryDashboard.itemSummary.title' | translate">
+  <!-- Min-width triggers horizontal scroll on narrow viewports; colgroup % widths apply above that -->
+  <table
+    [attr.dir]="tableDir"
+    [ngClass]="showLotQuantityColumns ? 'min-w-[56rem]' : 'min-w-[36rem]'"
+    class="item-summary-main-table w-full border-collapse table-fixed">
     <caption class="sr-only">{{ 'inventoryDashboard.itemSummary.title' | translate }}</caption>
     <colgroup *ngIf="showLotQuantityColumns">
       <col style="width: 3%" />
