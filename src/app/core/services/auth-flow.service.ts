@@ -1,6 +1,6 @@
 import { Inject, Injectable, Optional } from '@angular/core';
-import { Observable, of, throwError } from 'rxjs';
-import { catchError, finalize, map, switchMap, tap } from 'rxjs/operators';
+import { Observable, of, Subject, throwError } from 'rxjs';
+import { catchError, defaultIfEmpty, finalize, map, shareReplay, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { StorageService } from './storage.service';
 import { ConfigService } from './config.service';
@@ -45,6 +45,10 @@ type JwtPayload = Record<string, unknown> & {
   providedIn: 'root'
 })
 export class AuthFlowService {
+  /** One silent restore at a time; credential login cancels an in-flight restore (avoids duplicate handleLoginSuccess). */
+  private readonly cancelSilentRestore$ = new Subject<void>();
+  private silentRestoreShared$: Observable<boolean> | null = null;
+
   constructor(
     private apiService: ApiService,
     private storageService: StorageService,
@@ -55,6 +59,10 @@ export class AuthFlowService {
     private session: AuthSessionService,
     private authCrossTab: AuthCrossTabSyncService
   ) {}
+
+  private cancelPendingSilentRestore(): void {
+    this.cancelSilentRestore$.next();
+  }
 
   generateCaptcha(): Observable<CaptchaResponse> {
     const endpoint = API_ENDPOINTS.AUTH.GENERATE_CAPTCHA;
@@ -93,6 +101,7 @@ export class AuthFlowService {
   }
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
+    this.cancelPendingSilentRestore();
     this.configService.log('Attempting login', { username: credentials.username });
 
     return this.apiService.postRaw<LoginResponse>(API_ENDPOINTS.AUTH.LOGIN, credentials).pipe(
@@ -123,6 +132,7 @@ export class AuthFlowService {
   }
 
   selectRole(roleId: string, options?: { switchWhileLoggedIn?: boolean }): Observable<LoginResponse> {
+    this.cancelPendingSilentRestore();
     const body: { roleId: string; roleSelectionToken?: string } = { roleId };
     if (!options?.switchWhileLoggedIn) {
       const t = this.storageService.get<string>('role_selection_token');
@@ -234,11 +244,20 @@ export class AuthFlowService {
     if (this.session.isAuthenticated() && !this.session.isTokenExpired()) {
       return of(true);
     }
-    return this.tokenRefresh.getRefreshedLoginResponse().pipe(
-      switchMap(loginResponse => this.handleLoginSuccess(loginResponse, { notifyPeer: false })),
-      map(() => true),
-      catchError(() => of(false))
-    );
+    if (!this.silentRestoreShared$) {
+      this.silentRestoreShared$ = this.tokenRefresh.getRefreshedLoginResponse().pipe(
+        takeUntil(this.cancelSilentRestore$),
+        switchMap(loginResponse => this.handleLoginSuccess(loginResponse, { notifyPeer: false })),
+        map(() => true),
+        catchError(() => of(false)),
+        defaultIfEmpty(false),
+        finalize(() => {
+          this.silentRestoreShared$ = null;
+        }),
+        shareReplay({ bufferSize: 1, refCount: true })
+      );
+    }
+    return this.silentRestoreShared$;
   }
 
   logout(): Observable<boolean> {
