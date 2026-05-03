@@ -30,6 +30,7 @@ export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit 
   private static readonly builtInTemplateUrls = new Set([
     'BaseReportTemplate',
     'AllowanceItemsReportTemplate',
+    'AssetsReportTemplate',
     'UsersReportTemplate'
   ]);
 

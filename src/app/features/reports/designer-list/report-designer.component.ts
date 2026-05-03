@@ -197,7 +197,7 @@ export class ReportDesignerComponent implements OnInit {
         })
       )
       .subscribe((templates) => {
-        const preferredOrder = ['UsersReportTemplate', 'AllowanceItemsReportTemplate', 'BaseReportTemplate'];
+        const preferredOrder = ['UsersReportTemplate', 'AssetsReportTemplate', 'AllowanceItemsReportTemplate', 'BaseReportTemplate'];
         this.reportTemplates = [...templates].sort((a, b) => {
           const rank = (url: string) => {
             const i = preferredOrder.indexOf(url);
