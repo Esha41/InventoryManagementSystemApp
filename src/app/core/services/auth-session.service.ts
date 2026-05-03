@@ -121,6 +121,28 @@ export class AuthSessionService {
     this.clearAuthData();
   }
 
+  /**
+   * Clears in-memory session only (subjects + heartbeat + profile cache).
+   * Does NOT touch storage: use this when a peer tab now owns localStorage tokens
+   * (e.g. cross-tab session change detected as a different user).
+   */
+  clearInMemorySession(): void {
+    if (this.isClearingAuthData) {
+      return;
+    }
+    this.sessionHeartbeat.pause();
+    this.profileProvider?.clearProfile();
+    this.currentUserSubject.next(null);
+    this.isAuthenticatedSubject.next(false);
+    this.authStateSubject.next({
+      isAuthenticated: false,
+      user: null,
+      token: null,
+      refreshToken: null,
+      expiresAt: null
+    });
+  }
+
   pauseSessionHeartbeat(): void {
     this.sessionHeartbeat.pause();
   }

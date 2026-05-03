@@ -152,14 +152,6 @@ export class AuthCrossTabSyncService {
     void router.navigate(['/auth/login']);
   }
 
-  /**
-   * Another tab rotated auth storage or finished login. The peer already wrote the new
-   * `auth_token` / `current_user` to localStorage, so the HTTP interceptor will use the
-   * fresh bearer on its own. Reconcile our in-memory state without nuking the UI:
-   *   - Same user as in-memory: no-op.
-   *   - Different user: surface as session conflict and sign out locally.
-   *   - No local session: adopt the peer session via the full restore path.
-   */
   private applyPeerSessionChange(): void {
     if (this.session.logoutInProgress) {
       return;
@@ -180,7 +172,9 @@ export class AuthCrossTabSyncService {
       }
 
       if (localUserId && storedUserId && localUserId !== storedUserId) {
-        this.session.clearSession();
+        // Peer now owns the storage; clear only our in-memory state so we don't
+        // wipe the peer's freshly-written tokens (which would cascade-logout the peer).
+        this.session.clearInMemorySession();
         const router = this.injector.get(Router);
         void router.navigate(['/auth/login'], { queryParams: { sessionConflict: 'true' } });
         this.restoreInProgress = false;
