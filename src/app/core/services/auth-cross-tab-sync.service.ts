@@ -20,7 +20,7 @@ export class AuthCrossTabSyncService {
   private channel: BroadcastChannel | null = null;
   private peerLogoutTimer: ReturnType<typeof setTimeout> | null = null;
   private peerSyncTimer: ReturnType<typeof setTimeout> | null = null;
-  private readonly debounceMs = 200;
+  private readonly debounceMs = 300;
   private restoreInProgress = false;
 
   constructor(
@@ -37,8 +37,14 @@ export class AuthCrossTabSyncService {
     this.initStorageListener();
   }
 
-  /** Call after this tab establishes a full authenticated session (login / select-role). */
+  /**
+   * With localStorage auth, peers already get `storage` events; posting here duplicates work and can churn auth APIs.
+   * SessionStorage: no cross-tab storage — BroadcastChannel is required.
+   */
   notifyAuthenticatedSessionChanged(): void {
+    if (this.configService.persistAuthAcrossSessions) {
+      return;
+    }
     try {
       this.channel?.postMessage({ type: 'auth-session-changed' } satisfies AuthSyncMessage);
     } catch {
@@ -167,6 +173,15 @@ export class AuthCrossTabSyncService {
       const localUserId = String(localUser?.id ?? '').trim();
 
       if (localUserId && storedUserId && localUserId === storedUserId) {
+        if (this.configService.persistAuthAcrossSessions) {
+          const storedToken = this.storageService.get<string>('auth_token');
+          const storedExp = this.storageService.get<Date>('token_expires_at');
+          const memToken = this.session.getLastKnownAccessToken();
+          if (storedToken && storedExp && storedToken !== memToken) {
+            const rt = this.storageService.get<string>('refresh_token') ?? undefined;
+            this.session.applyRefreshedTokens(storedToken, new Date(storedExp), rt);
+          }
+        }
         this.restoreInProgress = false;
         return;
       }

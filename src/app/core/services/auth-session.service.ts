@@ -86,10 +86,16 @@ export class AuthSessionService {
       return;
     }
 
-    this.storageService.set('auth_token', accessToken);
-    this.storageService.set('token_expires_at', expiresAt);
+    const existingToken = this.storageService.get<string>('auth_token');
+    if (existingToken !== accessToken) {
+      this.storageService.set('auth_token', accessToken);
+      this.storageService.set('token_expires_at', expiresAt);
+    }
     if (refreshToken) {
-      this.storageService.set('refresh_token', refreshToken);
+      const existingRt = this.storageService.get<string>('refresh_token');
+      if (existingRt !== refreshToken) {
+        this.storageService.set('refresh_token', refreshToken);
+      }
     }
     const user = this.getCurrentUser();
     if (user) {
@@ -153,6 +159,11 @@ export class AuthSessionService {
 
   getCurrentUser(): AuthenticatedUser | null {
     return this.currentUserSubject.value;
+  }
+
+  /** Token last written to `authState$` (cross-tab same-user sync vs shared localStorage). */
+  getLastKnownAccessToken(): string | null {
+    return this.authStateSubject.value?.token ?? null;
   }
 
   isAuthenticated(): boolean {
