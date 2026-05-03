@@ -231,7 +231,7 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
         if (response.ok) {
           await cache.put(url, response.clone());
         }
-      } catch (error) {
+      } catch (_error) {
         // Silently fail
       }
     };
@@ -500,7 +500,7 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
       (codeFromName ? codeFromName[1] : `DEP-${depot.id.toString().padStart(2, '0')}`);
 
     // Determine color based on NEQ or other criteria (default to green)
-    let color: 'green' | 'orange' | 'red' = 'green';
+    const color: 'green' | 'orange' | 'red' = 'green';
 
     // Use actual coordinates or default to Doha center if not available
     const latitude = depot.latitude ? Number(depot.latitude) : 25.2854;

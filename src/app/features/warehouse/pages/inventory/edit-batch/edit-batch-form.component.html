@@ -43,21 +43,21 @@
     <h3 class="text-lg font-semibold text-[var(--color-text)] mb-4">{{ 'editBatch.purchaseDetails' | translate }}</h3>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-4" formGroupName="commonInfo">
       <div class="min-w-0">
-        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addWeaponAsset.purchaseDate' |
+        <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="edit-batch-purchasedate-1">{{ 'addWeaponAsset.purchaseDate' |
           translate }}</label>
-        <input formControlName="purchaseDate" type="date"
+        <input id="edit-batch-purchasedate-1" formControlName="purchaseDate" type="date"
           class="w-full px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors">
       </div>
       <div class="min-w-0">
-        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{
+        <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="edit-batch-warrantyexpirydate-2">{{
           'addWeaponAsset.warrantyExpiryDate' | translate }}</label>
-        <input formControlName="warrantyExpiryDate" type="date"
+        <input id="edit-batch-warrantyexpirydate-2" formControlName="warrantyExpiryDate" type="date"
           class="w-full px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors">
       </div>
       <div class="min-w-0 sm:col-span-2 lg:col-span-1">
-        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addWeaponAsset.purchasePrice' |
+        <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="edit-batch-purchaseprice-3">{{ 'addWeaponAsset.purchasePrice' |
           translate }}</label>
-        <input formControlName="purchasePrice" type="number"
+        <input id="edit-batch-purchaseprice-3" formControlName="purchasePrice" type="number"
           class="w-full px-4 py-2 text-sm border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
           [class.border-[var(--color-error)]]="batchForm.get('commonInfo')?.get('purchasePrice')?.invalid && batchForm.get('commonInfo')?.get('purchasePrice')?.touched">
       </div>
@@ -69,18 +69,18 @@
     <h3 class="text-lg font-semibold text-[var(--color-text)] mb-4">{{ 'addWeaponAsset.deliveryReceiptInformation' | translate }}</h3>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end" formGroupName="commonInfo">
         <div>
-          <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+          <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="edit-batch-deliveryreceipt-4">
             {{ 'addWeaponAsset.deliveryReceipt' | translate }}
           </label>
-          <input type="text" formControlName="deliveryReceipt"
+          <input id="edit-batch-deliveryreceipt-4" type="text" formControlName="deliveryReceipt"
             class="w-full px-4 py-2 text-sm border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
             [placeholder]="'addWeaponAsset.enterDeliveryReceipt' | translate">
         </div>
         <div>
-          <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+          <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
             {{ 'common.attachments' | translate }} <span class="text-[var(--color-text-muted)] font-normal">({{
               'common.optional' | translate }})</span>
-          </label>
+          </span>
           <div class="space-y-2">
             <div class="relative flex items-center gap-2">
               <input type="file" #editBatchFileInput (change)="onAttachmentChange($event)" multiple

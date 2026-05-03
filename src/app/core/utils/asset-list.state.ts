@@ -82,7 +82,7 @@ export function createInitialImageState(): AssetImageState {
 /**
  * Resets filter state to initial values
  */
-export function resetFilterState(state: AssetFilterState): AssetFilterState {
+export function resetFilterState(_state: AssetFilterState): AssetFilterState {
   return createInitialFilterState();
 }
 

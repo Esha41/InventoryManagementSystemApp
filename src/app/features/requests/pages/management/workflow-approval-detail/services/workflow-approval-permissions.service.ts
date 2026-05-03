@@ -5,7 +5,7 @@
 
 import { Injectable } from '@angular/core';
 import { BackendAuthService } from '@services/backend-auth.service';
-import { RequestDetail, WorkflowApprovalStep } from '@models/workflow-approval.model';
+import { RequestDetail } from '@models/workflow-approval.model';
 import { OrderSummary } from '@models/order-report.model';
 import { REQUEST_STATUS_APPROVED } from '@utils/status.utils';
 import { hasPendingStep } from '../utils/workflow-approval-helpers';
@@ -146,7 +146,7 @@ export class WorkflowApprovalPermissionsService {
       const hasCannotRejectPermission = this.authService.hasPermission(this.CANNOT_REJECT_PERMISSION);
 
       return !hasCannotRejectPermission;
-    } catch (error) {
+    } catch (_error) {
       return true;
     }
   }
@@ -224,7 +224,7 @@ export class WorkflowApprovalPermissionsService {
 
       // For non-weapon orders, use the standard supply review permission
       return this.authService.hasPermission(this.SUPPLY_REVIEW_PERMISSION);
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }
@@ -271,7 +271,7 @@ export class WorkflowApprovalPermissionsService {
       }
 
       return this.authService.hasPermission(this.UPDATE_REQUEST_AND_SUPPLY_PERMISSION);
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }
@@ -318,7 +318,7 @@ export class WorkflowApprovalPermissionsService {
 
       // Check if items are weapons and user has permission
       return this.authService.hasPermission(this.REVIEW_WEAPON_SUPPLY_PERMISSION) && isWeaponOrder;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }
@@ -338,7 +338,7 @@ export class WorkflowApprovalPermissionsService {
         return true;
       }
       return this.authService.hasPermission(this.SELECT_DEPOTS_PERMISSION);
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }
@@ -406,7 +406,7 @@ export class WorkflowApprovalPermissionsService {
     try {
       // Administrators should NOT bypass the permission check for this specific action
       return this.authService.hasPermission(this.SET_SUPPLY_PICKUP_DATE_PERMISSION);
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }
@@ -434,7 +434,7 @@ export class WorkflowApprovalPermissionsService {
       }
 
       return this.authService.hasPermission(this.CONFIRM_SUPPLY_PICKUP_DATE_PERMISSION);
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }
@@ -570,7 +570,7 @@ export class WorkflowApprovalPermissionsService {
       if (isAdministrator) {
         return true;
       }
-    } catch (error) {
+    } catch (_error) {
       // If admin check fails, continue with normal checks
     }
 
@@ -648,7 +648,7 @@ export class WorkflowApprovalPermissionsService {
 
       // Only show if user is the current approver
       return currentPendingStep.isCurrentUserApprover === true;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }

@@ -18,12 +18,12 @@
     <div class="space-y-6">
       <!-- Display Mode: depot is already set and not editing -->
       <div *ngIf="isAlreadySet && !isEditMode">
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
           {{ 'workflowApprovalDetail.returnDepot' | translate }}
           <span class="ms-2 text-xs font-normal text-[var(--color-success)] bg-[var(--color-success)]/20 px-2 py-1 rounded">
             {{ 'workflowApprovalDetail.valueSet' | translate }}
           </span>
-        </label>
+        </span>
         <div class="relative min-h-[42px] rounded border border-[var(--color-border)] bg-[var(--color-background-active)] cursor-not-allowed">
           <div class="flex items-center px-3 py-2">
             <span class="text-sm text-[var(--color-text)] flex-1">{{ depotDisplayName }}</span>
@@ -41,10 +41,10 @@
 
       <!-- Edit Mode: depot not set or user clicked Update (only when not approved) -->
       <div *ngIf="canChangeReturnDepot && (!isAlreadySet || isEditMode)">
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
           {{ 'workflowApprovalDetail.returnDepot' | translate }}
           <span class="text-[var(--color-error)]">*</span>
-        </label>
+        </span>
         <app-dropdown class="w-full"
           [(ngModel)]="selectedDepotId"
           [options]="depots"

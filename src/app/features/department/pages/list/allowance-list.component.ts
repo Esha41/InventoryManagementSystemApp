@@ -203,7 +203,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   }
 
   private initializeItemTypeOptions(): void {
-    const currentLang = getCurrentLang(this.translateService);
+    const _currentLang = getCurrentLang(this.translateService);
     this.itemTypeOptions = [
       { value: null, label: this.translateService.instant('allowance.allItems') || 'All Items' },
       { value: ItemType.Ammunition, label: this.translateService.instant('allowance.ammunition') || 'Ammunition' },
@@ -433,7 +433,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
 
   onEdit(allowance: AllowanceTableRow): void {
     if (!this.isAdminUser && this.userDepartmentId !== null && allowance.departmentId !== this.userDepartmentId) {
-      this.translateService.get(['toast.error', 'allowance.errors.unauthorizedAccess']).subscribe(translations => {
+      this.translateService.get(['toast.error', 'allowance.errors.unauthorizedAccess']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.error(translations['allowance.errors.unauthorizedAccess'], translations['toast.error']);
       });
       return;
@@ -489,11 +489,11 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
             const r = result as { ok: boolean; error?: unknown } | undefined;
             if (r && r.ok === false) {
               const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(r.error, this.translateService.instant('allowance.failedToDeleteItem'), this.translateService);
-              this.translateService.get(['toast.error', 'allowance.failedToDeleteItem']).subscribe((tr: TranslationMap) => {
+              this.translateService.get(['toast.error', 'allowance.failedToDeleteItem']).pipe(takeUntil(this.destroy$)).subscribe((tr: TranslationMap) => {
                 this.toastService.error(errorMessage, tr['toast.error']);
               });
             } else {
-              this.translateService.get(['toast.success', 'allowance.itemDeletedSuccessfully']).subscribe((tr: TranslationMap) => {
+              this.translateService.get(['toast.success', 'allowance.itemDeletedSuccessfully']).pipe(takeUntil(this.destroy$)).subscribe((tr: TranslationMap) => {
                 this.toastService.success(tr['allowance.itemDeletedSuccessfully'], tr['toast.success']);
               });
             }
@@ -503,8 +503,8 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
             this.loadAllowances();
             this.cdr.markForCheck();
           },
-          error: (error: unknown) => {
-            this.translateService.get(['toast.error', 'allowance.failedToDeleteItem']).subscribe((tr: TranslationMap) => {
+          error: (_error: unknown) => {
+            this.translateService.get(['toast.error', 'allowance.failedToDeleteItem']).pipe(takeUntil(this.destroy$)).subscribe((tr: TranslationMap) => {
               this.toastService.error(tr['allowance.failedToDeleteItem'], tr['toast.error']);
             });
             this.showDeleteDialog = false;
@@ -527,7 +527,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
 
             if (ids.length === 0) {
 
-              this.translateService.get(['toast.success', 'allowance.alreadyDeleted']).subscribe((tr: TranslationMap) => {
+              this.translateService.get(['toast.success', 'allowance.alreadyDeleted']).pipe(takeUntil(this.destroy$)).subscribe((tr: TranslationMap) => {
                 this.toastService.success(tr['allowance.alreadyDeleted'], tr['toast.success']);
               });
               this.showDeleteDialog = false;
@@ -558,11 +558,11 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
                   if (hasHardError) {
                     const firstErr = r.find((x): x is { ok: false; error: unknown } => x.ok === false);
                     const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(firstErr?.error, this.translateService.instant('allowance.failedToDelete'), this.translateService);
-                    this.translateService.get(['toast.error', 'allowance.failedToDelete']).subscribe((tr: TranslationMap) => {
+                    this.translateService.get(['toast.error', 'allowance.failedToDelete']).pipe(takeUntil(this.destroy$)).subscribe((tr: TranslationMap) => {
                       this.toastService.error(errorMessage, tr['toast.error']);
                     });
                   } else {
-                    this.translateService.get(['toast.success', 'allowance.deletedSuccessfully']).subscribe((tr: TranslationMap) => {
+                    this.translateService.get(['toast.success', 'allowance.deletedSuccessfully']).pipe(takeUntil(this.destroy$)).subscribe((tr: TranslationMap) => {
                       this.toastService.success(tr['allowance.deletedSuccessfully'], tr['toast.success']);
                     });
                   }
@@ -573,7 +573,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
                   this.cdr.markForCheck();
                 },
                 error: () => {
-                  this.translateService.get(['toast.error', 'allowance.failedToDelete']).subscribe((tr: TranslationMap) => {
+                  this.translateService.get(['toast.error', 'allowance.failedToDelete']).pipe(takeUntil(this.destroy$)).subscribe((tr: TranslationMap) => {
                     this.toastService.error(tr['allowance.failedToDelete'], tr['toast.error']);
                   });
                   this.showDeleteDialog = false;
@@ -582,7 +582,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
               });
           },
           error: () => {
-            this.translateService.get(['toast.error', 'allowance.failedToLoadForDeletion']).subscribe((tr: TranslationMap) => {
+            this.translateService.get(['toast.error', 'allowance.failedToLoadForDeletion']).pipe(takeUntil(this.destroy$)).subscribe((tr: TranslationMap) => {
               this.toastService.error(tr['allowance.failedToLoadForDeletion'], tr['toast.error']);
             });
             this.showDeleteDialog = false;

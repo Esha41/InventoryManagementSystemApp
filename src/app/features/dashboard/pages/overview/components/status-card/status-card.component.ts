@@ -2,34 +2,14 @@ import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, Change
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
-import { formatTimeToMilitary, formatDate } from '@utils/format.utils';
+import {  formatDate } from '@utils/format.utils';
 import { localizedBilingualLabel } from '@utils/localization.utils';
 import { AutoRejectCountdownComponent } from '@requests/components/auto-reject-countdown/auto-reject-countdown.component';
 import { OrderAutoRejectCountdownDto } from '@requests/services/auto-reject-countdown.service';
 import { getRequestStatusTranslationKey } from '@utils/status.utils';
+import type { OrderItem, ReturnItem } from '@models/dashboard-order-display.model';
 
-export interface OrderItem {
-  orderId: string;
-  requestDate: string;
-  /** Preferred: bilingual fields; UI resolves via localizedBilingualLabel */
-  departmentNameEn?: string;
-  departmentNameAr?: string;
-  requesterNameEn?: string;
-  requesterNameAr?: string;
-  /** Legacy single string (e.g. search); prefer En/Ar for display */
-  departmentName?: string;
-  requesterName?: string;
-  items?: ReturnItem[];
-  /** Numeric backend id for opening details */
-  requestId?: number;
-}
-
-export interface ReturnItem {
-  itemName: string;
-  itemNo: string;
-  quantity: number;
-  notes?: string;
-}
+export type { OrderItem, ReturnItem };
 
 export type StatusType = 'new-issue' | 'on-progress' | 'completed' | 'new' | 'declined' | 'returned' | 'action-required';
 

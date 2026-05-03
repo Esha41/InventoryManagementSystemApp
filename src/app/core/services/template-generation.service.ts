@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-imports -- template generation composes feature-layer export APIs for admin import UX */
 import { Injectable } from '@angular/core';
 import { InventoryService } from '@inventory/services/inventory.service';
 import { AmmunitionService } from '@assets/services/ammunition.service';
@@ -46,7 +47,7 @@ export class TemplateGenerationService {
 
     service.generateImportTemplate(currentLang)
       .pipe(
-        catchError(error => {
+        catchError(_error => {
           this.toastService.error(`Failed to download ${type} template. Please try again.`);
           return of(null);
         })

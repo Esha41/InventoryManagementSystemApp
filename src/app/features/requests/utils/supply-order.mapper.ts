@@ -55,7 +55,7 @@ export function mapSupplyDetailsToDisplay(supply: SupplyDto, currentLang: string
  * Gets item type name from item number or returns default
  * TODO: Implement logic to determine type from item number
  */
-function getItemTypeName(itemNo?: string): string {
+function getItemTypeName(_itemNo?: string): string {
   // TODO: Implement logic to determine type from item number
   return 'Supply Item';
 }

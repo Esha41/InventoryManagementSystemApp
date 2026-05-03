@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -35,7 +35,7 @@ import { ErrorHandler } from '@utils/error-handler.utils';
   styleUrls: ['./add-lot-modal.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AddLotModalComponent implements OnInit, OnDestroy {
+export class AddLotModalComponent implements OnDestroy {
   private destroy$ = new Subject<void>();
 
   @Input() isOpen: boolean = false;
@@ -68,10 +68,6 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef
   ) {
     this.initializeForm();
-  }
-
-  ngOnInit(): void {
-    // Form is initialized in constructor
   }
 
   ngOnDestroy(): void {
@@ -136,9 +132,7 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
 
   onShowAvailableLots(): void {
     if (!this.selectedItemForLot) {
-      this.translateService.get(['supplyOrder.toast.pleaseSelectItemFirst', 'toast.warning']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-        this.toastService.warning(translations['supplyOrder.toast.pleaseSelectItemFirst'], translations['toast.warning']);
-      });
+      this.showWarningToast('supplyOrder.toast.pleaseSelectItemFirst', 'toast.warning');
       return;
     }
     this.loadAvailableLotsForQuantity(this.selectedItemForLot);
@@ -146,9 +140,7 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
 
   onShowAllLots(): void {
     if (!this.selectedItemForLot) {
-      this.translateService.get(['supplyOrder.toast.pleaseSelectItemFirst', 'toast.warning']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-        this.toastService.warning(translations['supplyOrder.toast.pleaseSelectItemFirst'], translations['toast.warning']);
-      });
+      this.showWarningToast('supplyOrder.toast.pleaseSelectItemFirst', 'toast.warning');
       return;
     }
     this.loadAllLotsForItem(this.selectedItemForLot);
@@ -163,17 +155,13 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
 
   onGetManualLotDetails(): void {
     if (!this.selectedItemForLot || !this.manualLotNumber.trim()) {
-      this.translateService.get(['supplyOrder.toast.pleaseEnterLotNumber', 'toast.warning']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-        this.toastService.warning(translations['supplyOrder.toast.pleaseEnterLotNumber'], translations['toast.warning']);
-      });
+      this.showWarningToast('supplyOrder.toast.pleaseEnterLotNumber', 'toast.warning');
       return;
     }
 
     const lotKey = this.manualLotNumber.trim();
     if (lotKey.length > 64) {
-      this.translateService.get(['supplyOrder.toast.invalidLotNumber', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-        this.toastService.error(translations['supplyOrder.toast.invalidLotNumber'], translations['toast.error']);
-      });
+      this.showErrorToastKeys('supplyOrder.toast.invalidLotNumber', 'toast.error');
       return;
     }
 
@@ -183,22 +171,23 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (lot) => {
           if (lot.itemId !== this.selectedItemForLot!.itemId) {
-            this.translateService.get(['supplyOrder.toast.lotBelongsToDifferentItemWithName', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-              const errorMsg = translations['supplyOrder.toast.lotBelongsToDifferentItemWithName']
-                .replace('{{lotNumber}}', lotKey)
-                .replace('{{itemName}}', lot.itemName || 'Unknown');
-              this.toastService.error(errorMsg, translations['toast.error']);
-            });
+            this.showErrorToastInterpolated(
+              'supplyOrder.toast.lotBelongsToDifferentItemWithName',
+              'toast.error',
+              msg =>
+                msg.replace('{{lotNumber}}', lotKey).replace('{{itemName}}', lot.itemName || 'Unknown')
+            );
             this.loadingManualLot = false;
             return;
           }
 
           const existingLot = this.availableLots.find(l => String(l.lotNumber) === String(lot.lot));
           if (existingLot) {
-            this.translateService.get(['supplyOrder.toast.lotAlreadyInListWithNumber', 'toast.warning']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-              const warningMsg = translations['supplyOrder.toast.lotAlreadyInListWithNumber'].replace('{{lotNumber}}', lotKey);
-              this.toastService.warning(warningMsg, translations['toast.warning']);
-            });
+            this.showWarningToastInterpolated(
+              'supplyOrder.toast.lotAlreadyInListWithNumber',
+              'toast.warning',
+              msg => msg.replace('{{lotNumber}}', lotKey)
+            );
             this.loadingManualLot = false;
             return;
           }
@@ -207,19 +196,17 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
           this.availableLots.push(newLot);
           this.availableLots.sort((a, b) => a.daysUntilExpiry - b.daysUntilExpiry);
 
-          this.translateService.get(['supplyOrder.toast.lotAddedSuccessfullyWithNumber', 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-            const successMsg = translations['supplyOrder.toast.lotAddedSuccessfullyWithNumber'].replace('{{lotNumber}}', lotKey);
-            this.toastService.success(successMsg, translations['toast.success']);
-          });
+          this.showSuccessToastInterpolated(
+            'supplyOrder.toast.lotAddedSuccessfullyWithNumber',
+            'toast.success',
+            msg => msg.replace('{{lotNumber}}', lotKey)
+          );
           this.manualLotNumber = '';
           this.loadingManualLot = false;
           this.cdr.markForCheck();
         },
         error: (error: unknown) => {
-          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Lot not found or error loading details');
-          this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-            this.toastService.error(errorMessage, translations['toast.error']);
-          });
+          this.showErrorToast(error, 'Lot not found or error loading details');
           this.loadingManualLot = false;
           this.cdr.markForCheck();
         }
@@ -236,25 +223,22 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
           this.loadingAllLots = false;
 
           if (this.availableLots.length > 0) {
-            this.translateService.get(['supplyOrder.toast.loadedAvailableLotsCount', 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-              const successMsg = translations['supplyOrder.toast.loadedAvailableLotsCount']
-                .replace('{{count}}', this.availableLots.length.toString())
-                .replace('{{quantity}}', formatNumberUtil(item.quantity));
-              this.toastService.success(successMsg, translations['toast.success']);
-            });
+            this.showSuccessToastInterpolated(
+              'supplyOrder.toast.loadedAvailableLotsCount',
+              'toast.success',
+              msg =>
+                msg
+                  .replace('{{count}}', this.availableLots.length.toString())
+                  .replace('{{quantity}}', formatNumberUtil(item.quantity))
+            );
           } else {
-            this.translateService.get(['supplyOrder.toast.noAvailableLotsFoundForQuantity', 'toast.warning']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-              this.toastService.warning(translations['supplyOrder.toast.noAvailableLotsFoundForQuantity'], translations['toast.warning']);
-            });
+            this.showWarningToast('supplyOrder.toast.noAvailableLotsFoundForQuantity', 'toast.warning');
           }
           this.loadingAllLots = false;
           this.cdr.markForCheck();
         },
         error: (error: unknown) => {
-          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load available lots');
-          this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-            this.toastService.error(errorMessage, translations['toast.error']);
-          });
+          this.showErrorToast(error, 'Failed to load available lots');
           this.loadingAllLots = false;
           this.cdr.markForCheck();
         }
@@ -271,23 +255,18 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
           this.loadingAllLots = false;
 
           if (this.availableLots.length > 0) {
-            this.translateService.get(['supplyOrder.toast.loadedAllLotsCount', 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-              const successMsg = translations['supplyOrder.toast.loadedAllLotsCount']
-                .replace('{{count}}', this.availableLots.length.toString());
-              this.toastService.success(successMsg, translations['toast.success']);
-            });
+            this.showSuccessToastInterpolated(
+              'supplyOrder.toast.loadedAllLotsCount',
+              'toast.success',
+              msg => msg.replace('{{count}}', this.availableLots.length.toString())
+            );
           } else {
-            this.translateService.get(['supplyOrder.toast.noLotsFound', 'toast.warning']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-              this.toastService.warning(translations['supplyOrder.toast.noLotsFound'], translations['toast.warning']);
-            });
+            this.showWarningToast('supplyOrder.toast.noLotsFound', 'toast.warning');
           }
           this.cdr.markForCheck();
         },
         error: (error: unknown) => {
-          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load lots');
-          this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-            this.toastService.error(errorMessage, translations['toast.error']);
-          });
+          this.showErrorToast(error, 'Failed to load lots');
           this.loadingAllLots = false;
           this.cdr.markForCheck();
         }
@@ -324,25 +303,19 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
   onAddLot(): void {
     if (!this.selectedItemForLot) {
       this.addLotForm.get('itemId')?.markAsTouched();
-      this.translateService.get(['supplyOrder.toast.pleaseSelectItem', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-        this.toastService.error(translations['supplyOrder.toast.pleaseSelectItem'], translations['toast.error']);
-      });
+      this.showErrorToastKeys('supplyOrder.toast.pleaseSelectItem', 'toast.error');
       return;
     }
 
     if (!this.selectedLotNumber) {
       this.addLotForm.get('lot')?.markAsTouched();
-      this.translateService.get(['supplyOrder.toast.pleaseSelectLot', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-        this.toastService.error(translations['supplyOrder.toast.pleaseSelectLot'], translations['toast.error']);
-      });
+      this.showErrorToastKeys('supplyOrder.toast.pleaseSelectLot', 'toast.error');
       return;
     }
 
     if (this.addLotForm.invalid) {
       this.addLotForm.markAllAsTouched();
-      this.translateService.get(['supplyOrder.toast.pleaseFillRequiredFields', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-        this.toastService.error(translations['supplyOrder.toast.pleaseFillRequiredFields'], translations['toast.error']);
-      });
+      this.showErrorToastKeys('supplyOrder.toast.pleaseFillRequiredFields', 'toast.error');
       return;
     }
 
@@ -357,25 +330,19 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
     }).pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.translateService.get(['supplyOrder.toast.lotAddedSuccessfullyToSupply', 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-            this.toastService.success(translations['supplyOrder.toast.lotAddedSuccessfullyToSupply'], translations['toast.success']);
-          });
+          this.showSuccessToast('supplyOrder.toast.lotAddedSuccessfullyToSupply', 'toast.success');
           this.loadingLotDetails = false;
           this.closeModal();
           this.lotAdded.emit();
         },
         error: (error: unknown) => {
-          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to add lot');
-          this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-            this.toastService.error(errorMessage, translations['toast.error']);
-          });
+          this.showErrorToast(error, 'Failed to add lot');
           this.loadingLotDetails = false;
         }
       });
   }
 
   closeModal(): void {
-    this.isOpen = false;
     this.addLotForm.reset();
     this.addLotForm.patchValue({ quantity: 1 });
     this.selectedItemForLot = null;
@@ -384,6 +351,82 @@ export class AddLotModalComponent implements OnInit, OnDestroy {
     this.showManualLotEntry = false;
     this.manualLotNumber = '';
     this.closed.emit();
+  }
+
+  private showSuccessToast(messageKey: string, titleKey: string = 'toast.success'): void {
+    this.translateService
+      .get([messageKey, titleKey])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.success(translations[messageKey], translations[titleKey]);
+      });
+  }
+
+  private showSuccessToastInterpolated(
+    messageKey: string,
+    titleKey: string,
+    format: (message: string) => string
+  ): void {
+    this.translateService
+      .get([messageKey, titleKey])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.success(format(translations[messageKey]), translations[titleKey]);
+      });
+  }
+
+  private showWarningToast(messageKey: string, titleKey: string = 'toast.warning'): void {
+    this.translateService
+      .get([messageKey, titleKey])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.warning(translations[messageKey], translations[titleKey]);
+      });
+  }
+
+  private showWarningToastInterpolated(
+    messageKey: string,
+    titleKey: string,
+    format: (message: string) => string
+  ): void {
+    this.translateService
+      .get([messageKey, titleKey])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.warning(format(translations[messageKey]), translations[titleKey]);
+      });
+  }
+
+  private showErrorToastKeys(messageKey: string, titleKey: string = 'toast.error'): void {
+    this.translateService
+      .get([messageKey, titleKey])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.error(translations[messageKey], translations[titleKey]);
+      });
+  }
+
+  private showErrorToastInterpolated(
+    messageKey: string,
+    titleKey: string,
+    format: (message: string) => string
+  ): void {
+    this.translateService
+      .get([messageKey, titleKey])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.error(format(translations[messageKey]), translations[titleKey]);
+      });
+  }
+
+  private showErrorToast(error: unknown, defaultMsg: string): void {
+    const msg = ErrorHandler.extractAndTranslateErrorMessage(error, defaultMsg, this.translateService);
+    this.translateService
+      .get('toast.error')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.error(msg, translations['toast.error']);
+      });
   }
 }
 

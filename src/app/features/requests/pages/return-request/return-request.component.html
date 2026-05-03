@@ -48,9 +48,9 @@
 
           <!-- Reason -->
           <div class="flex flex-col lg:flex-row lg:items-start lg:gap-8 gap-2">
-            <label class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
+            <span class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
               {{ 'returnRequest.reason' | translate }}
-            </label>
+            </span>
             <div class="flex-1">
               <input type="text" [(ngModel)]="reason" name="reason"
                 [placeholder]="'returnRequest.enterReason' | translate"
@@ -60,9 +60,9 @@
 
           <!-- Priority -->
           <div class="flex flex-col lg:flex-row lg:items-start lg:gap-8 gap-2">
-            <label class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
+            <span class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
               {{ 'returnRequest.priority' | translate }} <span class="text-[var(--color-error)]">*</span>
-            </label>
+            </span>
             <div class="flex-1">
               <app-dropdown class="w-full" [(ngModel)]="priority" name="priority" (ngModelChange)="onPriorityChange()"
                 [options]="priorityOptions" optionLabel="labelKey" optionValue="value" [translateLabels]="true"
@@ -76,9 +76,9 @@
 
           <!-- Department -->
           <div class="flex flex-col lg:flex-row lg:items-start lg:gap-8 gap-2">
-            <label class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
+            <span class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
               {{ 'returnRequest.department' | translate }} <span class="text-[var(--color-error)]">*</span>
-            </label>
+            </span>
             <div class="flex-1">
               <ng-container *ngIf="isDepartmentLocked; else departmentSelect">
                 <input type="text" [value]="lockedDepartmentName || ('returnRequest.selectDepartment' | translate)"
@@ -101,9 +101,9 @@
 
           <!-- Requester -->
           <div class="flex flex-col lg:flex-row lg:items-start lg:gap-8 gap-2">
-            <label class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
+            <span class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
               {{ 'returnRequest.requester' | translate }}
-            </label>
+            </span>
             <div class="flex-1">
               <ng-container *ngIf="isRequesterLocked; else requesterSelect">
                 <input type="text" [value]="lockedRequesterName || currentUserDetails?.userName || ''"
@@ -122,9 +122,9 @@
 
           <!-- Purpose -->
           <div class="flex flex-col lg:flex-row lg:items-start lg:gap-8 gap-2">
-            <label class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
+            <span class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
               {{ 'returnRequest.requestPurpose' | translate }} <span class="text-[var(--color-error)]">*</span>
-            </label>
+            </span>
             <div class="flex-1">
               <app-dropdown class="w-full" [(ngModel)]="requestPurposeId" name="requestPurposeId"
                 (ngModelChange)="onRequestPurposeChange()" [disabled]="isLoadingRequestPurposes"
@@ -140,9 +140,9 @@
 
           <!-- Request Purpose Notes (required when purpose selected) -->
           <div *ngIf="requestPurposeId" class="flex flex-col lg:flex-row lg:items-start lg:gap-8 gap-2">
-            <label class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
+            <span class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
               {{ 'returnRequest.requestPurposeNotes' | translate }} <span class="text-[var(--color-error)]">*</span>
-            </label>
+            </span>
             <div class="flex-1">
               <textarea [(ngModel)]="requestPurposeNotes" name="requestPurposeNotes" rows="3"
                 (ngModelChange)="onRequestPurposeNotesChange()"
@@ -156,9 +156,9 @@
 
           <!-- Notes -->
           <div class="flex flex-col lg:flex-row lg:items-start lg:gap-8 gap-2">
-            <label class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
+            <span class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
               {{ 'returnRequest.notes' | translate }}
-            </label>
+            </span>
             <div class="flex-1">
               <textarea [(ngModel)]="notes" name="notes" rows="3" [placeholder]="'returnRequest.enterNotes' | translate"
                 class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] resize-none transition-all"></textarea>
@@ -167,9 +167,9 @@
 
           <!-- Attachments -->
           <div class="flex flex-col lg:flex-row lg:items-start lg:gap-8 gap-2">
-            <label class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
+            <span class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
               {{ 'common.attachments' | translate }} <span class="text-[var(--color-error)]">*</span>
-            </label>
+            </span>
             <div class="flex-1">
               <div class="space-y-3">
                 <div class="flex flex-wrap items-center gap-3">
@@ -219,9 +219,9 @@
           <!-- Return Items Section -->
           <div class="border-t border-[var(--color-border)] pt-8">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-              <label class="text-base font-bold text-[var(--color-text)]">
+              <span class="text-base font-bold text-[var(--color-text)]">
                 {{ 'returnRequest.returnItems' | translate }} <span class="text-[var(--color-error)]">*</span>
-              </label>
+              </span>
               <button type="button" (click)="addReturnItem()"
                 class="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-[var(--color-brand)]/10 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20 rounded-lg transition-all">
                 <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
@@ -256,9 +256,9 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   <!-- Item Selection -->
                   <div class="sm:col-span-2 lg:col-span-1">
-                    <label class="block text-xs font-bold text-[var(--color-text-muted)] mb-2">
+                    <span class="block text-xs font-bold text-[var(--color-text-muted)] mb-2">
                       {{ 'returnRequest.item' | translate }} <span class="text-[var(--color-error)]">*</span>
-                    </label>
+                    </span>
                     <div class="relative" #itemDropdown>
                       <button type="button" (click)="toggleItemDropdown(i); $event.stopPropagation()"
                         [disabled]="isLoadingItems"
@@ -303,10 +303,10 @@
 
                   <!-- Quantity -->
                   <div>
-                    <label class="block text-xs font-bold text-[var(--color-text-muted)] mb-2">
+                    <label class="block text-xs font-bold text-[var(--color-text-muted)] mb-2" for="return-request-fld-11-11">
                       {{ 'returnRequest.quantity' | translate }} <span class="text-[var(--color-error)]">*</span>
                     </label>
-                    <input type="number" [(ngModel)]="item.quantity" [name]="'quantity_' + i"
+                    <input id="return-request-fld-11-11" type="number" [(ngModel)]="item.quantity" [name]="'quantity_' + i"
                       (ngModelChange)="onQuantityChange(i)" (keydown)="onQuantityKeydown($event)" min="1"
                       [placeholder]="'returnRequest.enterQuantity' | translate"
                       [class.border-[var(--color-error)]]="hasError('returnItem_' + i + '_quantity')"
@@ -319,10 +319,10 @@
 
                   <!-- Item Notes -->
                   <div>
-                    <label class="block text-xs font-bold text-[var(--color-text-muted)] mb-2">
+                    <label class="block text-xs font-bold text-[var(--color-text-muted)] mb-2" for="return-request-fld-12-12">
                       {{ 'returnRequest.itemNotes' | translate }}
                     </label>
-                    <input type="text" [(ngModel)]="item.notes" [name]="'notes_' + i"
+                    <input id="return-request-fld-12-12" type="text" [(ngModel)]="item.notes" [name]="'notes_' + i"
                       [placeholder]="'returnRequest.itemNotesPlaceholder' | translate"
                       class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
                   </div>

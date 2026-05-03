@@ -9,7 +9,7 @@ import type { RequestManagementRequestItemDto } from './request-management-base.
  * Base request item DTO (read) — matches Request Management `RequestItemDto`.
  * @see `ettadbackend/Ettad.RequestManagement.Service/Common/Dtos/RequestItemDto.cs`
  */
-export interface RequestItemDto extends RequestManagementRequestItemDto {}
+export type RequestItemDto = RequestManagementRequestItemDto;
 
 /**
  * DTO for creating or updating request items
@@ -25,46 +25,31 @@ export interface CreateRequestItemDto {
  * Order-specific request item DTO
  * Extends base with order-specific fields
  */
-export interface OrderRequestItemDto extends RequestItemDto {
-    // Inherits all fields from RequestItemDto
-    // Can add order-specific fields here if needed in the future
-}
+export type OrderRequestItemDto = RequestItemDto;
 
 /**
  * Return-specific request item DTO
  * Extends base with return-specific fields
  */
-export interface ReturnItemDto extends RequestItemDto {
-    // Inherits all fields from RequestItemDto
-    // Can add return-specific fields here if needed in the future
-}
+export type ReturnItemDto = RequestItemDto;
 
 /**
  * Discard-specific request item DTO
  * Extends base with discard-specific fields
  */
-export interface DiscardItemDto extends RequestItemDto {
-    // Inherits all fields from RequestItemDto
-    // Can add discard-specific fields here if needed in the future
-}
+export type DiscardItemDto = RequestItemDto;
 
 /**
  * DTO for creating order items
  */
-export interface CreateOrderItemDto extends CreateRequestItemDto {
-    // Inherits from CreateRequestItemDto
-}
+export type CreateOrderItemDto = CreateRequestItemDto;
 
 /**
  * DTO for creating return items
  */
-export interface CreateReturnItemDto extends CreateRequestItemDto {
-    // Inherits from CreateRequestItemDto
-}
+export type CreateReturnItemDto = CreateRequestItemDto;
 
 /**
  * DTO for creating discard items
  */
-export interface CreateDiscardItemDto extends CreateRequestItemDto {
-    // Inherits from CreateRequestItemDto
-}
+export type CreateDiscardItemDto = CreateRequestItemDto;

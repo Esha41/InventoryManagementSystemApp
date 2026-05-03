@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule, Search, Package } from 'lucide-angular';
+import { LucideAngularModule, Package } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
 
 import { OrderService } from '@requests/services/order.service';
@@ -13,6 +13,7 @@ import { ToastService } from '@services/toast.service';
 import { LoadingStateComponent } from '@components/index';
 import { mapOrderPriorityToString } from '@utils/priority.utils';
 import { trackById } from '@utils/trackby.utils';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 @Component({
   selector: 'app-supply-order-list',
@@ -65,10 +66,8 @@ export class SupplyOrderListComponent implements OnInit, OnDestroy {
           this.loading = false;
           this.cdr.markForCheck();
         },
-        error: () => {
-          this.translateService.get(['toast.failedToLoadOrders', 'toast.error']).subscribe(translations => {
-            this.toastService.error(translations['toast.failedToLoadOrders'], translations['toast.error']);
-          });
+        error: (_error: unknown) => {
+          this.showErrorToastKeys('toast.failedToLoadOrders', 'toast.error');
           this.loading = false;
           this.cdr.markForCheck();
         }
@@ -190,6 +189,43 @@ export class SupplyOrderListComponent implements OnInit, OnDestroy {
    */
   mapOrderPriorityToString(priority?: number | string | null): string {
     return mapOrderPriorityToString(priority);
+  }
+
+  private showSuccessToast(messageKey: string, titleKey: string = 'toast.success'): void {
+    this.translateService
+      .get([messageKey, titleKey])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.success(translations[messageKey], translations[titleKey]);
+      });
+  }
+
+  private showErrorToastKeys(messageKey: string, titleKey: string = 'toast.error'): void {
+    this.translateService
+      .get([messageKey, titleKey])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.error(translations[messageKey], translations[titleKey]);
+      });
+  }
+
+  private showWarningToast(messageKey: string, titleKey: string = 'toast.warning'): void {
+    this.translateService
+      .get([messageKey, titleKey])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.warning(translations[messageKey], translations[titleKey]);
+      });
+  }
+
+  private showErrorToast(error: unknown, defaultMsg: string): void {
+    const msg = ErrorHandler.extractAndTranslateErrorMessage(error, defaultMsg, this.translateService);
+    this.translateService
+      .get('toast.error')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.error(msg, translations['toast.error']);
+      });
   }
 }
 

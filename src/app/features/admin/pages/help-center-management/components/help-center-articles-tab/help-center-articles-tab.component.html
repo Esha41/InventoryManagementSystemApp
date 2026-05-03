@@ -107,15 +107,15 @@
   (closed)="closeArticleModal()">
   <form [formGroup]="articleForm" class="w-full min-w-0 space-y-4">
     <div>
-      <label class="mb-1.5 block text-sm font-medium text-[var(--color-text)]">{{ 'helpCenter.colTitle' | translate }}</label>
-      <input
+      <label class="mb-1.5 block text-sm font-medium text-[var(--color-text)]" for="help-center-articles-tab-title-1">{{ 'helpCenter.colTitle' | translate }}</label>
+      <input id="help-center-articles-tab-title-1"
         type="text"
         class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm text-[var(--color-text)]"
         formControlName="title" />
     </div>
     <div>
-      <label class="mb-1.5 block text-sm font-medium text-[var(--color-text)]">{{ 'helpCenter.colCategory' | translate }}</label>
-      <input
+      <label class="mb-1.5 block text-sm font-medium text-[var(--color-text)]" for="help-center-articles-tab-category-2">{{ 'helpCenter.colCategory' | translate }}</label>
+      <input id="help-center-articles-tab-category-2"
         type="text"
         class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm text-[var(--color-text)]"
         formControlName="category" />
@@ -125,10 +125,10 @@
       {{ 'helpCenter.colPublished' | translate }}
     </label>
     <div class="w-full min-w-0">
-      <label class="mb-1.5 flex flex-wrap items-baseline gap-1 text-sm font-medium text-[var(--color-text)]">
+      <span class="mb-1.5 flex flex-wrap items-baseline gap-1 text-sm font-medium text-[var(--color-text)]">
         <span>{{ 'helpCenter.contentLabel' | translate }}</span>
         <span class="font-semibold text-[var(--color-error)]" aria-hidden="true">{{ 'common.requiredSuffix' | translate }}</span>
-      </label>
+      </span>
       <p class="mb-2 text-xs text-[var(--color-text-muted)]">{{ 'helpCenter.articleEditorHint' | translate }}</p>
       <div
         class="block w-full min-w-0 overflow-hidden rounded-lg border bg-[var(--color-background)] [&_.ql-container]:rounded-b-lg [&_.ql-toolbar]:rounded-t-lg [&_.ql-editor]:min-h-[280px] [&_.ql-editor]:text-[var(--color-text)]"

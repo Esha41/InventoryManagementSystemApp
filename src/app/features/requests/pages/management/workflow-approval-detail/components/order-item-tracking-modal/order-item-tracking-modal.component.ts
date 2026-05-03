@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ChangeDetectorRef, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnDestroy, ChangeDetectorRef, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Clock, User, ArrowRight, FileText, Activity, RotateCcw } from 'lucide-angular';
@@ -6,7 +6,7 @@ import { ModalComponent } from '@components/modal/modal.component';
 import { OrderItemTrackingService, OrderItemHistoryDto, OrderItemActionType } from '../../../../../services/order-item-tracking.service';
 import { Subject } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
-import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import {  getCurrentLang } from '@utils/localization.utils';
 import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 
 @Component({
@@ -27,7 +27,7 @@ import { AppDatePipe } from '@shared/pipes/app-date.pipe';
   `],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class OrderItemTrackingModalComponent implements OnInit, OnDestroy, OnChanges {
+export class OrderItemTrackingModalComponent implements OnDestroy, OnChanges {
     readonly Clock = Clock;
     readonly User = User;
     readonly ArrowRight = ArrowRight;
@@ -55,8 +55,6 @@ export class OrderItemTrackingModalComponent implements OnInit, OnDestroy, OnCha
         public translate: TranslateService
     ) { }
 
-    ngOnInit(): void { }
-
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['isOpen'] && this.isOpen) {
             this.loadHistory();
@@ -69,7 +67,6 @@ export class OrderItemTrackingModalComponent implements OnInit, OnDestroy, OnCha
     }
 
     onClose(): void {
-        this.isOpen = false;
         this.closed.emit();
     }
 

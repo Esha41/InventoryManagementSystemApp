@@ -1,4 +1,3 @@
-import { DelegationScope } from './delegation-scope.enum';
 
 export interface UserDelegation {
     id: number;

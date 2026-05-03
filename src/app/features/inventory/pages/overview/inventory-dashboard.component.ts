@@ -33,6 +33,7 @@ import { AssetDto } from '@models/asset.model';
 import { DepotDto } from '@models/depot.model';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
+import { CardComponent } from '@components/card/card.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { getLookupDropdownLabel } from '@utils/asset-list.utils';
@@ -84,6 +85,7 @@ import {
     PaginationComponent,
     RowsPerPageComponent,
     DropdownComponent,
+    CardComponent,
     InventoryItemSummaryTableComponent,
     InventoryDashboardStatCardsComponent,
     InventoryDashboardWeaponPipelineComponent

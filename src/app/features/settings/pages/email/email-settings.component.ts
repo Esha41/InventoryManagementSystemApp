@@ -134,7 +134,7 @@ export class EmailSettingsComponent implements OnInit, OnDestroy {
 
           if (!is403 && !is404) {
             this.errorMessage = error.message || 'Failed to load email configuration';
-            this.translateService.get(['toast.error']).subscribe(translations => {
+            this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
               this.toastService.error(
                 this.errorMessage,
                 translations['toast.error']
@@ -179,7 +179,7 @@ export class EmailSettingsComponent implements OnInit, OnDestroy {
           this.accountPassword = ''; // Clear password field after save
           this.isSaving = false;
 
-          this.translateService.get(['emailSettings.savedSuccessfully', 'toast.success']).subscribe(translations => {
+          this.translateService.get(['emailSettings.savedSuccessfully', 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.success(
               translations['emailSettings.savedSuccessfully'],
               translations['toast.success']
@@ -211,7 +211,7 @@ export class EmailSettingsComponent implements OnInit, OnDestroy {
           }
 
           this.errorMessage = errorMessage;
-          this.translateService.get(['toast.error']).subscribe(translations => {
+          this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.error(
               this.errorMessage,
               translations['toast.error']

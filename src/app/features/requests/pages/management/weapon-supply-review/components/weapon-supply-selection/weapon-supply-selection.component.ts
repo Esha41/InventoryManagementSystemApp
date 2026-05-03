@@ -211,7 +211,7 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
               savedItemQuantities.forEach((qty, key) => {
                 const [batchIdStr, itemIdStr] = key.split('_');
                 const batchId = parseInt(batchIdStr, 10);
-                const itemId = parseInt(itemIdStr, 10);
+                const _itemId = parseInt(itemIdStr, 10);
                 if (batchIdsFromOptions.has(batchId)) {
                   this.itemQuantities.set(key, qty);
                 }

@@ -83,7 +83,7 @@ export function sortLotDetails(
 export function isPlaceholderCaliberLabel(text: string): boolean {
   const t = text.trim();
   if (!t) return true;
-  return /^[\-–—]+$/.test(t);
+  return /^[-–—]+$/.test(t);
 }
 
 export function distinctCalibersFromItems(items: ItemInventorySummaryDto[]): string[] {

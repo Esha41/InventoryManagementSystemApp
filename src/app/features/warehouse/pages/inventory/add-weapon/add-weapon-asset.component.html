@@ -51,23 +51,18 @@
             </div>
         </div>
 
-        <!-- Bulk Progress Overlay -->
-        <div *ngIf="isProcessingBulk" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-            <div class="bg-[var(--color-background)] p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
-                <h3 class="text-lg font-bold mb-4">{{ 'addWeaponAsset.progress.title' | translate }}</h3>
-                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
-                    <div class="bg-[var(--color-brand)] h-2.5 rounded-full transition-all duration-300"
-                        [style.width.%]="(bulkProgress.current / bulkProgress.total) * 100"></div>
-                </div>
-                <p class="text-sm text-[var(--color-text-muted)] text-center">
-                    {{ 'addWeaponAsset.progress.status' | translate: { current: bulkProgress.current, total:
-                    bulkProgress.total } }}
-                </p>
-            </div>
-        </div>
+        <app-weapon-asset-bulk-progress-overlay
+            [visible]="isProcessingBulk"
+            [progress]="bulkProgress"
+        ></app-weapon-asset-bulk-progress-overlay>
 
         <form *ngIf="!loading && inputMode === 'single'" [formGroup]="assetForm" (ngSubmit)="onSubmit()"
             class="space-y-6">
+
+            <div *ngIf="assetsFormArray.length > 1" role="status"
+                class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-100">
+                {{ 'addWeaponAsset.multiRowSingleSubmitHint' | translate }}
+            </div>
 
             <!-- Weapon Assets Card -->
             <div
@@ -98,10 +93,10 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <!-- Weapon Selection -->
                             <div class="md:col-span-2">
-                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
                                     {{ 'addWeaponAsset.weapon' | translate }} <span
                                         class="text-[var(--color-error)]">*</span>
-                                </label>
+                                </span>
                                 <app-dropdown class="w-full" formControlName="itemId"
                                     (selectionChange)="onWeaponSelected(i); onFieldChange('itemId', i)" [options]="availableWeapons"
                                     optionValue="id" [optionLabelFn]="weaponOptionLabel" [placeholderSelectable]="false"
@@ -115,11 +110,11 @@
 
                             <!-- Batch Number -->
                             <div class="md:col-span-2">
-                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="add-weapon-batchnumber-2">
                                     {{ 'addWeaponAsset.batchNumber' | translate }} <span
                                         class="text-[var(--color-error)]">*</span>
                                 </label>
-                                <input type="text" formControlName="batchNumber"
+                                <input id="add-weapon-batchnumber-2" type="text" formControlName="batchNumber"
                                     (input)="onFieldChange('batchNumber', i)"
                                     class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
                                     [class.border-[var(--color-error)]]="isFieldInvalid('batchNumber', i)"
@@ -131,9 +126,9 @@
 
                             <!-- Supplier / manufacturer / primary purpose (optional) -->
                             <div>
-                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
                                     {{ 'addWeaponAsset.supplier' | translate }}
-                                </label>
+                                </span>
                                 <app-dropdown class="w-full" formControlName="supplierId"
                                     [options]="suppliers" optionValue="id" [optionLabelFn]="lookupOptionLabel"
                                     [placeholderSelectable]="true"
@@ -142,9 +137,9 @@
                                 </app-dropdown>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
                                     {{ 'addWeaponAsset.manufacturer' | translate }}
-                                </label>
+                                </span>
                                 <app-dropdown class="w-full" formControlName="manufacturerId"
                                     [options]="manufacturers" optionValue="id" [optionLabelFn]="lookupOptionLabel"
                                     [placeholderSelectable]="true"
@@ -153,9 +148,9 @@
                                 </app-dropdown>
                             </div>
                             <div class="md:col-span-2">
-                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
                                     {{ 'addWeaponAsset.primaryPurpose' | translate }}
-                                </label>
+                                </span>
                                 <app-dropdown class="w-full" formControlName="primaryPurposId"
                                     [options]="getPrimaryPurposeOptionsForRow(i)" optionValue="id" [optionLabelFn]="lookupOptionLabel"
                                     [placeholderSelectable]="true"
@@ -174,10 +169,10 @@
 
                             <!-- Serial Number -->
                             <div>
-                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="add-weapon-serialnumber-6">
                                     {{ 'addWeaponAsset.serialNumber' | translate }}
                                 </label>
-                                <input type="text" formControlName="serialNumber"
+                                <input id="add-weapon-serialnumber-6" type="text" formControlName="serialNumber"
                                     (input)="onFieldChange('serialNumber', i)"
                                     class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
                                     [class.border-[var(--color-error)]]="isFieldInvalid('serialNumber', i)"
@@ -190,10 +185,10 @@
 
                             <!-- RFID Tag -->
                             <div>
-                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="add-weapon-rfid-7">
                                     {{ 'addWeaponAsset.rfidTag' | translate }}
                                 </label>
-                                <input type="text" formControlName="rfid" (input)="onFieldChange('rfid', i)"
+                                <input id="add-weapon-rfid-7" type="text" formControlName="rfid" (input)="onFieldChange('rfid', i)"
                                     class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
                                     [class.border-[var(--color-error)]]="isFieldInvalid('rfid', i)"
                                     [placeholder]="'addWeaponAsset.enterRfidTag' | translate">
@@ -212,10 +207,10 @@
 
                             <!-- Purchase Date -->
                             <div>
-                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="add-weapon-purchasedate-8">
                                     {{ 'addWeaponAsset.purchaseDate' | translate }}
                                 </label>
-                                <input type="date" formControlName="purchaseDate"
+                                <input id="add-weapon-purchasedate-8" type="date" formControlName="purchaseDate"
                                     (input)="onFieldChange('purchaseDate', i)" [max]="getMaxDate()"
                                     class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
                                     [class.border-[var(--color-error)]]="isFieldInvalid('purchaseDate', i)">
@@ -227,10 +222,10 @@
 
                             <!-- Warranty Expiry Date -->
                             <div>
-                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="add-weapon-warrantyexpirydate-9">
                                     {{ 'addWeaponAsset.warrantyExpiryDate' | translate }}
                                 </label>
-                                <input type="date" formControlName="warrantyExpiryDate"
+                                <input id="add-weapon-warrantyexpirydate-9" type="date" formControlName="warrantyExpiryDate"
                                     (input)="onFieldChange('warrantyExpiryDate', i)"
                                     class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
                                     [class.border-[var(--color-error)]]="isFieldInvalid('warrantyExpiryDate', i)">
@@ -242,10 +237,10 @@
 
                             <!-- Purchase Price -->
                             <div>
-                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="add-weapon-purchaseprice-10">
                                     {{ 'addWeaponAsset.purchasePrice' | translate }}
                                 </label>
-                                <input type="number" formControlName="purchasePrice" min="0" step="0.01"
+                                <input id="add-weapon-purchaseprice-10" type="number" formControlName="purchasePrice" min="0" step="0.01"
                                     (input)="onFieldChange('purchasePrice', i)"
                                     class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
                                     [class.border-[var(--color-error)]]="isFieldInvalid('purchasePrice', i)"
@@ -258,10 +253,10 @@
 
                             <!-- Notes -->
                             <div class="md:col-span-2">
-                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="add-weapon-notes-11">
                                     {{ 'addWeaponAsset.notes' | translate }}
                                 </label>
-                                <textarea formControlName="notes" (input)="onFieldChange('notes', i)" rows="3"
+                                <textarea id="add-weapon-notes-11" formControlName="notes" (input)="onFieldChange('notes', i)" rows="3"
                                     class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
                                     [class.border-[var(--color-error)]]="isFieldInvalid('notes', i)"
                                     [placeholder]="'addWeaponAsset.notesPlaceholder' | translate"></textarea>
@@ -280,9 +275,9 @@
                             </div>
 
                             <div class="md:col-span-2">
-                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
                                     {{ 'addWeaponAsset.assignment.assignType' | translate }}
-                                </label>
+                                </span>
                                 <app-dropdown class="w-full" formControlName="assignMode"
                                     [options]="assignModeDropdownOptions" optionValue="value"
                                     [showSearch]="false"
@@ -292,9 +287,9 @@
                             </div>
 
                             <div *ngIf="getAssetFormGroup(i).get('assignMode')?.value === 'department'" class="md:col-span-2">
-                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
                                     {{ 'addWeaponAsset.assignment.department' | translate }} <span class="text-[var(--color-error)]">*</span>
-                                </label>
+                                </span>
                                 <app-dropdown class="w-full" formControlName="assignToDepartmentId"
                                     [options]="departments" optionValue="id" [optionLabelFn]="departmentOptionLabel"
                                     [placeholderSelectable]="false"
@@ -304,9 +299,9 @@
                             </div>
 
                             <div *ngIf="getAssetFormGroup(i).get('assignMode')?.value === 'employee'" class="md:col-span-2">
-                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
                                     {{ 'addWeaponAsset.assignment.employee' | translate }} <span class="text-[var(--color-error)]">*</span>
-                                </label>
+                                </span>
                                 <app-dropdown class="w-full" formControlName="assignToEmployeeId"
                                     [options]="employeeDropdownOptions" optionValue="value"
                                     [placeholderSelectable]="false"
@@ -322,10 +317,10 @@
                             </div>
 
                             <div *ngIf="getAssetFormGroup(i).get('assignMode')?.value !== 'none'" class="md:col-span-2">
-                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                                <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="add-weapon-assignmentnotes-15">
                                     {{ 'addWeaponAsset.assignment.notes' | translate }}
                                 </label>
-                                <textarea formControlName="assignmentNotes" (input)="onFieldChange('assignmentNotes', i)" rows="2"
+                                <textarea id="add-weapon-assignmentnotes-15" formControlName="assignmentNotes" (input)="onFieldChange('assignmentNotes', i)" rows="2"
                                     class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
                                     [class.border-[var(--color-error)]]="isFieldInvalid('assignmentNotes', i)"
                                     [placeholder]="'addWeaponAsset.assignment.notesPlaceholder' | translate"></textarea>
@@ -348,10 +343,10 @@
                     translate }}</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
                     <div>
-                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="add-weapon-deliveryreceipt-16">
                             {{ 'addWeaponAsset.deliveryReceipt' | translate }}
                         </label>
-                        <input type="text" formControlName="deliveryReceipt"
+                        <input id="add-weapon-deliveryreceipt-16" type="text" formControlName="deliveryReceipt"
                             class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
                             [class.border-[var(--color-error)]]="isFieldInvalid('deliveryReceipt')"
                             [placeholder]="'addWeaponAsset.enterDeliveryReceipt' | translate">
@@ -361,9 +356,9 @@
                     </div>
                     <!-- Attachments (Optional) -->
                     <div>
-                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                        <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
                             {{ 'common.attachments' | translate }} <span class="text-[var(--color-text-muted)] font-normal">({{ 'common.optional' | translate }})</span>
-                        </label>
+                        </span>
                         <div class="space-y-3">
                             <div class="relative flex items-center gap-2">
                                 <input type="file" #weaponAddFileInput (change)="onAttachmentChange($event)" multiple
@@ -439,9 +434,9 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Weapon Selection -->
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                        <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
                             {{ 'addWeaponAsset.weapon' | translate }} <span class="text-[var(--color-error)]">*</span>
-                        </label>
+                        </span>
                         <app-dropdown class="w-full" formControlName="itemId" [options]="availableWeapons"
                             optionValue="id" [optionLabelFn]="weaponOptionLabel"
                             (selectionChange)="onBulkWeaponSelected()"
@@ -452,21 +447,21 @@
 
                     <!-- Batch Number and Quantity in one row -->
                     <div>
-                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="add-weapon-batchnumber-19">
                             {{ 'addWeaponAsset.batchNumber' | translate }} <span class="text-[var(--color-error)]">*</span>
                         </label>
-                        <input type="text" formControlName="batchNumber"
+                        <input id="add-weapon-batchnumber-19" type="text" formControlName="batchNumber"
                             class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
                             [class.border-[var(--color-error)]]="!!(bulkForm.get('batchNumber')?.errors?.['required'] && bulkForm.get('batchNumber')?.touched)"
                             [placeholder]="'addWeaponAsset.enterBatchNumber' | translate">
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="add-weapon-quantity-20">
                             {{ 'addWeaponAsset.bulk.quantity' | translate }} <span
                                 class="text-[var(--color-error)]">*</span>
                         </label>
-                        <input type="number" formControlName="quantity" min="1" max="50000"
+                        <input id="add-weapon-quantity-20" type="number" formControlName="quantity" min="1" max="50000"
                             class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors">
                     </div>
                 </div>
@@ -505,46 +500,46 @@
 
                     <!-- Purchase Date -->
                     <div>
-                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="add-weapon-purchasedate-21">
                             {{ 'addWeaponAsset.purchaseDate' | translate }}
                         </label>
-                        <input type="date" formControlName="purchaseDate" [max]="getMaxDate()"
+                        <input id="add-weapon-purchasedate-21" type="date" formControlName="purchaseDate" [max]="getMaxDate()"
                             class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors">
                     </div>
 
                     <!-- Warranty Expiry Date -->
                     <div>
-                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="add-weapon-warrantyexpirydate-22">
                             {{ 'addWeaponAsset.warrantyExpiryDate' | translate }}
                         </label>
-                        <input type="date" formControlName="warrantyExpiryDate"
+                        <input id="add-weapon-warrantyexpirydate-22" type="date" formControlName="warrantyExpiryDate"
                             class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors">
                     </div>
 
                     <!-- Purchase Price -->
                     <div>
-                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="add-weapon-purchaseprice-23">
                             {{ 'addWeaponAsset.purchasePrice' | translate }}
                         </label>
-                        <input type="number" formControlName="purchasePrice" min="0" step="0.01"
+                        <input id="add-weapon-purchaseprice-23" type="number" formControlName="purchasePrice" min="0" step="0.01"
                             class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
                             [placeholder]="'addWeaponAsset.enterPurchasePrice' | translate">
                     </div>
 
                     <!-- Notes -->
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="add-weapon-notes-24">
                             {{ 'addWeaponAsset.notes' | translate }}
                         </label>
-                        <textarea formControlName="notes" rows="3"
+                        <textarea id="add-weapon-notes-24" formControlName="notes" rows="3"
                             class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
                             [placeholder]="'addWeaponAsset.notesPlaceholder' | translate"></textarea>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                        <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
                             {{ 'addWeaponAsset.supplier' | translate }}
-                        </label>
+                        </span>
                         <app-dropdown class="w-full" formControlName="supplierId"
                             [options]="suppliers" optionValue="id" [optionLabelFn]="lookupOptionLabel"
                             [placeholderSelectable]="true"
@@ -552,9 +547,9 @@
                         </app-dropdown>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                        <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
                             {{ 'addWeaponAsset.manufacturer' | translate }}
-                        </label>
+                        </span>
                         <app-dropdown class="w-full" formControlName="manufacturerId"
                             [options]="manufacturers" optionValue="id" [optionLabelFn]="lookupOptionLabel"
                             [placeholderSelectable]="true"
@@ -562,9 +557,9 @@
                         </app-dropdown>
                     </div>
                     <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                        <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
                             {{ 'addWeaponAsset.primaryPurpose' | translate }}
-                        </label>
+                        </span>
                         <app-dropdown class="w-full" formControlName="primaryPurposId"
                             [options]="getPrimaryPurposeOptionsForBulk()" optionValue="id" [optionLabelFn]="lookupOptionLabel"
                             [placeholderSelectable]="true"
@@ -584,19 +579,19 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
                     <!-- Delivery Receipt -->
                     <div>
-                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="add-weapon-deliveryreceipt-28">
                             {{ 'addWeaponAsset.deliveryReceipt' | translate }}
                         </label>
-                        <input type="text" formControlName="deliveryReceipt"
+                        <input id="add-weapon-deliveryreceipt-28" type="text" formControlName="deliveryReceipt"
                             class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
                             [placeholder]="'addWeaponAsset.enterDeliveryReceipt' | translate">
                     </div>
 
                     <!-- Attachments (Optional) -->
                     <div>
-                        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                        <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
                             {{ 'common.attachments' | translate }} <span class="text-[var(--color-text-muted)] font-normal">({{ 'common.optional' | translate }})</span>
-                        </label>
+                        </span>
                         <div class="space-y-3">
                             <div class="relative flex items-center gap-2">
                                 <input type="file" #bulkCommonFileInput (change)="onAttachmentChange($event)" multiple

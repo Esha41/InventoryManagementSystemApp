@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable, forkJoin, timer, switchMap, of } from 'rxjs';
+import { Observable, timer, switchMap, of } from 'rxjs';
+import { take } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { InventoryService } from '@inventory/services/inventory.service';
 import { AssetService } from '@assets/services/asset.service';
@@ -89,11 +90,9 @@ export class WarehouseInventoryCrudService {
     const filesItemId = detail.itemId;
     return this.inventoryService.update(inventory.id, finalUpdateInventoryDto, files, filesItemId)
       .pipe(
-        switchMap((updatedInventory: InventoryDto) => {
+        switchMap((_updatedInventory: InventoryDto) => {
           // Show success message
-          this.translateService.get(['toast.inventoryUpdated', 'toast.success']).subscribe(translations => {
-            this.toastService.success(translations['toast.inventoryUpdated'], translations['toast.success']);
-          });
+          this.showSuccessToastKeys('toast.inventoryUpdated', 'toast.success');
 
           // Wait a bit to ensure backend transaction is committed, then reload fresh data
           return timer(500).pipe(
@@ -128,9 +127,7 @@ export class WarehouseInventoryCrudService {
       .pipe(
         switchMap((inventory) => {
           if (!inventory) {
-            this.translateService.get(['toast.inventoryNotFound', 'toast.error']).subscribe(translations => {
-              this.toastService.error(translations['toast.inventoryNotFound'], translations['toast.error']);
-            });
+            this.showErrorToastKeys('toast.inventoryNotFound', 'toast.error');
             return of({
               success: false,
               error: 'Inventory not found'
@@ -145,9 +142,7 @@ export class WarehouseInventoryCrudService {
             return this.inventoryService.delete(inventory.id)
               .pipe(
                 switchMap(() => {
-                  this.translateService.get(['toast.inventoryDeleted', 'toast.success']).subscribe(translations => {
-                    this.toastService.success(translations['toast.inventoryDeleted'], translations['toast.success']);
-                  });
+                  this.showSuccessToastKeys('toast.inventoryDeleted', 'toast.success');
                   return of({
                     success: true
                   } as DeleteInventoryDetailResult);
@@ -179,9 +174,7 @@ export class WarehouseInventoryCrudService {
             return this.inventoryService.update(inventory.id, updateDto)
               .pipe(
                 switchMap(() => {
-                  this.translateService.get(['toast.inventoryItemDeleted', 'toast.success']).subscribe(translations => {
-                    this.toastService.success(translations['toast.inventoryItemDeleted'], translations['toast.success']);
-                  });
+                  this.showSuccessToastKeys('toast.inventoryItemDeleted', 'toast.success');
                   return of({
                     success: true
                   } as DeleteInventoryDetailResult);
@@ -206,12 +199,11 @@ export class WarehouseInventoryCrudService {
     return this.assetService.delete(assetId)
       .pipe(
         switchMap(() => {
-          this.translateService.get(['toast.success', 'warehouseInventory.assetDeleted']).subscribe(translations => {
-            this.toastService.success(
-              translations['warehouseInventory.assetDeleted'] || 'Asset deleted successfully',
-              translations['toast.success']
-            );
-          });
+          this.showSuccessToastKeysWithFallback(
+            'warehouseInventory.assetDeleted',
+            'toast.success',
+            'Asset deleted successfully'
+          );
           return of({
             success: true
           } as DeleteAssetResult);
@@ -290,22 +282,65 @@ export class WarehouseInventoryCrudService {
   }
 
   private showDeleteAssetError(error?: string): void {
-    this.translateService.get(['toast.error', 'warehouseInventory.failedToDeleteAsset']).subscribe(t => {
-      this.toastService.error(
-        error || t['warehouseInventory.failedToDeleteAsset'] || 'Failed to delete asset',
-        t['toast.error']
-      );
-    });
+    this.translateService
+      .get(['toast.error', 'warehouseInventory.failedToDeleteAsset'])
+      .pipe(take(1))
+      .subscribe(t => {
+        this.toastService.error(
+          error || t['warehouseInventory.failedToDeleteAsset'] || 'Failed to delete asset',
+          t['toast.error']
+        );
+      });
   }
 
   private showToastFromKeys(messageKey: string, overrideMessage?: string, error?: unknown): void {
-    this.translateService.get([messageKey, 'toast.error']).subscribe(t => {
-      const msg = overrideMessage
-        || (error !== undefined
-          ? ErrorHandler.extractAndTranslateErrorMessage(error, t[messageKey], this.translateService)
-          : t[messageKey]);
-      this.toastService.error(msg, t['toast.error']);
-    });
+    this.translateService
+      .get([messageKey, 'toast.error'])
+      .pipe(take(1))
+      .subscribe(t => {
+        const msg = overrideMessage
+          || (error !== undefined
+            ? ErrorHandler.extractAndTranslateErrorMessage(error, t[messageKey], this.translateService)
+            : t[messageKey]);
+        this.toastService.error(msg, t['toast.error']);
+      });
+  }
+
+  private showSuccessToastKeys(messageKey: string, titleKey: string): void {
+    this.translateService
+      .get([messageKey, titleKey])
+      .pipe(take(1))
+      .subscribe(translations => {
+        this.toastService.success(translations[messageKey], translations[titleKey]);
+      });
+  }
+
+  private showErrorToastKeys(messageKey: string, titleKey: string): void {
+    this.translateService
+      .get([messageKey, titleKey])
+      .pipe(take(1))
+      .subscribe(translations => {
+        this.toastService.error(translations[messageKey], translations[titleKey]);
+      });
+  }
+
+  private showSuccessToastKeysWithFallback(messageKey: string, titleKey: string, fallbackBody: string): void {
+    this.translateService
+      .get([messageKey, titleKey])
+      .pipe(take(1))
+      .subscribe(translations => {
+        this.toastService.success(translations[messageKey] || fallbackBody, translations[titleKey]);
+      });
+  }
+
+  private showErrorToast(error: unknown, defaultMsg: string): void {
+    const msg = ErrorHandler.extractAndTranslateErrorMessage(error, defaultMsg, this.translateService);
+    this.translateService
+      .get('toast.error')
+      .pipe(take(1))
+      .subscribe(translations => {
+        this.toastService.error(msg, translations['toast.error']);
+      });
   }
 }
 

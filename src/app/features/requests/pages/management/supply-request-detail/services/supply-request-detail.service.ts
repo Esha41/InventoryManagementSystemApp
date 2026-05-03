@@ -17,7 +17,6 @@ import { BaseRequestDto, WorkflowApprovalStep } from '@models/workflow-approval.
 import { SupplyRequestDetail, OrderItem } from '@models/supply-request.model';
 import { mapOrderToRequestDetail, applySuggestionToItems, capOrderItemDischargeToApprovedQuantity } from '../../utils/supply-request.mapper';
 import { mapLotDetailsToLotItems } from '@utils/lot.utils';
-import { mapWorkflowStepsToApprovalSteps } from '@requests/utils/approval-workflow.utils';
 import { mapApprovalHistory, mapRequestStatus } from '@utils/request-mapper.utils';
 import { ConfigService } from '@services/config.service';
 import { ToastService } from '@services/toast.service';
@@ -181,6 +180,44 @@ export class SupplyRequestDetailService {
         return this.supplyService.getSupplySuggestion(orderId).pipe(
           map((suggestion) => ({ suggestion, existingSupply: null }))
         );
+      })
+    );
+  }
+
+  /**
+   * Initial page load after `loadRequestDetail`: draft check + suggestion application or loading lots from draft supply.
+   * Mutates `requestDetail` in place (same semantics as legacy component switchMap).
+   */
+  applyInitialSuggestionsToRequestDetail(
+    orderId: number,
+    requestDetail: SupplyRequestDetail
+  ): Observable<LoadSuggestionsResult> {
+    return this.loadSuggestionsWithDraftCheck(orderId).pipe(
+      switchMap(({ suggestion, existingSupply }) => {
+        const hasEmptySuggestions = !suggestion.itemSuggestions || suggestion.itemSuggestions.length === 0;
+        const hasExistingSupply =
+          !!existingSupply && !!existingSupply.supplyDetails && existingSupply.supplyDetails.length > 0;
+
+        if (hasEmptySuggestions && hasExistingSupply && existingSupply) {
+          return this.loadLotsForExistingSelections(
+            requestDetail,
+            existingSupply.supplyDetails,
+            existingSupply.id
+          ).pipe(map(() => ({ suggestion, existingSupply })));
+        }
+
+        this.applySuggestions(requestDetail, suggestion);
+        if (existingSupply?.supplyDetails?.length) {
+          const { notFoundCount } = this.restoreExistingSelections(
+            requestDetail,
+            existingSupply.supplyDetails
+          );
+          if (notFoundCount > 0) {
+            this.config.log(`${notFoundCount} previously selected lots are no longer available`);
+          }
+        }
+
+        return of({ suggestion, existingSupply });
       })
     );
   }
@@ -398,7 +435,7 @@ export class SupplyRequestDetailService {
     };
 
     return this.supplyService.create(createSupplyDto).pipe(
-      tap((supplyId: number) => {
+      tap((_supplyId: number) => {
         const message = this.translate.instant('supplyRequestDetail.dischargeProcessedSuccessfully', {
           count: supplyDetails.length
         });
@@ -500,6 +537,30 @@ export class SupplyRequestDetailService {
    */
   getSupplySuggestion(orderId: number): Observable<OrderSupplySuggestionDto> {
     return this.supplyService.getSupplySuggestion(orderId);
+  }
+
+  /**
+   * User-triggered suggestion refresh (“suggest for all” UX). Mutates `requestDetail` and shows result toasts on success paths.
+   * Caller should handle failures + loading flags (stream errors propagate from HTTP).
+   */
+  applyInteractiveSupplySuggestion(
+    orderId: number,
+    requestDetail: SupplyRequestDetail
+  ): Observable<OrderSupplySuggestionDto> {
+    return this.getSupplySuggestion(orderId).pipe(
+      tap((suggestion) => {
+        this.applySuggestions(requestDetail, suggestion);
+        if (suggestion.canFulfillCompletely) {
+          const message = this.translate.instant('supplyRequestDetail.suggestionsLoadedAllFulfilled');
+          const title = this.translate.instant('toast.success');
+          this.toastService.success(message, title);
+        } else {
+          const message = this.translate.instant('supplyRequestDetail.suggestionsLoadedInsufficient');
+          const title = this.translate.instant('toast.warning');
+          this.toastService.warning(message, title);
+        }
+      })
+    );
   }
 
   /**

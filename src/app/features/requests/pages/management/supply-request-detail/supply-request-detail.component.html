@@ -46,37 +46,37 @@
           <div *ngIf="isRequestInfoExpanded" class="px-6 pb-6">
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                   {{ 'supplyRequestDetail.orderNo' | translate }}
-                </label>
+                </span>
                 <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ requestDetail.issueNo }}</p>
               </div>
 
               <div>
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                   {{ 'supplyRequestDetail.requestType' | translate }}
-                </label>
+                </span>
                 <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ requestDetail.requestType }}</p>
               </div>
 
               <div>
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                   {{ 'supplyRequestDetail.requesterName' | translate }}
-                </label>
+                </span>
                 <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ resolveRequesterName() }}</p>
               </div>
 
               <div>
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                   {{ 'supplyRequestDetail.departmentName' | translate }}
-                </label>
+                </span>
                 <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ resolveDepartmentName() }}</p>
               </div>
 
               <div>
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                   {{ 'supplyRequestDetail.priority' | translate }}
-                </label>
+                </span>
                 <p class="text-sm mt-1 font-semibold" [ngClass]="{
                 'text-red-600': mapOrderPriorityToString(requestDetail.priority) === 'Critical' || mapOrderPriorityToString(requestDetail.priority) === 'VeryUrgent',
                 'text-orange-600': mapOrderPriorityToString(requestDetail.priority) === 'Urgent',
@@ -87,25 +87,25 @@
               <!-- Reason / Usage Purpose removed here to avoid duplication with workflow-approval and other views -->
 
               <div *ngIf="orderData?.requestPurposeNotes" class="col-span-2">
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                   {{ 'common.requestPurposeNotes' | translate }}
-                </label>
+                </span>
                 <div class="mt-1 p-3 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
                   <p class="text-sm text-[var(--color-text)] font-medium">{{ orderData?.requestPurposeNotes }}</p>
                 </div>
               </div>
 
               <div *ngIf="orderData?.usageLocation">
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                   {{ 'supplyRequestDetail.usageLocation' | translate }}
-                </label>
+                </span>
                 <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ orderData?.usageLocation }}</p>
               </div>
 
               <div *ngIf="orderData?.usageDateFrom">
-                <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+                <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
                   {{ 'supplyRequestDetail.usageDate' | translate }}
-                </label>
+                </span>
                 <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
                   {{ formatDate(orderData?.usageDateFrom) }}
                   <span *ngIf="orderData?.usageTimeFrom" class="ms-2">{{ formatTimeToMilitary(orderData?.usageTimeFrom)

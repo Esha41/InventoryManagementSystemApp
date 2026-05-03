@@ -25,11 +25,11 @@
           </h4>
           <!-- Roles -->
           <div class="mb-4">
-            <label
+            <span
               class="block text-sm font-semibold text-[var(--color-text)] mb-2"
             >
               {{ "stockNotificationSettings.roles" | translate }}
-            </label>
+            </span>
             <app-dropdown
               class="w-full"
               formControlName="rolesIds"
@@ -50,11 +50,11 @@
 
           <!-- Users -->
           <div>
-            <label
+            <span
               class="block text-sm font-semibold text-[var(--color-text)] mb-2"
             >
               {{ "stockNotificationSettings.users" | translate }}
-            </label>
+            </span>
             <app-dropdown
               class="w-full"
               formControlName="usersIds"
@@ -97,11 +97,11 @@
 
           <!-- Date and Time -->
           <div class="mb-4">
-            <label
+            <span
               class="block text-sm font-semibold text-[var(--color-text)] mb-2"
             >
               {{ "stockNotificationSettings.dateAndTime" | translate }}
-            </label>
+            </span>
             <div
               class="relative min-h-[52px] w-full px-3 border-2 border-[var(--color-border)] rounded-xl text-sm bg-[var(--color-background)] text-[var(--color-text)] hover:bg-[var(--color-background-hover)] cursor-pointer transition-all focus-within:border-[var(--color-brand)] focus-within:ring-2 focus-within:ring-[var(--color-brand)]/25"
               (click)="openDateTimePicker(dateTimePicker)"

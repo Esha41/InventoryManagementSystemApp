@@ -12,8 +12,8 @@
       </div>
     </div>
     <div class="assets-bulk-select">
-      <label class="assets-bulk-label">{{ 'weaponSupplyReview.selectCount' | translate }}</label>
-      <input type="number" [(ngModel)]="bulkSelectCount" [min]="0" [max]="getMaxSelectableCount()"
+      <label class="assets-bulk-label" for="item-asset-selection-fld-1-1">{{ 'weaponSupplyReview.selectCount' | translate }}</label>
+      <input id="item-asset-selection-fld-1-1" type="number" [(ngModel)]="bulkSelectCount" [min]="0" [max]="getMaxSelectableCount()"
         (blur)="applyBulkSelect()" (keyup.enter)="applyBulkSelect()" class="assets-bulk-input">
       <button type="button" (click)="applyBulkSelect()" class="assets-bulk-btn">
         {{ 'weaponSupplyReview.apply' | translate }}

@@ -42,20 +42,20 @@
 
           <!-- Schedule Name -->
           <div>
-            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="scheduled-report-form-schedulename-1">
               {{ 'scheduledReports.scheduleName' | translate }} <span class="text-[var(--color-error)]">*</span>
             </label>
-            <input type="text" [(ngModel)]="formData.scheduleName" name="scheduleName" required
+            <input id="scheduled-report-form-schedulename-1" type="text" [(ngModel)]="formData.scheduleName" name="scheduleName" required
               [placeholder]="'scheduledReports.scheduleNamePlaceholder' | translate"
               class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-background)] text-[var(--color-text)]" />
           </div>
 
           <!-- Report Selection -->
           <div>
-            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="scheduled-report-form-reportid-2">
               {{ 'scheduledReports.report' | translate }} <span class="text-[var(--color-error)]">*</span>
             </label>
-            <select [(ngModel)]="formData.reportId" name="reportId" required
+            <select id="scheduled-report-form-reportid-2" [(ngModel)]="formData.reportId" name="reportId" required
               class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-background)] text-[var(--color-text)]">
               <option value="">{{ 'common.select' | translate }}</option>
               <option *ngFor="let report of reports" [value]="report.id">{{ report.reportName }}</option>
@@ -64,10 +64,10 @@
 
           <!-- Output Format -->
           <div>
-            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="scheduled-report-form-outputformat-3">
               {{ 'scheduledReports.outputFormat' | translate }} <span class="text-[var(--color-error)]">*</span>
             </label>
-            <select [(ngModel)]="formData.outputFormat" name="outputFormat" required
+            <select id="scheduled-report-form-outputformat-3" [(ngModel)]="formData.outputFormat" name="outputFormat" required
               class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-background)] text-[var(--color-text)]">
               <option *ngFor="let format of outputFormats" [value]="format.value">{{ format.label }}</option>
             </select>
@@ -82,9 +82,9 @@
 
           <!-- Frequency -->
           <div>
-            <label class="block text-sm font-medium text-[var(--color-text)] mb-3">
+            <span class="block text-sm font-medium text-[var(--color-text)] mb-3">
               {{ 'scheduledReports.frequency' | translate }} <span class="text-[var(--color-error)]">*</span>
-            </label>
+            </span>
             <div class="flex flex-wrap gap-4">
               <label *ngFor="let freq of frequencies" class="flex items-center gap-2 cursor-pointer">
                 <input type="radio" [(ngModel)]="formData.frequency" name="frequency" [value]="freq.value"
@@ -97,10 +97,10 @@
 
           <!-- Weekly Day Selector -->
           <div *ngIf="formData.frequency === 'Weekly'">
-            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="scheduled-report-form-dayofweek-5">
               {{ 'scheduledReports.dayOfWeek' | translate }} <span class="text-[var(--color-error)]">*</span>
             </label>
-            <select [(ngModel)]="formData.dayOfWeek" name="dayOfWeek" required
+            <select id="scheduled-report-form-dayofweek-5" [(ngModel)]="formData.dayOfWeek" name="dayOfWeek" required
               class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-background)] text-[var(--color-text)]">
               <option *ngFor="let day of daysOfWeek" [value]="day.value">{{ day.label }}</option>
             </select>
@@ -108,10 +108,10 @@
 
           <!-- Monthly Day Selector -->
           <div *ngIf="formData.frequency === 'Monthly'">
-            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="scheduled-report-form-dayofmonth-6">
               {{ 'scheduledReports.dayOfMonth' | translate }} <span class="text-[var(--color-error)]">*</span>
             </label>
-            <select [(ngModel)]="formData.dayOfMonth" name="dayOfMonth" required
+            <select id="scheduled-report-form-dayofmonth-6" [(ngModel)]="formData.dayOfMonth" name="dayOfMonth" required
               class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-background)] text-[var(--color-text)]">
               <option *ngFor="let day of daysOfMonth" [value]="day">{{ day }}</option>
             </select>
@@ -119,10 +119,10 @@
 
           <!-- Time of Day -->
           <div>
-            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="scheduled-report-form-timeofday-7">
               {{ 'scheduledReports.timeOfDay' | translate }} <span class="text-[var(--color-error)]">*</span>
             </label>
-            <input type="time" [(ngModel)]="formData.timeOfDay" name="timeOfDay" required
+            <input id="scheduled-report-form-timeofday-7" type="time" [(ngModel)]="formData.timeOfDay" name="timeOfDay" required
               class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-background)] text-[var(--color-text)]" />
           </div>
         </div>
@@ -154,10 +154,10 @@
           <!-- Add Recipient Form -->
           <div *ngIf="showRecipientForm" class="p-4 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)] space-y-3">
             <div>
-              <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="scheduled-report-form-userid-8">
                 {{ 'scheduledReports.selectUser' | translate }}
               </label>
-              <select [(ngModel)]="recipientForm.userId" name="userId"
+              <select id="scheduled-report-form-userid-8" [(ngModel)]="recipientForm.userId" name="userId"
                 class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-background)] text-[var(--color-text)]">
                 <option value="">{{ 'scheduledReports.selectUser' | translate }}</option>
                 <option *ngFor="let user of users" [value]="user.id">{{ user.name }} ({{ user.email }})</option>
@@ -165,20 +165,20 @@
             </div>
 
             <!-- <div>
-              <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="scheduled-report-form-emailaddress-9">
                 {{ 'scheduledReports.emailAddress' | translate }}
               </label>
-              <input type="email" [(ngModel)]="recipientForm.emailAddress" name="emailAddress"
+              <input id="scheduled-report-form-emailaddress-9" type="email" [(ngModel)]="recipientForm.emailAddress" name="emailAddress"
                 [placeholder]="'scheduledReports.emailPlaceholder' | translate"
                 [disabled]="!!recipientForm.userId"
                 class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-background)] text-[var(--color-text)] disabled:opacity-50" />
             </div> -->
 
             <div>
-              <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="scheduled-report-form-recipienttype-10">
                 {{ 'scheduledReports.recipientType' | translate }}
               </label>
-              <select [(ngModel)]="recipientForm.recipientType" name="recipientType"
+              <select id="scheduled-report-form-recipienttype-10" [(ngModel)]="recipientForm.recipientType" name="recipientType"
                 class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-background)] text-[var(--color-text)]">
                 <option *ngFor="let type of recipientTypes" [value]="type.value">{{ type.label }}</option>
               </select>
@@ -214,20 +214,20 @@
 
           <!-- Email Subject -->
           <div>
-            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="scheduled-report-form-emailsubject-11">
               {{ 'scheduledReports.emailSubject' | translate }}
             </label>
-            <input type="text" [(ngModel)]="formData.emailSubject" name="emailSubject"
+            <input id="scheduled-report-form-emailsubject-11" type="text" [(ngModel)]="formData.emailSubject" name="emailSubject"
               [placeholder]="'scheduledReports.emailSubjectPlaceholder' | translate"
               class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-background)] text-[var(--color-text)]" />
           </div>
 
           <!-- Email Body -->
           <div>
-            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="scheduled-report-form-emailbody-12">
               {{ 'scheduledReports.emailBody' | translate }}
             </label>
-            <textarea [(ngModel)]="formData.emailBody" name="emailBody" rows="4"
+            <textarea id="scheduled-report-form-emailbody-12" [(ngModel)]="formData.emailBody" name="emailBody" rows="4"
               [placeholder]="'scheduledReports.emailBodyPlaceholder' | translate"
               class="w-full px-4 py-2 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-background)] text-[var(--color-text)]"></textarea>
           </div>

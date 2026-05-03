@@ -1,9 +1,9 @@
 <!-- Table Selection -->
 <app-card>
   <div>
-    <label class="block text-sm font-semibold text-[var(--color-text)] mb-3">
+    <span class="block text-sm font-semibold text-[var(--color-text)] mb-3">
       {{ 'lookupManagement.selectTable' | translate }}
-    </label>
+    </span>
     <!-- Shared Dropdown Component -->
     <app-dropdown [options]="lookupTables" optionLabel="displayNameKey"
       [placeholder]="'lookupManagement.selectTablePlaceholder' | translate" [(ngModel)]="selectedTable"

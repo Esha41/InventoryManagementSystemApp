@@ -261,7 +261,7 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
         .subscribe({
           next: () => {
             const itemName = this.lookupManagementService.getLookupItemName(this.selectedLookupItem);
-            this.translateService.get(['toast.success', 'lookupManagement.deleteItem']).subscribe(translations => {
+            this.translateService.get(['toast.success', 'lookupManagement.deleteItem']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
               this.toastService.success(
                 `"${itemName}" ${translations['lookupManagement.deleteItem'] || 'deleted'} successfully`,
                 translations['toast.success']
@@ -276,7 +276,7 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
             const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to delete employee');
             this.lookupErrorMessage = errorMessage;
             this.cdr.markForCheck();
-            this.translateService.get(['toast.error']).subscribe(translations => {
+            this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
               this.toastService.error(
                 errorMessage,
                 translations['toast.error']
@@ -307,7 +307,7 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
         next: (success) => {
           if (success) {
             const itemName = this.lookupManagementService.getLookupItemName(this.selectedLookupItem);
-            this.translateService.get(['toast.success', 'lookupManagement.deleteItem']).subscribe(translations => {
+            this.translateService.get(['toast.success', 'lookupManagement.deleteItem']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
               this.toastService.success(
                 `"${itemName}" ${translations['lookupManagement.deleteItem'] || 'deleted'} successfully`,
                 translations['toast.success']
@@ -323,7 +323,7 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
           const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to delete lookup item');
           this.lookupErrorMessage = errorMessage;
           this.cdr.markForCheck();
-          this.translateService.get(['toast.error']).subscribe(translations => {
+          this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.error(
               errorMessage,
               translations['toast.error']
@@ -351,7 +351,7 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
     operation
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (item) => {
+        next: (_item) => {
           const isCreate = this.lookupModalMode === 'create';
           const itemName = this.lookupManagementService.getLookupItemName(dto);
 
@@ -380,7 +380,7 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
           this.lookupErrorMessage = errorMessage;
           this.cdr.markForCheck();
 
-          this.translateService.get(['toast.error']).subscribe(translations => {
+          this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.error(
               errorMessage,
               translations['toast.error']

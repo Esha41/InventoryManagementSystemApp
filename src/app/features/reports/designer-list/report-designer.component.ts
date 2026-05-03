@@ -410,6 +410,7 @@ export class ReportDesignerComponent implements OnInit {
 
   onRolesSelected(roleIds: string[]): void {
     if (this.reportToMakePublic) {
+      this.showRoleDialog = false;
       this.loading = true;
       // Update roles for the published report (keep it published, just update roles)
       this.reportService.setReportPublic(this.reportToMakePublic.id, true, roleIds)
@@ -440,7 +441,6 @@ export class ReportDesignerComponent implements OnInit {
               );
             }
           }
-          this.showRoleDialog = false;
           this.reportToMakePublic = null;
           this.selectedRoleIds = [];
         });
@@ -514,7 +514,7 @@ export class ReportDesignerComponent implements OnInit {
   updatePagination(): void {
     this.totalItems = this.filteredReports.length;
     const startIndex = (this.currentPage - 1) * this.rowsPerPage;
-    const endIndex = startIndex + this.rowsPerPage;
+    const _endIndex = startIndex + this.rowsPerPage;
     // For now, just use filteredReports directly
     // In real implementation, you'd slice here
   }

@@ -22,7 +22,7 @@ import { LoadingStateComponent } from '@components/index';
   ],
   templateUrl: './devexpress-designer.component.html'
 })
-export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit {
+export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly ArrowLeft = ArrowLeft;
   readonly ArrowRight = ArrowRight;
 
@@ -262,17 +262,17 @@ export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit 
         const text = i.textContent?.trim().toLowerCase() || '';
         const root = i.closest('.dxrd-menu-item') || i.parentElement;
   
-        if (this.isCreateMode && text === 'save') {
-          root && ((root as HTMLElement).style.display = 'none');
-        }
-  
-        if (!this.isCreateMode && text === 'save as') {
-          root && ((root as HTMLElement).style.display = 'none');
+        if (this.isCreateMode && text === 'save' && root) {
+          (root as HTMLElement).style.display = 'none';
         }
 
-        if (!this.isCreateMode && text === 'save') {
-          root && ((root as HTMLElement).style.display = '');
-}
+        if (!this.isCreateMode && text === 'save as' && root) {
+          (root as HTMLElement).style.display = 'none';
+        }
+
+        if (!this.isCreateMode && text === 'save' && root) {
+          (root as HTMLElement).style.display = '';
+        }
       });
   
       clearInterval(timer);

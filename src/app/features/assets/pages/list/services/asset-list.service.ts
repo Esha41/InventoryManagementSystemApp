@@ -19,7 +19,6 @@ import {
   AssetColumnFilters,
   createEmptyColumnFilters
 } from '@models/asset-list.model';
-import { AssetDto } from '@models/asset.model';
 import { AmmunitionReadDto } from '@models/ammunition.model';
 import { WeaponDto } from '@models/weapon.model';
 import { ExplosiveDto } from '@models/explosive.model';

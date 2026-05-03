@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
+import { take } from 'rxjs/operators';
+import { ErrorHandler } from '@utils/error-handler.utils';
 import { ExcelColumn, ExcelService } from '@services/excel.service';
 import { ToastService } from '@services/toast.service';
 import { ItemInventorySummaryDto, ItemType } from '@models/inventory.model';
@@ -35,8 +37,7 @@ export class InventoryDashboardExportService {
 
   exportItemSummariesToExcel(items: ItemInventorySummaryDto[], context: InventoryDashboardExportContext): void {
     if (!items?.length) {
-      // Match existing export services style.
-      this.toastService.warning('No data available to export');
+      this.showWarningToast('common.noData');
       return;
     }
 
@@ -57,13 +58,38 @@ export class InventoryDashboardExportService {
         includeTimestamp: true
       });
 
-      this.translate.get(['common.exportSuccess', 'toast.success']).subscribe(t => {
-        this.toastService.success(t['common.exportSuccess'], t['toast.success']);
-      });
-    } catch (err) {
-      // Match existing export services style.
-      this.toastService.error('Export failed');
+      this.showSuccessToast();
+    } catch (_err: unknown) {
+      this.showErrorToast(_err, 'Export failed');
     }
+  }
+
+  private showSuccessToast(messageKey = 'common.exportSuccess', titleKey = 'toast.success'): void {
+    this.translate
+      .get([messageKey, titleKey])
+      .pipe(take(1))
+      .subscribe(t => {
+        this.toastService.success(t[messageKey], t[titleKey]);
+      });
+  }
+
+  private showWarningToast(messageKey: string, titleKey = 'toast.warning'): void {
+    this.translate
+      .get([messageKey, titleKey])
+      .pipe(take(1))
+      .subscribe(t => {
+        this.toastService.warning(t[messageKey], t[titleKey]);
+      });
+  }
+
+  private showErrorToast(error: unknown, defaultMsg: string): void {
+    const msg = ErrorHandler.extractAndTranslateErrorMessage(error, defaultMsg, this.translate);
+    this.translate
+      .get('toast.error')
+      .pipe(take(1))
+      .subscribe(t => {
+        this.toastService.error(msg, t['toast.error']);
+      });
   }
 
   private buildItemColumns(activeTab: InventoryDashboardExportContext['activeTab']): ExcelColumn[] {

@@ -47,7 +47,7 @@ export class AssignmentModalComponent {
   @Input() errorMessage: string | null = null;
 
   @Output() save = new EventEmitter<void>();
-  @Output() cancel = new EventEmitter<void>();
+  @Output() assignmentDismissed = new EventEmitter<void>();
   @Output() departmentChange = new EventEmitter<number | string | null>();
   @Output() itemSelectChange = new EventEmitter<number>();
   @Output() ammunitionChange = new EventEmitter<number[]>();
@@ -95,7 +95,7 @@ export class AssignmentModalComponent {
   }
 
   onCancel(): void {
-    this.cancel.emit();
+    this.assignmentDismissed.emit();
   }
 
   onDepartmentChange(value: number | string | null): void {

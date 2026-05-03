@@ -7,18 +7,18 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- Name -->
       <div class="flex items-center gap-4">
-        <label class="text-sm font-bold text-[var(--color-text)] min-w-[100px]">{{ 'newIssueRequest.name' | translate
+        <label class="text-sm font-bold text-[var(--color-text)] min-w-[100px]" for="review-form-fld-1-1">{{ 'newIssueRequest.name' | translate
           }}</label>
-        <input type="text" [ngModel]="requesterName"
+        <input id="review-form-fld-1-1" type="text" [ngModel]="requesterName"
           [placeholder]="'newIssueRequest.requesterNamePlaceholder' | translate" readonly
           class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
       </div>
 
       <!-- Comments -->
       <div class="flex items-center gap-4">
-        <label class="text-sm font-bold text-[var(--color-text)] min-w-[100px]">{{ 'newIssueRequest.comments' |
+        <label class="text-sm font-bold text-[var(--color-text)] min-w-[100px]" for="review-form-fld-2-2">{{ 'newIssueRequest.comments' |
           translate }}</label>
-        <input type="text" [ngModel]="requesterComments"
+        <input id="review-form-fld-2-2" type="text" [ngModel]="requesterComments"
           [placeholder]="'newIssueRequest.commentsNonePlaceholder' | translate" readonly
           class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
       </div>
@@ -32,26 +32,26 @@
     <div class="space-y-6">
       <!-- Order Type -->
       <div class="flex items-center gap-4">
-        <label class="text-sm font-bold text-[var(--color-text)] min-w-[150px]">{{ 'newIssueRequest.orderType' |
+        <label class="text-sm font-bold text-[var(--color-text)] min-w-[150px]" for="review-form-fld-3-3">{{ 'newIssueRequest.orderType' |
           translate }}</label>
-        <input type="text" [ngModel]="orderType" [placeholder]="'newIssueRequest.orderTypePlaceholder' | translate"
+        <input id="review-form-fld-3-3" type="text" [ngModel]="orderType" [placeholder]="'newIssueRequest.orderTypePlaceholder' | translate"
           readonly
           class="flex-1 max-w-xs px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
       </div>
 
       <!-- Order Priority -->
       <div class="flex items-center gap-4">
-        <label class="text-sm font-bold text-[var(--color-text)] min-w-[150px]">{{ 'newIssueRequest.orderPriority' |
+        <label class="text-sm font-bold text-[var(--color-text)] min-w-[150px]" for="review-form-fld-4-4">{{ 'newIssueRequest.orderPriority' |
           translate }}</label>
-        <input type="text" [ngModel]="getTranslatedPriority()"
+        <input id="review-form-fld-4-4" type="text" [ngModel]="getTranslatedPriority()"
           [placeholder]="'newIssueRequest.priorityPlaceholder' | translate" readonly
           class="flex-1 max-w-xs px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
       </div>
 
       <!-- Order Document -->
       <div class="flex items-center gap-4">
-        <label class="text-sm font-bold text-[var(--color-text)] min-w-[150px]">{{ 'newIssueRequest.orderDocument' |
-          translate }}</label>
+        <span class="text-sm font-bold text-[var(--color-text)] min-w-[150px]">{{ 'newIssueRequest.orderDocument' |
+          translate }}</span>
         <div class="flex-1 max-w-xs">
           <div *ngIf="files && files.length > 0" class="space-y-2">
             <div *ngFor="let file of files"
@@ -112,8 +112,8 @@
       <div class="space-y-6">
         <!-- From Reserve -->
         <div class="flex items-center">
-          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.fromReserve' |
-            translate }}</label>
+          <span class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.fromReserve' |
+            translate }}</span>
           <div class="flex gap-6 ms-4">
             <label class="flex items-center cursor-pointer">
               <div
@@ -140,35 +140,35 @@
 
         <!-- Use purpose -->
         <div class="flex items-center gap-4">
-          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.usePurpose' |
+          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]" for="review-form-fld-7-7">{{ 'newIssueRequest.usePurpose' |
             translate }}</label>
-          <input type="text" [ngModel]="usePurpose" [placeholder]="'newIssueRequest.usePurposePlaceholder' | translate"
+          <input id="review-form-fld-7-7" type="text" [ngModel]="usePurpose" [placeholder]="'newIssueRequest.usePurposePlaceholder' | translate"
             readonly
             class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
         </div>
 
         <!-- Usage Location -->
         <div class="flex items-center gap-4">
-          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.usageLocation' |
+          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]" for="review-form-fld-8-8">{{ 'newIssueRequest.usageLocation' |
             translate }}</label>
-          <input type="text" [ngModel]="usageLocation"
+          <input id="review-form-fld-8-8" type="text" [ngModel]="usageLocation"
             [placeholder]="'newIssueRequest.usageLocationPlaceholder' | translate" readonly
             class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
         </div>
 
         <!-- Number of Officers -->
         <div class="flex items-center gap-4" *ngIf="numberOfOfficers !== null && numberOfOfficers !== undefined">
-          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.numberOfOfficers'
+          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]" for="review-form-fld-9-9">{{ 'newIssueRequest.numberOfOfficers'
             | translate }}</label>
-          <input type="text" [ngModel]="numberOfOfficers" readonly
+          <input id="review-form-fld-9-9" type="text" [ngModel]="numberOfOfficers" readonly
             class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
         </div>
 
         <!-- Number of Other Ranks -->
         <div class="flex items-center gap-4" *ngIf="numberOfOtherRanks !== null && numberOfOtherRanks !== undefined">
-          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{
+          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]" for="review-form-fld-10-10">{{
             'newIssueRequest.numberOfOtherRanks' | translate }}</label>
-          <input type="text" [ngModel]="numberOfOtherRanks" readonly
+          <input id="review-form-fld-10-10" type="text" [ngModel]="numberOfOtherRanks" readonly
             class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
         </div>
       </div>
@@ -177,18 +177,18 @@
       <div class="space-y-6">
         <!-- Usage Date From -->
         <div class="flex items-center gap-4">
-          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.usageDateFrom' |
+          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]" for="review-form-fld-11-11">{{ 'newIssueRequest.usageDateFrom' |
             translate }}</label>
-          <input type="text" [ngModel]="getFormattedUsageDateFrom()"
+          <input id="review-form-fld-11-11" type="text" [ngModel]="getFormattedUsageDateFrom()"
             [placeholder]="'newIssueRequest.usageDatePlaceholder' | translate" readonly
             class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
         </div>
 
         <!-- Usage Date To -->
         <div class="flex items-center gap-4" *ngIf="usageDateTo">
-          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.usageDateTo' |
+          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]" for="review-form-fld-12-12">{{ 'newIssueRequest.usageDateTo' |
             translate }}</label>
-          <input type="text" [ngModel]="getFormattedUsageDateTo()"
+          <input id="review-form-fld-12-12" type="text" [ngModel]="getFormattedUsageDateTo()"
             [placeholder]="'newIssueRequest.usageDateToPlaceholder' | translate" readonly
             class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
         </div>

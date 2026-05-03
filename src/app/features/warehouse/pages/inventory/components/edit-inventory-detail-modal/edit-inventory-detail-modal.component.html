@@ -23,10 +23,10 @@
 
     <!-- Lot Number -->
     <div>
-      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="edit-inventory-detail-modal-lot-1">
         {{ 'editInventoryDetail.lotNumber' | translate }} <span class="text-[var(--color-error)]">*</span>
       </label>
-      <input type="text" formControlName="lot" maxlength="64" autocomplete="off"
+      <input id="edit-inventory-detail-modal-lot-1" type="text" formControlName="lot" maxlength="64" autocomplete="off"
         class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
         [class.border-[var(--color-error)]]="detailForm.get('lot')?.invalid && detailForm.get('lot')?.touched"
         [placeholder]="'editInventoryDetail.enterLotNumber' | translate" />
@@ -37,10 +37,10 @@
 
     <!-- Item Quantity -->
     <div>
-      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="edit-inventory-detail-modal-originalquantity-2">
         {{ 'editInventoryDetail.itemQuantity' | translate }} <span class="text-[var(--color-error)]">*</span>
       </label>
-      <input type="number" formControlName="originalQuantity" min="1"
+      <input id="edit-inventory-detail-modal-originalquantity-2" type="number" formControlName="originalQuantity" min="1"
         class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
         [class.border-[var(--color-error)]]="detailForm.get('originalQuantity')?.invalid && detailForm.get('originalQuantity')?.touched"
         [placeholder]="'editInventoryDetail.totalQuantity' | translate" />
@@ -51,28 +51,28 @@
 
     <!-- Batch No -->
     <div>
-      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="edit-inventory-detail-modal-batchno-3">
         {{ 'editInventoryDetail.batchNo' | translate }}
       </label>
-      <input type="text" formControlName="batchNo"
+      <input id="edit-inventory-detail-modal-batchno-3" type="text" formControlName="batchNo"
         class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
         [placeholder]="'editInventoryDetail.enterBatchNo' | translate" />
     </div>
 
     <!-- Expiry Date -->
     <div>
-      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="edit-inventory-detail-modal-expirydate-4">
         {{ 'editInventoryDetail.expiryDate' | translate }}
       </label>
-      <input type="text" formControlName="expiryDate" placeholder="DD/MM/YYYY"
+      <input id="edit-inventory-detail-modal-expirydate-4" type="text" formControlName="expiryDate" placeholder="DD/MM/YYYY"
         class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all" />
     </div>
 
     <!-- Ready For Issue -->
     <div>
-      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+      <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'editInventoryDetail.readyForIssue' | translate }}
-      </label>
+      </span>
       <app-dropdown class="w-full" formControlName="readyForIssue" [options]="readyForIssueOptions"
         [translateLabels]="true" [showSearch]="false" [placeholderSelectable]="false" [placeholderValue]="null"
         placeholder="{{ 'editInventoryDetail.readyForIssue' | translate }}">
@@ -81,9 +81,9 @@
 
     <!-- Supplier -->
     <div>
-      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+      <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'editInventoryDetail.supplier' | translate }}
-      </label>
+      </span>
       <app-dropdown class="w-full" formControlName="supplierId" [options]="suppliers" optionValue="id"
         [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false" [placeholderValue]="null"
         placeholder="{{ 'editInventoryDetail.selectSupplier' | translate }}">
@@ -92,9 +92,9 @@
 
     <!-- Manufacturer -->
     <div>
-      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+      <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'editInventoryDetail.manufacturer' | translate }}
-      </label>
+      </span>
       <app-dropdown class="w-full" formControlName="manufacturerId" [options]="manufacturers" optionValue="id"
         [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false" [placeholderValue]="null"
         placeholder="{{ 'editInventoryDetail.selectManufacturer' | translate }}">
@@ -103,9 +103,9 @@
 
     <!-- Country -->
     <div>
-      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+      <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'editInventoryDetail.country' | translate }}
-      </label>
+      </span>
       <app-dropdown class="w-full" formControlName="countryId" [options]="countries" optionValue="id"
         [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false" [placeholderValue]="null"
         placeholder="{{ 'editInventoryDetail.selectCountry' | translate }}">
@@ -114,9 +114,9 @@
 
     <!-- Primary purpose (ammunition / explosive; options from catalog item) -->
     <div *ngIf="showPrimaryPurposeSection">
-      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+      <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'addInventory.primaryPurpose' | translate }}
-      </label>
+      </span>
       <app-dropdown class="w-full" formControlName="primaryPurposId" [options]="getPrimaryPurposeOptions()"
         optionValue="id" [optionLabelFn]="primaryPurposeOptionLabel" [placeholderSelectable]="false" [placeholderValue]="null"
         placeholder="{{ 'addInventory.selectPrimaryPurpose' | translate }}">
@@ -127,23 +127,23 @@
     <div class="mb-4">
       <div class="grid grid-cols-1 gap-4 items-start">
         <div>
-          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="edit-inventory-detail-modal-deliveryreceipt-10">
             {{ 'addInventory.deliveryReceipt' | translate }}
           </label>
-          <input type="text" formControlName="deliveryReceipt"
+          <input id="edit-inventory-detail-modal-deliveryreceipt-10" type="text" formControlName="deliveryReceipt"
             class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
             [placeholder]="'addInventory.enterDeliveryReceipt' | translate" />
         </div>
         <div>
-          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+          <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
             {{ 'common.attachments' | translate }} <span class="text-[var(--color-text-muted)] font-normal">({{ 'common.optional' | translate }})</span>
-          </label>
+          </span>
           <div class="space-y-3">
             <div class="relative flex items-center gap-2">
               <input type="file" #invEditFileInput (change)="onAttachmentChange($event)" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" class="hidden">
-              <label (click)="invEditFileInput.click()" class="px-4 py-2 rounded-lg border-0 text-sm font-semibold bg-[var(--color-brand)]/10 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20 cursor-pointer transition-all">
+              <span (click)="invEditFileInput.click()" class="px-4 py-2 rounded-lg border-0 text-sm font-semibold bg-[var(--color-brand)]/10 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20 cursor-pointer transition-all">
                 {{ 'common.chooseFiles' | translate }}
-              </label>
+              </span>
               <span class="text-sm text-[var(--color-text-muted)] flex-1">
                 <span *ngIf="!selectedFiles.length">{{ 'common.noFileChosen' | translate }}</span>
                 <span *ngIf="selectedFiles.length">{{ selectedFiles.length }} {{ selectedFiles.length === 1 ? ('common.file' | translate) : ('common.files' | translate) }}</span>
@@ -200,48 +200,48 @@
 
       <!-- Invoice Number -->
       <div class="mb-4">
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="edit-inventory-detail-modal-invoicenumber-13">
           {{ 'editInventoryDetail.invoiceNumber' | translate }}
         </label>
-        <input type="text" formControlName="invoiceNumber"
+        <input id="edit-inventory-detail-modal-invoicenumber-13" type="text" formControlName="invoiceNumber"
           class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
           [placeholder]="'editInventoryDetail.enterInvoiceNumber' | translate" />
       </div>
 
       <!-- Invoice Date -->
       <div class="mb-4">
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="edit-inventory-detail-modal-invoicedate-14">
           {{ 'editInventoryDetail.invoiceDate' | translate }}
         </label>
-        <input type="text" formControlName="invoiceDate" placeholder="DD/MM/YYYY"
+        <input id="edit-inventory-detail-modal-invoicedate-14" type="text" formControlName="invoiceDate" placeholder="DD/MM/YYYY"
           class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all" />
       </div>
 
       <!-- Received Date -->
       <div class="mb-4">
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="edit-inventory-detail-modal-recieveddate-15">
           {{ 'editInventoryDetail.receivedDate' | translate }}
         </label>
-        <input type="text" formControlName="recievedDate" placeholder="DD/MM/YYYY"
+        <input id="edit-inventory-detail-modal-recieveddate-15" type="text" formControlName="recievedDate" placeholder="DD/MM/YYYY"
           class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all" />
       </div>
 
       <!-- Contract Number -->
       <div class="mb-4">
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="edit-inventory-detail-modal-contractnumber-16">
           {{ 'editInventoryDetail.contractNumber' | translate }}
         </label>
-        <input type="text" formControlName="contractNumber"
+        <input id="edit-inventory-detail-modal-contractnumber-16" type="text" formControlName="contractNumber"
           class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
           [placeholder]="'editInventoryDetail.enterContractNumber' | translate" />
       </div>
 
       <!-- Notes -->
       <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="edit-inventory-detail-modal-notes-17">
           {{ 'editInventoryDetail.notes' | translate }}
         </label>
-        <textarea formControlName="notes" rows="3"
+        <textarea id="edit-inventory-detail-modal-notes-17" formControlName="notes" rows="3"
           class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all resize-none"
           [placeholder]="'editInventoryDetail.enterNotes' | translate"></textarea>
       </div>

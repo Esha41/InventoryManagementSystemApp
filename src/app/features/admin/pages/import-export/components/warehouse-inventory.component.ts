@@ -1,11 +1,10 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, Download, Upload, FileText } from 'lucide-angular';
 import { CardComponent } from '@components/card/card.component';
-import { ButtonComponent } from '@components/button/button.component';
 import { ImportDialogComponent } from '@components/import-dialog/import-dialog.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { LoadingStateComponent } from '@components/index';
@@ -329,7 +328,10 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
               const errorInfo = errorsByRow.get(rowNum);
               previewRows.push({
                 rowNumber: rowNum,
-                data: record,
+                data:
+                  typeof record === 'object' && record !== null
+                    ? (record as Record<string, unknown>)
+                    : {},
                 isValid: !errorInfo || errorInfo.errors.length === 0,
                 errors: errorInfo ? errorInfo.errors : []
               });
@@ -370,7 +372,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       });
   }
 
-  onPreviewConfirmed(validRows: PreviewRow[]): void {
+  onPreviewConfirmed(_validRows: PreviewRow[]): void {
     this.showPreviewModal = false;
     this.previewData = null;
 
@@ -682,7 +684,7 @@ export class WarehouseInventoryComponent implements OnInit, OnDestroy {
       });
     }
 
-    this.translateService.get(['common.exportSuccess', 'toast.success']).subscribe(translations => {
+    this.translateService.get(['common.exportSuccess', 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
       this.toastService.success(translations['common.exportSuccess'], translations['toast.success']);
     });
   }

@@ -2,7 +2,6 @@ import { Component, EventEmitter, Input, Output, signal, ViewChild, ElementRef, 
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Download, Upload, FileText, AlertCircle, Check, X } from 'lucide-angular';
-import { ButtonComponent } from '../button/button.component';
 
 @Component({
     selector: 'app-import-dialog',

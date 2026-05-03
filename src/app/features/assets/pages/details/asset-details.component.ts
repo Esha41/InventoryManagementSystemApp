@@ -81,7 +81,7 @@ export class AssetDetailsComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Error loading asset:', error);
           this.error = this.translateService.instant('assetDetails.failedToLoad') || 'Failed to load asset details';
-          this.translateService.get(['toast.error', 'assetDetails.failedToLoad']).subscribe(translations => {
+          this.translateService.get(['toast.error', 'assetDetails.failedToLoad']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.error(
               translations['assetDetails.failedToLoad'] || 'Failed to load asset details',
               translations['toast.error']

@@ -13,9 +13,9 @@
   <app-card *ngIf="!loadingMessages && messages.length > 0">
     <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
       <div class="w-full sm:w-auto sm:min-w-[200px] sm:max-w-xs">
-        <label class="mb-1.5 block text-xs font-medium text-[var(--color-text-muted)]">{{
+        <span class="mb-1.5 block text-xs font-medium text-[var(--color-text-muted)]">{{
           'helpCenter.messagesFilterStatus' | translate
-        }}</label>
+        }}</span>
         <app-dropdown
           [formControl]="statusFilter"
           [options]="statusFilterOptions()"
@@ -24,10 +24,10 @@
         </app-dropdown>
       </div>
       <div class="w-full min-w-0 flex-1 sm:max-w-md">
-        <label class="mb-1.5 block text-xs font-medium text-[var(--color-text-muted)]">{{
+        <label class="mb-1.5 block text-xs font-medium text-[var(--color-text-muted)]" for="help-center-messages-tab-fld-2-2">{{
           'helpCenter.messagesSearchLabel' | translate
         }}</label>
-        <input
+        <input id="help-center-messages-tab-fld-2-2"
           type="search"
           class="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--color-brand)_25%,transparent)]"
           [formControl]="searchQuery"

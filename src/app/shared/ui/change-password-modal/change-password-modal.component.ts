@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, X, Lock, Eye, EyeOff } from 'lucide-angular';
 import { ChangePasswordRequest } from '@models/change-password.model';
@@ -49,15 +49,15 @@ export class ChangePasswordModalComponent implements OnInit {
         });
     }
 
-    private passwordStrengthValidator(control: any): { [key: string]: boolean } | null {
-        const value = control.value;
+    private passwordStrengthValidator(control: AbstractControl): ValidationErrors | null {
+        const value = control.value as string | null | undefined;
         if (!value) {
             return null;
         }
 
         const hasLetter = /[a-zA-Z]/.test(value);
         const hasNumber = /[0-9]/.test(value);
-        const hasSymbol = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(value);
+        const hasSymbol = /[!@#$%^&*()_+\-=\\[\]{};':"|,./?]/.test(value);
 
         const valid = hasLetter && hasNumber && hasSymbol;
 

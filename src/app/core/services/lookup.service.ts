@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
+import {  HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { ApiService } from './api.service';
 import { LookupItem, CreateUpdateLookupDto, DepartmentDto, SupplierDto, ManufacturerDto, CountryDto, HccDto, NatureOptionDto } from '@models/lookup.model';
 import { DepotDto } from '@models/depot.model';
-import { APIOperationResponse } from '@models/api-response.model';
 import { PaginatedList, PagedListRequest } from '@models/pagination.model';
 import { ConfigService } from './config.service';
 
@@ -200,7 +199,7 @@ export class LookupService {
   /**
    * Clear cache for a specific lookup table (no-op for now, kept for backward compatibility)
    */
-  clearCacheFor(tableName: string): void {
+  clearCacheFor(_tableName: string): void {
     // No caching implemented yet, but method kept for backward compatibility
     // Future implementation can add caching here
   }

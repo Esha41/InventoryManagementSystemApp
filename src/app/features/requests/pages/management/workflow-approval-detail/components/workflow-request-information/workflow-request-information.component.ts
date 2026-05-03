@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
@@ -21,7 +21,7 @@ import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
   styleUrls: ['./workflow-request-information.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class WorkflowRequestInformationComponent implements OnDestroy {
+export class WorkflowRequestInformationComponent {
   readonly FileText = FileText;
   readonly Eye = Eye;
   readonly User = User;
@@ -35,10 +35,6 @@ export class WorkflowRequestInformationComponent implements OnDestroy {
     private translateService: TranslateService,
     private supplyServiceHelper: WorkflowApprovalSupplyService
   ) { }
-
-  ngOnDestroy(): void {
-    // Component cleanup if needed
-  }
 
   /**
    * Get localized value
@@ -78,8 +74,7 @@ export class WorkflowRequestInformationComponent implements OnDestroy {
         return 'text-red-600';
       case 'Critical':
         return 'text-red-600';
-      default:
-        // Fallback: try lowercase matching
+      default: {
         const priorityLower = priorityStr.toLowerCase().trim().replace(/\s+/g, '');
         if (priorityLower === 'normal' || priorityLower === '1') {
           return 'text-green-600';
@@ -91,6 +86,7 @@ export class WorkflowRequestInformationComponent implements OnDestroy {
           return 'text-red-600';
         }
         return 'text-gray-600';
+      }
     }
   }
 

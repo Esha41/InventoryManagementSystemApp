@@ -67,7 +67,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const skipBearer =
     skipAuth || shouldSkipBearerForSelectRole(req, pendingRoleSelectionToken);
 
-  let authReq = req.clone({
+  const authReq = req.clone({
     withCredentials: true,
     ...(token && !skipBearer
       ? { setHeaders: { Authorization: `Bearer ${token}` } }

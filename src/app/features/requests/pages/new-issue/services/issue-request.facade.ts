@@ -252,7 +252,11 @@ export class IssueRequestFacade {
   filterCartridges(): void { this.catalogOrchestrator.filterCartridges(this.catalogCtx); }
 
   onFilterSidebarChange(): void {
-    this.fromReserve !== 'No' ? this.filterCartridges() : this.requestServerRefilter();
+    if (this.fromReserve !== 'No') {
+      this.filterCartridges();
+    } else {
+      this.requestServerRefilter();
+    }
   }
 
   onClearFilters(): void { this.catalogOrchestrator.handleClearFilters(this.catalogCtx, this.catalogHooks); }

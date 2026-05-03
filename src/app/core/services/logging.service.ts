@@ -60,7 +60,7 @@ export class LoggingService {
     /**
      * Send logs to external service (placeholder for future implementation)
      */
-    private sendToExternalService(level: string, message: string, data?: unknown): void {
+    private sendToExternalService(_level: string, _message: string, _data?: unknown): void {
         // TODO: Implement integration with error tracking service
         // Example: Sentry.captureException, Application Insights, etc.
     }

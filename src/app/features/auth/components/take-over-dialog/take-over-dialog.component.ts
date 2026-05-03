@@ -13,6 +13,6 @@ export class TakeOverDialogComponent {
   @Input({ required: true }) existingSessionUser!: string;
   @Input({ required: true }) requestingUser!: string;
 
-  @Output() readonly confirm = new EventEmitter<void>();
-  @Output() readonly cancel = new EventEmitter<void>();
+  @Output() readonly takeOverConfirmed = new EventEmitter<void>();
+  @Output() readonly takeOverCancelled = new EventEmitter<void>();
 }

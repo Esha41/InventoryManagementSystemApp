@@ -5,6 +5,7 @@ import { ApiService } from './api.service';
 import { StorageService } from './storage.service';
 import { ConfigService } from './config.service';
 import { AuthSessionService } from './auth-session.service';
+import { AuthCrossTabSyncService } from './auth-cross-tab-sync.service';
 import { SessionHeartbeatService } from './session-heartbeat.service';
 import { TokenRefreshService } from './token-refresh.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
@@ -51,7 +52,8 @@ export class AuthFlowService {
     @Optional() @Inject(USER_PROFILE_PROVIDER) private profileProvider: IUserProfileProvider | null,
     private tokenRefresh: TokenRefreshService,
     private sessionHeartbeat: SessionHeartbeatService,
-    private session: AuthSessionService
+    private session: AuthSessionService,
+    private authCrossTab: AuthCrossTabSyncService
   ) {}
 
   generateCaptcha(): Observable<CaptchaResponse> {
@@ -145,7 +147,10 @@ export class AuthFlowService {
     );
   }
 
-  private handleLoginSuccess(response: LoginResponse): Observable<LoginResponse> {
+  private handleLoginSuccess(
+    response: LoginResponse,
+    options?: { notifyPeer?: boolean }
+  ): Observable<LoginResponse> {
     this.configService.log('Login successful');
 
     this.storageService.remove('role_selection_token');
@@ -216,16 +221,21 @@ export class AuthFlowService {
         this.session.clearSession();
         return throwError(() => new Error('Failed to load user profile. Please try logging in again.'));
       }),
-      tap(() => this.sessionHeartbeat.start())
+      tap(() => {
+        this.sessionHeartbeat.start();
+        if (options?.notifyPeer !== false) {
+          this.authCrossTab.notifyAuthenticatedSessionChanged();
+        }
+      })
     );
   }
 
   restoreSessionSilently(): Observable<boolean> {
-    if (this.session.isAuthenticated()) {
+    if (this.session.isAuthenticated() && !this.session.isTokenExpired()) {
       return of(true);
     }
     return this.tokenRefresh.getRefreshedLoginResponse().pipe(
-      switchMap(loginResponse => this.handleLoginSuccess(loginResponse)),
+      switchMap(loginResponse => this.handleLoginSuccess(loginResponse, { notifyPeer: false })),
       map(() => true),
       catchError(() => of(false))
     );
@@ -247,7 +257,10 @@ export class AuthFlowService {
         this.session.clearSession();
         return of(true);
       }),
-      finalize(() => this.session.setLogoutInProgress(false))
+      finalize(() => {
+        this.authCrossTab.notifyLoggedOut();
+        this.session.setLogoutInProgress(false);
+      })
     );
   }
 

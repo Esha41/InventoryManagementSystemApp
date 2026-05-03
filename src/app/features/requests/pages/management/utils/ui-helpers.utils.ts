@@ -3,8 +3,8 @@
  * Functions for UI-related operations like CSS classes, formatting, etc.
  */
 
+import { LucideIconData, CheckCircle, AlertTriangle, Clock, Package } from 'lucide-angular';
 import { formatDate } from '@utils/format.utils';
-import { CheckCircle, AlertTriangle, Clock, Package } from 'lucide-angular';
 import { OrderDto } from '@models/order.model';
 import { OrderItem } from '@models/supply-request.model';
 
@@ -31,7 +31,7 @@ export function formatDateForDisplay(date: Date | string | undefined): string {
 /**
  * Get approval status icon
  */
-export function getApprovalStatusIcon(status: string): any {
+export function getApprovalStatusIcon(status: string): LucideIconData {
   switch (status) {
     case 'Approved': return CheckCircle;
     case 'Rejected': return AlertTriangle;
@@ -45,7 +45,7 @@ export function getApprovalStatusIcon(status: string): any {
 /**
  * Get item type icon
  */
-export function getItemTypeIcon(type: string): any {
+export function getItemTypeIcon(_type: string): LucideIconData {
   return Package;
 }
 

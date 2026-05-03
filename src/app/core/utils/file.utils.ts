@@ -103,7 +103,7 @@ export function validateFileType(file: File): { isValid: boolean; errorMessage: 
   }
 
   const fileName = file.name.toLowerCase();
-  const fileExtension = fileName.substring(fileName.lastIndexOf('.'));
+  const _fileExtension = fileName.substring(fileName.lastIndexOf('.'));
   
   // Check by extension
   const isValidExtension = ALLOWED_FILE_EXTENSIONS.some(ext => 

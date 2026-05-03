@@ -18,12 +18,12 @@
     <div class="space-y-6">
       <!-- Display Mode: date is already set and not editing -->
       <div *ngIf="isAlreadySet && !isEditMode">
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
           {{ 'workflowApprovalDetail.deliveryDate' | translate }}
           <span class="ms-2 text-xs font-normal text-[var(--color-success)] bg-[var(--color-success)]/20 px-2 py-1 rounded">
             {{ 'workflowApprovalDetail.valueSet' | translate }}
           </span>
-        </label>
+        </span>
         <div class="relative min-h-[42px] rounded border border-[var(--color-border)] bg-[var(--color-background-active)] cursor-not-allowed">
           <div class="flex items-center px-3 py-2 gap-2">
             <span class="text-sm text-[var(--color-text)] flex-1">{{ deliveryDateDisplay }}</span>
@@ -45,10 +45,10 @@
 
       <!-- Edit Mode: date not set or user clicked Update (only when not approved) -->
       <div *ngIf="canChangeReturnDeliveryDate && (!isAlreadySet || isEditMode)">
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
           {{ 'workflowApprovalDetail.deliveryDate' | translate }}
           <span class="text-[var(--color-error)]">*</span>
-        </label>
+        </span>
         <div
           class="relative min-h-[42px] rounded border bg-[var(--color-background)] cursor-pointer border-[var(--color-border)] hover:border-[var(--color-brand)]/50"
           (click)="!processing && openDatePicker()">

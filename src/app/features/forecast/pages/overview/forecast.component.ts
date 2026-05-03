@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ElementRef, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { Chart, registerables } from 'chart.js';
@@ -14,7 +14,7 @@ Chart.register(...registerables);
   styleUrls: ['./forecast.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ForecastComponent implements OnInit, AfterViewInit {
+export class ForecastComponent implements AfterViewInit, OnDestroy {
   @ViewChild('weeklyIssuesChart') weeklyIssuesChart!: ElementRef<HTMLCanvasElement>;
   @ViewChild('monthlyPerformanceChart') monthlyPerformanceChart!: ElementRef<HTMLCanvasElement>;
   @ViewChild('ammunitionChart') ammunitionChart!: ElementRef<HTMLCanvasElement>;
@@ -22,9 +22,6 @@ export class ForecastComponent implements OnInit, AfterViewInit {
   @ViewChild('annualBudgetChart') annualBudgetChart!: ElementRef<HTMLCanvasElement>;
 
   private charts: Chart[] = [];
-
-  ngOnInit(): void {
-  }
 
   ngAfterViewInit(): void {
     this.createWeeklyIssuesChart();

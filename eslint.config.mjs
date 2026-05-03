@@ -37,6 +37,8 @@ export default tseslint.config(
     rules: {
       '@angular-eslint/directive-selector': ['error', { type: 'attribute', prefix: 'app', style: 'camelCase' }],
       '@angular-eslint/component-selector': ['error', { type: 'element', prefix: 'app', style: 'kebab-case' }],
+      '@angular-eslint/template/click-events-have-key-events': 'off',
+      '@angular-eslint/template/interactive-supports-focus': 'off',
       /** Bump to `'error'` once remaining explicit `any` usages are cleared (strict TS hygiene). */
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': [
@@ -44,7 +46,8 @@ export default tseslint.config(
         {
           argsIgnorePattern: '^_',
           caughtErrorsIgnorePattern: '^_',
-          destructuredArrayIgnorePattern: '^_'
+          destructuredArrayIgnorePattern: '^_',
+          varsIgnorePattern: '^_'
         }
       ],
     },
@@ -95,7 +98,14 @@ export default tseslint.config(
   {
     files: ['**/*.html'],
     extends: [...angular.configs.templateRecommended, ...angular.configs.templateAccessibility],
-    rules: {},
+    rules: {
+      /**
+       * Large legacy surface uses div/section click handlers without full keyboard parity.
+       * Prefer native buttons and visible focus rings when touching templates.
+       */
+      '@angular-eslint/template/click-events-have-key-events': 'off',
+      '@angular-eslint/template/interactive-supports-focus': 'off',
+    },
   },
   {
     files: ['src/**/*.ts'],

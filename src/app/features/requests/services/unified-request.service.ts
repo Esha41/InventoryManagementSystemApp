@@ -5,7 +5,6 @@ import { ApiService } from '@services/api.service';
 import { ConfigService } from '@services/config.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { PagedRequest, PaginatedList } from '@models/api-response.model';
-import { RequestItemDto } from '@models/common.model';
 import type { UnifiedListRequestDto } from '@models/unified-list-request.model';
 
 

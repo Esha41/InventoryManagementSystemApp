@@ -314,7 +314,7 @@
 
   <app-import-preview-dialog *ngIf="store.showPreviewModal() && store.previewData()" [previewData]="store.previewData()!"
     [assetType]="store.previewImportAssetType()"
-    (confirm)="orchestrator.onWarehousePreviewConfirmed()" (cancel)="orchestrator.onWarehousePreviewCancelled()">
+    (confirm)="orchestrator.onWarehousePreviewConfirmed()" (importCancelled)="orchestrator.onWarehousePreviewCancelled()">
   </app-import-preview-dialog>
 
   </ng-container>

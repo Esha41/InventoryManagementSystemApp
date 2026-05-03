@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { UserDelegationService } from '@admin/services/user-delegation.service';
 import { UserDelegation } from '@models/user-delegation';
-import { LucideAngularModule, Users, Calendar, User, AlertCircle, Filter, RefreshCw, ArrowRight, Ban, Network } from 'lucide-angular';
+import { LucideAngularModule, Users, Calendar, User, AlertCircle, Filter, ArrowRight, Ban, Network } from 'lucide-angular';
 import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 import { finalize } from 'rxjs/operators';
 import { ToastService } from '@services/toast.service';

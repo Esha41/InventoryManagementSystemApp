@@ -173,7 +173,7 @@ export class ImagePreviewTooltipComponent implements OnInit, OnDestroy {
     }
 
     // Create synthetic event for recalculation
-    const syntheticEvent = {
+    const _syntheticEvent = {
       target: this.currentImageElement,
       currentTarget: this.currentImageElement,
       ...({} as Partial<MouseEvent>)
@@ -186,8 +186,8 @@ export class ImagePreviewTooltipComponent implements OnInit, OnDestroy {
     const arrowSize = 10;
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    const scrollX = window.scrollX || window.pageXOffset;
-    const scrollY = window.scrollY || window.pageYOffset;
+    const _scrollX = window.scrollX || window.pageXOffset;
+    const _scrollY = window.scrollY || window.pageYOffset;
 
     // Get image element position
     const rect = (event.target as HTMLElement).getBoundingClientRect();

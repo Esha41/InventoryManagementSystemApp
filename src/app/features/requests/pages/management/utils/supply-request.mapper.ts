@@ -3,7 +3,7 @@
  * Functions for mapping OrderDto to SupplyRequestDetail and related operations
  */
 
-import { OrderDto, OrderRequestItemDto } from '@models/order.model';
+import { OrderDto } from '@models/order.model';
 import { SupplyRequestDetail, OrderItem } from '@models/supply-request.model';
 import { OrderSupplySuggestionDto } from '@requests/services/supply.service';
 import { formatDate } from '@utils/format.utils';
@@ -201,7 +201,7 @@ export function capOrderItemDischargeToApprovedQuantity(item: OrderItem): void {
     return;
   }
 
-  let sum = item.availableLots.reduce((s, lot) => s + (lot.selectedQuantity || 0), 0);
+  const sum = item.availableLots.reduce((s, lot) => s + (lot.selectedQuantity || 0), 0);
   const cap = item.approvedQuantity ?? 0;
 
   if (sum <= cap) {

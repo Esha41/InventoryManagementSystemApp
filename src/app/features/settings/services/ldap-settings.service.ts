@@ -89,7 +89,7 @@ export class LdapSettingsService {
           const status = httpError?.status;
 
           // Extract error message from HttpErrorResponse using ErrorHandler
-          let errorMessage = ErrorHandler.extractErrorMessage(error, 'Operation failed');
+          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Operation failed');
 
           // Determine translation key based on error status
           let translationKey = 'admin.ldapSettings.errors.updateFailed';

@@ -162,7 +162,7 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
         });
     }
 
-    private createItemFormGroup(index: number): FormGroup {
+    private createItemFormGroup(_index: number): FormGroup {
         return this.fb.group({
             serialNumber: ['', [Validators.maxLength(200)]],
             rfid: ['', [Validators.maxLength(500)]]
@@ -272,7 +272,7 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
                     // Clear session storage
                     this.storageService.remove('bulkAssetData');
 
-                    this.translateService.get(['toast.success', 'addWeaponAsset.successMessage']).subscribe(translations => {
+                    this.translateService.get(['toast.success', 'addWeaponAsset.successMessage']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
                         const message = translations['addWeaponAsset.successMessage'] || 'Weapon assets created successfully!';
                         const title = translations['toast.success'];
                         this.toastService.success(message, title);
@@ -308,7 +308,7 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
                     this.isProcessingBulk = false;
                     this.cdr.markForCheck();
 
-                    this.translateService.get(['toast.error']).subscribe(translations => {
+                    this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
                         this.toastService.error(errorMsg, translations['toast.error']);
                     });
                 }

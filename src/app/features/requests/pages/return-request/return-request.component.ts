@@ -8,7 +8,6 @@ import { LucideAngularModule, Plus, X, ChevronDown, Search, Send } from 'lucide-
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { ReturnService } from '@requests/services/return.service';
 import { CreateReturnDto } from '@models/return.model';
-import { CreateReturnItemDto } from '@models/request-item.model';
 import { LookupService } from '@services/lookup.service';
 import { AmmunitionService } from '@assets/services/ammunition.service';
 import { WeaponService } from '@assets/services/weapon.service';
@@ -246,7 +245,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
           this.cdr.markForCheck();
         },
         error: () => {
-          this.translate.get(['toast.error', 'returnRequest.errors.failedToLoadDepartments']).subscribe((translations: Record<string, string>) => {
+          this.translate.get(['toast.error', 'returnRequest.errors.failedToLoadDepartments']).pipe(takeUntil(this.destroy$)).subscribe((translations: Record<string, string>) => {
             this.toastService.error(
               translations['returnRequest.errors.failedToLoadDepartments'] || 'Failed to load departments',
               translations['toast.error']
@@ -281,7 +280,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
           this.cdr.markForCheck();
         },
         error: () => {
-          this.translate.get(['toast.error', 'returnRequest.errors.failedToLoadUsers']).subscribe((translations: Record<string, string>) => {
+          this.translate.get(['toast.error', 'returnRequest.errors.failedToLoadUsers']).pipe(takeUntil(this.destroy$)).subscribe((translations: Record<string, string>) => {
             this.toastService.error(
               translations['returnRequest.errors.failedToLoadUsers'] || 'Failed to load users',
               translations['toast.error']
@@ -307,7 +306,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
           this.cdr.markForCheck();
         },
         error: () => {
-          this.translate.get(['toast.error', 'returnRequest.errors.failedToLoadRequestPurposes']).subscribe((translations: Record<string, string>) => {
+          this.translate.get(['toast.error', 'returnRequest.errors.failedToLoadRequestPurposes']).pipe(takeUntil(this.destroy$)).subscribe((translations: Record<string, string>) => {
             this.toastService.error(
               translations['returnRequest.errors.failedToLoadRequestPurposes'] || 'Failed to load request purposes',
               translations['toast.error']
@@ -344,7 +343,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
           this.cdr.markForCheck();
         },
         error: () => {
-          this.translate.get(['toast.error', 'returnRequest.errors.failedToLoadItems']).subscribe((translations: Record<string, string>) => {
+          this.translate.get(['toast.error', 'returnRequest.errors.failedToLoadItems']).pipe(takeUntil(this.destroy$)).subscribe((translations: Record<string, string>) => {
             this.toastService.error(
               translations['returnRequest.errors.failedToLoadItems'] || 'Failed to load items',
               translations['toast.error']
@@ -505,7 +504,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
     return String(optionValue) === String(itemId);
   }
 
-  onSendRequest(form: NgForm): void {
+  onSendRequest(_form: NgForm): void {
     this.isSubmitted = true;
     this.errors = {};
 
@@ -548,7 +547,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
       'returnRequest.confirmDialog.message',
       'common.yes',
       'common.cancel'
-    ]).subscribe((translations: Record<string, string>) => {
+    ]).pipe(takeUntil(this.destroy$)).subscribe((translations: Record<string, string>) => {
       this.confirmDialogTitle = translations['returnRequest.confirmDialog.title'] || 'Confirm Request';
       this.confirmDialogMessage = translations['returnRequest.confirmDialog.message'] || 'Are you sure you want to submit this return request?';
       this.confirmDialogConfirmText = translations['common.yes'] || 'Yes';
@@ -590,7 +589,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
     this.returnService.createReturn(createReturnDto, filesToUpload)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (returnId) => {
+        next: (_returnId) => {
           // Toast notification is handled by backend SignalR notification
           this.resetForm();
           this.isLoading = false;
@@ -602,7 +601,7 @@ export class ReturnRequestComponent implements OnInit, OnDestroy, AfterViewInit 
         error: (error: unknown) => {
           const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, 'Failed to create return request', this.translate);
 
-          this.translate.get(['toast.error']).subscribe((translations: Record<string, string>) => {
+          this.translate.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe((translations: Record<string, string>) => {
             this.toastService.error(errorMessage, translations['toast.error']);
           });
           this.isLoading = false;

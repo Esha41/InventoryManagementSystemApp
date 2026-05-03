@@ -400,7 +400,7 @@ export class AllowanceComponent implements OnInit, OnDestroy {
     return isValid;
   }
 
-  onSend(form: NgForm): void {
+  onSend(_form: NgForm): void {
     this.isSubmitted = true;
     if (!this.validateForm()) return;
 
@@ -445,11 +445,11 @@ export class AllowanceComponent implements OnInit, OnDestroy {
     this.apiService.post<void>(
       API_ENDPOINTS.ALLOWANCE.BULK,
       requestData
-    ).subscribe({
+    ).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.isLoading = false;
         this.cdr.markForCheck();
-        this.translateService.get(['allowance.success.sentSuccessfully', 'toast.success']).subscribe(translations => {
+        this.translateService.get(['allowance.success.sentSuccessfully', 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
           this.toastService.success(
             translations['allowance.success.sentSuccessfully'],
             translations['toast.success']
@@ -466,15 +466,19 @@ export class AllowanceComponent implements OnInit, OnDestroy {
         const err = error as { status?: number };
         if (err?.status === 403) {
           const forbiddenMessage = this.translateService.instant('allowance.errors.unauthorizedAccess');
-          this.translateService.get(['toast.error']).subscribe(translations => {
+          this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.error(forbiddenMessage, translations['toast.error']);
           });
           this.errors['submit'] = forbiddenMessage;
           return;
         }
 
-        const errorMessage = ErrorHandler.extractErrorMessage(error, this.translateService.instant('allowance.errors.failedToSend'));
-        this.translateService.get(['toast.error']).subscribe(translations => {
+        const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(
+          error,
+          this.translateService.instant('allowance.errors.failedToSend'),
+          this.translateService
+        );
+        this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
           this.toastService.error(errorMessage, translations['toast.error']);
         });
         this.errors['submit'] = errorMessage;
@@ -516,7 +520,7 @@ export class AllowanceComponent implements OnInit, OnDestroy {
   loadExistingAllowance(departmentId: number, year: number): void {
     const endpoint = API_ENDPOINTS.ALLOWANCE.BY_DEPARTMENT_AND_YEAR(departmentId, year);
     type AllowanceResponseData = AllowanceItemByDepartmentDto & { Items?: AllowanceItemDetailDto[] };
-    this.apiService.get<AllowanceResponseData>(endpoint).subscribe({
+    this.apiService.get<AllowanceResponseData>(endpoint).pipe(takeUntil(this.destroy$)).subscribe({
       next: (data) => {
         const items = data?.items ?? data?.Items ?? [];
 
@@ -535,7 +539,7 @@ export class AllowanceComponent implements OnInit, OnDestroy {
         const err = error as { status?: number };
         if (err?.status === 403) {
           const forbiddenMessage = this.translateService.instant('allowance.errors.unauthorizedAccess');
-          this.translateService.get(['toast.error']).subscribe(translations => {
+          this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.error(forbiddenMessage, translations['toast.error']);
           });
           this.cdr.markForCheck();
@@ -546,7 +550,7 @@ export class AllowanceComponent implements OnInit, OnDestroy {
           return;
         }
 
-        this.translateService.get(['toast.error', 'allowance.errors.failedToLoad']).subscribe(translations => {
+        this.translateService.get(['toast.error', 'allowance.errors.failedToLoad']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
           this.toastService.error(
             translations['allowance.errors.failedToLoad'] || 'Failed to load allowance data',
             translations['toast.error']

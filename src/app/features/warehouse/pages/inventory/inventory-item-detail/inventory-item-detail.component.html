@@ -110,18 +110,18 @@
         <div class="p-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
+              <span class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
                 {{ 'addInventory.deliveryReceipt' | translate }}
-              </label>
+              </span>
               <p class="text-sm font-medium text-[var(--color-text)]">
                 {{ inventoryDetail?.deliveryReceipt || '-' }}
               </p>
             </div>
 
             <div>
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
+              <span class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
                 {{ 'common.attachments' | translate }}
-              </label>
+              </span>
 
               <div *ngIf="deliveryReceiptFiles?.length; else noDeliveryReceiptFiles" class="space-y-2">
                 <div *ngFor="let f of deliveryReceiptFiles"
@@ -154,9 +154,9 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Invoice Number -->
             <div *ngIf="inventoryDetail?.invoiceNumber">
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
+              <span class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
                 {{ 'editInventoryDetail.invoiceNumber' | translate }}
-              </label>
+              </span>
               <p class="text-sm font-medium text-[var(--color-text)]">
                 {{ inventoryDetail?.invoiceNumber }}
               </p>
@@ -164,9 +164,9 @@
 
             <!-- Invoice Date -->
             <div *ngIf="inventoryDetail?.invoiceDate">
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
+              <span class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
                 {{ 'editInventoryDetail.invoiceDate' | translate }}
-              </label>
+              </span>
               <p class="text-sm font-medium text-[var(--color-text)]">
                 {{ formatDate(inventoryDetail?.invoiceDate) }}
               </p>
@@ -174,9 +174,9 @@
 
             <!-- Received Date -->
             <div *ngIf="inventoryDetail?.recievedDate">
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
+              <span class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
                 {{ 'editInventoryDetail.receivedDate' | translate }}
-              </label>
+              </span>
               <p class="text-sm font-medium text-[var(--color-text)]">
                 {{ formatDate(inventoryDetail?.recievedDate) }}
               </p>
@@ -185,9 +185,9 @@
 
             <!-- Contract Number -->
             <div>
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
+              <span class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
                 {{ 'editInventoryDetail.contractNumber' | translate }}
-              </label>
+              </span>
               <p class="text-sm font-medium text-[var(--color-text)]">
                 {{ inventoryDetail?.contractNumber || '-' }}
               </p>
@@ -195,9 +195,9 @@
 
             <!-- Notes -->
             <div *ngIf="inventoryDetail?.notes" class="md:col-span-2">
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
+              <span class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
                 {{ 'editInventoryDetail.notes' | translate }}
-              </label>
+              </span>
               <p class="text-sm text-[var(--color-text)] whitespace-pre-wrap">
                 {{ inventoryDetail?.notes }}
               </p>

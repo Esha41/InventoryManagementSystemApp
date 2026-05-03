@@ -9,7 +9,6 @@ import { OrderDto } from '@models/order.model';
 import { OrderSummary, OrderReportItem, OrderReportApprovalStep, WorkflowDetail } from '@models/order-report.model';
 import { mapOrderStatusFromApi } from '@utils/status.utils';
 import { mapOrderPriorityToString } from '@utils/priority.utils';
-import { formatDateShort } from '@utils/format.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
@@ -257,7 +256,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
 
 
 
-  private loadWorkflowDetails(order: OrderDto): void {
+  private loadWorkflowDetails(_order: OrderDto): void {
     this.workflowDetails = [];
   }
 

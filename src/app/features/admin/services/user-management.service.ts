@@ -191,7 +191,7 @@ export class UserManagementService {
    * Filter users by search term
    * @deprecated Use loadUsers with searchTerm instead
    */
-  filterUsers(users: BackendUserDto[], searchTerm: string): BackendUserDto[] {
+  filterUsers(users: BackendUserDto[], _searchTerm: string): BackendUserDto[] {
     // Logic moved to backend. This is kept for compatibility if needed or local filtering of small lists.
     // For now, return as is or implement client side if strictly required (not recommended with server pagination)
     return users;
@@ -329,21 +329,21 @@ export class UserManagementService {
   /**
    * Get total users count
    */
-  getTotalUsers(users: BackendUserDto[]): number {
+  getTotalUsers(_users: BackendUserDto[]): number {
     return this.userSummary.totalUsers;
   }
 
   /**
    * Get total active users count
    */
-  getTotalActiveUsers(users: BackendUserDto[]): number {
+  getTotalActiveUsers(_users: BackendUserDto[]): number {
     return this.userSummary.activeUsers;
   }
 
   /**
    * Get total inactive users count
    */
-  getTotalInactiveUsers(users: BackendUserDto[]): number {
+  getTotalInactiveUsers(_users: BackendUserDto[]): number {
     return this.userSummary.inactiveUsers;
   }
 

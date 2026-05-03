@@ -6,8 +6,7 @@
 import { 
   isDisplayableRequestStatus, 
   mapRequestStatusToCardStatus, 
-  getRequestStatusTranslationKey,
-  CardStatus 
+  getRequestStatusTranslationKey 
 } from './status.utils';
 
 // Re-export types and functions for convenience

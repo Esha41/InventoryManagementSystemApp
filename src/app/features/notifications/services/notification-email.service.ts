@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { take } from 'rxjs/operators';
 import { STORAGE_KEYS } from '@constants/app.constants';
 import { Notification } from '@notifications/models/notification.model';
 import { ConfigService } from '@services/config.service';
@@ -95,9 +96,7 @@ export class NotificationEmailService {
 
     if (!recipientEmail) {
       this.configService.logWarning('Cannot send email notification: user email not available');
-      this.translate.get(['toast.emailNotificationSkipped', 'toast.warning']).subscribe(translations => {
-        this.toastService.warning(translations['toast.emailNotificationSkipped'], translations['toast.warning']);
-      });
+      this.showEmailSkippedWarningToast();
       return;
     }
 
@@ -157,9 +156,7 @@ export class NotificationEmailService {
       },
       error: (error: unknown) => {
         this.configService.logError('Failed to send email notification', error);
-        this.translate.get(['toast.failedToSendEmailNotification', 'toast.error']).subscribe(translations => {
-          this.toastService.error(translations['toast.failedToSendEmailNotification'], translations['toast.error']);
-        });
+        this.showEmailSendFailedToast();
       }
     });
   }
@@ -402,5 +399,29 @@ export class NotificationEmailService {
       default:
         return `Status ${statusNum}`;
     }
+  }
+
+  private showEmailSkippedWarningToast(): void {
+    this.translate
+      .get(['toast.emailNotificationSkipped', 'toast.warning'])
+      .pipe(take(1))
+      .subscribe(translations => {
+        this.toastService.warning(
+          translations['toast.emailNotificationSkipped'],
+          translations['toast.warning']
+        );
+      });
+  }
+
+  private showEmailSendFailedToast(): void {
+    this.translate
+      .get(['toast.failedToSendEmailNotification', 'toast.error'])
+      .pipe(take(1))
+      .subscribe(translations => {
+        this.toastService.error(
+          translations['toast.failedToSendEmailNotification'],
+          translations['toast.error']
+        );
+      });
   }
 }

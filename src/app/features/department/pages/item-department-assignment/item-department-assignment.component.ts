@@ -447,7 +447,7 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
             this.facade.removeAssignmentFromCache(deletedId, departmentId);
             this.refreshDepartmentSummaries();
           } else {
-            this.translateService.get(['toast.failedToDeleteAssignment', 'toast.error']).subscribe((t: TranslationMap) => {
+            this.translateService.get(['toast.failedToDeleteAssignment', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe((t: TranslationMap) => {
               this.toastService.error(t['toast.failedToDeleteAssignment'], t['toast.error']);
             });
           }

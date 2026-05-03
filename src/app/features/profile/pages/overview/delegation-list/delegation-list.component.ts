@@ -150,7 +150,7 @@ export class DelegationListComponent implements OnInit {
                         this.loadDelegations();
                     }
                 },
-                error: (err) => {
+                error: (_err) => {
                     // On error also reload to be safe and sync state
                     this.loadPendingDelegations();
                     this.loadDelegations();
@@ -179,7 +179,7 @@ export class DelegationListComponent implements OnInit {
                         this.loadDelegations();
                     }
                 },
-                error: (err) => {
+                error: (_err) => {
                     // On error also reload to be safe and sync state
                     this.loadPendingDelegations();
                     this.loadDelegations();

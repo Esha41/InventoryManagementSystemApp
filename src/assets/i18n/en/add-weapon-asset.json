@@ -36,6 +36,7 @@
         "loadError": "Failed to load data. Please try again.",
         "createError": "Failed to create weapon asset. Please try again.",
         "successMessage": "Weapon assets created successfully!",
+        "multiRowSingleSubmitHint": "Saving will create assets from the first row only with this submission. Remove extra rows, or submit one row at a time if you need separate deliveries.",
         "noWeaponsAvailable": "No weapons available in catalog",
         "warehouse": "Warehouse",
         "serialNumberTaken": "This serial number is already assigned to another asset",

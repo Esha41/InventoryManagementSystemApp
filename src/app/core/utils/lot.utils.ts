@@ -2,6 +2,7 @@
  * Lot-related utility functions
  */
 
+// eslint-disable-next-line no-restricted-imports -- LotDetailDto lives with InventoryService today; move DTO to @models to drop this (tech debt).
 import { LotDetailDto } from '@inventory/services/inventory.service';
 import { LotItem } from '@models/supply-order.model';
 

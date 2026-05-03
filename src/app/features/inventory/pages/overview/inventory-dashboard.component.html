@@ -59,12 +59,12 @@
         (ordersAwaitingClick)="onOrdersAwaitingClick()">
       </app-inventory-dashboard-weapon-pipeline>
 
-      <!-- ── Item Summary Table ─────────────────────────────────────────── -->
-      <div class="w-full min-w-0 bg-[var(--color-background)] rounded-xl shadow-custom-sm border border-[var(--color-border)] overflow-hidden mb-6 md:mb-8">
+      <!-- ── Item Summary: same app-card + inner bordered table shell as asset list ── -->
+      <app-card [shadow]="true" class="mb-6 md:mb-8 w-full min-w-0 block">
 
         <!-- Section header -->
-        <div class="px-4 sm:px-6 py-4 border-b border-[var(--color-border)] flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-          <div>
+        <div class="pb-4 border-b border-[var(--color-border)] flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 min-w-0">
+          <div class="min-w-0">
             <h2 class="text-base sm:text-lg font-semibold text-[var(--color-text)]">
               {{ 'inventoryDashboard.itemSummary.title' | translate }}
             </h2>
@@ -72,8 +72,8 @@
               {{ 'inventoryDashboard.itemSummary.clickHint' | translate }}
             </p>
           </div>
-          <div class="shrink-0 flex flex-col items-end gap-2">
-            <div class="text-sm text-[var(--color-text-muted)] text-end">
+          <div class="shrink-0 flex flex-col items-stretch sm:items-end gap-2 w-full sm:w-auto min-w-0">
+            <div class="text-sm text-[var(--color-text-muted)] text-start sm:text-end">
               <span class="font-medium text-[var(--color-text)]">{{ filteredItemCount }}</span>
               {{ 'inventoryDashboard.itemSummary.items' | translate }}
               <span *ngIf="hasActiveTableFilters && itemSummaries.length !== filteredItemCount" class="block text-xs mt-0.5">
@@ -86,7 +86,7 @@
               type="button"
               (click)="onExport()"
               [disabled]="isLoading || isExporting || filteredItemCount === 0"
-              class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white bg-[var(--color-success)] hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              class="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white bg-[var(--color-success)] hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto sm:self-end">
               <lucide-angular [img]="FileDown" class="h-3.5 w-3.5"></lucide-angular>
               <span>{{ (isExporting ? 'common.exporting' : 'common.exportToExcel') | translate }}</span>
             </button>
@@ -94,12 +94,12 @@
         </div>
 
         <!-- ── Filters ───────────────────────────────────────────────────── -->
-        <div *ngIf="depots.length > 0 || itemSummaries.length > 0" class="px-4 sm:px-6 py-3 border-b border-[var(--color-border)] bg-[var(--color-background-muted)]/50">
+        <div *ngIf="depots.length > 0 || itemSummaries.length > 0" class="-mx-4 sm:-mx-6 px-4 sm:px-6 py-3 border-b border-[var(--color-border)] bg-[var(--color-background-muted)]/50">
           <div class="flex flex-col lg:flex-row flex-wrap gap-3 lg:items-end">
 
             <!-- Depot multi-select -->
             <div *ngIf="depots.length > 0" class="w-full min-w-[200px] lg:max-w-xs lg:flex-none">
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.depot' | translate }}</label>
+              <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.depot' | translate }}</span>
               <app-dropdown class="block w-full min-h-[42px]"
                 [(ngModel)]="selectedDepotIds"
                 (ngModelChange)="onDepotFilterChange($event)"
@@ -113,7 +113,7 @@
             <ng-container *ngIf="itemSummaries.length > 0">
               <!-- Item multi-select picker -->
               <div class="w-full min-w-[200px] lg:max-w-xs lg:flex-none">
-                <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.pickItem' | translate }}</label>
+                <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.pickItem' | translate }}</span>
                 <app-dropdown class="block w-full min-h-[42px]"
                   [(ngModel)]="selectedItemFilterIds"
                   (ngModelChange)="onItemPickFilterChange()"
@@ -126,7 +126,7 @@
 
               <!-- Text search -->
               <div class="w-full flex-1 min-w-0 sm:min-w-[200px]">
-                <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.search' | translate }}</label>
+                <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.search' | translate }}</span>
                 <div class="relative">
                   <span class="pointer-events-none absolute inset-y-0 start-0 z-[1] flex w-10 items-center justify-center text-[var(--color-text-muted)]" aria-hidden="true">
                     <lucide-angular [img]="Search" class="h-4 w-4 shrink-0"></lucide-angular>
@@ -140,7 +140,7 @@
 
               <!-- Caliber -->
               <div class="w-full min-w-[200px] lg:max-w-xs lg:flex-none">
-                <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.caliber' | translate }}</label>
+                <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.caliber' | translate }}</span>
                 <app-dropdown class="block w-full min-h-[42px]"
                   [(ngModel)]="caliberFilter"
                   (ngModelChange)="onCaliberFilterChange()"
@@ -157,7 +157,7 @@
 
               <!-- Item type (only shown in "All" tab) -->
               <div *ngIf="activeTab === 'all'" class="w-full min-w-[200px] lg:max-w-xs lg:flex-none">
-                <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.itemType' | translate }}</label>
+                <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.itemType' | translate }}</span>
                 <app-dropdown class="block w-full min-h-[42px]"
                   [(ngModel)]="itemTypeFilter"
                   (ngModelChange)="onItemTypeFilterChange()"
@@ -185,8 +185,8 @@
         </div>
 
         <!-- ── Tabs ──────────────────────────────────────────────────────── -->
-        <div *ngIf="itemSummaries.length > 0" class="px-4 sm:px-6 border-b border-[var(--color-border)]">
-          <nav class="flex gap-1 overflow-x-auto -mb-px" aria-label="Item type tabs">
+        <div *ngIf="itemSummaries.length > 0" class="-mx-4 sm:-mx-6 px-4 sm:px-6 border-b border-[var(--color-border)] min-w-0">
+          <nav class="flex gap-1 overflow-x-auto overflow-y-hidden -mb-px pb-px" aria-label="Item type tabs">
             <button *ngFor="let tab of [
               { id: 'all',        label: 'inventoryDashboard.tabs.all',        count: itemTypeCountMetrics.tabCounts.all },
               { id: 'ammunition', label: 'inventoryDashboard.tabs.ammunition',  count: itemTypeCountMetrics.tabCounts.ammunition },
@@ -210,13 +210,13 @@
         </div>
 
         <!-- Empty state (no data from API) -->
-        <div *ngIf="itemSummaries.length === 0" class="flex flex-col items-center justify-center py-16 text-center px-4">
+        <div *ngIf="itemSummaries.length === 0" class="flex flex-col items-center justify-center py-16 text-center px-4 mt-4 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)]">
           <lucide-angular [img]="Package" class="w-12 h-12 text-[var(--color-text-muted)] mb-3"></lucide-angular>
           <p class="text-[var(--color-text-muted)]">{{ 'inventoryDashboard.itemSummary.empty' | translate }}</p>
         </div>
 
         <!-- No rows match filters -->
-        <div *ngIf="itemSummaries.length > 0 && filteredItemCount === 0" class="flex flex-col items-center justify-center py-12 text-center px-4">
+        <div *ngIf="itemSummaries.length > 0 && filteredItemCount === 0" class="flex flex-col items-center justify-center py-12 text-center px-4 mt-4 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)]">
           <p class="text-[var(--color-text-muted)]">{{ 'inventoryDashboard.itemSummary.noFilterMatch' | translate }}</p>
           <button type="button" (click)="clearTableFilters()"
             class="mt-4 flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors w-full sm:w-auto justify-center">
@@ -225,7 +225,7 @@
           </button>
         </div>
 
-        <div *ngIf="itemSummaries.length > 0 && filteredItemCount > 0" class="w-full min-w-0 max-w-full">
+        <div *ngIf="itemSummaries.length > 0 && filteredItemCount > 0" class="w-full min-w-0 max-w-full mt-4 border border-[var(--color-border)] rounded-lg overflow-hidden">
         <app-inventory-item-summary-table
           [activeTab]="activeTab"
           [rows]="paginatedItemSummaries"
@@ -269,7 +269,7 @@
 
         <!-- Item table pagination -->
         <div *ngIf="itemSummaries.length > 0 && filteredItemCount > 0"
-          class="flex w-full min-w-0 flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 sm:px-6 py-4"
+          class="flex w-full min-w-0 flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 mt-4"
           [class.sm:flex-row-reverse]="isRTL">
           <app-rows-per-page [rowsPerPage]="itemRowsPerPage" [totalItems]="filteredItemCount"
             [visibleItems]="paginatedItemSummaries.length" (rowsPerPageChange)="onItemRowsPerPageChange($event)">
@@ -283,8 +283,8 @@
           </div>
         </div>
 
-      </div>
-      <!-- ── End Item Summary Table ──────────────────────────────────────── -->
+      </app-card>
+      <!-- ── End Item Summary ────────────────────────────────────────────── -->
 
     </ng-container>
 

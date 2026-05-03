@@ -20,7 +20,6 @@ import { CreateUpdateExplosiveDto } from '@models/explosive.model';
 import { AmmunitionReadDto } from '@models/ammunition.model';
 import { WeaponDto } from '@models/weapon.model';
 import { ExplosiveDto } from '@models/explosive.model';
-import { createInitialImageState } from '@utils/asset-list.state';
 import { ErrorHandler } from '@utils/error-handler.utils';
 
 export interface EditSaveEvent {
@@ -54,7 +53,7 @@ export class AssetListCrudHandlerService {
     setLoading: (v: boolean) => void,
     setImageState: (s: AssetImageState) => void,
     setModalState: (s: AssetModalState) => void,
-    loadAssets: () => void
+    _loadAssets: () => void
   ): void {
     const asset = assets.find(a => a.id === assetId);
     if (!asset) return;
@@ -121,7 +120,6 @@ export class AssetListCrudHandlerService {
     const id = parseInt(String(modalState.selectedAsset.id), 10);
     if (isNaN(id)) return;
 
-    const service = this.assetCrudService.getAssetService(activeTab);
     setLoading(true);
 
     this.assetCrudService.updateAsset(

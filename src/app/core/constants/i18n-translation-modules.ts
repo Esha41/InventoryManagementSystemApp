@@ -11,7 +11,6 @@ export const I18N_TRANSLATION_MODULES: readonly string[] = [
   'requests-workflowApproval',
   'requests-workflowReturnSummary',
   'requests-supplyRequestDetail',
-  'requests-supplyRequestManagement',
   'requests-entities',
   'requests-processReturn',
   'inventory-warehouse',

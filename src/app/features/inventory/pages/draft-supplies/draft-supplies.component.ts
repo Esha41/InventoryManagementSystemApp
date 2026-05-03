@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, ArrowRight } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { MonitoringService } from '@services/monitoring.service';
 import { DraftSupplyListItemDto } from '@models/inventory-dashboard-monitoring.model';
 import { ErrorHandler } from '@utils/error-handler.utils';
@@ -68,25 +69,19 @@ export class DraftSuppliesComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.route.queryParamMap.pipe(takeUntil(this.destroy$)).subscribe(q => {
-      const depotIds = q.getAll('depotIds').map(Number).filter(n => !Number.isNaN(n));
-      this.load(depotIds.length > 0 ? depotIds : undefined);
-    });
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  private load(depotIds?: number[]): void {
-    this.loading = true;
-    this.error = null;
-    this.cdr.markForCheck();
-
-    this.monitoringService
-      .getDraftSuppliesList(depotIds)
-      .pipe(takeUntil(this.destroy$))
+    this.route.queryParamMap
+      .pipe(
+        switchMap(q => {
+          const depotIds = q.getAll('depotIds').map(Number).filter(n => !Number.isNaN(n));
+          this.loading = true;
+          this.error = null;
+          this.cdr.markForCheck();
+          return this.monitoringService.getDraftSuppliesList(
+            depotIds.length > 0 ? depotIds : undefined
+          );
+        }),
+        takeUntil(this.destroy$)
+      )
       .subscribe({
         next: items => {
           this.rows = items ?? [];
@@ -100,6 +95,11 @@ export class DraftSuppliesComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         }
       });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   onBack(): void {

@@ -2,7 +2,7 @@ import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { RequestDetail } from '@models/workflow-approval.model';
-import { getRequestStatusBadgeClass, getPriorityBadgeClass } from '@utils/status-class.utils';
+import { getRequestStatusBadgeClass } from '@utils/status-class.utils';
 
 @Component({
     selector: 'app-request-summary-sidebar',

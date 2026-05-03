@@ -7,7 +7,6 @@ import { OrderDto } from '@models/order.model';
 import { mapOrderStatusFromApi } from '@utils/status.utils';
 import { mapOrderPriorityToString } from '@utils/priority.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
-import { getApprovalStatusBadgeClass } from '@utils/status-class.utils';
 import { TranslateService } from '@ngx-translate/core';
 
 /**

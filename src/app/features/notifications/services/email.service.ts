@@ -129,7 +129,7 @@ export class EmailService {
     const lines: string[] = [];
 
     switch (entityType.toLowerCase()) {
-      case 'order':
+      case 'order': {
         if (entity['orderNo'] || entity['requestNo']) {
           lines.push(`  Order Number: ${entity['orderNo'] || entity['requestNo'] || `#${entity['id']}`}`);
         }
@@ -157,8 +157,9 @@ export class EmailService {
           });
         }
         break;
+      }
 
-      case 'return':
+      case 'return': {
         if (entity['requestNo']) {
           lines.push(`  Return Number: ${entity['requestNo'] || `#${entity['id']}`}`);
         }
@@ -186,8 +187,9 @@ export class EmailService {
           });
         }
         break;
+      }
 
-      case 'discard':
+      case 'discard': {
         if (entity['requestNo']) {
           lines.push(`  Discard Number: ${entity['requestNo'] || `#${entity['id']}`}`);
         }
@@ -215,6 +217,7 @@ export class EmailService {
           });
         }
         break;
+      }
     }
 
     return lines;

@@ -4,7 +4,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, Download, Upload, FileText } from 'lucide-angular';
 import { CardComponent } from '@components/card/card.component';
-import { ButtonComponent } from '@components/button/button.component';
 import { ImportDialogComponent } from '@components/import-dialog/import-dialog.component';
 import { AmmunitionService } from '@assets/services/ammunition.service';
 import { WeaponService } from '@assets/services/weapon.service';
@@ -287,7 +286,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
       });
   }
 
-  onPreviewConfirmed(validRows: PreviewRow[]): void {
+  onPreviewConfirmed(_validRows: PreviewRow[]): void {
     this.showPreviewModal = false;
     this.previewData = null;
 
@@ -383,7 +382,7 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
       includeTimestamp: true
     });
 
-    this.translateService.get(['common.exportSuccess', 'toast.success']).subscribe(translations => {
+    this.translateService.get(['common.exportSuccess', 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
       this.toastService.success(translations['common.exportSuccess'], translations['toast.success']);
     });
   }

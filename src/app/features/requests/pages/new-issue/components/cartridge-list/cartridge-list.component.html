@@ -82,9 +82,9 @@
     </div>
     <!-- Select Type Tabs -->
     <div class="mb-4">
-      <label class="block text-sm font-semibold text-[var(--color-text)] mb-3">
+      <span class="block text-sm font-semibold text-[var(--color-text)] mb-3">
         {{ 'newIssueRequest.selectType' | translate }}
-      </label>
+      </span>
       <div class="bg-[var(--color-background)] rounded-lg p-1 shadow-sm border border-[var(--color-border)]">
         <nav class="flex gap-1" aria-label="Item Type Tabs">
           <button *ngFor="let option of itemTypeOptions" (click)="onItemTypeChange(option)" [ngClass]="{
@@ -110,7 +110,7 @@
     <ng-container *ngIf="selectedItemType === 'Ammunition'">
       <!-- Select Ammunition Type -->
       <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
+        <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
           <span>{{ 'newIssueRequest.selectAmmunitionType' | translate }}</span>
           <button *ngIf="selectedAmmunitionType" (click)="onAmmunitionTypeChange('')" type="button"
             class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
@@ -119,7 +119,7 @@
             </svg>
             <span>{{ 'common.clear' | translate }}</span>
           </button>
-        </label>
+        </span>
         <app-dropdown class="w-full" [ngModel]="selectedAmmunitionType" (ngModelChange)="onAmmunitionTypeChange($event)"
           [options]="ammunitionTypeOptions" optionLabel="label" optionValue="value" [translateLabels]="true"
           [placeholderSelectable]="false" [placeholderValue]="''"
@@ -129,7 +129,7 @@
 
       <!-- Select Bullet Diameter -->
       <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
+        <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
           <span>{{ 'newIssueRequest.selectBulletDiameter' | translate }}</span>
           <button *ngIf="selectedBulletDiameter" (click)="onBulletDiameterChange('')" type="button"
             class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
@@ -138,7 +138,7 @@
             </svg>
             <span>{{ 'common.clear' | translate }}</span>
           </button>
-        </label>
+        </span>
         <app-dropdown class="w-full" [ngModel]="selectedBulletDiameter" (ngModelChange)="onBulletDiameterChange($event)"
           [options]="bulletDiameters" [placeholderSelectable]="false" [placeholderValue]="''"
           placeholder="{{ 'newIssueRequest.selectBulletDiameter' | translate }}">
@@ -147,7 +147,7 @@
 
       <!-- Linked/Not Linked -->
       <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
+        <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
           <span>{{ 'newIssueRequest.linkedNotLinked' | translate }}</span>
           <button *ngIf="selectedLinked" (click)="onLinkedChange('')" type="button"
             class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
@@ -156,7 +156,7 @@
             </svg>
             <span>{{ 'common.clear' | translate }}</span>
           </button>
-        </label>
+        </span>
         <app-dropdown class="w-full" [ngModel]="selectedLinked" (ngModelChange)="onLinkedChange($event)"
           [options]="linkedOptions" optionLabel="label" optionValue="value" [translateLabels]="true"
           [placeholderSelectable]="false" [placeholderValue]="''"
@@ -166,7 +166,7 @@
 
       <!-- Nature Options -->
       <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
+        <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
           <span>{{ 'newIssueRequest.natureOptions' | translate }}</span>
           <button *ngIf="selectedNature" (click)="onNatureChange('')" type="button"
             class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
@@ -175,7 +175,7 @@
             </svg>
             <span>{{ 'common.clear' | translate }}</span>
           </button>
-        </label>
+        </span>
         <app-dropdown class="w-full" [ngModel]="selectedNature" (ngModelChange)="onNatureChange($event)"
           [options]="natureOptions" [placeholderSelectable]="false" [placeholderValue]="''"
           placeholder="{{ 'newIssueRequest.natureOptions' | translate }}">
@@ -184,7 +184,7 @@
 
       <!-- NSN Number -->
       <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between" for="cartridge-list-fld-6-6">
           <span>{{ 'newIssueRequest.nsn' | translate }}</span>
           <button *ngIf="selectedNSN" (click)="onNSNChange('')" type="button"
             class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
@@ -194,7 +194,7 @@
             <span>{{ 'common.clear' | translate }}</span>
           </button>
         </label>
-        <input type="text" [ngModel]="selectedNSN" (ngModelChange)="onNSNChange($event)"
+        <input id="cartridge-list-fld-6-6" type="text" [ngModel]="selectedNSN" (ngModelChange)="onNSNChange($event)"
           placeholder="{{ 'newIssueRequest.enterNSN' | translate }}"
           class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent placeholder:text-[var(--color-text-muted)]">
       </div>
@@ -203,7 +203,7 @@
     <!-- Weapon Filters -->
     <ng-container *ngIf="selectedItemType === 'Weapon'">
       <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
+        <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
           <span>{{ 'addAsset.weaponType' | translate }}</span>
           <button *ngIf="selectedWeaponType" (click)="onWeaponTypeChange('')" type="button"
             class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
@@ -212,7 +212,7 @@
             </svg>
             <span>{{ 'common.clear' | translate }}</span>
           </button>
-        </label>
+        </span>
         <app-dropdown class="w-full" [ngModel]="selectedWeaponType" (ngModelChange)="onWeaponTypeChange($event)"
           [options]="weaponTypeOptions" [translateLabels]="true" [optionLabel]="'label'" [optionValue]="'value'"
           [placeholderSelectable]="false" [placeholderValue]="''"
@@ -220,7 +220,7 @@
         </app-dropdown>
       </div>
       <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between" for="cartridge-list-fld-8-8">
           <span>{{ 'addAsset.caliber' | translate }}</span>
           <button *ngIf="selectedCaliber" (click)="onCaliberChange('')" type="button"
             class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
@@ -231,14 +231,14 @@
           </button>
         </label>
         <!-- Assuming caliber matches text input or dropdown, keeping simplified as input/dropdown driven by options -->
-        <input type="text" [ngModel]="selectedCaliber" (ngModelChange)="onCaliberChange($event)"
+        <input id="cartridge-list-fld-8-8" type="text" [ngModel]="selectedCaliber" (ngModelChange)="onCaliberChange($event)"
           placeholder="{{ 'addAsset.enterCaliber' | translate }}"
           class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent placeholder:text-[var(--color-text-muted)]">
       </div>
 
       <!-- NSN for Weapon too -->
       <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between" for="cartridge-list-fld-9-9">
           <span>{{ 'newIssueRequest.nsn' | translate }}</span>
           <button *ngIf="selectedNSN" (click)="onNSNChange('')" type="button"
             class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
@@ -248,7 +248,7 @@
             <span>{{ 'common.clear' | translate }}</span>
           </button>
         </label>
-        <input type="text" [ngModel]="selectedNSN" (ngModelChange)="onNSNChange($event)"
+        <input id="cartridge-list-fld-9-9" type="text" [ngModel]="selectedNSN" (ngModelChange)="onNSNChange($event)"
           placeholder="{{ 'newIssueRequest.enterNSN' | translate }}"
           class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent placeholder:text-[var(--color-text-muted)]">
       </div>
@@ -257,7 +257,7 @@
     <!-- Explosive Filters -->
     <ng-container *ngIf="selectedItemType === 'Explosive'">
       <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
+        <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
           <span>{{ 'addAsset.explosiveType' | translate }}</span>
           <button *ngIf="selectedExplosiveType" (click)="onExplosiveTypeChange('')" type="button"
             class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
@@ -266,7 +266,7 @@
             </svg>
             <span>{{ 'common.clear' | translate }}</span>
           </button>
-        </label>
+        </span>
         <app-dropdown class="w-full" [ngModel]="selectedExplosiveType" (ngModelChange)="onExplosiveTypeChange($event)"
           [options]="explosiveTypeOptions" [translateLabels]="true" [optionLabel]="'label'" [optionValue]="'value'"
           [placeholderSelectable]="false" [placeholderValue]="''"
@@ -274,7 +274,7 @@
         </app-dropdown>
       </div>
       <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between" for="cartridge-list-fld-11-11">
           <span>{{ 'addAsset.unNumber' | translate }}</span>
           <button *ngIf="selectedUNNumber" (click)="onUnNumberChange('')" type="button"
             class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
@@ -284,7 +284,7 @@
             <span>{{ 'common.clear' | translate }}</span>
           </button>
         </label>
-        <input type="text" [ngModel]="selectedUNNumber" (ngModelChange)="onUnNumberChange($event)"
+        <input id="cartridge-list-fld-11-11" type="text" [ngModel]="selectedUNNumber" (ngModelChange)="onUnNumberChange($event)"
           placeholder="{{ 'addAsset.enterUnNumber' | translate }}"
           class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent placeholder:text-[var(--color-text-muted)]">
       </div>
@@ -344,10 +344,10 @@
       <div *ngIf="pendingCartridgeId === cartridge.id" class="flex flex-wrap gap-3 justify-end"
         (click)="$event.stopPropagation()">
         <div class="flex items-center gap-2">
-          <label class="text-xs font-semibold text-[var(--color-text)] uppercase tracking-wide">
+          <label class="text-xs font-semibold text-[var(--color-text)] uppercase tracking-wide" for="cartridge-list-fld-12-12">
             {{ 'newIssueRequest.quantity' | translate }}
           </label>
-          <input type="number" min="1" [value]="pendingQuantity" (click)="$event.stopPropagation()"
+          <input id="cartridge-list-fld-12-12" type="number" min="1" [value]="pendingQuantity" (click)="$event.stopPropagation()"
             (keydown)="$event.stopPropagation()" (input)="updatePendingQuantity($event)"
             class="w-24 px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent">
         </div>

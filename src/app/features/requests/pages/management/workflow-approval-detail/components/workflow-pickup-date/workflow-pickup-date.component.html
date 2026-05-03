@@ -14,13 +14,13 @@
     <div class="space-y-6">
       <!-- Pickup Date Input -->
       <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
           {{ 'workflowApprovalDetail.pickupDate' | translate }}
           <span *ngIf="isPickupDateAlreadySet"
             class="ms-2 text-xs font-normal text-[var(--color-success)] bg-[var(--color-success)]/20 px-2 py-1 rounded">
             {{ 'workflowApprovalDetail.dateSetLocked' | translate }}
           </span>
-        </label>
+        </span>
         <div
           class="relative min-h-[42px] rounded border bg-[var(--color-background)]"
           [class.cursor-pointer]="!isPickupDateAlreadySet && !pickupDateProcessing"
@@ -81,9 +81,9 @@
     <div class="space-y-6">
       <!-- Pickup Date Input (Editable for confirmation until confirmed) -->
       <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
           {{ 'workflowApprovalDetail.pickupDate' | translate }}
-        </label>
+        </span>
         <div
           class="relative min-h-[42px] rounded border bg-[var(--color-background)]"
           [class.cursor-pointer]="isPickupDateEditable() && !confirmPickupDateProcessing"

@@ -5,7 +5,7 @@
 
 import { Injectable } from '@angular/core';
 import { Observable, forkJoin, of } from 'rxjs';
-import { map, catchError, filter, switchMap } from 'rxjs/operators';
+import { map, catchError, switchMap } from 'rxjs/operators';
 import { Asset, AssetType } from '@models/asset-list.model';
 import { FileUploadDto, FileEntityType } from '@models/file-upload.model';
 import { AmmunitionService } from '@assets/services/ammunition.service';

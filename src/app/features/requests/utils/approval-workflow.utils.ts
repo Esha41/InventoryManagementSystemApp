@@ -3,13 +3,14 @@
  * Functions for mapping and processing approval workflow data
  */
 
+import { WorkflowApprovalStep } from '@models/workflow-approval.model';
 import { ApprovalStep } from '@models/supply-request.model';
 import { getApprovalStatusBadgeClass } from '@utils/status-class.utils';
 
 /**
  * Map WorkflowApprovalStep to ApprovalStep format
  */
-export function mapWorkflowStepsToApprovalSteps(workflowSteps: any[]): ApprovalStep[] {
+export function mapWorkflowStepsToApprovalSteps(workflowSteps: WorkflowApprovalStep[]): ApprovalStep[] {
   return workflowSteps.map((step, index) => ({
     id: step.id?.toString() || (index + 1).toString(),
     approverName: step.approverName || step.applicationRoleName || 'Pending Approval',

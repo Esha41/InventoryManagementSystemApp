@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnDestroy, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { Cartridge } from '@models/cartridge.model';
@@ -21,7 +21,7 @@ export class CartridgeDetailsComponent implements OnChanges, OnDestroy {
   @Input() cartridge: Cartridge | null = null;
   @Input() showActions: boolean = true; // Control whether to show action buttons
   @Output() select = new EventEmitter<void>();
-  @Output() cancel = new EventEmitter<void>();
+  @Output() goBackRequested = new EventEmitter<void>();
 
   imageUrl: string | null = null;
   private blobUrls: Set<string> = new Set();
@@ -120,7 +120,7 @@ export class CartridgeDetailsComponent implements OnChanges, OnDestroy {
   }
 
   onCancel(): void {
-    this.cancel.emit();
+    this.goBackRequested.emit();
   }
 }
 

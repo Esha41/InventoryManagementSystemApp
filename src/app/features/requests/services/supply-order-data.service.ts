@@ -57,7 +57,7 @@ export class SupplyOrderDataService {
       fullOrder: this.orderService.getOrderById(orderId)
     }).pipe(
       map(({ supply, fullOrder }) => {
-        const order = supply.order || fullOrder;
+        const _order = supply.order || fullOrder;
 
         // Merge full order data (with nested objects) into supply.order if it exists
         if (supply.order && fullOrder) {
@@ -225,7 +225,7 @@ export class SupplyOrderDataService {
           supplyData: of(supply)
         }).pipe(
           map(({ fullOrder, supplyData }) => {
-            const order = supplyData.order || fullOrder;
+            const _order = supplyData.order || fullOrder;
 
             // Merge nested objects from fullOrder into supply.order if it exists
             if (supplyData.order && fullOrder) {

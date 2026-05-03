@@ -1,15 +1,16 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, OnDestroy, ChangeDetectionStrategy, ViewChild, ElementRef, HostBinding } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, ChangeDetectionStrategy, ViewChild, ElementRef, HostBinding } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { LucideAngularModule, Clock, CheckCircle } from 'lucide-angular';
 import { RequestDetail } from '@models/workflow-approval.model';
 import { WorkflowApprovalSupplyService } from '../../services/workflow-approval-supply.service';
 import { WorkflowApprovalStateService } from '../../services/workflow-approval-state.service';
 import { ToastService } from '@services/toast.service';
-import { ErrorHandler } from '@utils/error-handler.utils';
 import { formatDateForInput, formatDateShort } from '@core/utils/format.utils';
+import { ErrorHandler } from '@utils/error-handler.utils';
 
 @Component({
   selector: 'app-workflow-pickup-date',
@@ -24,7 +25,7 @@ import { formatDateForInput, formatDateShort } from '@core/utils/format.utils';
   styleUrls: ['./workflow-pickup-date.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class WorkflowPickupDateComponent implements OnChanges, OnDestroy {
+export class WorkflowPickupDateComponent implements OnChanges {
   readonly Clock = Clock;
   readonly CheckCircle = CheckCircle;
 
@@ -171,10 +172,6 @@ export class WorkflowPickupDateComponent implements OnChanges, OnDestroy {
     }
   }
 
-  ngOnDestroy(): void {
-    // Component cleanup if needed
-  }
-
   /**
    * Update pickup date and emit to parent
    */
@@ -189,35 +186,32 @@ export class WorkflowPickupDateComponent implements OnChanges, OnDestroy {
   setSupplyPickupDate(): void {
     if (this.pickupDateProcessing || !this.requestDetail || !this.localPickupDate) {
       if (!this.localPickupDate) {
-        this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.selectPickupDate']).subscribe(translations => {
-          this.toastService.error(
-            translations['workflowApprovalDetail.errors.selectPickupDate'] || 'Please select a pickup date',
-            translations['toast.error']
-          );
-        });
+        this.showErrorToastKeys(
+          'workflowApprovalDetail.errors.selectPickupDate',
+          'toast.error',
+          'Please select a pickup date'
+        );
       }
       return;
     }
 
     // Prevent selecting past dates (date part) – mirrors usage date validation
     if (!this.isPickupDateOnOrAfterToday(this.localPickupDate)) {
-      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.pickupDateMustBeTodayOrFuture']).subscribe(translations => {
-        this.toastService.error(
-          translations['workflowApprovalDetail.errors.pickupDateMustBeTodayOrFuture'] || 'Pickup date must be today or a future date',
-          translations['toast.error']
-        );
-      });
+      this.showErrorToastKeys(
+        'workflowApprovalDetail.errors.pickupDateMustBeTodayOrFuture',
+        'toast.error',
+        'Pickup date must be today or a future date'
+      );
       return;
     }
 
     // Prevent changes if date already set
     if (this.isPickupDateAlreadySet) {
-      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.pickupDateAlreadySet']).subscribe(translations => {
-        this.toastService.error(
-          translations['workflowApprovalDetail.errors.pickupDateAlreadySet'] || 'Pickup date has already been set and cannot be modified',
-          translations['toast.error']
-        );
-      });
+      this.showErrorToastKeys(
+        'workflowApprovalDetail.errors.pickupDateAlreadySet',
+        'toast.error',
+        'Pickup date has already been set and cannot be modified'
+      );
       return;
     }
 
@@ -234,8 +228,9 @@ export class WorkflowPickupDateComponent implements OnChanges, OnDestroy {
           this.pickupDateSet.emit();
           this.pickupDateChanged.emit();
         },
-        error: () => {
+        error: (error: unknown) => {
           this.pickupDateProcessing = false;
+          this.showErrorToast(error, 'Failed to set pickup date');
         }
       });
   }
@@ -246,24 +241,22 @@ export class WorkflowPickupDateComponent implements OnChanges, OnDestroy {
   confirmSupplyPickupDate(): void {
     if (this.confirmPickupDateProcessing || !this.requestDetail || !this.localPickupDate) {
       if (!this.localPickupDate) {
-        this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.selectPickupDate']).subscribe(translations => {
-          this.toastService.error(
-            translations['workflowApprovalDetail.errors.selectPickupDate'] || 'Please select a pickup date',
-            translations['toast.error']
-          );
-        });
+        this.showErrorToastKeys(
+          'workflowApprovalDetail.errors.selectPickupDate',
+          'toast.error',
+          'Please select a pickup date'
+        );
       }
       return;
     }
 
     // Prevent selecting past dates (date part) – mirrors usage date validation
     if (!this.isPickupDateOnOrAfterToday(this.localPickupDate)) {
-      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.pickupDateMustBeTodayOrFuture']).subscribe(translations => {
-        this.toastService.error(
-          translations['workflowApprovalDetail.errors.pickupDateMustBeTodayOrFuture'] || 'Pickup date must be today or a future date',
-          translations['toast.error']
-        );
-      });
+      this.showErrorToastKeys(
+        'workflowApprovalDetail.errors.pickupDateMustBeTodayOrFuture',
+        'toast.error',
+        'Pickup date must be today or a future date'
+      );
       return;
     }
 
@@ -280,8 +273,9 @@ export class WorkflowPickupDateComponent implements OnChanges, OnDestroy {
           this.pickupDateConfirmed.emit();
           this.pickupDateChanged.emit();
         },
-        error: () => {
+        error: (error: unknown) => {
           this.confirmPickupDateProcessing = false;
+          this.showErrorToast(error, 'Failed to confirm pickup date');
         }
       });
   }
@@ -304,5 +298,42 @@ export class WorkflowPickupDateComponent implements OnChanges, OnDestroy {
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
     return normalized >= todayStr;
+  }
+
+  private showSuccessToast(messageKey: string, titleKey: string = 'toast.success'): void {
+    this.translateService
+      .get([titleKey, messageKey])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.success(translations[messageKey], translations[titleKey]);
+      });
+  }
+
+  private showErrorToast(error: unknown, defaultMsg: string): void {
+    const msg = ErrorHandler.extractAndTranslateErrorMessage(error, defaultMsg, this.translateService);
+    this.translateService
+      .get('toast.error')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.error(msg, translations['toast.error']);
+      });
+  }
+
+  private showErrorToastKeys(bodyKey: string, titleKey: string, fallbackBody: string): void {
+    this.translateService
+      .get([titleKey, bodyKey])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.error(translations[bodyKey] || fallbackBody, translations[titleKey]);
+      });
+  }
+
+  private showWarningToast(messageKey: string, titleKey: string = 'toast.warning'): void {
+    this.translateService
+      .get([titleKey, messageKey])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.warning(translations[messageKey], translations[titleKey]);
+      });
   }
 }

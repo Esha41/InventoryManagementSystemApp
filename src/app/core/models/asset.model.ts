@@ -20,7 +20,7 @@ export enum AssetStatus {
     AwaitingDisposal = 5,
     Disposed = 6,
     NotReadyToIssue = 7,
-    Assigned = 7
+    Assigned = 8
 }
 
 /** Status dropdown order: Ready, Not ready, then remainder (matches backend batch Excel labels). */

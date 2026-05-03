@@ -6,12 +6,8 @@
 import { OrderDto } from '@models/order.model';
 import { OrderSummary, OrderReportItem, OrderReportApprovalStep, WorkflowDetail } from '@models/order-report.model';
 import { WorkflowApprovalStep } from '@models/workflow-approval.model';
-import { mapOrderStatusToString, mapOrderStatusFromApi } from '@utils/status.utils';
 import { getRequestStatusTranslationKey } from '@utils/status.utils';
 import { mapOrderPriorityToString } from '@utils/priority.utils';
-import { formatOrderDateTime } from '@utils/date.utils';
-import { getRequestTitle } from '@utils/dashboard.utils';
-import { formatRequestDate } from '@utils/request-mapper.utils';
 import { formatDate, formatTimeToMilitary, formatDateShort } from '@utils/format.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
@@ -303,8 +299,7 @@ export function mapApprovalRecordsToSteps(
  * Generate fallback approval workflow steps from order data
  */
 export function generateApprovalWorkflowFallback(
-  order: OrderDto,
-  formatDateTime: (date?: string, time?: string) => string
+  order: OrderDto
 ): OrderReportApprovalStep[] {
   const fromDate = order.usageDateFrom ? formatDate(order.usageDateFrom) : 'N/A';
   const toDate = order.usageDateTo ? formatDate(order.usageDateTo) : '';

@@ -541,7 +541,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
         this.cdr.markForCheck();
       },
       error: (error: unknown) => {
-        let errorMsg = ErrorHandler.extractAndTranslateErrorMessage(error, 'Failed to create asset. Please try again.', this.translateService);
+        const errorMsg = ErrorHandler.extractAndTranslateErrorMessage(error, 'Failed to create asset. Please try again.', this.translateService);
         this.errorMessage = errorMsg;
         this.toastService.error(errorMsg, this.translationService.getTranslation('toast.error'));
         this.submitting = false;
@@ -626,7 +626,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
       if (!this.isValidImageType(file)) {
-        this.translateService.get(['toast.onlyImageFilesAllowed', 'toast.error']).subscribe(translations => {
+        this.translateService.get(['toast.onlyImageFilesAllowed', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
           this.toastService.error(translations['toast.onlyImageFilesAllowed'], translations['toast.error']);
         });
         input.value = '';
@@ -649,7 +649,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     if (files && files.length > 0) {
       const file = files[0];
       if (!this.isValidImageType(file)) {
-        this.translateService.get(['toast.onlyImageFilesAllowed', 'toast.error']).subscribe(translations => {
+        this.translateService.get(['toast.onlyImageFilesAllowed', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
           this.toastService.error(translations['toast.onlyImageFilesAllowed'], translations['toast.error']);
         });
         this.assetForm.image = undefined;

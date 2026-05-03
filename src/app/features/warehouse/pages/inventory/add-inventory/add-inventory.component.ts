@@ -12,7 +12,7 @@ import { LookupService, SupplierDto, ManufacturerDto, CountryDto, LookupItem } f
 import { AmmunitionService } from '@assets/services/ammunition.service';
 import { WeaponService } from '@assets/services/weapon.service';
 import { ExplosiveService } from '@assets/services/explosive.service';
-import { CreateInventoryDto, CreateInventoryDetailDto, ItemType } from '@models/inventory.model';
+import { CreateInventoryDto } from '@models/inventory.model';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { ToastService } from '@services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -587,7 +587,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
           this.submitting = false;
           this.cdr.markForCheck();
 
-          this.translateService.get(['toast.success', 'addInventory.successMessage']).subscribe(translations => {
+          this.translateService.get(['toast.success', 'addInventory.successMessage']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             const message = translations['addInventory.successMessage'] || 'Inventory created successfully!';
             const title = translations['toast.success'];
             this.toastService.success(message, title);
@@ -608,7 +608,7 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
           this.submitting = false;
           this.cdr.markForCheck();
 
-          this.translateService.get(['toast.error']).subscribe(translations => {
+          this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.error(errorMsg, translations['toast.error']);
           });
         }

@@ -77,33 +77,33 @@
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-2 gap-y-3">
             <!-- Item Name (read-only) -->
             <div class="lg:col-span-3">
-              <label class="lg:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">{{ 'processReturnItems.item' | translate }}</label>
+              <span class="lg:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">{{ 'processReturnItems.item' | translate }}</span>
               <div class="px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background-active)] text-sm text-[var(--color-text)] min-h-[38px] flex items-center">
                 {{ row.itemName || '-' }}
               </div>
             </div>
             <!-- Requested qty (read-only) -->
             <div class="lg:col-span-1">
-              <label class="lg:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">{{ 'processReturnItems.returnedQuantity' | translate }}</label>
+              <span class="lg:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">{{ 'processReturnItems.returnedQuantity' | translate }}</span>
               <div class="px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background-active)] text-sm text-[var(--color-text)] min-h-[38px] flex items-center tabular-nums">
-                {{ row.returnedQuantity != null ? row.returnedQuantity : '—' }}
+                {{ (row.returnedQuantity ?? null) !== null ? row.returnedQuantity : '—' }}
               </div>
             </div>
             <!-- Received qty -->
             <div class="lg:col-span-1">
-              <label class="lg:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">
+              <label class="lg:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block" for="process-return-items-fld-3-3">
                 {{ 'processReturnItems.receivedQuantity' | translate }}
                 <span class="text-[var(--color-error)]" aria-hidden="true">*</span>
               </label>
-              <input type="number" [(ngModel)]="row.receivedQuantity" [disabled]="processing" min="1" required
+              <input id="process-return-items-fld-3-3" type="number" [(ngModel)]="row.receivedQuantity" [disabled]="processing" min="1" required
                 class="w-full px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 tabular-nums"
                 [placeholder]="'processReturnItems.enterReceivedQuantity' | translate">
             </div>
             <div class="lg:col-span-1">
-              <label class="lg:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">
+              <span class="lg:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">
                 {{ 'processReturnItems.readyForIssue' | translate }}
                 <span class="text-[var(--color-error)]" aria-hidden="true">*</span>
-              </label>
+              </span>
               <app-dropdown class="w-full block text-sm min-h-[38px]" [(ngModel)]="row.readyForIssue"
                 [name]="'ammoReadyForIssue_' + i" [options]="readyForIssueDropdownOptions" optionValue="value"
                 optionLabel="label" [translateLabels]="true" [showSearch]="false" [disabled]="processing" required="true"
@@ -112,18 +112,18 @@
             </div>
             <!-- Lot -->
             <div class="lg:col-span-2">
-              <label class="lg:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">
+              <label class="lg:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block" for="process-return-items-fld-5-5">
                 {{ 'processReturnItems.lot' | translate }}
                 <span class="text-[var(--color-error)]" aria-hidden="true">*</span>
               </label>
-              <input type="text" [(ngModel)]="row.lot" [disabled]="processing" required
+              <input id="process-return-items-fld-5-5" type="text" [(ngModel)]="row.lot" [disabled]="processing" required
                 class="w-full px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50"
                 [placeholder]="'processReturnItems.enterLot' | translate">
             </div>
             <!-- Notes (same row as other columns on lg+) -->
             <div class="lg:col-span-4">
-              <label class="lg:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">{{ 'processReturnItems.notes' | translate }}</label>
-              <input type="text" [(ngModel)]="row.notes" [disabled]="processing"
+              <label class="lg:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block" for="process-return-items-fld-6-6">{{ 'processReturnItems.notes' | translate }}</label>
+              <input id="process-return-items-fld-6-6" type="text" [(ngModel)]="row.notes" [disabled]="processing"
                 class="w-full px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 min-h-[38px]"
                 [placeholder]="'processReturnItems.notesPlaceholder' | translate">
             </div>
@@ -241,25 +241,25 @@
                           <span class="text-sm font-medium text-[var(--color-text)] tabular-nums">{{ ui + 1 }}</span>
                         </div>
                         <div class="sm:col-span-3">
-                          <label class="sm:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">
+                          <label class="sm:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block" for="process-return-items-fld-7-7">
                             {{ 'processReturnItems.serialNumber' | translate }}<span class="text-[var(--color-error)]" aria-hidden="true">*</span>
                           </label>
-                          <input type="text" [(ngModel)]="unit.serialNumber" [disabled]="processing" required
+                          <input id="process-return-items-fld-7-7" type="text" [(ngModel)]="unit.serialNumber" [disabled]="processing" required
                             class="w-full px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background-main)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 min-h-[38px]"
                             [placeholder]="'processReturnItems.enterSerialNumber' | translate">
                         </div>
                         <div class="sm:col-span-2">
-                          <label class="sm:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">
+                          <label class="sm:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block" for="process-return-items-fld-8-8">
                             {{ 'processReturnItems.batchNumber' | translate }}<span class="text-[var(--color-error)]" aria-hidden="true">*</span>
                           </label>
-                          <input type="text" [(ngModel)]="unit.batchNumber" [disabled]="processing" required
+                          <input id="process-return-items-fld-8-8" type="text" [(ngModel)]="unit.batchNumber" [disabled]="processing" required
                             class="w-full px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background-main)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 min-h-[38px]"
                             [placeholder]="'processReturnItems.enterBatchNumber' | translate">
                         </div>
                         <div class="sm:col-span-3">
-                          <label class="sm:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">
+                          <span class="sm:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">
                             {{ 'processReturnItems.assetStatus' | translate }}<span class="text-[var(--color-error)]" aria-hidden="true">*</span>
-                          </label>
+                          </span>
                           <app-dropdown class="w-full min-w-[10rem] block text-sm" [(ngModel)]="unit.status"
                             [name]="'weaponUnitStatus_' + i + '_' + ui" [options]="weaponStatusDropdownOptions"
                             optionValue="value" optionLabel="label" [translateLabels]="true" [showSearch]="false"
@@ -268,8 +268,8 @@
                           </app-dropdown>
                         </div>
                         <div class="sm:col-span-3">
-                          <label class="sm:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">{{ 'processReturnItems.notes' | translate }}</label>
-                          <input type="text" [(ngModel)]="unit.notes" [disabled]="processing"
+                          <label class="sm:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block" for="process-return-items-fld-10-10">{{ 'processReturnItems.notes' | translate }}</label>
+                          <input id="process-return-items-fld-10-10" type="text" [(ngModel)]="unit.notes" [disabled]="processing"
                             class="w-full px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background-main)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent disabled:opacity-50 min-h-[38px]"
                             [placeholder]="'processReturnItems.notesPlaceholder' | translate">
                         </div>
@@ -312,8 +312,8 @@
                   <span *ngIf="pl.lot" class="block">{{ pl.lot }}</span>
                   <span *ngIf="!pl.serialNumber && !pl.batchNumber && !pl.lot">—</span>
                 </td>
-                <td class="px-3 py-2 tabular-nums">{{ pl.returnedQuantity != null ? pl.returnedQuantity : '—' }}</td>
-                <td class="px-3 py-2 tabular-nums">{{ pl.receivedQuantity != null ? pl.receivedQuantity : '—' }}</td>
+                <td class="px-3 py-2 tabular-nums">{{ (pl.returnedQuantity ?? null) !== null ? pl.returnedQuantity : '—' }}</td>
+                <td class="px-3 py-2 tabular-nums">{{ (pl.receivedQuantity ?? null) !== null ? pl.receivedQuantity : '—' }}</td>
                 <td class="px-3 py-2 text-[var(--color-text-muted)] max-w-xs whitespace-pre-wrap">{{ pl.notes || '—' }}</td>
                 <td class="px-3 py-2">
                   <ul class="space-y-1" *ngIf="pl.files?.length">
@@ -348,7 +348,7 @@
         <div class="space-y-3">
           <input #attachmentInput type="file" multiple accept=".jpg,.jpeg,.png,.pdf,.xlsx,.docx" class="hidden"
             (change)="onAttachmentInputChange($event)">
-          <label (click)="!processing && attachmentInput.click()"
+          <span (click)="!processing && attachmentInput.click()"
             [class.opacity-50]="processing"
             [class.cursor-not-allowed]="processing"
             [class.pointer-events-none]="processing"
@@ -358,7 +358,7 @@
             class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-[var(--color-brand)] border border-[var(--color-brand)] shadow-custom-sm cursor-pointer transition-all hover:opacity-90 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2">
             <lucide-angular [img]="Paperclip" class="h-4 w-4 opacity-95"></lucide-angular>
             {{ 'common.chooseFiles' | translate }}
-          </label>
+          </span>
           <p class="text-xs text-[var(--color-text-muted)]">
             {{ 'newIssueRequest.attachmentsHint' | translate }}
           </p>

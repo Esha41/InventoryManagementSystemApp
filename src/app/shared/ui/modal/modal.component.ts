@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, X } from 'lucide-angular';
 
@@ -15,10 +15,12 @@ import { LucideAngularModule, X } from 'lucide-angular';
       class="fixed inset-0 z-50 overflow-y-auto"
     >
       <!-- Backdrop -->
-      <div 
-        class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+      <button
+        type="button"
+        aria-label="Close dialog"
+        class="fixed inset-0 bg-black bg-opacity-50 transition-opacity w-full min-h-[100vh] cursor-default border-0 p-0 m-0"
         (click)="onBackdropClick($event)"
-      ></div>
+      ></button>
 
       <!-- Modal Container -->
       <div class="relative flex min-h-full items-center justify-center p-4 pointer-events-none">
@@ -35,6 +37,7 @@ import { LucideAngularModule, X } from 'lucide-angular';
             <h2 class="text-xl font-semibold text-[var(--color-text)]">{{ title }}</h2>
             <button
               *ngIf="showCloseButton"
+              type="button"
               (click)="close()"
               class="p-1 rounded-lg hover:bg-[var(--color-background-hover)] transition-colors"
               aria-label="Close modal"
@@ -81,7 +84,7 @@ export class ModalComponent {
     this.closed.emit();
   }
 
-  onBackdropClick(event: MouseEvent): void {
+  onBackdropClick(_event: MouseEvent): void {
     // Close when clicking on the backdrop
     if (this.closeOnBackdrop) {
       this.close();

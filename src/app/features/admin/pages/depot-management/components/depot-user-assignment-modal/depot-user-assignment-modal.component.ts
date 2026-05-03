@@ -112,7 +112,7 @@ export class DepotUserAssignmentModalComponent implements OnInit, OnDestroy {
           this.selectedUserIds = new Set(this.assignedUserIds);
           this.loadAllUsers();
         },
-        error: (err) => {
+        error: (_err) => {
           this.error = 'Failed to load depot users';
           this.loading = false;
           this.cdr.markForCheck();

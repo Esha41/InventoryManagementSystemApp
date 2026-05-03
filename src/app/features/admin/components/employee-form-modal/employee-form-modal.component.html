@@ -2,10 +2,10 @@
   <form id="employee-form-modal-form" [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="employee-form-modal-nameen-1">
           {{ 'employeeFormModal.nameEn' | translate }} <span class="text-[var(--color-error)]">*</span>
         </label>
-        <input type="text" formControlName="nameEn"
+        <input id="employee-form-modal-nameen-1" type="text" formControlName="nameEn"
                class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
                [class.border-[var(--color-error)]]="form.get('nameEn')?.invalid && form.get('nameEn')?.touched" />
         <p *ngIf="getFieldError('nameEn')" class="mt-2 text-sm text-[var(--color-error)]">
@@ -13,19 +13,19 @@
         </p>
       </div>
       <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="employee-form-modal-namear-2">
           {{ 'employeeFormModal.nameAr' | translate }}
         </label>
-        <input type="text" formControlName="nameAr"
+        <input id="employee-form-modal-namear-2" type="text" formControlName="nameAr"
                class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all" />
       </div>
     </div>
 
     <div>
-      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="employee-form-modal-militaryid-3">
         {{ 'employeeFormModal.militaryId' | translate }} <span class="text-[var(--color-error)]">*</span>
       </label>
-      <input type="text" formControlName="militaryId"
+      <input id="employee-form-modal-militaryid-3" type="text" formControlName="militaryId"
              class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
              [class.border-[var(--color-error)]]="form.get('militaryId')?.invalid && form.get('militaryId')?.touched" />
       <p *ngIf="getFieldError('militaryId')" class="mt-2 text-sm text-[var(--color-error)]">
@@ -35,9 +35,9 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
           {{ 'employeeFormModal.department' | translate }} <span class="text-[var(--color-error)]">*</span>
-        </label>
+        </span>
         <app-dropdown class="w-full"
                       formControlName="departmentId"
                       [options]="departments"
@@ -53,9 +53,9 @@
         </p>
       </div>
       <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
           {{ 'employeeFormModal.rank' | translate }} <span class="text-[var(--color-error)]">*</span>
-        </label>
+        </span>
         <app-dropdown class="w-full"
                       formControlName="rankId"
                       [options]="ranks"
@@ -74,17 +74,17 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="employee-form-modal-phone-6">
           {{ 'employeeFormModal.phone' | translate }}
         </label>
-        <input type="text" formControlName="phone"
+        <input id="employee-form-modal-phone-6" type="text" formControlName="phone"
                class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all" />
       </div>
       <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="employee-form-modal-email-7">
           {{ 'employeeFormModal.email' | translate }}
         </label>
-        <input type="email" formControlName="email"
+        <input id="employee-form-modal-email-7" type="email" formControlName="email"
                class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all"
                [class.border-[var(--color-error)]]="form.get('email')?.invalid && form.get('email')?.touched" />
         <p *ngIf="getFieldError('email')" class="mt-2 text-sm text-[var(--color-error)]">
@@ -94,10 +94,10 @@
     </div>
 
     <div>
-      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="employee-form-modal-notes-8">
         {{ 'employeeFormModal.notes' | translate }}
       </label>
-      <textarea rows="3" formControlName="notes"
+      <textarea id="employee-form-modal-notes-8" rows="3" formControlName="notes"
                 class="w-full px-4 py-2.5 border-2 border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)] focus:ring-4 focus:ring-[var(--color-brand)]/20 transition-all resize-none"></textarea>
     </div>
 
