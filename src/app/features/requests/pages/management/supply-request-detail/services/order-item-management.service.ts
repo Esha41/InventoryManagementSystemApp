@@ -5,6 +5,7 @@
 
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { take } from 'rxjs/operators';
 import { OrderService } from '@requests/services/order.service';
 import { CreateRequestItemDto } from '@models/request-item.model';
 import { APIOperationResponse } from '@models/api-response.model';
@@ -46,19 +47,25 @@ export class OrderItemManagementService {
    * Show success message for item operations
    */
   showSuccessMessage(key: string): void {
-    this.translate.get([key, 'toast.success']).subscribe(translations => {
-      this.toastService.success(translations[key], translations['toast.success']);
-    });
+    this.translate
+      .get([key, 'toast.success'])
+      .pipe(take(1))
+      .subscribe(translations => {
+        this.toastService.success(translations[key], translations['toast.success']);
+      });
   }
 
   /**
    * Show error message for item operations
    */
   showErrorMessage(key: string, messageOverride?: string): void {
-    this.translate.get([key, 'toast.error']).subscribe(translations => {
-      const message = messageOverride || translations[key] || 'Operation failed';
-      this.toastService.error(message, translations['toast.error']);
-    });
+    this.translate
+      .get([key, 'toast.error'])
+      .pipe(take(1))
+      .subscribe(translations => {
+        const message = messageOverride || translations[key] || 'Operation failed';
+        this.toastService.error(message, translations['toast.error']);
+      });
   }
 }
 

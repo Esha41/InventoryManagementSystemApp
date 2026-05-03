@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, Subject } from 'rxjs';
-import { map, catchError, tap, takeUntil } from 'rxjs/operators';
+import { map, catchError, tap } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { ApiService } from '@services/api.service';
 import { BackendUserService } from '@services/backend-user.service';
@@ -23,7 +23,7 @@ import {
   getLocalizedName, 
   getCurrentLang 
 } from '@utils/localization.utils';
-import { formatDateShort, formatTimeToMilitary } from '@utils/format.utils';
+import {  formatTimeToMilitary } from '@utils/format.utils';
 
 /**
  * Service for handling order report data loading and business logic
@@ -429,11 +429,7 @@ export class OrderReportService {
       return [];
     }
 
-    const fallbackSteps = generateApprovalWorkflowFallback(order, (d, t) => {
-      // Return raw date string, formatting will be done by pipe
-      // The function expects a string, so return empty string if no date
-      return d || '';
-    })
+    const fallbackSteps = generateApprovalWorkflowFallback(order)
       .map((step, index) => {
         // Convert the formatted date string back to raw date
         // The function returns formatted strings like "DD/MM/YYYY · HHmm - DD/MM/YYYY · HHmm"

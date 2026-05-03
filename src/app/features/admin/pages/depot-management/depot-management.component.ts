@@ -285,14 +285,14 @@ export class DepotManagementComponent implements OnInit, OnDestroy {
         this.loading = false;
         this.cdr.markForCheck();
       },
-        error: (error) => {
-        const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to save depot');
-        this.translateService.get(['toast.failedToSaveDepot', 'toast.error']).subscribe(translations => {
-            this.toastService.error(
-              errorMessage || translations['toast.failedToSaveDepot'],
-              translations['toast.error']
-            );
-          });
+      error: (error: unknown) => {
+        const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, 'Failed to save depot', this.translateService);
+        this.translateService.get(['toast.failedToSaveDepot', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
+          this.toastService.error(
+            errorMessage || translations['toast.failedToSaveDepot'],
+            translations['toast.error']
+          );
+        });
         this.loading = false;
         this.cdr.markForCheck();
       }

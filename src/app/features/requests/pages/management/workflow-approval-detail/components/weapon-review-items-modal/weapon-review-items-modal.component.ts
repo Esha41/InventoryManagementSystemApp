@@ -109,7 +109,6 @@ export class WeaponReviewItemsModalComponent implements OnInit, OnDestroy {
   }
 
   onClose(): void {
-    this.isOpen = false;
     this.resetStates();
     this.closed.emit();
   }
@@ -150,7 +149,7 @@ export class WeaponReviewItemsModalComponent implements OnInit, OnDestroy {
           this.loadingWeapons = false;
           this.cdr.markForCheck();
         },
-        error: (error: unknown) => {
+        error: (_error: unknown) => {
           this.loadingWeapons = false;
           this.cdr.markForCheck();
         }
@@ -193,7 +192,7 @@ export class WeaponReviewItemsModalComponent implements OnInit, OnDestroy {
           }
           this.savingItem = false;
         },
-        error: (error) => {
+        error: (_error) => {
           this.orderItemManagementService.showErrorMessage('supplyRequestDetail.failedToAddItem');
           this.savingItem = false;
         }
@@ -243,7 +242,7 @@ export class WeaponReviewItemsModalComponent implements OnInit, OnDestroy {
           }
           this.savingItem = false;
         },
-        error: (error) => {
+        error: (_error) => {
           this.orderItemManagementService.showErrorMessage('supplyRequestDetail.failedToUpdateItemQuantity');
           this.savingItem = false;
         }
@@ -281,7 +280,7 @@ export class WeaponReviewItemsModalComponent implements OnInit, OnDestroy {
             );
           }
         },
-        error: (error) => {
+        error: (_error) => {
           this.orderItemManagementService.showErrorMessage('supplyRequestDetail.failedToRemoveItem');
         }
       });

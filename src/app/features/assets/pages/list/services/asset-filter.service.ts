@@ -5,7 +5,6 @@
 
 import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { AssetFilterState, AssetType } from '@models/asset-list.model';
 import { LookupItem } from '@models/lookup.model';
 import { ItemType } from '@models/inventory.model';
 import { createFilterOptions } from '@utils/asset-list.utils';

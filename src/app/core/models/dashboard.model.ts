@@ -4,7 +4,7 @@
  */
 
 import { CardStatus } from '@utils/dashboard.utils';
-import { OrderItem } from '@dashboard/pages/overview/components/status-card/status-card.component';
+import type { OrderItem } from '@models/dashboard-order-display.model';
 
 /**
  * Dashboard card configuration and data

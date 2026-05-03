@@ -1,5 +1,4 @@
-import { OrderItem } from '@dashboard/pages/overview/components/status-card/status-card.component';
-import { OverstockItemView } from '@dashboard/pages/overview/components/overstock-card/overstock-card.component';
+import type { OrderItem } from '@models/dashboard-order-display.model';
 import { CardStatus } from '@utils/dashboard.utils';
 
 export interface InventoryDashboardCard {

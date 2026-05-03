@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -13,7 +13,7 @@ export type ImportPreviewMode = 'strict' | 'allowSkipInvalid';
 
 export interface PreviewRow {
     rowNumber: number;
-    data: any;
+    data: Record<string, unknown>;
     isValid: boolean;
     errors: string[];
 }
@@ -42,12 +42,12 @@ export type RowFilter = 'all' | 'valid' | 'invalid';
     templateUrl: './import-preview-dialog.component.html',
     styleUrls: ['./import-preview-dialog.component.css']
 })
-export class ImportPreviewDialogComponent implements OnInit {
+export class ImportPreviewDialogComponent {
     @Input() previewData: PreviewData | null = null;
     @Input() assetType: 'ammunition' | 'weapon' | 'explosive' | 'batch' = 'ammunition';
     @Input() importPreviewMode: ImportPreviewMode = 'strict';
     @Output() confirm = new EventEmitter<PreviewRow[]>();
-    @Output() cancel = new EventEmitter<void>();
+    @Output() importCancelled = new EventEmitter<void>();
 
     readonly X = X;
     readonly CheckCircle = CheckCircle;
@@ -73,12 +73,8 @@ export class ImportPreviewDialogComponent implements OnInit {
         return this.translationService?.isRTL() ?? false;
     }
 
-    ngOnInit(): void {
-        // Initial setup if needed
-    }
-
     onCancel(): void {
-        this.cancel.emit();
+        this.importCancelled.emit();
     }
 
     onConfirmClick(): void {
@@ -169,7 +165,7 @@ export class ImportPreviewDialogComponent implements OnInit {
         return row.isValid ? 'row-valid' : 'row-invalid';
     }
 
-    getCellValue(row: PreviewRow, column: string): any {
+    getCellValue(row: PreviewRow, column: string): unknown {
         return row.data[column] ?? '-';
     }
 
@@ -223,7 +219,7 @@ export class ImportPreviewDialogComponent implements OnInit {
 
         // Prepare data for Excel
         const excelData = invalidRows.map(row => {
-            const rowData: any = {
+            const rowData: Record<string, string | number | boolean | null | undefined> = {
                 'Row Number': row.rowNumber,
                 'Errors': row.errors.join('; ')
             };

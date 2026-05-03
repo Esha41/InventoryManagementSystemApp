@@ -14,8 +14,7 @@ import {
   mapRequestStatusToCardStatus,
   getRequestTitle,
   mapRequestItems,
-  filterDisplayableRequests,
-  DisplayableRequest
+  filterDisplayableRequests
 } from '@utils/dashboard.utils';
 import { mapToOrderDto, mapToReturnDto, mapToDiscardDto, separateRequestsByType } from '@utils/request-type-mapper.utils';
 import { FilterData, PaginatedList, PagedRequest } from '@models/api-response.model';

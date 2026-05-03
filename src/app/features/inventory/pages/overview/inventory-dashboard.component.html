@@ -99,7 +99,7 @@
 
             <!-- Depot multi-select -->
             <div *ngIf="depots.length > 0" class="w-full min-w-[200px] lg:max-w-xs lg:flex-none">
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.depot' | translate }}</label>
+              <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.depot' | translate }}</span>
               <app-dropdown class="block w-full min-h-[42px]"
                 [(ngModel)]="selectedDepotIds"
                 (ngModelChange)="onDepotFilterChange($event)"
@@ -113,7 +113,7 @@
             <ng-container *ngIf="itemSummaries.length > 0">
               <!-- Item multi-select picker -->
               <div class="w-full min-w-[200px] lg:max-w-xs lg:flex-none">
-                <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.pickItem' | translate }}</label>
+                <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.pickItem' | translate }}</span>
                 <app-dropdown class="block w-full min-h-[42px]"
                   [(ngModel)]="selectedItemFilterIds"
                   (ngModelChange)="onItemPickFilterChange()"
@@ -126,7 +126,7 @@
 
               <!-- Text search -->
               <div class="w-full flex-1 min-w-0 sm:min-w-[200px]">
-                <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.search' | translate }}</label>
+                <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.search' | translate }}</span>
                 <div class="relative">
                   <span class="pointer-events-none absolute inset-y-0 start-0 z-[1] flex w-10 items-center justify-center text-[var(--color-text-muted)]" aria-hidden="true">
                     <lucide-angular [img]="Search" class="h-4 w-4 shrink-0"></lucide-angular>
@@ -140,7 +140,7 @@
 
               <!-- Caliber -->
               <div class="w-full min-w-[200px] lg:max-w-xs lg:flex-none">
-                <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.caliber' | translate }}</label>
+                <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.caliber' | translate }}</span>
                 <app-dropdown class="block w-full min-h-[42px]"
                   [(ngModel)]="caliberFilter"
                   (ngModelChange)="onCaliberFilterChange()"
@@ -157,7 +157,7 @@
 
               <!-- Item type (only shown in "All" tab) -->
               <div *ngIf="activeTab === 'all'" class="w-full min-w-[200px] lg:max-w-xs lg:flex-none">
-                <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.itemType' | translate }}</label>
+                <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.itemType' | translate }}</span>
                 <app-dropdown class="block w-full min-h-[42px]"
                   [(ngModel)]="itemTypeFilter"
                   (ngModelChange)="onItemTypeFilterChange()"

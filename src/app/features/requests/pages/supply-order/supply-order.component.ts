@@ -5,7 +5,6 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, AlertTriangle } from 'lucide-angular';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
-import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { ModalComponent } from '@components/modal/modal.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { AddLotModalComponent } from './components/add-lot-modal/add-lot-modal.component';
@@ -14,7 +13,6 @@ import { EditOrderItemModalComponent } from './components/edit-order-item-modal/
 import { SupplyOrderHeaderComponent } from './components/supply-order-header/supply-order-header.component';
 import { SupplyOrderInfoComponent } from './components/supply-order-info/supply-order-info.component';
 import { OrderItemsManagementComponent } from './components/order-items-management/order-items-management.component';
-import { ApprovalWorkflowComponent } from './components/approval-workflow/approval-workflow.component';
 import { SupplyItemsListComponent } from './components/supply-items-list/supply-items-list.component';
 import { OrderDto, OrderRequestItemDto } from '@models/order.model';
 import { SupplyDto } from '@requests/services/supply.service';
@@ -24,7 +22,6 @@ import { SupplyItemDisplay } from '@models/supply-order.model';
 import { formatNumber as formatNumberUtil } from '@utils/format.utils';
 import { BaseRequestDto, WorkflowApprovalStep } from '@models/workflow-approval.model';
 import { LoadingStateComponent } from '@components/index';
-import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
 import { SupplyOrderDataService } from '@requests/services/supply-order-data.service';
@@ -118,12 +115,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     const byOrder = this.route.snapshot.queryParams['byOrder'] === 'true';
 
     if (isNaN(receivedId)) {
-      this.translateService.get(['toast.error', 'supplyOrder.errors.invalidId']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-        this.toastService.error(
-          translations['supplyOrder.errors.invalidId'] || 'Invalid ID',
-          translations['toast.error']
-        );
-      });
+      this.showErrorToastKeys('supplyOrder.errors.invalidId', 'toast.error');
       this.router.navigate(['/requests/supply-order']);
       return;
     }
@@ -169,10 +161,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         },
         error: (error: unknown) => {
-          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load supply for this order');
-          this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-            this.toastService.error(errorMessage, translations['toast.error']);
-          });
+          this.showErrorToast(error, 'Failed to load supply for this order');
           this.loading = false;
           this.cdr.markForCheck();
           this.goBack();
@@ -206,10 +195,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         },
         error: (error: unknown) => {
-          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load supply order');
-          this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-            this.toastService.error(errorMessage, translations['toast.error']);
-          });
+          this.showErrorToast(error, 'Failed to load supply order');
           this.loading = false;
           this.cdr.markForCheck();
           this.goBack();
@@ -333,9 +319,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
 
   onUpdateItem(item: SupplyItemDisplay): void {
     if (!this.supplyData) {
-      this.translateService.get(['supplyOrder.toast.supplyDataNotLoaded', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-        this.toastService.error(translations['supplyOrder.toast.supplyDataNotLoaded'], translations['toast.error']);
-      });
+      this.showErrorToastKeys('supplyOrder.toast.supplyDataNotLoaded', 'toast.error');
       return;
     }
 
@@ -343,25 +327,18 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     item.quantityError = undefined;
 
     if (!item.quantity || item.quantity <= 0) {
-      this.translateService.get(['supplyOrder.toast.quantityMustBeGreaterThanZero']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-        item.quantityError = translations['supplyOrder.toast.quantityMustBeGreaterThanZero'];
-        this.toastService.error(translations['supplyOrder.toast.quantityMustBeGreaterThanZero']);
-      });
+      this.showFieldValidationToast(item, 'supplyOrder.toast.quantityMustBeGreaterThanZero');
       return;
     }
 
     const lotStr = String(item.lot ?? '').trim();
     if (!lotStr || lotStr.length > 64) {
-      this.translateService.get(['supplyOrder.toast.invalidLotNumber', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-        this.toastService.error(translations['supplyOrder.toast.invalidLotNumber'], translations['toast.error']);
-      });
+      this.showErrorToastKeys('supplyOrder.toast.invalidLotNumber', 'toast.error');
       return;
     }
 
     if (!item.itemId || item.itemId <= 0) {
-      this.translateService.get(['supplyOrder.toast.invalidItem', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-        this.toastService.error(translations['supplyOrder.toast.invalidItem'], translations['toast.error']);
-      });
+      this.showErrorToastKeys('supplyOrder.toast.invalidItem', 'toast.error');
       return;
     }
 
@@ -373,13 +350,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
 
     if (newTotalSupplied > item.requestedQuantity) {
       const maxAllowedQuantity = item.requestedQuantity - (currentTotalSupplied - originalQuantity);
-      this.translateService.get(['supplyOrder.toast.maxQuantityExceeded', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-        const errorMsg = translations['supplyOrder.toast.maxQuantityExceeded']
-          .replace('{{maxQuantity}}', formatNumberUtil(maxAllowedQuantity))
-          .replace('{{requestedQuantity}}', formatNumberUtil(item.requestedQuantity));
-        item.quantityError = errorMsg;
-        this.toastService.error(errorMsg, translations['toast.error']);
-      });
+      this.showMaxQuantityExceededToast(item, maxAllowedQuantity);
       return;
     }
 
@@ -392,9 +363,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     }).pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.translateService.get(['supplyOrder.toast.itemUpdatedSuccessfully', 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-            this.toastService.success(translations['supplyOrder.toast.itemUpdatedSuccessfully'], translations['toast.success']);
-          });
+          this.showSuccessToast('supplyOrder.toast.itemUpdatedSuccessfully', 'toast.success');
           item.isEditing = false;
           item.originalQuantity = undefined;
           item.quantityError = undefined;
@@ -403,10 +372,7 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
           this.loadSupplyData();
         },
         error: (error: unknown) => {
-          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to update item');
-          this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-            this.toastService.error(errorMessage, translations['toast.error']);
-          });
+          this.showErrorToast(error, 'Failed to update item');
           this.updatingItem = false;
           this.cdr.markForCheck();
           this.loadSupplyData();
@@ -446,19 +412,17 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.translateService.get(['supplyOrder.toast.itemRemovedFromSupply', 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-            const successMsg = translations['supplyOrder.toast.itemRemovedFromSupply'].replace('{{itemName}}', item.itemName);
-            this.toastService.success(successMsg, translations['toast.success']);
-          });
+          this.showSuccessToastInterpolated(
+            'supplyOrder.toast.itemRemovedFromSupply',
+            'toast.success',
+            msg => msg.replace('{{itemName}}', item.itemName)
+          );
           this.deletingItem = false;
           this.cdr.markForCheck();
           this.loadSupplyData();
         },
         error: (error: unknown) => {
-          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to delete item');
-          this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-            this.toastService.error(errorMessage, translations['toast.error']);
-          });
+          this.showErrorToast(error, 'Failed to delete item');
           this.deletingItem = false;
           this.cdr.markForCheck();
         }
@@ -549,22 +513,15 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response: APIOperationResponse<boolean>) => {
           if (response.succeeded) {
-            this.translateService.get(['supplyOrder.toast.itemRemovedSuccessfully', 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-              this.toastService.success(translations['supplyOrder.toast.itemRemovedSuccessfully'], translations['toast.success']);
-            });
+            this.showSuccessToast('supplyOrder.toast.itemRemovedSuccessfully', 'toast.success');
             this.closeRemoveOrderItemModal();
             this.loadSupplyData();
           } else {
-            this.translateService.get(['toast.error', 'toast.failedToRemoveItem']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-              this.toastService.error(response.message || translations['toast.failedToRemoveItem'], translations['toast.error']);
-            });
+            this.showErrorToastWithApiOrFallbackMessage(response.message, 'toast.failedToRemoveItem');
           }
         },
         error: (error: unknown) => {
-          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to remove item');
-          this.translateService.get(['toast.error', 'toast.failedToRemoveItem']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-            this.toastService.error(errorMessage, translations['toast.error']);
-          });
+          this.showErrorToast(error, 'Failed to remove item');
         }
       });
   }
@@ -594,5 +551,86 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
       .reduce((sum, si) => sum + si.quantity, 0);
   }
 
+  private showSuccessToast(messageKey: string, titleKey: string = 'toast.success'): void {
+    this.translateService
+      .get([messageKey, titleKey])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.success(translations[messageKey], translations[titleKey]);
+      });
+  }
+
+  private showSuccessToastInterpolated(
+    messageKey: string,
+    titleKey: string,
+    format: (message: string) => string
+  ): void {
+    this.translateService
+      .get([messageKey, titleKey])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.success(format(translations[messageKey]), translations[titleKey]);
+      });
+  }
+
+  private showWarningToast(messageKey: string, titleKey: string = 'toast.warning'): void {
+    this.translateService
+      .get([messageKey, titleKey])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.warning(translations[messageKey], translations[titleKey]);
+      });
+  }
+
+  private showErrorToastKeys(messageKey: string, titleKey: string = 'toast.error'): void {
+    this.translateService
+      .get([messageKey, titleKey])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.error(translations[messageKey], translations[titleKey]);
+      });
+  }
+
+  private showFieldValidationToast(item: SupplyItemDisplay, messageKey: string): void {
+    this.translateService
+      .get([messageKey, 'toast.error'])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        item.quantityError = translations[messageKey];
+        this.toastService.error(translations[messageKey], translations['toast.error']);
+      });
+  }
+
+  private showMaxQuantityExceededToast(item: SupplyItemDisplay, maxAllowedQuantity: number): void {
+    this.translateService
+      .get(['supplyOrder.toast.maxQuantityExceeded', 'toast.error'])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        const errorMsg = translations['supplyOrder.toast.maxQuantityExceeded']
+          .replace('{{maxQuantity}}', formatNumberUtil(maxAllowedQuantity))
+          .replace('{{requestedQuantity}}', formatNumberUtil(item.requestedQuantity));
+        item.quantityError = errorMsg;
+        this.toastService.error(errorMsg, translations['toast.error']);
+      });
+  }
+
+  private showErrorToast(error: unknown, defaultMsg: string): void {
+    const msg = ErrorHandler.extractAndTranslateErrorMessage(error, defaultMsg, this.translateService);
+    this.translateService
+      .get('toast.error')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.error(msg, translations['toast.error']);
+      });
+  }
+
+  private showErrorToastWithApiOrFallbackMessage(apiMessage: string | undefined, fallbackKey: string): void {
+    this.translateService
+      .get(['toast.error', fallbackKey])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.error(apiMessage || translations[fallbackKey], translations['toast.error']);
+      });
+  }
 }
 

@@ -95,7 +95,7 @@ export function formatMetadataKey(key: string, translateService: { instant: (key
 export function hasMetadataAction(
   notification: Notification,
   keys: readonly string[],
-  hiddenKeys: ReadonlySet<string>
+  _hiddenKeys: ReadonlySet<string>
 ): boolean {
   if (!notification.metadata) {
     return false;
@@ -288,7 +288,7 @@ export function canProposeNewTime(
 export function getDisplayMetadata(
   notification: Notification | null,
   hiddenKeys: ReadonlySet<string>,
-  translateService: { instant: (key: string) => string }
+  _translateService: { instant: (key: string) => string }
 ): Array<{ key: string; value: string }> {
   const meta = asNotificationMetadata(notification?.metadata ?? null);
   if (!meta) {

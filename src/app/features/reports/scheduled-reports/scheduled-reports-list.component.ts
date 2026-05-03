@@ -8,7 +8,7 @@ import { ToastService } from '@services/toast.service';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent, ConfirmDialogComponent } from '@components/index';
 import { ButtonComponent } from '@components/button/button.component';
 import { ExecutionHistoryDialogComponent } from './execution-history-dialog/execution-history-dialog.component';
-import { ReportService, ScheduledReport, ScheduledReportRecipient } from '@reports/services/report.service';
+import { ReportService, ScheduledReport } from '@reports/services/report.service';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -364,7 +364,7 @@ export class ScheduledReportsListComponent implements OnInit {
   updatePagination(): void {
     this.totalItems = this.filteredReports.length;
     const startIndex = (this.currentPage - 1) * this.rowsPerPage;
-    const endIndex = startIndex + this.rowsPerPage;
+    const _endIndex = startIndex + this.rowsPerPage;
   }
 
   onPageChange(page: number): void {

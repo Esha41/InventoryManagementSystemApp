@@ -13,7 +13,8 @@ import { formatDateShort } from '@core/utils/format.utils';
 import { FileUploadDto, FileUploadService } from '@services/file-upload.service';
 import { AmmunitionService } from '@assets/services/ammunition.service';
 import { ExplosiveService } from '@assets/services/explosive.service';
-import { Subscription } from 'rxjs';
+import { Subscription, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-edit-inventory-detail-modal',
@@ -58,6 +59,8 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges, OnD
   /** Existing uploaded file ids the user removed in UI; deleted on Save by backend. */
   removedExistingFileIds: number[] = [];
 
+  private readonly destroy$ = new Subject<void>();
+
   readonly readyForIssueOptions: DropdownOption<boolean>[] = [
     { label: 'editInventoryDetail.readyForIssueYes', value: true },
     { label: 'editInventoryDetail.readyForIssueNo', value: false }
@@ -88,6 +91,8 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges, OnD
 
   ngOnDestroy(): void {
     this.catalogPurposesSub?.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -367,7 +372,7 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges, OnD
   onSubmit(): void {
     if (this.detailForm.invalid) {
       const invalidFields = this.getInvalidFieldNames();
-      this.translateService.get('editInventoryDetail.requiredFieldsError').subscribe(msg => {
+      this.translateService.get('editInventoryDetail.requiredFieldsError').pipe(takeUntil(this.destroy$)).subscribe(msg => {
         this.errorMessage = invalidFields.length > 0
           ? `${msg} (${invalidFields.join(', ')})`
           : msg;

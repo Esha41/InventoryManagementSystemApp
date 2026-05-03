@@ -20,7 +20,7 @@
     <div class="flex flex-wrap gap-3 pt-2 justify-end">
       <button
         type="button"
-        (click)="cancel.emit()"
+        (click)="takeOverCancelled.emit()"
         class="min-h-[2.75rem] px-4 py-2.5 rounded-xl border-2 border-[var(--color-border)]
                bg-[var(--color-background-muted)] text-[var(--color-text)] hover:bg-[var(--color-background)] transition-colors"
       >
@@ -28,7 +28,7 @@
       </button>
       <button
         type="button"
-        (click)="confirm.emit()"
+        (click)="takeOverConfirmed.emit()"
         class="min-h-[2.75rem] px-4 py-2.5 rounded-xl bg-[var(--color-brand)] text-white
                font-semibold hover:bg-[var(--color-brand-dark)] transition-colors"
       >

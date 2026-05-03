@@ -95,6 +95,7 @@ export class AuthSessionService {
     if (user) {
       this.updateAuthState(user, accessToken, expiresAt);
     }
+    this.sessionHeartbeat.resume(true);
   }
 
   clearSessionForPendingRoleSelection(): void {
@@ -170,12 +171,12 @@ export class AuthSessionService {
         this.currentUserSubject.next(state.user);
         this.isAuthenticatedSubject.next(true);
         this.authStateSubject.next(state);
-        this.sessionHeartbeat.start();
 
-        if (this.isTokenExpired()) {
-          this.configService.log('Token expired - session kept; refresh will run on next API call');
-        } else {
+        if (!this.isTokenExpired()) {
+          this.sessionHeartbeat.start();
           this.configService.log('User session restored', { userId: state.user.id });
+        } else {
+          this.configService.log('Token expired - session kept; refresh will run on next API call');
         }
       }
     } catch (error) {
@@ -208,14 +209,8 @@ export class AuthSessionService {
 
     try {
       this.profileProvider?.clearProfile();
-      this.storageService.remove('auth_token');
       this.storageService.remove('refresh_token');
-      this.storageService.remove('current_user');
-      this.storageService.remove('token_expires_at');
-
-      if (typeof window !== 'undefined') {
-        this.storageService.clear();
-      }
+      this.storageService.removeSensitiveSessionBackedKeys();
 
       this.currentUserSubject.next(null);
       this.isAuthenticatedSubject.next(false);

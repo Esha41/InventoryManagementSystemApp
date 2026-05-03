@@ -5,7 +5,7 @@
 
 import { Injectable } from '@angular/core';
 import { Observable, Subject, of } from 'rxjs';
-import { takeUntil, map, catchError } from 'rxjs/operators';
+import { takeUntil, map, catchError, take } from 'rxjs/operators';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { SupplyService, SupplyDto } from '@requests/services/supply.service';
@@ -199,10 +199,7 @@ export class WorkflowApprovalDataService {
             observer.complete();
           },
           error: () => {
-            this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.failedToLoadRanks']).subscribe(translations => {
-              const errorMsg = translations['workflowApprovalDetail.errors.failedToLoadRanks'] || translations['toast.failedToLoadRoles'];
-              this.toastService.error(errorMsg, translations['toast.error']);
-            });
+            this.showFailedToLoadRanksToast();
             observer.next([]);
             observer.complete();
           }
@@ -225,11 +222,26 @@ export class WorkflowApprovalDataService {
             observer.next(data);
             observer.complete();
           },
-          error: (error) => {
-            const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load previous workflow steps');
+          error: (error: unknown) => {
+            const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(
+              error,
+              'Failed to load previous workflow steps',
+              this.translateService
+            );
             observer.error(errorMessage);
           }
         });
     });
+  }
+
+  private showFailedToLoadRanksToast(): void {
+    this.translateService
+      .get(['toast.error', 'workflowApprovalDetail.errors.failedToLoadRanks', 'toast.failedToLoadRoles'])
+      .pipe(take(1))
+      .subscribe(translations => {
+        const errorMsg =
+          translations['workflowApprovalDetail.errors.failedToLoadRanks'] || translations['toast.failedToLoadRoles'];
+        this.toastService.error(errorMsg, translations['toast.error']);
+      });
   }
 }

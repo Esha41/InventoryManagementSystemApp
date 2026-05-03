@@ -7,10 +7,8 @@ import { ApiService } from '@services/api.service';
 import type {
   CreateSupplyDetailDto,
   CreateSupplyDto,
-  OrderItemSupplySuggestionDto,
   OrderSupplySuggestionDto,
   SubmitSupplyDto,
-  SupplyDetailDto,
   SupplyDto,
   UpdateSupplyDetailDto,
   UpdateSupplyDto,

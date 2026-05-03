@@ -79,14 +79,12 @@ export class TemplateSelectDialogComponent implements OnInit, OnChanges {
   onConfirm(): void {
     if (this.selectedTemplate) {
       this.templateSelected.emit(this.selectedTemplate);
-      this.isOpen = false;
       this.selectedTemplate = null;
     }
   }
 
   onCancel(): void {
     this.cancelled.emit();
-    this.isOpen = false;
     this.selectedTemplate = null;
   }
 }

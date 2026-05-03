@@ -136,7 +136,7 @@ export class EditAssetComponent implements OnInit, OnDestroy {
           this.error = 'Failed to load asset details';
           this.loading = false;
           this.cdr.markForCheck();
-          this.translateService.get(['toast.error', 'assetDetails.failedToLoad']).subscribe(translations => {
+          this.translateService.get(['toast.error', 'assetDetails.failedToLoad']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.error(
               translations['assetDetails.failedToLoad'] || 'Failed to load asset details',
               translations['toast.error']
@@ -228,7 +228,7 @@ export class EditAssetComponent implements OnInit, OnDestroy {
         next: () => {
           this.saving = false;
           this.cdr.markForCheck();
-          this.translateService.get(['toast.success', 'common.savedSuccessfully']).subscribe(translations => {
+          this.translateService.get(['toast.success', 'common.savedSuccessfully']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.success(
               translations['common.savedSuccessfully'] || 'Saved successfully',
               translations['toast.success']
@@ -240,7 +240,7 @@ export class EditAssetComponent implements OnInit, OnDestroy {
           console.error('Error updating asset:', error);
           this.saving = false;
           this.cdr.markForCheck();
-          this.translateService.get(['toast.error', 'common.failedToSave']).subscribe(translations => {
+          this.translateService.get(['toast.error', 'common.failedToSave']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.error(
               translations['common.failedToSave'] || 'Failed to save changes',
               translations['toast.error']

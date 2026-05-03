@@ -30,27 +30,27 @@
   <div *ngIf="!loading && !error && summary" class="space-y-6">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div *ngIf="summary.orderSupplyDate" class="space-y-1">
-        <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+        <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
           {{ 'workflowApprovalDetail.workflowSupplySummary.orderPickupDate' | translate }}
-        </label>
+        </span>
         <p class="text-sm text-[var(--color-text)] font-medium">{{ summary.orderSupplyDate | appDateTime }}</p>
       </div>
       <div *ngIf="showSupplyDateRow()" class="space-y-1">
-        <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+        <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
           {{ 'workflowApprovalDetail.workflowSupplySummary.supplyPickupDate' | translate }}
-        </label>
+        </span>
         <p class="text-sm text-[var(--color-text)] font-medium">{{ summary.supplyDate | appDateTime }}</p>
       </div>
       <div *ngIf="summary.submissionStatus > 0" class="space-y-1">
-        <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+        <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
           {{ 'workflowApprovalDetail.workflowSupplySummary.submissionStatus' | translate }}
-        </label>
+        </span>
         <p class="text-sm text-[var(--color-text)] font-medium">{{ submissionLabelKey(summary.submissionStatus) | translate }}</p>
       </div>
       <div *ngIf="summary.fulfillmentStatus > 0" class="space-y-1">
-        <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+        <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
           {{ 'workflowApprovalDetail.workflowSupplySummary.fulfillmentStatus' | translate }}
-        </label>
+        </span>
         <p class="text-sm text-[var(--color-text)] font-medium">{{ fulfillmentLabelKey(summary.fulfillmentStatus) | translate }}</p>
       </div>
     </div>
@@ -77,9 +77,9 @@
     </div>
 
     <div *ngIf="summary.notes" class="space-y-1">
-      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+      <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
         {{ 'workflowApprovalDetail.workflowSupplySummary.supplyNotes' | translate }}
-      </label>
+      </span>
       <p class="text-sm text-[var(--color-text)] whitespace-pre-wrap">{{ summary.notes }}</p>
     </div>
 

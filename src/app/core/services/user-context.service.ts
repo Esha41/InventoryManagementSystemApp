@@ -7,7 +7,6 @@ import { ApiService } from './api.service';
 import { StorageService } from './storage.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { PERMISSIONS } from '@constants/permissions.constants';
-import { APIOperationResponse } from '@models/api-response.model';
 import { decodeJwtPayload } from '@utils/jwt.util';
 
 const ADMIN_PERMISSION_HINTS = [

@@ -5,12 +5,12 @@
 
 import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
-import { takeUntil, catchError } from 'rxjs/operators';
+import { takeUntil, catchError, take } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { SupplyService, SubmitSupplyDto, SupplyDto } from '@requests/services/supply.service';
+import { SupplyService, SubmitSupplyDto } from '@requests/services/supply.service';
 import { ConfigService } from '@services/config.service';
 import { FileUploadService } from '@services/file-upload.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
@@ -91,20 +91,17 @@ export class WorkflowApprovalSupplyService {
         .pipe(takeUntil(destroy$))
         .subscribe({
           next: () => {
-            this.translateService.get(['toast.success', 'workflowApprovalDetail.success.pickupDateSet']).subscribe(translations => {
-              this.toastService.success(
-                translations['workflowApprovalDetail.success.pickupDateSet'] || 'Pickup date set successfully and locked for confirmation',
-                translations['toast.success']
-              );
-            });
+            this.showSuccessToast('workflowApprovalDetail.success.pickupDateSet', 'toast.success', 'Pickup date set successfully and locked for confirmation');
             observer.next();
             observer.complete();
           },
-          error: (error) => {
-            this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.failedToSetPickupDate']).subscribe(translations => {
-              const errorMessage = ErrorHandler.extractErrorMessage(error, translations['workflowApprovalDetail.errors.failedToSetPickupDate'] || 'Failed to set pickup date');
-              this.toastService.error(errorMessage, translations['toast.error']);
-            });
+          error: (error: unknown) => {
+            this.showErrorToastKeys(
+              error,
+              'toast.error',
+              'workflowApprovalDetail.errors.failedToSetPickupDate',
+              'Failed to set pickup date'
+            );
             observer.error(error);
           }
         });
@@ -139,20 +136,17 @@ export class WorkflowApprovalSupplyService {
         .pipe(takeUntil(destroy$))
         .subscribe({
           next: () => {
-            this.translateService.get(['toast.success', 'workflowApprovalDetail.success.pickupDateConfirmed']).subscribe(translations => {
-              this.toastService.success(
-                translations['workflowApprovalDetail.success.pickupDateConfirmed'] || 'Pickup date confirmed successfully',
-                translations['toast.success']
-              );
-            });
+            this.showSuccessToast('workflowApprovalDetail.success.pickupDateConfirmed', 'toast.success', 'Pickup date confirmed successfully');
             observer.next();
             observer.complete();
           },
-          error: (error) => {
-            this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.failedToConfirmPickupDate']).subscribe(translations => {
-              const errorMessage = ErrorHandler.extractErrorMessage(error, translations['workflowApprovalDetail.errors.failedToConfirmPickupDate'] || 'Failed to confirm pickup date');
-              this.toastService.error(errorMessage, translations['toast.error']);
-            });
+          error: (error: unknown) => {
+            this.showErrorToastKeys(
+              error,
+              'toast.error',
+              'workflowApprovalDetail.errors.failedToConfirmPickupDate',
+              'Failed to confirm pickup date'
+            );
             observer.error(error);
           }
         });
@@ -178,24 +172,12 @@ export class WorkflowApprovalSupplyService {
         .pipe(takeUntil(destroy$))
         .subscribe({
           next: () => {
-            this.translateService.get(['toast.success', 'workflowApprovalDetail.success.supplySubmitted']).subscribe(translations => {
-              this.toastService.success(
-                translations['workflowApprovalDetail.success.supplySubmitted'] || 'Supply submitted successfully',
-                translations['toast.success']
-              );
-            });
+            this.showSuccessToast('workflowApprovalDetail.success.supplySubmitted', 'toast.success', 'Supply submitted successfully');
             observer.next();
             observer.complete();
           },
-          error: (error) => {
-            const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to submit supply');
-
-            this.translateService.get(['toast.error']).subscribe(translations => {
-              this.toastService.error(
-                errorMessage,
-                translations['toast.error'] || 'Error'
-              );
-            });
+          error: (error: unknown) => {
+            this.showErrorToast(error, 'Failed to submit supply');
             observer.error(error);
           }
         });
@@ -221,23 +203,18 @@ export class WorkflowApprovalSupplyService {
           takeUntil(destroy$),
           catchError((error: unknown) => {
             this.config.logError('Failed to upload additional files', error);
-            this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileUploadFailed']).subscribe(translations => {
-              this.toastService.error(
-                ErrorHandler.extractErrorMessage(error, translations['workflowApprovalDetail.errors.fileUploadFailed'] || 'Failed to upload files'),
-                translations['toast.error']
-              );
-            });
+            this.showErrorToastKeys(
+              error,
+              'toast.error',
+              'workflowApprovalDetail.errors.fileUploadFailed',
+              'Failed to upload files'
+            );
             return throwError(() => error);
           })
         )
         .subscribe({
           next: (fileIds) => {
-            this.translateService.get(['toast.success', 'workflowApprovalDetail.success.filesUploaded']).subscribe(translations => {
-              this.toastService.success(
-                translations['workflowApprovalDetail.success.filesUploaded'] || 'Files uploaded successfully',
-                translations['toast.success']
-              );
-            });
+            this.showSuccessToast('workflowApprovalDetail.success.filesUploaded', 'toast.success', 'Files uploaded successfully');
             observer.next(fileIds ?? []);
             observer.complete();
           },
@@ -263,12 +240,12 @@ export class WorkflowApprovalSupplyService {
           takeUntil(destroy$),
           catchError((error: unknown) => {
             this.config.logError('Failed to download file', error);
-            this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileDownloadFailed']).subscribe(translations => {
-              this.toastService.error(
-                ErrorHandler.extractErrorMessage(error, translations['workflowApprovalDetail.errors.fileDownloadFailed'] || 'Failed to download file'),
-                translations['toast.error']
-              );
-            });
+            this.showErrorToastKeys(
+              error,
+              'toast.error',
+              'workflowApprovalDetail.errors.fileDownloadFailed',
+              'Failed to download file'
+            );
             return throwError(() => error);
           })
         )
@@ -298,23 +275,18 @@ export class WorkflowApprovalSupplyService {
           takeUntil(destroy$),
           catchError((error: unknown) => {
             this.config.logError('Failed to delete file', error);
-            this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.fileDeleteFailed']).subscribe(translations => {
-              this.toastService.error(
-                ErrorHandler.extractErrorMessage(error, translations['workflowApprovalDetail.errors.fileDeleteFailed'] || 'Failed to delete file'),
-                translations['toast.error']
-              );
-            });
+            this.showErrorToastKeys(
+              error,
+              'toast.error',
+              'workflowApprovalDetail.errors.fileDeleteFailed',
+              'Failed to delete file'
+            );
             return throwError(() => error);
           })
         )
         .subscribe({
           next: () => {
-            this.translateService.get(['toast.success', 'workflowApprovalDetail.success.fileDeleted']).subscribe(translations => {
-              this.toastService.success(
-                translations['workflowApprovalDetail.success.fileDeleted'] || 'File deleted successfully',
-                translations['toast.success']
-              );
-            });
+            this.showSuccessToast('workflowApprovalDetail.success.fileDeleted', 'toast.success', 'File deleted successfully');
             observer.next(true);
             observer.complete();
           },
@@ -347,5 +319,43 @@ export class WorkflowApprovalSupplyService {
    */
   showFileValidationErrors(invalidFiles: string[]): void {
     showFileValidationErrors(this.translateService, this.toastService, invalidFiles, 'workflowApprovalDetail');
+  }
+
+  private showSuccessToast(messageKey: string, titleKey: string, fallbackBody: string): void {
+    this.translateService
+      .get([messageKey, titleKey])
+      .pipe(take(1))
+      .subscribe(translations => {
+        this.toastService.success(translations[messageKey] || fallbackBody, translations[titleKey]);
+      });
+  }
+
+  private showErrorToast(error: unknown, defaultMsg: string): void {
+    const msg = ErrorHandler.extractAndTranslateErrorMessage(error, defaultMsg, this.translateService);
+    this.translateService
+      .get('toast.error')
+      .pipe(take(1))
+      .subscribe(translations => {
+        this.toastService.error(msg, translations['toast.error'] || 'Error');
+      });
+  }
+
+  private showErrorToastKeys(
+    error: unknown,
+    titleKey: string,
+    bodyKey: string,
+    fallbackBody: string
+  ): void {
+    this.translateService
+      .get([titleKey, bodyKey])
+      .pipe(take(1))
+      .subscribe(translations => {
+        const msg = ErrorHandler.extractAndTranslateErrorMessage(
+          error,
+          translations[bodyKey] || fallbackBody,
+          this.translateService
+        );
+        this.toastService.error(msg, translations[titleKey]);
+      });
   }
 }

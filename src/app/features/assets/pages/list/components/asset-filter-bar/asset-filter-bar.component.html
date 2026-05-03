@@ -6,9 +6,9 @@
     <div class="flex flex-wrap items-end gap-4">
       <!-- Search -->
       <div class="relative flex-1 min-w-0 w-full sm:min-w-[200px]">
-        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+        <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
           {{ 'assetList.filters.search' | translate }}
-        </label>
+        </span>
         <div class="app-search-field">
           <lucide-angular [img]="Search" class="app-search-field__icon app-search-field__icon--lg"></lucide-angular>
           <input type="text" [(ngModel)]="filterState.searchTerm"
@@ -30,9 +30,9 @@
 
       <!-- Ammunition Filters -->
       <div *ngIf="activeTab === 'ammunition'" class="w-full sm:w-[180px]">
-        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+        <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
           {{ 'assetList.filters.caseType' | translate }}
-        </label>
+        </span>
         <app-dropdown class="w-full" [(ngModel)]="filterState.selectedCaseType" (selectionChange)="onFilterChange()"
           [options]="filterOptions.caseType" optionLabel="label" optionValue="value" [placeholderSelectable]="false"
           placeholder="{{ 'assetList.filters.allCaseTypes' | translate }}">
@@ -40,9 +40,9 @@
       </div>
 
       <div *ngIf="activeTab === 'ammunition'" class="w-full sm:w-[220px]">
-        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+        <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
           {{ 'assetList.filters.primaryPurpose' | translate }}
-        </label>
+        </span>
         <app-dropdown class="w-full" [(ngModel)]="filterState.selectedPrimaryPurposeId"
           (selectionChange)="onFilterChange()" [options]="filterOptions.primaryPurpose" optionLabel="label"
           optionValue="value" [placeholderSelectable]="false"
@@ -51,9 +51,9 @@
       </div>
 
       <div *ngIf="activeTab === 'ammunition'" class="w-full sm:w-[180px]">
-        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+        <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
           {{ 'assetList.filters.compatibility' | translate }}
-        </label>
+        </span>
         <app-dropdown class="w-full" [(ngModel)]="filterState.selectedCompatibility"
           (selectionChange)="onFilterChange()" [options]="filterOptions.compatibility" optionLabel="label"
           optionValue="value" [placeholderSelectable]="false"
@@ -63,9 +63,9 @@
 
       <!-- Weapon Filters -->
       <div *ngIf="activeTab === 'weapon'" class="w-full sm:w-[180px]">
-        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+        <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
           {{ 'assetList.filters.weaponType' | translate }}
-        </label>
+        </span>
         <app-dropdown class="w-full" [(ngModel)]="filterState.selectedWeaponType"
           (selectionChange)="onFilterChange()" [options]="filterOptions.weaponType" optionLabel="label"
           optionValue="value" [placeholderSelectable]="false"
@@ -74,9 +74,9 @@
       </div>
 
       <div *ngIf="activeTab === 'weapon'" class="w-full sm:w-[180px]">
-        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+        <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
           {{ 'assetList.filters.classification' | translate }}
-        </label>
+        </span>
         <app-dropdown class="w-full" [(ngModel)]="filterState.selectedWeaponClassification"
           (selectionChange)="onFilterChange()" [options]="filterOptions.weaponClassification" optionLabel="label"
           optionValue="value" [placeholderSelectable]="false"
@@ -85,9 +85,9 @@
       </div>
 
       <div *ngIf="activeTab === 'weapon'" class="w-full sm:w-[180px]">
-        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+        <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
           {{ 'assetList.filters.country' | translate }}
-        </label>
+        </span>
         <app-dropdown class="w-full" [(ngModel)]="filterState.selectedCountryOfManufacture"
           (selectionChange)="onFilterChange()" [options]="filterOptions.countryOfManufacture" optionLabel="label"
           optionValue="value" [placeholderSelectable]="false"
@@ -96,9 +96,9 @@
       </div>
 
       <div *ngIf="activeTab === 'weapon'" class="w-full sm:w-[220px]">
-        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+        <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
           {{ 'assetList.filters.primaryPurpose' | translate }}
-        </label>
+        </span>
         <app-dropdown class="w-full" [(ngModel)]="filterState.selectedWeaponPrimaryPurposeId"
           (selectionChange)="onFilterChange()" [options]="filterOptions.primaryPurpose" optionLabel="label"
           optionValue="value" [placeholderSelectable]="false"
@@ -108,9 +108,9 @@
 
       <!-- Explosive Filters -->
       <div *ngIf="activeTab === 'explosive'" class="w-full sm:w-[180px]">
-        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+        <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
           {{ 'assetList.filters.explosiveType' | translate }}
-        </label>
+        </span>
         <app-dropdown class="w-full" [(ngModel)]="filterState.selectedExplosiveType"
           (selectionChange)="onFilterChange()" [options]="filterOptions.explosiveType" optionLabel="label"
           optionValue="value" [placeholderSelectable]="false"
@@ -119,9 +119,9 @@
       </div>
 
       <div *ngIf="activeTab === 'explosive'" class="w-full sm:w-[180px]">
-        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+        <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
           {{ 'assetList.filters.classification' | translate }}
-        </label>
+        </span>
         <app-dropdown class="w-full" [(ngModel)]="filterState.selectedExplosiveClassification"
           (selectionChange)="onFilterChange()" [options]="filterOptions.explosiveClassification" optionLabel="label"
           optionValue="value" [placeholderSelectable]="false"
@@ -130,9 +130,9 @@
       </div>
 
       <div *ngIf="activeTab === 'explosive'" class="w-full sm:w-[180px]">
-        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+        <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
           {{ 'assetList.filters.hazardDivision' | translate }}
-        </label>
+        </span>
         <app-dropdown class="w-full" [(ngModel)]="filterState.selectedExplosiveHazardDivision"
           (selectionChange)="onFilterChange()" [options]="filterOptions.explosiveHazardDivision" optionLabel="label"
           optionValue="value" [placeholderSelectable]="false"
@@ -141,9 +141,9 @@
       </div>
 
       <div *ngIf="activeTab === 'explosive'" class="w-full sm:w-[180px]">
-        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+        <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
           {{ 'assetList.filters.compatibility' | translate }}
-        </label>
+        </span>
         <app-dropdown class="w-full" [(ngModel)]="filterState.selectedExplosiveCompatibility"
           (selectionChange)="onFilterChange()" [options]="filterOptions.explosiveCompatibility" optionLabel="label"
           optionValue="value" [placeholderSelectable]="false"
@@ -152,9 +152,9 @@
       </div>
 
       <div *ngIf="activeTab === 'explosive'" class="w-full sm:w-[220px]">
-        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">
+        <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
           {{ 'assetList.filters.primaryPurpose' | translate }}
-        </label>
+        </span>
         <app-dropdown class="w-full" [(ngModel)]="filterState.selectedExplosivePrimaryPurposeId"
           (selectionChange)="onFilterChange()" [options]="filterOptions.primaryPurpose" optionLabel="label"
           optionValue="value" [placeholderSelectable]="false"
@@ -187,22 +187,22 @@
         <div *ngIf="activeTab === 'ammunition'" class="flex flex-col gap-4">
           <div class="alf-more-filters__single-line">
             <div class="alf-col-field alf-col-field--line">
-              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'assetList.table.name' | translate }}</label>
-              <input type="text" [(ngModel)]="filterState.columnFilters.name" (keydown)="onColumnFilterKeydown($event)"
+              <label class="text-xs font-medium text-[var(--color-text-muted)]" for="asset-filter-bar-fld-14-14">{{ 'assetList.table.name' | translate }}</label>
+              <input id="asset-filter-bar-fld-14-14" type="text" [(ngModel)]="filterState.columnFilters.name" (keydown)="onColumnFilterKeydown($event)"
                 class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
             </div>
             <div class="alf-col-field alf-col-field--line">
-              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'assetList.table.itemNo' | translate }}</label>
-              <input type="text" [(ngModel)]="filterState.columnFilters.itemNo" (keydown)="onColumnFilterKeydown($event)"
+              <label class="text-xs font-medium text-[var(--color-text-muted)]" for="asset-filter-bar-fld-15-15">{{ 'assetList.table.itemNo' | translate }}</label>
+              <input id="asset-filter-bar-fld-15-15" type="text" [(ngModel)]="filterState.columnFilters.itemNo" (keydown)="onColumnFilterKeydown($event)"
                 class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
             </div>
             <div class="alf-col-field alf-col-field--line">
-              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'assetList.table.partNo' | translate }}</label>
-              <input type="text" [(ngModel)]="filterState.columnFilters.partNo" (keydown)="onColumnFilterKeydown($event)"
+              <label class="text-xs font-medium text-[var(--color-text-muted)]" for="asset-filter-bar-fld-16-16">{{ 'assetList.table.partNo' | translate }}</label>
+              <input id="asset-filter-bar-fld-16-16" type="text" [(ngModel)]="filterState.columnFilters.partNo" (keydown)="onColumnFilterKeydown($event)"
                 class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
             </div>
             <div class="alf-col-field alf-col-field--line">
-              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'addAsset.caliber' | translate }}</label>
+              <span class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'addAsset.caliber' | translate }}</span>
               <app-dropdown class="w-full"
                 [(ngModel)]="filterState.columnFilters.caliberId" name="colFilterCaliberAmmo"
                 [options]="calibersAmmunitionForFilter" optionValue="id"
@@ -217,18 +217,18 @@
           <div class="alf-more-filters__actions-row w-full flex flex-wrap items-end gap-4">
             <div class="alf-more-filters__arm-un-line flex flex-nowrap gap-4 min-w-0 overflow-x-auto pb-0.5">
               <div class="alf-col-field alf-col-field--line">
-                <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'addAsset.armNumber' | translate }}</label>
-                <input type="text" [(ngModel)]="filterState.columnFilters.armNumber" (keydown)="onColumnFilterKeydown($event)"
+                <label class="text-xs font-medium text-[var(--color-text-muted)]" for="asset-filter-bar-fld-18-18">{{ 'addAsset.armNumber' | translate }}</label>
+                <input id="asset-filter-bar-fld-18-18" type="text" [(ngModel)]="filterState.columnFilters.armNumber" (keydown)="onColumnFilterKeydown($event)"
                   class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
               </div>
               <div class="alf-col-field alf-col-field--line">
-                <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'addAsset.unNumber' | translate }}</label>
-                <input type="text" [(ngModel)]="filterState.columnFilters.unNumber" (keydown)="onColumnFilterKeydown($event)"
+                <label class="text-xs font-medium text-[var(--color-text-muted)]" for="asset-filter-bar-fld-19-19">{{ 'addAsset.unNumber' | translate }}</label>
+                <input id="asset-filter-bar-fld-19-19" type="text" [(ngModel)]="filterState.columnFilters.unNumber" (keydown)="onColumnFilterKeydown($event)"
                   class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
               </div>
               <div class="alf-col-field alf-col-field--line">
-                <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'assetList.table.nsn' | translate }}</label>
-                <input type="text" [(ngModel)]="filterState.columnFilters.nsn" (keydown)="onColumnFilterKeydown($event)"
+                <label class="text-xs font-medium text-[var(--color-text-muted)]" for="asset-filter-bar-fld-20-20">{{ 'assetList.table.nsn' | translate }}</label>
+                <input id="asset-filter-bar-fld-20-20" type="text" [(ngModel)]="filterState.columnFilters.nsn" (keydown)="onColumnFilterKeydown($event)"
                   class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
               </div>
             </div>
@@ -247,39 +247,39 @@
         <div *ngIf="activeTab === 'weapon'" class="flex flex-col gap-4">
           <div class="alf-more-filters__single-line">
             <div class="alf-col-field alf-col-field--line">
-              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'assetList.table.name' | translate }}</label>
-              <input type="text" [(ngModel)]="filterState.columnFilters.name" (keydown)="onColumnFilterKeydown($event)"
+              <label class="text-xs font-medium text-[var(--color-text-muted)]" for="asset-filter-bar-fld-21-21">{{ 'assetList.table.name' | translate }}</label>
+              <input id="asset-filter-bar-fld-21-21" type="text" [(ngModel)]="filterState.columnFilters.name" (keydown)="onColumnFilterKeydown($event)"
                 class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
             </div>
             <div class="alf-col-field alf-col-field--line">
-              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'assetList.table.itemNo' | translate }}</label>
-              <input type="text" [(ngModel)]="filterState.columnFilters.itemNo" (keydown)="onColumnFilterKeydown($event)"
+              <label class="text-xs font-medium text-[var(--color-text-muted)]" for="asset-filter-bar-fld-22-22">{{ 'assetList.table.itemNo' | translate }}</label>
+              <input id="asset-filter-bar-fld-22-22" type="text" [(ngModel)]="filterState.columnFilters.itemNo" (keydown)="onColumnFilterKeydown($event)"
                 class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
             </div>
             <div class="alf-col-field alf-col-field--line">
-              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'assetList.table.partNo' | translate }}</label>
-              <input type="text" [(ngModel)]="filterState.columnFilters.partNo" (keydown)="onColumnFilterKeydown($event)"
+              <label class="text-xs font-medium text-[var(--color-text-muted)]" for="asset-filter-bar-fld-23-23">{{ 'assetList.table.partNo' | translate }}</label>
+              <input id="asset-filter-bar-fld-23-23" type="text" [(ngModel)]="filterState.columnFilters.partNo" (keydown)="onColumnFilterKeydown($event)"
                 class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
             </div>
             <div class="alf-col-field alf-col-field--line">
-              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'addAsset.unNumber' | translate }}</label>
-              <input type="text" [(ngModel)]="filterState.columnFilters.unNumber" (keydown)="onColumnFilterKeydown($event)"
+              <label class="text-xs font-medium text-[var(--color-text-muted)]" for="asset-filter-bar-fld-24-24">{{ 'addAsset.unNumber' | translate }}</label>
+              <input id="asset-filter-bar-fld-24-24" type="text" [(ngModel)]="filterState.columnFilters.unNumber" (keydown)="onColumnFilterKeydown($event)"
                 class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
             </div>
             <div class="alf-col-field alf-col-field--line">
-              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'assetList.table.nsn' | translate }}</label>
-              <input type="text" [(ngModel)]="filterState.columnFilters.nsn" (keydown)="onColumnFilterKeydown($event)"
+              <label class="text-xs font-medium text-[var(--color-text-muted)]" for="asset-filter-bar-fld-25-25">{{ 'assetList.table.nsn' | translate }}</label>
+              <input id="asset-filter-bar-fld-25-25" type="text" [(ngModel)]="filterState.columnFilters.nsn" (keydown)="onColumnFilterKeydown($event)"
                 class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
             </div>
           </div>
           <div class="alf-more-filters__actions-row w-full flex flex-wrap items-end gap-4">
             <div class="alf-col-field alf-col-field--line">
-              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'addAsset.weaponType' | translate }}</label>
-              <input type="text" [(ngModel)]="filterState.columnFilters.weaponType" (keydown)="onColumnFilterKeydown($event)"
+              <label class="text-xs font-medium text-[var(--color-text-muted)]" for="asset-filter-bar-fld-26-26">{{ 'addAsset.weaponType' | translate }}</label>
+              <input id="asset-filter-bar-fld-26-26" type="text" [(ngModel)]="filterState.columnFilters.weaponType" (keydown)="onColumnFilterKeydown($event)"
                 class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
             </div>
             <div class="alf-col-field alf-col-field--line">
-              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'addAsset.caliber' | translate }}</label>
+              <span class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'addAsset.caliber' | translate }}</span>
               <app-dropdown class="w-full"
                 [(ngModel)]="filterState.columnFilters.caliberId" name="colFilterCaliberWeapon"
                 [options]="calibersWeaponForFilter" optionValue="id"
@@ -306,36 +306,36 @@
         <div *ngIf="activeTab === 'explosive'" class="flex flex-col gap-4">
           <div class="alf-more-filters__single-line">
             <div class="alf-col-field alf-col-field--line">
-              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'assetList.table.name' | translate }}</label>
-              <input type="text" [(ngModel)]="filterState.columnFilters.name" (keydown)="onColumnFilterKeydown($event)"
+              <label class="text-xs font-medium text-[var(--color-text-muted)]" for="asset-filter-bar-fld-28-28">{{ 'assetList.table.name' | translate }}</label>
+              <input id="asset-filter-bar-fld-28-28" type="text" [(ngModel)]="filterState.columnFilters.name" (keydown)="onColumnFilterKeydown($event)"
                 class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
             </div>
             <div class="alf-col-field alf-col-field--line">
-              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'assetList.table.itemNo' | translate }}</label>
-              <input type="text" [(ngModel)]="filterState.columnFilters.itemNo" (keydown)="onColumnFilterKeydown($event)"
+              <label class="text-xs font-medium text-[var(--color-text-muted)]" for="asset-filter-bar-fld-29-29">{{ 'assetList.table.itemNo' | translate }}</label>
+              <input id="asset-filter-bar-fld-29-29" type="text" [(ngModel)]="filterState.columnFilters.itemNo" (keydown)="onColumnFilterKeydown($event)"
                 class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
             </div>
             <div class="alf-col-field alf-col-field--line">
-              <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'assetList.table.partNo' | translate }}</label>
-              <input type="text" [(ngModel)]="filterState.columnFilters.partNo" (keydown)="onColumnFilterKeydown($event)"
+              <label class="text-xs font-medium text-[var(--color-text-muted)]" for="asset-filter-bar-fld-30-30">{{ 'assetList.table.partNo' | translate }}</label>
+              <input id="asset-filter-bar-fld-30-30" type="text" [(ngModel)]="filterState.columnFilters.partNo" (keydown)="onColumnFilterKeydown($event)"
                 class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
             </div>
           </div>
           <div class="alf-more-filters__actions-row w-full flex flex-wrap items-end gap-4">
             <div class="alf-more-filters__arm-un-line flex flex-nowrap gap-4 min-w-0 overflow-x-auto pb-0.5">
               <div class="alf-col-field alf-col-field--line">
-                <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'addAsset.armNumber' | translate }}</label>
-                <input type="text" [(ngModel)]="filterState.columnFilters.armNumber" (keydown)="onColumnFilterKeydown($event)"
+                <label class="text-xs font-medium text-[var(--color-text-muted)]" for="asset-filter-bar-fld-31-31">{{ 'addAsset.armNumber' | translate }}</label>
+                <input id="asset-filter-bar-fld-31-31" type="text" [(ngModel)]="filterState.columnFilters.armNumber" (keydown)="onColumnFilterKeydown($event)"
                   class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
               </div>
               <div class="alf-col-field alf-col-field--line">
-                <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'addAsset.unNumber' | translate }}</label>
-                <input type="text" [(ngModel)]="filterState.columnFilters.unNumber" (keydown)="onColumnFilterKeydown($event)"
+                <label class="text-xs font-medium text-[var(--color-text-muted)]" for="asset-filter-bar-fld-32-32">{{ 'addAsset.unNumber' | translate }}</label>
+                <input id="asset-filter-bar-fld-32-32" type="text" [(ngModel)]="filterState.columnFilters.unNumber" (keydown)="onColumnFilterKeydown($event)"
                   class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
               </div>
               <div class="alf-col-field alf-col-field--line">
-                <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'assetList.table.nsn' | translate }}</label>
-                <input type="text" [(ngModel)]="filterState.columnFilters.nsn" (keydown)="onColumnFilterKeydown($event)"
+                <label class="text-xs font-medium text-[var(--color-text-muted)]" for="asset-filter-bar-fld-33-33">{{ 'assetList.table.nsn' | translate }}</label>
+                <input id="asset-filter-bar-fld-33-33" type="text" [(ngModel)]="filterState.columnFilters.nsn" (keydown)="onColumnFilterKeydown($event)"
                   class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
               </div>
             </div>

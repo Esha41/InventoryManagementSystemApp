@@ -35,7 +35,7 @@ export class RoleSelectionPanelComponent {
   @Input() isPostLoginFlow = true;
 
   @Output() rolePick = new EventEmitter<string>();
-  @Output() cancel = new EventEmitter<void>();
+  @Output() roleSelectionDismissed = new EventEmitter<void>();
 
   constructor(
     private translate: TranslateService,
@@ -57,6 +57,6 @@ export class RoleSelectionPanelComponent {
   }
 
   onCancel(): void {
-    this.cancel.emit();
+    this.roleSelectionDismissed.emit();
   }
 }

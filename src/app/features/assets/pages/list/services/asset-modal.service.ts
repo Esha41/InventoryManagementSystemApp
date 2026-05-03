@@ -24,7 +24,7 @@ export class AssetModalService {
     imageState: AssetImageState
   ): void {
     modalState.selectedAsset = asset;
-    imageState = createInitialImageState();
+    Object.assign(imageState, createInitialImageState());
   }
 
   /**
@@ -36,7 +36,7 @@ export class AssetModalService {
   ): void {
     modalState.showEditModal = false;
     modalState.selectedAsset = null;
-    imageState = createInitialImageState();
+    Object.assign(imageState, createInitialImageState());
   }
 
   /**

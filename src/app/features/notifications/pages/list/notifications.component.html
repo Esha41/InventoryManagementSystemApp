@@ -71,7 +71,7 @@
             </div>
           </div>
 
-          <ng-container *ngIf="!(loading$ | async)">
+          <ng-container *ngIf="(loading$ | async) === false">
             <ng-container *ngIf="filteredNotifications$ | async as notifications">
               <div *ngIf="notifications.length === 0"
                 class="flex h-full flex-col items-center justify-center gap-3 px-6 py-16 text-center text-sm text-[var(--color-text-muted)]">
@@ -442,10 +442,10 @@
     (closed)="closeProposeModal()">
     <form [formGroup]="proposeForm" class="space-y-4">
       <div class="space-y-2">
-        <label class="text-sm font-medium text-[var(--color-text)]">
+        <label class="text-sm font-medium text-[var(--color-text)]" for="list-pickupdate-1">
           {{ 'notifications.pickupDate' | translate }}
         </label>
-        <input type="date" formControlName="pickupDate"
+        <input id="list-pickupdate-1" type="date" formControlName="pickupDate"
           class="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-soft)]" />
         <p class="text-xs text-red-500"
           *ngIf="proposeForm.get('pickupDate')?.invalid && proposeForm.get('pickupDate')?.touched">
@@ -454,10 +454,10 @@
       </div>
 
       <div class="space-y-2">
-        <label class="text-sm font-medium text-[var(--color-text)]">
+        <label class="text-sm font-medium text-[var(--color-text)]" for="list-pickuptime-2">
           {{ 'notifications.pickupTime' | translate }}
         </label>
-        <input type="text" formControlName="pickupTime" (input)="formatMilitaryTime($event)" maxlength="4"
+        <input id="list-pickuptime-2" type="text" formControlName="pickupTime" (input)="formatMilitaryTime($event)" maxlength="4"
           pattern="[0-9]{4}" [placeholder]="'newIssueRequest.selectTimePlaceholder' | translate"
           class="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-soft)]" />
         <p class="text-xs text-red-500"

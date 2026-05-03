@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, signal, computed, effect } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { combineLatest, catchError, of } from 'rxjs';
@@ -40,7 +40,7 @@ import { createEcharts } from '@core/echarts.factory';
     styleUrls: ['./analytics-dashboard.component.css'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AnalyticsDashboardComponent implements OnInit, OnDestroy {
+export class AnalyticsDashboardComponent implements OnInit {
     // Icons
     readonly TrendingUp = TrendingUp;
     readonly RefreshCw = RefreshCw;
@@ -107,10 +107,6 @@ export class AnalyticsDashboardComponent implements OnInit, OnDestroy {
         this.adminAnalyticsService.startAutoRefresh();
         
         // Metrics are automatically loaded via toSignal() - no manual subscription needed!
-    }
-
-    ngOnDestroy(): void {
-        // Signals automatically clean up - no manual unsubscribe needed
     }
 
     /**

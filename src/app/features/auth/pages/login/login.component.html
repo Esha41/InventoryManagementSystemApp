@@ -2,8 +2,8 @@
   *ngIf="showTakeOverDialog"
   [existingSessionUser]="takeOverExistingSessionUser"
   [requestingUser]="takeOverRequestingUser"
-  (confirm)="takeOverSession()"
-  (cancel)="cancelTakeOver()"
+  (takeOverConfirmed)="takeOverSession()"
+  (takeOverCancelled)="cancelTakeOver()"
 />
 
 <div class="space-y-4 sm:space-y-6">

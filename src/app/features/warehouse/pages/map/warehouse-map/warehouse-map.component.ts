@@ -231,7 +231,7 @@ export class WarehouseMapComponent implements OnInit, AfterViewInit, OnDestroy {
         if (response.ok) {
           await cache.put(url, response.clone());
         }
-      } catch (error) {
+      } catch (_error) {
         // Silently fail
       }
     };

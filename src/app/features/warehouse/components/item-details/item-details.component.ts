@@ -64,7 +64,7 @@ export class ItemDetailsComponent implements OnInit, OnChanges, OnDestroy {
   @Input() isPage = false;
   @Input() itemType?: ItemTypeHint;
   @Output() select = new EventEmitter<void>();
-  @Output() cancel = new EventEmitter<void>();
+  @Output() navigationDismissed = new EventEmitter<void>();
   @Output() close = new EventEmitter<void>();
 
   loading = false;
@@ -151,7 +151,7 @@ export class ItemDetailsComponent implements OnInit, OnChanges, OnDestroy {
         queryParams: { tab: this.itemType }
       });
     } else {
-      this.cancel.emit();
+      this.navigationDismissed.emit();
     }
   }
 
@@ -160,7 +160,7 @@ export class ItemDetailsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   onCancel(): void {
-    this.cancel.emit();
+    this.navigationDismissed.emit();
   }
 
   onClose(): void {

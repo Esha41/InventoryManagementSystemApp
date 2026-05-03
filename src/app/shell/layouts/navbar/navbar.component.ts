@@ -240,7 +240,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
       next: () => {
         this.router.navigate(['/auth/login']);
       },
-      error: (error) => {
+      error: (_error) => {
         // Even if there's an error, redirect to login
         this.router.navigate(['/auth/login']);
       }

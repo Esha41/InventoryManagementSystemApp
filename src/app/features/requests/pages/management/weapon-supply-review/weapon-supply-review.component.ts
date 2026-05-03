@@ -5,13 +5,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, ArrowRight, ChevronDown, ChevronUp,ChevronRight, CheckCircle, AlertTriangle, Package, Clock, User, 
   Shield, FileText, Warehouse, Building2, Users, ClipboardList,ListOrdered, Check, X, Search, Info, Paperclip,Plus, Trash2, Pencil } from 'lucide-angular';
-import { Subject, takeUntil, debounceTime, distinctUntilChanged, forkJoin, of } from 'rxjs';
-import { catchError, switchMap } from 'rxjs/operators';
+import { Subject, takeUntil, forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 import { AssetService } from '@assets/services/asset.service';
 import { OrderService } from '@requests/services/order.service';
 import { FileUploadService } from '@services/file-upload.service';
-import { FileEntityType } from '@models/file-upload.model';
 import { OrderDto } from '@models/order.model';
 import { AssetDto } from '@core/models/asset.model';
 import { DropdownOption } from '@components/dropdown/dropdown.component';

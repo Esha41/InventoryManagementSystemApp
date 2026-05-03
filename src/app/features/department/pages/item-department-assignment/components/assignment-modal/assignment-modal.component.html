@@ -18,7 +18,7 @@
 
     <form (ngSubmit)="onSave()" class="space-y-4">
       <div>
-        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'itemDepartmentAssignment.department' | translate }} *</label>
+        <span class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'itemDepartmentAssignment.department' | translate }} *</span>
         <app-dropdown
           class="w-full"
           [(ngModel)]="currentAssignment.departmentId"
@@ -33,7 +33,7 @@
       </div>
 
       <div *ngIf="isEditMode">
-        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'itemDepartmentAssignment.item' | translate }} *</label>
+        <span class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'itemDepartmentAssignment.item' | translate }} *</span>
         <app-dropdown
           class="w-full"
           [(ngModel)]="currentAssignment.itemId"
@@ -49,7 +49,7 @@
 
       <ng-container *ngIf="!isEditMode">
         <div>
-          <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'itemDepartmentAssignment.ammunitionLabel' | translate }}</label>
+          <span class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'itemDepartmentAssignment.ammunitionLabel' | translate }}</span>
           <app-dropdown
             class="w-full"
             [ngModel]="selectedAmmunitionIds"
@@ -64,7 +64,7 @@
           </app-dropdown>
         </div>
         <div>
-          <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'itemDepartmentAssignment.explosivesLabel' | translate }}</label>
+          <span class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'itemDepartmentAssignment.explosivesLabel' | translate }}</span>
           <app-dropdown
             class="w-full"
             [ngModel]="selectedExplosiveIds"
@@ -79,7 +79,7 @@
           </app-dropdown>
         </div>
         <div>
-          <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'itemDepartmentAssignment.weaponsLabel' | translate }}</label>
+          <span class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'itemDepartmentAssignment.weaponsLabel' | translate }}</span>
           <app-dropdown
             class="w-full"
             [ngModel]="selectedWeaponIds"
@@ -99,8 +99,8 @@
       </ng-container>
 
       <div>
-        <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'itemDepartmentAssignment.notes' | translate }}</label>
-        <textarea [(ngModel)]="currentAssignment.notes" name="notes" rows="3"
+        <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="assignment-modal-notes-6">{{ 'itemDepartmentAssignment.notes' | translate }}</label>
+        <textarea id="assignment-modal-notes-6" [(ngModel)]="currentAssignment.notes" name="notes" rows="3"
           class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
           [placeholder]="'itemDepartmentAssignment.notesPlaceholder' | translate"></textarea>
       </div>

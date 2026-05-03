@@ -1,9 +1,9 @@
 <!-- Depot Selection -->
 <app-card [shadow]="true" class="mb-6 overflow-hidden">
   <div class="p-4 sm:p-6">
-    <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+    <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
       {{ 'adminImportExport.selectDepot' | translate }}
-    </label>
+    </span>
     <app-dropdown [options]="getDepotOptions()" [(ngModel)]="selectedDepotId" (selectionChange)="onDepotChange($event)"
       placeholder="{{ 'adminImportExport.selectDepotPlaceholder' | translate }}" class="w-full max-w-full sm:max-w-md">
     </app-dropdown>
@@ -106,5 +106,5 @@
 
 <!-- Import Preview Dialog -->
 <app-import-preview-dialog *ngIf="showPreviewModal && previewData" [previewData]="previewData" [assetType]="activeTab"
-  (confirm)="onPreviewConfirmed($event)" (cancel)="onPreviewCancelled()">
+  (confirm)="onPreviewConfirmed($event)" (importCancelled)="onPreviewCancelled()">
 </app-import-preview-dialog>

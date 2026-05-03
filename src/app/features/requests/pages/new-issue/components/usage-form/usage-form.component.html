@@ -98,8 +98,8 @@
       <div class="space-y-6">
         <!-- Order Priority -->
         <div>
-          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.orderPriority' |
-            translate }} <span class="text-red-500">*</span></label>
+          <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.orderPriority' |
+            translate }} <span class="text-red-500">*</span></span>
           <app-dropdown class="w-full" [ngModel]="orderPriority" (ngModelChange)="onOrderPriorityChange($event)"
             [options]="orderPriorities" [placeholderSelectable]="false" [placeholderValue]="''"
             [error]="hasError('orderPriority')" [translateLabels]="true"
@@ -112,8 +112,8 @@
 
         <!-- Use purpose -->
         <div>
-          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usePurpose' |
-            translate }} <span class="text-red-500">*</span></label>
+          <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usePurpose' |
+            translate }} <span class="text-red-500">*</span></span>
           <app-dropdown class="w-full" name="usePurpose" [ngModel]="selectedUsePurposeId"
             (ngModelChange)="onUsePurposeChange($event)" [options]="usePurposeOptions" [placeholderSelectable]="false"
             [placeholderValue]="null" [error]="hasError('usePurpose')" [disabled]="usePurposeOptions.length === 0"
@@ -127,10 +127,10 @@
 
         <!-- Request Purpose Notes (required when use purpose selected) -->
         <div *ngIf="selectedUsePurposeId !== null && selectedUsePurposeId !== undefined">
-          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="usage-form-fld-3-3">
             {{ 'newIssueRequest.requestPurposeNotes' | translate }} <span class="text-red-500">*</span>
           </label>
-          <textarea [ngModel]="requestPurposeNotes" (ngModelChange)="onRequestPurposeNotesChange($event)" rows="3"
+          <textarea id="usage-form-fld-3-3" [ngModel]="requestPurposeNotes" (ngModelChange)="onRequestPurposeNotesChange($event)" rows="3"
             [placeholder]="'newIssueRequest.requestPurposeNotesPlaceholder' | translate"
             class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 transition-all resize-none"
             [ngClass]="{
@@ -144,9 +144,9 @@
 
         <!-- Usage Location -->
         <div>
-          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usageLocation' |
+          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="usage-form-usagelocation-4">{{ 'newIssueRequest.usageLocation' |
             translate }} <span class="text-red-500">*</span></label>
-          <input name="usageLocation" type="text" [ngModel]="usageLocation"
+          <input id="usage-form-usagelocation-4" name="usageLocation" type="text" [ngModel]="usageLocation"
             (ngModelChange)="onUsageLocationChange($event)"
             class="w-full px-3 py-2 border rounded text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 transition-all"
             [ngClass]="{
@@ -160,25 +160,25 @@
 
         <!-- No. of Officers -->
         <div>
-          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.numberOfOfficers'
+          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="usage-form-fld-5-5">{{ 'newIssueRequest.numberOfOfficers'
             | translate }}</label>
-          <input type="number" [ngModel]="numberOfOfficers" (ngModelChange)="onNumberOfOfficersChange($event)"
+          <input id="usage-form-fld-5-5" type="number" [ngModel]="numberOfOfficers" (ngModelChange)="onNumberOfOfficersChange($event)"
             class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-all">
         </div>
 
         <!-- No. of Other Ranks -->
         <div>
-          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{
+          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="usage-form-fld-6-6">{{
             'newIssueRequest.numberOfOtherRanks' | translate }}</label>
-          <input type="number" [ngModel]="numberOfOtherRanks" (ngModelChange)="onNumberOfOtherRanksChange($event)"
+          <input id="usage-form-fld-6-6" type="number" [ngModel]="numberOfOtherRanks" (ngModelChange)="onNumberOfOtherRanksChange($event)"
             class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-all">
         </div>
 
         <!-- File Upload -->
         <div>
-          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+          <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
             {{ 'newIssueRequest.attachments' | translate }} <span class="text-red-500">*</span>
-          </label>
+          </span>
           <div class="space-y-3">
             <!-- File Input -->
             <div class="flex flex-wrap items-center gap-3">
@@ -231,8 +231,8 @@
       <div class="space-y-6">
         <!-- Usage Date From - Display in DD/MM/YYYY (app format), picker opens on click -->
         <div>
-          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usageDateFrom' |
-            translate }} <span class="text-red-500">*</span></label>
+          <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usageDateFrom' |
+            translate }} <span class="text-red-500">*</span></span>
           <div class="relative min-h-[42px] rounded border bg-[var(--color-background)] cursor-pointer"
             (click)="openDateFromPicker()"
             [attr.dir]="isRTL ? 'rtl' : 'ltr'"
@@ -260,8 +260,8 @@
 
         <!-- Usage Date To - Display in DD/MM/YYYY (app format), picker opens on click -->
         <div>
-          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usageDateTo' |
-            translate }} <span class="text-red-500">*</span></label>
+          <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usageDateTo' |
+            translate }} <span class="text-red-500">*</span></span>
           <div class="relative min-h-[42px] rounded border bg-[var(--color-background)] cursor-pointer"
             (click)="openDateToPicker()"
             [attr.dir]="isRTL ? 'rtl' : 'ltr'"
@@ -288,8 +288,8 @@
 
         <!-- Usage Time From -->
         <div>
-          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usageTimeFrom' |
-            translate }} <span class="text-red-500">*</span></label>
+          <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usageTimeFrom' |
+            translate }} <span class="text-red-500">*</span></span>
           <app-dropdown class="w-full" [ngModel]="usageTimeFrom" (ngModelChange)="onUsageTimeFromChange($event)"
             [options]="timeOptions" [placeholderSelectable]="false" [placeholderValue]="''"
             [error]="hasError('usageTimeFrom')" placeholder="{{ 'newIssueRequest.selectTimePlaceholder' | translate }}">
@@ -303,8 +303,8 @@
 
         <!-- Usage Time To -->
         <div>
-          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usageTimeTo' |
-            translate }} <span class="text-red-500">*</span></label>
+          <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.usageTimeTo' |
+            translate }} <span class="text-red-500">*</span></span>
           <app-dropdown class="w-full" [ngModel]="usageTimeTo" (ngModelChange)="onUsageTimeToChange($event)"
             [options]="timeOptions" [placeholderSelectable]="false" [placeholderValue]="''"
             [error]="hasError('usageTimeTo')" placeholder="{{ 'newIssueRequest.selectTimePlaceholder' | translate }}">
@@ -318,9 +318,9 @@
 
         <!-- Comments -->
         <div>
-          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">{{ 'newIssueRequest.comments' |
+          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="usage-form-requestercomments-12">{{ 'newIssueRequest.comments' |
             translate }}</label>
-          <textarea name="requesterComments" [ngModel]="requesterComments"
+          <textarea id="usage-form-requestercomments-12" name="requesterComments" [ngModel]="requesterComments"
             (ngModelChange)="onRequesterCommentsChange($event)" rows="4"
             placeholder="{{ 'newIssueRequest.commentsPlaceholder' | translate }}"
             class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 transition-all resize-none"

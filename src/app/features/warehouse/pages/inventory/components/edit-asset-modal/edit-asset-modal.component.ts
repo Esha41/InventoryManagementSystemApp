@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -13,7 +13,8 @@ import { LookupService } from '@services/lookup.service';
 import { LookupItem } from '@models/lookup.model';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
     selector: 'app-edit-asset-modal',
@@ -30,7 +31,7 @@ import { forkJoin } from 'rxjs';
     templateUrl: './edit-asset-modal.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class EditAssetModalComponent implements OnInit, OnChanges {
+export class EditAssetModalComponent implements OnChanges, OnDestroy {
     @Input() isOpen = false;
     @Input() asset: AssetDto | null = null;
     @Output() closed = new EventEmitter<void>();
@@ -43,6 +44,8 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
     manufacturers: LookupItem[] = [];
     allPrimaryPurposes: LookupItem[] = [];
     primaryPurposeOptions: LookupItem[] = [];
+
+    private readonly destroy$ = new Subject<void>();
 
     readonly lookupOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null): string => {
         if (!option) return '';
@@ -64,7 +67,10 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
         this.initForm();
     }
 
-    ngOnInit(): void { }
+    ngOnDestroy(): void {
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['isOpen'] && !this.isOpen && this.assetForm) {
@@ -79,7 +85,7 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
                 suppliers: this.lookupService.getSuppliers(),
                 manufacturers: this.lookupService.getManufacturers(),
                 primaryPurposes: this.lookupService.getPrimaryPurposes()
-            }).subscribe({
+            }).pipe(takeUntil(this.destroy$)).subscribe({
                 next: ({ suppliers, manufacturers, primaryPurposes }) => {
                     this.suppliers = (suppliers || []).filter(s => !s.isDeleted);
                     this.manufacturers = (manufacturers || []).filter(m => !m.isDeleted);
@@ -168,23 +174,17 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
             primaryPurposId: formValue.primaryPurposId ?? null
         };
 
-        this.assetService.update(this.asset.id, updateDto).subscribe({
+        this.assetService.update(this.asset.id, updateDto).pipe(takeUntil(this.destroy$)).subscribe({
             next: () => {
                 this.isLoading = false;
-                this.translateService.get(['toast.success', 'common.savedSuccessfully']).subscribe(translations => {
-                    this.toastService.success(
-                        translations['common.savedSuccessfully'] || 'Saved successfully',
-                        translations['toast.success']
-                    );
-                    this.saved.emit();
-                    this.close();
-                });
+                this.showSaveSuccessToast();
             },
-            error: (error) => {
+            error: (error: unknown) => {
                 this.isLoading = false;
                 console.error('Error updating asset:', error);
-                this.translateService.get('common.failedToSave').subscribe(msg => {
+                this.translateService.get('common.failedToSave').pipe(takeUntil(this.destroy$)).subscribe(msg => {
                     this.errorMessage = msg;
+                    this.cdr.markForCheck();
                 });
             }
         });
@@ -196,5 +196,19 @@ export class EditAssetModalComponent implements OnInit, OnChanges {
             if (control.errors?.['min']) return this.translateService.instant('addWeaponAsset.minValue', { min: 0 });
         }
         return null;
+    }
+
+    private showSaveSuccessToast(messageKey = 'common.savedSuccessfully', titleKey = 'toast.success'): void {
+        this.translateService
+            .get([titleKey, messageKey])
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(translations => {
+                this.toastService.success(
+                    translations[messageKey] || 'Saved successfully',
+                    translations[titleKey]
+                );
+                this.saved.emit();
+                this.close();
+            });
     }
 }

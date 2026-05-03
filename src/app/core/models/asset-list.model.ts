@@ -1,9 +1,9 @@
 import { LookupDto } from './ammunition.model';
 import { Observable } from 'rxjs';
 import { APIOperationResponse } from './api-response.model';
-import type { AmmunitionReadDto, AmmunitionCreateDto } from './ammunition.model';
-import type { WeaponDto, CreateUpdateWeaponDto } from './weapon.model';
-import type { ExplosiveDto, CreateUpdateExplosiveDto } from './explosive.model';
+import type { AmmunitionReadDto } from './ammunition.model';
+import type { WeaponDto } from './weapon.model';
+import type { ExplosiveDto } from './explosive.model';
 
 /**
  * Asset type for tab management

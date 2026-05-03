@@ -5,7 +5,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { CardComponent } from '@components/card/card.component';
-import { ButtonComponent } from '@components/button/button.component';
 import { RoleFormModalComponent } from '@admin/components/role-form-modal/role-form-modal.component';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
@@ -111,11 +110,11 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
       error: (error: unknown) => {
         this.isLoading = false;
         const errorMsg = (error instanceof Error ? error.message : String(error)) || 'Unknown error';
-        this.translateService.get('adminRoles.errors.failedToLoadRoles').subscribe(translation => {
+        this.translateService.get('adminRoles.errors.failedToLoadRoles').pipe(takeUntil(this.destroy$)).subscribe(translation => {
           this.errorMessage = `${translation || 'Failed to load roles'}: ${errorMsg}`;
           this.cdr.markForCheck();
         });
-        this.translateService.get(['toast.error', 'toast.failedToLoadRoles']).subscribe(translations => {
+        this.translateService.get(['toast.error', 'toast.failedToLoadRoles']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
           this.toastService.error(
             translations['toast.failedToLoadRoles'] || `Failed to load roles: ${errorMsg}`,
             translations['toast.error']
@@ -151,7 +150,7 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
           if (success) {
             this.showDeleteConfirm = false;
             this.selectedRole = undefined;
-            this.translateService.get(['toast.success', 'toast.roleDeleted']).subscribe(translations => {
+            this.translateService.get(['toast.success', 'toast.roleDeleted']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
               const message = (translations['toast.roleDeleted'] || 'Role deleted successfully').replace('{roleName}', roleName);
               this.toastService.success(message, translations['toast.success']);
             });
@@ -161,7 +160,7 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
         },
         error: (error: unknown) => {
           const errorMsg = (error instanceof Error ? error.message : String(error)) || '';
-          this.translateService.get(['toast.error', 'toast.failedToDeleteRole']).subscribe((translations: TranslationMap) => {
+          this.translateService.get(['toast.error', 'toast.failedToDeleteRole']).pipe(takeUntil(this.destroy$)).subscribe((translations: TranslationMap) => {
             let message = translations['toast.failedToDeleteRole'] || 'Failed to delete role';
             if (roleName && message.includes('{roleName}')) {
               message = message.replace('{roleName}', roleName);

@@ -6,7 +6,7 @@ import { ButtonComponent } from '@components/button/button.component';
 import { RoleDto, CreateRoleDto, UpdateRoleDto, ApplicationEntityDto } from '@models/backend-user.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BackendUserService } from '@services/backend-user.service';
-import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
+import {  DropdownOption } from '@components/dropdown/dropdown.component';
 import { Subject, takeUntil } from 'rxjs';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { ProfileDataService } from '@profile/services/profile-data.service';
@@ -36,7 +36,7 @@ export class RoleFormModalComponent implements OnInit, OnChanges, OnDestroy {
 
   @Output() closed = new EventEmitter<void>();
   @Output() saved = new EventEmitter<RoleDto>();
-  @Output() error = new EventEmitter<string>();
+  @Output() saveError = new EventEmitter<string>();
 
   roleForm!: FormGroup;
   isLoading = false;
@@ -185,7 +185,7 @@ export class RoleFormModalComponent implements OnInit, OnChanges, OnDestroy {
             this.isLoading = false;
             const errorMsg = ErrorHandler.extractErrorMessage(error, 'Failed to create role');
             this.errorMessage = errorMsg;
-            this.error.emit(errorMsg);
+            this.saveError.emit(errorMsg);
           }
         });
     } else if (this.role) {
@@ -210,7 +210,7 @@ export class RoleFormModalComponent implements OnInit, OnChanges, OnDestroy {
             this.isLoading = false;
             const errorMsg = ErrorHandler.extractErrorMessage(error, 'Failed to update role');
             this.errorMessage = errorMsg;
-            this.error.emit(errorMsg);
+            this.saveError.emit(errorMsg);
           }
         });
     }

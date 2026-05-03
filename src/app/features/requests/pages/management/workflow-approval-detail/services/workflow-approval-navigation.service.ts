@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
+import { take } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -40,12 +41,11 @@ export class WorkflowApprovalNavigationService {
    */
   navigateToSupplyOrder(requestId: number): void {
     if (!requestId) {
-      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.invalidRequestData']).subscribe(translations => {
-        this.toastService.error(
-          translations['workflowApprovalDetail.errors.invalidRequestData'] || 'Invalid request data',
-          translations['toast.error']
-        );
-      });
+      this.showErrorToastKeys(
+        'workflowApprovalDetail.errors.invalidRequestData',
+        'toast.error',
+        'Invalid request data'
+      );
       return;
     }
 
@@ -64,12 +64,11 @@ export class WorkflowApprovalNavigationService {
     if (isWeaponOrder) {
       this.router.navigate(['/requests/requests-management', requestId, 'weapon-supply-selection']);
     } else {
-      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.notWeaponOrder']).subscribe(translations => {
-        this.toastService.error(
-          translations['workflowApprovalDetail.errors.notWeaponOrder'] || 'This order does not contain weapon items',
-          translations['toast.error']
-        );
-      });
+      this.showErrorToastKeys(
+        'workflowApprovalDetail.errors.notWeaponOrder',
+        'toast.error',
+        'This order does not contain weapon items'
+      );
     }
   }
 
@@ -84,12 +83,11 @@ export class WorkflowApprovalNavigationService {
     if (isWeaponOrder) {
       this.router.navigate(['/requests/requests-management', requestId, 'weapon-supply-review']);
     } else {
-      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.notWeaponOrder']).subscribe(translations => {
-        this.toastService.error(
-          translations['workflowApprovalDetail.errors.notWeaponOrder'] || 'This order does not contain weapon items',
-          translations['toast.error']
-        );
-      });
+      this.showErrorToastKeys(
+        'workflowApprovalDetail.errors.notWeaponOrder',
+        'toast.error',
+        'This order does not contain weapon items'
+      );
     }
   }
 
@@ -135,5 +133,14 @@ export class WorkflowApprovalNavigationService {
         queryParams: queryParams
       });
     }
+  }
+
+  private showErrorToastKeys(bodyKey: string, titleKey: string, fallbackBody: string): void {
+    this.translateService
+      .get([titleKey, bodyKey])
+      .pipe(take(1))
+      .subscribe(translations => {
+        this.toastService.error(translations[bodyKey] || fallbackBody, translations[titleKey]);
+      });
   }
 }

@@ -1,8 +1,10 @@
 <div *ngIf="isOpen" class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true"
     [attr.aria-labelledby]="'import-dialog-title'">
     <!-- Backdrop -->
-    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" (click)="onClose()" aria-hidden="true">
-    </div>
+    <button type="button"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity w-full cursor-default border-0 p-0 m-0"
+        (click)="onClose()" [attr.aria-label]="'common.close' | translate">
+    </button>
 
     <!-- Modal Container -->
     <div class="relative flex min-h-full items-center justify-center p-4 sm:p-6 pointer-events-none">
@@ -43,7 +45,11 @@
 
                 <!-- Drag & Drop Area -->
                 <div (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)"
+                    role="button" tabindex="0"
+                    [attr.aria-label]="'importDialog.clickToUpload' | translate"
                     (click)="fileInput.click()"
+                    (keydown.enter)="fileInput.click()"
+                    (keydown.space)="$event.preventDefault(); fileInput.click()"
                     class="border-2 border-dashed rounded-lg p-6 sm:p-8 text-center transition-all cursor-pointer" [ngClass]="{
                         'border-[var(--color-brand)] bg-[var(--color-brand)]/5': dragOver(),
                         'border-[var(--color-border)] hover:border-[var(--color-brand)]/50': !dragOver() && !error(),

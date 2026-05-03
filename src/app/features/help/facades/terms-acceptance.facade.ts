@@ -1,4 +1,4 @@
-import { Injectable, inject, signal, Optional } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { catchError, of, take } from 'rxjs';
 import { HelpCenterService } from '@help-center/services/help-center.service';
 import { ToastService } from '@services/toast.service';

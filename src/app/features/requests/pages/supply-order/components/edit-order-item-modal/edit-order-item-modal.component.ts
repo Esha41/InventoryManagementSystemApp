@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChanges, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnDestroy, OnChanges, SimpleChanges, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -29,7 +29,7 @@ import { ErrorHandler } from '@utils/error-handler.utils';
   styleUrls: ['./edit-order-item-modal.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class EditOrderItemModalComponent implements OnInit, OnDestroy, OnChanges {
+export class EditOrderItemModalComponent implements OnDestroy, OnChanges {
   private destroy$ = new Subject<void>();
 
   @Input() isOpen: boolean = false;
@@ -55,10 +55,6 @@ export class EditOrderItemModalComponent implements OnInit, OnDestroy, OnChanges
     private cdr: ChangeDetectorRef
   ) {
     this.initializeForm();
-  }
-
-  ngOnInit(): void {
-    // Form is initialized in constructor
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -122,25 +118,18 @@ export class EditOrderItemModalComponent implements OnInit, OnDestroy, OnChanges
       .subscribe({
         next: (response: APIOperationResponse<boolean>) => {
           if (response.succeeded) {
-            this.translateService.get(['supplyOrder.toast.itemQuantityUpdatedSuccessfully', 'toast.success']).subscribe(translations => {
-              this.toastService.success(translations['supplyOrder.toast.itemQuantityUpdatedSuccessfully'], translations['toast.success']);
-            });
+            this.showSuccessToast('supplyOrder.toast.itemQuantityUpdatedSuccessfully', 'toast.success');
             this.closeModal();
             this.itemUpdated.emit();
           } else {
             const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(response, 'Failed to update item quantity', this.translateService);
-            this.translateService.get(['toast.error']).subscribe(translations => {
-              this.toastService.error(errorMessage, translations['toast.error']);
-            });
+            this.showErrorToastFromMessage(errorMessage);
           }
           this.savingItem = false;
           this.cdr.markForCheck();
         },
-        error: (error: any) => {
-          const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, 'Failed to update item quantity', this.translateService);
-          this.translateService.get(['toast.error']).subscribe(translations => {
-            this.toastService.error(errorMessage, translations['toast.error']);
-          });
+        error: (error: unknown) => {
+          this.showErrorToast(error, 'Failed to update item quantity');
           this.savingItem = false;
           this.cdr.markForCheck();
         }
@@ -148,9 +137,40 @@ export class EditOrderItemModalComponent implements OnInit, OnDestroy, OnChanges
   }
 
   closeModal(): void {
-    this.isOpen = false;
     this.editItemForm.reset();
     this.closed.emit();
+  }
+
+  private showSuccessToast(messageKey: string, titleKey: string = 'toast.success'): void {
+    this.translateService
+      .get([messageKey, titleKey])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.success(translations[messageKey], translations[titleKey]);
+      });
+  }
+
+  private showErrorToast(error: unknown, defaultMsg: string): void {
+    const msg = ErrorHandler.extractAndTranslateErrorMessage(error, defaultMsg, this.translateService);
+    this.showErrorToastFromMessage(msg);
+  }
+
+  private showErrorToastFromMessage(message: string): void {
+    this.translateService
+      .get('toast.error')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.error(message, translations['toast.error']);
+      });
+  }
+
+  private showWarningToast(messageKey: string, titleKey: string = 'toast.warning'): void {
+    this.translateService
+      .get([messageKey, titleKey])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.warning(translations[messageKey], translations[titleKey]);
+      });
   }
 }
 

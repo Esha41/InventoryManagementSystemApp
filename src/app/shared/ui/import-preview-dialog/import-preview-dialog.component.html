@@ -1,5 +1,10 @@
-<div class="modal-overlay" (click)="onCancel()">
-    <div class="modal-container" (click)="$event.stopPropagation()" [class.rtl]="isRTL">
+<div class="modal-overlay" role="button" tabindex="0"
+    [attr.aria-label]="'common.close' | translate"
+    (click)="onCancel()"
+    (keydown.enter)="onCancel()"
+    (keydown.space)="$event.preventDefault(); onCancel()">
+    <div class="modal-container" tabindex="-1" (click)="$event.stopPropagation()"
+        (keydown)="$event.stopPropagation()" [class.rtl]="isRTL">
         <!-- Header -->
         <div class="modal-header">
             <h2 class="modal-title">

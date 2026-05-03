@@ -77,10 +77,10 @@
             <div class="space-y-4">
             <div class="flex flex-wrap items-end gap-4">
               <div class="wam-filter-field">
-                <label class="text-xs font-medium text-[var(--color-text-muted)]">{{
+                <label class="text-xs font-medium text-[var(--color-text-muted)]" for="weapon-asset-master-wamdatefrom-1">{{
                   'weaponAssetMaster.filters.dateFrom' | translate
                 }}</label>
-                <input
+                <input id="weapon-asset-master-wamdatefrom-1"
                   name="wamDateFrom"
                   type="date"
                   [(ngModel)]="filterDateFrom"
@@ -89,10 +89,10 @@
                 />
               </div>
               <div class="wam-filter-field">
-                <label class="text-xs font-medium text-[var(--color-text-muted)]">{{
+                <label class="text-xs font-medium text-[var(--color-text-muted)]" for="weapon-asset-master-wamdateto-2">{{
                   'weaponAssetMaster.filters.dateTo' | translate
                 }}</label>
-                <input
+                <input id="weapon-asset-master-wamdateto-2"
                   name="wamDateTo"
                   type="date"
                   [(ngModel)]="filterDateTo"
@@ -101,9 +101,9 @@
                 />
               </div>
               <div class="wam-filter-field">
-                <label class="text-xs font-medium text-[var(--color-text-muted)]">{{
+                <span class="text-xs font-medium text-[var(--color-text-muted)]">{{
                   'weaponAssetMaster.filters.custodyLabel' | translate
-                }}</label>
+                }}</span>
                 <app-dropdown
                   name="wamFilterCustody"
                   class="w-full"
@@ -115,7 +115,7 @@
                 ></app-dropdown>
               </div>
               <div class="wam-filter-field">
-                <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'weaponAssetMaster.col.primaryPurpose' | translate }}</label>
+                <span class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'weaponAssetMaster.col.primaryPurpose' | translate }}</span>
                 <app-dropdown
                   name="wamFilterPrimaryPurpose"
                   class="w-full"
@@ -128,7 +128,7 @@
                 ></app-dropdown>
               </div>
               <div class="wam-filter-field">
-                <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'weaponAssetMaster.col.status' | translate }}</label>
+                <span class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'weaponAssetMaster.col.status' | translate }}</span>
                 <app-dropdown
                   name="wamFilterStatus"
                   class="w-full"
@@ -145,7 +145,7 @@
             <!-- Supplier, Manufacturer, Depot, Employee + Apply / Clear on one line -->
             <div class="wam-filter-supplier-row">
               <div class="wam-filter-field wam-filter-field--single-line">
-                <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'weaponAssetMaster.col.supplier' | translate }}</label>
+                <span class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'weaponAssetMaster.col.supplier' | translate }}</span>
                 <app-dropdown
                   name="wamFilterSupplier"
                   class="w-full"
@@ -158,7 +158,7 @@
                 ></app-dropdown>
               </div>
               <div class="wam-filter-field wam-filter-field--single-line">
-                <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'weaponAssetMaster.col.manufacturer' | translate }}</label>
+                <span class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'weaponAssetMaster.col.manufacturer' | translate }}</span>
                 <app-dropdown
                   name="wamFilterManufacturer"
                   class="w-full"
@@ -171,7 +171,7 @@
                 ></app-dropdown>
               </div>
               <div class="wam-filter-field wam-filter-field--single-line">
-                <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'weaponAssetMaster.col.depot' | translate }}</label>
+                <span class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'weaponAssetMaster.col.depot' | translate }}</span>
                 <app-dropdown
                   name="wamFilterDepot"
                   class="w-full"
@@ -184,7 +184,7 @@
                 ></app-dropdown>
               </div>
               <div class="wam-filter-field wam-filter-field--single-line">
-                <label class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'weaponAssetMaster.filters.employee' | translate }}</label>
+                <span class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'weaponAssetMaster.filters.employee' | translate }}</span>
                 <app-dropdown
                   name="wamFilterEmployee"
                   class="w-full"
@@ -197,7 +197,7 @@
                 ></app-dropdown>
               </div>
               <div class="wam-filter-actions-inline">
-                <label class="block text-xs font-medium mb-1 invisible pointer-events-none select-none" aria-hidden="true">.</label>
+                <span class="block text-xs font-medium mb-1 invisible pointer-events-none select-none" aria-hidden="true">.</span>
                 <div class="flex flex-nowrap items-center gap-2">
                   <button
                     type="button"

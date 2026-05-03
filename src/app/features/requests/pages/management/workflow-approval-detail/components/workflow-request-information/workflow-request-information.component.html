@@ -13,9 +13,9 @@
 
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <div *ngIf="requestDetail?.requestType === 'Order'" class="space-y-1">
-      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+      <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
         {{ 'newIssueRequest.allowanceSelection' | translate }}
-      </label>
+      </span>
       <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
         {{ (requestDetail?.isFromAllowance ? 'workflowApprovalDetail.fromAllowance' :
         'workflowApprovalDetail.outOfAllowance') | translate }}
@@ -23,18 +23,18 @@
     </div>
 
     <div class="space-y-1">
-      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+      <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
         {{ 'common.requestType' | translate }}
-      </label>
+      </span>
       <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
         {{ ('common.requestTypes.' + requestDetail?.requestType) | translate }}
       </p>
     </div>
 
     <div class="space-y-1">
-      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+      <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
         {{ 'common.priority' | translate }}
-      </label>
+      </span>
       <p class="text-sm mt-1 font-semibold" [ngClass]="getPriorityTextColor(requestDetail?.priority)">
         {{ ('common.priorityLevels.' + requestDetail?.priority) | translate }}
       </p>
@@ -43,36 +43,36 @@
 
 
     <div class="space-y-1">
-      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+      <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
         {{ 'common.requestDate' | translate }}
-      </label>
+      </span>
       <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
         {{ requestDetail?.requestDate | appDateTime }}
       </p>
     </div>
 
     <div *ngIf="requestDetail?.departmentName || requestDetail?.departmentNameAr" class="space-y-1">
-      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+      <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
         {{ 'common.department' | translate }}
-      </label>
+      </span>
       <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{
         getLocalizedValue(requestDetail?.departmentNameEn || requestDetail?.departmentName,
         requestDetail?.departmentNameAr) }}</p>
     </div>
 
     <div *ngIf="requestDetail?.requestPurposeName || requestDetail?.requestPurposeNameAr" class="space-y-1">
-      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+      <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
         {{ 'common.requestPurpose' | translate }}
-      </label>
+      </span>
       <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{
         getLocalizedValue(requestDetail?.requestPurposeNameEn || requestDetail?.requestPurposeName,
         requestDetail?.requestPurposeNameAr) }}</p>
     </div>
 
     <div *ngIf="requestDetail?.requestPurposeNotes" class="md:col-span-2 space-y-1">
-      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+      <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
         {{ 'common.requestPurposeNotes' | translate }}
-      </label>
+      </span>
       <div class="mt-1 p-3 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
         <p class="text-sm text-[var(--color-text)] leading-relaxed">{{ requestDetail?.requestPurposeNotes }}</p>
       </div>
@@ -80,35 +80,35 @@
 
     <!-- Usage Location -->
     <div *ngIf="requestDetail?.usageLocation" class="space-y-1">
-      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+      <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
         {{ 'common.usageLocation' | translate }}
-      </label>
+      </span>
       <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ requestDetail?.usageLocation }}</p>
     </div>
 
     <!-- Number of Officers -->
     <div *ngIf="requestDetail?.numberOfOfficer !== null && requestDetail?.numberOfOfficer !== undefined"
       class="space-y-1">
-      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+      <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
         {{ 'common.numberOfOfficers' | translate }}
-      </label>
+      </span>
       <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ requestDetail?.numberOfOfficer }}</p>
     </div>
 
     <!-- Number of Other Ranks -->
     <div *ngIf="requestDetail?.numberOfOtherRank !== null && requestDetail?.numberOfOtherRank !== undefined"
       class="space-y-1">
-      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+      <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
         {{ 'common.numberOfOtherRanks' | translate }}
-      </label>
+      </span>
       <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ requestDetail?.numberOfOtherRank }}</p>
     </div>
 
     <!-- Usage Date From -->
     <div *ngIf="requestDetail?.usageDateFrom" class="space-y-1">
-      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+      <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
         {{ 'common.usageDateFrom' | translate }}
-      </label>
+      </span>
       <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
         {{ requestDetail?.usageDateFrom | appDateTime }}
       </p>
@@ -116,9 +116,9 @@
 
     <!-- Usage Date To -->
     <div *ngIf="requestDetail?.usageDateTo" class="space-y-1">
-      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+      <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
         {{ 'common.usageDateTo' | translate }}
-      </label>
+      </span>
       <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
         {{ requestDetail?.usageDateTo | appDateTime }}
       </p>
@@ -127,9 +127,9 @@
     <!-- Usage Purpose removed here to avoid duplication with other pages -->
 
     <div *ngIf="requestDetail?.requesterName" class="md:col-span-2 space-y-1">
-      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+      <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
         {{ 'common.requester' | translate }}
-      </label>
+      </span>
       <div class="flex items-center gap-2 mt-1">
         <div class="w-8 h-8 rounded-full bg-[var(--color-brand)]/10 flex items-center justify-center">
           <lucide-angular [img]="User" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
@@ -144,9 +144,9 @@
 
 
     <div *ngIf="requestDetail?.notes" class="md:col-span-2 space-y-1">
-      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+      <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
         {{ 'common.comments' | translate }}
-      </label>
+      </span>
       <div class="mt-1 p-3 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
         <p class="text-sm text-[var(--color-text)] leading-relaxed">{{ requestDetail?.notes }}</p>
       </div>
@@ -156,9 +156,9 @@
     <div
       *ngIf="(requestDetail?.requestType === 'Order' || requestDetail?.requestType === 'Return' || requestDetail?.requestType === 'Discard') && orderFiles && orderFiles.length > 0"
       class="md:col-span-2 space-y-1">
-      <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+      <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
         {{ 'newIssueRequest.attachments' | translate }}
-      </label>
+      </span>
       <div class="mt-1 space-y-2">
         <div *ngFor="let file of orderFiles"
           class="flex items-center gap-2 p-2 bg-[var(--color-background-muted)] rounded-lg">

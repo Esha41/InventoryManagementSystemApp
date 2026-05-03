@@ -219,45 +219,45 @@
         <form (ngSubmit)="saveDepot()" class="space-y-4">
           <!-- Name (English) -->
           <div>
-            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'depot.nameEn' | translate }}
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="depot-management-nameen-1">{{ 'depot.nameEn' | translate }}
               *</label>
-            <input type="text" [(ngModel)]="currentDepot.nameEn" name="nameEn" required
+            <input id="depot-management-nameen-1" type="text" [(ngModel)]="currentDepot.nameEn" name="nameEn" required
               class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
               [placeholder]="'depot.enterNameEn' | translate" />
           </div>
 
           <!-- Name (Arabic) -->
           <div>
-            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'depot.nameAr' | translate }}
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="depot-management-namear-2">{{ 'depot.nameAr' | translate }}
               *</label>
-            <input type="text" [(ngModel)]="currentDepot.nameAr" name="nameAr" required
+            <input id="depot-management-namear-2" type="text" [(ngModel)]="currentDepot.nameAr" name="nameAr" required
               class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
               [placeholder]="'depot.enterNameAr' | translate" />
           </div>
 
           <!-- Depot Code -->
           <div>
-            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'depot.Code' | translate }}
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="depot-management-code-3">{{ 'depot.Code' | translate }}
               *</label>
-            <input type="text" [(ngModel)]="currentDepot.Code" name="Code" required
+            <input id="depot-management-code-3" type="text" [(ngModel)]="currentDepot.Code" name="Code" required
               class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
               [placeholder]="'depot.enterCode' | translate" />
           </div>
 
           <!-- Location -->
           <div>
-            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'depot.location' | translate }}
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="depot-management-location-4">{{ 'depot.location' | translate }}
               *</label>
-            <input type="text" [(ngModel)]="currentDepot.location" name="location" required
+            <input id="depot-management-location-4" type="text" [(ngModel)]="currentDepot.location" name="location" required
               class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
               [placeholder]="'depot.enterLocation' | translate" />
           </div>
 
           <!-- Latitude -->
           <div>
-            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'depot.latitude' | translate
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="depot-management-latitude-5">{{ 'depot.latitude' | translate
               }}</label>
-            <input type="number" step="any" min="-90" max="90" [(ngModel)]="currentDepot.latitude" name="latitude"
+            <input id="depot-management-latitude-5" type="number" step="any" min="-90" max="90" [(ngModel)]="currentDepot.latitude" name="latitude"
               (keydown)="onCoordinateKeydown($event)"
               class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
               [placeholder]="'depot.enterLatitude' | translate" />
@@ -266,9 +266,9 @@
 
           <!-- Longitude -->
           <div>
-            <label class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'depot.longitude' | translate
+            <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="depot-management-longitude-6">{{ 'depot.longitude' | translate
               }}</label>
-            <input type="number" step="any" min="-180" max="180" [(ngModel)]="currentDepot.longitude" name="longitude"
+            <input id="depot-management-longitude-6" type="number" step="any" min="-180" max="180" [(ngModel)]="currentDepot.longitude" name="longitude"
               (keydown)="onCoordinateKeydown($event)"
               class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
               [placeholder]="'depot.enterLongitude' | translate" />

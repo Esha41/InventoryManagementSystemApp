@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Subject, takeUntil, Observable, forkJoin, throwError, of } from 'rxjs';
+import { Subject, takeUntil, Observable, forkJoin, of } from 'rxjs';
 import { map, catchError, switchMap, tap } from 'rxjs/operators';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { LucideAngularModule, Save, X, ArrowLeft, ArrowRight, GripVertical } from 'lucide-angular';
@@ -279,7 +279,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
 
     // Capture notifier data directly from editSteps at save time
     // Ensure arrays are properly initialized
-    const notifierData = this.editSteps.map((s, idx) => {
+    const _notifierData = this.editSteps.map((s, idx) => {
       // Ensure arrays exist and are properly formatted
       const roleIds = Array.isArray(s.notifyingRoleIds) ? [...s.notifyingRoleIds] : [];
       const userIds = Array.isArray(s.notifyingUserIds) ? [...s.notifyingUserIds] : [];
@@ -481,7 +481,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     const notifierObservables = stepsWithIds.map(step =>
       this.workflowService.getStepNotifiers(step.workflowStepId!).pipe(
         map(notifiers => ({ step, notifiers })),
-        catchError(err => {
+        catchError(_err => {
           return new Observable<{ step: EditStepForm; notifiers: WorkflowStepNotifier[] }>(observer => {
             observer.next({ step, notifiers: [] });
             observer.complete();
@@ -570,7 +570,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     });
   }
 
-  private loadUsersForNotifyingRoles(step: EditStepForm, stepIndex: number): void {
+  private loadUsersForNotifyingRoles(step: EditStepForm, _stepIndex: number): void {
     if (!step.usersInNotifyingRoles) {
       step.usersInNotifyingRoles = [];
     }
@@ -646,7 +646,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     });
   }
 
-  private loadNextStepsForStep(step: EditStepForm, stepIndex: number): void {
+  private loadNextStepsForStep(step: EditStepForm, _stepIndex: number): void {
     // Only call API for existing steps (those with workflowStepId)
     if (!step.workflowStepId) {
       // New steps don't have ID yet, so no next steps available

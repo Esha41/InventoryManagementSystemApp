@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, forkJoin, of, firstValueFrom } from 'rxjs';
+import {  forkJoin, of, firstValueFrom } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { AmmunitionService } from '@assets/services/ammunition.service';
 import { WeaponService } from '@assets/services/weapon.service';
@@ -294,7 +294,7 @@ export class InventoryImportService {
     rows: InventoryImportRow[],
     allItems: ItemWithIdAndNo[],
     existingKeys: Set<string>,
-    depotId: number
+    _depotId: number
   ): {
     inventoryDetails: CreateInventoryDetailDto[];
     invoiceDate?: string;

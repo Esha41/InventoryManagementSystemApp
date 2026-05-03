@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, take } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
@@ -135,17 +135,24 @@ export class IssueRequestSubmissionService {
           callbacks.onSuccess(result.orderId ?? null, result.orderNumber ?? null);
         } else {
           const msg = result.error || 'Failed to submit order. Please try again.';
-          this.translate.get('toast.error').subscribe(title => this.toastService.error(msg, title));
+          this.showTranslatedTitleErrorToast(msg);
           callbacks.onTransportError(msg);
         }
       },
-      error: (error) => {
+      error: (error: unknown) => {
         ctx.orderSubmissionState.submittingOrder = false;
         const msg = ErrorHandler.resolveOrderSubmissionError(undefined, error, 'Failed to submit order');
-        this.translate.get('toast.error').subscribe(title => this.toastService.error(msg, title));
+        this.showTranslatedTitleErrorToast(msg);
         callbacks.onTransportError(msg);
       }
     });
+  }
+
+  private showTranslatedTitleErrorToast(body: string): void {
+    this.translate
+      .get('toast.error')
+      .pipe(take(1))
+      .subscribe(title => this.toastService.error(body, title));
   }
 
   private buildSubmissionDataFromContext(ctx: RunSubmissionContext): OrderSubmissionData {

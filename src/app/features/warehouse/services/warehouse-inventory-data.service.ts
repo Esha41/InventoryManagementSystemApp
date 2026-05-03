@@ -6,7 +6,7 @@ import { WeaponService } from '@assets/services/weapon.service';
 import { InventoryService } from '@inventory/services/inventory.service';
 import { BatchService } from '@warehouse/services/batch.service';
 import { LookupItem } from '@models/lookup.model';
-import { BatchAssetFilter, BatchSummaryDto } from '@models/batch.model';
+import { BatchAssetFilter } from '@models/batch.model';
 import { AssetDto } from '@models/asset.model';
 import { PagedRequest } from '@models/api-response.model';
 import { WeaponDto } from '@models/weapon.model';

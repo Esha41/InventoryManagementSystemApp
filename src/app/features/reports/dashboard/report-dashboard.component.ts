@@ -107,7 +107,7 @@ export class ReportDashboardComponent implements OnInit {
   updatePagination(): void {
     this.totalItems = this.filteredReports.length;
     const startIndex = (this.currentPage - 1) * this.rowsPerPage;
-    const endIndex = startIndex + this.rowsPerPage;
+    const _endIndex = startIndex + this.rowsPerPage;
   }
 
   onPageChange(page: number): void {

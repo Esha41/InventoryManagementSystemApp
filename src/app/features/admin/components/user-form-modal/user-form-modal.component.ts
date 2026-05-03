@@ -380,7 +380,7 @@ export class UserFormModalComponent implements OnInit, OnChanges, OnDestroy {
       this.backendUserService.createUser(dto)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-        next: (user: BackendUserDto) => {
+        next: (_user: BackendUserDto) => {
           this.isLoading = false;
           this.errorMessage = '';
           this.toastService.success(
@@ -453,7 +453,7 @@ export class UserFormModalComponent implements OnInit, OnChanges, OnDestroy {
       this.backendUserService.updateUser(this.user.id, dto)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-        next: (user: BackendUserDto) => {
+        next: (_user: BackendUserDto) => {
           this.isLoading = false;
           this.errorMessage = '';
           this.toastService.success(

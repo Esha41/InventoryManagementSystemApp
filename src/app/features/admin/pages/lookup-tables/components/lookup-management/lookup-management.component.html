@@ -290,5 +290,5 @@
 <!-- Employee Import Preview -->
 <app-import-preview-dialog *ngIf="showPreviewModal && previewData" [previewData]="previewData"
   [assetType]="'weapon'" [importPreviewMode]="'allowSkipInvalid'"
-  (confirm)="onPreviewConfirmed()" (cancel)="onPreviewCancelled()">
+  (confirm)="onPreviewConfirmed()" (importCancelled)="onPreviewCancelled()">
 </app-import-preview-dialog>

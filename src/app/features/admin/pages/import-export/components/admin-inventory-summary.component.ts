@@ -186,7 +186,7 @@ export class AdminInventorySummaryComponent implements OnInit, OnDestroy {
       includeTimestamp: true
     });
 
-    this.translateService.get(['common.exportSuccess', 'toast.success']).subscribe(translations => {
+    this.translateService.get(['common.exportSuccess', 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
       this.toastService.success(translations['common.exportSuccess'], translations['toast.success']);
     });
   }

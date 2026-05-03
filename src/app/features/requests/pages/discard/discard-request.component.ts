@@ -8,7 +8,6 @@ import { LucideAngularModule, Plus, X, ChevronDown, Search, Send } from 'lucide-
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { DiscardService } from '@requests/services/discard.service';
 import { CreateDiscardDto } from '@models/discard.model';
-import { CreateDiscardItemDto } from '@models/request-item.model';
 import { LookupService } from '@services/lookup.service';
 import { AmmunitionService } from '@assets/services/ammunition.service';
 import { WeaponService } from '@assets/services/weapon.service';
@@ -245,7 +244,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
           this.cdr.markForCheck();
         },
         error: () => {
-          this.translate.get(['toast.error', 'discardRequest.errors.failedToLoadDepartments']).subscribe((translations: Record<string, string>) => {
+          this.translate.get(['toast.error', 'discardRequest.errors.failedToLoadDepartments']).pipe(takeUntil(this.destroy$)).subscribe((translations: Record<string, string>) => {
             this.toastService.error(
               translations['discardRequest.errors.failedToLoadDepartments'] || 'Failed to load departments',
               translations['toast.error']
@@ -280,7 +279,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
           this.cdr.markForCheck();
         },
         error: () => {
-          this.translate.get(['toast.error', 'discardRequest.errors.failedToLoadUsers']).subscribe((translations: Record<string, string>) => {
+          this.translate.get(['toast.error', 'discardRequest.errors.failedToLoadUsers']).pipe(takeUntil(this.destroy$)).subscribe((translations: Record<string, string>) => {
             this.toastService.error(
               translations['discardRequest.errors.failedToLoadUsers'] || 'Failed to load users',
               translations['toast.error']
@@ -306,7 +305,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
           this.cdr.markForCheck();
         },
         error: () => {
-          this.translate.get(['toast.error', 'discardRequest.errors.failedToLoadRequestPurposes']).subscribe((translations: Record<string, string>) => {
+          this.translate.get(['toast.error', 'discardRequest.errors.failedToLoadRequestPurposes']).pipe(takeUntil(this.destroy$)).subscribe((translations: Record<string, string>) => {
             this.toastService.error(
               translations['discardRequest.errors.failedToLoadRequestPurposes'] || 'Failed to load request purposes',
               translations['toast.error']
@@ -343,7 +342,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
           this.cdr.markForCheck();
         },
         error: () => {
-          this.translate.get(['toast.error', 'discardRequest.errors.failedToLoadItems']).subscribe((translations: Record<string, string>) => {
+          this.translate.get(['toast.error', 'discardRequest.errors.failedToLoadItems']).pipe(takeUntil(this.destroy$)).subscribe((translations: Record<string, string>) => {
             this.toastService.error(
               translations['discardRequest.errors.failedToLoadItems'] || 'Failed to load items',
               translations['toast.error']
@@ -492,12 +491,12 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
     return option as T;
   }
 
-  onSendRequest(form: NgForm): void {
+  onSendRequest(_form: NgForm): void {
     this.isSubmitted = true;
     this.validateForm();
 
     if (Object.keys(this.errors).length > 0) {
-      this.translate.get(['toast.error', 'discardRequest.errors.correctFormErrors']).subscribe((translations: Record<string, string>) => {
+      this.translate.get(['toast.error', 'discardRequest.errors.correctFormErrors']).pipe(takeUntil(this.destroy$)).subscribe((translations: Record<string, string>) => {
         this.toastService.error(
           translations['discardRequest.errors.correctFormErrors'] || 'Please correct the form errors',
           translations['toast.error']
@@ -512,7 +511,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
       'discardRequest.confirmDialog.message',
       'common.yes',
       'common.cancel'
-    ]).subscribe((translations: Record<string, string>) => {
+    ]).pipe(takeUntil(this.destroy$)).subscribe((translations: Record<string, string>) => {
       this.confirmDialogTitle = translations['discardRequest.confirmDialog.title'] || 'Confirm Request';
       this.confirmDialogMessage = translations['discardRequest.confirmDialog.message'] || 'Are you sure you want to submit this discard request?';
       this.confirmDialogConfirmText = translations['common.yes'] || 'Yes';
@@ -554,7 +553,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
     this.discardService.createDiscard(createDiscardDto, filesToUpload)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (discardId) => {
+        next: (_discardId) => {
           // Toast notification is handled by backend SignalR notification
           this.resetForm();
           this.isLoading = false;
@@ -566,7 +565,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
         error: (error: unknown) => {
           const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, 'Failed to create discard request', this.translate);
 
-          this.translate.get(['toast.error']).subscribe((translations: Record<string, string>) => {
+          this.translate.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe((translations: Record<string, string>) => {
             this.toastService.error(errorMessage, translations['toast.error']);
           });
           this.isLoading = false;

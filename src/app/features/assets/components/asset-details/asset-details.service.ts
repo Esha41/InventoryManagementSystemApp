@@ -83,7 +83,7 @@ export class AssetDetailsService {
           catchError(() => {
             // If weapon fails, try explosive
             return this.explosiveService.getById<ExplosiveDto>(assetId).pipe(
-              catchError((err) => {
+              catchError((_err) => {
                 // All three failed
                 throw new Error('Failed to load asset details: asset not found in ammunition, weapon, or explosive');
               })

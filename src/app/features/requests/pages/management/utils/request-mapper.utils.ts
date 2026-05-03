@@ -37,12 +37,12 @@ export function mapBaseRequestToRequest(dto: UnifiedListRequestDto): Request {
 /**
  * Format date for display
  */
-function formatRequestDate(date: string | Date | undefined | null): string {
+function _formatRequestDate(date: string | Date | undefined | null): string {
   if (!date) return 'N/A';
 
   try {
     return formatDate(date as string);
-  } catch (error) {
+  } catch (_error) {
     return 'N/A';
   }
 }

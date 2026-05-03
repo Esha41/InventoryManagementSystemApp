@@ -52,14 +52,14 @@ export class TranslationService {
    * @param lang - Language to set
    * @param reload - Whether to reload the page when language changes (default: false)
    */
-  setLanguage(lang: Language, reload: boolean = false): void {
+  setLanguage(lang: Language, _reload: boolean = false): void {
     if (!this.isValidLanguage(lang)) {
       console.warn(`Invalid language: ${lang}. Using default: ${this.DEFAULT_LANGUAGE}`);
       lang = this.DEFAULT_LANGUAGE;
     }
 
     // Check if language is actually changing
-    const isLanguageChanging = this.currentLang !== lang;
+    const _isLanguageChanging = this.currentLang !== lang;
 
     this.currentLang = lang;
     this.translate.use(lang);

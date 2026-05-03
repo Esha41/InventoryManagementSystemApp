@@ -2,8 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRe
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subject, takeUntil, switchMap, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule } from 'lucide-angular';
 import { InventoryService, LotDetailDto } from '@inventory/services/inventory.service';
 import { WarehouseInventoryFormatterService } from '../services/warehouse-inventory-formatter.service';
@@ -15,7 +14,6 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
 import { formatDateShort } from '@utils/format.utils';
-import { FileEntityType } from '@services/file-upload.service';
 import { HttpClient } from '@angular/common/http';
 import { trackByKey } from '@utils/trackby.utils';
 import { FileUploadService } from '@services/file-upload.service';
@@ -115,12 +113,12 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
           window.open(objectUrl, '_blank', 'noopener');
           // Revoke after a minute; we also revoke all on destroy.
           setTimeout(() => {
-            try { window.URL.revokeObjectURL(objectUrl); } catch {}
+            try { window.URL.revokeObjectURL(objectUrl); } catch { /* ignore revoke errors */ }
             this.blobUrls.delete(objectUrl);
           }, 60_000);
         },
         error: () => {
-          this.translateService.get(['common.failedToLoadFile', 'toast.error']).subscribe(t => {
+          this.translateService.get(['common.failedToLoadFile', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(t => {
             // Reuse toast pattern? This component currently doesn't inject ToastService; keep it silent but log.
             console.error(t['common.failedToLoadFile'] || 'Failed to open file');
           });
@@ -141,7 +139,7 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
           this.inventoryDetail = details.find(d => d.id === this.inventoryDetailId) || null;
 
           if (!this.inventoryDetail) {
-            this.translateService.get('warehouseInventory.itemNotFound').subscribe(text => {
+            this.translateService.get('warehouseInventory.itemNotFound').pipe(takeUntil(this.destroy$)).subscribe(text => {
               this.error = text;
               this.cdr.markForCheck();
             });
@@ -186,7 +184,7 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         },
         error: () => {
-          this.translateService.get('warehouseInventory.failedToLoadItem').subscribe(text => {
+          this.translateService.get('warehouseInventory.failedToLoadItem').pipe(takeUntil(this.destroy$)).subscribe(text => {
             this.error = text;
             this.cdr.markForCheck();
           });
@@ -488,7 +486,7 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
   /**
    * Load image for the item
    */
-  private loadImage(itemId: number): void {
+  private loadImage(_itemId: number): void {
     if (!this.inventoryDetail?.item?.itemType) return;
 
     // Clean up previous image URL
@@ -501,16 +499,5 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
       }
     }
     this.imageUrl = null;
-
-    // Determine entity type based on item type
-    let entityType: FileEntityType;
-    const itemType = this.inventoryDetail.item.itemType;
-    if (itemType === ItemType.Weapon) {
-      entityType = FileEntityType.Weapon;
-    } else if (itemType === ItemType.Explosive) {
-      entityType = FileEntityType.Explosive;
-    } else {
-      entityType = FileEntityType.Ammunition;
-    }
   }
 }

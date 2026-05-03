@@ -84,7 +84,7 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
     requireComment: false,
     commentLabel: '',
     commentPlaceholder: '',
-    onConfirm: (comment?: string) => { }
+    onConfirm: (_comment?: string) => { }
   };
 
   // File size utility
@@ -281,10 +281,12 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
     let item: { value: string, label: string } | null = null;
 
     if (typeof option === 'object' && option !== null) {
-      if ('value' in option) {
-        item = option.value as { value: string, label: string };
-      } else if ('value' in option && 'label' in option) {
-        item = option as { value: string, label: string };
+      const o = option as DropdownOption<{ value: string, label: string }> | { value: string, label: string };
+      const v = o.value;
+      if (typeof v === 'object' && v !== null) {
+        item = v as { value: string, label: string };
+      } else if (typeof v === 'string') {
+        item = { value: v, label: typeof o.label === 'string' ? o.label : v };
       }
     }
 
@@ -381,75 +383,60 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
     // Validate: Pickup date must be set if user has permission
     // EXCEPTION: Elevated admins can bypass this requirement
     if (!this.isElevatedWorkflowAdmin && this.canSetSupplyPickupDate() && !this.isPickupDateAlreadySet) {
-      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.pickupDateRequired']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-        this.toastService.error(
-          translations['workflowApprovalDetail.errors.pickupDateRequired'] || 'Please set the supply pickup date before approving.',
-          translations['toast.error']
-        );
-      });
+      this.showErrorToastKeys(
+        'workflowApprovalDetail.errors.pickupDateRequired',
+        'toast.error',
+        'Please set the supply pickup date before approving.'
+      );
       return;
     }
 
     // Validate: Supply must be submitted if user has permission
     // EXCEPTION: Elevated admins can bypass this requirement
     if (!this.isElevatedWorkflowAdmin && this.canSubmitSupply() && !this.isSupplySubmitted()) {
-      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.supplySubmissionRequired']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-        this.toastService.error(
-          translations['workflowApprovalDetail.errors.supplySubmissionRequired'] || 'Please submit the supply information before approving.',
-          translations['toast.error']
-        );
-      });
+      this.showErrorToastKeys(
+        'workflowApprovalDetail.errors.supplySubmissionRequired',
+        'toast.error',
+        'Please submit the supply information before approving.'
+      );
       return;
     }
 
     // Validate: Depot must be selected if user has permission
     // EXCEPTION: Elevated admins can bypass this requirement
     if (!this.isElevatedWorkflowAdmin && this.canSelectDepots() && !this.isDepotSelected()) {
-      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.depotSelectionRequired']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-        this.toastService.error(
-          translations['workflowApprovalDetail.errors.depotSelectionRequired'] || 'Please select at least one depot before approving.',
-          translations['toast.error']
-        );
-      });
+      this.showErrorToastKeys(
+        'workflowApprovalDetail.errors.depotSelectionRequired',
+        'toast.error',
+        'Please select at least one depot before approving.'
+      );
       return;
     }
 
     // Validate: Return depot must be set if user has permission
     if (!this.isElevatedWorkflowAdmin && this.canSetReturnDepot() && !this.isReturnDepotSet()) {
-      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.returnDepotRequired']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-        this.toastService.error(
-          translations['workflowApprovalDetail.errors.returnDepotRequired'] || 'Please set the return depot before approving.',
-          translations['toast.error']
-        );
-      });
+      this.showErrorToastKeys(
+        'workflowApprovalDetail.errors.returnDepotRequired',
+        'toast.error',
+        'Please set the return depot before approving.'
+      );
       return;
     }
 
     // Validate: Return delivery date must be set if user has permission
     if (!this.isElevatedWorkflowAdmin && this.canSetReturnDeliveryDate() && !this.isReturnDeliveryDateSet()) {
-      this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.returnDeliveryDateRequired']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-        this.toastService.error(
-          translations['workflowApprovalDetail.errors.returnDeliveryDateRequired'] || 'Please set the delivery date before approving.',
-          translations['toast.error']
-        );
-      });
+      this.showErrorToastKeys(
+        'workflowApprovalDetail.errors.returnDeliveryDateRequired',
+        'toast.error',
+        'Please set the delivery date before approving.'
+      );
       return;
     }
 
     // Validate: If there are multiple skip-to step options, user must select one
     const transitions = this.getCurrentStepTransitions();
     if (transitions.length > 1 && !this.selectedNextStepId) {
-      this.translateService.get([
-        'toast.error',
-        'workflowApprovalDetail.selectSkipToStepRequired',
-        'workflowApprovalDetail.skipToStep'
-      ]).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-        const skipToStepLabel = translations['workflowApprovalDetail.skipToStep'] || 'Go To Step';
-        const errorMsg = translations['workflowApprovalDetail.selectSkipToStepRequired'] ||
-          `Please select a step to go to from the "${skipToStepLabel}" dropdown before approving this request.`;
-        const errorTitle = translations['toast.error'] || 'Action Required';
-        this.toastService.error(errorMsg, errorTitle);
-      });
+      this.showSelectSkipToStepToast();
       return;
     }
 
@@ -484,25 +471,12 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
                 this.isProcessingAction = false;
                 this.approved.emit();
                 this.actionCompleted.emit();
-                // Show success message
-                this.translateService.get(['toast.success', 'workflowApprovalDetail.success.approved']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-                  this.toastService.success(
-                    translations['workflowApprovalDetail.success.approved'] || 'Request approved successfully',
-                    translations['toast.success'] || 'Success'
-                  );
-                });
+                this.showSuccessToast('workflowApprovalDetail.success.approved', 'toast.success', 'Request approved successfully');
               },
-              error: (error) => {
+              error: (error: unknown) => {
                 this.isProcessingAction = false;
                 // Don't reset form on error - preserve user's data (files, comments)
-                // Extract and show error message
-                const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to approve request');
-                this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.approveFailed']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-                  this.toastService.error(
-                    errorMessage || translations['workflowApprovalDetail.errors.approveFailed'] || 'Failed to approve request. Please try again.',
-                    translations['toast.error'] || 'Error'
-                  );
-                });
+                this.showErrorToast(error, 'Failed to approve request');
                 this.actionCompleted.emit();
               }
             });
@@ -547,25 +521,12 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
                 this.isProcessingAction = false;
                 this.rejected.emit();
                 this.actionCompleted.emit();
-                // Show success message
-                this.translateService.get(['toast.success', 'workflowApprovalDetail.success.rejected']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-                  this.toastService.success(
-                    translations['workflowApprovalDetail.success.rejected'] || 'Request rejected successfully',
-                    translations['toast.success'] || 'Success'
-                  );
-                });
+                this.showSuccessToast('workflowApprovalDetail.success.rejected', 'toast.success', 'Request rejected successfully');
               },
-              error: (error) => {
+              error: (error: unknown) => {
                 this.isProcessingAction = false;
                 // Don't reset form on error - preserve user's data (files, comments)
-                // Extract and show error message
-                const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to reject request');
-                this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.rejectFailed']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-                  this.toastService.error(
-                    errorMessage || translations['workflowApprovalDetail.errors.rejectFailed'] || 'Failed to reject request. Please try again.',
-                    translations['toast.error'] || 'Error'
-                  );
-                });
+                this.showErrorToast(error, 'Failed to reject request');
                 this.actionCompleted.emit();
               }
             });
@@ -580,12 +541,11 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
   returnForReview(): void {
     if (this.processing || this.isProcessingAction || !this.requestDetail || !this.returnToStepId) {
       if (!this.returnToStepId) {
-        this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.selectStepToReturn']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-          this.toastService.error(
-            translations['workflowApprovalDetail.errors.selectStepToReturn'] || 'Please select a step to return to',
-            translations['toast.error']
-          );
-        });
+        this.showErrorToastKeys(
+          'workflowApprovalDetail.errors.selectStepToReturn',
+          'toast.error',
+          'Please select a step to return to'
+        );
       }
       return;
     }
@@ -630,25 +590,16 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
                 this.isProcessingAction = false;
                 this.returnedForReview.emit();
                 this.actionCompleted.emit();
-                // Show success message
-                this.translateService.get(['toast.success', 'workflowApprovalDetail.success.returnedForReview']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-                  this.toastService.success(
-                    translations['workflowApprovalDetail.success.returnedForReview'] || 'Request returned for review successfully',
-                    translations['toast.success'] || 'Success'
-                  );
-                });
+                this.showSuccessToast(
+                  'workflowApprovalDetail.success.returnedForReview',
+                  'toast.success',
+                  'Request returned for review successfully'
+                );
               },
-              error: (error) => {
+              error: (error: unknown) => {
                 this.isProcessingAction = false;
                 // Don't reset form on error - preserve user's data (files, comments)
-                // Extract and show error message
-                const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to return request for review');
-                this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.returnForReviewFailed']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-                  this.toastService.error(
-                    errorMessage || translations['workflowApprovalDetail.errors.returnForReviewFailed'] || 'Failed to return request for review. Please try again.',
-                    translations['toast.error'] || 'Error'
-                  );
-                });
+                this.showErrorToast(error, 'Failed to return request for review');
                 this.actionCompleted.emit();
               }
             });
@@ -719,5 +670,57 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
     this.approvalFiles = [];
     this.selectedNextStepId = null;
     this.returnToStepId = null;
+  }
+
+  private showSuccessToast(messageKey: string, titleKey = 'toast.success', bodyFallback?: string): void {
+    this.translateService
+      .get([titleKey, messageKey])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.success(
+          translations[messageKey] || bodyFallback || '',
+          translations[titleKey] || 'Success'
+        );
+      });
+  }
+
+  private showErrorToastKeys(messageKey: string, titleKey = 'toast.error', bodyFallback?: string): void {
+    this.translateService
+      .get([titleKey, messageKey])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.error(
+          translations[messageKey] || bodyFallback || '',
+          translations[titleKey] || 'Error'
+        );
+      });
+  }
+
+  private showErrorToast(error: unknown, defaultMsg: string): void {
+    const msg = ErrorHandler.extractAndTranslateErrorMessage(error, defaultMsg, this.translateService);
+    this.translateService
+      .get('toast.error')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        this.toastService.error(msg, translations['toast.error'] || 'Error');
+      });
+  }
+
+  private showSelectSkipToStepToast(): void {
+    this.translateService
+      .get([
+        'toast.error',
+        'workflowApprovalDetail.selectSkipToStepRequired',
+        'workflowApprovalDetail.skipToStep'
+      ])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(translations => {
+        const skipToStepLabel = translations['workflowApprovalDetail.skipToStep'] || 'Go To Step';
+        const errorMsg =
+          translations['workflowApprovalDetail.selectSkipToStepRequired'] ||
+          `Please select a step to go to from the "${skipToStepLabel}" dropdown before approving this request.`;
+        const errorTitle = translations['toast.error'] || 'Action Required';
+        this.toastService.error(errorMsg, errorTitle);
+      });
   }
 }

@@ -163,7 +163,7 @@ export class NotificationDetailService {
                 detail: detail as NotificationRequestDetail,
                 error: null
               })),
-              catchError(error => of({
+              catchError(_error => of({
                 type: null,
                 detail: null,
                 error: handleDetailError(

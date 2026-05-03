@@ -78,10 +78,13 @@ export class WarehouseListComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         },
         error: () => {
-          this.translateService.get('warehouse.failedToLoad').subscribe(msg => {
-            this.error = msg;
-            this.cdr.markForCheck();
-          });
+          this.translateService
+            .get('warehouse.failedToLoad')
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(msg => {
+              this.error = msg;
+              this.cdr.markForCheck();
+            });
           this.loading = false;
           this.cdr.markForCheck();
         }

@@ -97,7 +97,7 @@ export class LdapSettingsComponent implements OnInit, OnDestroy {
 
           if (!is403 && !is404) {
             this.errorMessage = error.message || 'Failed to load LDAP settings';
-            this.translateService.get(['toast.error']).subscribe(translations => {
+            this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
               this.toastService.error(
                 this.errorMessage,
                 translations['toast.error']
@@ -143,7 +143,7 @@ export class LdapSettingsComponent implements OnInit, OnDestroy {
             isActive: updated.isActive ?? payload.isActive ?? true
           };
 
-          this.translateService.get(['ldapSettings.savedSuccessfully', 'toast.success']).subscribe(translations => {
+          this.translateService.get(['ldapSettings.savedSuccessfully', 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.success(
               translations['ldapSettings.savedSuccessfully'],
               translations['toast.success']
@@ -164,7 +164,7 @@ export class LdapSettingsComponent implements OnInit, OnDestroy {
           }
 
           this.errorMessage = message;
-          this.translateService.get(['toast.error']).subscribe(translations => {
+          this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.error(
               this.errorMessage,
               translations['toast.error']

@@ -127,7 +127,7 @@
   <form [formGroup]="termsForm" class="w-full min-w-0 space-y-4">
     <div class="flex flex-wrap items-end gap-4">
       <div class="min-w-[120px] flex-1">
-        <label class="mb-1.5 flex flex-wrap items-baseline gap-1 text-sm font-medium text-[var(--color-text)]" [attr.for]="'terms-version-input'">
+        <label class="mb-1.5 flex flex-wrap items-baseline gap-1 text-sm font-medium text-[var(--color-text)]" [attr.for]="'terms-version-input'" for="terms-version-input">
           <span>{{ 'helpCenter.version' | translate }}</span>
           <span class="font-semibold text-[var(--color-error)]" aria-hidden="true">{{ 'common.requiredSuffix' | translate }}</span>
         </label>
@@ -151,7 +151,7 @@
         <p class="mt-0.5 text-xs text-[var(--color-text-muted)]">{{ 'helpCenter.termsVersionHint' | translate }}</p>
       </div>
       <div class="min-w-[120px] flex-1">
-        <label class="mb-1.5 flex flex-wrap items-baseline gap-1 text-sm font-medium text-[var(--color-text)]" [attr.for]="'terms-effective-input'">
+        <label class="mb-1.5 flex flex-wrap items-baseline gap-1 text-sm font-medium text-[var(--color-text)]" [attr.for]="'terms-effective-input'" for="terms-effective-input">
           <span>{{ 'helpCenter.effectiveDate' | translate }}</span>
           <span class="font-semibold text-[var(--color-error)]" aria-hidden="true">{{ 'common.requiredSuffix' | translate }}</span>
         </label>
@@ -173,10 +173,10 @@
       </div>
     </div>
     <div class="help-center-terms-editor-wrap w-full min-w-0">
-      <label class="mb-1.5 flex flex-wrap items-baseline gap-1 text-sm font-medium text-[var(--color-text)]">
+      <span class="mb-1.5 flex flex-wrap items-baseline gap-1 text-sm font-medium text-[var(--color-text)]">
         <span>{{ 'helpCenter.contentLabel' | translate }}</span>
         <span class="font-semibold text-[var(--color-error)]" aria-hidden="true">{{ 'common.requiredSuffix' | translate }}</span>
-      </label>
+      </span>
       <p class="mb-2 text-xs text-[var(--color-text-muted)]">{{ 'helpCenter.termsEditorHint' | translate }}</p>
       <div
         class="block w-full min-w-0 overflow-hidden rounded-lg border bg-[var(--color-background)] [&_.ql-container]:rounded-b-lg [&_.ql-toolbar]:rounded-t-lg [&_.ql-editor]:min-h-[280px] [&_.ql-editor]:text-[var(--color-text)]"

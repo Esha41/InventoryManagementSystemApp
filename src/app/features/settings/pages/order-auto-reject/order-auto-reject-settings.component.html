@@ -27,9 +27,9 @@
               {{ 'orderAutoRejectSettings.sectionWhenStarts' | translate }}
             </h4>
             <div>
-              <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+              <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
                 {{ 'orderAutoRejectSettings.triggerRole' | translate }}
-              </label>
+              </span>
               <app-dropdown
                 class="w-full"
                 formControlName="triggerRoleId"
@@ -56,10 +56,10 @@
               {{ 'orderAutoRejectSettings.sectionWhenActs' | translate }}
             </h4>
             <div>
-              <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+              <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="order-auto-reject-thresholddays-2">
                 {{ 'orderAutoRejectSettings.thresholdDays' | translate }}
               </label>
-              <input
+              <input id="order-auto-reject-thresholddays-2"
                 type="number"
                 formControlName="thresholdDays"
                 min="1"
@@ -78,9 +78,9 @@
             </div>
 
             <div>
-              <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+              <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
                 {{ 'orderAutoRejectSettings.reminderLeadDays' | translate }}
-              </label>
+              </span>
               <p class="text-xs text-[var(--color-text-muted)] mb-2">
                 {{ 'orderAutoRejectSettings.reminderLeadDaysHint' | translate }}
               </p>
@@ -123,9 +123,9 @@
               {{ 'orderAutoRejectSettings.notifyRequesterLockedHint' | translate }}
             </p>
             <div>
-              <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+              <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
                 {{ 'orderAutoRejectSettings.notifyRoles' | translate }}
-              </label>
+              </span>
               <app-dropdown
                 class="w-full"
                 formControlName="notifyRoleIds"
@@ -153,9 +153,9 @@
               </label>
             </div>
             <div>
-              <label class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+              <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
                 {{ 'orderAutoRejectSettings.scanSchedule' | translate }}
-              </label>
+              </span>
               <app-dropdown
                 class="w-full"
                 formControlName="scanSchedulePreset"

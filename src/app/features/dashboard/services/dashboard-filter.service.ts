@@ -124,19 +124,18 @@ export class DashboardFilterService {
           valA = a.orders[0]?.orderId || a.title || '';
           valB = b.orders[0]?.orderId || b.title || '';
           break;
-        case 'usageDate':
+        case 'usageDate': {
           valA = a.orders[0]?.requestDate || '';
           valB = b.orders[0]?.requestDate || '';
-          // Try to parse as date for proper date sorting
           const dateA = this.parseDate(valA);
           const dateB = this.parseDate(valB);
           if (dateA && dateB) {
             return direction === 'asc' ? dateA.getTime() - dateB.getTime() : dateB.getTime() - dateA.getTime();
           }
-          // Fallback to string comparison if dates can't be parsed
           valA = valA.toLowerCase();
           valB = valB.toLowerCase();
           break;
+        }
         case 'department':
           valA = a.orders[0]?.departmentName || 'N/A';
           valB = b.orders[0]?.departmentName || 'N/A';

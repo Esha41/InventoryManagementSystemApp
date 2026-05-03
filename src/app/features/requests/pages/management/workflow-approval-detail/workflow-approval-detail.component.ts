@@ -616,7 +616,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
           if (!baseRequest) {
             if (showLoading) {
-              this.translateService.get('workflowApprovalDetail.errors.requestNotFound').subscribe(translation => {
+              this.translateService.get('workflowApprovalDetail.errors.requestNotFound').pipe(takeUntil(this.destroy$)).subscribe(translation => {
                 if (loadSeq !== this.detailLoadSeq) return;
                 this.error = translation || 'Request not found';
                 this.loading = false;

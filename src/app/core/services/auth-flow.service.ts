@@ -231,7 +231,7 @@ export class AuthFlowService {
   }
 
   restoreSessionSilently(): Observable<boolean> {
-    if (this.session.isAuthenticated()) {
+    if (this.session.isAuthenticated() && !this.session.isTokenExpired()) {
       return of(true);
     }
     return this.tokenRefresh.getRefreshedLoginResponse().pipe(

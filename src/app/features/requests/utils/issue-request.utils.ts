@@ -159,7 +159,7 @@ export function applyUserContext(
  */
 export function applyAuthenticatedUserContext(
   user: AuthenticatedUser | null,
-  userContextState: UserContextState
+  _userContextState: UserContextState
 ): { nameEn?: string; nameAr?: string; userName?: string; departmentId?: number } | null {
   if (!user) {
     return null;

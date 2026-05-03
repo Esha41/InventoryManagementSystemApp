@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -30,7 +30,7 @@ import { Subject, takeUntil, forkJoin } from 'rxjs';
   styleUrls: ['./edit-asset-modal.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class EditAssetModalComponent implements OnInit, OnChanges, OnDestroy {
+export class EditAssetModalComponent implements OnChanges, OnDestroy {
   @Input() isOpen = false;
   @Input() asset: AssetDto | null = null;
   @Input() loading = false;
@@ -72,8 +72,6 @@ export class EditAssetModalComponent implements OnInit, OnChanges, OnDestroy {
   ) {
     this.initForm();
   }
-
-  ngOnInit(): void { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isOpen'] && !this.isOpen && this.editForm) {
@@ -217,11 +215,11 @@ export class EditAssetModalComponent implements OnInit, OnChanges, OnDestroy {
         next: () => {
           this.finishSuccess();
         },
-        error: (error) => {
+        error: (error: unknown) => {
           console.error('Error updating asset:', error);
           this.saving = false;
           this.cdr.markForCheck();
-          this.translateService.get(['toast.error', 'common.failedToSave']).subscribe(translations => {
+          this.translateService.get(['toast.error', 'common.failedToSave']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.error(
               translations['common.failedToSave'] || 'Failed to save changes',
               translations['toast.error']
@@ -233,7 +231,7 @@ export class EditAssetModalComponent implements OnInit, OnChanges, OnDestroy {
 
   private finishSuccess(): void {
     this.saving = false;
-    this.translateService.get(['toast.success', 'common.savedSuccessfully']).subscribe(translations => {
+    this.translateService.get(['toast.success', 'common.savedSuccessfully']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
       this.toastService.success(
         translations['common.savedSuccessfully'] || 'Saved successfully',
         translations['toast.success']

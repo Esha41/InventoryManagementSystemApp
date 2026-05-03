@@ -17,7 +17,6 @@ import { BaseRequestDto, WorkflowApprovalStep } from '@models/workflow-approval.
 import { SupplyRequestDetail, OrderItem } from '@models/supply-request.model';
 import { mapOrderToRequestDetail, applySuggestionToItems, capOrderItemDischargeToApprovedQuantity } from '../../utils/supply-request.mapper';
 import { mapLotDetailsToLotItems } from '@utils/lot.utils';
-import { mapWorkflowStepsToApprovalSteps } from '@requests/utils/approval-workflow.utils';
 import { mapApprovalHistory, mapRequestStatus } from '@utils/request-mapper.utils';
 import { ConfigService } from '@services/config.service';
 import { ToastService } from '@services/toast.service';
@@ -436,7 +435,7 @@ export class SupplyRequestDetailService {
     };
 
     return this.supplyService.create(createSupplyDto).pipe(
-      tap((supplyId: number) => {
+      tap((_supplyId: number) => {
         const message = this.translate.instant('supplyRequestDetail.dischargeProcessedSuccessfully', {
           count: supplyDetails.length
         });

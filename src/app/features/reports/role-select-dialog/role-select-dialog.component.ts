@@ -123,12 +123,10 @@ export class RoleSelectDialogComponent implements OnInit, OnChanges {
 
   onConfirm(): void {
     this.rolesSelected.emit(Array.from(this.selectedRoles));
-    this.isOpen = false;
   }
 
   onCancel(): void {
     this.cancelled.emit();
-    this.isOpen = false;
     // Reset to original selection
     if (this.selectedRoleIds && this.selectedRoleIds.length > 0) {
       this.selectedRoles = new Set(this.selectedRoleIds);

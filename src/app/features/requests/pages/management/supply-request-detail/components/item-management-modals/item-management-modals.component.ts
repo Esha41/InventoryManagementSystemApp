@@ -180,7 +180,7 @@ export class ItemManagementModalsComponent implements OnInit, OnChanges {
     return getItemManagementOptionLabel(item, this.translate);
   };
 
-  getItemProductId(item: OrderItem): string {
+  getItemProductId(_item: OrderItem): string {
     return '-';
   }
 

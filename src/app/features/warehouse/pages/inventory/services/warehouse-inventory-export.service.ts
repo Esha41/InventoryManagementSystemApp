@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { take } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { ExcelService, ExcelColumn } from '@services/excel.service';
 import { ToastService } from '@services/toast.service';
@@ -37,7 +38,7 @@ export class WarehouseInventoryExportService {
    */
   exportBatchSummariesToExcel(batches: BatchSummaryDto[], depoName: string): void {
     if (!batches?.length) {
-      this.toastService.warning('No data available to export');
+      this.showWarningToast('common.noData');
       return;
     }
 
@@ -63,9 +64,7 @@ export class WarehouseInventoryExportService {
       includeTimestamp: true
     });
 
-    this.translateService.get(['common.exportSuccess', 'toast.success']).subscribe((translations) => {
-      this.toastService.success(translations['common.exportSuccess'], translations['toast.success']);
-    });
+    this.showSuccessToast();
   }
 
   exportInventoryToExcel(
@@ -163,9 +162,7 @@ export class WarehouseInventoryExportService {
       includeTimestamp: true
     });
 
-    this.translateService.get(['common.exportSuccess', 'toast.success']).subscribe(translations => {
-      this.toastService.success(translations['common.exportSuccess'], translations['toast.success']);
-    });
+    this.showSuccessToast();
   }
 
   /**
@@ -237,9 +234,7 @@ export class WarehouseInventoryExportService {
       includeTimestamp: true
     });
 
-    this.translateService.get(['common.exportSuccess', 'toast.success']).subscribe(translations => {
-      this.toastService.success(translations['common.exportSuccess'], translations['toast.success']);
-    });
+    this.showSuccessToast();
   }
 
   // ---------- Store-aware orchestration flows ----------
@@ -267,9 +262,9 @@ export class WarehouseInventoryExportService {
             d => this.formatterService.getPrimaryPurposeName(d)
           );
         },
-        error: () => {
+        error: (err: unknown) => {
           store.setLoading(false);
-          this.toastService.error('Failed to fetch data for export');
+          this.showErrorToast(err, 'Failed to fetch data for export');
         }
       });
   }
@@ -281,13 +276,40 @@ export class WarehouseInventoryExportService {
         next: blob => {
           const nameSafe = (batch.batchNumber || `batch_${batch.id}`).replace(/[^\w.-]+/g, '_');
           this.downloadBlob(blob, `${nameSafe}_BatchAssets_${new Date().toISOString().slice(0, 10)}.xlsx`);
-          this.translateService.get(['common.exportSuccess', 'toast.success'])
-            .pipe(takeUntilDestroyed(store.destroyRef))
-            .subscribe(t => this.toastService.success(t['common.exportSuccess'], t['toast.success']));
+          this.showSuccessToast();
         },
-        error: err => {
-          this.toastService.error(ErrorHandler.extractErrorMessage(err, 'Export failed'));
+        error: (err: unknown) => {
+          this.showErrorToast(err, 'Export failed');
         }
+      });
+  }
+
+  private showSuccessToast(messageKey = 'common.exportSuccess', titleKey = 'toast.success'): void {
+    this.translateService
+      .get([messageKey, titleKey])
+      .pipe(take(1))
+      .subscribe(t => {
+        this.toastService.success(t[messageKey], t[titleKey]);
+      });
+  }
+
+  private showWarningToast(messageKey: string, titleKey?: string): void {
+    const title = titleKey ?? 'toast.warning';
+    this.translateService
+      .get([messageKey, title])
+      .pipe(take(1))
+      .subscribe(translations => {
+        this.toastService.warning(translations[messageKey], translations[title]);
+      });
+  }
+
+  private showErrorToast(error: unknown, defaultMsg: string): void {
+    const msg = ErrorHandler.extractAndTranslateErrorMessage(error, defaultMsg, this.translateService);
+    this.translateService
+      .get('toast.error')
+      .pipe(take(1))
+      .subscribe(translations => {
+        this.toastService.error(msg, translations['toast.error']);
       });
   }
 

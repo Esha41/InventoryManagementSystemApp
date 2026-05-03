@@ -1,8 +1,10 @@
 import { Injectable, Injector, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 import { BackendAuthService } from './backend-auth.service';
 import { AuthSessionService } from './auth-session.service';
 import { ConfigService } from './config.service';
+import { StorageService } from './storage.service';
 
 type AuthSyncMessage = { type: 'auth-session-changed' } | { type: 'auth-logged-out' };
 
@@ -19,10 +21,12 @@ export class AuthCrossTabSyncService {
   private peerLogoutTimer: ReturnType<typeof setTimeout> | null = null;
   private peerSyncTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly debounceMs = 200;
+  private restoreInProgress = false;
 
   constructor(
     private readonly session: AuthSessionService,
     private readonly configService: ConfigService,
+    private readonly storageService: StorageService,
     private readonly injector: Injector,
     private readonly ngZone: NgZone
   ) {
@@ -71,6 +75,9 @@ export class AuthCrossTabSyncService {
     }
     window.addEventListener('storage', (e: StorageEvent) => {
       if (e.storageArea !== localStorage) {
+        return;
+      }
+      if (this.restoreInProgress) {
         return;
       }
       if (e.key === null) {
@@ -134,6 +141,9 @@ export class AuthCrossTabSyncService {
     if (this.session.logoutInProgress) {
       return;
     }
+    if (this.restoreInProgress) {
+      return;
+    }
     if (!this.session.isAuthenticated()) {
       return;
     }
@@ -143,21 +153,56 @@ export class AuthCrossTabSyncService {
   }
 
   /**
-   * Another tab rotated auth storage or finished login; clear local in-memory state and rebuild from cookie.
+   * Another tab rotated auth storage or finished login. The peer already wrote the new
+   * `auth_token` / `current_user` to localStorage, so the HTTP interceptor will use the
+   * fresh bearer on its own. Reconcile our in-memory state without nuking the UI:
+   *   - Same user as in-memory: no-op.
+   *   - Different user: surface as session conflict and sign out locally.
+   *   - No local session: adopt the peer session via the full restore path.
    */
   private applyPeerSessionChange(): void {
     if (this.session.logoutInProgress) {
       return;
     }
-    const backendAuth = this.injector.get(BackendAuthService);
-    if (this.session.isAuthenticated()) {
-      this.session.clearSession();
+    if (this.restoreInProgress) {
+      return;
     }
-    backendAuth.restoreSessionSilently().subscribe(restored => {
-      if (!restored) {
+    this.restoreInProgress = true;
+    try {
+      const storedUser = this.storageService.get<{ id?: string }>('current_user');
+      const localUser = this.session.getCurrentUser();
+      const storedUserId = String(storedUser?.id ?? '').trim();
+      const localUserId = String(localUser?.id ?? '').trim();
+
+      if (localUserId && storedUserId && localUserId === storedUserId) {
+        this.restoreInProgress = false;
+        return;
+      }
+
+      if (localUserId && storedUserId && localUserId !== storedUserId) {
+        this.session.clearSession();
         const router = this.injector.get(Router);
         void router.navigate(['/auth/login'], { queryParams: { sessionConflict: 'true' } });
+        this.restoreInProgress = false;
+        return;
       }
-    });
+
+      const backendAuth = this.injector.get(BackendAuthService);
+      backendAuth
+        .restoreSessionSilently()
+        .pipe(
+          finalize(() => {
+            this.restoreInProgress = false;
+          })
+        )
+        .subscribe(restored => {
+          if (!restored) {
+            const router = this.injector.get(Router);
+            void router.navigate(['/auth/login'], { queryParams: { sessionConflict: 'true' } });
+          }
+        });
+    } catch {
+      this.restoreInProgress = false;
+    }
   }
 }

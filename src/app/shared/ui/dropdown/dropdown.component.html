@@ -39,7 +39,6 @@
     <div
       class="p-3 border-b border-border bg-background transition-colors duration-200 ease-in-out motion-reduce:transition-none"
       *ngIf="showSearch && options && options.length > 0"
-      (click)="onSearchClick($event)"
     >
       <div class="relative flex items-center">
         <span
@@ -76,7 +75,13 @@
         [ngClass]="isOptionDisabled(option) ? 'opacity-60 cursor-not-allowed hover:!bg-transparent' : ''"
         [class.font-semibold]="isSelected(option)"
         [style.background-color]="isSelected(option) ? 'rgba(var(--app-dropdown-accent-color-rgb), 0.08)' : null"
+        role="option"
+        [attr.tabindex]="isOptionDisabled(option) ? '-1' : '0'"
+        [attr.aria-disabled]="isOptionDisabled(option)"
+        [attr.aria-selected]="isSelected(option)"
         (click)="selectOption(option)"
+        (keydown.enter)="selectOption(option)"
+        (keydown.space)="$event.preventDefault(); selectOption(option)"
       >
         <span *ngIf="multiple" class="flex items-center gap-2 w-full">
           <input

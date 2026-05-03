@@ -46,27 +46,27 @@
         <div *ngIf="isRequestInfoExpanded" class="px-6 pb-6 border-t border-[var(--color-border)]">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
             <div class="space-y-1">
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+              <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
                 {{ 'weaponSupplyReview.orderNo' | translate }}
-              </label>
+              </span>
               <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ orderData.requestNo || orderData.orderNo }}</p>
             </div>
             <div class="space-y-1">
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+              <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
                 {{ 'weaponSupplyReview.department' | translate }}
-              </label>
+              </span>
               <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ getDepartmentName() }}</p>
             </div>
             <div class="space-y-1">
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+              <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
                 {{ 'weaponSupplyReview.requester' | translate }}
-              </label>
+              </span>
               <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ getRequesterName() }}</p>
             </div>
             <div *ngIf="orderData.usageLocation" class="space-y-1">
-              <label class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+              <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
                 {{ 'weaponSupplyReview.usageLocation' | translate }}
-              </label>
+              </span>
               <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ orderData.usageLocation }}</p>
             </div>
           </div>
@@ -359,9 +359,9 @@ class="assets-table-input w-full min-w-0">
         <div *ngIf="isReceiverInfoExpanded" class="px-6 pb-6 border-t border-[var(--color-border)]">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
             <div class="space-y-1">
-              <label class="block text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-1">
+              <span class="block text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-1">
                 {{ 'weaponSupplyReview.receiver' | translate }} <span class="text-[var(--color-error)]">*</span>
-              </label>
+              </span>
               <app-dropdown
                 [options]="employeeDropdownOptions"
                 [(ngModel)]="receiverEmployeeId"
@@ -374,37 +374,37 @@ class="assets-table-input w-full min-w-0">
             </div>
 
             <div class="space-y-1">
-              <label class="block text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-1">
+              <label class="block text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-1" for="weapon-supply-review-fld-6-6">
                 {{ 'weaponSupplyReview.location' | translate }}
               </label>
-              <input type="text" [(ngModel)]="location"
+              <input id="weapon-supply-review-fld-6-6" type="text" [(ngModel)]="location"
                 class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] transition-all">
             </div>
 
             <div class="space-y-1">
-              <label class="block text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-1">
+              <label class="block text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-1" for="weapon-supply-review-fld-7-7">
                 {{ 'weaponSupplyReview.expectedReturnDate' | translate }}
               </label>
-              <input type="date" [(ngModel)]="expectedReturnDate"
+              <input id="weapon-supply-review-fld-7-7" type="date" [(ngModel)]="expectedReturnDate"
                 class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] transition-all">
             </div>
 
             <!-- File Attachment -->
             <div class="space-y-1">
-              <label class="block text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-1">
+              <span class="block text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-1">
                 {{ 'weaponSupplyReview.fileAttachments' | translate }} <span class="text-[var(--color-error)]">*</span>
-              </label>
+              </span>
               <div class="space-y-3">
                 <!-- File Input -->
                 <div class="relative flex items-center gap-2">
                   <input type="file" #fileInput (change)="onFilesSelected($event)"
                     [disabled]="submitting" multiple accept=".jpg,.jpeg,.png,.pdf,.xlsx,.docx" class="hidden">
-                  <label (click)="!submitting && fileInput.click()"
+                  <span (click)="!submitting && fileInput.click()"
                     [class.opacity-50]="submitting"
                     [class.cursor-not-allowed]="submitting"
                     class="px-4 py-2 rounded-lg text-sm font-medium bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand)]/90 cursor-pointer transition-all">
                     {{ 'common.chooseFiles' | translate }}
-                  </label>
+                  </span>
                   <span class="text-sm text-[var(--color-text-muted)] flex-1">
                     <span *ngIf="selectedFiles.length === 0">{{ 'common.noFileChosen' | translate }}</span>
                     <span *ngIf="selectedFiles.length > 0">{{ selectedFiles.length }} {{ selectedFiles.length === 1 ? ('common.file' | translate) : ('common.files' | translate) }}</span>
@@ -437,10 +437,10 @@ class="assets-table-input w-full min-w-0">
             </div>
 
             <div class="md:col-span-2 space-y-1">
-              <label class="block text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-1">
+              <label class="block text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-1" for="weapon-supply-review-fld-10-10">
                 {{ 'weaponSupplyReview.notes' | translate }}
               </label>
-              <textarea [(ngModel)]="notes" rows="3"
+              <textarea id="weapon-supply-review-fld-10-10" [(ngModel)]="notes" rows="3"
                 class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] transition-all resize-none"></textarea>
             </div>
           </div>

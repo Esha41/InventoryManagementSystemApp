@@ -161,7 +161,7 @@
 
 <!-- Role Form Modal -->
 <app-role-form-modal [isOpen]="showRoleModal" [role]="selectedRole" [mode]="roleModalMode"
-  (closed)="showRoleModal = false" (saved)="onRoleSaved($event)" (error)="onRoleError($event)" />
+  (closed)="showRoleModal = false" (saved)="onRoleSaved($event)" (saveError)="onRoleError($event)" />
 
 <!-- Delete Confirmation -->
 <app-confirm-dialog [isOpen]="showDeleteConfirm" [title]="'adminRoles.deleteRole' | translate"

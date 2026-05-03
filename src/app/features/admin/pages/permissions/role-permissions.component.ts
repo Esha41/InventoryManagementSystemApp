@@ -216,10 +216,10 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
           this.isLoading = false;
           this.cdr.markForCheck();
         },
-        error: (error) => {
+        error: (_error) => {
           this.isLoading = false;
           this.cdr.markForCheck();
-          this.translateService.get(['toast.failedToLoadRoles', 'toast.error']).subscribe(translations => {
+          this.translateService.get(['toast.failedToLoadRoles', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.error(translations['toast.failedToLoadRoles'], translations['toast.error']);
           });
         }
@@ -250,10 +250,10 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
           this.isLoading = false;
           this.cdr.markForCheck();
         },
-        error: (error) => {
+        error: (_error) => {
           this.isLoading = false;
           this.cdr.markForCheck();
-          this.translateService.get(['toast.failedToLoadPermissions', 'toast.error']).subscribe(translations => {
+          this.translateService.get(['toast.failedToLoadPermissions', 'toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
             this.toastService.error(translations['toast.failedToLoadPermissions'], translations['toast.error']);
           });
         }

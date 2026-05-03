@@ -82,7 +82,8 @@
         <!-- Dropdown Menu - responsive width, doesn't overflow viewport -->
         <div *ngIf="showUserMenu"
           class="absolute mt-2 w-[min(20rem,calc(100vw-2rem))] min-w-[18rem] sm:min-w-[19rem] bg-[var(--color-background)] rounded-xl shadow-custom-lg border border-[var(--color-border)] animate-in fade-in slide-in-from-top-2 duration-200 z-50"
-          [class.right-0]="!isRTL" [class.left-0]="isRTL" (click)="$event.stopPropagation()">
+          [class.right-0]="!isRTL" [class.left-0]="isRTL" tabindex="-1"
+          (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
           <!-- User Info in Dropdown -->
           <div class="px-5 py-4 border-b border-[var(--color-border)]">
             <div class="flex items-center gap-3.5">
@@ -129,5 +130,7 @@
   </div>
 </nav>
 
-<!-- Overlay to close menu when clicking outside -->
-<div *ngIf="showUserMenu" (click)="closeUserMenu()" class="fixed inset-0 z-30"></div>
+<!-- Overlay to close menu when interacting outside -->
+<button *ngIf="showUserMenu" type="button" (click)="closeUserMenu()"
+  class="fixed inset-0 z-30 cursor-default border-0 p-0 m-0 bg-transparent w-full min-h-[100vh]"
+  [attr.aria-label]="'common.close' | translate"></button>

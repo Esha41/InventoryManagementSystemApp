@@ -5,7 +5,6 @@ import { WorkflowStepDto } from '@models/workflow.model';
 import { getLocalizedName, getCurrentLang, Localizable } from '@utils/localization.utils';
 import { formatDateTimeExtended } from '@utils/format.utils';
 import { RequestStatusEnum } from '@utils/request-mapper.utils';
-import { LookupItem } from '@services/lookup.service';
 import { WorkflowApprovalStepOption } from '../services/workflow-approval-data.service';
 
 type WorkflowStepDisplayLike = WorkflowStepDto & {
@@ -31,7 +30,7 @@ type ApprovalStepWithPascalTransitions = WorkflowApprovalStep & {
   Transitions?: unknown;
 };
 
-function isWorkflowStepTransitionLike(value: unknown): value is WorkflowStepTransition {
+function _isWorkflowStepTransitionLike(value: unknown): value is WorkflowStepTransition {
   if (!value || typeof value !== 'object') return false;
   const v = value as { targetWorkflowStepId?: unknown; sourceWorkflowStepId?: unknown };
   return typeof v.targetWorkflowStepId === 'number' && typeof v.sourceWorkflowStepId === 'number';
@@ -114,7 +113,7 @@ function applyTerminalAutoRejectToTimeline(
 export function formatApprovalDateTime(
   dateTime: string | Date | undefined,
   changedAt?: string | Date | undefined,
-  translateService?: TranslateService
+  _translateService?: TranslateService
 ): string {
   // If primary date is missing, fall back to changedAt completely
   if (!dateTime && changedAt) {

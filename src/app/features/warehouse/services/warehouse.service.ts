@@ -1,28 +1,14 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { map, tap, catchError } from 'rxjs/operators';
 import { ApiService } from '@services/api.service';
 import { ConfigService } from '@services/config.service';
-import { API_ENDPOINTS } from '@constants/app.constants';
-import { 
-  WarehouseDto, 
-  WarehouseSummaryDto, 
-  CreateWarehouseDto, 
-  UpdateWarehouseDto,
-  WarehouseLocationDto
-} from '@models/warehouse.model';
 import {
-  WarehouseInventoryItem,
-  WarehouseInventoryResponse,
-  WarehouseInventoryRequest,
-  WarehouseInventorySummary
-} from '@models/warehouse-inventory.model';
-import { ApiResponse } from '@models/api-response.model';
+  WarehouseDto,
+  WarehouseSummaryDto,
+  CreateWarehouseDto,
+  UpdateWarehouseDto
+} from '@models/warehouse.model';
 
-/**
- * Warehouse Service
- * Handles all warehouse management operations with the backend
- */
 @Injectable({
   providedIn: 'root'
 })
@@ -63,28 +49,28 @@ export class WarehouseService {
   /**
    * @deprecated Use LookupService.getDepots() instead
    */
-  getWarehouseById(id: string): Observable<WarehouseDto> {
+  getWarehouseById(_id: string): Observable<WarehouseDto> {
     return throwError(() => new Error('Use LookupService.getDepots() instead'));
   }
 
   /**
    * @deprecated Warehouse management is handled via Lookup API
    */
-  createWarehouse(warehouse: CreateWarehouseDto): Observable<WarehouseDto> {
+  createWarehouse(_warehouse: CreateWarehouseDto): Observable<WarehouseDto> {
     return throwError(() => new Error('Warehouse management via Lookup API'));
   }
 
   /**
    * @deprecated Warehouse management is handled via Lookup API
    */
-  updateWarehouse(id: string, warehouse: UpdateWarehouseDto): Observable<WarehouseDto> {
+  updateWarehouse(_id: string, _warehouse: UpdateWarehouseDto): Observable<WarehouseDto> {
     return throwError(() => new Error('Warehouse management via Lookup API'));
   }
 
   /**
    * @deprecated Warehouse management is handled via Lookup API
    */
-  deleteWarehouse(id: string): Observable<boolean> {
+  deleteWarehouse(_id: string): Observable<boolean> {
     return throwError(() => new Error('Warehouse management via Lookup API'));
   }
 

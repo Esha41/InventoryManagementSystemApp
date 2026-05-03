@@ -2,7 +2,6 @@ import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { OrderSummary } from '@models/order-report.model';
-import { mapOrderPriorityToString } from '@utils/priority.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { getApprovalStatusBadgeClass } from '@utils/status-class.utils';
 import { TranslateService } from '@ngx-translate/core';

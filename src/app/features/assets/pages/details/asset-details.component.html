@@ -28,34 +28,34 @@
         <div class="p-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+              <span class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
                 {{ 'assetDetails.serialNumber' | translate }}
-              </label>
+              </span>
               <p class="text-sm font-medium text-[var(--color-text)]">
                 {{ asset.serialNumber || '-' }}
               </p>
             </div>
             <div>
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+              <span class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
                 {{ 'assetDetails.rfidTag' | translate }}
-              </label>
+              </span>
               <p class="text-sm font-medium text-[var(--color-text)]">
                 {{ asset.rfid || '-' }}
               </p>
             </div>
             <div>
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+              <span class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
                 {{ 'assetDetails.status' | translate }}
-              </label>
+              </span>
               <span *ngIf="asset.status" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium" [ngClass]="getStatusColorClass()">
                 {{ getStatusLabel() | translate }}
               </span>
               <span *ngIf="!asset.status" class="text-sm text-[var(--color-text)]">-</span>
             </div>
             <div>
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+              <span class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
                 {{ 'warehouseInventory.location' | translate }}
-              </label>
+              </span>
               <p class="text-sm font-medium text-[var(--color-text)]">
                 {{ getDepotName() }}
               </p>
@@ -75,65 +75,65 @@
         <div class="p-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+              <span class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
                 {{ 'addWeaponAsset.deliveryReceipt' | translate }}
-              </label>
+              </span>
               <p class="text-sm font-medium text-[var(--color-text)]">
                 {{ asset.deliveryReceipt || '-' }}
               </p>
             </div>
             <div>
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+              <span class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
                 {{ 'assetDetails.purchaseDate' | translate }}
-              </label>
+              </span>
               <p class="text-sm font-medium text-[var(--color-text)]">
                 {{ formatDate(asset.purchaseDate) }}
               </p>
             </div>
             <div>
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+              <span class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
                 {{ 'assetDetails.warrantyExpiryDate' | translate }}
-              </label>
+              </span>
               <p class="text-sm font-medium text-[var(--color-text)]">
                 {{ formatDate(asset.warrantyExpiryDate) }}
               </p>
             </div>
             <div>
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+              <span class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
                 {{ 'assetDetails.purchasePrice' | translate }}
-              </label>
+              </span>
               <p class="text-sm font-medium text-[var(--color-text)]">
                 {{ asset.purchasePrice ?? '-' }}
               </p>
             </div>
             <div>
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+              <span class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
                 {{ 'assetDetails.supplier' | translate }}
-              </label>
+              </span>
               <p class="text-sm font-medium text-[var(--color-text)]">
                 {{ getLookupLabel(asset.supplier) }}
               </p>
             </div>
             <div>
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+              <span class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
                 {{ 'assetDetails.manufacturer' | translate }}
-              </label>
+              </span>
               <p class="text-sm font-medium text-[var(--color-text)]">
                 {{ getLookupLabel(asset.manufacturer) }}
               </p>
             </div>
             <div>
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+              <span class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
                 {{ 'assetDetails.primaryPurpose' | translate }}
-              </label>
+              </span>
               <p class="text-sm font-medium text-[var(--color-text)]">
                 {{ getLookupLabel(asset.primaryPurpos) }}
               </p>
             </div>
             <div *ngIf="asset.notes" class="md:col-span-2">
-              <label class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
+              <span class="block text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
                 {{ 'assetDetails.notes' | translate }}
-              </label>
+              </span>
               <p class="text-sm text-[var(--color-text)] whitespace-pre-wrap">
                 {{ asset.notes }}
               </p>

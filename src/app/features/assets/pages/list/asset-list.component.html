@@ -20,7 +20,7 @@
 
     <app-import-preview-dialog *ngIf="showPreviewModal && previewData" [previewData]="previewData"
       [assetType]="facade.activeTab"
-      (confirm)="onPreviewConfirmed($event)" (cancel)="onPreviewCancelled()">
+      (confirm)="onPreviewConfirmed($event)" (importCancelled)="onPreviewCancelled()">
     </app-import-preview-dialog>
 
     <!-- Filters Card -->

@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
@@ -26,7 +26,7 @@ import { getApprovalStatusBadgeClass } from '@utils/status-class.utils';
   styleUrls: ['./workflow-approval-timeline.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class WorkflowApprovalTimelineComponent implements OnDestroy {
+export class WorkflowApprovalTimelineComponent {
   readonly CheckCircle = CheckCircle;
   readonly AlertTriangle = AlertTriangle;
   readonly Clock = Clock;
@@ -46,10 +46,6 @@ export class WorkflowApprovalTimelineComponent implements OnDestroy {
     private translateService: TranslateService,
     private supplyServiceHelper: WorkflowApprovalSupplyService
   ) { }
-
-  ngOnDestroy(): void {
-    // Component cleanup if needed
-  }
 
   /**
    * Toggle expanded state
