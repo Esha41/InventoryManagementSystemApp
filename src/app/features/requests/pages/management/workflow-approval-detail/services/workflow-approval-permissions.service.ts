@@ -57,8 +57,9 @@ export class WorkflowApprovalPermissionsService {
 
   /**
    * Check if user can approve or reject requests.
-   * Gated by request status (pending / returned-for-review paths), then either elevated workflow admin
-   * or {@link WorkflowApprovalStep.isCurrentUserApprover} on the current pending step from the DTO.
+   * Gated by request status (pending / returned-for-review paths), then either elevated workflow admin,
+   * or the API saying it is this user's turn ({@link RequestDetail.isMyTurn} and/or
+   * {@link WorkflowApprovalStep.isCurrentUserApprover} on the pending step).
    */
   canApproveOrReject(requestDetail: RequestDetail | null, processing: boolean): boolean {
     if (!requestDetail || processing) {
@@ -79,10 +80,6 @@ export class WorkflowApprovalPermissionsService {
       return true;
     }
 
-    const currentUserId = currentUser.id?.toLowerCase() || '';
-    const currentUserName = currentUser.userName?.toLowerCase() || '';
-    const currentUserEmail = currentUser.email?.toLowerCase() || '';
-
     const currentPendingStep = requestDetail.approvalHistory?.find(
       step => step.status === 'Pending' && step.isPending
     );
@@ -91,36 +88,9 @@ export class WorkflowApprovalPermissionsService {
       return false;
     }
 
-    if (currentPendingStep.isCurrentUserApprover !== true) {
-      return false;
-    }
-
-    // Guard against duplicate action if history already records this user on this workflow step
-    if (requestDetail.approvalHistory?.length) {
-      const hasUserAlreadyActedInCurrentStep = requestDetail.approvalHistory.some(step => {
-        if (step.workflowStepId === currentPendingStep.workflowStepId) {
-          if (step.status === 'Approved' || step.status === 'Rejected') {
-            const changedBy = step.changedBy?.toLowerCase() || '';
-            const approverName = step.approverName?.toLowerCase() || '';
-
-            const matchesUserId = currentUserId && changedBy.includes(currentUserId);
-            const matchesUserName = currentUserName && (changedBy.includes(currentUserName) || approverName.includes(currentUserName));
-            const matchesUserEmail = currentUserEmail && changedBy.includes(currentUserEmail);
-
-            if (matchesUserId || matchesUserName || matchesUserEmail) {
-              return true;
-            }
-          }
-        }
-        return false;
-      });
-
-      if (hasUserAlreadyActedInCurrentStep) {
-        return false;
-      }
-    }
-
-    return true;
+    return (
+      requestDetail.isMyTurn === true || currentPendingStep.isCurrentUserApprover === true
+    );
   }
 
   /**
