@@ -29,7 +29,6 @@ export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit,
   /** Layout URLs served by ReportFactory when no DB row exists — not valid post-save report IDs */
   private static readonly builtInTemplateUrls = new Set([
     'BaseReportTemplate',
-    'AllowanceItemsReportTemplate',
     'AssetsReportTemplate',
     'UsersReportTemplate'
   ]);
