@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule, Plus, Edit2, Trash2, Globe, Eye, Upload, Users, FileText } from 'lucide-angular';
+import { LucideAngularModule, Plus, Edit2, Trash2, Globe, Search, Upload, Users, FileText } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
 import { ButtonComponent } from '@components/button/button.component';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
@@ -40,7 +40,7 @@ export class ReportDesignerComponent implements OnInit {
   readonly Edit2 = Edit2;
   readonly Trash2 = Trash2;
   readonly Globe = Globe;
-  readonly Eye = Eye;
+  readonly Search = Search;
   readonly Upload = Upload;
   readonly Users = Users;
   readonly FileText = FileText;
