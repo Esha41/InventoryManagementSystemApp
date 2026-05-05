@@ -138,7 +138,7 @@
         "pickItem": "Item",
         "allItems": "All items",
         "search": "Search",
-        "searchPlaceholder": "Name, item no., NSN, part no.",
+        "searchPlaceholder": "Search ....",
         "caliber": "Caliber",
         "caliberPlaceholder": "Filter by caliber",
         "allCalibers": "All calibers",

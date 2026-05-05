@@ -282,7 +282,7 @@
     "noLots": "لا يوجد lot متاح لهذه المادة",
     "noAssets": "لا توجد أصول متاحة لهذه المادة",
     "noItems": "لا توجد مواد مخزون متاحة",
-    "searchPlaceholder": "البحث باسم الماده، رقم مادة، NSN، أو Part No...",
+    "searchPlaceholder": "البحث ....",
     "noResults": "لا توجد مواد تطابق معايير البحث",
     "exportWithDetails": "تصدير مع تفاصيل Lots",
     "exportingWithDetails": "جارٍ تحميل تفاصيل Lots للتصدير. الرجاء الانتظار..."
