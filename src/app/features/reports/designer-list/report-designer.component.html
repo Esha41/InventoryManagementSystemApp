@@ -88,41 +88,47 @@
 
     <!-- Reports Table -->
     <div *ngIf="!loading && !error"
-      class="bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg shadow-custom-sm">
+      class="min-w-0 w-full bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg shadow-custom-sm">
       <!-- Desktop Table View -->
-      <div class="hidden md:block overflow-hidden rounded-t-lg">
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-[var(--color-border)]">
-            <thead class="bg-[var(--color-background-muted)]">
-              <tr>
-                <th
-                  class="px-4 lg:px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
-                  {{ 'reportDesigner.table.reportName' | translate }}
-                </th>
-                <th
-                  class="px-4 lg:px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
-                  {{ 'reportDesigner.table.status' | translate }}
-                </th>
-                <th
-                  class="px-4 lg:px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
-                  {{ 'reportDesigner.table.roles' | translate }}
-                </th>
-                <th
-                  class="px-4 lg:px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
-                  {{ 'reportDesigner.table.createdDate' | translate }}
-                </th>
-                <th
-                  class="px-4 lg:px-6 py-3 text-center text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider"
-                  style="text-align: center;">
-                  {{ 'reportDesigner.table.actions' | translate }}
-                </th>
-              </tr>
-            </thead>
-            <tbody class="bg-[var(--color-background)] divide-y divide-[var(--color-border)]">
+      <div class="hidden md:block min-w-0 overflow-hidden rounded-t-lg">
+        <table class="w-full min-w-0 table-fixed divide-y divide-[var(--color-border)]">
+          <colgroup>
+            <col class="w-[30%]" />
+            <col class="w-[14%]" />
+            <col class="w-[24%]" />
+            <col class="w-[14%]" />
+            <col class="w-[18%]" />
+          </colgroup>
+          <thead class="bg-[var(--color-background-muted)]">
+            <tr>
+              <th
+                class="px-4 lg:px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider whitespace-normal">
+                {{ 'reportDesigner.table.reportName' | translate }}
+              </th>
+              <th
+                class="px-4 lg:px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider whitespace-normal">
+                {{ 'reportDesigner.table.status' | translate }}
+              </th>
+              <th
+                class="px-4 lg:px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider whitespace-normal">
+                {{ 'reportDesigner.table.roles' | translate }}
+              </th>
+              <th
+                class="px-4 lg:px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider whitespace-normal">
+                {{ 'reportDesigner.table.createdDate' | translate }}
+              </th>
+              <th
+                class="px-4 lg:px-6 py-3 text-center text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider whitespace-normal"
+                style="text-align: center;">
+                {{ 'reportDesigner.table.actions' | translate }}
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-[var(--color-background)] divide-y divide-[var(--color-border)]">
               <tr *ngFor="let report of paginatedReports"
                 class="hover:bg-[var(--color-background-hover)] transition-colors">
-                <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
-                  <div class="font-medium">
+                <td class="px-4 lg:px-6 py-4 text-sm text-[var(--color-text)] text-start min-w-0">
+                  <div class="font-medium truncate" [title]="report.reportName">
                     {{ report.reportName }}
                   </div>
                 </td>
@@ -132,7 +138,7 @@
                     {{ getStatusDisplayName(report) }}
                   </span>
                 </td>
-                <td class="px-4 lg:px-6 py-4 text-sm text-[var(--color-text)] text-start">
+                <td class="px-4 lg:px-6 py-4 text-sm text-[var(--color-text)] text-start min-w-0">
                   <div *ngIf="isPublished(report) && report.roles && report.roles.length > 0" class="flex flex-wrap gap-1">
                     <span *ngFor="let role of report.roles" 
                       class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/20">
@@ -151,8 +157,8 @@
                 <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-muted)] text-start">
                   {{ formatDate(report.creationDate) }}
                 </td>
-                <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium" style="text-align: center;">
-                  <div class="flex items-center justify-center gap-2 mx-auto w-fit">
+                <td class="px-4 lg:px-6 py-4 text-sm font-medium min-w-0" style="text-align: center;">
+                  <div class="flex flex-wrap items-center justify-center gap-2 mx-auto max-w-full">
                     <!-- Edit Button -->
                     <button type="button" *ngIf="canEditReport" (click)="onEdit(report)"
                       class="p-2 text-[var(--color-info)] hover:text-[var(--color-info)]/80 hover:bg-[var(--color-info)]/10 rounded-lg transition-colors"
@@ -186,7 +192,6 @@
               </tr>
             </tbody>
           </table>
-        </div>
       </div>
 
       <!-- Mobile Card View -->
