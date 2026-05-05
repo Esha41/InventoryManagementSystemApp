@@ -1,7 +1,8 @@
 <div class="relative w-full">
   <button
     type="button"
-    class="app-dropdown-trigger w-full flex items-center justify-between gap-3 py-2.5 px-4 rounded-xl border-2 border-border bg-background text-text text-sm font-medium outline-none transition-[border-color,box-shadow] duration-200 ease-in-out motion-reduce:transition-none disabled:cursor-not-allowed disabled:opacity-60 enabled:hover:border-[rgba(var(--app-dropdown-accent-color-rgb),0.6)] enabled:hover:shadow-[0_0_0_4px_rgba(var(--app-dropdown-accent-color-rgb),0.12)] focus-visible:border-[rgba(var(--app-dropdown-accent-color-rgb),0.6)] focus-visible:shadow-[0_0_0_4px_rgba(var(--app-dropdown-accent-color-rgb),0.12)] data-[trigger-state=open]:border-[var(--app-dropdown-accent-color)] data-[trigger-state=open]:shadow-[0_0_0_4px_rgba(var(--app-dropdown-accent-color-rgb),0.12)] data-[trigger-state=error]:border-[rgba(var(--color-danger-rgb,220,38,38),0.8)] data-[trigger-state=error]:shadow-[0_0_0_3px_rgba(var(--color-danger-rgb,220,38,38),0.12)] data-[trigger-state=error]:enabled:hover:border-[rgba(var(--color-danger-rgb,220,38,38),1)] data-[trigger-state=error]:enabled:hover:shadow-[0_0_0_3px_rgba(var(--color-danger-rgb,220,38,38),0.18)] data-[trigger-state=error]:focus-visible:border-[rgba(var(--color-danger-rgb,220,38,38),1)] data-[trigger-state=error]:focus-visible:shadow-[0_0_0_3px_rgba(var(--color-danger-rgb,220,38,38),0.18)]"
+    class="app-dropdown-trigger w-full flex justify-between gap-3 px-4 rounded-xl border-2 border-border bg-background text-text text-sm font-medium outline-none transition-[border-color,box-shadow] duration-200 ease-in-out motion-reduce:transition-none disabled:cursor-not-allowed disabled:opacity-60 enabled:hover:border-[rgba(var(--app-dropdown-accent-color-rgb),0.6)] enabled:hover:shadow-[0_0_0_4px_rgba(var(--app-dropdown-accent-color-rgb),0.12)] focus-visible:border-[rgba(var(--app-dropdown-accent-color-rgb),0.6)] focus-visible:shadow-[0_0_0_4px_rgba(var(--app-dropdown-accent-color-rgb),0.12)] data-[trigger-state=open]:border-[var(--app-dropdown-accent-color)] data-[trigger-state=open]:shadow-[0_0_0_4px_rgba(var(--app-dropdown-accent-color-rgb),0.12)] data-[trigger-state=error]:border-[rgba(var(--color-danger-rgb,220,38,38),0.8)] data-[trigger-state=error]:shadow-[0_0_0_3px_rgba(var(--color-danger-rgb,220,38,38),0.12)] data-[trigger-state=error]:enabled:hover:border-[rgba(var(--color-danger-rgb,220,38,38),1)] data-[trigger-state=error]:enabled:hover:shadow-[0_0_0_3px_rgba(var(--color-danger-rgb,220,38,38),0.18)] data-[trigger-state=error]:focus-visible:border-[rgba(var(--color-danger-rgb,220,38,38),1)] data-[trigger-state=error]:focus-visible:shadow-[0_0_0_3px_rgba(var(--color-danger-rgb,220,38,38),0.18)]"
+    [ngClass]="multiple && multiTriggerBadges && hasSelection && multiBadgeUseCollapsedSummary ? 'items-center py-2.5 min-h-[42px]' : (multiple && multiTriggerBadges && hasSelection ? 'items-start py-2 min-h-[42px]' : 'items-center py-2.5')"
     [attr.data-trigger-state]="error ? 'error' : isOpen ? 'open' : 'idle'"
     [attr.disabled]="disabled ? true : null"
     (mousedown)="onTriggerMouseDown($event)"
@@ -9,6 +10,7 @@
     (blur)="onTriggerBlur()"
   >
     <span
+      *ngIf="!(multiple && multiTriggerBadges && hasSelection)"
       class="flex-1 min-w-0 text-start text-sm whitespace-nowrap overflow-hidden text-ellipsis"
       [class.text-text-muted]="!hasSelection"
       [class.font-normal]="!hasSelection"
@@ -16,10 +18,47 @@
     >
       {{ displayLabel }}
     </span>
+    <span
+      *ngIf="multiple && multiTriggerBadges && hasSelection && multiBadgeUseCollapsedSummary"
+      class="flex flex-1 min-w-0 items-center text-start"
+    >
+      <span
+        class="inline-flex min-w-0 max-w-full items-center gap-2 truncate rounded-full border border-[var(--color-brand)]/25 bg-[var(--color-brand)]/10 px-3 py-1 text-xs font-semibold tabular-nums text-[var(--color-brand)]"
+        [title]="selectedLabelsForBadges.join(', ')"
+      >
+        <ng-container *ngIf="multiBadgeCollapsedSummaryKey; else collapsedBadgeFallback">
+          {{ multiBadgeCollapsedSummaryKey | translate: { count: selectedLabelsForBadges.length } }}
+        </ng-container>
+        <ng-template #collapsedBadgeFallback>{{ selectedLabelsForBadges.length }}</ng-template>
+      </span>
+    </span>
+    <span
+      *ngIf="multiple && multiTriggerBadges && hasSelection && !multiBadgeUseCollapsedSummary"
+      class="flex flex-1 min-w-0 flex-wrap items-center gap-1.5 justify-start text-start leading-snug"
+    >
+      <span
+        *ngFor="let lab of selectedLabelsForBadges.slice(0, 3)"
+        class="inline-flex max-w-[9.5rem] min-w-0 items-center truncate rounded-full border border-[var(--color-brand)]/25 bg-[var(--color-brand)]/10 px-2.5 py-0.5 text-[11px] font-semibold tracking-tight text-[var(--color-brand)]"
+        [title]="lab"
+      >
+        {{ lab }}
+      </span>
+      <span
+        *ngIf="badgeOverflowCount > 0"
+        class="inline-flex shrink-0 items-center rounded-full border border-[var(--color-border)] bg-[var(--color-background-muted)] px-2.5 py-0.5 text-[11px] font-bold tabular-nums text-[var(--color-text-muted)]"
+      >
+        <ng-container *ngIf="badgeOverflowTranslateKey; else badgeOverflowPlain">
+          {{ badgeOverflowTranslateKey | translate: { count: badgeOverflowCount } }}
+        </ng-container>
+        <ng-template #badgeOverflowPlain>+{{ badgeOverflowCount }}</ng-template>
+      </span>
+    </span>
     <lucide-angular
       [img]="ChevronDown"
       class="shrink-0 w-4 h-4 text-text-muted flex items-center justify-center origin-center transition-[transform,color] duration-200 ease-in-out motion-reduce:transition-none"
       [class.rotate-180]="isOpen"
+      [class.self-start]="multiple && multiTriggerBadges && hasSelection && !multiBadgeUseCollapsedSummary"
+      [class.mt-0.5]="multiple && multiTriggerBadges && hasSelection && !multiBadgeUseCollapsedSummary"
     ></lucide-angular>
   </button>
 
@@ -27,6 +66,8 @@
     class="app-dropdown-panel absolute top-[calc(100%+0.5rem)] left-0 right-0 z-[99999] rounded-xl border-2 border-border bg-background shadow-[var(--shadow-xl)] overflow-hidden transition-colors duration-200 ease-in-out motion-reduce:transition-none"
     *ngIf="isOpen"
   >
+    <ng-content select="[appDropdownPanelFooter]"></ng-content>
+
     <div *ngIf="addActionLabel" class="border-b border-border p-2">
       <button
         type="button"

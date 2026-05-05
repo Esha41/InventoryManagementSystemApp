@@ -1,8 +1,3 @@
-/**
- * Workflow Approval Permissions Service
- * Handles all permission checks and authorization logic
- */
-
 import { Injectable } from '@angular/core';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { RequestDetail } from '@models/workflow-approval.model';

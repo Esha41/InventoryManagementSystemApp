@@ -13,6 +13,7 @@ import { OrderItem } from '@models/supply-request.model';
  */
 export function getLotConditionClass(condition: string): string {
   switch (condition) {
+    case 'Expired':
     case 'Near Expiry': return 'bg-red-100 text-red-800 border-red-300';
     case 'Fair': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
     case 'Good': return 'bg-green-100 text-green-800 border-green-300';

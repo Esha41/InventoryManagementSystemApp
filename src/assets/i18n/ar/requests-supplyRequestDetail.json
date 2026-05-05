@@ -40,6 +40,7 @@
     "available": "متاح",
     "noExpiry": "لا يوجد تاريخ انتهاء",
     "daysRemaining": "أيام متبقية",
+    "lotExpiredTimeline": "منتهي الصلاحية",
     "dischargeQuantity": "كمية الصرف",
     "totalSelected": "إجمالي المحدد",
     "selectItem": "اختر المادة",

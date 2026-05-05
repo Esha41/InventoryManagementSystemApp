@@ -105,7 +105,15 @@
     "filter": {
       "allDepots": "جميع مستودعاتي",
       "viewingDepot": "عرض المستودع",
-      "depots": "مستودعات"
+      "depots": "مستودعات",
+      "apply": "تطبيق",
+      "cancel": "إلغاء",
+      "clearAll": "مسح الكل",
+      "depotsMore": "+{{count}} أخرى",
+      "depotsHeaderAll": "جميع المستودعات ({{count}})",
+      "depotsHeaderSummary": "{{count}} مستودع محدد",
+      "depotsTriggerAll": "كل المستودعات ({{count}})",
+      "depotsTriggerPartial": "{{count}} مستودع محدد"
     },
     "tabs": {
       "all": "الكل",

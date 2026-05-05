@@ -1,6 +1,6 @@
 import { ApplicationConfig, provideZoneChangeDetection, importProvidersFrom, APP_INITIALIZER } from '@angular/core';
 import { provideQuillConfig } from 'ngx-quill/config';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideHttpClient, withInterceptors, HttpClient } from '@angular/common/http';
 import { TranslateModule, TranslateLoader, TranslationObject } from '@ngx-translate/core';
 import { routes } from './app.routes';
@@ -93,7 +93,12 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideQuillConfig({}),
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes),
+    provideRouter(
+      routes,
+      withInMemoryScrolling({
+        scrollPositionRestoration: 'top'
+      })
+    ),
     provideHttpClient(
       withInterceptors([authInterceptor, errorInterceptor])
     ),

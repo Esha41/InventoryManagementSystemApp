@@ -1,35 +1,36 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, NavigationEnd } from '@angular/router';
+import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil, merge } from 'rxjs';
-import {  debounceTime, filter, map } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, filter, map } from 'rxjs/operators';
 import { LucideAngularModule, ShieldAlert, Grid, List, Eye, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-angular';
 import { StatusCardComponent, OrderItem } from './components/status-card/status-card.component';
 import { RequestDetailsModalComponent, UnifiedRequestDto } from './components/request-details-modal/request-details-modal.component';
 import { BackendAuthService } from '@services/backend-auth.service';
-import { UnifiedRequestService } from '@requests/services/unified-request.service';
-import { ReturnService } from '@requests/services/return.service';
 import { ReturnDto } from '@models/return.model';
-import { DiscardService } from '@requests/services/discard.service';
 import { DiscardDto } from '@models/discard.model';
-import { OrderService } from '@requests/services/order.service';
 import { OrderDto } from '@models/order.model';
-import { UserContextService } from '@services/user-context.service';
 import { RequestStatusUpdateService } from '@requests/services/request-status-update.service';
 import { DashboardDataService } from '@dashboard/services/dashboard-data.service';
-import { DashboardFilterService } from '@dashboard/services/dashboard-filter.service';
 import { DashboardCard } from '@models/dashboard.model';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { RequestFilterBarComponent, StatusFilter, PriorityFilter, AutoRejectFilter } from '@requests/components/request-filter-bar/request-filter-bar.component';
 import { AutoRejectCountdownService, OrderAutoRejectCountdownDto } from '@requests/services/auto-reject-countdown.service';
 import { AutoRejectCountdownComponent } from '@requests/components/auto-reject-countdown/auto-reject-countdown.component';
-import {  formatDateTimeExtended } from '@utils/format.utils';
+import { formatDateTimeExtended } from '@utils/format.utils';
 import { defaultPageSize } from '@constants/app.constants';
 import { localizedBilingualLabel } from '@utils/localization.utils';
 import { getRequestStatusTranslationKey } from '@utils/status.utils';
+import {
+  DASHBOARD_VIEW_QUERY_PARAM,
+  DashboardViewMode,
+  isDashboardRoutePath,
+  parseDashboardViewMode,
+  pathWithoutQuery
+} from '@dashboard/utils/dashboard-url.utils';
 
 @Component({
   selector: 'app-dashboard',
@@ -53,8 +54,8 @@ import { getRequestStatusTranslationKey } from '@utils/status.utils';
 export class DashboardComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
-  // View state
-  viewMode: 'grid' | 'table' = 'grid';
+  /** Driven by `?view=` on this route; toggling layout does not refetch (same dataset). */
+  viewMode: DashboardViewMode = 'grid';
   currentPage = 1;
   /** Same page size for grid and list/table views (server-side pagination). */
   rowsPerPage = defaultPageSize;
@@ -197,22 +198,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly authService: BackendAuthService,
-    private readonly unifiedRequestService: UnifiedRequestService,
-    private readonly orderService: OrderService,
-    private readonly returnService: ReturnService,
-    private readonly discardService: DiscardService,
     private readonly translate: TranslateService,
     private readonly cdr: ChangeDetectorRef,
     private readonly router: Router,
-    private readonly userContextService: UserContextService,
+    private readonly route: ActivatedRoute,
     private readonly requestStatusUpdateService: RequestStatusUpdateService,
     private readonly dashboardDataService: DashboardDataService,
-    private readonly dashboardFilterService: DashboardFilterService,
     private readonly autoRejectCountdownService: AutoRejectCountdownService
-  ) { }
-
-  get paginatedCards(): DashboardCard[] {
-    return this.visibleCards;
+  ) {
+    const rawView = this.route.snapshot.queryParamMap.get(DASHBOARD_VIEW_QUERY_PARAM);
+    this.viewMode = parseDashboardViewMode(rawView);
   }
 
   get totalPages(): number {
@@ -232,41 +227,53 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.loadAllRequests();
   }
 
-  toggleViewMode(mode: 'grid' | 'table'): void {
-    this.viewMode = mode;
-    // Keep rowsPerPage unchanged so grid and table use the same page size (including user selection).
-    this.currentPage = 1;
-    this.loadAllRequests();
+  toggleViewMode(mode: DashboardViewMode): void {
+    if (mode === this.viewMode) {
+      return;
+    }
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        [DASHBOARD_VIEW_QUERY_PARAM]: mode === 'table' ? 'list' : null
+      },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
   }
 
   ngOnInit(): void {
-    // Combine all triggers that should reload data into a single stream
-    // This is more efficient than multiple separate subscriptions
+    this.route.queryParamMap
+      .pipe(
+        map(q => parseDashboardViewMode(q.get(DASHBOARD_VIEW_QUERY_PARAM))),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(mode => {
+        this.viewMode = mode;
+        this.cdr.markForCheck();
+      });
+
     const userChanges$ = this.authService.currentUser$.pipe(
       filter(user => !!user),
-      map(() => 'user-change')
+      map(() => 'user-change' as const)
     );
 
     const statusUpdates$ = this.requestStatusUpdateService.onRequestStatusUpdated$.pipe(
-      map(() => 'status-update')
+      map(() => 'status-update' as const)
     );
 
-    const navigationChanges$ = this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd),
-      filter(() => this.router.url === '/dashboard' || this.router.url.startsWith('/dashboard')),
-      map(() => 'navigation')
+    // Path-only navigations: distinctUntilChanged skips successive `/dashboard` emissions when only `?view=` changes.
+    const dashboardPathEntry$ = this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      map(() => pathWithoutQuery(this.router.url)),
+      filter(isDashboardRoutePath),
+      distinctUntilChanged(),
+      map(() => 'navigation' as const)
     );
 
-    // Merge all triggers and use distinctUntilChanged with a time window
-    // to prevent duplicate calls within a short time frame
-    merge(userChanges$, statusUpdates$, navigationChanges$)
-      .pipe(
-        debounceTime(100), // Small debounce to handle rapid successive events
-        takeUntil(this.destroy$)
-      )
-      .subscribe(() => {
-        this.loadAllRequests();
-      });
+    merge(userChanges$, statusUpdates$, dashboardPathEntry$)
+      .pipe(debounceTime(100), takeUntil(this.destroy$))
+      .subscribe(() => this.loadAllRequests());
 
     this.translate.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
   }
@@ -430,26 +437,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.loadAllRequests();
   }
 
-
-  /**
-   * Sort cards based on column and direction
-   * @deprecated Use DashboardFilterService.sortCards instead
-   */
-  private sortCards(cards: DashboardCard[], column: string, direction: 'asc' | 'desc'): DashboardCard[] {
-    return this.dashboardFilterService.sortCards(cards, column, direction);
-  }
-
-
   get filteredCardsCount(): number {
     return this.totalItems;
   }
-
-
-
-  shouldShowCard(card: DashboardCard): boolean {
-    return this.paginatedCards.includes(card);
-  }
-
 
   onViewOrderDetails(orderRequestId: number): void {
     const cachedOrder = this.orderRequestsMap.get(orderRequestId);

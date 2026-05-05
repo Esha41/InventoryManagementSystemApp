@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Subject, Subscription, timer } from 'rxjs';
@@ -36,6 +37,9 @@ export class IdleService implements OnDestroy {
   private enabled = false;
   private lastActivity = 0;
   private boundOnActivity: (() => void) | null = null;
+  private boundOnVisibilityChange: (() => void) | null = null;
+  private tabHiddenAt: number | null = null;
+  private idleStartTime: number = Date.now();
 
   private stateSubject = new BehaviorSubject<IdleState>({
     isWarning: false,
@@ -56,14 +60,17 @@ export class IdleService implements OnDestroy {
     this.enabled = true;
 
     this.boundOnActivity = this.onActivity.bind(this);
+    this.boundOnVisibilityChange = this.onVisibilityChange.bind(this);
 
     this.ngZone.runOutsideAngular(() => {
       this.ACTIVITY_EVENTS.forEach(event =>
         document.addEventListener(event, this.boundOnActivity!, { passive: true })
       );
+      document.addEventListener('visibilitychange', this.boundOnVisibilityChange!, { passive: true });
     });
 
     this.resetIdleTimer();
+    this.idleStartTime = Date.now();
     this.configService.log('Idle detection started');
   }
 
@@ -78,6 +85,13 @@ export class IdleService implements OnDestroy {
       this.boundOnActivity = null;
     }
 
+    if (this.boundOnVisibilityChange) {
+      document.removeEventListener('visibilitychange', this.boundOnVisibilityChange);
+      this.boundOnVisibilityChange = null;
+    }
+
+    this.tabHiddenAt = null;
+
     this.clearIdleTimer();
     this.stopCountdown();
     this.stateSubject.next({ isWarning: false, secondsRemaining: 0 });
@@ -89,6 +103,7 @@ export class IdleService implements OnDestroy {
     this.stateSubject.next({ isWarning: false, secondsRemaining: 0 });
     this.backendAuth.resumeSessionHeartbeat();
     this.resetIdleTimer();
+    this.idleStartTime = Date.now();
   }
 
   ngOnDestroy(): void {
@@ -105,6 +120,62 @@ export class IdleService implements OnDestroy {
     if (this.stateSubject.value.isWarning) return;
 
     this.resetIdleTimer();
+    this.idleStartTime = Date.now();
+  }
+
+  private onVisibilityChange(): void {
+    if (document.visibilityState === 'hidden') {
+      this.tabHiddenAt = Date.now();
+      this.configService.log('Tab hidden');
+      this.backendAuth.pauseSessionHeartbeat();
+      return;
+    }
+
+    const hiddenAt = this.tabHiddenAt;
+    this.tabHiddenAt = null;
+    if (hiddenAt === null) {
+      return;
+    }
+
+    const elapsedHiddenMs = Date.now() - hiddenAt;
+
+    this.ngZone.run(() => {
+      if (this.stateSubject.value.isWarning) {
+        this.performLogout();
+        return;
+      }
+
+      if (elapsedHiddenMs >= this.IDLE_TIMEOUT_MS) {
+        this.backendAuth
+          .getUserClaims()
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: () => {
+              this.idleStartTime = Date.now();
+              this.resetIdleTimer();
+              this.backendAuth.resumeSessionHeartbeat();
+              this.configService.log('Tab visible: session revalidated after extended background period');
+            },
+            error: (err: unknown) => {
+              if (this.isUnauthorizedError(err)) {
+                this.configService.log('Tab visible: session invalid (401/403), logging out', err);
+                this.performLogout();
+              } else {
+                this.configService.log('Tab visible: session revalidation failed (non-auth error)', err);
+                this.backendAuth.resumeSessionHeartbeat();
+                this.resetIdleTimer();
+              }
+            }
+          });
+        return;
+      }
+
+      this.backendAuth.resumeSessionHeartbeat();
+    });
+  }
+
+  private isUnauthorizedError(err: unknown): boolean {
+    return err instanceof HttpErrorResponse && (err.status === 401 || err.status === 403);
   }
 
   private resetIdleTimer(): void {

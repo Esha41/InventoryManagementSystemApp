@@ -105,7 +105,15 @@
     "filter": {
       "allDepots": "All my depots",
       "viewingDepot": "Viewing depot",
-      "depots": "depots"
+      "depots": "depots",
+      "apply": "Apply",
+      "cancel": "Cancel",
+      "clearAll": "Clear All",
+      "depotsMore": "+{{count}} more",
+      "depotsHeaderAll": "All {{count}} depots",
+      "depotsHeaderSummary": "{{count}} depots selected",
+      "depotsTriggerAll": "All {{count}} depots",
+      "depotsTriggerPartial": "{{count}} depots selected"
     },
     "tabs": {
       "all": "All",

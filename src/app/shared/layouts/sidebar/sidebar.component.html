@@ -49,7 +49,7 @@
 
         <!-- Menu Item with Children (Submenu) -->
         <div *ngIf="!item.isHeader && hasChildren(item)" class="mb-1 relative group" #menuItem
-          [attr.data-onboarding]="item.label === 'nav.requestManagement' ? 'request-management' : item.label === 'nav.requestsManagement' ? 'approval-management' : null"
+          [attr.data-onboarding]="item.label === 'nav.requestManagement' ? 'request-management' : null"
           (mouseenter)="showTooltip($event)" (mouseleave)="hideTooltip()">
           <button (click)="toggleSubmenu(item.label)"
             class="w-full flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[var(--color-sidebar-active)] text-[var(--color-text-muted)]">

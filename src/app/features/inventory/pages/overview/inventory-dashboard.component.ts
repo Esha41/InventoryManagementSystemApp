@@ -1,4 +1,11 @@
-import { Component, OnDestroy, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  ViewChild
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -94,6 +101,8 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class InventoryDashboardComponent implements OnInit, OnDestroy {
+  @ViewChild('depotDropdown') depotDropdownRef?: DropdownComponent<number>;
+
   private readonly destroy$ = new Subject<void>();
   private readonly manualRefresh$ = new Subject<void>();
   private readonly afterDepotsReady$ = new Subject<void>();
@@ -105,6 +114,13 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
   depots: DepotDto[] = [];
   selectedDepotIds: number[] = [];
+  /** Working selection for depot dropdown until Apply. */
+  pendingDepotIds: number[] = [];
+
+  /** Above this count (and when not all depots), header shows one summary chip instead of per-depot badges. */
+  readonly depotHeaderMaxIndividualBadges = 4;
+  /** Dropdown trigger collapses to one summary line when selection has at least this many depots. */
+  readonly depotDropdownCollapseBadgeCount = 5;
 
   activeTab: ActiveTab = 'all';
 
@@ -176,7 +192,9 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe((depots: DepotDto[]) => {
       this.depots = depots;
-      this.selectedDepotIds = depots.map(d => d.id);
+      const ids = depots.map(d => d.id);
+      this.selectedDepotIds = ids;
+      this.pendingDepotIds = [...ids];
       this.cdr.markForCheck();
       this.setupLoadingPipeline();
       this.afterDepotsReady$.next();
@@ -297,10 +315,40 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  onDepotFilterChange(depotIds: number[] | null): void {
-    this.selectedDepotIds = Array.isArray(depotIds) ? depotIds.map(Number) : [];
+  private commitDepotSelection(ids: number[]): void {
+    this.selectedDepotIds = ids.map(Number);
     this.clearTableFilters();
     this.manualRefresh$.next();
+  }
+
+  onDepotDropdownOpened(_open: boolean): void {
+    this.pendingDepotIds = [...this.selectedDepotIds];
+    this.cdr.markForCheck();
+  }
+
+  onDepotSelectionPending(): void {
+    this.cdr.markForCheck();
+  }
+
+  onApplyDepotSelection(): void {
+    this.commitDepotSelection(this.pendingDepotIds);
+    this.depotDropdownRef?.closePanel();
+    this.cdr.markForCheck();
+  }
+
+  onCancelDepotSelection(): void {
+    this.pendingDepotIds = [...this.selectedDepotIds];
+    this.depotDropdownRef?.closePanel();
+    this.cdr.markForCheck();
+  }
+
+  onClearDepotSelection(): void {
+    this.pendingDepotIds = [];
+    this.cdr.markForCheck();
+  }
+
+  get isAllDepotsSelected(): boolean {
+    return this.depots.length > 0 && this.selectedDepotIds.length === this.depots.length;
   }
 
   get selectedDepotLabels(): string {

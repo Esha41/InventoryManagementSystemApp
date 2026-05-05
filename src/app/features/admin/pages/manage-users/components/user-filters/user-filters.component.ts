@@ -34,7 +34,7 @@ export class UserFiltersComponent implements OnInit, OnDestroy, OnChanges {
   private readonly cdr = inject(ChangeDetectorRef);
 
   @Input() searchTerm: string = '';
-  @Input() statusFilter: 'all' | 'active' | 'inactive' | 'deleted' = 'all';
+  @Input() statusFilter: 'all' | 'active' | 'inactive' | 'deleted' = 'active';
   @Input() useSearchButton: boolean = false;
   @Output() searchChange = new EventEmitter<string>();
   @Output() searchTriggered = new EventEmitter<string>();

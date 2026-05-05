@@ -98,7 +98,7 @@ export class LotSelectionService {
       quantity: lot.remainingQuantity,
       expiryDate: lot.expiryDate ? new Date(lot.expiryDate) : undefined,
       location: formatLocation(lot.depot),
-      condition: lot.isExpired ? 'Near Expiry' : determineCondition(lot.expiryDate),
+      condition: lot.isExpired ? 'Expired' : determineCondition(lot.expiryDate),
       daysUntilExpiry: calculateDaysUntilExpiry(lot.expiryDate),
       selectedQuantity: 0,
       depotName: getLocalizedName(lot.depot, getCurrentLang(this.translate)),

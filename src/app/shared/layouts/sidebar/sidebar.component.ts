@@ -103,8 +103,24 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     {
       label: 'nav.requestManagement',
       icon: ClipboardList,
-      permissions: [PERMISSIONS.REQUESTS.ORDER.PAGE, PERMISSIONS.REQUESTS.RETURN_REQUEST.PAGE_NAV, PERMISSIONS.REQUESTS.DISCARD.PAGE_NAV],
+      permissions: [
+        PERMISSIONS.REQUESTS.ORDER.PAGE,
+        PERMISSIONS.REQUESTS.RETURN_REQUEST.PAGE_NAV,
+        PERMISSIONS.REQUESTS.DISCARD.PAGE_NAV,
+        PERMISSIONS.REQUESTS.REQUEST.PAGE,
+        PERMISSIONS.REQUESTS.RECEIVER.PAGE
+      ],
       children: [
+        {
+          label: 'nav.requestsOverview',
+          route: '/requests/requests-management',
+          permissions: [PERMISSIONS.REQUESTS.VIEW_REQUEST.PAGE, PERMISSIONS.REQUESTS.REQUEST.PAGE, PERMISSIONS.REQUESTS.RECEIVER.PAGE]
+        },
+        {
+          label: 'nav.orderReport',
+          route: '/requests/requests-management/order-report',
+          permissions: [PERMISSIONS.REQUESTS.VIEW_REQUEST.PAGE, PERMISSIONS.REQUESTS.REQUEST.PAGE, PERMISSIONS.REQUESTS.RECEIVER.PAGE]
+        },
         {
           label: 'nav.newIssueRequest',
           route: '/requests/new-issue-request',
@@ -119,23 +135,6 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
           label: 'nav.newDiscardRequest',
           route: '/requests/discard-request',
           permissions: [PERMISSIONS.REQUESTS.DISCARD.PAGE_NAV]
-        }
-      ]
-    },
-    {
-      label: 'nav.requestsManagement',
-      icon: FileText,
-      permissions: [PERMISSIONS.REQUESTS.ORDER.PAGE, PERMISSIONS.REQUESTS.REQUEST.PAGE, PERMISSIONS.REQUESTS.RECEIVER.PAGE],
-      children: [
-        {
-          label: 'nav.requestsOverview',
-          route: '/requests/requests-management',
-          permissions: [PERMISSIONS.REQUESTS.VIEW_REQUEST.PAGE, PERMISSIONS.REQUESTS.REQUEST.PAGE, PERMISSIONS.REQUESTS.RECEIVER.PAGE]
-        },
-        {
-          label: 'nav.orderReport',
-          route: '/requests/requests-management/order-report',
-          permissions: [PERMISSIONS.REQUESTS.VIEW_REQUEST.PAGE, PERMISSIONS.REQUESTS.REQUEST.PAGE, PERMISSIONS.REQUESTS.RECEIVER.PAGE]
         }
       ]
     },
@@ -369,10 +368,6 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     if (url.startsWith('/warehouse')) {
       this.expandedMenus.add('nav.warehouse');
     }
-    // Auto-expand requests management menu if inside its routes
-    if (url.startsWith('/requests/requests-management')) {
-      this.expandedMenus.add('nav.requestsManagement');
-    }
     // Auto-expand department menu if on department routes
     if (url.startsWith('/department')) {
       this.expandedMenus.add('nav.department');
@@ -391,7 +386,12 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       this.expandedMenus.add('nav.reports');
     }
 
-    if (url.startsWith('/requests/new-issue-request') || url.startsWith('/requests/return-request') || url.startsWith('/requests/discard-request')) {
+    if (
+      url.startsWith('/requests/new-issue-request') ||
+      url.startsWith('/requests/return-request') ||
+      url.startsWith('/requests/discard-request') ||
+      url.startsWith('/requests/requests-management')
+    ) {
       this.expandedMenus.add('nav.requestManagement');
     }
 

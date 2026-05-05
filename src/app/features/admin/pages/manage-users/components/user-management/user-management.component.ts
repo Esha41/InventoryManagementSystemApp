@@ -61,7 +61,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   isLoading = false;
   errorMessage = '';
   searchTerm = '';
-  statusFilter: 'all' | 'active' | 'inactive' | 'deleted' = 'all';
+  statusFilter: 'all' | 'active' | 'inactive' | 'deleted' = 'active';
   rankFilterId: number | null = null;
   departmentFilterId: number | null = null;
   roleFilterId: string | null = null;

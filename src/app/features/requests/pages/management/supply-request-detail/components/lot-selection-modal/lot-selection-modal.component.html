@@ -74,9 +74,10 @@
     <!-- Lots List -->
     <div class="space-y-4 max-h-[50vh] overflow-y-auto pe-2">
       <div *ngFor="let lot of availableLots" class="border rounded-lg p-4 transition-all relative group"
-        [class.border-red-300]="lot.condition === 'Near Expiry'" [class.bg-red-50]="lot.condition === 'Near Expiry'"
-        [class.border-[var(--color-border)]]="lot.condition !== 'Near Expiry'"
-        [class.bg-[var(--color-background)]]="lot.condition !== 'Near Expiry'">
+        [class.border-red-300]="lot.condition === 'Near Expiry' || lot.condition === 'Expired'"
+        [class.bg-red-50]="lot.condition === 'Near Expiry' || lot.condition === 'Expired'"
+        [class.border-[var(--color-border)]]="lot.condition !== 'Near Expiry' && lot.condition !== 'Expired'"
+        [class.bg-[var(--color-background)]]="lot.condition !== 'Near Expiry' && lot.condition !== 'Expired'">
 
         <button (click)="onRemoveLot(lot.lotNumber)"
           class="absolute top-2 end-2 p-1.5 rounded-full hover:bg-red-100 text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -92,7 +93,7 @@
                 [ngClass]="getLotConditionClass(lot.condition)">
                 {{ lot.condition }}
               </span>
-              <lucide-angular *ngIf="lot.condition === 'Near Expiry'" [img]="AlertTriangle"
+              <lucide-angular *ngIf="lot.condition === 'Near Expiry' || lot.condition === 'Expired'" [img]="AlertTriangle"
                 class="h-4 w-4 text-red-600">
               </lucide-angular>
             </div>
@@ -109,7 +110,10 @@
             <p *ngIf="!lot.expiryDate" class="text-xs text-[var(--color-text-muted)] mt-1">
               {{ 'supplyRequestDetail.noExpiry' | translate }}
             </p>
-            <p class="text-xs mt-1 font-medium" [ngClass]="{
+            <p *ngIf="lot.daysUntilExpiry < 0" class="text-xs mt-1 font-medium text-red-600">
+              {{ 'supplyRequestDetail.lotExpiredTimeline' | translate }}
+            </p>
+            <p *ngIf="lot.daysUntilExpiry >= 0" class="text-xs mt-1 font-medium" [ngClass]="{
               'text-red-600': lot.daysUntilExpiry < 60,
               'text-yellow-600': lot.daysUntilExpiry >= 60 && lot.daysUntilExpiry < 180,
               'text-green-600': lot.daysUntilExpiry >= 180

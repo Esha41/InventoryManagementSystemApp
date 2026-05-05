@@ -90,11 +90,9 @@
     <div *ngIf="viewMode === 'grid' && visibleCards.length > 0"
       class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5
              gap-4 md:gap-5 mb-6
-             [&>app-status-card]:flex [&>app-status-card]:flex-col [&>app-status-card]:h-full
-             [&>app-status-card]:transition-[transform,box-shadow] [&>app-status-card]:duration-200
-             [&>app-status-card]:ease-out [&>app-status-card]:hover:-translate-y-0.5">
+             [&>app-status-card]:flex [&>app-status-card]:flex-col [&>app-status-card]:h-full">
       <app-status-card
-        *ngFor="let card of paginatedCards; trackBy: trackByCard"
+        *ngFor="let card of visibleCards; trackBy: trackByCard"
         [title]="card.title"
         [status]="card.status"
         [requestStatus]="card.requestStatus"
@@ -118,7 +116,7 @@
 
       <!-- Mobile cards (< md) -->
       <div class="md:hidden divide-y divide-[var(--color-border)]">
-        <div *ngFor="let card of paginatedCards; trackBy: trackByCard"
+        <div *ngFor="let card of visibleCards; trackBy: trackByCard"
           class="flex items-start gap-3 p-4 transition-colors hover:bg-[var(--color-background-muted)]"
           [ngClass]="card.isMyTurn ? 'border-s-[3px] border-s-[var(--color-brand)]' : ''">
 
@@ -214,7 +212,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-[var(--color-border)]">
-            <tr *ngFor="let card of paginatedCards; trackBy: trackByCard"
+            <tr *ngFor="let card of visibleCards; trackBy: trackByCard"
               class="group hover:bg-[var(--color-background-muted)] transition-colors"
               [class.action-required-highlight]="card.isMyTurn"
               [ngClass]="card.priority === 3 ? 'border-s-[3px] border-s-red-400' : ''">

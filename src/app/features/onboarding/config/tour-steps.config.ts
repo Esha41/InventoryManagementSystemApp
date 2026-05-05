@@ -72,15 +72,6 @@ export function getTourSteps(
       },
     },
     {
-      element: '[data-onboarding="approval-management"]',
-      popover: {
-        title: translate.instant('onboarding.approvalManagement.title'),
-        description: translate.instant('onboarding.approvalManagement.description'),
-        side: popoverSide,
-        align: 'start',
-      },
-    },
-    {
       element: '[data-onboarding="theme-toggle"]',
       popover: {
         title: translate.instant('onboarding.theme.title'),
