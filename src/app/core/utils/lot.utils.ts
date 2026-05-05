@@ -26,18 +26,28 @@ export function formatLocation(depot?: { nameEn?: string; nameAr?: string }): st
 /**
  * Determines condition based on expiry date
  */
-export function determineCondition(expiryDate?: string): 'Good' | 'Fair' | 'Near Expiry' {
+export function determineCondition(expiryDate?: string): 'Good' | 'Fair' | 'Near Expiry' | 'Expired' {
   if (!expiryDate) return 'Good';
-  
+
   const days = calculateDaysUntilExpiry(expiryDate);
+  if (days < 0) return 'Expired';
   if (days < LOT_CONSTANTS.DAYS_NEAR_EXPIRY_THRESHOLD) return 'Near Expiry';
   if (days < LOT_CONSTANTS.DAYS_FAIR_CONDITION_THRESHOLD) return 'Fair';
   return 'Good';
 }
 
 /**
- * Calculates days until expiry date
- * Returns large number if no expiry date or already expired
+ * Normalizes expiry from API (string or Date) for day-boundary helpers.
+ */
+export function expiryDateInputToString(expiry?: string | Date): string | undefined {
+  if (expiry === undefined || expiry === null) return undefined;
+  if (typeof expiry === 'string') return expiry;
+  return expiry.toISOString();
+}
+
+/**
+ * Calculates days until expiry date.
+ * Returns a large positive number when expiry is unknown; negative when already expired.
  */
 export function calculateDaysUntilExpiry(expiryDate?: string): number {
   if (!expiryDate) return LOT_CONSTANTS.DAYS_UNTIL_EXPIRY_UNDEFINED;
@@ -66,7 +76,7 @@ export function mapLotDetailsToLotItems(
       quantity: lot.remainingQuantity,
       expiryDate: lot.expiryDate ? new Date(lot.expiryDate) : undefined,
       location: formatLocation(lot.depot),
-      condition: lot.isExpired ? 'Near Expiry' as const : determineCondition(lot.expiryDate),
+      condition: lot.isExpired ? ('Expired' as const) : determineCondition(lot.expiryDate),
       daysUntilExpiry: calculateDaysUntilExpiry(lot.expiryDate),
       selectedQuantity: existingSelections?.get(lot.lot) ?? 0,
       depotName: lot.depot?.nameEn || lot.depot?.nameAr,

@@ -1,12 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { TranslationService } from '@services/translation.service';
 import { ThemeService } from '@services/theme.service';
 import { LucideAngularModule, Globe, Moon, Sun } from 'lucide-angular';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { APP_CONSTANTS } from '@constants/app.constants';
+import { filter } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 /**
  * Authentication Layout Component
@@ -21,6 +23,8 @@ import { APP_CONSTANTS } from '@constants/app.constants';
   styleUrls: ['./auth-layout.component.css']
 })
 export class AuthLayoutComponent {
+  @ViewChild('authScrollRoot') authScrollRoot?: ElementRef<HTMLElement>;
+
   readonly Globe = Globe;
   readonly Moon = Moon;
   readonly Sun = Sun;
@@ -29,8 +33,28 @@ export class AuthLayoutComponent {
 
   constructor(
     public translationService: TranslationService,
-    public themeService: ThemeService
-  ) { }
+    public themeService: ThemeService,
+    private router: Router
+  ) {
+    this.router.events
+      .pipe(
+        filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+        takeUntilDestroyed()
+      )
+      .subscribe(() => this.scrollAuthLayoutToTop());
+  }
+
+  private scrollAuthLayoutToTop(): void {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const el = this.authScrollRoot?.nativeElement;
+        if (el) {
+          el.scrollTop = 0;
+        }
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      });
+    });
+  }
 
   get isRTL(): boolean {
     return this.translationService.isRTL();

@@ -1,386 +1,144 @@
+# Ettad Frontend - Supply Chain & Inventory Management System
 
-# ETTAD Frontend Application
-
-**Integrated Inventory Management System - Frontend**
-
-A modern, enterprise-grade Angular application for managing inventory, supply requests, warehouses, and administrative operations.
-
----
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Tech Stack](#tech-stack)
-- [Sprint 1 Deliverables](#sprint-1-deliverables)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Development](#development)
-- [Architecture](#architecture)
-- [Features](#features)
+**Version**: 1.3.0  
+**Status**: Production-Ready  
+**Last Updated**: 2026-05-03
 
 ---
 
-## Overview
+## Project Overview
 
-ETTAD Frontend is a comprehensive inventory management system built with Angular 18, featuring a modern UI, robust authentication, role-based access control, and full internationalization support (English/Arabic with RTL).
+Ettad Frontend is an enterprise-grade Angular 21.1.0 web application for centralized supply chain, inventory, and asset management. The system manages weapons, ammunition, cartridges, explosives, and general supplies across distributed warehouse locations with role-based access control, multi-tier approval workflows, and comprehensive reporting.
 
-**Sprint 1 Duration:** 1 Week  
-**Status:**  Core Features Complete
-
----
-
-## 🛠 Tech Stack
-
-### Core Framework
-- **Angular 18** - Latest version with standalone components
-- **TypeScript 5.4** - Type-safe development
-- **RxJS 7.8** - Reactive programming
-
-### UI & Styling
-- **TailwindCSS 3.4** - Utility-first CSS framework
-- **Lucide Angular** - Modern icon library
-- **Custom Design System** - CSS variables for theming
-
-### Additional Libraries
-- **@ngx-translate** - Internationalization (i18n)
-- **Chart.js** - Data visualization
-
-### Development Tools
-- **Angular CLI 18** - Build tooling
-- **ESLint** - Code linting
-- **PostCSS** - CSS processing
+**Key Capabilities**:
+- Centralized inventory management with warehouse distribution
+- Supply request workflows with multi-tier approvals
+- Asset tracking and lifecycle management
+- Role-based access control with fine-grained permissions
+- Admin dashboards with analytics and KPIs
+- Multi-language support (English, Arabic)
+- Real-time notifications via SignalR
+- Advanced reporting with DevExpress Report Designer
 
 ---
 
-## Sprint 1 Deliverables
-
-###  Authentication & Authorization
-- JWT-based authentication system
-- Role-based access control (RBAC)
-- Permission guards for route protection
-- HTTP interceptors for token management
-- Secure token storage
-
-###  Core Layout & Navigation
-- Responsive main layout with sidebar
-- Collapsible sidebar with tooltips
-- Navigation menu with permission-based visibility
-- Header with user profile, notifications, and language switcher
-- Footer component
-
-###  User Management
-- User CRUD operations
-- Role assignment interface
-- User list with filtering and search
-- User form modal (create/edit)
-- LDAP user support
-
-###  Admin Management
-- Admin user management interface
-- Role management system
-- Permission management
-- Lookup tables management (18 tables)
-  - Departments, Suppliers, Manufacturers, Countries
-  - Case Types, HCC, Colors, Compatibilities
-  - Depot, Hazard Divisions, Nature Options
-  - NSN, Primary Purposes, Projectile Materials
-  - Propellants, Units, Ranks, Workflow Types
-
-###  Inventory Management
-- Warehouse inventory listing
-- Inventory item details
-- Add/Edit inventory items
-- Inventory search functionality
-- Warehouse map view
-- Inventory detail editing modal
-
-###  Supply Request Management
-- Supply request listing with pagination
-- Request detail view
-- Status management
-- RTL-aware pagination controls
-
-###  Workflow Management
-- Workflow creation and editing
-- Workflow type selection
-- Step management
-- Workflow listing and details
-
-###  Asset Management
-- Asset listing
-- Add new assets
-- Asset filtering and search
-- Asset details view
-
-###  Allowance Management
-- Allowance creation
-- Department-based allowances
-- Ammunition item selection
-- Allowance listing
-
-###  Request Management
-- New issue request workflow
-- Return request functionality
-- Discard request functionality
-- Request status tracking
-- Order details modal
-
-###  Dashboard
-- Status cards with statistics
-- Quick access to key features
-- Permission-based content display
-
-###  Notifications
-- Notification center
-- Notification detail view
-- Real-time notification display
-
-###  Internationalization
-- Full English/Arabic translation support
-- RTL (Right-to-Left) layout support
-- Language switcher
-- Dynamic content direction
-
-###  UI Components Library
-- Reusable Button component (5 variants)
-- Card component
-- Modal component
-- Confirm Dialog component
-- Stepper component
-- Toast notification system
-- Searchable dropdown component
-- Form modals (User, Role, Lookup)
-
-###  Design System
-- Custom CSS variables for theming
-- Consistent color palette
-- Typography system
-- Spacing and sizing utilities
-- Shadow system
-- Border radius tokens
-- Transition animations
-
----
-
-## Project Structure
-
-```
-src/app/
-├── core/                    # Core functionality
-│   ├── constants/          # Application constants
-│   ├── directives/         # Custom directives
-│   ├── guards/            # Route guards
-│   ├── interceptors/      # HTTP interceptors
-│   ├── models/            # TypeScript models/interfaces
-│   ├── services/          # Core services
-│   └── utils/             # Utility functions
-│
-├── pages/                  # Feature pages
-│   ├── auth/              # Authentication pages
-│   ├── dashboard/         # Dashboard
-│   ├── manage-admins/    # Admin management
-│   ├── warehouse/         # Warehouse management
-│   ├── inventory/         # Inventory management
-│   ├── requests/         # Request management
-│   └── ...               # Other feature pages
-│
-└── shared/                # Shared components
-    ├── components/        # Reusable UI components
-    └── layouts/           # Layout components
-```
-
----
-
-##  Architecture
-
-### Design Patterns
-- **Standalone Components** - Modern Angular architecture
-- **Service-Based State Management** - RxJS BehaviorSubjects
-- **Dependency Injection** - Angular DI system
-- **Lazy Loading** - Route-based code splitting
-- **Interceptor Pattern** - HTTP request/response handling
-- **Guard Pattern** - Route protection
-
-### Key Services
-- `ApiService` - Centralized HTTP client
-- `BackendAuthService` - Authentication management
-- `BackendUserService` - User operations
-- `LookupService` - Generic lookup table operations
-- `ToastService` - Notification system
-- `TranslationService` - i18n management
-- `ConfigService` - Application configuration
-
-### Security
-- JWT token-based authentication
-- Permission-based route guards
-- HTTP interceptors for automatic token injection
-- Secure token storage (localStorage)
-- Automatic logout on 401 errors
-
----
-
-##  Getting Started
+## Quick Start
 
 ### Prerequisites
-- Node.js 20+ 
-- npm 9+ or yarn
-- Angular CLI 18
+- Node.js 18.x or 20.x
+- npm 9.x or higher
+- Backend API running on `https://localhost:7148/api`
 
 ### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd EttadFrontEnd
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Configure environment**
-   - Copy `src/environments/environment.ts` if needed
-   - Update API URL in environment file
-
-4. **Start development server**
-   ```bash
-   npm start
-   # or for local configuration
-   npm run start:local
-   ```
-
-5. **Access the application**
-   - Open browser to `http://localhost:4200`
-
-### Build for Production
-
 ```bash
-npm run build:prod
+git clone <repository-url>
+cd ettadfrontend
+npm install
+npm start
 ```
 
-### Build for Local
+Visit **http://localhost:4200** and login with your credentials.
+
+---
+
+## Tech Stack
+
+| Category | Technology |
+|----------|-----------|
+| **Framework** | Angular 21.1.0 |
+| **Language** | TypeScript 5.9.0 |
+| **State** | RxJS 7.8.1 (Observables) |
+| **UI Components** | DevExtreme 25.2.3, Angular CDK 21.1.0 |
+| **Styling** | Tailwind CSS 3.4.14 |
+| **Charts** | ECharts 6.0.0, Chart.js 4.5.1 |
+| **Maps** | Leaflet 1.9.4 |
+| **Rich Text** | Quill 2.0.3 |
+| **Export** | XLSX 0.18.5, jsPDF 3.0.3 |
+| **i18n** | ngx-translate 17.0.0 |
+| **Real-time** | @microsoft/signalr 10.0.0 |
+| **Linting** | ESLint 9.39.4 + @angular-eslint |
+| **Testing** | Karma, Jasmine |
+
+---
+
+## Architecture Overview
+
+**Pattern**: Feature-based modular architecture with lazy-loaded features
+
+```
+AppComponent (Root)
+  ↓
+MainLayoutComponent (Protected routes)
+  ├── Dashboard (lazy)
+  ├── Warehouse (lazy)
+  ├── Requests (lazy)
+  ├── Admin (lazy)
+  └── ... (12+ other features)
+
+AuthLayoutComponent (Authentication routes)
+  ├── Login
+  ├── Forgot Password
+  └── Reset Password
+```
+
+**Key Design Principles**:
+- Standalone components (no NgModules)
+- Lazy-loaded feature routes
+- RxJS Observable streams for state
+- Functional HTTP interceptors
+- Role-based permission guards
+
+---
+
+## Available Scripts
 
 ```bash
-npm run build:local
+npm start              # Dev server on localhost:4200
+npm run start:local    # Dev with debug mode
+npm run start:prod     # Dev with prod config
+npm run build          # Build for production
+npm run watch          # Build in watch mode
+npm test               # Run unit tests
+npm run lint           # Run ESLint
 ```
 
 ---
 
-## Development
+## Environment Configuration
 
-### Available Scripts
+Edit `src/environments/environment.ts`:
 
-| Command | Description |
-|---------|-------------|
-| `npm start` | Start dev server (development config) |
-| `npm run start:local` | Start dev server (local config) |
-| `npm run start:prod` | Start dev server (production config) |
-| `npm run build` | Build for production |
-| `npm run build:local` | Build for local environment |
-| `npm run build:prod` | Build for production environment |
-| `npm run lint` | Run ESLint |
-| `npm test` | Run unit tests |
-
-### Code Style
-- Follow Angular style guide
-- Use TypeScript strict mode
-- Standalone components only
-- Follow existing naming conventions
-- Use TailwindCSS utility classes
-- Maintain RTL support for all components
-
-### Environment Configuration
-
-**Development** (`environment.ts`)
 ```typescript
-export const environment = {
+export const environment: Environment = {
   production: false,
-  apiUrl: 'https://localhost:7060/api',
-  appName: 'ETTAD',
-  version: '1.1.2',
-  enableLogging: true
+  apiUrl: 'https://your-api:7148/api',
+  appName: 'Ettad (Dev)',
+  enableLogging: true,
+  version: '1.3.0'
 };
 ```
 
-**Local** (`environment.local.ts`)
-```typescript
-export const environment = {
-  production: false,
-  apiUrl: 'https://localhost:7148/api',
-  // ... other config
-};
-```
+---
+
+## Routing & Guards
+
+- **authGuard**: Protects authenticated routes, restores session silently
+- **permissionGuard**: Checks user permissions against route requirements
 
 ---
 
-##  Features
+## For Detailed Documentation
 
-### Authentication
--  Login with email/password
--  JWT token management
--  Automatic token refresh
--  Session management
--  Logout functionality
-
-### User Management
--  User CRUD operations
--  Role assignment
--  Permission management
--  User search and filtering
-
-### Inventory Management
--  Warehouse listing
--  Inventory item management
--  Search and filter inventory
--  Inventory detail views
--  Add/Edit inventory items
-
-### Request Management
--  Create new issue requests
--  Return requests
--  Discard requests
--  Request status tracking
-- Request details view
-
-### Admin Features
--  Lookup table management (18 tables)
--  Admin user management
--  Role and permission configuration
--  System configuration
-
-### UI/UX
--  Responsive design
--  RTL support
--  Loading states
--  Error handling
--  Toast notifications
--  Modal dialogs
--  Form validation
+See `docs/` folder:
+- `docs/architecture.md` - Detailed architecture patterns
+- `docs/onboarding.md` - New developer setup guide
+- `docs/modules.md` - Module-by-module breakdown
+- `docs/deployment.md` - Build and deployment guide
 
 ---
 
-##  Notes
+## Version History
 
-- **Sprint 1** completed in 1 week
-- All core features are functional
-- Some features may have minor TODOs for future sprints
-- Testing coverage to be expanded in future sprints
-- Documentation will be enhanced as features mature
-
----
-
-##  Team
-
-Developed by the Flora development team.
-
----
-
-##  License
-
-[Add license information]
-
----
-
-**Last Updated:** Sprint 1 Delivery  
-**Version:** 1.1.1
+| Version | Date | Status |
+|---------|------|--------|
+| 1.3.0 | 2026-05-03 | Current Production |

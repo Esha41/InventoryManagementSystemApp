@@ -47,7 +47,7 @@ export interface LotItem {
   quantity: number;
   expiryDate?: Date;
   location: string;
-  condition: 'Good' | 'Fair' | 'Near Expiry';
+  condition: 'Good' | 'Fair' | 'Near Expiry' | 'Expired';
   daysUntilExpiry: number;
   selectedQuantity: number;
   depotName?: string;

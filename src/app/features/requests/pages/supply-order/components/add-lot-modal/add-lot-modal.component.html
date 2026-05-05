@@ -88,9 +88,9 @@
       <div *ngIf="availableLots.length > 0" class="space-y-3 max-h-[40vh] overflow-y-auto pe-2">
         <div *ngFor="let lot of availableLots" class="border-2 rounded-lg p-4 transition-all cursor-pointer"
           [ngClass]="{
-            'border-[var(--color-error)]/50 bg-[var(--color-error)]/10': lot.condition === 'Near Expiry',
+            'border-[var(--color-error)]/50 bg-[var(--color-error)]/10': lot.condition === 'Near Expiry' || lot.condition === 'Expired',
             'border-[var(--color-brand)]/50 bg-[var(--color-brand)]/10': selectedLotNumber === lot.lotNumber,
-            'border-[var(--color-border)] bg-[var(--color-background-active)]': lot.condition !== 'Near Expiry' && selectedLotNumber !== lot.lotNumber
+            'border-[var(--color-border)] bg-[var(--color-background-active)]': lot.condition !== 'Near Expiry' && lot.condition !== 'Expired' && selectedLotNumber !== lot.lotNumber
           }" (click)="onSelectLot(lot.lotNumber)">
 
           <div class="flex items-start justify-between">
@@ -98,7 +98,7 @@
               <div class="flex items-center gap-2 mb-1">
                 <span class="font-semibold text-[var(--color-text)]">LOT-{{ lot.lotNumber }}</span>
                 <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border-2" [ngClass]="{
-                  'bg-[var(--color-error)]/20 text-[var(--color-error)] border-[var(--color-error)]/30': lot.condition === 'Near Expiry',
+                  'bg-[var(--color-error)]/20 text-[var(--color-error)] border-[var(--color-error)]/30': lot.condition === 'Near Expiry' || lot.condition === 'Expired',
                   'bg-[var(--color-warning)]/20 text-[var(--color-warning)] border-[var(--color-warning)]/30': lot.condition === 'Fair',
                   'bg-[var(--color-success)]/20 text-[var(--color-success)] border-[var(--color-success)]/30': lot.condition === 'Good'
                 }">

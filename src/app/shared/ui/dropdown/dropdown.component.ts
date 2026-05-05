@@ -94,6 +94,16 @@ export class DropdownComponent<T = Primitive>
   @Input() error = false;
   @Input() name: string | null = null;
   @Input() addActionLabel?: string;
+  /** When true with {@link multiple}, render the trigger as compact chips (first 3) plus overflow via {@link badgeOverflowTranslateKey}. */
+  @Input() multiTriggerBadges = false;
+  /** ngx-translate key with param `count` for remaining selections after the first 3 labels (e.g. inventoryDashboard.filter.depotsMore). */
+  @Input() badgeOverflowTranslateKey?: string;
+  /** When set and selection count >= this value, show one summary chip instead of many badges (large multi-selects). */
+  @Input() multiBadgeCollapseAt: number | null = null;
+  /** Translate key with `{ count }` when collapsed and not all options are selected. */
+  @Input() multiBadgeCollapsedTranslateKey?: string;
+  /** Translate key with `{ count }` when collapsed and every option is selected (e.g. all depots). */
+  @Input() multiBadgeCollapsedAllTranslateKey?: string;
 
   @Output() openedChange = new EventEmitter<boolean>();
   @Output() selectionChange = new EventEmitter<T | null | T[]>();
@@ -197,6 +207,50 @@ export class DropdownComponent<T = Primitive>
       return Array.isArray(this.innerValue) && this.innerValue.length > 0;
     }
     return this.innerValue !== null && this.innerValue !== undefined && this.innerValue !== '';
+  }
+
+  /** Resolved labels for selected values (multiple mode), for badge-style triggers. */
+  get selectedLabelsForBadges(): string[] {
+    if (!this.multiple || !Array.isArray(this.innerValue) || this.innerValue.length === 0) {
+      return [];
+    }
+    return this.innerValue
+      .map(value => {
+        const option = this.findOptionByValue(value);
+        return option ? this.getOptionLabel(option) : this.formatLabel(value);
+      })
+      .filter(label => label && String(label).trim() !== '');
+  }
+
+  get badgeOverflowCount(): number {
+    const n = this.selectedLabelsForBadges.length;
+    return n > 3 ? n - 3 : 0;
+  }
+
+  /** Single-line summary instead of per-depot chips when selection count is large. */
+  get multiBadgeUseCollapsedSummary(): boolean {
+    const min = this.multiBadgeCollapseAt;
+    return !!(
+      this.multiTriggerBadges &&
+      this.multiple &&
+      this.hasSelection &&
+      min != null &&
+      this.selectedLabelsForBadges.length >= min
+    );
+  }
+
+  get multiBadgeCollapsedSummaryKey(): string | undefined {
+    const n = this.selectedLabelsForBadges.length;
+    const total = (this.options ?? []).length;
+    if (
+      this.multiBadgeCollapsedAllTranslateKey &&
+      total > 0 &&
+      n === total &&
+      n > 0
+    ) {
+      return this.multiBadgeCollapsedAllTranslateKey;
+    }
+    return this.multiBadgeCollapsedTranslateKey;
   }
 
   get displayLabel(): string {
@@ -400,6 +454,11 @@ export class DropdownComponent<T = Primitive>
       }
     }
     return false;
+  }
+
+  /** Close the panel from parent components (e.g. after confirming a multi-select). */
+  closePanel(): void {
+    this.close();
   }
 
   close(): void {
