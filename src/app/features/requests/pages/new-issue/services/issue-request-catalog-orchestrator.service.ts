@@ -43,7 +43,13 @@ function buildCatalogSearchFilters(searchTerm: string): FilterData {
       { field: 'ItemNo', operator: 'contains', value: term },
       { field: 'PartNo', operator: 'contains', value: term },
       { field: 'Nsn', operator: 'contains', value: term },
-      { field: 'Caliber', operator: 'contains', value: term }
+      {
+        logic: 'or',
+        filters: [
+          { field: 'LookupCaliber.NameEn', operator: 'contains', value: term },
+          { field: 'LookupCaliber.NameAr', operator: 'contains', value: term }
+        ]
+      }
     ]
   };
 }
@@ -104,7 +110,15 @@ function buildWeaponPagedRequest(page: number, pageSize: number, fs: FilterState
   if (search) filters.push(buildCatalogSearchFilters(search));
   if (fs.selectedWeaponType?.trim()) filters.push({ field: 'Type.NameEn', operator: 'contains', value: spacedFromEnumKey(fs.selectedWeaponType.trim()) });
   const caliber = fs.selectedCaliber?.trim() ?? '';
-  if (caliber) filters.push({ field: 'Caliber', operator: 'contains', value: caliber });
+  if (caliber) {
+    filters.push({
+      logic: 'or',
+      filters: [
+        { field: 'LookupCaliber.NameEn', operator: 'contains', value: caliber },
+        { field: 'LookupCaliber.NameAr', operator: 'contains', value: caliber }
+      ]
+    });
+  }
   const nsn = fs.selectedNSN?.trim() ?? '';
   if (nsn) filters.push({ field: 'Nsn', operator: 'contains', value: nsn });
   return wrapPagedRequest(page, pageSize, filters);
