@@ -233,8 +233,7 @@ export class DashboardDataService {
     searchQuery: string,
     statusFilter: string,
     priorityFilter: string,
-    sortState: { column: string | null; direction: 'asc' | 'desc' },
-    autoRejectFilter: string = 'all'
+    sortState: { column: string | null; direction: 'asc' | 'desc' }
   ): Observable<PaginatedList<DashboardCard>> {
     const filters: FilterData[] = [];
 
@@ -284,26 +283,13 @@ export class DashboardDataService {
       }
     }
 
-    // Auto-reject days-remaining filter (server-side; dashboard applies this client-side after countdown load)
-    if (autoRejectFilter && autoRejectFilter !== 'all') {
-      const autoRejectFilterMap: Record<string, FilterData> = {
-        'expiring-1day':  { field: 'DaysRemaining', operator: 'lte', value: '1' },
-        'expiring-3days': { field: 'DaysRemaining', operator: 'lte', value: '3' },
-        'expiring-7days': { field: 'DaysRemaining', operator: 'lte', value: '7' }
-      };
-      const arFilter = autoRejectFilterMap[autoRejectFilter];
-      if (arFilter) {
-        filters.push(arFilter);
-      }
-    }
-
     const pagedRequest: PagedRequest = {
       page: page,
       pageSize: rowsPerPage,
       filter: filters.length > 0 ? (filters.length === 1 ? filters[0] : { logic: 'and', filters }) : undefined
     };
 
-    // Sorting — default to Priority desc (VeryUrgent first) when no explicit column chosen
+    // Sorting — default: higher priority first, then newest (see ApplyUserActionsCompositeSort on backend)
     const columnMap: Record<string, string> = {
       'orderNumber': 'RequestNo',
       'usageDate': 'CreationDate',

@@ -175,14 +175,12 @@ export class IssueRequestFacade {
     this.initializeUserContext();
     this.initializeStepFromQueryParams();
     this.loadRequestPurposes();
-    this.rebuildOrderPriorities();
 
     this.filterOptions.weaponTypeOptions = getWeaponTypeOptions();
     this.filterOptions.explosiveTypeOptions = getExplosiveTypeOptions();
 
     this.translate.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.rebuildRequestPurposeOptions();
-      this.rebuildOrderPriorities();
       this.updateUsePurposeFromSelection(this.requestPurposeState.selectedRequestPurposeId);
     });
 
@@ -528,10 +526,6 @@ export class IssueRequestFacade {
 
   private rebuildRequestPurposeOptions(): void {
     this.requestPurposeOptionsMap = this.submissionService.rebuildRequestPurposeOptions(this.requestPurposeState);
-  }
-
-  private rebuildOrderPriorities(): void {
-    this.filterOptions.orderPriorities = this.submissionService.rebuildOrderPriorities();
   }
 
   private updateUsePurposeFromSelection(id: number | null): void {

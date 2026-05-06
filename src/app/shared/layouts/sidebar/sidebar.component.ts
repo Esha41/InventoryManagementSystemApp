@@ -112,16 +112,6 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       ],
       children: [
         {
-          label: 'nav.requestsOverview',
-          route: '/requests/requests-management',
-          permissions: [PERMISSIONS.REQUESTS.VIEW_REQUEST.PAGE, PERMISSIONS.REQUESTS.REQUEST.PAGE, PERMISSIONS.REQUESTS.RECEIVER.PAGE]
-        },
-        {
-          label: 'nav.orderReport',
-          route: '/requests/requests-management/order-report',
-          permissions: [PERMISSIONS.REQUESTS.VIEW_REQUEST.PAGE, PERMISSIONS.REQUESTS.REQUEST.PAGE, PERMISSIONS.REQUESTS.RECEIVER.PAGE]
-        },
-        {
           label: 'nav.newIssueRequest',
           route: '/requests/new-issue-request',
           permissions: [PERMISSIONS.REQUESTS.ORDER.PAGE]
@@ -135,6 +125,16 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
           label: 'nav.newDiscardRequest',
           route: '/requests/discard-request',
           permissions: [PERMISSIONS.REQUESTS.DISCARD.PAGE_NAV]
+        },
+        {
+          label: 'nav.requestsOverview',
+          route: '/requests/requests-management',
+          permissions: [PERMISSIONS.REQUESTS.VIEW_REQUEST.PAGE, PERMISSIONS.REQUESTS.REQUEST.PAGE, PERMISSIONS.REQUESTS.RECEIVER.PAGE]
+        },
+        {
+          label: 'nav.orderReport',
+          route: '/requests/requests-management/order-report',
+          permissions: [PERMISSIONS.REQUESTS.VIEW_REQUEST.PAGE, PERMISSIONS.REQUESTS.REQUEST.PAGE, PERMISSIONS.REQUESTS.RECEIVER.PAGE]
         }
       ]
     },

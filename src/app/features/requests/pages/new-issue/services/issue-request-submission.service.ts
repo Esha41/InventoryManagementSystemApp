@@ -18,8 +18,6 @@ import { ToastService } from '@services/toast.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { normalizeArrayResponse } from '@utils/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
-import { DropdownOption } from '@components/dropdown/dropdown.component';
-
 export interface RunSubmissionContext {
   cartridgeState: CartridgeState;
   requestPurposeState: RequestPurposeState;
@@ -85,14 +83,6 @@ export class IssueRequestSubmissionService {
     if (id && optionsMap.has(id)) {
       usageFormData.usePurpose = optionsMap.get(id)?.usePurpose || '';
     }
-  }
-
-  rebuildOrderPriorities(): DropdownOption<string>[] {
-    return [
-      { label: 'newIssueRequest.normalPriority', value: 'Normal' },
-      { label: 'newIssueRequest.urgentPriority', value: 'Urgent' },
-      { label: 'newIssueRequest.veryUrgentPriority', value: 'Very Urgent' }
-    ];
   }
 
   // ---- Submission ---------------------------------------------------------
@@ -166,7 +156,6 @@ export class IssueRequestSubmissionService {
       usageDateTo: ctx.usageFormData.usageDateTo,
       usageTimeTo: ctx.usageFormData.usageTimeTo,
       usageLocation: ctx.usageFormData.usageLocation,
-      orderPriority: ctx.usageFormData.orderPriority,
       numberOfOfficers: ctx.usageFormData.numberOfOfficers,
       numberOfOtherRanks: ctx.usageFormData.numberOfOtherRanks,
       requesterComments: ctx.reviewFormData.requesterComments,

@@ -33,6 +33,8 @@
     "normalPriority": "Normal",
     "urgentPriority": "Urgent",
     "veryUrgentPriority": "Very Urgent",
+    "autoPriorityHint": "Priority is set automatically from usage start date: within 7 days — Very Urgent; within 14 days — Urgent; otherwise Normal.",
+    "autoPrioritySelectDateFirst": "Select a usage start date to see the assigned priority.",
     "quantity": "Quantity",
     "confirmSelection": "Confirm Selection",
     "fromReserve": "From Allowance",

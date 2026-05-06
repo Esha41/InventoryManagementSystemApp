@@ -9,6 +9,7 @@ import { getFileSizeFromFile, removeFile, validateFile, MAX_FILE_SIZE_MB, showFi
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { formatDateForInput, formatDateShort } from '@core/utils/format.utils';
+import { getOrderPriorityTranslationKeyFromUsageDateYmd } from '@requests/utils/order-priority-from-usage.utils';
 import type { ReserveDetailItem } from '@requests/pages/new-issue/new-issue-request.state';
 
 // Export MAX_FILE_SIZE_MB for template use
@@ -72,6 +73,13 @@ export class UsageFormComponent {
     return formatted === 'N/A' ? '' : formatted;
   }
 
+  /** Mirrors server priority from usage start date (display only). */
+  get autoDerivedPriorityLabel(): string {
+    const ymd = formatDateForInput(this.usageDateFrom) || this.usageDateFrom;
+    const key = getOrderPriorityTranslationKeyFromUsageDateYmd(ymd);
+    return this.translateService.instant(key);
+  }
+
   @ViewChild('dateFromPicker') dateFromPickerRef?: ElementRef<HTMLInputElement>;
   @ViewChild('dateToPicker') dateToPickerRef?: ElementRef<HTMLInputElement>;
 
@@ -114,12 +122,6 @@ export class UsageFormComponent {
   @Input() usedQuantity: number = 0;
   @Input() reserveDetailsByItem: ReserveDetailItem[] = [];
   @Input() selectedCartridges: Cartridge[] = [];
-  @Input() orderPriority: string = '';
-  @Input() orderPriorities: Array<DropdownOption<string>> | string[] = [
-    'newIssueRequest.normalPriority',
-    'newIssueRequest.urgentPriority',
-    'newIssueRequest.veryUrgentPriority'
-  ];
   @Input() requesterComments: string = '';
   @Input() selectedFiles: File[] = [];
   @Output() removeCartridge = new EventEmitter<number>();
@@ -138,7 +140,6 @@ export class UsageFormComponent {
   @Output() usageDateToChange = new EventEmitter<string>();
   @Output() usageTimeToChange = new EventEmitter<string>();
   @Output() requestPurposeNotesChange = new EventEmitter<string>();
-  @Output() orderPriorityChange = new EventEmitter<string>();
   @Output() requesterCommentsChange = new EventEmitter<string>();
   @Output() previous = new EventEmitter<void>();
   @Output() next = new EventEmitter<void>();
@@ -151,7 +152,6 @@ export class UsageFormComponent {
     usageDateTo: null,
     usageTimeTo: null,
     requestPurposeNotes: null,
-    orderPriority: null,
     requesterComments: null,
     selectedFiles: null
   };
@@ -291,20 +291,6 @@ export class UsageFormComponent {
     }
   }
 
-  onOrderPriorityChange(value: string): void {
-    this.orderPriorityChange.emit(value);
-
-    this.clearError('orderPriority');
-
-    if (this.hasAttemptedSubmit) {
-      if (!value || value.trim().length === 0) {
-        this.formErrors.orderPriority = 'newIssueRequest.validation.orderPriorityRequired';
-      } else {
-        this.clearError('orderPriority');
-      }
-    }
-  }
-
   onRequesterCommentsChange(value: string): void {
     this.requesterCommentsChange.emit(value);
 
@@ -430,11 +416,6 @@ export class UsageFormComponent {
       isValid = false;
     }
 
-    if (!this.orderPriority || this.orderPriority.trim().length === 0) {
-      this.formErrors.orderPriority = 'newIssueRequest.validation.orderPriorityRequired';
-      isValid = false;
-    }
-
     if (!this.selectedFiles || this.selectedFiles.length === 0) {
       this.formErrors.selectedFiles = 'newIssueRequest.validation.attachmentsRequired';
       isValid = false;
@@ -475,7 +456,6 @@ type UsageFormErrors = {
   usageTimeFrom: string | null;
   usageDateTo: string | null;
   usageTimeTo: string | null;
-  orderPriority: string | null;
   requesterComments: string | null;
   selectedFiles: string | null;
 };

@@ -17,7 +17,6 @@ export interface OrderSubmissionData {
   usageDateTo: string;
   usageTimeTo: string;
   usageLocation: string;
-  orderPriority: string;
   numberOfOfficers: number | null;
   numberOfOtherRanks: number | null;
   requesterComments: string;
@@ -132,13 +131,6 @@ export class OrderSubmissionService {
       };
     }
 
-    if (!data.orderPriority) {
-      return {
-        isValid: false,
-        error: 'Order priority is required.'
-      };
-    }
-
     return { isValid: true };
   }
 
@@ -184,7 +176,6 @@ export class OrderSubmissionService {
       usageLocation: getValueOrDefault(data.usageLocation, 'N/A'),
       numberOfOfficer: data.numberOfOfficers ?? null,
       numberOfOtherRank: data.numberOfOtherRanks ?? null,
-      priority: this.mapPriorityToEnum(data.orderPriority),
       requestItems
     };
   }
@@ -333,18 +324,4 @@ export class OrderSubmissionService {
     const seconds = date.getSeconds().toString().padStart(2, '0');
     return `${hours}:${minutes}:${seconds}`;
   }
-
-  /**
-   * Maps priority label to enum value
-   * Backend RequestPriority enum: Normal = 1, Urgent = 2, VeryUrgent = 3
-   */
-  private mapPriorityToEnum(priorityLabel: string): number {
-    const normalized = (priorityLabel || '').toLowerCase().replace(/\s+/g, '');
-    if (normalized.includes('normal')) return 1;
-    if (normalized.includes('urgent') && normalized.includes('very')) return 3;
-    if (normalized.includes('veryurgent')) return 3;
-    if (normalized.includes('urgent')) return 2;
-    return 2; // default to Urgent
-  }
 }
-

@@ -21,18 +21,16 @@
             <app-request-filter-bar
               [showStatusFilter]="true"
               [showPriorityFilter]="true"
-              [showAutoRejectFilter]="true"
+              [showAutoRejectFilter]="false"
               [showSearchBar]="true"
               [showResultCount]="true"
               [statusFilter]="selectedStatusFilter"
               [priorityFilter]="selectedPriorityFilter"
-              [autoRejectFilter]="selectedAutoRejectFilter"
               [searchQuery]="searchQuery"
               [resultCount]="filteredCardsCount"
               [useSearchButton]="true"
               (statusFilterChange)="onStatusFilterChange($event)"
               (priorityFilterChange)="onPriorityFilterChange($event)"
-              (autoRejectFilterChange)="onAutoRejectFilterChange($event)"
               (searchTriggered)="onSearchChange($event)"
               (filtersCleared)="onFiltersCleared()">
             </app-request-filter-bar>

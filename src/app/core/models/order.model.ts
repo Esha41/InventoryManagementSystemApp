@@ -16,7 +16,6 @@ export interface CreateOrderDto {
     orderNo: string;
     requestNo: string;
     reason: string;
-    priority: number;
     notes?: string;
     requestPurposeNotes?: string;
     departmentId: number;

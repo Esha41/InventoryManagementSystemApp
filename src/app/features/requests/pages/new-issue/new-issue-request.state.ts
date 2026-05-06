@@ -39,7 +39,6 @@ export interface FilterOptions {
   bulletDiameters: string[];
   linkedOptions: DropdownOption<string>[] | string[];
   natureOptions: string[];
-  orderPriorities: DropdownOption<string>[] | string[]; // Allow objects or strings
 
   weaponTypeOptions?: DropdownOption<string>[]; // DropdownOption[]
   explosiveTypeOptions?: DropdownOption<string>[]; // DropdownOption[]
@@ -84,7 +83,6 @@ export interface UsageFormData {
   usageTimeFrom: string;
   usageDateTo: string;
   usageTimeTo: string;
-  orderPriority: string;
 }
 
 export interface ReserveDetailsState {
@@ -180,7 +178,6 @@ export function createInitialFilterOptions(): ExtendedFilterOptions {
       { label: 'newIssueRequest.linkedOptionNotLinked', value: 'Not Linked' }
     ],
     natureOptions: [],
-    orderPriorities: [],
     weaponTypeOptions: [],
     explosiveTypeOptions: []
   };
@@ -222,8 +219,7 @@ export function createInitialUsageFormData(): UsageFormData {
     usageDateFrom: '',
     usageTimeFrom: '',
     usageDateTo: '',
-    usageTimeTo: '',
-    orderPriority: ''
+    usageTimeTo: ''
   };
 }
 

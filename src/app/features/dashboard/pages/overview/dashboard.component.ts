@@ -17,7 +17,7 @@ import { DashboardDataService } from '@dashboard/services/dashboard-data.service
 import { DashboardCard } from '@models/dashboard.model';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
-import { RequestFilterBarComponent, StatusFilter, PriorityFilter, AutoRejectFilter } from '@requests/components/request-filter-bar/request-filter-bar.component';
+import { RequestFilterBarComponent, StatusFilter, PriorityFilter } from '@requests/components/request-filter-bar/request-filter-bar.component';
 import { AutoRejectCountdownService, OrderAutoRejectCountdownDto } from '@requests/services/auto-reject-countdown.service';
 import { AutoRejectCountdownComponent } from '@requests/components/auto-reject-countdown/auto-reject-countdown.component';
 import { formatDateTimeExtended } from '@utils/format.utils';
@@ -73,7 +73,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   searchQuery: string = '';
   selectedStatusFilter: StatusFilter = 'all';
   selectedPriorityFilter: PriorityFilter = 'all';
-  selectedAutoRejectFilter: AutoRejectFilter = 'all';
 
   // Auto-reject countdowns keyed by order request id
   countdownByRequestId: Record<number, OrderAutoRejectCountdownDto> = {};
@@ -89,11 +88,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   visibleCards: DashboardCard[] = [];
   totalItems = 0;
   isLoading = false;
-
-
-  private rawVisibleCards: DashboardCard[] = [];
-  private rawTotalItems = 0;
-
 
 
   // Modal state (unified)
@@ -292,15 +286,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.searchQuery,
       this.selectedStatusFilter,
       this.selectedPriorityFilter,
-      this.sortState,
-      'all'
+      this.sortState
     )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          this.rawVisibleCards = response.items;
-          this.rawTotalItems = response.totalCount;
-          // Apply client-side auto-reject filter after countdowns load (or immediately if none).
           this.visibleCards = response.items;
           this.totalItems = response.totalCount;
           this.isLoading = false;
@@ -320,7 +310,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .map(c => c.orderRequestId as number);
     if (orderIds.length === 0) {
       this.countdownByRequestId = {};
-      this.applyAutoRejectFilter();
       this.cdr.markForCheck();
       return;
     }
@@ -328,40 +317,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(rows => {
         this.countdownByRequestId = this.autoRejectCountdownService.mapByRequestId(rows);
-        this.applyAutoRejectFilter();
         this.cdr.markForCheck();
       });
-  }
-
-  private applyAutoRejectFilter(): void {
-    if (this.selectedAutoRejectFilter === 'all') {
-      this.visibleCards = this.rawVisibleCards;
-      this.totalItems = this.rawTotalItems;
-      return;
-    }
-
-    const maxDays =
-      this.selectedAutoRejectFilter === 'expiring-1day' ? 1 :
-      this.selectedAutoRejectFilter === 'expiring-3days' ? 3 :
-      this.selectedAutoRejectFilter === 'expiring-7days' ? 7 :
-      undefined;
-
-    const filtered = this.rawVisibleCards.filter(card => {
-      if (!card.orderRequestId) return false; // auto-reject applies to orders only
-      const cd = this.countdownByRequestId[card.orderRequestId];
-      if (!cd || cd.state === 'none') return false;
-
-      if (maxDays != null) {
-        // "Expiring within N days" — include warning/running; exclude expired.
-        return cd.state !== 'expired' && cd.daysRemaining <= maxDays;
-      }
-
-      return true;
-    });
-
-    this.visibleCards = filtered;
-    // Note: server-side pagination/counts won't match; show filtered count for UX.
-    this.totalItems = filtered.length;
   }
 
   getAutoRejectCountdown(card: DashboardCard): OrderAutoRejectCountdownDto | null {
@@ -392,16 +349,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.loadAllRequests();
   }
 
-  onAutoRejectFilterChange(filter: AutoRejectFilter): void {
-    this.selectedAutoRejectFilter = filter;
-    this.currentPage = 1;
-    this.loadAllRequests();
-  }
-
   onFiltersCleared(): void {
     this.selectedStatusFilter = 'all';
     this.selectedPriorityFilter = 'all';
-    this.selectedAutoRejectFilter = 'all';
     this.searchQuery = '';
     this.currentPage = 1;
     this.loadAllRequests();
@@ -430,8 +380,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.sortState.direction = this.sortState.direction === 'asc' ? 'desc' : 'asc';
     } else {
       this.sortState.column = column;
-      // Default priority sort descending (VeryUrgent first)
-      this.sortState.direction = column === 'priority' ? 'desc' : 'asc';
+      // Default: priority high→low, then request date newest first; date column defaults to newest first with priority tie-break
+      this.sortState.direction =
+        column === 'priority' || column === 'usageDate' ? 'desc' : 'asc';
     }
     this.currentPage = 1;
     this.loadAllRequests();

@@ -33,6 +33,8 @@
     "normalPriority": "أولوية عادية",
     "urgentPriority": "أولوية مستعجلة",
     "veryUrgentPriority": "أولوية مستعجلة جداً",
+    "autoPriorityHint": "تُحدَّد أولوية الطلب تلقائياً من تاريخ بداية الاستخدام: خلال 7 أيام — مستعجل جداً؛ خلال 14 يوماً — مستعجل؛ وإلا عادي.",
+    "autoPrioritySelectDateFirst": "اختر تاريخ بداية الاستخدام لعرض الأولوية المحددة.",
     "confirmSelection": "تأكيد الاختيار",
     "fromReserve": "ضمن المقرر",
     "usePurpose": "الغرض من الاستخدام",

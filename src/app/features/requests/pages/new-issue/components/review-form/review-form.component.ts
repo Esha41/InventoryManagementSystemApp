@@ -10,6 +10,8 @@ import { Cartridge } from '@models/cartridge.model';
 import { LucideAngularModule, Eye } from 'lucide-angular';
 import { getFileSizeFromFile, viewFile as viewFileUtil } from '@utils/file.utils';
 import { formatDateTimeExtended } from '@utils/format.utils';
+import { getOrderPriorityTranslationKeyFromUsageDateYmd } from '@requests/utils/order-priority-from-usage.utils';
+import { formatDateForInput } from '@core/utils/format.utils';
 
 @Component({
   selector: 'app-review-form',
@@ -26,7 +28,6 @@ export class ReviewFormComponent {
   @Input() requesterName: string = '';
   @Input() requesterComments: string = '';
   @Input() orderType: string = '';
-  @Input() orderPriority: string = '';
   @Input() fromReserve: string = '';
   @Input() usePurpose: string = '';
   @Input() usageLocation: string = '';
@@ -61,23 +62,9 @@ export class ReviewFormComponent {
   }
 
   getTranslatedPriority(): string {
-    if (!this.orderPriority) return '';
-    // If it's already a translation key, translate it
-    if (this.orderPriority.startsWith('newIssueRequest.')) {
-      return this.translateService.instant(this.orderPriority);
-    }
-    // Map the actual values to translation keys
-    const priorityMap: { [key: string]: string } = {
-      'Normal': 'newIssueRequest.normalPriority',
-      'Urgent': 'newIssueRequest.urgentPriority',
-      'VeryUrgent': 'newIssueRequest.veryUrgentPriority',
-      'Very Urgent': 'newIssueRequest.veryUrgentPriority',
-      'Normal Priority': 'newIssueRequest.normalPriority',
-      'Urgent Priority': 'newIssueRequest.urgentPriority',
-      'Very Urgent Priority': 'newIssueRequest.veryUrgentPriority'
-    };
-    const translationKey = priorityMap[this.orderPriority];
-    return translationKey ? this.translateService.instant(translationKey) : this.orderPriority;
+    const ymd = formatDateForInput(this.usageDateFrom) || this.usageDateFrom;
+    const key = getOrderPriorityTranslationKeyFromUsageDateYmd(ymd);
+    return this.translateService.instant(key);
   }
 
 
