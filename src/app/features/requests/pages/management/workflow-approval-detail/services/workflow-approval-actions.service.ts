@@ -113,7 +113,7 @@ export class WorkflowApprovalActionsService {
       const formData = this.createApprovalFormData(data);
 
       this.apiService.post<void>(
-        API_ENDPOINTS.WORKFLOW_APPROVAL.APPROVE_REJECT,
+        API_ENDPOINTS.WORKFLOW_APPROVAL.PROCESS_ACTION,
         formData
       )
         .pipe(takeUntil(destroy$))
@@ -143,7 +143,7 @@ export class WorkflowApprovalActionsService {
       const formData = this.createApprovalFormData(data);
 
       this.apiService.post<void>(
-        API_ENDPOINTS.WORKFLOW_APPROVAL.APPROVE_REJECT,
+        API_ENDPOINTS.WORKFLOW_APPROVAL.PROCESS_ACTION,
         formData
       )
         .pipe(takeUntil(destroy$))
@@ -173,7 +173,7 @@ export class WorkflowApprovalActionsService {
       const formData = this.createReturnForReviewFormData(data);
 
       this.apiService.post<void>(
-        API_ENDPOINTS.WORKFLOW_APPROVAL.APPROVE_REJECT,
+        API_ENDPOINTS.WORKFLOW_APPROVAL.PROCESS_ACTION,
         formData
       )
         .pipe(takeUntil(destroy$))

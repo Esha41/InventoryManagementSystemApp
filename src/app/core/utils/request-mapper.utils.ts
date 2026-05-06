@@ -520,6 +520,7 @@ export function mapToRequestDetail(data: BaseRequestDto): RequestDetail {
     requestType: mapRequestType(data.requestType),
     priority: mapPriority(data.priority),
     status: requestStatus,
+    rawStatus: data.status,
     requestDate: formatRequestDate(data.requestDate),
     reason: data.reason,
     notes: data.notes,

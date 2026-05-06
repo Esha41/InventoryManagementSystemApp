@@ -12,7 +12,8 @@ import { SupplyService, SupplyDto } from '@requests/services/supply.service';
 import { AssetSupplyService } from '@requests/services/asset-supply.service';
 import { LookupItem } from '@services/lookup.service';
 import { RequestDetail, BaseRequestDto, FileUploadDto, WorkflowStepTransition, RequestItem } from '@models/workflow-approval.model';
-import { mapToRequestDetail } from '@utils/request-mapper.utils';
+import { mapToRequestDetail, getStatusMetadata } from '@utils/request-mapper.utils';
+import { getRequestStatusTranslationKey } from '@utils/status.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { getRequestStatusBadgeClass, getPriorityBadgeClass } from '@utils/status-class.utils';
 import { TranslationService } from '@services/translation.service';
@@ -489,8 +490,19 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       });
   }
 
-  getStatusClass(status: string): string {
-    return getRequestStatusBadgeClass(status);
+  /** Same translation keys as dashboard request cards (`dashboard.statusLabels.*`, etc.). */
+  getHeaderRequestStatusTranslationKey(): string {
+    if (!this.requestDetail) return 'dashboard.statusLabels.new';
+    return getRequestStatusTranslationKey(this.requestDetail.rawStatus ?? this.requestDetail.status);
+  }
+
+  /** Badge colours aligned with `getStatusMetadata` / dashboard card styling. */
+  getHeaderStatusClass(): string {
+    if (!this.requestDetail) {
+      return getRequestStatusBadgeClass('Pending');
+    }
+    const badgeKind = getStatusMetadata(this.requestDetail.rawStatus ?? this.requestDetail.status).badgeClass;
+    return getRequestStatusBadgeClass(badgeKind);
   }
 
   getPriorityClass(priority: string): string {

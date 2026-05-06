@@ -90,7 +90,8 @@ export const API_ENDPOINTS = {
     ALL_ORDERS: '/WorkflowApproval/AllOrders',
     ALL_BASE_REQUESTS: '/WorkflowApproval/AllBaseRequests',
     BASE_REQUEST_BY_ID: (requestId: number) => `/WorkflowApproval/BaseRequest/${requestId}`,
-    APPROVE_REJECT: '/WorkflowApproval/approve-reject',
+    /** POST: unified approve / reject / return-for-review (CQRS ProcessWorkflowActionCommand) */
+    PROCESS_ACTION: '/WorkflowApproval/process-action',
   },
 
   // requests management
