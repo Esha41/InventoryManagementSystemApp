@@ -5,7 +5,7 @@ import { catchError, map, tap } from 'rxjs/operators';
 
 import { ApiService } from '../api.service';
 import { ConfigService } from '../config.service';
-import { API_ENDPOINTS } from '@constants/app.constants';
+import { API_ENDPOINTS, defaultPageSize } from '@constants/app.constants';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import {
   BackendUserDto,
@@ -46,7 +46,7 @@ export class UsersApiService {
 
     let params = new HttpParams()
       .set('Page', (request?.page ?? 1).toString())
-      .set('PageSize', (request?.pageSize ?? 10).toString());
+      .set('PageSize', (request?.pageSize ?? defaultPageSize).toString());
 
     params = appendFilterParams(params, 'Filter', request?.filter);
 

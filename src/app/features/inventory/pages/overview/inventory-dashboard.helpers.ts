@@ -2,14 +2,13 @@ import { ItemInventorySummaryDto, ItemType } from '@models/inventory.model';
 import { LotDetailDto } from '@inventory/services/inventory.service';
 import { AssetDto } from '@models/asset.model';
 
-export type ActiveTab = 'all' | 'ammunition' | 'weapon' | 'explosive';
+export type ActiveTab = 'ammunition' | 'weapon' | 'explosive';
 
 export interface ItemSummaryFilterState {
   selectedItemFilterIds: number[];
   searchText: string;
   /** Selected catalog caliber display string; null = no filter */
   caliberSelection: string | null;
-  itemType: number | null;
   activeTab: ActiveTab;
 }
 
@@ -19,15 +18,11 @@ export function filterItemSummaries(
 ): ItemInventorySummaryDto[] {
   let list = items;
 
-  if (f.activeTab !== 'all') {
-    const tabType =
-      f.activeTab === 'ammunition' ? 1 :
-      f.activeTab === 'weapon'     ? 2 :
-                                     3;
-    list = list.filter(i => i.itemType === tabType);
-  } else if (f.itemType !== null) {
-    list = list.filter(i => i.itemType === f.itemType);
-  }
+  const tabType =
+    f.activeTab === 'ammunition' ? 1 :
+    f.activeTab === 'weapon'     ? 2 :
+                                   3;
+  list = list.filter(i => i.itemType === tabType);
 
   if (f.selectedItemFilterIds.length > 0) {
     list = list.filter(i => f.selectedItemFilterIds.includes(i.itemId));
@@ -125,7 +120,7 @@ export function sumLotDetailsMetrics(lots: LotDetailDto[]): {
 export function itemTypeTabAndStatCounts(
   itemSummaries: ItemInventorySummaryDto[]
 ): {
-  tabCounts: { all: number; ammunition: number; weapon: number; explosive: number };
+  tabCounts: { ammunition: number; weapon: number; explosive: number };
   byType: { ammo: number; weapon: number; explosive: number };
 } {
   let ammunition = 0;
@@ -137,7 +132,7 @@ export function itemTypeTabAndStatCounts(
     else if (i.itemType === ItemType.Explosive) explosive++;
   }
   return {
-    tabCounts: { all: itemSummaries.length, ammunition, weapon, explosive },
+    tabCounts: { ammunition, weapon, explosive },
     byType: { ammo: ammunition, weapon, explosive: explosive }
   };
 }
@@ -146,7 +141,6 @@ export function filterItemSummariesByActiveTab(
   itemSummaries: ItemInventorySummaryDto[],
   activeTab: ActiveTab
 ): ItemInventorySummaryDto[] {
-  if (activeTab === 'all') return itemSummaries;
   const tabType =
     activeTab === 'ammunition' ? ItemType.Ammunition :
     activeTab === 'weapon'     ? ItemType.Weapon     :
@@ -154,18 +148,15 @@ export function filterItemSummariesByActiveTab(
   return itemSummaries.filter(i => i.itemType === tabType);
 }
 
-export function hasActiveItemTableFilters(
-  activeTab: ActiveTab,
+/** Search, caliber, or item pick — excludes tab scope. */
+export function hasSecondaryItemTableFilters(
   itemSearchText: string,
   caliberFilter: string | null | undefined,
-  itemTypeFilter: number | null,
   selectedItemFilterIds: number[]
 ): boolean {
   return (
-    activeTab !== 'all' ||
     !!itemSearchText.trim() ||
     !!(caliberFilter ?? '').trim() ||
-    itemTypeFilter !== null ||
     selectedItemFilterIds.length > 0
   );
 }
@@ -215,19 +206,6 @@ export function nextTableSort(
     return { sortColumn: column, sortDirection: sortDirection === 'asc' ? 'desc' : 'asc' };
   }
   return { sortColumn: column, sortDirection: 'asc' };
-}
-
-export function activeTabFromItemTypeDropdown(
-  raw: number | null | undefined
-): { activeTab: ActiveTab; itemTypeFilter: null } {
-  if (raw === null || raw === undefined) {
-    return { activeTab: 'all', itemTypeFilter: null };
-  }
-  const t = Number(raw);
-  if (t === ItemType.Ammunition) return { activeTab: 'ammunition', itemTypeFilter: null };
-  if (t === ItemType.Weapon) return { activeTab: 'weapon', itemTypeFilter: null };
-  if (t === ItemType.Explosive) return { activeTab: 'explosive', itemTypeFilter: null };
-  return { activeTab: 'all', itemTypeFilter: null };
 }
 
 export function sortAssetDetailsDtos(

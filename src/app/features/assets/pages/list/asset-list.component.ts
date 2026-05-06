@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, Optional, Inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Optional, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -8,7 +8,6 @@ import { IOnboardingTourProvider } from '@core/interfaces/onboarding-tour-provid
 import { Subject, combineLatest } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
-import { ImagePreviewTooltipComponent } from '@components/index';
 import { AmmunitionReadDto } from '@models/ammunition.model';
 import { WeaponDto } from '@models/weapon.model';
 import { ExplosiveDto } from '@models/explosive.model';
@@ -60,8 +59,6 @@ import { LookupItem } from '@models/lookup.model';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
-  @ViewChild(ImagePreviewTooltipComponent) imagePreviewTooltip!: ImagePreviewTooltipComponent;
-
   private readonly destroy$ = new Subject<void>();
 
   showImportModal = false;
@@ -137,7 +134,6 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    if (this.imagePreviewTooltip) this.imagePreviewTooltip.hide();
     this.facade.destroy();
   }
 
@@ -356,23 +352,6 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
       () => this.facade.loadAssets(),
       () => this.cdr.markForCheck()
     );
-  }
-
-  onImageError(asset: Asset): void {
-    asset.imageUrl = undefined;
-    this.cdr.markForCheck();
-  }
-
-  showImagePreview(event: MouseEvent, asset: Asset): void {
-    if (!asset.imageUrl || !this.imagePreviewTooltip) return;
-    this.imagePreviewTooltip.showPreview(event, {
-      imageUrl: asset.imageUrl,
-      altText: this.getAssetName(asset)
-    });
-  }
-
-  hideImagePreview(): void {
-    this.imagePreviewTooltip?.hide();
   }
 
   readonly getAssetName = (asset: Asset | AmmunitionReadDto | WeaponDto | ExplosiveDto | null): string =>

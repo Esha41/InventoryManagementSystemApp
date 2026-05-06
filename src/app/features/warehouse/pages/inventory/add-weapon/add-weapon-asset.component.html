@@ -51,10 +51,7 @@
             </div>
         </div>
 
-        <app-weapon-asset-bulk-progress-overlay
-            [visible]="isProcessingBulk"
-            [progress]="bulkProgress"
-        ></app-weapon-asset-bulk-progress-overlay>
+        <app-weapon-asset-bulk-progress-overlay [visible]="isProcessingBulk"></app-weapon-asset-bulk-progress-overlay>
 
         <form *ngIf="!loading && inputMode === 'single'" [formGroup]="assetForm" (ngSubmit)="onSubmit()"
             class="space-y-6">

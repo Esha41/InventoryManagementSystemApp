@@ -8,11 +8,10 @@ import { ItemInventorySummaryDto, ItemType } from '@models/inventory.model';
 
 export interface InventoryDashboardExportContext {
   depotLabel: string;
-  activeTab: 'all' | 'ammunition' | 'explosive' | 'weapon';
+  activeTab: 'ammunition' | 'explosive' | 'weapon';
   filters: {
     searchText?: string;
     caliberText?: string;
-    itemTypeFilter?: number | null;
     selectedItemCount?: number;
   };
   totals: {

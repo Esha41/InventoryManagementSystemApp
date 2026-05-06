@@ -32,20 +32,7 @@
         <app-error-state *ngIf="errorMessage && !loading" [error]="errorMessage || ''" variant="inline">
         </app-error-state>
 
-        <!-- Bulk Progress Overlay -->
-        <div *ngIf="isProcessingBulk" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-            <div class="bg-[var(--color-background)] p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
-                <h3 class="text-lg font-bold mb-4">{{ 'addWeaponAsset.progress.title' | translate }}</h3>
-                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
-                    <div class="bg-[var(--color-brand)] h-2.5 rounded-full transition-all duration-300"
-                        [style.width.%]="(bulkProgress.current / bulkProgress.total) * 100"></div>
-                </div>
-                <p class="text-sm text-[var(--color-text-muted)] text-center">
-                    {{ 'addWeaponAsset.progress.status' | translate: { current: bulkProgress.current, total:
-                    bulkProgress.total } }}
-                </p>
-            </div>
-        </div>
+        <app-weapon-asset-bulk-progress-overlay [visible]="isProcessingBulk"></app-weapon-asset-bulk-progress-overlay>
 
         <!-- Form -->
         <form *ngIf="!loading && bulkData && bulkEntryForm" [formGroup]="bulkEntryForm" (ngSubmit)="onSubmit()"

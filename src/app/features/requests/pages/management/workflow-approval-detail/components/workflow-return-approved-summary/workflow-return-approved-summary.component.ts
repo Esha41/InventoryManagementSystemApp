@@ -17,6 +17,7 @@ import { FileUploadService } from '@services/file-upload.service';
 import { FileUploadDto } from '@models/file-upload.model';
 import { ReturnTrackingLineDto } from '@models/return.model';
 import { RequestItem } from '@models/workflow-approval.model';
+import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
 
 export interface ReturnApprovedMasterRow {
   rowKey: string;
@@ -42,7 +43,7 @@ export interface ReturnApprovedAttachmentRow {
 @Component({
   selector: 'app-workflow-return-approved-summary',
   standalone: true,
-  imports: [CommonModule, TranslateModule, LucideAngularModule],
+  imports: [CommonModule, TranslateModule, LucideAngularModule, TableClampTooltipDirective],
   templateUrl: './workflow-return-approved-summary.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })

@@ -28,6 +28,13 @@ type Primitive = string | number | boolean | null | undefined;
 const PANEL_GAP_PX = 8;
 const VIEWPORT_PAD_PX = 10;
 
+/**
+ * Compact trigger chrome (~42px) for use beside standard text inputs.
+ * Tailwind literal lives next to merging logic (JIT includes `*.ts` under `src/`).
+ */
+const TRIGGER_FORM_ALIGNED_TW =
+  '!rounded-lg !border !border-[var(--color-border)] !min-h-[42px] !box-border !px-3 !py-2 shadow-none hover:shadow-none focus-visible:shadow-none enabled:hover:border-[var(--color-border)] data-[trigger-state=open]:shadow-none font-normal';
+
 function overflowYClipsVertically(overflowY: string): boolean {
   return overflowY === 'hidden' || overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'clip';
 }
@@ -93,6 +100,10 @@ export class DropdownComponent<T = Primitive>
   @Input() trackByFn?: (option: DropdownOption<T> | T, index: number) => unknown;
   @Input() error = false;
   @Input() name: string | null = null;
+  /** When true, trigger uses compact form-field sizing to match neighbouring text inputs (narrower overrides default trigger). */
+  @Input() formFieldAligned = false;
+  /** Optional extra Tailwind classes merged onto the trigger (escape hatch; prefer {@link formFieldAligned} when possible). */
+  @Input() triggerAppendClasses: string | null = null;
   @Input() addActionLabel?: string;
   /** When true with {@link multiple}, render the trigger as compact chips (first 3) plus overflow via {@link badgeOverflowTranslateKey}. */
   @Input() multiTriggerBadges = false;
@@ -177,6 +188,25 @@ export class DropdownComponent<T = Primitive>
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;
+  }
+
+  get combinedTriggerNgClass(): Record<string, boolean> {
+    const cls: Record<string, boolean> = {};
+    const layout =
+      this.multiple && this.multiTriggerBadges && this.hasSelection && this.multiBadgeUseCollapsedSummary
+        ? 'items-center py-2.5 min-h-[42px]'
+        : this.multiple && this.multiTriggerBadges && this.hasSelection
+          ? 'items-start py-2 min-h-[42px]'
+          : 'items-center py-2.5';
+    for (const t of layout.trim().split(/\s+/).filter(Boolean)) cls[t] = true;
+    if (this.formFieldAligned) {
+      for (const t of TRIGGER_FORM_ALIGNED_TW.split(/\s+/).filter(Boolean)) cls[t] = true;
+    }
+    const raw = this.triggerAppendClasses?.trim();
+    if (raw) {
+      for (const t of raw.split(/\s+/).filter(Boolean)) cls[t] = true;
+    }
+    return cls;
   }
 
   get computedOptions(): Array<DropdownOption<T> | T> {

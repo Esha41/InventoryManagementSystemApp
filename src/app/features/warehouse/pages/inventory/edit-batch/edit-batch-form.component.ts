@@ -25,6 +25,7 @@ import { BatchDto, BulkUpdateBatchAssetsDto, BatchAssetUpdateItem } from '@model
 import { AssetDto, EmployeeDto } from '@models/asset.model';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { EmployeeFormModalComponent } from '@admin/components/employee-form-modal/employee-form-modal.component';
@@ -34,6 +35,7 @@ import { trackByIndex } from '@utils/trackby.utils';
 import { formatDateForInput } from '@utils/format.utils';
 import { FileUploadService } from '@services/file-upload.service';
 import { PERMISSIONS } from '@constants/permissions.constants';
+import { defaultPageSize } from '@constants/app.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 
 export type BatchEditAssignMode = 'none' | 'department' | 'employee';
@@ -51,7 +53,8 @@ export type BatchEditAssignMode = 'none' | 'department' | 'employee';
     ErrorStateComponent,
     PaginationComponent,
     RowsPerPageComponent,
-    EmployeeFormModalComponent
+    EmployeeFormModalComponent,
+    TableClampTooltipDirective
   ],
   templateUrl: './edit-batch-form.component.html',
   styleUrls: ['./edit-batch-form.component.css'],
@@ -83,9 +86,9 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
 
   /** Server-side pagination for the assets table (aligned with warehouse batch expand). */
   assetsPage = 1;
-  assetsPageSize = 50;
+  assetsPageSize = defaultPageSize;
   assetsTotalPages = 1;
-  readonly assetsPageSizeOptions = [50, 100, 200, 500];
+  readonly assetsPageSizeOptions = [20, 50, 100, 200, 500];
 
   batchForm!: FormGroup;
   get assetForms(): FormArray {
@@ -261,7 +264,6 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
 
   private syncPaginationFromBatch(batchDto: BatchDto): void {
     if (batchDto.assetsPageIndex != null) this.assetsPage = batchDto.assetsPageIndex;
-    if (batchDto.assetsPageSize != null) this.assetsPageSize = batchDto.assetsPageSize;
     this.assetsTotalPages = batchDto.assetsTotalPages ?? 1;
   }
 

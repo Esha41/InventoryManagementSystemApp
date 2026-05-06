@@ -52,7 +52,7 @@ export class WarehouseInventoryStore {
   private readonly _expandedBatchAssets = signal<AssetDto[]>([]);
   private readonly _loadingBatchAssets = signal(false);
   private readonly _expandedBatchAssetsPage = signal(1);
-  private readonly _expandedBatchAssetsPageSize = signal(50);
+  private readonly _expandedBatchAssetsPageSize = signal(defaultPageSize);
   private readonly _expandedBatchAssetsTotalPages = signal(1);
   private readonly _expandedBatchAssetTotalCount = signal(0);
   private readonly _expandedBatchAssetsAllLoaded = signal(false);
@@ -273,7 +273,7 @@ export class WarehouseInventoryStore {
   setExpandedBatchAssetsAllLoaded(allLoaded: boolean): void { this._expandedBatchAssetsAllLoaded.set(allLoaded); }
   resetExpandedBatchAssetState(): void {
     this._expandedBatchAssetsPage.set(1);
-    this._expandedBatchAssetsPageSize.set(50);
+    this._expandedBatchAssetsPageSize.set(defaultPageSize);
     this._expandedBatchAssetsTotalPages.set(1);
     this._expandedBatchAssetTotalCount.set(0);
     this._expandedBatchAssetsAllLoaded.set(false);

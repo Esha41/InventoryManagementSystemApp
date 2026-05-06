@@ -3,8 +3,9 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Eye, FileText, Search } from 'lucide-angular';
-import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent, TableClampTooltipDirective } from '@components/index';
 import { ReportService, Report } from '@reports/services/report.service';
+import { defaultPageSize } from '@constants/app.constants';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -18,7 +19,8 @@ import { of } from 'rxjs';
     PaginationComponent,
     RowsPerPageComponent,
     LoadingStateComponent,
-    ErrorStateComponent
+    ErrorStateComponent,
+    TableClampTooltipDirective
   ],
   templateUrl: './report-dashboard.component.html',
   styleUrls: ['./report-dashboard.component.css']
@@ -36,7 +38,7 @@ export class ReportDashboardComponent implements OnInit {
 
   // Pagination
   currentPage = 1;
-  rowsPerPage = 10;
+  rowsPerPage = defaultPageSize;
   totalItems = 0;
 
   constructor(

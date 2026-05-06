@@ -5,6 +5,7 @@ import { LucideAngularModule, Package, History as HistoryIcon } from 'lucide-ang
 import { RequestDetail, RequestItem } from '@models/workflow-approval.model';
 import { WorkflowApprovalStateService } from '../../services/workflow-approval-state.service';
 import { WorkflowApprovalNavigationService } from '../../services/workflow-approval-navigation.service';
+import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
 
 @Component({
   selector: 'app-workflow-request-items',
@@ -12,7 +13,8 @@ import { WorkflowApprovalNavigationService } from '../../services/workflow-appro
   imports: [
     CommonModule,
     TranslateModule,
-    LucideAngularModule
+    LucideAngularModule,
+    TableClampTooltipDirective
   ],
   templateUrl: './workflow-request-items.component.html',
   styleUrls: ['./workflow-request-items.component.css'],

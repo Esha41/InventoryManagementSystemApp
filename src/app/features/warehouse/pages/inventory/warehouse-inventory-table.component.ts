@@ -18,6 +18,7 @@ import {
   InventoryTableComponent,
   WarehouseInventoryTableSortColumn
 } from './components/inventory-table/inventory-table.component';
+import { defaultPageSize } from '@constants/app.constants';
 
 @Component({
   selector: 'app-warehouse-inventory-table',
@@ -338,11 +339,11 @@ export class WarehouseInventoryTableComponent {
   @Input() expandedBatchAssets: AssetDto[] = [];
   @Input() loadingBatchAssets = false;
   @Input() batchAssetsPage = 1;
-  @Input() batchAssetsPageSize = 50;
+  @Input() batchAssetsPageSize = defaultPageSize;
   @Input() batchAssetsTotalPages = 1;
   @Input() batchAssetsTotalCount = 0;
   @Input() batchAssetsAllLoaded = false;
-  @Input() batchAssetsPageSizeOptions: number[] = [50, 100, 200, 500];
+  @Input() batchAssetsPageSizeOptions: number[] = [20, 50, 100, 200, 500];
 
   @Input() batchAssetExcelExportPerms: string[] = [];
   @Input() batchAssetExcelImportPerms: string[] = [];

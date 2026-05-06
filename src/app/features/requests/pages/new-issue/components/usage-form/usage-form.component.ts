@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
+import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
 import { Cartridge } from '@models/cartridge.model';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { getFileSizeFromFile, removeFile, validateFile, MAX_FILE_SIZE_MB, showFileValidationErrors } from '@utils/file.utils';
@@ -18,7 +19,7 @@ export const MAX_FILE_SIZE_MB_EXPORT = MAX_FILE_SIZE_MB;
 @Component({
   selector: 'app-usage-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, ButtonComponent, DropdownComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, ButtonComponent, DropdownComponent, TableClampTooltipDirective],
   templateUrl: './usage-form.component.html',
   styleUrls: ['./usage-form.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush

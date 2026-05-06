@@ -9,7 +9,7 @@ import { ErrorHandler } from '@utils/error-handler.utils';
 import { TranslationService } from '@services/translation.service';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
-import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import { LoadingStateComponent, ErrorStateComponent, TableClampTooltipDirective } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { defaultPageSize } from '@constants/app.constants';
 
@@ -23,7 +23,8 @@ import { defaultPageSize } from '@constants/app.constants';
     PaginationComponent,
     RowsPerPageComponent,
     LoadingStateComponent,
-    ErrorStateComponent
+    ErrorStateComponent,
+    TableClampTooltipDirective
   ],
   templateUrl: './expiring-lots.component.html',
   styleUrls: ['./expiring-lots.component.css'],

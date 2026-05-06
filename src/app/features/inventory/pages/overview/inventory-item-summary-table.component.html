@@ -120,7 +120,9 @@
             <lucide-angular [img]="isItemExpanded(item.itemId) ? ChevronUp : ChevronDown" class="w-4 h-4 inline-block"></lucide-angular>
           </td>
 
-          <td class="px-3 py-2.5 align-middle text-sm font-medium text-[var(--color-text)] min-w-0 break-words" [title]="item.itemName">{{ item.itemName }}</td>
+          <td class="px-3 py-2.5 align-middle min-w-0">
+            <span class="text-sm font-medium text-[var(--color-text)]" [appTableClampTooltip]="item.itemName">{{ item.itemName }}</span>
+          </td>
           <td dir="ltr" class="px-3 py-2.5 align-middle text-sm text-[var(--color-text-muted)] whitespace-nowrap tabular-nums" [class.text-right]="isRTL" [class.text-left]="!isRTL">{{ item.itemNo || '—' }}</td>
           <td class="px-3 py-2.5 align-middle whitespace-nowrap">
             <span [ngClass]="getItemTypeBadgeClass(item.itemType)">
@@ -259,9 +261,15 @@
                   <tbody class="divide-y divide-[var(--color-border)]">
                     <tr *ngFor="let lot of paginatedLotDetails"
                       class="hover:bg-[var(--color-background)] transition-colors">
-                      <td dir="ltr" class="px-2.5 sm:px-3 py-3 font-mono text-xs text-[var(--color-text)] min-w-0 truncate" [class.text-right]="isRTL" [class.text-left]="!isRTL" [title]="lot.lot || ''">{{ lot.lot || '—' }}</td>
-                      <td class="px-2.5 sm:px-3 py-3 text-xs text-[var(--color-text-muted)] min-w-0 truncate" [title]="getLotDepotName(lot)">{{ getLotDepotName(lot) }}</td>
-                      <td class="px-2.5 sm:px-3 py-3 text-xs text-[var(--color-text-muted)] min-w-0 truncate" [title]="lot.batchNo || ''">{{ lot.batchNo || '—' }}</td>
+                      <td dir="ltr" class="px-2.5 sm:px-3 py-3 text-xs text-[var(--color-text)] min-w-0" [class.text-right]="isRTL" [class.text-left]="!isRTL">
+                        <span class="font-mono" [clampLines]="1" [appTableClampTooltip]="lot.lot || '—'">{{ lot.lot || '—' }}</span>
+                      </td>
+                      <td class="px-2.5 sm:px-3 py-3 text-xs text-[var(--color-text-muted)] min-w-0">
+                        <span [clampLines]="1" [appTableClampTooltip]="getLotDepotName(lot)">{{ getLotDepotName(lot) }}</span>
+                      </td>
+                      <td class="px-2.5 sm:px-3 py-3 text-xs text-[var(--color-text-muted)] min-w-0">
+                        <span [clampLines]="1" [appTableClampTooltip]="lot.batchNo || '—'">{{ lot.batchNo || '—' }}</span>
+                      </td>
                       <td dir="ltr" class="px-2.5 sm:px-3 py-3 text-xs text-end tabular-nums text-[var(--color-text)] whitespace-nowrap">{{ lot.originalQuantity | number }}</td>
                       <td dir="ltr" class="px-2.5 sm:px-3 py-3 text-xs text-end tabular-nums text-[var(--color-text-muted)] whitespace-nowrap">{{ lot.usedQuantity | number }}</td>
                       <td dir="ltr" class="px-2.5 sm:px-3 py-3 text-xs text-end tabular-nums text-[var(--color-text-muted)] whitespace-nowrap">{{ lot.reservedQuantityByOrdersOnProcessing | number }}</td>
@@ -353,20 +361,20 @@
                   </thead>
                   <tbody class="divide-y divide-[var(--color-border)]">
                     <tr *ngFor="let asset of paginatedAssetDetails" class="hover:bg-[var(--color-background)] transition-colors">
-                      <td dir="ltr" class="px-2.5 sm:px-3 py-3 font-mono text-xs font-medium text-[var(--color-brand)] min-w-0 truncate" [class.text-right]="isRTL" [class.text-left]="!isRTL" [title]="asset.serialNumber || ''">
-                        {{ asset.serialNumber || '—' }}
+                      <td dir="ltr" class="px-2.5 sm:px-3 py-3 text-xs min-w-0" [class.text-right]="isRTL" [class.text-left]="!isRTL">
+                        <span class="font-mono font-medium text-[var(--color-brand)]" [clampLines]="1" [appTableClampTooltip]="asset.serialNumber || '—'">{{ asset.serialNumber || '—' }}</span>
                       </td>
                       <td dir="ltr" class="px-2.5 sm:px-3 py-3 whitespace-nowrap text-xs text-[var(--color-text)]" [class.text-right]="isRTL" [class.text-left]="!isRTL">
                         {{ asset.rfid || '—' }}
                       </td>
-                      <td class="px-2.5 sm:px-3 py-3 text-xs text-[var(--color-text-muted)] min-w-0 truncate" [title]="getAssetDepotName(asset)">
-                        {{ getAssetDepotName(asset) }}
+                      <td class="px-2.5 sm:px-3 py-3 text-xs text-[var(--color-text-muted)] min-w-0">
+                        <span [clampLines]="1" [appTableClampTooltip]="getAssetDepotName(asset)">{{ getAssetDepotName(asset) }}</span>
                       </td>
-                      <td class="px-2.5 sm:px-3 py-3 text-xs text-[var(--color-text-muted)] min-w-0 truncate" [title]="getAssetAssigneeName(asset)">
-                        {{ getAssetAssigneeName(asset) }}
+                      <td class="px-2.5 sm:px-3 py-3 text-xs text-[var(--color-text-muted)] min-w-0">
+                        <span [clampLines]="1" [appTableClampTooltip]="getAssetAssigneeName(asset)">{{ getAssetAssigneeName(asset) }}</span>
                       </td>
-                      <td class="px-2.5 sm:px-3 py-3 text-xs text-[var(--color-text-muted)] min-w-0 truncate" [title]="asset.location || ''">
-                        {{ asset.location || '—' }}
+                      <td class="px-2.5 sm:px-3 py-3 text-xs text-[var(--color-text-muted)] min-w-0">
+                        <span [clampLines]="1" [appTableClampTooltip]="asset.location || '—'">{{ asset.location || '—' }}</span>
                       </td>
                     </tr>
                   </tbody>

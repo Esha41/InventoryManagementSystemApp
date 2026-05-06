@@ -8,6 +8,7 @@ import { trackById } from '@utils/trackby.utils';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
+import { defaultPageSize } from '@constants/app.constants';
 
 export type BatchTableSortColumn = 'batchNumber' | 'quantity';
 
@@ -32,12 +33,12 @@ export class BatchTableComponent {
     @Input() expandedBatchAssets: AssetDto[] = [];
     @Input() loadingBatchAssets = false;
     @Input() batchAssetsPage = 1;
-    @Input() batchAssetsPageSize = 50;
+    @Input() batchAssetsPageSize = defaultPageSize;
     @Input() batchAssetsTotalPages = 1;
     @Input() batchAssetsTotalCount = 0;
     @Input() batchAssetsAllLoaded = false;
-    /** Page size choices for batch assets (default 50, 100, 200, 500). */
-    @Input() batchAssetsPageSizeOptions: number[] = [50, 100, 200, 500];
+    /** Page size choices for batch assets (default from `APP_CONSTANTS.PAGE_SIZE_OPTIONS` pattern: 20, 50, …). */
+    @Input() batchAssetsPageSizeOptions: number[] = [20, 50, 100, 200, 500];
     @Input() getAssetItemName: (asset: AssetDto) => string = () => '';
     @Input() getAssetStatusLabel: (asset: AssetDto) => string = () => '';
     @Input() formatDate: (date?: Date | string) => string = () => '';

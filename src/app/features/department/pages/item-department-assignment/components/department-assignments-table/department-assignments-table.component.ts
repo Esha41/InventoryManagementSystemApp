@@ -8,12 +8,13 @@ import { LucideAngularModule, Plus, Trash2 } from 'lucide-angular';
 import { ItemDepartmentAssignmentDto } from '@models/item-department-assignment.model';
 import { BaseItemWithType } from '@models/item-department-assignment.model';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
+import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
 import { getItemTypeName, getAssetDetailsTab } from '@utils/item-type.utils';
 
 @Component({
   selector: 'app-department-assignments-table',
   standalone: true,
-  imports: [CommonModule, TranslateModule, LucideAngularModule, HasPermissionDirective],
+  imports: [CommonModule, TranslateModule, LucideAngularModule, HasPermissionDirective, TableClampTooltipDirective],
   templateUrl: './department-assignments-table.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })

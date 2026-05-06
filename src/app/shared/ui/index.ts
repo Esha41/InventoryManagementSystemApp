@@ -11,5 +11,7 @@ export * from './dropdown/dropdown.component';
 export * from './pagination/pagination.component';
 export * from './rows-per-page/rows-per-page.component';
 export * from './loading-state/loading-state.component';
+export * from './import-progress-loader/import-progress-loader.component';
 export * from './error-state/error-state.component';
 export * from './image-preview-tooltip/image-preview-tooltip.component';
+export * from './table-clamp-tooltip/table-clamp-tooltip.directive';

@@ -460,8 +460,8 @@
                                     </button>
                                 </td>
                                 <td
-                                    class="inventory-table__cell-text inventory-table__cell-text--wide px-6 py-4 text-sm font-medium text-[var(--color-text)] align-top">
-                                    {{ item.itemName }}
+                                    class="inventory-table__cell-text inventory-table__cell-text--wide px-6 py-4 text-sm font-medium text-[var(--color-text)] align-top min-w-0">
+                                    <span [appTableClampTooltip]="item.itemName">{{ item.itemName }}</span>
                                 </td>
                                 <td class="inventory-table__cell-text px-6 py-4 text-sm text-[var(--color-text)] align-top">
                                     {{ item.itemNo }}

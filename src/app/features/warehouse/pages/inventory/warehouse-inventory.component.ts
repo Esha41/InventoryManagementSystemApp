@@ -71,7 +71,7 @@ export class WarehouseInventoryComponent implements OnInit {
   readonly warehouseExportPerms = [...WAREHOUSE_DEPOT_EXPORT_PERMISSIONS];
   readonly warehouseInventoryImportPerms = [...WAREHOUSE_DEPOT_INVENTORY_IMPORT_PERMISSIONS];
   readonly warehouseAssetImportPerms = [...WAREHOUSE_DEPOT_ASSET_IMPORT_PERMISSIONS];
-  readonly batchAssetsPageSizeOptions = [50, 100, 200, 500];
+  readonly batchAssetsPageSizeOptions = [20, 50, 100, 200, 500];
 
   ngOnInit(): void { this.orchestrator.initialize(); }
 

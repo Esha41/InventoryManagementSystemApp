@@ -85,8 +85,8 @@
       "distinctItemTypes": "Distinct item types",
       "totalRemaining": "Total Remaining",
       "availableUnits": "Available units",
-      "totalLots": "Total Lots",
-      "activeLots": "Active Lots",
+      "totalLots": "Total lots/batches",
+      "activeLots": "Active lots/batches",
       "byType": "Items by Type"
     },
     "weaponsAndPipeline": {
@@ -273,7 +273,7 @@
     "usedQty": "Used Qty",
     "reservedQty": "Hold Quantity",
     "remainingQty": "Remaining Qty",
-    "totalLots": "Total Lots",
+    "totalLots": "Total lots/batches",
     "totalAssets": "Total Assets",
     "lotDetails": "Lot Details",
     "assetDetails": "Asset Details",

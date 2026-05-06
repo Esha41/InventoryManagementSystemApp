@@ -14,11 +14,12 @@ import { Subscription } from 'rxjs';
 import { SupplyService, WorkflowSupplySummaryDto } from '@requests/services/supply.service';
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
 
 @Component({
   selector: 'app-order-report-supply-summary',
   standalone: true,
-  imports: [CommonModule, TranslateModule, AppDateTimePipe],
+  imports: [CommonModule, TranslateModule, AppDateTimePipe, TableClampTooltipDirective],
   templateUrl: './order-report-supply-summary.component.html',
   styleUrls: ['./order-report-supply-summary.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush

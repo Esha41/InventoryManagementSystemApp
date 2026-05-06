@@ -27,10 +27,10 @@
         <tbody>
           <tr *ngFor="let assignment of assignments"
             class="border-t border-[var(--color-border)] hover:bg-[var(--color-background-hover)] transition-colors">
-            <td class="px-4 py-3 text-sm text-start">
+            <td class="px-4 py-3 text-sm text-start min-w-0">
               <button type="button" (click)="navigateToAssetDetails(assignment)"
-                class="text-[var(--color-brand)] hover:underline cursor-pointer font-medium text-left">
-                {{ assignment.itemName }}
+                class="text-[var(--color-brand)] hover:underline cursor-pointer font-medium text-left min-w-0 block w-full">
+                <span [appTableClampTooltip]="assignment.itemName">{{ assignment.itemName }}</span>
               </button>
             </td>
             <td class="px-4 py-3 text-sm text-[var(--color-text)] text-start">{{ assignment.itemNo }}</td>

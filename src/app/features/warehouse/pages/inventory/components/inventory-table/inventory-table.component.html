@@ -5,25 +5,25 @@
         <th scope="col"
           class="inv-table-th px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] tracking-wide w-[22%] min-w-0 align-top">
           <button type="button" (click)="toggleSort('itemName')"
-            class="inv-table-sort-btn flex flex-wrap items-start gap-x-1 gap-y-0.5 max-w-full min-w-0 cursor-pointer select-none text-start leading-snug hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
-            {{ 'warehouseInventory.itemName' | translate }}
-            <lucide-angular [img]="sortIcon('itemName')" class="h-3.5 w-3.5 shrink-0 mt-0.5 text-[var(--color-text-muted)]"></lucide-angular>
+            class="inv-table-sort-btn flex w-full min-w-0 flex-nowrap items-start gap-x-1 cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
+            <span class="min-w-0 flex-1 leading-snug">{{ 'warehouseInventory.itemName' | translate }}</span>
+            <lucide-angular [img]="sortIcon('itemName')" class="h-3.5 w-3.5 shrink-0 mt-0.5 text-[var(--color-text-muted)]" aria-hidden="true"></lucide-angular>
           </button>
         </th>
         <th scope="col"
           class="inv-table-th px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] tracking-wide w-[10%] min-w-0 align-top">
           <button type="button" (click)="toggleSort('supplier')"
-            class="inv-table-sort-btn flex flex-wrap items-start gap-x-1 gap-y-0.5 max-w-full min-w-0 cursor-pointer select-none text-start leading-snug hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
-            {{ 'warehouseInventory.supplier' | translate }}
-            <lucide-angular [img]="sortIcon('supplier')" class="h-3.5 w-3.5 shrink-0 mt-0.5 text-[var(--color-text-muted)]"></lucide-angular>
+            class="inv-table-sort-btn flex w-full min-w-0 flex-nowrap items-start gap-x-1 cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
+            <span class="min-w-0 flex-1 leading-snug">{{ 'warehouseInventory.supplier' | translate }}</span>
+            <lucide-angular [img]="sortIcon('supplier')" class="h-3.5 w-3.5 shrink-0 mt-0.5 text-[var(--color-text-muted)]" aria-hidden="true"></lucide-angular>
           </button>
         </th>
         <th scope="col"
           class="inv-table-th px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] tracking-wide w-[10%] min-w-0 align-top">
           <button type="button" (click)="toggleSort('manufacturer')"
-            class="inv-table-sort-btn flex flex-wrap items-start gap-x-1 gap-y-0.5 max-w-full min-w-0 cursor-pointer select-none text-start leading-snug hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
-            {{ 'warehouseInventory.manufacturer' | translate }}
-            <lucide-angular [img]="sortIcon('manufacturer')" class="h-3.5 w-3.5 shrink-0 mt-0.5 text-[var(--color-text-muted)]"></lucide-angular>
+            class="inv-table-sort-btn flex w-full min-w-0 flex-nowrap items-start gap-x-1 cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
+            <span class="min-w-0 flex-1 leading-snug">{{ 'warehouseInventory.manufacturer' | translate }}</span>
+            <lucide-angular [img]="sortIcon('manufacturer')" class="h-3.5 w-3.5 shrink-0 mt-0.5 text-[var(--color-text-muted)]" aria-hidden="true"></lucide-angular>
           </button>
         </th>
         <th *ngIf="showPrimaryPurposeColumn" scope="col"
@@ -33,41 +33,41 @@
         <th scope="col"
           class="inv-table-th px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] tracking-wide w-[7%] min-w-[3.25rem] align-top">
           <button type="button" (click)="toggleSort('lot')"
-            class="inv-table-sort-btn flex flex-nowrap items-center gap-x-1 max-w-full cursor-pointer select-none text-start leading-snug hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)] whitespace-nowrap">
-            {{ 'warehouseInventory.lot' | translate }}
-            <lucide-angular [img]="sortIcon('lot')" class="h-3.5 w-3.5 shrink-0 text-[var(--color-text-muted)]"></lucide-angular>
+            class="inv-table-sort-btn flex w-full min-w-0 flex-nowrap items-start gap-x-1 cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
+            <span class="min-w-0 flex-1 leading-snug">{{ 'warehouseInventory.lot' | translate }}</span>
+            <lucide-angular [img]="sortIcon('lot')" class="h-3.5 w-3.5 shrink-0 mt-0.5 text-[var(--color-text-muted)]" aria-hidden="true"></lucide-angular>
           </button>
         </th>
         <th scope="col"
           class="inv-table-th px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] tracking-wide w-[7%] min-w-[5.25rem] align-top">
           <button type="button" (click)="toggleSort('quantity')"
-            class="inv-table-sort-btn flex flex-nowrap items-center gap-x-1 max-w-full cursor-pointer select-none text-start leading-snug hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)] whitespace-nowrap">
-            {{ 'warehouseInventory.quantity' | translate }}
-            <lucide-angular [img]="sortIcon('quantity')" class="h-3.5 w-3.5 shrink-0 text-[var(--color-text-muted)]"></lucide-angular>
+            class="inv-table-sort-btn flex w-full min-w-0 flex-nowrap items-start gap-x-1 cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
+            <span class="min-w-0 flex-1 leading-snug">{{ 'warehouseInventory.quantity' | translate }}</span>
+            <lucide-angular [img]="sortIcon('quantity')" class="h-3.5 w-3.5 shrink-0 mt-0.5 text-[var(--color-text-muted)]" aria-hidden="true"></lucide-angular>
           </button>
         </th>
         <th scope="col"
           class="inv-table-th px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] tracking-wide w-[8%] min-w-0 align-top">
           <button type="button" (click)="toggleSort('readyForIssue')"
-            class="inv-table-sort-btn flex flex-wrap items-start gap-x-1 gap-y-0.5 max-w-full min-w-0 cursor-pointer select-none text-start leading-snug hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
-            {{ 'warehouseInventory.readyForIssue' | translate }}
-            <lucide-angular [img]="sortIcon('readyForIssue')" class="h-3.5 w-3.5 shrink-0 mt-0.5 text-[var(--color-text-muted)]"></lucide-angular>
+            class="inv-table-sort-btn flex w-full min-w-0 flex-nowrap items-start gap-x-1 cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
+            <span class="min-w-0 flex-1 leading-snug">{{ 'warehouseInventory.readyForIssue' | translate }}</span>
+            <lucide-angular [img]="sortIcon('readyForIssue')" class="h-3.5 w-3.5 shrink-0 mt-0.5 text-[var(--color-text-muted)]" aria-hidden="true"></lucide-angular>
           </button>
         </th>
         <th scope="col"
           class="inv-table-th px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] tracking-wide w-[8%] min-w-0 align-top">
           <button type="button" (click)="toggleSort('expiryDate')"
-            class="inv-table-sort-btn flex flex-wrap items-start gap-x-1 gap-y-0.5 max-w-full min-w-0 cursor-pointer select-none text-start leading-snug hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
-            {{ 'warehouseInventory.expiryDate' | translate }}
-            <lucide-angular [img]="sortIcon('expiryDate')" class="h-3.5 w-3.5 shrink-0 mt-0.5 text-[var(--color-text-muted)]"></lucide-angular>
+            class="inv-table-sort-btn flex w-full min-w-0 flex-nowrap items-start gap-x-1 cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
+            <span class="min-w-0 flex-1 leading-snug">{{ 'warehouseInventory.expiryDate' | translate }}</span>
+            <lucide-angular [img]="sortIcon('expiryDate')" class="h-3.5 w-3.5 shrink-0 mt-0.5 text-[var(--color-text-muted)]" aria-hidden="true"></lucide-angular>
           </button>
         </th>
         <th scope="col"
           class="inv-table-th px-4 py-3 text-start text-xs font-semibold text-[var(--color-text)] tracking-wide w-[8%] min-w-0 align-top">
           <button type="button" (click)="toggleSort('invoiceNumber')"
-            class="inv-table-sort-btn flex flex-wrap items-start gap-x-1 gap-y-0.5 max-w-full min-w-0 cursor-pointer select-none text-start leading-snug hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
-            {{ 'warehouseInventory.invoiceNumber' | translate }}
-            <lucide-angular [img]="sortIcon('invoiceNumber')" class="h-3.5 w-3.5 shrink-0 mt-0.5 text-[var(--color-text-muted)]"></lucide-angular>
+            class="inv-table-sort-btn flex w-full min-w-0 flex-nowrap items-start gap-x-1 cursor-pointer select-none text-start hover:opacity-80 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]">
+            <span class="min-w-0 flex-1 leading-snug">{{ 'warehouseInventory.invoiceNumber' | translate }}</span>
+            <lucide-angular [img]="sortIcon('invoiceNumber')" class="h-3.5 w-3.5 shrink-0 mt-0.5 text-[var(--color-text-muted)]" aria-hidden="true"></lucide-angular>
           </button>
         </th>
         <th scope="col" class="inv-table-th px-4 py-3 text-end text-xs font-semibold text-[var(--color-text)] tracking-wide w-[9rem] shrink-0 align-top whitespace-nowrap">
@@ -85,18 +85,19 @@
     <!-- Inventory Items -->
     <tr *ngFor="let detail of items; trackBy: trackById"
       class="bg-[var(--color-background)] hover:bg-[var(--color-background-hover)] transition-colors">
-      <td class="inv-table-cell-wrap px-4 py-4 text-sm font-medium text-[var(--color-text)] text-start align-top min-w-0 break-words">
-        {{ getItemName(detail) }}
+      <td class="inv-table-cell-wrap px-4 py-4 text-sm font-medium text-[var(--color-text)] text-start align-top min-w-0">
+        <!-- Name: single line + ellipsis (column is wide; 2-line clamp hid the "..." until a 3rd line). Supplier/manufacturer stay 2-line. -->
+        <span [appTableClampTooltip]="getItemName(detail)">{{ getItemName(detail) }}</span>
       </td>
-      <td class="inv-table-cell-wrap px-4 py-4 text-sm text-[var(--color-text)] text-start align-top min-w-0 break-words">
-        {{ getSupplierName(detail) }}
+      <td class="inv-table-cell-wrap px-4 py-4 text-sm text-[var(--color-text)] text-start align-top min-w-0">
+        <span [appTableClampTooltip]="getSupplierName(detail)">{{ getSupplierName(detail) }}</span>
       </td>
-      <td class="inv-table-cell-wrap px-4 py-4 text-sm text-[var(--color-text)] text-start align-top min-w-0 break-words">
-        {{ getManufacturerName(detail) }}
+      <td class="inv-table-cell-wrap px-4 py-4 text-sm text-[var(--color-text)] text-start align-top min-w-0">
+        <span [appTableClampTooltip]="getManufacturerName(detail)">{{ getManufacturerName(detail) }}</span>
       </td>
       <td *ngIf="showPrimaryPurposeColumn"
-        class="inv-table-cell-wrap px-4 py-4 text-sm text-[var(--color-text)] text-start align-top min-w-0 break-words">
-        {{ getPrimaryPurposeName(detail) }}
+        class="inv-table-cell-wrap px-4 py-4 text-sm text-[var(--color-text)] text-start align-top min-w-0">
+        <span [appTableClampTooltip]="getPrimaryPurposeName(detail)">{{ getPrimaryPurposeName(detail) }}</span>
       </td>
       <td class="px-4 py-4 text-sm text-[var(--color-text)] text-start align-top min-w-0 break-words">
         {{ detail.lot }}

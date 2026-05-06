@@ -58,12 +58,10 @@
             <tbody class="bg-[var(--color-background)] divide-y divide-[var(--color-border)]">
               <tr *ngFor="let report of paginatedReports"
                 class="hover:bg-[var(--color-background-hover)] transition-colors">
-                <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
-                  <div class="flex items-center gap-2">
+                <td class="px-4 lg:px-6 py-4 text-sm text-[var(--color-text)] text-start min-w-0 max-w-[min(28rem,50vw)] align-top">
+                  <div class="flex items-center gap-2 min-w-0">
                     <lucide-angular [img]="FileText" class="h-4 w-4 text-[var(--color-text-muted)] flex-shrink-0"></lucide-angular>
-                    <div class="font-medium">
-                      {{ report.reportName }}
-                    </div>
+                    <div class="font-medium min-w-0" [appTableClampTooltip]="report.reportName">{{ report.reportName }}</div>
                   </div>
                 </td>
                 <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-muted)] text-start">
@@ -93,9 +91,7 @@
           <div class="flex justify-between items-start mb-3">
             <div class="flex items-center gap-2 flex-1 min-w-0">
               <lucide-angular [img]="FileText" class="h-4 w-4 text-[var(--color-text-muted)] flex-shrink-0"></lucide-angular>
-              <div class="font-medium text-sm text-[var(--color-text)] truncate">
-                {{ report.reportName }}
-              </div>
+              <div class="font-medium text-sm text-[var(--color-text)] min-w-0" [appTableClampTooltip]="report.reportName">{{ report.reportName }}</div>
             </div>
           </div>
 

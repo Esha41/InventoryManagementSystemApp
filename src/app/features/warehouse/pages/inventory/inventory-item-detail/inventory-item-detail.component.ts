@@ -10,6 +10,7 @@ import { LookupService } from '@services/lookup.service';
 import { InventoryDetailDto, ItemType } from '@models/inventory.model';
 import { AssetDetailsComponent } from '@assets/components/asset-details/asset-details.component';
 import { WarehouseDetailLayoutComponent } from '@components/warehouse-detail-layout/warehouse-detail-layout.component';
+import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
@@ -24,7 +25,7 @@ type TabType = 'overview' | 'stock';
 @Component({
   selector: 'app-inventory-item-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule, TranslateModule, AssetDetailsComponent, WarehouseDetailLayoutComponent],
+  imports: [CommonModule, RouterModule, LucideAngularModule, TranslateModule, AssetDetailsComponent, WarehouseDetailLayoutComponent, TableClampTooltipDirective],
   templateUrl: './inventory-item-detail.component.html',
   styleUrls: ['./inventory-item-detail.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush

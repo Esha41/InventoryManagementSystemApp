@@ -17,7 +17,7 @@ import { WeaponDto } from '@models/weapon.model';
 import { ExplosiveDto } from '@models/explosive.model';
 import { getLookupDisplayName } from '@utils/asset-list.utils';
 import { TranslationService } from '@services/translation.service';
-import { LoadingStateComponent } from '@components/index';
+import { LoadingStateComponent, ImportProgressLoaderComponent, ImportLoaderPhase } from '@components/index';
 import { ImportPreviewDialogComponent, PreviewData, PreviewRow } from '@components/import-preview-dialog/import-preview-dialog.component';
 import { IImportableService } from '@core/interfaces/importable-service.interface';
 import { ImportResult } from '@models/import-result.model';
@@ -37,7 +37,8 @@ type LookupDisplayInput = Parameters<typeof getLookupDisplayName>[0];
     CardComponent,
     ImportDialogComponent,
     ImportPreviewDialogComponent,
-    LoadingStateComponent
+    LoadingStateComponent,
+    ImportProgressLoaderComponent
   ],
   templateUrl: './assets-import-export.component.html',
   styleUrls: ['./assets-import-export.component.css'],
@@ -78,6 +79,38 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;
+  }
+
+  // ---------- Import progress loader bindings ----------
+  // Derived state for <app-import-progress-loader>. Kept as getters so we don't
+  // duplicate the source-of-truth flags (isPreviewInProgress / isImportInProgress).
+  get isImportLoaderOpen(): boolean {
+    return this.isPreviewInProgress || this.isImportInProgress;
+  }
+
+  get importLoaderPhase(): ImportLoaderPhase {
+    return this.isImportInProgress ? 'importing' : 'preview';
+  }
+
+  /** Translated tab name shown in the loader title (e.g. "Ammunition"). */
+  get importLoaderEntityName(): string {
+    const key = `warehouseInventory.tabs.${this._activeTab}`;
+    return this.translateService.instant(key) || this._activeTab;
+  }
+
+  /**
+   * Item count for the loader badge. Only meaningful during the actual import
+   * (preview already knows how many rows). Falls back to null when unknown.
+   */
+  get importLoaderItemCount(): number | null {
+    if (this.isImportInProgress && this.previewData) {
+      return this.previewData.totalRows ?? null;
+    }
+    return null;
+  }
+
+  get importLoaderFileName(): string | null {
+    return this.pendingImportFile?.name ?? null;
   }
 
   ngOnInit(): void {

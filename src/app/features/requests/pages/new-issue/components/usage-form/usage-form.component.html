@@ -362,10 +362,10 @@
         <tbody>
           <tr *ngFor="let item of reserveDetailsByItem" class="border-t border-[var(--color-border)] transition-colors"
             [ngClass]="{'bg-[var(--color-brand)]/10 border-s-4 border-s-[var(--color-brand)]': isItemSelected(item.itemId)}">
-            <td class="px-4 py-2 text-[var(--color-text)]">
-              <div class="flex items-center gap-2">
-                <span *ngIf="isItemSelected(item.itemId)" class="w-2 h-2 rounded-full bg-[var(--color-brand)]"></span>
-                {{ item.itemName }}
+            <td class="px-4 py-2 text-[var(--color-text)] min-w-0">
+              <div class="flex items-center gap-2 min-w-0">
+                <span *ngIf="isItemSelected(item.itemId)" class="w-2 h-2 shrink-0 rounded-full bg-[var(--color-brand)]"></span>
+                <span class="min-w-0" [appTableClampTooltip]="item.itemName">{{ item.itemName }}</span>
               </div>
             </td>
             <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ item.itemNo }}</td>

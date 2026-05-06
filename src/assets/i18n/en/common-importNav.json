@@ -5,6 +5,17 @@
     "clickToUpload": "Click to upload or drag and drop",
     "xlsxOnly": "XLSX files only"
   },
+  "importLoader": {
+    "titlePreview": "Validating {{entityName}}",
+    "titleImporting": "Importing {{entityName}}",
+    "titleFinalizing": "Finalizing import",
+    "messagePreview": "Checking your file for errors and duplicates. This usually takes a few seconds.",
+    "messageImporting": "Items are being added to the catalog. Please don't refresh the page.",
+    "messageFinalizing": "Saving the last records and updating the catalog.",
+    "itemsCount": "{{count}} items",
+    "file": "File",
+    "doNotClose": "Please keep this window open until the import completes."
+  },
   "import": {
     "previewTitle": "Import Preview",
     "totalRows": "Total Rows",

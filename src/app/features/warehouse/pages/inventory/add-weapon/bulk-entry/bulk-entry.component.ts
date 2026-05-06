@@ -20,6 +20,7 @@ import { CreateAssetDto, UpdateAssetDto } from '@models/asset.model';
 // Components
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
+import { WeaponAssetBulkProgressOverlayComponent } from '../components/weapon-asset-bulk-progress-overlay.component';
 
 // Utils
 import { ErrorHandler } from '@utils/error-handler.utils';
@@ -65,7 +66,8 @@ interface BulkEntryFormValue {
         LucideAngularModule,
         LoadingStateComponent,
         ErrorStateComponent,
-        HasPermissionDirective
+        HasPermissionDirective,
+        WeaponAssetBulkProgressOverlayComponent
     ],
     templateUrl: './bulk-entry.component.html',
     styleUrls: ['./bulk-entry.component.css'],
@@ -90,7 +92,6 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
     loading = false;
     submitting = false;
     errorMessage: string | null = null;
-    bulkProgress = { current: 0, total: 0 };
     isProcessingBulk = false;
     deliveryReceiptFiles: File[] = [];
 
@@ -253,12 +254,8 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
 
         this.submitting = true;
         this.isProcessingBulk = true;
-        this.bulkProgress = { current: 0, total: createDtos.length };
         this.errorMessage = null;
         this.cdr.markForCheck();
-
-        // Create assets in bulk
-        this.bulkProgress = { current: 0, total: createDtos.length }; // Initial state
 
         this.assetService.createBulk<number[]>(createDtos)
             .pipe(takeUntil(this.destroy$))
@@ -266,7 +263,6 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
                 next: (ids: number[]) => {
                     this.submitting = false;
                     this.isProcessingBulk = false;
-                    this.bulkProgress = { current: createDtos.length, total: createDtos.length };
                     this.cdr.markForCheck();
 
                     // Clear session storage

@@ -23,7 +23,9 @@
       </thead>
       <tbody class="bg-[var(--color-background)]">
         <tr *ngFor="let item of orderItems" class="border-t border-[var(--color-border)]">
-          <td class="px-4 py-2 text-[var(--color-text)]">{{ item.itemName }}</td>
+          <td class="px-4 py-2 text-[var(--color-text)] min-w-0">
+            <span [appTableClampTooltip]="item.itemName">{{ item.itemName }}</span>
+          </td>
           <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ getItemProductId(item) }}</td>
           <td class="px-4 py-2 text-[var(--color-text)]">{{ formatNumber(item.quantity) }}</td>
           <td class="px-4 py-2">

@@ -18,6 +18,7 @@ import { WeaponSupplyLookupService } from '../../services/weapon-supply-lookup.s
 import { WeaponSupplyDisplayService } from '../../services/weapon-supply-display.service';
 import { WeaponSupplySelectionService } from '../../services/weapon-supply-selection.service';
 import { LoadingStateComponent } from '@components/loading-state/loading-state.component';
+import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
 
 @Component({
   selector: 'app-weapon-supply-selection',
@@ -27,7 +28,8 @@ import { LoadingStateComponent } from '@components/loading-state/loading-state.c
     FormsModule,
     TranslateModule,
     LucideAngularModule,
-    LoadingStateComponent
+    LoadingStateComponent,
+    TableClampTooltipDirective
   ],
   providers: [WeaponSupplyLookupService, WeaponSupplyDisplayService],
   templateUrl: './weapon-supply-selection.component.html',

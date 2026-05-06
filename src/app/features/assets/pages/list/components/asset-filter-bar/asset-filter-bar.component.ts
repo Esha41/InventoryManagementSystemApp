@@ -15,6 +15,7 @@ import { LookupItem } from '@models/lookup.model';
 import { AssetFilterOptions } from '../../models/asset-filter-options.model';
 import { getLookupDropdownLabel, filterRenderableLookupItems } from '@utils/asset-list.utils';
 import { unwrapDropdownOption } from '@utils/dropdown.utils';
+import { ASSET_LIST_MORE_FILTER_TEXT_INPUT_CLASS } from './asset-filter-bar.ui-classes';
 
 @Component({
   selector: 'app-asset-filter-bar',
@@ -28,7 +29,6 @@ import { unwrapDropdownOption } from '@utils/dropdown.utils';
     DropdownComponent
   ],
   templateUrl: './asset-filter-bar.component.html',
-  styleUrls: ['./asset-filter-bar.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AssetFilterBarComponent {
@@ -49,6 +49,8 @@ export class AssetFilterBarComponent {
   readonly FilterX = FilterX;
   readonly X = X;
   readonly ChevronDown = ChevronDown;
+
+  readonly moreFilterInputClass = ASSET_LIST_MORE_FILTER_TEXT_INPUT_CLASS;
 
   readonly lookupOptionLabel = (option: DropdownOption<LookupItem> | LookupItem) =>
     getLookupDropdownLabel(unwrapDropdownOption(option), this.translateService);

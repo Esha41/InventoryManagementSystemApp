@@ -220,11 +220,11 @@
               <td class="px-5 py-3.5 text-sm text-[var(--color-text-muted)] whitespace-nowrap">
                 {{ formatApprovalDateTime(card.orders[0].requestDate) || '—' }}
               </td>
-              <td class="px-5 py-3.5 text-sm text-[var(--color-text)] whitespace-nowrap max-w-[200px] truncate">
-                {{ displayDepartment(card.orders[0]) }}
+              <td class="px-5 py-3.5 text-sm text-[var(--color-text)] min-w-0 max-w-[200px] align-top">
+                <span [appTableClampTooltip]="displayDepartment(card.orders[0])">{{ displayDepartment(card.orders[0]) }}</span>
               </td>
-              <td class="px-5 py-3.5 text-sm text-[var(--color-text)] whitespace-nowrap">
-                {{ displayRequester(card.orders[0]) }}
+              <td class="px-5 py-3.5 text-sm text-[var(--color-text)] min-w-0 max-w-[220px] align-top">
+                <span [appTableClampTooltip]="displayRequester(card.orders[0])">{{ displayRequester(card.orders[0]) }}</span>
               </td>
               <td class="px-5 py-3.5">
                 <div class="flex items-center gap-2">

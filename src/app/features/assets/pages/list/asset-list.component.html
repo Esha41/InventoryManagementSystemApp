@@ -41,9 +41,7 @@
       [paginationState]="paginationState" [totalPages]="totalPages" [getAssetName]="getAssetName"
       (view)="onView($event)" (edit)="onEdit($event)" (delete)="onDelete($event)" (restore)="onRestore($event)" (permanentDelete)="onPermanentDelete($event)" (sort)="sortByColumn($event)"
       (pageChange)="onPageChange($event)" (rowsPerPageChange)="onRowsPerPageChange($event)"
-      (ammunitionViewModeChange)="switchAmmunitionViewMode($event)" (explosivesViewModeChange)="switchExplosivesViewMode($event)" (weaponsViewModeChange)="switchWeaponsViewMode($event)"
-      (imageError)="onImageError($event)" (showImagePreview)="showImagePreview($event.event, $event.asset)"
-      (hideImagePreview)="hideImagePreview()">
+      (ammunitionViewModeChange)="switchAmmunitionViewMode($event)" (explosivesViewModeChange)="switchExplosivesViewMode($event)" (weaponsViewModeChange)="switchWeaponsViewMode($event)">
       </app-asset-table>
     </div>
 

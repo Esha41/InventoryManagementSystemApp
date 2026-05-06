@@ -128,7 +128,6 @@ export class AddWeaponAssetComponent implements OnInit {
   errorMessage: string | null = null;
   inputMode: 'single' | 'bulk' = 'single';
   bulkForm!: FormGroup;
-  bulkProgress = { current: 0, total: 0 };
   isProcessingBulk = false;
   deliveryReceiptFiles: File[] = [];
 
@@ -475,7 +474,6 @@ export class AddWeaponAssetComponent implements OnInit {
 
     this.submitting = true;
     this.isProcessingBulk = true;
-    this.bulkProgress = { current: 0, total: createDtos.length };
     this.errorMessage = null;
     this.cdr.markForCheck();
 
@@ -484,7 +482,6 @@ export class AddWeaponAssetComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
-          this.bulkProgress = { current: createDtos.length, total: createDtos.length };
           this.isProcessingBulk = false;
           void this.onSubmitSuccessFinalize();
         },
@@ -501,7 +498,6 @@ export class AddWeaponAssetComponent implements OnInit {
 
     this.submitting = true;
     this.isProcessingBulk = true;
-    this.bulkProgress = { current: 0, total: dto.quantity };
     this.errorMessage = null;
     this.cdr.markForCheck();
 
@@ -509,8 +505,7 @@ export class AddWeaponAssetComponent implements OnInit {
       .createWeaponAssetsBulkFromTemplate(dto)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (result) => {
-          this.bulkProgress = { current: result.createdCount, total: dto.quantity };
+        next: () => {
           this.isProcessingBulk = false;
           void this.onSubmitSuccessFinalize();
         },

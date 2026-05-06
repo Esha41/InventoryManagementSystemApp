@@ -6,6 +6,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Edit2, Trash2, Eye, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-angular';
 import { InventoryDetailDto } from '@models/inventory.model';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
+import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
 import { trackById } from '@utils/trackby.utils';
 
 /** Sortable columns for warehouse inventory (ammo / explosives); maps to API sort fields in parent */
@@ -26,7 +27,8 @@ export type WarehouseInventoryTableSortColumn =
     CommonModule,
     TranslateModule,
     LucideAngularModule,
-    HasPermissionDirective
+    HasPermissionDirective,
+    TableClampTooltipDirective
   ],
   templateUrl: './inventory-table.component.html',
   styleUrls: ['./inventory-table.component.css'],

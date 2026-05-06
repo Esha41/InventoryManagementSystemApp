@@ -85,8 +85,8 @@
       "distinctItemTypes": "أنواع المواد المختلفة",
       "totalRemaining": "إجمالي المتبقي",
       "availableUnits": "الوحدات المتاحة",
-      "totalLots": "Total Lots",
-      "activeLots": "Active Lots",
+      "totalLots": "Total lots/batches",
+      "activeLots": "Active lots/batches",
       "byType": "المواد حسب النوع"
     },
     "weaponsAndPipeline": {
@@ -273,7 +273,7 @@
     "usedQty": "الكمية المصروفة سابقا",
     "reservedQty": "الكمية المحجوزة",
     "remainingQty": "الكمية المتبقية",
-    "totalLots": "Total Lots",
+    "totalLots": "Total lots/batches",
     "totalAssets": "إجمالي الأصول",
     "lotDetails": "تفاصيل lot",
     "assetDetails": "تفاصيل الأصول",
