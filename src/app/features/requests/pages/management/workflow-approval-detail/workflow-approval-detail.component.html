@@ -47,8 +47,8 @@
               {{ 'ORDER_TRACKING.HISTORY' | translate }}
             </button>
             <span
-              class="inline-flex items-center px-4 py-2 rounded-lg border font-medium text-sm shadow-sm {{ getStatusClass(requestDetail.status) }}">
-              {{ ('common.statuses.' + requestDetail.status) | translate }}
+              class="inline-flex items-center px-4 py-2 rounded-lg border font-medium text-sm shadow-sm {{ getHeaderStatusClass() }}">
+              {{ getHeaderRequestStatusTranslationKey() | translate }}
             </span>
           </div>
         </div>

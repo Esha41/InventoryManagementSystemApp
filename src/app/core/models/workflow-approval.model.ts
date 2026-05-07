@@ -109,7 +109,10 @@ export interface RequestDetail {
   requestNo: string;
   requestType: RequestType;
   priority: Priority;
+  /** Normalized badge label (historical); prefer {@link rawStatus} for dashboard-aligned i18n. */
   status: RequestStatus;
+  /** Backend request status as returned by API (numeric enum or string) — matches dashboard translation keys. */
+  rawStatus?: number | string;
   requestDate: string;
   reason?: string;
   notes?: string;
