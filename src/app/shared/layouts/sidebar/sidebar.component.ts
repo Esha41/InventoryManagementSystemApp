@@ -192,13 +192,14 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       permissions: [
         PERMISSIONS.INVENTORY.SUMMARY_REPORT.PAGE,
         PERMISSIONS.INVENTORY.LOW_STOCK_REPORT.PAGE,
+        PERMISSIONS.INVENTORY.CRITICAL_STOCK_REPORT.PAGE,
         PERMISSIONS.INVENTORY.EXPIRING_LOTS_REPORT.PAGE,
         PERMISSIONS.REPORTS.DASHBOARD
       ],
       children: [
         {
           label: 'nav.inventoryReports',
-          permissions: [PERMISSIONS.INVENTORY.SUMMARY_REPORT.PAGE, PERMISSIONS.INVENTORY.LOW_STOCK_REPORT.PAGE, PERMISSIONS.INVENTORY.EXPIRING_LOTS_REPORT.PAGE],
+          permissions: [PERMISSIONS.INVENTORY.SUMMARY_REPORT.PAGE, PERMISSIONS.INVENTORY.LOW_STOCK_REPORT.PAGE, PERMISSIONS.INVENTORY.CRITICAL_STOCK_REPORT.PAGE, PERMISSIONS.INVENTORY.EXPIRING_LOTS_REPORT.PAGE],
           children: [
             {
               label: 'nav.inventorySummary',
@@ -209,6 +210,11 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
               label: 'nav.lowStock',
               route: '/inventory-dashboard/low-stock',
               permissions: [PERMISSIONS.INVENTORY.LOW_STOCK_REPORT.PAGE]
+            },
+            {
+              label: 'nav.criticalStock',
+              route: '/inventory-dashboard/critical-stock',
+              permissions: [PERMISSIONS.INVENTORY.CRITICAL_STOCK_REPORT.PAGE]
             },
             {
               label: 'nav.expiringLots',
@@ -377,6 +383,7 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     if (
       url.startsWith('/inventory-summary') ||
       url.startsWith('/inventory-dashboard/low-stock') ||
+      url.startsWith('/inventory-dashboard/critical-stock') ||
       url.startsWith('/inventory-dashboard/expiring-lots')
     ) {
       this.expandedMenus.add('nav.reports');

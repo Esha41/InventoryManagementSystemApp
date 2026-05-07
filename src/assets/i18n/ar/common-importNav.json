@@ -82,6 +82,7 @@
     "inventoryForecast": "توقعات المخزون",
     "inventorySummary": "تقرير المخزون",
     "lowStock": "المخزون المنخفض",
+    "criticalStock": "المخزون الحرج",
     "expiringLots": "lots علي وشك الانتهاء",
     "reports": "التقارير",
     "inventoryReports": "تقارير المخزون",

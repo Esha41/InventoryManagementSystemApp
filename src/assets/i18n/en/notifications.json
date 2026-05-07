@@ -106,6 +106,8 @@
   },
   "stockNotificationSettings": {
     "title": "Stock Notification Settings",
+    "lowStockSection": "Low stock",
+    "criticalStockSection": "Critical stock",
     "recipientsSettings": "Recipients Settings",
     "roles": "Roles",
     "rolesPlaceholder": "Select roles",

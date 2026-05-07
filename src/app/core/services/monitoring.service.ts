@@ -47,6 +47,18 @@ export interface LowStockItemDto {
   remaining: number;
 }
 
+export interface CriticalStockItemDto {
+  itemId: number;
+  itemName: string;
+  itemNo?: string;
+  nsn?: string;
+  criticalQuantity?: number;
+  totalStock: number;
+  holdQuantity: number;
+  suppliedQuantity: number;
+  remaining: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -83,6 +95,14 @@ export class MonitoringService {
 
   getLowStockItems(): Observable<LowStockItemDto[]> {
     return this.apiService.get<LowStockItemDto[]>(`${this.baseEndpoint}/low-stock`);
+  }
+
+  getCriticalStockItemsCount(depotId?: number, depotIds?: number[]): Observable<number> {
+    return this.apiService.get<number>(`${this.baseEndpoint}/critical-stock/count`, this.buildCountParams(depotId, depotIds));
+  }
+
+  getCriticalStockItems(): Observable<CriticalStockItemDto[]> {
+    return this.apiService.get<CriticalStockItemDto[]>(`${this.baseEndpoint}/critical-stock`);
   }
 
   getInventoryDashboardSummary(depotIds?: number[]): Observable<InventoryDashboardSummaryDto> {

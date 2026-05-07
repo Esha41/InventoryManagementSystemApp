@@ -73,6 +73,7 @@
     "inventoryForecast": "Inventory Forecast",
     "inventorySummary": "Inventory Summary",
     "lowStock": "Low Stock",
+    "criticalStock": "Critical Stock",
     "expiringLots": "Expiring lots",
     "reports": "Reports",
     "inventoryReports": "Inventory Reports",

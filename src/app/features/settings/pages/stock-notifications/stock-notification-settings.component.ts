@@ -32,14 +32,17 @@ export class StockNotificationSettingsComponent implements OnInit, OnDestroy {
   users: BackendUserDto[] = [];
   selectedRoles: string[] = [];
   selectedUsers: string[] = [];
-  schedule: Date | null = null;
   isLoadingRoles = false;
   isLoadingUsers = false;
   isLoadingSchedule = false;
+  isLoadingCriticalSchedule = false;
   isLoadingSelectedRecipients = false;
+  isLoadingCriticalRecipients = false;
   errorMessage = '';
   recipientsForm!: FormGroup;
+  criticalRecipientsForm!: FormGroup;
   scheduleForm!: FormGroup;
+  criticalScheduleForm!: FormGroup;
 
   constructor(
     private fb: FormBuilder,
@@ -52,11 +55,15 @@ export class StockNotificationSettingsComponent implements OnInit, OnDestroy {
   }
   ngOnInit(): void {
     this.initializeRecipientsForm();
+    this.initializeCriticalRecipientsForm();
     this.initializeScheduleForm();
+    this.initializeCriticalScheduleForm();
     this.loadRoles();
     this.loadUsers();
     this.loadSelectedRecipients();
+    this.loadCriticalSelectedRecipients();
     this.loadSchedule();
+    this.loadCriticalSchedule();
   }
 
   ngOnDestroy(): void {
@@ -70,14 +77,28 @@ export class StockNotificationSettingsComponent implements OnInit, OnDestroy {
         rolesIds: [[]],
         usersIds: [[]],
       },
-    )
+    );
+  }
+
+  private initializeCriticalRecipientsForm() {
+    this.criticalRecipientsForm = this.fb.group({
+      rolesIds: [[]],
+      usersIds: [[]],
+    });
   }
 
   private initializeScheduleForm() {
     this.scheduleForm = this.fb.group({
-      dateTime: "",
-    })
+      dateTime: '',
+    });
   }
+
+  private initializeCriticalScheduleForm() {
+    this.criticalScheduleForm = this.fb.group({
+      dateTime: '',
+    });
+  }
+
   private loadRoles(): void {
     this.isLoadingRoles = true;
     this.backendUserService.getAllRolesSimple().pipe(takeUntil(this.destroy$)).subscribe({
@@ -120,7 +141,7 @@ export class StockNotificationSettingsComponent implements OnInit, OnDestroy {
         this.recipientsForm.patchValue({
           rolesIds: this.selectedRoles ?? [],
           usersIds: this.selectedUsers ?? [],
-        })
+        });
         this.isLoadingSelectedRecipients = false;
         this.cdr.markForCheck();
       },
@@ -133,8 +154,51 @@ export class StockNotificationSettingsComponent implements OnInit, OnDestroy {
     });
   }
 
+  private loadCriticalSelectedRecipients(): void {
+    this.isLoadingCriticalRecipients = true;
+    this.stockNotificationService.getCriticalSettings().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (data) => {
+        this.criticalRecipientsForm.patchValue({
+          rolesIds: data.roles ?? [],
+          usersIds: data.users ?? [],
+        });
+        this.isLoadingCriticalRecipients = false;
+        this.cdr.markForCheck();
+      },
+      error: (error: unknown) => {
+        console.error('Failed to load critical stock recipients from API:', error);
+        this.errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to load critical stock recipients');
+        this.isLoadingCriticalRecipients = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
   private updateSelectedRecipients(dto: LowStockNotificationSettingsDto): void {
     this.stockNotificationService.updateSettings(dto).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.cdr.markForCheck();
+        this.translateService.get(['toast.success', 'stockNotificationSettings.recipientsSavedSuccess']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
+          this.toastService.success(
+            translations['stockNotificationSettings.recipientsSavedSuccess'],
+            translations['toast.success']
+          );
+        });
+      },
+      error: (error: unknown) => {
+        this.cdr.markForCheck();
+        this.translateService.get(['toast.error', 'stockNotificationSettings.recipientsSaveFailed']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
+          this.toastService.error(
+            ErrorHandler.extractErrorMessage(error, translations['stockNotificationSettings.recipientsSaveFailed']),
+            translations['toast.error']
+          );
+        });
+      }
+    });
+  }
+
+  private updateCriticalSelectedRecipients(dto: LowStockNotificationSettingsDto): void {
+    this.stockNotificationService.updateCriticalSettings(dto).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.cdr.markForCheck();
         this.translateService.get(['toast.success', 'stockNotificationSettings.recipientsSavedSuccess']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
@@ -179,7 +243,28 @@ export class StockNotificationSettingsComponent implements OnInit, OnDestroy {
     });
   }
 
-
+  private updateCriticalSchedule(dateTime: LowStockNotificationScheduleDto): void {
+    this.stockNotificationService.updateCriticalSchedule(dateTime).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.cdr.markForCheck();
+        this.translateService.get(['toast.success', 'stockNotificationSettings.scheduleSavedSuccess']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
+          this.toastService.success(
+            translations['stockNotificationSettings.scheduleSavedSuccess'],
+            translations['toast.success']
+          );
+        });
+      },
+      error: (error: unknown) => {
+        this.cdr.markForCheck();
+        this.translateService.get(['toast.error', 'stockNotificationSettings.scheduleSaveFailed']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
+          this.toastService.error(
+            ErrorHandler.extractErrorMessage(error, translations['stockNotificationSettings.scheduleSaveFailed']),
+            translations['toast.error']
+          );
+        });
+      }
+    });
+  }
 
   openDateTimePicker(input: HTMLInputElement | null): void {
     if (!input) return;
@@ -190,10 +275,6 @@ export class StockNotificationSettingsComponent implements OnInit, OnDestroy {
     input.focus();
   }
 
-  /**
-   * Display `dd/mm/yyyy hh:mm AM/PM` for datetime-local values.
-   * datetime-local value is `YYYY-MM-DDTHH:mm`.
-   */
   getDateTimeDisplay(dateTimeValue?: string | null): string {
     if (!dateTimeValue) return '';
 
@@ -202,7 +283,6 @@ export class StockNotificationSettingsComponent implements OnInit, OnDestroy {
 
     const [, yyyy, mm, dd, hhStr, min] = match;
 
-    // Use shared pipe for the date portion (dd/MM/yyyy) to match the app format.
     const dateObj = new Date(parseInt(yyyy, 10), parseInt(mm, 10) - 1, parseInt(dd, 10));
     const datePart = this.appDatePipe.transform(dateObj);
     if (!datePart || datePart === 'N/A') return '';
@@ -215,13 +295,21 @@ export class StockNotificationSettingsComponent implements OnInit, OnDestroy {
     return `${datePart} ${hour12Str}:${min} ${ampm}`;
   }
 
+  private buildSchedulePayload(formValueDateTime: string): LowStockNotificationScheduleDto {
+    const timezoneOffset = -new Date().getTimezoneOffset();
+    const offsetHours = Math.floor(Math.abs(timezoneOffset) / 60).toString().padStart(2, '0');
+    const offsetMinutes = (Math.abs(timezoneOffset) % 60).toString().padStart(2, '0');
+    const offsetSign = timezoneOffset >= 0 ? '+' : '-';
+    const offsetString = `${offsetSign}${offsetHours}:${offsetMinutes}`;
+    const dateTimeWithOffset = `${formValueDateTime}:00${offsetString}`;
+    return { scheduleTime: dateTimeWithOffset };
+  }
+
   private loadSchedule(): void {
     this.isLoadingSchedule = true;
-    this.stockNotificationService.getSchedule<string | null>().subscribe({
+    this.stockNotificationService.getSchedule<string | null>().pipe(takeUntil(this.destroy$)).subscribe({
       next: (scheduleValue) => {
         if (scheduleValue && typeof scheduleValue === 'string') {
-          // Backend returns date string like "2026-01-20T12:47:00"
-          // Extract just the date and time parts for datetime-local input (YYYY-MM-DDTHH:mm)
           const dateStr = scheduleValue.slice(0, 16);
           this.scheduleForm.patchValue({ dateTime: dateStr });
         } else {
@@ -238,13 +326,43 @@ export class StockNotificationSettingsComponent implements OnInit, OnDestroy {
     });
   }
 
+  private loadCriticalSchedule(): void {
+    this.isLoadingCriticalSchedule = true;
+    this.stockNotificationService.getCriticalSchedule<string | null>().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (scheduleValue) => {
+        if (scheduleValue && typeof scheduleValue === 'string') {
+          const dateStr = scheduleValue.slice(0, 16);
+          this.criticalScheduleForm.patchValue({ dateTime: dateStr });
+        } else {
+          this.criticalScheduleForm.patchValue({ dateTime: '' });
+        }
+        this.isLoadingCriticalSchedule = false;
+        this.cdr.markForCheck();
+      },
+      error: (error: unknown) => {
+        this.isLoadingCriticalSchedule = false;
+        this.errorMessage = 'Failed to load critical schedule: ' + ErrorHandler.extractErrorMessage(error, 'Unknown error');
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
   onSubmitRecipientsForm(): void {
     const formValue = this.recipientsForm.getRawValue();
     const dto: LowStockNotificationSettingsDto = {
       roles: formValue.rolesIds,
       users: formValue.usersIds,
-    }
-    this.updateSelectedRecipients(dto)
+    };
+    this.updateSelectedRecipients(dto);
+  }
+
+  onSubmitCriticalRecipientsForm(): void {
+    const formValue = this.criticalRecipientsForm.getRawValue();
+    const dto: LowStockNotificationSettingsDto = {
+      roles: formValue.rolesIds,
+      users: formValue.usersIds,
+    };
+    this.updateCriticalSelectedRecipients(dto);
   }
 
   onSubmitScheduleForm(): void {
@@ -253,23 +371,15 @@ export class StockNotificationSettingsComponent implements OnInit, OnDestroy {
       this.errorMessage = 'Please select a valid schedule time';
       return;
     }
-    // Send the datetime string directly with timezone offset (not as Date object)
-    // datetime-local gives us "2026-01-20T15:47" (local time, no timezone)
-    // Append timezone offset so backend receives and parses the exact local time
-    const timezoneOffset = -new Date().getTimezoneOffset(); // Get offset in minutes
-    const offsetHours = Math.floor(Math.abs(timezoneOffset) / 60).toString().padStart(2, '0');
-    const offsetMinutes = (Math.abs(timezoneOffset) % 60).toString().padStart(2, '0');
-    const offsetSign = timezoneOffset >= 0 ? '+' : '-';
-    const offsetString = `${offsetSign}${offsetHours}:${offsetMinutes}`;
-
-    // Create ISO string with timezone: "2026-01-20T15:47:00+03:00"
-    // Send as string so backend parses it correctly with timezone info
-    const dateTimeWithOffset = `${formValue.dateTime}:00${offsetString}`;
-
-    const dto: LowStockNotificationScheduleDto = {
-      scheduleTime: dateTimeWithOffset // string | Date - backend parses ISO string to DateTime
-    };
-    this.updateSchedule(dto)
+    this.updateSchedule(this.buildSchedulePayload(formValue.dateTime));
   }
 
+  onSubmitCriticalScheduleForm(): void {
+    const formValue = this.criticalScheduleForm.getRawValue();
+    if (!formValue.dateTime) {
+      this.errorMessage = 'Please select a valid schedule time';
+      return;
+    }
+    this.updateCriticalSchedule(this.buildSchedulePayload(formValue.dateTime));
+  }
 }
