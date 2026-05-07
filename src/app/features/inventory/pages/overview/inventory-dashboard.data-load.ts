@@ -5,7 +5,7 @@ import { BackendAuthService } from '@services/backend-auth.service';
 import { MonitoringService } from '@services/monitoring.service';
 import { InventorySummaryDataService } from '@inventory/services/inventory-summary-data.service';
 import { ItemInventorySummaryDto } from '@models/inventory.model';
-import { InventoryDashboardSummaryDto } from '@models/inventory-dashboard-monitoring.model';
+import { InventoryDashboardSummaryDto, InventoryHeadlineMetricsDto } from '@models/inventory-dashboard-monitoring.model';
 
 export const INVENTORY_DASHBOARD_PATH_SEGMENT = 'inventory-dashboard';
 
@@ -33,21 +33,22 @@ export function emptyInventoryMonitoring(): InventoryDashboardSummaryDto {
   };
 }
 
-export function buildMonitoringCountQuery(
-  selectedDepotIds: number[]
-): { depotId?: number; depotIds?: number[] } {
-  if (selectedDepotIds.length === 0) {
-    return {};
-  }
-  if (selectedDepotIds.length === 1) {
-    return { depotId: selectedDepotIds[0] };
-  }
-  return { depotIds: [...selectedDepotIds] };
+export function emptyInventoryHeadlineMetrics(): InventoryHeadlineMetricsDto {
+  return {
+    lowStockCount: 0,
+    expiringSoonCount: 0,
+    totalDistinctItems: 0,
+    totalRemainingQuantity: 0,
+    totalLots: 0,
+    ammunitionItemCount: 0,
+    explosiveItemCount: 0,
+    accessoryItemCount: 0,
+    weaponItemGroupsCount: 0
+  };
 }
 
 export interface InventoryDashboardDataResult {
-  lowStockCount: number;
-  expiringSoonCount: number;
+  headlineMetrics: InventoryHeadlineMetricsDto;
   itemSummaries: ItemInventorySummaryDto[];
   inventoryMonitoring: InventoryDashboardSummaryDto;
 }
@@ -58,14 +59,11 @@ export function getInventoryDashboardData$(
   inventorySummaryData: InventorySummaryDataService
 ): Observable<InventoryDashboardDataResult> {
   const ids = selectedDepotIds.length > 0 ? selectedDepotIds : undefined;
-  const countQ = buildMonitoringCountQuery(selectedDepotIds);
+
   return forkJoin({
-    lowStockCount: monitoringService
-      .getLowStockItemsCount(countQ.depotId, countQ.depotIds)
-      .pipe(catchError(() => of(0))),
-    expiringSoonCount: monitoringService
-      .getExpiringLotsCount(countQ.depotId, countQ.depotIds)
-      .pipe(catchError(() => of(0))),
+    headlineMetrics: monitoringService
+      .getInventoryHeadlineMetrics(ids)
+      .pipe(catchError(() => of(emptyInventoryHeadlineMetrics()))),
     itemSummaries: inventorySummaryData.loadMergedItemSummaries(ids).pipe(catchError(() => of([]))),
     inventoryMonitoring: monitoringService
       .getInventoryDashboardSummary(ids)

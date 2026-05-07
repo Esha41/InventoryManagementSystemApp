@@ -75,6 +75,7 @@
   },
   "inventoryDashboard": {
     "title": "لوحة تحكم المخزون",
+    "loading": "جاري تحميل لوحة المخزون…",
     "statistics": {
       "totalItems": "إجمالي المواد",
       "totalQuantity": "إجمالي الكمية",

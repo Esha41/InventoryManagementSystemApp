@@ -2,9 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
+import { PaginatedList, PagedListRequest } from '@models/pagination.model';
 import {
   DraftSupplyListItemDto,
   InventoryDashboardSummaryDto,
+  InventoryHeadlineMetricsDto,
   OrderAwaitingFulfillmentListItemDto
 } from '@models/inventory-dashboard-monitoring.model';
 
@@ -69,20 +71,47 @@ export class MonitoringService {
     return undefined;
   }
 
+  private buildPostOptions(depotId?: number, depotIds?: number[]): { params?: HttpParams } {
+    const p = this.buildCountParams(depotId, depotIds);
+    return p ? { params: p } : {};
+  }
+
   getExpiringLotsCount(depotId?: number, depotIds?: number[]): Observable<number> {
     return this.apiService.get<number>(`${this.baseEndpoint}/expiring-lots/count`, this.buildCountParams(depotId, depotIds));
   }
 
-  getExpiringLots(): Observable<ExpiringLotDto[]> {
-    return this.apiService.get<ExpiringLotDto[]>(`${this.baseEndpoint}/expiring-lots`);
+  /**
+   * POST `Monitoring/expiring-lots/Paginated` — same pattern as `api/Ammunition/Paginated` (body: PagedListRequest).
+   */
+  getExpiringLotsPaginated(
+    request: PagedListRequest,
+    depotId?: number,
+    depotIds?: number[]
+  ): Observable<PaginatedList<ExpiringLotDto>> {
+    return this.apiService.post<PaginatedList<ExpiringLotDto>>(
+      `${this.baseEndpoint}/expiring-lots/Paginated`,
+      request,
+      this.buildPostOptions(depotId, depotIds)
+    );
   }
 
   getLowStockItemsCount(depotId?: number, depotIds?: number[]): Observable<number> {
     return this.apiService.get<number>(`${this.baseEndpoint}/low-stock/count`, this.buildCountParams(depotId, depotIds));
   }
 
-  getLowStockItems(): Observable<LowStockItemDto[]> {
-    return this.apiService.get<LowStockItemDto[]>(`${this.baseEndpoint}/low-stock`);
+  /**
+   * POST `Monitoring/low-stock/Paginated` — same pattern as `api/Ammunition/Paginated` (body: PagedListRequest).
+   */
+  getLowStockItemsPaginated(
+    request: PagedListRequest,
+    depotId?: number,
+    depotIds?: number[]
+  ): Observable<PaginatedList<LowStockItemDto>> {
+    return this.apiService.post<PaginatedList<LowStockItemDto>>(
+      `${this.baseEndpoint}/low-stock/Paginated`,
+      request,
+      this.buildPostOptions(depotId, depotIds)
+    );
   }
 
   getInventoryDashboardSummary(depotIds?: number[]): Observable<InventoryDashboardSummaryDto> {
@@ -91,6 +120,17 @@ export class MonitoringService {
       params = '?' + depotIds.map(id => `depotIds=${id}`).join('&');
     }
     return this.apiService.get<InventoryDashboardSummaryDto>(`${this.baseEndpoint}/dashboard/inventory-summary${params}`);
+  }
+
+  /** Stat-card headline metrics (totals, by-type, low stock, expiring soon). */
+  getInventoryHeadlineMetrics(depotIds?: number[]): Observable<InventoryHeadlineMetricsDto> {
+    let params = '';
+    if (depotIds && depotIds.length > 0) {
+      params = '?' + depotIds.map(id => `depotIds=${id}`).join('&');
+    }
+    return this.apiService.get<InventoryHeadlineMetricsDto>(
+      `${this.baseEndpoint}/dashboard/inventory-headline-metrics${params}`
+    );
   }
 
   getDraftSuppliesList(depotIds?: number[]): Observable<DraftSupplyListItemDto[]> {
