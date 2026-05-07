@@ -6,7 +6,14 @@ import { InventoryService } from './inventory.service';
 import { AssetService } from '@assets/services/asset.service';
 import { ItemInventorySummaryDto, ItemType } from '@models/inventory.model';
 import { AssetDto, AssetStatus } from '@models/asset.model';
+import { PaginatedList } from '@models/pagination.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { defaultPageSize } from '@constants/app.constants';
+
+export interface MergedItemSummariesPage {
+    items: ItemInventorySummaryDto[];
+    weaponAssetsPage: PaginatedList<AssetDto> | null;
+}
 
 
 @Injectable({ providedIn: 'root' })
@@ -21,14 +28,22 @@ export class InventorySummaryDataService {
         return this.loadMergedItemSummaries(undefined);
     }
 
-    loadMergedItemSummaries(depotIds?: number[]): Observable<ItemInventorySummaryDto[]> {
+    /**
+     * Loads non-weapon item summaries plus a single page of weapon assets (default page 1, size 20).
+     * The caller fetches additional weapon-asset pages on demand via {@link loadWeaponAssetsPage}.
+     */
+    loadMergedItemSummaries(
+        depotIds?: number[],
+        page: number = 1,
+        pageSize: number = defaultPageSize
+    ): Observable<ItemInventorySummaryDto[]> {
         return forkJoin({
             inventorySummary: this.inventoryService.getAllItemsSummary(depotIds).pipe(
                 map(items => this.filterOutWeapons(items)),
                 catchError(() => of([]))
             ),
-            weaponAssets: this.loadAssetsForDepotScope(depotIds).pipe(
-                map(assets => this.transformAssetsToSummary(assets)),
+            weaponAssets: this.loadWeaponAssetsPage(depotIds, page, pageSize).pipe(
+                map(res => this.transformAssetsToSummary(res?.items ?? [])),
                 catchError(() => of([]))
             )
         }).pipe(
@@ -36,26 +51,42 @@ export class InventorySummaryDataService {
         );
     }
 
-    private loadAssetsForDepotScope(depotIds?: number[]): Observable<AssetDto[]> {
+    /**
+     * Single-page fetch of weapon assets for the given depot scope. Use this for the dashboard's
+     * server-side "Next" pagination so each click is one request.
+     */
+    loadWeaponAssetsPage(
+        depotIds: number[] | undefined,
+        page: number = 1,
+        pageSize: number = defaultPageSize
+    ): Observable<PaginatedList<AssetDto> | null> {
+        const request = { page, pageSize };
         if (!depotIds?.length) {
-            return this.assetService.getAll<AssetDto>({ search: '' });
+            return this.assetService.getAssetsPaged(request);
         }
         if (depotIds.length === 1) {
-            return this.assetService.getAll<AssetDto>({ search: '', depotId: depotIds[0] });
+            return this.assetService.getAssetsPaged(request, { depotId: depotIds[0] });
         }
-        return this.assetService
-            .getAll<AssetDto>({ search: '', depotIds: depotIds })
-            .pipe(
-                map(assets => {
-                    const byAssetId = new Map<number, AssetDto>();
-                    for (const a of assets) {
-                        if (!a.isDeleted) {
-                            byAssetId.set(a.id, a);
-                        }
-                    }
-                    return [...byAssetId.values()];
-                })
-            );
+        return this.assetService.getAssetsPaged(request, { depotIds });
+    }
+
+    /**
+     * Fetch a single page of weapon assets and return the per-item weapon summaries plus the raw
+     * pagination metadata. Used by the dashboard to refresh ONLY the weapon part of the table on
+     * "Next" clicks (no headline/monitoring requests).
+     */
+    loadWeaponSummariesPage(
+        depotIds: number[] | undefined,
+        page: number = 1,
+        pageSize: number = defaultPageSize
+    ): Observable<{ summaries: ItemInventorySummaryDto[]; meta: PaginatedList<AssetDto> | null }> {
+        return this.loadWeaponAssetsPage(depotIds, page, pageSize).pipe(
+            map(res => ({
+                summaries: this.transformAssetsToSummary(res?.items ?? []),
+                meta: res
+            })),
+            catchError(() => of({ summaries: [] as ItemInventorySummaryDto[], meta: null }))
+        );
     }
 
     private filterOutWeapons(items: ItemInventorySummaryDto[]): ItemInventorySummaryDto[] {

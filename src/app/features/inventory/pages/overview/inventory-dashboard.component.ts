@@ -136,6 +136,8 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   headlineMetrics: InventoryHeadlineMetricsDto = emptyInventoryHeadlineMetrics();
 
   itemSummaries: ItemInventorySummaryDto[] = [];
+  /** Non-weapon items kept aside so weapon-page refetches only replace the weapon slice. */
+  private nonWeaponSummariesCache: ItemInventorySummaryDto[] = [];
   private _itemTypeCountMetrics = itemTypeTabAndStatCounts([]);
   itemSortColumn: string | null = null;
   itemSortDirection: 'asc' | 'desc' = 'asc';
@@ -248,10 +250,10 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   }): void {
     this.headlineMetrics = result.headlineMetrics ?? emptyInventoryHeadlineMetrics();
     this.itemSummaries = result.itemSummaries;
+    this.nonWeaponSummariesCache = (result.itemSummaries ?? []).filter(i => i.itemType !== ItemType.Weapon);
     this._itemTypeCountMetrics = itemTypeTabAndStatCounts(this.itemSummaries);
     this.inventoryMonitoring = result.inventoryMonitoring ?? emptyInventoryMonitoring();
     this.loadCaliberFilterLookups();
-    this.itemCurrentPage = 1;
     this.expandedItemId = null;
     this.lotDetails = [];
     this.assetDetails = [];
@@ -261,11 +263,38 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Lightweight refetch: hits ONLY `POST /Asset/paged` for the next weapon-assets page,
+   * merges the new weapon summaries with the cached non-weapon list. Used by item-table
+   * pagination so each "Next" click fires exactly one network request.
+   */
+  private refetchWeaponSummariesPage(): void {
+    const ids = this.selectedDepotIds.length > 0 ? this.selectedDepotIds : undefined;
+    this.isLoading = true;
+    this.cdr.markForCheck();
+    this.inventorySummaryData
+      .loadWeaponSummariesPage(ids, this.itemCurrentPage, this.itemRowsPerPage)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        })
+      )
+      .subscribe(({ summaries }) => {
+        this.itemSummaries = [...this.nonWeaponSummariesCache, ...summaries];
+        this._itemTypeCountMetrics = itemTypeTabAndStatCounts(this.itemSummaries);
+        this.cdr.markForCheck();
+      });
+  }
+
   private fetchAllData() {
     return getInventoryDashboardData$(
       this.selectedDepotIds,
       this.monitoringService,
-      this.inventorySummaryData
+      this.inventorySummaryData,
+      this.itemCurrentPage,
+      this.itemRowsPerPage
     ).pipe(
       catchError(err => {
         this.errorMessage = ErrorHandler.extractErrorMessage(err, 'Failed to load dashboard data');
@@ -576,15 +605,19 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   }
 
   onItemPageChange(page: number): void {
+    if (page === this.itemCurrentPage) return;
     this.itemCurrentPage = page;
     window.scrollTo({ top: 0, behavior: 'smooth' });
     this.cdr.markForCheck();
+    this.refetchWeaponSummariesPage();
   }
 
   onItemRowsPerPageChange(rows: number): void {
+    if (rows === this.itemRowsPerPage) return;
     this.itemRowsPerPage = rows;
     this.itemCurrentPage = 1;
     this.cdr.markForCheck();
+    this.refetchWeaponSummariesPage();
   }
 
   toggleItemExpand(item: ItemInventorySummaryDto): void {

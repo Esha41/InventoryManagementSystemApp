@@ -56,7 +56,9 @@ export interface InventoryDashboardDataResult {
 export function getInventoryDashboardData$(
   selectedDepotIds: number[],
   monitoringService: MonitoringService,
-  inventorySummaryData: InventorySummaryDataService
+  inventorySummaryData: InventorySummaryDataService,
+  weaponAssetsPage: number = 1,
+  weaponAssetsPageSize?: number
 ): Observable<InventoryDashboardDataResult> {
   const ids = selectedDepotIds.length > 0 ? selectedDepotIds : undefined;
 
@@ -64,7 +66,9 @@ export function getInventoryDashboardData$(
     headlineMetrics: monitoringService
       .getInventoryHeadlineMetrics(ids)
       .pipe(catchError(() => of(emptyInventoryHeadlineMetrics()))),
-    itemSummaries: inventorySummaryData.loadMergedItemSummaries(ids).pipe(catchError(() => of([]))),
+    itemSummaries: inventorySummaryData
+      .loadMergedItemSummaries(ids, weaponAssetsPage, weaponAssetsPageSize)
+      .pipe(catchError(() => of([]))),
     inventoryMonitoring: monitoringService
       .getInventoryDashboardSummary(ids)
       .pipe(catchError(() => of(emptyInventoryMonitoring())))

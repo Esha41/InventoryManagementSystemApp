@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { EMPTY, Observable } from 'rxjs';
+import { map, catchError, expand, reduce } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { AssetDto, CreateAssetDto, UpdateAssetDto, CreateBulkAssetsFromTemplateDto, BulkCreateFromTemplateResultDto } from '@models/asset.model';
 import { PagedListRequest, PaginatedList } from '@models/pagination.model';
 import { APIOperationResponse } from '@models/api-response.model';
 import { ConfigService } from '@services/config.service';
 import { ApiService } from '@services/api.service';
+import { defaultPageSize } from '@constants/app.constants';
 
 import { IImportableService } from '@core/interfaces/importable-service.interface';
 import { ImportResult } from '@models/import-result.model';
@@ -54,6 +55,72 @@ export class AssetService implements IImportableService {
                 console.error('Error fetching paginated assets:', error);
                 throw error;
             })
+        );
+    }
+
+    /**
+     * Paginated assets with optional depotId and/or multiple depotIds (same rules as GET /Asset).
+     * POST /api/Asset/paged
+     */
+    getAssetsPaged(
+        request: PagedListRequest,
+        query?: { depotId?: number; depotIds?: number[] }
+    ): Observable<PaginatedList<AssetDto>> {
+        let params = new HttpParams();
+        if (query?.depotId != null) params = params.set('depotId', String(query.depotId));
+        if (query?.depotIds?.length) {
+            for (const id of query.depotIds) {
+                params = params.append('depotIds', String(id));
+            }
+        }
+
+        return this.apiService.post<PaginatedList<AssetDto>>(
+            `${this.basePath}/paged`,
+            request,
+            { params }
+        ).pipe(
+            map(response => {
+                if (!response || !response.items) {
+                    throw new Error('Invalid response structure');
+                }
+                return response;
+            }),
+            catchError(error => {
+                console.error('Error fetching paged assets by depots:', error);
+                throw error;
+            })
+        );
+    }
+
+    /**
+     * Drain `POST /api/Asset/paged` page by page (pageSize = defaultPageSize) until all pages are loaded,
+     * concatenating items into a single array. Used by screens that need every asset for the depot scope
+     * but want to issue paginated requests instead of one giant `GET /Asset` call.
+     *
+     * Defensive against backend mis-binding the page param: tracks the next requested page locally
+     * (instead of trusting `pageIndex`), and stops when either `pageIndex >= totalPages` or a hard
+     * page-count cap is reached.
+     */
+    getAllAssetsPagedAccumulated(query?: { depotId?: number; depotIds?: number[] }): Observable<AssetDto[]> {
+        const pageSize = defaultPageSize;
+        const maxPages = 5000; // Hard ceiling: 100k assets at pageSize 20.
+        const fetchPage = (page: number) =>
+            this.getAssetsPaged({ page, pageSize }, query).pipe(
+                map(res => ({ res, requestedPage: page }))
+            );
+
+        return fetchPage(1).pipe(
+            expand(({ res, requestedPage }) => {
+                const totalPages = res.totalPages ?? 0;
+                if (requestedPage >= totalPages || requestedPage >= maxPages) {
+                    return EMPTY;
+                }
+                return fetchPage(requestedPage + 1);
+            }),
+            reduce<{ res: PaginatedList<AssetDto> }, AssetDto[]>(
+                (acc, { res }) => acc.concat(res.items ?? []),
+                []
+            )
         );
     }
 
