@@ -22,6 +22,7 @@ import {
 import {
   LucideAngularModule,
   RefreshCw,
+  Loader2,
   Package,
   Warehouse,
   Search,
@@ -64,17 +65,16 @@ import {
   sumItemSummariesExcludingWeapon,
   sumItemSummariesField,
   sortAssetDetailsDtos,
-  totalRemainingFromSummaries,
-  totalLotsFromSummaries,
   ActiveTab
 } from './inventory-dashboard.helpers';
 import { InventoryItemSummaryTableComponent } from './inventory-item-summary-table.component';
 import { InventoryDashboardStatCardsComponent } from './components/inventory-dashboard-stat-cards/inventory-dashboard-stat-cards.component';
 import { InventoryDashboardWeaponPipelineComponent } from './components/inventory-dashboard-weapon-pipeline/inventory-dashboard-weapon-pipeline.component';
-import { InventoryDashboardSummaryDto } from '@models/inventory-dashboard-monitoring.model';
+import { InventoryDashboardSummaryDto, InventoryHeadlineMetricsDto } from '@models/inventory-dashboard-monitoring.model';
 import { InventoryDashboardExportService } from '@inventory/services/inventory-dashboard-export.service';
 import {
   emptyInventoryMonitoring,
+  emptyInventoryHeadlineMetrics,
   enterInventoryDashboard$,
   getInventoryDashboardData$,
   userAccountRefetch$
@@ -107,7 +107,8 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   private readonly afterDepotsReady$ = new Subject<void>();
   private loadingPipelineWired = false;
 
-  isLoading = false;
+  /** True until initial depot list + first dashboard bundle resolve (also during refresh). */
+  isLoading = true;
   isExporting = false;
   errorMessage: string | null = null;
 
@@ -130,10 +131,9 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   /** Caliber display labels from lookup API (merged into filter dropdown with {@link distinctCalibers}). */
   caliberFilterCatalogLabels: string[] = [];
 
-  lowStockCount = 0;
-  expiringSoonCount = 0;
-
   inventoryMonitoring: InventoryDashboardSummaryDto = emptyInventoryMonitoring();
+
+  headlineMetrics: InventoryHeadlineMetricsDto = emptyInventoryHeadlineMetrics();
 
   itemSummaries: ItemInventorySummaryDto[] = [];
   private _itemTypeCountMetrics = itemTypeTabAndStatCounts([]);
@@ -158,6 +158,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   assetRowsPerPage = defaultPageSize;
 
   readonly RefreshCw = RefreshCw;
+  readonly Loader2 = Loader2;
   readonly Package = Package;
   readonly Warehouse = Warehouse;
   readonly Search = Search;
@@ -241,13 +242,11 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   }
 
   private applyDashboardData(result: {
-    lowStockCount: number;
-    expiringSoonCount: number;
+    headlineMetrics: InventoryHeadlineMetricsDto;
     itemSummaries: ItemInventorySummaryDto[];
     inventoryMonitoring: InventoryDashboardSummaryDto | null;
   }): void {
-    this.lowStockCount = result.lowStockCount;
-    this.expiringSoonCount = result.expiringSoonCount;
+    this.headlineMetrics = result.headlineMetrics ?? emptyInventoryHeadlineMetrics();
     this.itemSummaries = result.itemSummaries;
     this._itemTypeCountMetrics = itemTypeTabAndStatCounts(this.itemSummaries);
     this.inventoryMonitoring = result.inventoryMonitoring ?? emptyInventoryMonitoring();
@@ -397,6 +396,16 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     return this._itemTypeCountMetrics;
   }
 
+  /** Stat cards "by type" — from headline API (excludes accessory in UI breakdown). */
+  get statCardByType(): { ammo: number; weapon: number; explosive: number } {
+    const h = this.headlineMetrics;
+    return {
+      ammo: h.ammunitionItemCount,
+      weapon: h.weaponItemGroupsCount,
+      explosive: h.explosiveItemCount
+    };
+  }
+
   setActiveTab(tab: ActiveTab): void {
     this.activeTab = tab;
     this.selectedItemFilterIds = [];
@@ -513,14 +522,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       });
     }
     return this.translate.instant('inventoryDashboard.itemSummary.singleItemTotalsNameOnly', { name: i.itemName });
-  }
-
-  get totalRemainingQty(): number {
-    return totalRemainingFromSummaries(this.itemSummaries);
-  }
-
-  get totalLotsStat(): number {
-    return totalLotsFromSummaries(this.itemSummaries);
   }
 
   get sumTotalQtyFiltered(): number {

@@ -22,6 +22,19 @@ export interface InventoryDashboardSummaryDto {
   pipeline: InventoryPipelineDashboardDto;
 }
 
+/** Matches GET Monitoring/dashboard/inventory-headline-metrics */
+export interface InventoryHeadlineMetricsDto {
+  lowStockCount: number;
+  expiringSoonCount: number;
+  totalDistinctItems: number;
+  totalRemainingQuantity: number;
+  totalLots: number;
+  ammunitionItemCount: number;
+  explosiveItemCount: number;
+  accessoryItemCount: number;
+  weaponItemGroupsCount: number;
+}
+
 export interface DraftSupplyListItemDto {
   rowKind: string;
   rowId: number;

@@ -75,6 +75,7 @@
   },
   "inventoryDashboard": {
     "title": "Inventory Dashboard",
+    "loading": "Loading dashboard…",
     "statistics": {
       "totalItems": "Total Items",
       "totalQuantity": "Total Quantity",
