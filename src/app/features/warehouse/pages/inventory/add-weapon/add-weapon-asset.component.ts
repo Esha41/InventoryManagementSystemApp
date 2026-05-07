@@ -53,7 +53,10 @@ import {
   createBulkWeaponAssetForm,
   createWeaponAssetRowGroup
 } from './utils/weapon-asset-form.factory';
-import { WEAPON_ASSET_MAX_FILL_IDENTIFIERS_QUANTITY } from './utils/weapon-asset.constants';
+import {
+  WEAPON_ASSET_MAX_BULK_QUANTITY,
+  WEAPON_ASSET_MAX_FILL_IDENTIFIERS_QUANTITY
+} from './utils/weapon-asset.constants';
 import {
   patchAssignControlsForMode,
   patchDepartmentSelectionOnBulkForm,
@@ -130,6 +133,11 @@ export class AddWeaponAssetComponent implements OnInit {
   bulkForm!: FormGroup;
   isProcessingBulk = false;
   deliveryReceiptFiles: File[] = [];
+  bulkProgressPercent = 0;
+  bulkProgressCount = 0;
+  bulkProgressTotal = 0;
+  bulkProgressElapsedSeconds = 0;
+  private bulkProgressInterval?: number;
 
   private quantityTierSub?: Subscription;
   private readonly purposeOptionsCache = new WeaponAssetPrimaryPurposeOptionsCache();
@@ -167,6 +175,7 @@ export class AddWeaponAssetComponent implements OnInit {
   }
 
   readonly maxQuantityForFillIdentifiers = WEAPON_ASSET_MAX_FILL_IDENTIFIERS_QUANTITY;
+  readonly maxBulkQuantity = WEAPON_ASSET_MAX_BULK_QUANTITY;
 
   get assetsFormArray(): FormArray {
     return this.assetForm.get('assets') as FormArray;
@@ -371,6 +380,11 @@ export class AddWeaponAssetComponent implements OnInit {
     return fieldErrorFromControl(c, this.translateService);
   }
 
+  getBulkFieldError(fieldPath: string): string | null {
+    const c = this.bulkForm?.get(fieldPath) ?? null;
+    return fieldErrorFromControl(c, this.translateService);
+  }
+
   onFieldChange(fieldPath: string, index?: number): void {
     const c = getControlScope(this.assetForm, fieldPath, index, (i) => this.getAssetFormGroup(i));
     touchControlIfPresent(c);
@@ -441,11 +455,7 @@ export class AddWeaponAssetComponent implements OnInit {
       return;
     }
 
-    if (this.deliveryReceiptFiles.length > 0) {
-      this.submitBulkMultipart();
-    } else {
-      this.submitBulkFromTemplate();
-    }
+    this.submitBulkFromTemplate();
   }
 
   private submitSingleMode(): void {
@@ -499,21 +509,59 @@ export class AddWeaponAssetComponent implements OnInit {
     this.submitting = true;
     this.isProcessingBulk = true;
     this.errorMessage = null;
+
+    // Initialize progress tracking
+    this.bulkProgressTotal = dto.quantity || 0;
+    this.bulkProgressCount = 0;
+    this.bulkProgressPercent = 0;
+    this.bulkProgressElapsedSeconds = 0;
+
+    const startTime = Date.now();
+
+    // Update progress every 200ms (smooth animation)
+    this.bulkProgressInterval = window.setInterval(() => {
+      this.bulkProgressElapsedSeconds = Math.round((Date.now() - startTime) / 1000);
+
+      // Estimate progress: start fast, slow down as we approach completion
+      // For 1M records: expect ~60-90 seconds with SqlBulkCopy
+      const estimatedTotalSeconds = Math.max(10, this.bulkProgressTotal / 15_000); // ~15k records/sec
+      const estimatedPercent = Math.min(95, (this.bulkProgressElapsedSeconds / estimatedTotalSeconds) * 100);
+      this.bulkProgressPercent = Math.round(estimatedPercent);
+
+      this.cdr.markForCheck();
+    }, 200);
+
     this.cdr.markForCheck();
 
     this.submission
-      .createWeaponAssetsBulkFromTemplate(dto)
+      .createWeaponAssetsBulkFromTemplate(dto, this.deliveryReceiptFiles)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
-          this.isProcessingBulk = false;
-          void this.onSubmitSuccessFinalize();
+          this.clearBulkProgress();
+          // Show completion
+          this.bulkProgressPercent = 100;
+          this.cdr.markForCheck();
+
+          // Brief delay to show 100% before closing
+          setTimeout(() => {
+            this.isProcessingBulk = false;
+            void this.onSubmitSuccessFinalize();
+          }, 500);
         },
         error: (error: unknown) => {
+          this.clearBulkProgress();
           this.isProcessingBulk = false;
           void this.onSubmitError(error);
         }
       });
+  }
+
+  private clearBulkProgress(): void {
+    if (this.bulkProgressInterval !== undefined) {
+      clearInterval(this.bulkProgressInterval);
+      this.bulkProgressInterval = undefined;
+    }
   }
 
   private async onSubmitSuccessFinalize(): Promise<void> {

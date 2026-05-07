@@ -91,6 +91,11 @@ export class WarehouseInventoryStore {
   private readonly _showDeleteBatchDialog = signal(false);
   private readonly _selectedBatch = signal<BatchSummaryDto | null>(null);
 
+  /** Large batch async delete (Hangfire) progress banner */
+  private readonly _largeBatchDeletionActive = signal(false);
+  private readonly _largeBatchDeletionPercent = signal(0);
+  private readonly _largeBatchDeletionMessage = signal('');
+
   // Language tracked reactively for `isRTL` / localized depot name refresh.
   private readonly _currentLang = signal<string>('en');
 
@@ -144,6 +149,9 @@ export class WarehouseInventoryStore {
   readonly loadingAsset: Signal<boolean> = this._loadingAsset.asReadonly();
   readonly showDeleteBatchDialog: Signal<boolean> = this._showDeleteBatchDialog.asReadonly();
   readonly selectedBatch: Signal<BatchSummaryDto | null> = this._selectedBatch.asReadonly();
+  readonly largeBatchDeletionActive: Signal<boolean> = this._largeBatchDeletionActive.asReadonly();
+  readonly largeBatchDeletionPercent: Signal<number> = this._largeBatchDeletionPercent.asReadonly();
+  readonly largeBatchDeletionMessage: Signal<string> = this._largeBatchDeletionMessage.asReadonly();
   readonly currentLang: Signal<string> = this._currentLang.asReadonly();
 
   // ---------- Form controls (bindable by child components) ----------
@@ -310,6 +318,25 @@ export class WarehouseInventoryStore {
   // ---------- Batch delete modal ----------
   setDeleteBatchDialogOpen(open: boolean): void { this._showDeleteBatchDialog.set(open); }
   setSelectedBatch(batch: BatchSummaryDto | null): void { this._selectedBatch.set(batch); }
+
+  beginLargeBatchDeletion(message: string): void {
+    this._largeBatchDeletionActive.set(true);
+    this._largeBatchDeletionPercent.set(0);
+    this._largeBatchDeletionMessage.set(message);
+  }
+
+  updateLargeBatchDeletionProgress(percent: number, message?: string): void {
+    this._largeBatchDeletionPercent.set(Math.max(0, Math.min(100, Math.round(percent))));
+    if (message != null && message !== '') {
+      this._largeBatchDeletionMessage.set(message);
+    }
+  }
+
+  endLargeBatchDeletion(): void {
+    this._largeBatchDeletionActive.set(false);
+    this._largeBatchDeletionPercent.set(0);
+    this._largeBatchDeletionMessage.set('');
+  }
 
   // ---------- Composite transitions ----------
   closeEditDetail(): void {

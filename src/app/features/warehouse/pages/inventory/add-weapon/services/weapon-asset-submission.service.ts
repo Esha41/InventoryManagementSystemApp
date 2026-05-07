@@ -42,9 +42,10 @@ export class WeaponAssetSubmissionService {
   }
 
   createWeaponAssetsBulkFromTemplate(
-    dto: CreateBulkAssetsFromTemplateDto
+    dto: CreateBulkAssetsFromTemplateDto,
+    files?: File[]
   ): Observable<BulkCreateFromTemplateResultDto> {
-    return this.assetService.createBulkFromTemplate(dto);
+    return this.assetService.createBulkFromTemplate(dto, files);
   }
 
   /**
