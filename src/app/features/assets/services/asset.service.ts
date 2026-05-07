@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { AssetDto, CreateAssetDto, UpdateAssetDto, CreateBulkAssetsFromTemplateDto, BulkCreateFromTemplateResultDto } from '@models/asset.model';
+import { AssetDto, CreateAssetDto, UpdateAssetDto, CreateBulkAssetsFromTemplateDto, BulkCreateFromTemplateResultDto, BulkDeleteAssetsEnqueueResultDto, BulkDeleteAssetsStatusDto, StartBulkDeleteAssetsDto } from '@models/asset.model';
 import { PagedListRequest, PaginatedList } from '@models/pagination.model';
 import { APIOperationResponse } from '@models/api-response.model';
 import { ConfigService } from '@services/config.service';
@@ -131,8 +131,23 @@ export class AssetService implements IImportableService {
         return this.apiService.post<T>(`${this.basePath}/Bulk`, formData);
     }
 
-    createBulkFromTemplate(data: CreateBulkAssetsFromTemplateDto): Observable<BulkCreateFromTemplateResultDto> {
-        return this.apiService.post<BulkCreateFromTemplateResultDto>(`${this.basePath}/bulk-template`, data);
+    createBulkFromTemplate(data: CreateBulkAssetsFromTemplateDto, files?: File[]): Observable<BulkCreateFromTemplateResultDto> {
+        const formData = new FormData();
+        formData.append('dtoJson', JSON.stringify(data));
+        files?.forEach(file => formData.append('files', file, file.name));
+        return this.apiService.post<BulkCreateFromTemplateResultDto>(`${this.basePath}/bulk-template`, formData);
+    }
+
+    /**
+     * Start async chunked soft-delete (Hangfire). Poll with {@link getBulkDeleteStatus}.
+     */
+    startBulkDelete(dto: StartBulkDeleteAssetsDto): Observable<BulkDeleteAssetsEnqueueResultDto> {
+        return this.apiService.post<BulkDeleteAssetsEnqueueResultDto>(`${this.basePath}/bulk-delete`, dto);
+    }
+
+    getBulkDeleteStatus(jobId: string): Observable<BulkDeleteAssetsStatusDto> {
+        return this.apiService.get<BulkDeleteAssetsStatusDto>(
+            `${this.basePath}/bulk-delete/${encodeURIComponent(jobId)}/status`);
     }
 
     /**

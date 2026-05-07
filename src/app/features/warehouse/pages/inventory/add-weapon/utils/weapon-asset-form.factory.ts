@@ -1,5 +1,6 @@
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { WeaponAssignMode } from '../utils/weapon-asset-assign.types';
+import { WEAPON_ASSET_MAX_BULK_QUANTITY } from './weapon-asset.constants';
 
 export function createWeaponAssetRowGroup(fb: FormBuilder): FormGroup {
   return fb.group({
@@ -34,7 +35,7 @@ export function createBulkWeaponAssetForm(fb: FormBuilder): FormGroup {
   return fb.group({
     itemId: [null, Validators.required],
     batchNumber: ['', [Validators.required, Validators.maxLength(500)]],
-    quantity: [null as number | null, [Validators.required, Validators.min(1), Validators.max(50000)]],
+    quantity: [null as number | null, [Validators.required, Validators.min(1), Validators.max(WEAPON_ASSET_MAX_BULK_QUANTITY)]],
     fillIdentifiers: [false],
     purchaseDate: [''],
     warrantyExpiryDate: [''],

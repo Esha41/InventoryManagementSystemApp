@@ -51,7 +51,13 @@
             </div>
         </div>
 
-        <app-weapon-asset-bulk-progress-overlay [visible]="isProcessingBulk"></app-weapon-asset-bulk-progress-overlay>
+        <app-weapon-asset-bulk-progress-overlay
+            [visible]="isProcessingBulk"
+            [percentComplete]="bulkProgressPercent"
+            [processedCount]="bulkProgressCount"
+            [totalCount]="bulkProgressTotal"
+            [elapsedSeconds]="bulkProgressElapsedSeconds">
+        </app-weapon-asset-bulk-progress-overlay>
 
         <form *ngIf="!loading && inputMode === 'single'" [formGroup]="assetForm" (ngSubmit)="onSubmit()"
             class="space-y-6">
@@ -458,8 +464,15 @@
                             {{ 'addWeaponAsset.bulk.quantity' | translate }} <span
                                 class="text-[var(--color-error)]">*</span>
                         </label>
-                        <input id="add-weapon-quantity-20" type="number" formControlName="quantity" min="1" max="50000"
-                            class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors">
+                        <input id="add-weapon-quantity-20" type="number" formControlName="quantity" min="1" [max]="maxBulkQuantity"
+                            class="w-full px-4 py-2 border rounded-lg bg-[var(--color-background)] text-[var(--color-text)] border-[var(--color-border)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-colors"
+                            [class.border-[var(--color-error)]]="!!(bulkForm.get('quantity')?.invalid && bulkForm.get('quantity')?.touched)">
+                        <p class="text-xs text-[var(--color-text-muted)] mt-1">
+                            {{ 'addWeaponAsset.bulk.quantityHint' | translate: { max: maxBulkQuantity } }}
+                        </p>
+                        <p *ngIf="bulkForm.get('quantity')?.invalid && bulkForm.get('quantity')?.touched" class="text-xs text-[var(--color-error)] mt-1">
+                            {{ getBulkFieldError('quantity') || ('addWeaponAsset.required' | translate) }}
+                        </p>
                     </div>
                 </div>
 

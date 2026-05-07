@@ -36,6 +36,11 @@ export function fieldErrorFromControl(
       min: errs['min'].min
     });
   }
+  if (errs['max']) {
+    return translateService.instant('addWeaponAsset.maxValue', {
+      max: errs['max'].max
+    });
+  }
   return null;
 }
 
