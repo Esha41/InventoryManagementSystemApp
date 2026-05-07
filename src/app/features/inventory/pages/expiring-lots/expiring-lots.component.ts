@@ -12,6 +12,7 @@ import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.co
 import { LoadingStateComponent, ErrorStateComponent, TableClampTooltipDirective } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { defaultPageSize } from '@constants/app.constants';
+import { PagedListRequest } from '@models/pagination.model';
 
 @Component({
   selector: 'app-expiring-lots',
@@ -76,8 +77,10 @@ export class ExpiringLotsComponent implements OnInit, OnDestroy {
     this.error = null;
     this.cdr.markForCheck();
 
+    const request: PagedListRequest = { page: this.currentPage, pageSize: this.rowsPerPage };
+
     this.monitoringService
-      .getExpiringLotsPaginated(this.currentPage, this.rowsPerPage)
+      .getExpiringLotsPaginated(request)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (paged) => {

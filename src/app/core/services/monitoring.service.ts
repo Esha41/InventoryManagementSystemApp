@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
+import { PaginatedList, PagedListRequest } from '@models/pagination.model';
 import {
   DraftSupplyListItemDto,
   InventoryDashboardSummaryDto,
@@ -48,16 +49,6 @@ export interface LowStockItemDto {
   remaining: number;
 }
 
-/** Matches backend `PaginatedList<T>` (camelCase JSON). */
-export interface PaginatedListDto<T> {
-  items: T[];
-  pageIndex: number;
-  totalPages: number;
-  totalCount: number;
-  hasPreviousPage: boolean;
-  hasNextPage: boolean;
-}
-
 @Injectable({
   providedIn: 'root'
 })
@@ -80,30 +71,28 @@ export class MonitoringService {
     return undefined;
   }
 
+  private buildPostOptions(depotId?: number, depotIds?: number[]): { params?: HttpParams } {
+    const p = this.buildCountParams(depotId, depotIds);
+    return p ? { params: p } : {};
+  }
+
   getExpiringLotsCount(depotId?: number, depotIds?: number[]): Observable<number> {
     return this.apiService.get<number>(`${this.baseEndpoint}/expiring-lots/count`, this.buildCountParams(depotId, depotIds));
   }
 
   /**
-   * Paged expiring lots (same rules as `/expiring-lots/count`). Defaults: page 1, pageSize 10.
+   * POST `Monitoring/expiring-lots/Paginated` — same pattern as `api/Ammunition/Paginated` (body: PagedListRequest).
    */
   getExpiringLotsPaginated(
-    page: number,
-    pageSize: number,
+    request: PagedListRequest,
     depotId?: number,
     depotIds?: number[]
-  ): Observable<PaginatedListDto<ExpiringLotDto>> {
-    let params = new HttpParams()
-      .set('page', String(page))
-      .set('pageSize', String(pageSize));
-    if (depotIds && depotIds.length > 0) {
-      for (const id of depotIds) {
-        params = params.append('depotIds', String(id));
-      }
-    } else if (depotId != null) {
-      params = params.set('depotId', String(depotId));
-    }
-    return this.apiService.get<PaginatedListDto<ExpiringLotDto>>(`${this.baseEndpoint}/expiring-lots`, params);
+  ): Observable<PaginatedList<ExpiringLotDto>> {
+    return this.apiService.post<PaginatedList<ExpiringLotDto>>(
+      `${this.baseEndpoint}/expiring-lots/Paginated`,
+      request,
+      this.buildPostOptions(depotId, depotIds)
+    );
   }
 
   getLowStockItemsCount(depotId?: number, depotIds?: number[]): Observable<number> {
@@ -111,25 +100,18 @@ export class MonitoringService {
   }
 
   /**
-   * Paged low-stock rows. Defaults match API (page 1, pageSize 10).
+   * POST `Monitoring/low-stock/Paginated` — same pattern as `api/Ammunition/Paginated` (body: PagedListRequest).
    */
   getLowStockItemsPaginated(
-    page: number,
-    pageSize: number,
+    request: PagedListRequest,
     depotId?: number,
     depotIds?: number[]
-  ): Observable<PaginatedListDto<LowStockItemDto>> {
-    let params = new HttpParams()
-      .set('page', String(page))
-      .set('pageSize', String(pageSize));
-    if (depotIds && depotIds.length > 0) {
-      for (const id of depotIds) {
-        params = params.append('depotIds', String(id));
-      }
-    } else if (depotId != null) {
-      params = params.set('depotId', String(depotId));
-    }
-    return this.apiService.get<PaginatedListDto<LowStockItemDto>>(`${this.baseEndpoint}/low-stock`, params);
+  ): Observable<PaginatedList<LowStockItemDto>> {
+    return this.apiService.post<PaginatedList<LowStockItemDto>>(
+      `${this.baseEndpoint}/low-stock/Paginated`,
+      request,
+      this.buildPostOptions(depotId, depotIds)
+    );
   }
 
   getInventoryDashboardSummary(depotIds?: number[]): Observable<InventoryDashboardSummaryDto> {

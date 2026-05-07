@@ -11,6 +11,7 @@ import { PaginationComponent } from '@components/pagination/pagination.component
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { LoadingStateComponent, ErrorStateComponent, TableClampTooltipDirective } from '@components/index';
 import { defaultPageSize } from '@constants/app.constants';
+import { PagedListRequest } from '@models/pagination.model';
 
 @Component({
   selector: 'app-low-stock',
@@ -75,8 +76,10 @@ export class LowStockComponent implements OnInit, OnDestroy {
     this.error = null;
     this.cdr.markForCheck();
 
+    const request: PagedListRequest = { page: this.currentPage, pageSize: this.rowsPerPage };
+
     this.monitoringService
-      .getLowStockItemsPaginated(this.currentPage, this.rowsPerPage)
+      .getLowStockItemsPaginated(request)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (paged) => {
