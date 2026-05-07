@@ -84,8 +84,8 @@
                   <div class="flex items-start gap-2 min-w-0">
                     <lucide-angular [img]="FileText" class="h-4 w-4 text-[var(--color-text-muted)] flex-shrink-0 mt-0.5"></lucide-angular>
                     <div class="min-w-0">
-                      <div class="font-medium truncate" [title]="report.scheduleName">{{ report.scheduleName }}</div>
-                      <div class="text-xs text-[var(--color-text-muted)] truncate" [title]="report.reportName">{{ report.reportName }}</div>
+                      <div class="font-medium" [appTableClampTooltip]="report.scheduleName">{{ report.scheduleName }}</div>
+                      <div class="text-xs text-[var(--color-text-muted)]" [appTableClampTooltip]="report.reportName">{{ report.reportName }}</div>
                     </div>
                   </div>
                 </td>
@@ -105,7 +105,7 @@
                 <td class="px-4 lg:px-6 py-4 text-sm text-[var(--color-text)] text-start min-w-0">
                   <div class="flex items-center gap-2 min-w-0">
                     <lucide-angular [img]="Mail" class="h-4 w-4 text-[var(--color-text-muted)] flex-shrink-0"></lucide-angular>
-                    <span class="min-w-0 truncate" [title]="getRecipientCount(report) + ' ' + ('scheduledReports.recipients' | translate)">{{ getRecipientCount(report) }} {{ 'scheduledReports.recipients' | translate }}</span>
+                    <span class="min-w-0" [clampLines]="1" [appTableClampTooltip]="(getRecipientCount(report) + ' ' + ('scheduledReports.recipients' | translate))">{{ getRecipientCount(report) }} {{ 'scheduledReports.recipients' | translate }}</span>
                   </div>
                 </td>
                 <td class="px-4 lg:px-6 py-4 text-sm text-start min-w-0">
@@ -172,8 +172,8 @@
             <div class="flex items-center gap-2 flex-1 min-w-0">
               <lucide-angular [img]="FileText" class="h-4 w-4 text-[var(--color-text-muted)] flex-shrink-0"></lucide-angular>
               <div class="flex-1 min-w-0">
-                <div class="font-medium text-sm text-[var(--color-text)] truncate">{{ report.scheduleName }}</div>
-                <div class="text-xs text-[var(--color-text-muted)] truncate">{{ report.reportName }}</div>
+                <div class="font-medium text-sm text-[var(--color-text)]" [appTableClampTooltip]="report.scheduleName">{{ report.scheduleName }}</div>
+                <div class="text-xs text-[var(--color-text-muted)]" [appTableClampTooltip]="report.reportName">{{ report.reportName }}</div>
               </div>
             </div>
             <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border flex-shrink-0 ml-2"

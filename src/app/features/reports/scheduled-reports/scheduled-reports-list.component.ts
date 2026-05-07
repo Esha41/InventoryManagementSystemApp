@@ -5,10 +5,11 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Plus, Search, Edit, Trash2, Play, Calendar, Mail, Clock, FileText, Power, PowerOff, History, Loader2, CheckCircle2, XCircle } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
 import { ToastService } from '@services/toast.service';
-import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent, ConfirmDialogComponent } from '@components/index';
+import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent, ConfirmDialogComponent, TableClampTooltipDirective } from '@components/index';
 import { ButtonComponent } from '@components/button/button.component';
 import { ExecutionHistoryDialogComponent } from './execution-history-dialog/execution-history-dialog.component';
 import { ReportService, ScheduledReport } from '@reports/services/report.service';
+import { defaultPageSize } from '@constants/app.constants';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -25,7 +26,8 @@ import { of } from 'rxjs';
     RowsPerPageComponent,
     LoadingStateComponent,
     ErrorStateComponent,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    TableClampTooltipDirective
   ],
   templateUrl: './scheduled-reports-list.component.html',
   styleUrls: ['./scheduled-reports-list.component.css']
@@ -62,7 +64,7 @@ export class ScheduledReportsListComponent implements OnInit {
 
   // Pagination
   currentPage = 1;
-  rowsPerPage = 10;
+  rowsPerPage = defaultPageSize;
   totalItems = 0;
 
   constructor(

@@ -27,6 +27,7 @@ import { LoadingStateComponent } from '@components/loading-state/loading-state.c
 import { EmployeeFormModalComponent } from '@admin/components/employee-form-modal/employee-form-modal.component';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { FocusOnInitDirective } from '@core/directives/focus-on-init.directive';
+import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
 import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 
@@ -41,7 +42,8 @@ import { BackendAuthService } from '@services/backend-auth.service';
     LoadingStateComponent,
     EmployeeFormModalComponent,
     DropdownComponent,
-    FocusOnInitDirective
+    FocusOnInitDirective,
+    TableClampTooltipDirective
   ],
   providers: [
     WeaponSupplyReviewService,

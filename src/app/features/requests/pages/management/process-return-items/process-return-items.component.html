@@ -78,8 +78,8 @@
             <!-- Item Name (read-only) -->
             <div class="lg:col-span-3">
               <span class="lg:hidden text-xs font-semibold text-[var(--color-text-muted)] mb-1 block">{{ 'processReturnItems.item' | translate }}</span>
-              <div class="px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background-active)] text-sm text-[var(--color-text)] min-h-[38px] flex items-center">
-                {{ row.itemName || '-' }}
+              <div class="px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background-active)] text-sm text-[var(--color-text)] min-h-[38px] flex items-center min-w-0">
+                <span class="min-w-0" [appTableClampTooltip]="row.itemName || '-'">{{ row.itemName || '-' }}</span>
               </div>
             </div>
             <!-- Requested qty (read-only) -->
@@ -187,8 +187,8 @@
                     <lucide-angular *ngIf="isWeaponLineExpanded(i)" [img]="ChevronDown" class="h-5 w-5 mx-auto"></lucide-angular>
                     <lucide-angular *ngIf="!isWeaponLineExpanded(i)" [img]="ChevronRight" class="h-5 w-5 mx-auto rtl:rotate-180"></lucide-angular>
                   </td>
-                  <td class="px-3 py-3 align-middle font-medium text-[var(--color-text)]">
-                    {{ line.itemName || '—' }}
+                  <td class="px-3 py-3 align-middle font-medium text-[var(--color-text)] min-w-0 max-w-[min(28rem,45vw)]">
+                    <span [appTableClampTooltip]="line.itemName || '—'">{{ line.itemName || '—' }}</span>
                   </td>
                   <td class="px-3 py-3 align-middle tabular-nums text-[var(--color-text)] min-w-[8.5rem] w-[9rem]">
                     {{ line.returnedQuantity }}

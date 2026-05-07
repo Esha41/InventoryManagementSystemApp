@@ -110,7 +110,9 @@
               <tbody>
                 <tr *ngFor="let item of requestItems; let i = index">
                   <td class="text-[var(--color-text-muted)]">{{ i + 1 }}</td>
-                  <td class="font-medium text-[var(--color-text)]">{{ item.itemName }}</td>
+                  <td class="font-medium text-[var(--color-text)] min-w-0">
+                    <span [appTableClampTooltip]="item.itemName">{{ item.itemName }}</span>
+                  </td>
                   <td class="text-[var(--color-text)]">{{ item.itemNo || '—' }}</td>
                   <td class="text-[var(--color-text)]">{{ item.nsn || '—' }}</td>
                   <td class="text-center text-[var(--color-text)]">{{ formatNumber(item.quantity) }}</td>
@@ -290,7 +292,9 @@
                                       </button>
                                     </div>
                                   </td>
-                                  <td class="text-[var(--color-text)]">{{ getItemName(asset) }}</td>
+                                  <td class="text-[var(--color-text)] min-w-0">
+                                    <span [appTableClampTooltip]="getItemName(asset)">{{ getItemName(asset) }}</span>
+                                  </td>
                                   <td class="text-[var(--color-text)]">{{ getAssetDepotName(asset) }}</td>
                                   <td (click)="$event.stopPropagation()">
                                     <app-dropdown

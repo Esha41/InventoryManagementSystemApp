@@ -12,5 +12,6 @@
 
 .inv-table-sort-btn {
   width: 100%;
+  /* Label + sort icon: never wrap the icon under the label (wrap text inside .min-w-0 span only). */
 }
 

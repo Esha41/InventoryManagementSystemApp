@@ -1,0 +1,81 @@
+@if (isOpen()) {
+  <div
+    class="ipl-overlay fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6"
+    role="alertdialog"
+    aria-modal="true"
+    aria-busy="true"
+    aria-live="polite"
+    [attr.aria-labelledby]="'ipl-title'"
+    [attr.aria-describedby]="'ipl-message'"
+  >
+    <!-- Backdrop. Intentionally not clickable — import in progress, must not be cancelled. -->
+    <div class="ipl-backdrop fixed inset-0 bg-black/60 backdrop-blur-sm" aria-hidden="true"></div>
+
+    <!-- Card -->
+    <div
+      class="ipl-card relative w-full max-w-md rounded-2xl border-2 border-[var(--color-border)] bg-[var(--color-background)] shadow-2xl"
+      [class.flex-row-reverse]="isRTL()"
+    >
+      <div class="flex flex-col items-center gap-5 px-6 py-8 sm:px-8 sm:py-10 text-center">
+
+        <!-- Animated icon stack: orbital ring + central icon -->
+        <div class="ipl-icon-wrap" aria-hidden="true">
+          <div class="ipl-ring"></div>
+          <div class="ipl-ring ipl-ring--delay"></div>
+          <div class="ipl-icon">
+            <lucide-angular [img]="phaseIcon()" class="h-7 w-7"></lucide-angular>
+          </div>
+        </div>
+
+        <!-- Title + count badge -->
+        <div class="flex flex-col items-center gap-2">
+          <h2
+            id="ipl-title"
+            class="text-lg sm:text-xl font-semibold text-[var(--color-text)]"
+          >
+            {{ titleKey() | translate: translateParams() }}
+          </h2>
+
+          @if (itemCount() && itemCount()! > 0) {
+            <span
+              class="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-brand)]/10 px-3 py-1 text-xs font-semibold text-[var(--color-brand)]"
+            >
+              <span class="ipl-pulse-dot" aria-hidden="true"></span>
+              {{ 'importLoader.itemsCount' | translate: translateParams() }}
+            </span>
+          }
+        </div>
+
+        <!-- Body message -->
+        <p
+          id="ipl-message"
+          class="text-sm text-[var(--color-text-muted)] max-w-sm leading-relaxed"
+        >
+          {{ messageKey() | translate: translateParams() }}
+        </p>
+
+        <!-- Indeterminate progress bar -->
+        <div
+          class="ipl-progress w-full overflow-hidden rounded-full bg-[var(--color-background-hover)]"
+          role="progressbar"
+          [attr.aria-label]="titleKey() | translate: translateParams()"
+        >
+          <div class="ipl-progress-bar"></div>
+        </div>
+
+        <!-- File name (optional) -->
+        @if (fileName(); as name) {
+          <p class="text-xs text-[var(--color-text-muted)] truncate max-w-full px-2">
+            <span class="font-medium">{{ 'importLoader.file' | translate }}:</span>
+            <span class="ms-1 break-all">{{ name }}</span>
+          </p>
+        }
+
+        <!-- Reassurance footer -->
+        <p class="text-xs text-[var(--color-text-muted)] italic mt-1">
+          {{ 'importLoader.doNotClose' | translate }}
+        </p>
+      </div>
+    </div>
+  </div>
+}

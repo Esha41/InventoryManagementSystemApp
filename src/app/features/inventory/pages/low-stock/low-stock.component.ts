@@ -9,7 +9,7 @@ import { ErrorHandler } from '@utils/error-handler.utils';
 import { TranslationService } from '@services/translation.service';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
-import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import { LoadingStateComponent, ErrorStateComponent, TableClampTooltipDirective } from '@components/index';
 import { defaultPageSize } from '@constants/app.constants';
 
 @Component({
@@ -22,7 +22,8 @@ import { defaultPageSize } from '@constants/app.constants';
     PaginationComponent,
     RowsPerPageComponent,
     LoadingStateComponent,
-    ErrorStateComponent
+    ErrorStateComponent,
+    TableClampTooltipDirective
   ],
   templateUrl: './low-stock.component.html',
   styleUrls: ['./low-stock.component.css'],

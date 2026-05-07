@@ -6,9 +6,10 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Plus, Edit2, Trash2, Globe, Search, Upload, Users, FileText } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
 import { ButtonComponent } from '@components/button/button.component';
-import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent, TableClampTooltipDirective } from '@components/index';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { PERMISSIONS } from '@constants/permissions.constants';
+import { defaultPageSize } from '@constants/app.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { ReportService, Report, ReportTemplate, ReportStatus } from '@reports/services/report.service';
 import { ToastService } from '@services/toast.service';
@@ -30,7 +31,8 @@ import { RoleSelectDialogComponent } from '../role-select-dialog/role-select-dia
     LoadingStateComponent,
     ErrorStateComponent,
     ConfirmDialogComponent,
-    RoleSelectDialogComponent
+    RoleSelectDialogComponent,
+    TableClampTooltipDirective
   ],
   templateUrl: './report-designer.component.html',
   styleUrls: ['./report-designer.component.css']
@@ -53,7 +55,7 @@ export class ReportDesignerComponent implements OnInit {
 
   // Pagination
   currentPage = 1;
-  rowsPerPage = 10;
+  rowsPerPage = defaultPageSize;
   totalItems = 0;
 
   // Delete dialog

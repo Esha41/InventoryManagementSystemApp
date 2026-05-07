@@ -14,6 +14,7 @@ import { CreateRequestItemDto } from '@models/request-item.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
+import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
 
 /** Line item as mapped for display/editing (DTO fields + optional UI-only keys). */
 type WeaponReviewLineItem = RequestItem & {
@@ -31,7 +32,8 @@ type WeaponReviewLineItem = RequestItem & {
     TranslateModule,
     LucideAngularModule,
     ModalComponent,
-    DropdownComponent
+    DropdownComponent,
+    TableClampTooltipDirective
   ],
   templateUrl: './weapon-review-items-modal.component.html',
   styleUrls: ['./weapon-review-items-modal.component.css'],

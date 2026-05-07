@@ -112,7 +112,8 @@
         },
         "next": "Next",
         "progress": {
-            "title": "Creating Assets...",
+            "title": "Creating assets",
+            "subtitle": "Hang tight — this may take a moment.",
             "status": "Processed {{current}} of {{total}}"
         }
     }

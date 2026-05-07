@@ -39,7 +39,9 @@
                 [img]="expandIcon(row)"
                 class="h-4 w-4 inline-block"></lucide-angular>
             </td>
-            <td class="px-4 py-3 text-[var(--color-text)] font-medium">{{ row.itemName }}</td>
+            <td class="px-4 py-3 text-[var(--color-text)] font-medium min-w-0">
+              <span [appTableClampTooltip]="row.itemName">{{ row.itemName }}</span>
+            </td>
             <td class="px-4 py-3 text-[var(--color-text-muted)] tabular-nums">{{ row.itemNo }}</td>
             <td class="px-4 py-3 text-end tabular-nums">{{ row.returnedQty }}</td>
             <td class="px-4 py-3 text-end tabular-nums">{{ row.receivedQty }}</td>

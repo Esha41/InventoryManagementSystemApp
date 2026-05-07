@@ -14,7 +14,7 @@ import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { validateFile, showFileValidationErrors, getFileSizeFromFile, MAX_FILE_SIZE_MB } from '@utils/file.utils';
-import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import { LoadingStateComponent, ErrorStateComponent, TableClampTooltipDirective } from '@components/index';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
@@ -64,7 +64,8 @@ interface WeaponLine {
     LucideAngularModule,
     LoadingStateComponent,
     ErrorStateComponent,
-    DropdownComponent
+    DropdownComponent,
+    TableClampTooltipDirective
   ],
   templateUrl: './process-return-items.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush

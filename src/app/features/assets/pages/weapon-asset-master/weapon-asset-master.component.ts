@@ -21,7 +21,8 @@ import {
   Building,
   Search,
   X,
-  FilterX
+  FilterX,
+  Calendar
 } from 'lucide-angular';
 import { AssetService } from '@assets/services/asset.service';
 import { AssetHistoryService, AssetHistoryDto } from '@assets/services/asset-history.service';
@@ -35,14 +36,18 @@ import {
   CardComponent,
   LoadingStateComponent,
   PaginationComponent,
-  RowsPerPageComponent
+  RowsPerPageComponent,
+  TableClampTooltipDirective
 } from '@components/index';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
-import { AppDatePipe } from '@shared/pipes/app-date.pipe';
+import { AppDatePipe } from '@shared/pipes';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { trackById } from '@utils/trackby.utils';
 import { ToastService } from '@services/toast.service';
 import { ButtonComponent } from '@components/button/button.component';
+import { DateUtils } from '@utils/date.utils';
+import { defaultPageSize } from '@constants/app.constants';
+import { WAM_FILTER_DATE_FIELD_WRAPPER_CLASS } from './weapon-asset-master.ui-classes';
 
 /** Backend `AssetHistoryActionType.Created` */
 const HISTORY_ACTION_CREATED = 1;
@@ -65,13 +70,15 @@ type CustodyFilter = 'all' | 'checkout' | 'checkin';
     RowsPerPageComponent,
     AppDatePipe,
     DropdownComponent,
-    ButtonComponent
+    ButtonComponent,
+    TableClampTooltipDirective
   ],
   templateUrl: './weapon-asset-master.component.html',
-  styleUrls: ['./weapon-asset-master.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
+  readonly wamFilterDateFieldWrapperClass = WAM_FILTER_DATE_FIELD_WRAPPER_CLASS;
+
   items: AssetDto[] = [];
   loading = false;
   refreshing = false;
@@ -80,7 +87,7 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
   totalPages = 1;
 
   currentPage = 1;
-  rowsPerPage = 10;
+  rowsPerPage = defaultPageSize;
 
   searchInput = '';
   appliedSearchTerm = '';
@@ -132,7 +139,7 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
 
   /** Checkout / check-in: include `all` as a real option so the trigger shows the same translated label as other filters. */
   readonly custodyDropdownOptions: DropdownOption<CustodyFilter>[] = [
-    { label: 'weaponAssetMaster.filters.all', value: 'all' },
+    { label: 'common.all', value: 'all' },
     { label: 'weaponAssetMaster.filters.custodyCheckout', value: 'checkout' },
     { label: 'weaponAssetMaster.filters.custodyCheckin', value: 'checkin' }
   ];
@@ -197,6 +204,7 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
   readonly Search = Search;
   readonly X = X;
   readonly FilterX = FilterX;
+  readonly Calendar = Calendar;
   readonly trackById = trackById;
 
   constructor(
@@ -307,6 +315,19 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
+  /** Opens native date picker; `<input type="date">` is overlaid/invisible — surface shows DD/MM via `appDate`. */
+  openWeaponFilterNativeDate(native: HTMLInputElement | undefined | null): void {
+    DateUtils.openNativeDatePicker(native ?? undefined);
+  }
+
+  onWeaponFilterDateFieldKeydown(event: KeyboardEvent, native: HTMLInputElement | undefined | null): void {
+    if (event.key !== 'Enter' && event.key !== ' ') {
+      return;
+    }
+    event.preventDefault();
+    DateUtils.openNativeDatePicker(native ?? undefined);
+  }
+
   /** Copies draft filter controls into applied state and reloads the list. */
   applyAdditionalFilters(): void {
     this.appliedFilterDateFrom = this.filterDateFrom?.trim() ?? '';
@@ -319,7 +340,6 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
     this.appliedFilterCustody = this.filterCustody;
     this.appliedDepotIds = [...this.selectedDepotIds];
     this.currentPage = 1;
-    this.showMoreFilters = false;
     this.loadAssets();
     this.cdr.markForCheck();
   }
@@ -359,6 +379,13 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
     this.appliedDepotIds = [];
     this.currentPage = 1;
     this.loadAssets();
+  }
+
+  /** True when the list request is bounded by applied creation-from / creation-to filters. */
+  get hasAppliedCreationDateFilter(): boolean {
+    const f = this.appliedFilterDateFrom?.trim() ?? '';
+    const t = this.appliedFilterDateTo?.trim() ?? '';
+    return !!f || !!t;
   }
 
   hasActiveFilters(): boolean {

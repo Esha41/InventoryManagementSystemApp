@@ -104,7 +104,9 @@
           </thead>
           <tbody class="divide-y divide-[var(--color-border)]">
             <tr *ngFor="let line of summary.selectionLines" class="hover:bg-[var(--color-background-hover)]">
-              <td class="px-3 py-2 text-[var(--color-text)]">{{ line.itemName }}</td>
+              <td class="px-3 py-2 text-[var(--color-text)] min-w-0">
+                <span [appTableClampTooltip]="line.itemName">{{ line.itemName }}</span>
+              </td>
               <td class="px-3 py-2 text-[var(--color-text)]">{{ depotDisplay(line) }}</td>
               <td class="px-3 py-2 text-[var(--color-text)]">{{ line.batchNumber || '—' }}</td>
               <td class="px-3 py-2 text-end font-medium">{{ line.selectedQuantity }}</td>
@@ -137,7 +139,9 @@
           </thead>
           <tbody class="divide-y divide-[var(--color-border)]">
             <tr *ngFor="let line of summary.weaponLines" class="hover:bg-[var(--color-background-hover)]">
-              <td class="px-3 py-2 text-[var(--color-text)]">{{ line.itemName }}</td>
+              <td class="px-3 py-2 text-[var(--color-text)] min-w-0">
+                <span [appTableClampTooltip]="line.itemName">{{ line.itemName }}</span>
+              </td>
               <td class="px-3 py-2 text-[var(--color-text)] font-mono">{{ line.serialNumber || '—' }}</td>
               <td class="px-3 py-2 text-[var(--color-text)]">{{ line.batchNumber || '—' }}</td>
               <td class="px-3 py-2 text-[var(--color-text)]">{{ depotDisplay(line) }}</td>
@@ -178,7 +182,9 @@
           </thead>
           <tbody class="divide-y divide-[var(--color-border)]">
             <tr *ngFor="let line of summary.lines" class="hover:bg-[var(--color-background-hover)]">
-              <td class="px-3 py-2 text-[var(--color-text)]">{{ line.itemName }}</td>
+              <td class="px-3 py-2 text-[var(--color-text)] min-w-0">
+                <span [appTableClampTooltip]="line.itemName">{{ line.itemName }}</span>
+              </td>
               <td class="px-3 py-2 text-[var(--color-text-muted)]">{{ line.itemNo || '—' }}</td>
               <td class="px-3 py-2 text-end font-medium">{{ line.requestedQuantity }}</td>
               <td class="px-3 py-2 text-end font-medium">{{ line.approvedQuantity ?? line.requestedQuantity }}</td>

@@ -13,6 +13,17 @@
     "file": "ملف",
     "files": "ملفات"
   },
+  "importLoader": {
+    "titlePreview": "جارٍ التحقق من {{entityName}}",
+    "titleImporting": "جارٍ استيراد {{entityName}}",
+    "titleFinalizing": "جارٍ إنهاء الاستيراد",
+    "messagePreview": "يتم فحص الملف بحثًا عن الأخطاء والتكرارات. عادةً ما يستغرق ذلك بضع ثوانٍ.",
+    "messageImporting": "تتم إضافة العناصر إلى الفهرس. يُرجى عدم تحديث الصفحة.",
+    "messageFinalizing": "جارٍ حفظ آخر السجلات وتحديث الفهرس.",
+    "itemsCount": "{{count}} عنصر",
+    "file": "الملف",
+    "doNotClose": "يُرجى إبقاء هذه النافذة مفتوحة حتى اكتمال الاستيراد."
+  },
   "import": {
     "previewTitle": "معاينة الاستيراد",
     "totalRows": "إجمالي الصفوف",

@@ -128,9 +128,7 @@
               <tr *ngFor="let report of paginatedReports"
                 class="hover:bg-[var(--color-background-hover)] transition-colors">
                 <td class="px-4 lg:px-6 py-4 text-sm text-[var(--color-text)] text-start min-w-0">
-                  <div class="font-medium truncate" [title]="report.reportName">
-                    {{ report.reportName }}
-                  </div>
+                  <div class="font-medium" [appTableClampTooltip]="report.reportName">{{ report.reportName }}</div>
                 </td>
                 <td class="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
                   <span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium border"
@@ -201,9 +199,7 @@
           <!-- Header -->
           <div class="flex justify-between items-start mb-3">
             <div class="flex-1 min-w-0">
-              <div class="font-medium text-sm text-[var(--color-text)] truncate">
-                {{ report.reportName }}
-              </div>
+              <div class="font-medium text-sm text-[var(--color-text)]" [appTableClampTooltip]="report.reportName">{{ report.reportName }}</div>
             </div>
             <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border flex-shrink-0 ml-2"
               [ngClass]="getStatusClass(report.reportStatusId)">

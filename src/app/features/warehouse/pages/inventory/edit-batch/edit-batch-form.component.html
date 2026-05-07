@@ -198,7 +198,9 @@
             class="bg-[var(--color-background)] hover:bg-[var(--color-background-hover)]/80 transition-colors align-top">
             <td class="px-3 py-2.5 text-sm text-[var(--color-text-muted)] font-mono tabular-nums">{{ assetRowDisplayIndex(i)
               }}</td>
-            <td class="px-3 py-2.5 text-sm text-[var(--color-text)]">{{ getAssetName(i) }}</td>
+            <td class="px-3 py-2.5 text-sm text-[var(--color-text)] min-w-0">
+              <span [appTableClampTooltip]="getAssetName(i)">{{ getAssetName(i) }}</span>
+            </td>
             <td class="px-3 py-2">
               <input formControlName="serialNumber" type="text"
                 class="w-full min-h-[2.25rem] px-2.5 py-1.5 text-sm border rounded-md bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/30 focus:border-[var(--color-brand)] min-w-0 transition-colors"

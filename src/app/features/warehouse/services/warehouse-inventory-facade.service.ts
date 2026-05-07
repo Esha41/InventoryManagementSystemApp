@@ -512,8 +512,7 @@ export class WarehouseInventoryFacadeService {
             assets: full?.assets ?? [],
             totalCount: full?.assetCount ?? 0,
             totalPages: full?.assetsTotalPages ?? 1,
-            page: full?.assetsPageIndex ?? 1,
-            pageSize: allLoaded ? undefined : full?.assetsPageSize
+            page: full?.assetsPageIndex ?? 1
           });
           this.store.setLoadingBatchAssets(false);
         },

@@ -8,6 +8,7 @@ import { OrderRequestItemDto } from '@models/order.model';
 import { formatNumber as formatNumberUtil } from '@utils/format.utils';
 import { getItemProductId } from '@requests/utils/supply-order-format.utils';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
+import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
 
 /**
  * Order Items Management Component
@@ -21,7 +22,8 @@ import { HasPermissionDirective } from '@core/directives/has-permission.directiv
     CommonModule,
     TranslateModule,
     LucideAngularModule,
-    HasPermissionDirective
+    HasPermissionDirective,
+    TableClampTooltipDirective
   ],
   templateUrl: './order-items-management.component.html',
   styleUrls: ['./order-items-management.component.css'],

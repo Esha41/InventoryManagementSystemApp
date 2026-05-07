@@ -20,6 +20,7 @@ import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.co
 import { RequestFilterBarComponent, StatusFilter, PriorityFilter } from '@requests/components/request-filter-bar/request-filter-bar.component';
 import { AutoRejectCountdownService, OrderAutoRejectCountdownDto } from '@requests/services/auto-reject-countdown.service';
 import { AutoRejectCountdownComponent } from '@requests/components/auto-reject-countdown/auto-reject-countdown.component';
+import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
 import { formatDateTimeExtended } from '@utils/format.utils';
 import { defaultPageSize } from '@constants/app.constants';
 import { localizedBilingualLabel } from '@utils/localization.utils';
@@ -45,7 +46,8 @@ import {
     PaginationComponent,
     RowsPerPageComponent,
     RequestFilterBarComponent,
-    AutoRejectCountdownComponent
+    AutoRejectCountdownComponent,
+    TableClampTooltipDirective
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],

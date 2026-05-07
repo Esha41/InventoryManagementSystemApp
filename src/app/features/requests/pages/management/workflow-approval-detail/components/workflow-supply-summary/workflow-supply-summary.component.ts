@@ -14,11 +14,12 @@ import { LucideAngularModule, Package } from 'lucide-angular';
 import { SupplyService, WorkflowSupplySummaryDto } from '@requests/services/supply.service';
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
 
 @Component({
   selector: 'app-workflow-supply-summary',
   standalone: true,
-  imports: [CommonModule, TranslateModule, LucideAngularModule, AppDateTimePipe],
+  imports: [CommonModule, TranslateModule, LucideAngularModule, AppDateTimePipe, TableClampTooltipDirective],
   templateUrl: './workflow-supply-summary.component.html',
   styleUrls: ['./workflow-supply-summary.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush

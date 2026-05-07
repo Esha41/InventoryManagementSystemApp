@@ -26,10 +26,12 @@ import { AssetDto } from '@models/asset.model';
 import { LotDetailDto } from '@inventory/services/inventory.service';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
+import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslationService } from '@services/translation.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { defaultPageSize } from '@constants/app.constants';
 
 @Component({
   selector: 'app-inventory-item-summary-table',
@@ -39,7 +41,8 @@ import { takeUntil } from 'rxjs/operators';
     TranslateModule,
     LucideAngularModule,
     PaginationComponent,
-    RowsPerPageComponent
+    RowsPerPageComponent,
+    TableClampTooltipDirective
   ],
   templateUrl: './inventory-item-summary-table.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -77,7 +80,7 @@ export class InventoryItemSummaryTableComponent implements OnInit, OnDestroy {
   @Input() paginatedLotDetails: LotDetailDto[] = [];
   @Input() lotTotalPages = 1;
   @Input() lotCurrentPage = 1;
-  @Input() lotRowsPerPage = 10;
+  @Input() lotRowsPerPage = defaultPageSize;
 
   @Input() assetDetails: AssetDto[] = [];
   @Input() isAssetsLoading = false;
@@ -86,7 +89,7 @@ export class InventoryItemSummaryTableComponent implements OnInit, OnDestroy {
   @Input() paginatedAssetDetails: AssetDto[] = [];
   @Input() assetTotalPages = 1;
   @Input() assetCurrentPage = 1;
-  @Input() assetRowsPerPage = 10;
+  @Input() assetRowsPerPage = defaultPageSize;
 
   @Input() selectedDepotId: number | null = null;
   @Input() selectedDepotLabel = '';
@@ -96,7 +99,7 @@ export class InventoryItemSummaryTableComponent implements OnInit, OnDestroy {
   @Input() sumReservedQtyFiltered = 0;
   @Input() sumRemainingQtyFiltered = 0;
   @Input() sumLotsFiltered = 0;
-  @Input() activeTab: ActiveTab = 'all';
+  @Input() activeTab: ActiveTab = 'ammunition';
 
   @Output() readonly itemSort = new EventEmitter<string>();
   @Output() readonly rowToggle = new EventEmitter<ItemInventorySummaryDto>();

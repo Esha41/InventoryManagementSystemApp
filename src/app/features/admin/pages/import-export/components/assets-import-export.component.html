@@ -58,8 +58,8 @@
   </app-card>
 </div>
 
-<!-- Loading State -->
-<app-loading-state *ngIf="loadingAssets" size="lg" [fullPage]="false" containerClass="text-center py-12">
+<!-- List Loading State (only when reloading the table; the import loader handles import/preview phases). -->
+<app-loading-state *ngIf="loadingAssets && !isImportLoaderOpen" size="lg" [fullPage]="false" containerClass="text-center py-12">
 </app-loading-state>
 
 <!-- Assets Info -->
@@ -83,3 +83,13 @@
 <app-import-preview-dialog *ngIf="showPreviewModal && previewData" [previewData]="previewData" [assetType]="currentTab"
   (confirm)="onPreviewConfirmed($event)" (importCancelled)="onPreviewCancelled()">
 </app-import-preview-dialog>
+
+<!-- Import Progress Loader (shown while preview/import is running on the server). -->
+<app-import-progress-loader
+  [isOpen]="isImportLoaderOpen"
+  [phase]="importLoaderPhase"
+  [entityName]="importLoaderEntityName"
+  [itemCount]="importLoaderItemCount"
+  [fileName]="importLoaderFileName"
+  [isRTL]="isRTL">
+</app-import-progress-loader>

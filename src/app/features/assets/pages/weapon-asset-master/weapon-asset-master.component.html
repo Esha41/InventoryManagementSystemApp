@@ -9,14 +9,17 @@
 
   <div class="page-container flex flex-col gap-6 !pt-2 !pb-4 md:!pt-3 md:!pb-5 lg:!pt-3 lg:!pb-6">
     <app-card [shadow]="true" [padding]="false">
-      <div class="p-3 sm:p-4 space-y-3">
-        <h2 class="text-base font-semibold text-[var(--color-text)]">
-          {{ 'weaponAssetMaster.filters.heading' | translate }}
-        </h2>
+      <div class="p-5 sm:p-6">
+        <div class="mb-5">
+          <h2 class="text-lg font-semibold text-[var(--color-text)]">
+            {{ 'assetList.filters.title' | translate }}
+          </h2>
+        </div>
 
-        <div class="space-y-4">
-          <div class="flex flex-wrap items-end gap-2">
-              <div class="app-search-field flex-1 min-w-[12rem]">
+        <div class="space-y-5">
+          <div class="flex flex-wrap items-end gap-4">
+            <div class="relative min-w-0 flex-1 basis-full sm:min-w-[200px] sm:basis-[min(100%,20rem)]">
+              <div class="app-search-field w-full">
               <lucide-angular [img]="Search" class="app-search-field__icon app-search-field__icon--lg"></lucide-angular>
               <input
                 id="wam-search"
@@ -26,197 +29,284 @@
                 [(ngModel)]="searchInput"
                 (keydown.enter)="applySearch()"
                 [placeholder]="'weaponAssetMaster.filters.searchPlaceholder' | translate"
-                [attr.aria-label]="'weaponAssetMaster.filters.searchLabel' | translate"
+                [attr.aria-label]="'assetList.filters.search' | translate"
                 autocomplete="off"
-                class="app-search-field__input-ps-lg w-full pe-28 py-2.5 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none transition-all"
+                class="app-search-field__input-ps-lg w-full min-h-[44px] pe-[7.25rem] py-2.5 text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] focus:bg-[var(--color-background)] outline-none transition-all"
               />
-              <div class="absolute inset-y-0 end-0 pe-2 flex items-center gap-1">
+              <div class="absolute inset-y-0 end-0 flex items-center gap-1 pe-2">
                 <button
                   *ngIf="searchInput"
                   type="button"
                   (click)="clearSearch()"
-                  class="p-1 text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors"
+                  class="inline-flex size-9 shrink-0 items-center justify-center rounded-md text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-error)]"
                   [attr.aria-label]="'common.clear' | translate"
                 >
-                  <lucide-angular [img]="X" class="w-4 h-4"></lucide-angular>
+                  <lucide-angular [img]="X" class="h-4 w-4"></lucide-angular>
                 </button>
                 <button
                   type="button"
                   (click)="applySearch()"
-                  class="px-3 py-1.5 bg-[var(--color-brand)] text-white text-[10px] font-bold uppercase tracking-wider rounded-md hover:bg-[var(--color-brand-hover)] transition-all active:scale-95 shadow-sm"
+                  class="inline-flex h-9 min-w-[5.5rem] shrink-0 items-center justify-center rounded-md bg-[var(--color-brand)] px-3.5 text-xs font-bold uppercase tracking-wider text-white shadow-soft transition-all hover:bg-[var(--color-brand-hover)] active:scale-[0.98]"
                 >
                   {{ 'common.search' | translate }}
                 </button>
               </div>
             </div>
+            </div>
             <button
               type="button"
               (click)="toggleMoreFilters()"
               [attr.aria-expanded]="showMoreFilters"
-              class="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 border-[var(--color-border)] bg-[var(--color-background)] text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-background-hover)] transition-colors"
+              class="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-lg border-2 border-[var(--color-border)] bg-[var(--color-background)] px-4 py-2.5 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-background-hover)]"
             >
               <lucide-angular
                 [img]="ChevronDown"
-                class="h-4 w-4 text-[var(--color-text-muted)] transition-transform duration-200"
+                class="size-4 shrink-0 text-[var(--color-text-muted)] transition-transform duration-200"
                 [class.rotate-180]="showMoreFilters"
               ></lucide-angular>
-              <span>{{ (showMoreFilters ? 'weaponAssetMaster.filters.hideFilters' : 'weaponAssetMaster.filters.moreFilters') | translate }}</span>
+              <span>{{ (showMoreFilters ? 'assetList.filters.hideColumnFilters' : 'assetList.filters.moreColumnFilters') | translate }}</span>
             </button>
             <button
               *ngIf="hasActiveFilters() && !showMoreFilters"
               type="button"
               (click)="clearColumnFilters()"
-              class="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 border-[var(--color-border)] bg-[var(--color-background)] text-sm font-medium text-[var(--color-brand)] hover:bg-[var(--color-background-hover)] transition-colors"
+              class="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-lg border-2 border-[var(--color-border)] bg-[var(--color-background)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-background-hover)]"
             >
-              <lucide-angular [img]="FilterX" class="h-4 w-4 shrink-0 text-[var(--color-brand)]" aria-hidden="true"></lucide-angular>
-              <span>{{ 'weaponAssetMaster.filters.clear' | translate }}</span>
+              <lucide-angular [img]="FilterX" class="size-4 shrink-0" aria-hidden="true"></lucide-angular>
+              <span>{{ 'assetList.filters.clear' | translate }}</span>
             </button>
           </div>
 
-          <ng-container *ngIf="showMoreFilters">
-            <div class="space-y-4">
-            <div class="flex flex-wrap items-end gap-4">
-              <div class="wam-filter-field">
-                <label class="text-xs font-medium text-[var(--color-text-muted)]" for="weapon-asset-master-wamdatefrom-1">{{
-                  'weaponAssetMaster.filters.dateFrom' | translate
-                }}</label>
-                <input id="weapon-asset-master-wamdatefrom-1"
-                  name="wamDateFrom"
-                  type="date"
-                  [(ngModel)]="filterDateFrom"
-                  [max]="filterDateTo || null"
-                  class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] focus:ring-2 focus:ring-[var(--color-brand)] outline-none text-sm"
-                />
-              </div>
-              <div class="wam-filter-field">
-                <label class="text-xs font-medium text-[var(--color-text-muted)]" for="weapon-asset-master-wamdateto-2">{{
-                  'weaponAssetMaster.filters.dateTo' | translate
-                }}</label>
-                <input id="weapon-asset-master-wamdateto-2"
-                  name="wamDateTo"
-                  type="date"
-                  [(ngModel)]="filterDateTo"
-                  [min]="filterDateFrom || null"
-                  class="w-full py-2 px-3 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] focus:ring-2 focus:ring-[var(--color-brand)] outline-none text-sm"
-                />
-              </div>
-              <div class="wam-filter-field">
-                <span class="text-xs font-medium text-[var(--color-text-muted)]">{{
-                  'weaponAssetMaster.filters.custodyLabel' | translate
-                }}</span>
-                <app-dropdown
-                  name="wamFilterCustody"
-                  class="w-full"
-                  [(ngModel)]="filterCustody"
-                  [options]="custodyDropdownOptions"
-                  placeholder="{{ 'weaponAssetMaster.filters.all' | translate }}"
-                  [translateLabels]="true"
-                  [showSearch]="false"
-                ></app-dropdown>
-              </div>
-              <div class="wam-filter-field">
-                <span class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'weaponAssetMaster.col.primaryPurpose' | translate }}</span>
-                <app-dropdown
-                  name="wamFilterPrimaryPurpose"
-                  class="w-full"
-                  [(ngModel)]="filterPrimaryPurposeIds"
-                  [options]="primaryPurposes"
-                  optionValue="id"
-                  [optionLabelFn]="lookupDropdownLabelFn"
-                  [multiple]="true"
-                  placeholder="{{ 'weaponAssetMaster.filters.all' | translate }}"
-                ></app-dropdown>
-              </div>
-              <div class="wam-filter-field">
-                <span class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'weaponAssetMaster.col.status' | translate }}</span>
-                <app-dropdown
-                  name="wamFilterStatus"
-                  class="w-full"
-                  [(ngModel)]="filterStatuses"
-                  [options]="statusDropdownOptions"
-                  [multiple]="true"
-                  placeholder="{{ 'weaponAssetMaster.filters.all' | translate }}"
-                  [translateLabels]="true"
-                  [showSearch]="false"
-                ></app-dropdown>
-              </div>
-            </div>
+          <!-- Locale-formatted view of applied creation range (pipes); native date controls stay ISO yyyy-MM-dd for filtering. -->
+          <div
+            *ngIf="hasAppliedCreationDateFilter && !showMoreFilters"
+            class="rounded-lg border border-[var(--color-border)]/80 bg-[var(--color-background-hover)] px-3 py-2.5 text-sm text-[var(--color-text)]"
+          >
+            <span class="me-2 text-xs font-medium text-[var(--color-text-muted)]">{{
+              'weaponAssetMaster.filters.appliedCreationDates' | translate
+            }}</span>
+            <span class="inline-flex flex-wrap items-baseline gap-x-1 gap-y-0.5 font-medium tracking-tight" aria-live="polite">
+              <ng-container *ngIf="appliedFilterDateFrom?.trim()">{{ appliedFilterDateFrom | appDate }}</ng-container>
+              <span *ngIf="appliedFilterDateFrom?.trim() && appliedFilterDateTo?.trim()" class="text-[var(--color-text-muted)]" aria-hidden="true"
+                >&nbsp;–&nbsp;</span
+              >
+              <ng-container *ngIf="appliedFilterDateTo?.trim()">{{ appliedFilterDateTo | appDate }}</ng-container>
+            </span>
+          </div>
 
-            <!-- Supplier, Manufacturer, Depot, Employee + Apply / Clear on one line -->
-            <div class="wam-filter-supplier-row">
-              <div class="wam-filter-field wam-filter-field--single-line">
-                <span class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'weaponAssetMaster.col.supplier' | translate }}</span>
-                <app-dropdown
-                  name="wamFilterSupplier"
-                  class="w-full"
-                  [(ngModel)]="filterSupplierIds"
-                  [options]="suppliers"
-                  optionValue="id"
-                  [optionLabelFn]="lookupDropdownLabelFn"
-                  [multiple]="true"
-                  placeholder="{{ 'weaponAssetMaster.filters.all' | translate }}"
-                ></app-dropdown>
-              </div>
-              <div class="wam-filter-field wam-filter-field--single-line">
-                <span class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'weaponAssetMaster.col.manufacturer' | translate }}</span>
-                <app-dropdown
-                  name="wamFilterManufacturer"
-                  class="w-full"
-                  [(ngModel)]="filterManufacturerIds"
-                  [options]="manufacturers"
-                  optionValue="id"
-                  [optionLabelFn]="lookupDropdownLabelFn"
-                  [multiple]="true"
-                  placeholder="{{ 'weaponAssetMaster.filters.all' | translate }}"
-                ></app-dropdown>
-              </div>
-              <div class="wam-filter-field wam-filter-field--single-line">
-                <span class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'weaponAssetMaster.col.depot' | translate }}</span>
-                <app-dropdown
-                  name="wamFilterDepot"
-                  class="w-full"
-                  [(ngModel)]="selectedDepotIds"
-                  [options]="depots"
-                  optionValue="id"
-                  [optionLabelFn]="depotDropdownLabelFn"
-                  [multiple]="true"
-                  placeholder="{{ 'weaponAssetMaster.filters.all' | translate }}"
-                ></app-dropdown>
-              </div>
-              <div class="wam-filter-field wam-filter-field--single-line">
-                <span class="text-xs font-medium text-[var(--color-text-muted)]">{{ 'weaponAssetMaster.filters.employee' | translate }}</span>
-                <app-dropdown
-                  name="wamFilterEmployee"
-                  class="w-full"
-                  [(ngModel)]="filterEmployeeIds"
-                  [options]="employees"
-                  optionValue="id"
-                  [optionLabelFn]="employeeDropdownLabelFn"
-                  [multiple]="true"
-                  placeholder="{{ 'weaponAssetMaster.filters.all' | translate }}"
-                ></app-dropdown>
-              </div>
-              <div class="wam-filter-actions-inline">
-                <span class="block text-xs font-medium mb-1 invisible pointer-events-none select-none" aria-hidden="true">.</span>
-                <div class="flex flex-nowrap items-center gap-2">
-                  <button
-                    type="button"
-                    (click)="applyAdditionalFilters()"
-                    class="inline-flex shrink-0 items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[var(--color-brand)] text-white text-sm font-semibold shadow-sm hover:bg-[var(--color-brand-hover)] transition-colors"
+          <ng-container *ngIf="showMoreFilters">
+            <div class="space-y-6 border-t border-[var(--color-border)] pt-6">
+              <p class="text-xs text-[var(--color-text-muted)]">{{ 'assetList.filters.columnFiltersHint' | translate }}</p>
+              <!-- Row 1: dates + custody + purpose + status — equal-width grid on xl -->
+              <div class="grid w-full grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                <div class="flex min-w-0 flex-col gap-2">
+                  <span
+                    id="wam-filter-lbl-created-after"
+                    class="block text-xs font-medium leading-snug text-[var(--color-text-muted)]"
+                    >{{ 'weaponAssetMaster.filters.dateFrom' | translate }}</span
                   >
-                    {{ 'weaponAssetMaster.filters.applyFilters' | translate }}
-                  </button>
-                  <button
-                    type="button"
-                    (click)="clearColumnFilters()"
-                    class="inline-flex shrink-0 items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 border-[var(--color-border)] bg-[var(--color-background)] text-sm font-medium text-[var(--color-brand)] hover:bg-[var(--color-background-hover)] transition-colors"
+                  <div
+                    [class]="wamFilterDateFieldWrapperClass"
+                    role="button"
+                    tabindex="0"
+                    aria-haspopup="dialog"
+                    [attr.aria-labelledby]="'wam-filter-lbl-created-after'"
+                    (click)="openWeaponFilterNativeDate(wamDateFromNative)"
+                    (keydown)="onWeaponFilterDateFieldKeydown($event, wamDateFromNative)"
                   >
-                    <lucide-angular [img]="FilterX" class="h-4 w-4 shrink-0 text-[var(--color-brand)]" aria-hidden="true"></lucide-angular>
-                    <span>{{ 'weaponAssetMaster.filters.clear' | translate }}</span>
-                  </button>
+                    <span
+                      class="pointer-events-none flex min-h-[42px] w-full flex-1 items-center gap-2 py-2 text-sm leading-5 text-[var(--color-text)]"
+                    >
+                      <span
+                        class="min-w-0 flex-1 truncate text-start"
+                        [class.text-[var(--color-text-muted)]]="!filterDateFrom?.trim()"
+                      >
+                        {{
+                          (filterDateFrom?.trim() ? (filterDateFrom | appDate) : '') ||
+                            ('weaponAssetMaster.filters.dateInputPlaceholder' | translate)
+                        }}
+                      </span>
+                      <lucide-angular [img]="Calendar" class="size-4 shrink-0 text-[var(--color-text-muted)]" aria-hidden="true"></lucide-angular>
+                    </span>
+                    <input
+                      #wamDateFromNative
+                      id="weapon-asset-master-wamdatefrom-1"
+                      name="wamDateFrom"
+                      type="date"
+                      [(ngModel)]="filterDateFrom"
+                      [max]="filterDateTo || null"
+                      tabindex="-1"
+                      autocomplete="off"
+                      class="pointer-events-none absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                    />
+                  </div>
+                </div>
+                <div class="flex min-w-0 flex-col gap-2">
+                  <span
+                    id="wam-filter-lbl-created-before"
+                    class="block text-xs font-medium leading-snug text-[var(--color-text-muted)]"
+                    >{{ 'weaponAssetMaster.filters.dateTo' | translate }}</span
+                  >
+                  <div
+                    [class]="wamFilterDateFieldWrapperClass"
+                    role="button"
+                    tabindex="0"
+                    aria-haspopup="dialog"
+                    [attr.aria-labelledby]="'wam-filter-lbl-created-before'"
+                    (click)="openWeaponFilterNativeDate(wamDateToNative)"
+                    (keydown)="onWeaponFilterDateFieldKeydown($event, wamDateToNative)"
+                  >
+                    <span
+                      class="pointer-events-none flex min-h-[42px] w-full flex-1 items-center gap-2 py-2 text-sm leading-5 text-[var(--color-text)]"
+                    >
+                      <span
+                        class="min-w-0 flex-1 truncate text-start"
+                        [class.text-[var(--color-text-muted)]]="!filterDateTo?.trim()"
+                      >
+                        {{
+                          (filterDateTo?.trim() ? (filterDateTo | appDate) : '') ||
+                            ('weaponAssetMaster.filters.dateInputPlaceholder' | translate)
+                        }}
+                      </span>
+                      <lucide-angular [img]="Calendar" class="size-4 shrink-0 text-[var(--color-text-muted)]" aria-hidden="true"></lucide-angular>
+                    </span>
+                    <input
+                      #wamDateToNative
+                      id="weapon-asset-master-wamdateto-2"
+                      name="wamDateTo"
+                      type="date"
+                      [(ngModel)]="filterDateTo"
+                      [min]="filterDateFrom || null"
+                      tabindex="-1"
+                      autocomplete="off"
+                      class="pointer-events-none absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                    />
+                  </div>
+                </div>
+                <div class="flex min-w-0 flex-col gap-2">
+                  <span class="block text-xs font-medium leading-snug text-[var(--color-text-muted)]">{{
+                    'weaponAssetMaster.filters.custodyLabel' | translate
+                  }}</span>
+                  <app-dropdown
+                    name="wamFilterCustody"
+                    class="block w-full min-w-0"
+                    [formFieldAligned]="true"
+                    [(ngModel)]="filterCustody"
+                    [options]="custodyDropdownOptions"
+                    placeholder="{{ 'common.all' | translate }}"
+                    [translateLabels]="true"
+                    [showSearch]="false"
+                  ></app-dropdown>
+                </div>
+                <div class="flex min-w-0 flex-col gap-2">
+                  <span class="block text-xs font-medium leading-snug text-[var(--color-text-muted)]">{{ 'assetList.filters.primaryPurpose' | translate }}</span>
+                  <app-dropdown
+                    name="wamFilterPrimaryPurpose"
+                    class="block w-full min-w-0"
+                    [formFieldAligned]="true"
+                    [(ngModel)]="filterPrimaryPurposeIds"
+                    [options]="primaryPurposes"
+                    optionValue="id"
+                    [optionLabelFn]="lookupDropdownLabelFn"
+                    [multiple]="true"
+                    placeholder="{{ 'assetList.filters.allPrimaryPurposes' | translate }}"
+                  ></app-dropdown>
+                </div>
+                <div class="flex min-w-0 flex-col gap-2">
+                  <span class="block text-xs font-medium leading-snug text-[var(--color-text-muted)]">{{ 'assetList.table.status' | translate }}</span>
+                  <app-dropdown
+                    name="wamFilterStatus"
+                    class="block w-full min-w-0"
+                    [formFieldAligned]="true"
+                    [(ngModel)]="filterStatuses"
+                    [options]="statusDropdownOptions"
+                    [multiple]="true"
+                    placeholder="{{ 'common.all' | translate }}"
+                    [translateLabels]="true"
+                    [showSearch]="false"
+                  ></app-dropdown>
                 </div>
               </div>
-            </div>
+
+              <!-- Row 2: supplier, manufacturer, depot, employee + actions -->
+              <div class="grid w-full grid-cols-1 gap-x-5 gap-y-6 md:grid-cols-2 xl:grid-cols-5 xl:items-end">
+                <div class="flex min-w-0 flex-col gap-2">
+                  <span class="block text-xs font-medium leading-snug text-[var(--color-text-muted)]">{{ 'weaponAssetMaster.col.supplier' | translate }}</span>
+                  <app-dropdown
+                    name="wamFilterSupplier"
+                    class="block w-full min-w-0"
+                    [formFieldAligned]="true"
+                    [(ngModel)]="filterSupplierIds"
+                    [options]="suppliers"
+                    optionValue="id"
+                    [optionLabelFn]="lookupDropdownLabelFn"
+                    [multiple]="true"
+                    placeholder="{{ 'common.all' | translate }}"
+                  ></app-dropdown>
+                </div>
+                <div class="flex min-w-0 flex-col gap-2">
+                  <span class="block text-xs font-medium leading-snug text-[var(--color-text-muted)]">{{ 'weaponAssetMaster.col.manufacturer' | translate }}</span>
+                  <app-dropdown
+                    name="wamFilterManufacturer"
+                    class="block w-full min-w-0"
+                    [formFieldAligned]="true"
+                    [(ngModel)]="filterManufacturerIds"
+                    [options]="manufacturers"
+                    optionValue="id"
+                    [optionLabelFn]="lookupDropdownLabelFn"
+                    [multiple]="true"
+                    placeholder="{{ 'common.all' | translate }}"
+                  ></app-dropdown>
+                </div>
+                <div class="flex min-w-0 flex-col gap-2">
+                  <span class="block text-xs font-medium leading-snug text-[var(--color-text-muted)]">{{ 'weaponAssetMaster.col.depot' | translate }}</span>
+                  <app-dropdown
+                    name="wamFilterDepot"
+                    class="block w-full min-w-0"
+                    [formFieldAligned]="true"
+                    [(ngModel)]="selectedDepotIds"
+                    [options]="depots"
+                    optionValue="id"
+                    [optionLabelFn]="depotDropdownLabelFn"
+                    [multiple]="true"
+                    placeholder="{{ 'common.all' | translate }}"
+                  ></app-dropdown>
+                </div>
+                <div class="flex min-w-0 flex-col gap-2">
+                  <span class="block text-xs font-medium leading-snug text-[var(--color-text-muted)]">{{ 'weaponAssetMaster.filters.employee' | translate }}</span>
+                  <app-dropdown
+                    name="wamFilterEmployee"
+                    class="block w-full min-w-0"
+                    [formFieldAligned]="true"
+                    [(ngModel)]="filterEmployeeIds"
+                    [options]="employees"
+                    optionValue="id"
+                    [optionLabelFn]="employeeDropdownLabelFn"
+                    [multiple]="true"
+                    placeholder="{{ 'common.all' | translate }}"
+                  ></app-dropdown>
+                </div>
+                <div class="flex min-w-0 flex-col justify-end gap-3 sm:col-span-2 xl:col-span-1">
+                  <span class="pointer-events-none hidden h-5 shrink-0 xl:block" aria-hidden="true"></span>
+                  <div class="flex w-full flex-col gap-3 sm:flex-row sm:items-stretch">
+                    <button
+                      type="button"
+                      (click)="applyAdditionalFilters()"
+                      class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-lg bg-[var(--color-brand)] px-5 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-brand-hover)] xl:min-h-[42px]"
+                    >
+                      {{ 'assetList.filters.applyColumnFilters' | translate }}
+                    </button>
+                    <button
+                      type="button"
+                      (click)="clearColumnFilters()"
+                      class="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-lg border-2 border-[var(--color-border)] bg-[var(--color-background)] px-4 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-background-hover)] xl:min-h-[42px]"
+                    >
+                      <lucide-angular [img]="FilterX" class="size-4 shrink-0 text-[var(--color-text-muted)]" aria-hidden="true"></lucide-angular>
+                      <span>{{ 'assetList.filters.clear' | translate }}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </ng-container>
         </div>
@@ -264,14 +354,14 @@
                 {{ 'weaponAssetMaster.col.department' | translate }}
               </th>
               <th class="px-3 py-3 text-start text-xs font-semibold uppercase tracking-wider text-[var(--color-text)]" scope="col">
-                {{ 'weaponAssetMaster.col.primaryPurpose' | translate }}
+                {{ 'assetList.filters.primaryPurpose' | translate }}
               </th>
               <th
                 class="px-3 py-3 text-start text-xs font-semibold uppercase tracking-wider text-[var(--color-text)] cursor-pointer hover:bg-[var(--color-background-hover)]"
                 (click)="setSort('status')"
                 scope="col"
               >
-                {{ 'weaponAssetMaster.col.status' | translate }} {{ sortIndicator('status') }}
+                {{ 'assetList.table.status' | translate }} {{ sortIndicator('status') }}
               </th>
               <th class="px-3 py-3 text-start text-xs font-semibold uppercase tracking-wider text-[var(--color-text)]" scope="col">
                 {{ 'weaponAssetMaster.col.createdDepot' | translate }}
@@ -305,27 +395,35 @@
                     <lucide-angular [img]="getExpandIcon(isExpanded(asset.id))" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
                   </button>
                 </td>
-                <td class="px-3 py-3 align-top max-w-[14rem]">
+                <td class="px-3 py-3 align-top max-w-[14rem] min-w-0">
                   <a
                     *ngIf="asset.itemId"
                     [routerLink]="['/assets/asset-list', asset.itemId]"
                     [queryParams]="{ tab: 'weapon', returnTo: '/assets/weapon-asset-master' }"
-                    class="font-medium text-[var(--color-brand)] hover:underline truncate block"
-                    [title]="itemName(asset)"
+                    class="font-medium text-[var(--color-brand)] hover:underline"
+                    [appTableClampTooltip]="itemName(asset)"
                     (click)="$event.stopPropagation()"
                   >
                     {{ itemName(asset) }}
                   </a>
-                  <span *ngIf="!asset.itemId" class="font-medium text-[var(--color-text)] truncate block" [title]="itemName(asset)">
+                  <span *ngIf="!asset.itemId" class="font-medium text-[var(--color-text)]" [appTableClampTooltip]="itemName(asset)">
                     {{ itemName(asset) }}
                   </span>
                 </td>
                 <td class="px-3 py-3 align-top font-mono text-[var(--color-text)]">{{ asset.serialNumber || '—' }}</td>
-                <td class="px-3 py-3 align-top max-w-[10rem] truncate" [title]="custodianName(asset)">{{ custodianName(asset) }}</td>
-                <td class="px-3 py-3 align-top max-w-[10rem] truncate" [title]="departmentName(asset)">{{ departmentName(asset) }}</td>
-                <td class="px-3 py-3 align-top max-w-[8rem] truncate" [title]="primaryPurposeName(asset)">{{ primaryPurposeName(asset) }}</td>
+                <td class="px-3 py-3 align-top max-w-[10rem] min-w-0">
+                  <span [appTableClampTooltip]="custodianName(asset)" [clampLines]="1">{{ custodianName(asset) }}</span>
+                </td>
+                <td class="px-3 py-3 align-top max-w-[10rem] min-w-0">
+                  <span [appTableClampTooltip]="departmentName(asset)" [clampLines]="1">{{ departmentName(asset) }}</span>
+                </td>
+                <td class="px-3 py-3 align-top max-w-[8rem] min-w-0">
+                  <span [appTableClampTooltip]="primaryPurposeName(asset)" [clampLines]="1">{{ primaryPurposeName(asset) }}</span>
+                </td>
                 <td class="px-3 py-3 align-top">{{ statusLabel(asset) }}</td>
-                <td class="px-3 py-3 align-top max-w-[10rem] truncate" [title]="depotName(asset)">{{ depotName(asset) }}</td>
+                <td class="px-3 py-3 align-top max-w-[10rem] min-w-0">
+                  <span [appTableClampTooltip]="depotName(asset)" [clampLines]="1">{{ depotName(asset) }}</span>
+                </td>
                 <td class="px-3 py-3 align-top whitespace-nowrap text-[var(--color-text-secondary)]">
                   <ng-container *ngIf="asset.creationDate; else noCreatedDate">{{ asset.creationDate | appDate: 'military' }}</ng-container>
                   <ng-template #noCreatedDate>—</ng-template>
@@ -356,7 +454,11 @@
                     </div>
 
                     <div *ngIf="isLoadingHistory(asset.id)" class="flex justify-center py-6">
-                      <div class="spinner"></div>
+                      <div
+                        class="size-8 shrink-0 animate-spin rounded-full border-[3px] border-[var(--color-border)] border-t-[var(--color-brand)]"
+                        role="status"
+                        aria-hidden="true"
+                      ></div>
                     </div>
 
                     <div *ngIf="!isLoadingHistory(asset.id) && !hasExpandedHistoryContent(asset)" class="text-center py-4 text-[var(--color-text-muted)]">
@@ -511,13 +613,13 @@
           </div>
           <div>
             <div class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
-              {{ 'weaponAssetMaster.col.primaryPurpose' | translate }}
+              {{ 'assetList.filters.primaryPurpose' | translate }}
             </div>
             <p class="mt-1 text-[var(--color-text)]">{{ primaryPurposeName(viewModalAsset) }}</p>
           </div>
           <div>
             <div class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
-              {{ 'weaponAssetMaster.col.status' | translate }}
+              {{ 'assetList.table.status' | translate }}
             </div>
             <p class="mt-1 text-[var(--color-text)]">{{ statusLabel(viewModalAsset) }}</p>
           </div>

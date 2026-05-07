@@ -71,27 +71,16 @@
         <div *ngFor="let asset of paginatedAssets; trackBy: trackByAssetId"
           class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] flex flex-col gap-3">
 
-          <!-- Header: Image & Name -->
-          <div class="flex items-start gap-4">
-            <div
-              class="w-16 h-16 flex-shrink-0 relative bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)] overflow-hidden">
-              <img *ngIf="asset.imageUrl" [src]="asset.imageUrl" [alt]="asset.name" (error)="onImageError(asset)"
-                class="w-full h-full object-cover">
-              <div *ngIf="!asset.imageUrl"
-                class="w-full h-full flex items-center justify-center text-[var(--color-text-muted)]">
-                <lucide-angular [img]="Image" class="h-6 w-6 opacity-40"></lucide-angular>
-              </div>
-            </div>
-
-            <div class="flex-1 min-w-0">
-              <h3 class="font-bold text-[var(--color-text)] text-sm line-clamp-2">{{ getAssetName(asset) }}</h3>
-              <div class="flex items-center gap-2 mt-1">
-                <span
-                  class="text-xs font-mono bg-[var(--color-background-subtle)] px-1.5 py-0.5 rounded text-[var(--color-text-muted)] border border-[var(--color-border-muted)]">
-                  {{ asset.itemNo }}
-                </span>
-                <span *ngIf="asset.nsn" class="text-xs text-[var(--color-text-muted)]">NSN: {{ asset.nsn }}</span>
-              </div>
+          <!-- Header: Name (images only on asset detail) -->
+          <div class="min-w-0">
+            <h3 class="font-bold text-[var(--color-text)] text-sm m-0"
+              [appTableClampTooltip]="getAssetName(asset)">{{ getAssetName(asset) }}</h3>
+            <div class="flex items-center gap-2 mt-1">
+              <span
+                class="text-xs font-mono bg-[var(--color-background-subtle)] px-1.5 py-0.5 rounded text-[var(--color-text-muted)] border border-[var(--color-border-muted)]">
+                {{ asset.itemNo }}
+              </span>
+              <span *ngIf="asset.nsn" class="text-xs text-[var(--color-text-muted)]">NSN: {{ asset.nsn }}</span>
             </div>
           </div>
 
@@ -162,9 +151,6 @@
         <table class="w-full">
           <thead class="bg-[var(--color-background)]">
             <tr class="border-b border-[var(--color-border)]">
-              <th class="text-start py-4 px-6 font-semibold text-[var(--color-text)] text-sm">
-                {{ 'assetList.table.image' | translate }}
-              </th>
               <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'name', labelKey: 'assetList.table.name' }"></ng-container>
               <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'itemNo', labelKey: 'assetList.table.itemNo' }"></ng-container>
               <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'partNo', labelKey: 'assetList.table.partNo' }"></ng-container>
@@ -201,22 +187,9 @@
           <tbody class="bg-[var(--color-background)]">
             <tr *ngFor="let asset of paginatedAssets; trackBy: trackByAssetId"
               class="border-b border-[var(--color-border)] hover:bg-[var(--color-background)] transition-colors">
-              <td class="py-4 px-6">
-                <div class="image-preview-container">
-                  <div class="flex items-center justify-center w-16 h-16 relative">
-                    <img *ngIf="asset.imageUrl" [src]="asset.imageUrl" [alt]="asset.name"
-                      (error)="onImageError(asset)" (mouseenter)="onShowImagePreview($event, asset)"
-                      (mouseleave)="onHideImagePreview()"
-                      class="max-w-full max-h-full object-contain rounded-lg border border-[var(--color-border)] cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-md hover:border-[var(--color-brand)]">
-                    <div *ngIf="!asset.imageUrl"
-                      class="w-full h-full flex items-center justify-center bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)] text-[var(--color-text-muted)] text-xs">
-                      {{ 'common.noImage' | translate }}
-                    </div>
-                  </div>
-                </div>
-              </td>
-              <td class="asset-table__name-col py-4 px-6 align-top">
-                <div class="asset-table__name-text font-medium text-[var(--color-text)]">{{ getAssetName(asset) }}</div>
+              <td class="asset-table__name-col py-4 px-6 align-top min-w-0">
+                <span class="asset-table__name-text font-medium text-[var(--color-text)]"
+                  [appTableClampTooltip]="getAssetName(asset)">{{ getAssetName(asset) }}</span>
               </td>
               <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.itemNo }}</td>
               <td class="py-4 px-6 text-[var(--color-text)] text-sm">{{ asset.partNo }}</td>
@@ -347,6 +320,3 @@
     </div>
   </th>
 </ng-template>
-
-<!-- Image Preview Tooltip -->
-<app-image-preview-tooltip></app-image-preview-tooltip>

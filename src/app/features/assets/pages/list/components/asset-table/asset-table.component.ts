@@ -3,17 +3,17 @@
  * Displays assets in table (desktop) and card (mobile) views
  */
 
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, ViewChild } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { PERMISSIONS } from '@constants/permissions.constants';
 
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, Eye, Edit, Trash2, RotateCcw, ArrowUp, ArrowDown, ArrowUpDown, Image } from 'lucide-angular';
+import { LucideAngularModule, Eye, Edit, Trash2, RotateCcw, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-angular';
 import { CardComponent } from '@components/card/card.component';
 import { LoadingStateComponent } from '@components/loading-state/loading-state.component';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
-import { ImagePreviewTooltipComponent } from '@components/image-preview-tooltip/image-preview-tooltip.component';
+import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { Asset, AssetType, AssetSortState, AssetPaginationState } from '@models/asset-list.model';
 import { AmmunitionReadDto } from '@models/ammunition.model';
@@ -31,7 +31,7 @@ import { ExplosiveDto } from '@models/explosive.model';
     LoadingStateComponent,
     PaginationComponent,
     RowsPerPageComponent,
-    ImagePreviewTooltipComponent,
+    TableClampTooltipDirective,
     HasPermissionDirective
   ],
   templateUrl: './asset-table.component.html',
@@ -67,14 +67,9 @@ export class AssetTableComponent {
   @Output() sort = new EventEmitter<string>();
   @Output() pageChange = new EventEmitter<number>();
   @Output() rowsPerPageChange = new EventEmitter<number>();
-  @Output() imageError = new EventEmitter<Asset>();
-  @Output() showImagePreview = new EventEmitter<{ event: MouseEvent; asset: Asset }>();
-  @Output() hideImagePreview = new EventEmitter<void>();
   @Output() ammunitionViewModeChange = new EventEmitter<'available' | 'deleted'>();
   @Output() explosivesViewModeChange = new EventEmitter<'available' | 'deleted'>();
   @Output() weaponsViewModeChange = new EventEmitter<'available' | 'deleted'>();
-
-  @ViewChild(ImagePreviewTooltipComponent) imagePreviewTooltip!: ImagePreviewTooltipComponent;
 
   readonly Eye = Eye;
   readonly Edit = Edit;
@@ -83,7 +78,6 @@ export class AssetTableComponent {
   readonly ArrowUp = ArrowUp;
   readonly ArrowDown = ArrowDown;
   readonly ArrowUpDown = ArrowUpDown;
-  readonly Image = Image;
 
   get filteredAssets(): Asset[] {
     return this.assets;
@@ -127,18 +121,6 @@ export class AssetTableComponent {
 
   onRowsPerPageChange(rows: number): void {
     this.rowsPerPageChange.emit(rows);
-  }
-
-  onImageError(asset: Asset): void {
-    this.imageError.emit(asset);
-  }
-
-  onShowImagePreview(event: MouseEvent, asset: Asset): void {
-    this.showImagePreview.emit({ event, asset });
-  }
-
-  onHideImagePreview(): void {
-    this.hideImagePreview.emit();
   }
 
   onAmmunitionViewModeChange(mode: 'available' | 'deleted'): void {

@@ -6,6 +6,7 @@ import {
   AssetImageState,
   createEmptyColumnFilters
 } from '../models/asset-list.model';
+import { defaultPageSize } from '../constants/app.constants';
 
 /**
  * Initial filter state
@@ -49,7 +50,7 @@ export function createInitialSortState(): AssetSortState {
 export function createInitialPaginationState(): AssetPaginationState {
   return {
     currentPage: 1,
-    rowsPerPage: 5
+    rowsPerPage: defaultPageSize
   };
 }
 

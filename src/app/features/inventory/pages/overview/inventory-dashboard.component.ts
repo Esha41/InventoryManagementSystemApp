@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Subject, merge, of, asyncScheduler, forkJoin } from 'rxjs';
+import { Subject, merge, of, asyncScheduler } from 'rxjs';
 import {
   catchError,
   switchMap,
@@ -49,11 +49,10 @@ import { TranslationService } from '@services/translation.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { defaultPageSize } from '@constants/app.constants';
 import {
-  activeTabFromItemTypeDropdown,
   filterItemSummaries,
   filterItemSummariesByActiveTab,
   formatItemPickLabel,
-  hasActiveItemTableFilters,
+  hasSecondaryItemTableFilters,
   itemTypeTabAndStatCounts,
   nextTableSort,
   pageCountForLength,
@@ -122,11 +121,10 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   /** Dropdown trigger collapses to one summary line when selection has at least this many depots. */
   readonly depotDropdownCollapseBadgeCount = 5;
 
-  activeTab: ActiveTab = 'all';
+  activeTab: ActiveTab = 'ammunition';
 
   itemSearchText = '';
   caliberFilter: string | null = null;
-  itemTypeFilter: number | null = null;
   selectedItemFilterIds: number[] = [];
 
   /** Caliber display labels from lookup API (merged into filter dropdown with {@link distinctCalibers}). */
@@ -150,14 +148,14 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   lotSortColumn: string | null = null;
   lotSortDirection: 'asc' | 'desc' = 'asc';
   lotCurrentPage = 1;
-  lotRowsPerPage = 10;
+  lotRowsPerPage = defaultPageSize;
 
   assetDetails: AssetDto[] = [];
   isAssetsLoading = false;
   assetSortColumn: string | null = null;
   assetSortDirection: 'asc' | 'desc' = 'asc';
   assetCurrentPage = 1;
-  assetRowsPerPage = 10;
+  assetRowsPerPage = defaultPageSize;
 
   readonly RefreshCw = RefreshCw;
   readonly Package = Package;
@@ -297,7 +295,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
         filters: {
           searchText: this.itemSearchText,
           caliberText: (this.caliberFilter ?? '').trim() || undefined,
-          itemTypeFilter: this.itemTypeFilter,
           selectedItemCount: this.selectedItemFilterIds.length
         },
         totals: {
@@ -375,14 +372,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     return this.depots.map(d => ({ label: this.getDepotName(d), value: d.id }));
   }
 
-  get itemTypeDropdownOptions(): DropdownOption<number>[] {
-    return [
-      { label: this.translate.instant('inventoryDashboard.itemType.ammunition'), value: ItemType.Ammunition },
-      { label: this.translate.instant('inventoryDashboard.itemType.weapon'), value: ItemType.Weapon },
-      { label: this.translate.instant('inventoryDashboard.itemType.explosive'), value: ItemType.Explosive }
-    ];
-  }
-
   get itemPicklistOptions(): DropdownOption<number>[] {
     const rows = [...this.tabFilteredSummaries].sort((a, b) =>
       (a.itemName || '').localeCompare(b.itemName || '', undefined, { sensitivity: 'base' })
@@ -410,7 +399,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
   setActiveTab(tab: ActiveTab): void {
     this.activeTab = tab;
-    this.itemTypeFilter = null;
     this.selectedItemFilterIds = [];
     this.caliberFilter = null;
     this.itemCurrentPage = 1;
@@ -426,22 +414,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     if (this.activeTab === 'explosive') {
       this.caliberFilterCatalogLabels = [];
       this.cdr.markForCheck();
-      return;
-    }
-    if (this.activeTab === 'all') {
-      forkJoin({
-        ammo: this.lookupService.getCalibersByItemType(ItemType.Ammunition),
-        wpn: this.lookupService.getCalibersByItemType(ItemType.Weapon)
-      })
-        .pipe(
-          catchError(() => of({ ammo: [] as LookupItem[], wpn: [] as LookupItem[] })),
-          takeUntil(this.destroy$)
-        )
-        .subscribe(({ ammo, wpn }) => {
-          const merged = [...this.mapCalibersToFilterLabels(ammo), ...this.mapCalibersToFilterLabels(wpn)];
-          this.caliberFilterCatalogLabels = [...new Set(merged)].sort((a, b) => a.localeCompare(b));
-          this.cdr.markForCheck();
-        });
       return;
     }
     const itemType =
@@ -484,28 +456,14 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  onItemTypeFilterChange(): void {
-    this.itemCurrentPage = 1;
-    this.expandedItemId = null;
-    this.lotDetails = [];
-    this.assetDetails = [];
-    const next = activeTabFromItemTypeDropdown(this.itemTypeFilter);
-    this.activeTab = next.activeTab;
-    this.itemTypeFilter = next.itemTypeFilter;
-    this.loadCaliberFilterLookups();
-    this.cdr.markForCheck();
-  }
-
   onItemPickFilterChange(): void {
     this.itemCurrentPage = 1;
     this.cdr.markForCheck();
   }
 
   clearTableFilters(): void {
-    this.activeTab = 'all';
     this.itemSearchText = '';
     this.caliberFilter = null;
-    this.itemTypeFilter = null;
     this.selectedItemFilterIds = [];
     this.itemCurrentPage = 1;
     this.expandedItemId = null;
@@ -520,7 +478,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       selectedItemFilterIds: this.selectedItemFilterIds,
       searchText: this.itemSearchText,
       caliberSelection: this.caliberFilter,
-      itemType: this.itemTypeFilter,
       activeTab: this.activeTab
     });
   }
@@ -529,13 +486,18 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     return distinctCalibersFromItems(this.tabFilteredSummaries);
   }
 
-  get hasActiveTableFilters(): boolean {
-    return hasActiveItemTableFilters(
-      this.activeTab,
+  get hasSecondaryTableFilters(): boolean {
+    return hasSecondaryItemTableFilters(
       this.itemSearchText,
       this.caliberFilter,
-      this.itemTypeFilter,
       this.selectedItemFilterIds
+    );
+  }
+
+  get showTableTotalsHint(): boolean {
+    return (
+      this.itemSummaries.length > 0 &&
+      (this.itemSummaries.length !== this.filteredItemCount || this.hasSecondaryTableFilters)
     );
   }
 

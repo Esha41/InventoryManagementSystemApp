@@ -96,7 +96,7 @@
             <div class="text-sm text-[var(--color-text-muted)] text-start sm:text-end">
               <span class="font-medium text-[var(--color-text)]">{{ filteredItemCount }}</span>
               {{ 'inventoryDashboard.itemSummary.items' | translate }}
-              <span *ngIf="hasActiveTableFilters && itemSummaries.length !== filteredItemCount" class="block text-xs mt-0.5">
+              <span *ngIf="itemSummaries.length !== filteredItemCount" class="block text-xs mt-0.5">
                 {{ 'inventoryDashboard.itemSummary.filteredHint' | translate: { total: itemSummaries.length } }}
               </span>
             </div>
@@ -207,22 +207,8 @@
                 </app-dropdown>
               </div>
 
-              <!-- Item type (only shown in "All" tab) -->
-              <div *ngIf="activeTab === 'all'" class="w-full min-w-[200px] lg:max-w-xs lg:flex-none">
-                <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.itemType' | translate }}</span>
-                <app-dropdown class="block w-full min-h-[42px]"
-                  [(ngModel)]="itemTypeFilter"
-                  (ngModelChange)="onItemTypeFilterChange()"
-                  [options]="itemTypeDropdownOptions"
-                  [placeholderSelectable]="true"
-                  [placeholderValue]="null"
-                  [showSearch]="false"
-                  [placeholder]="'inventoryDashboard.itemSummary.filters.allTypes' | translate">
-                </app-dropdown>
-              </div>
-
               <!-- Clear filters (same control as asset list filter bar) -->
-              <div *ngIf="hasActiveTableFilters" class="w-full sm:w-auto lg:ms-auto">
+              <div *ngIf="hasSecondaryTableFilters" class="w-full sm:w-auto lg:ms-auto">
                 <button type="button" (click)="clearTableFilters()"
                   class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors w-full sm:w-auto justify-center">
                   <lucide-angular [img]="FilterX" class="h-4 w-4"></lucide-angular>
@@ -231,7 +217,7 @@
               </div>
             </ng-container>
           </div>
-          <p *ngIf="itemSummaries.length > 0 && hasActiveTableFilters" class="text-xs text-[var(--color-text-muted)] mt-2">
+          <p *ngIf="showTableTotalsHint" class="text-xs text-[var(--color-text-muted)] mt-2">
             {{ 'inventoryDashboard.itemSummary.totalsHint' | translate }}
           </p>
         </div>
@@ -240,10 +226,9 @@
         <div *ngIf="itemSummaries.length > 0" class="-mx-4 sm:-mx-6 px-4 sm:px-6 border-b border-[var(--color-border)] min-w-0">
           <nav class="flex gap-1 overflow-x-auto overflow-y-hidden -mb-px pb-px" aria-label="Item type tabs">
             <button *ngFor="let tab of [
-              { id: 'all',        label: 'inventoryDashboard.tabs.all',        count: itemTypeCountMetrics.tabCounts.all },
-              { id: 'ammunition', label: 'inventoryDashboard.tabs.ammunition',  count: itemTypeCountMetrics.tabCounts.ammunition },
-              { id: 'explosive',  label: 'inventoryDashboard.tabs.explosive',   count: itemTypeCountMetrics.tabCounts.explosive },
-              { id: 'weapon',     label: 'inventoryDashboard.tabs.weapon',      count: itemTypeCountMetrics.tabCounts.weapon }
+              { id: 'ammunition', label: 'inventoryDashboard.tabs.ammunition', count: itemTypeCountMetrics.tabCounts.ammunition },
+              { id: 'explosive',  label: 'inventoryDashboard.tabs.explosive',  count: itemTypeCountMetrics.tabCounts.explosive },
+              { id: 'weapon',     label: 'inventoryDashboard.tabs.weapon',     count: itemTypeCountMetrics.tabCounts.weapon }
             ]"
             type="button"
             (click)="setActiveTab($any(tab.id))"
@@ -277,61 +262,61 @@
           </button>
         </div>
 
-        <div *ngIf="itemSummaries.length > 0 && filteredItemCount > 0" class="w-full min-w-0 max-w-full mt-4 border border-[var(--color-border)] rounded-lg overflow-hidden">
-        <app-inventory-item-summary-table
-          [activeTab]="activeTab"
-          [rows]="paginatedItemSummaries"
-          [itemSortColumn]="itemSortColumn"
-          [itemSortDirection]="itemSortDirection"
-          [expandedItemId]="expandedItemId"
-          [lotDetails]="lotDetails"
-          [isLotsLoading]="isLotsLoading"
-          [lotSortColumn]="lotSortColumn"
-          [lotSortDirection]="lotSortDirection"
-          [paginatedLotDetails]="paginatedLotDetails"
-          [lotTotalPages]="lotTotalPages"
-          [lotCurrentPage]="lotCurrentPage"
-          [lotRowsPerPage]="lotRowsPerPage"
-          [assetDetails]="assetDetails"
-          [isAssetsLoading]="isAssetsLoading"
-          [assetSortColumn]="assetSortColumn"
-          [assetSortDirection]="assetSortDirection"
-          [paginatedAssetDetails]="paginatedAssetDetails"
-          [assetTotalPages]="assetTotalPages"
-          [assetCurrentPage]="assetCurrentPage"
-          [assetRowsPerPage]="assetRowsPerPage"
-          [selectedDepotId]="selectedDepotIds.length === 1 ? selectedDepotIds[0] : null"
-          [selectedDepotLabel]="selectedDepotLabel"
-          [singleItemTotalsSubtitle]="singleItemTotalsSubtitle"
-          [sumTotalQtyFiltered]="sumTotalQtyFiltered"
-          [sumUsedQtyFiltered]="sumUsedQtyFiltered"
-          [sumReservedQtyFiltered]="sumReservedQtyFiltered"
-          [sumRemainingQtyFiltered]="sumRemainingQtyFiltered"
-          [sumLotsFiltered]="sumLotsFiltered"
-          (itemSort)="sortItemsByColumn($event)"
-          (rowToggle)="toggleItemExpand($event)"
-          (lotSort)="sortLotsByColumn($event)"
-          (lotPageChange)="onLotPageChange($event)"
-          (lotRowsPerPageChange)="onLotRowsPerPageChange($event)"
-          (assetSort)="sortAssetsByColumn($event)"
-          (assetPageChange)="onAssetPageChange($event)"
-          (assetRowsPerPageChange)="onAssetRowsPerPageChange($event)">
-        </app-inventory-item-summary-table>
-        </div>
-
-        <!-- Item table pagination -->
+        <!-- Table + totals (tfoot) + pagination share one bordered shell so widths align -->
         <div *ngIf="itemSummaries.length > 0 && filteredItemCount > 0"
-          class="flex w-full min-w-0 flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 mt-4"
-          [class.sm:flex-row-reverse]="isRTL">
-          <app-rows-per-page [rowsPerPage]="itemRowsPerPage" [totalItems]="filteredItemCount"
-            [visibleItems]="paginatedItemSummaries.length" (rowsPerPageChange)="onItemRowsPerPageChange($event)">
-          </app-rows-per-page>
-          <div *ngIf="itemTotalPages > 1" class="flex items-center gap-3">
-            <app-pagination [currentPage]="itemCurrentPage" [totalPages]="itemTotalPages" (pageChange)="onItemPageChange($event)">
-            </app-pagination>
-            <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
-              {{ itemCurrentPage }} {{ 'common.of' | translate }} {{ itemTotalPages }}
-            </span>
+          class="flex w-full min-w-0 max-w-full flex-col mt-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] overflow-hidden">
+          <app-inventory-item-summary-table class="block min-w-0 w-full"
+            [activeTab]="activeTab"
+            [rows]="paginatedItemSummaries"
+            [itemSortColumn]="itemSortColumn"
+            [itemSortDirection]="itemSortDirection"
+            [expandedItemId]="expandedItemId"
+            [lotDetails]="lotDetails"
+            [isLotsLoading]="isLotsLoading"
+            [lotSortColumn]="lotSortColumn"
+            [lotSortDirection]="lotSortDirection"
+            [paginatedLotDetails]="paginatedLotDetails"
+            [lotTotalPages]="lotTotalPages"
+            [lotCurrentPage]="lotCurrentPage"
+            [lotRowsPerPage]="lotRowsPerPage"
+            [assetDetails]="assetDetails"
+            [isAssetsLoading]="isAssetsLoading"
+            [assetSortColumn]="assetSortColumn"
+            [assetSortDirection]="assetSortDirection"
+            [paginatedAssetDetails]="paginatedAssetDetails"
+            [assetTotalPages]="assetTotalPages"
+            [assetCurrentPage]="assetCurrentPage"
+            [assetRowsPerPage]="assetRowsPerPage"
+            [selectedDepotId]="selectedDepotIds.length === 1 ? selectedDepotIds[0] : null"
+            [selectedDepotLabel]="selectedDepotLabel"
+            [singleItemTotalsSubtitle]="singleItemTotalsSubtitle"
+            [sumTotalQtyFiltered]="sumTotalQtyFiltered"
+            [sumUsedQtyFiltered]="sumUsedQtyFiltered"
+            [sumReservedQtyFiltered]="sumReservedQtyFiltered"
+            [sumRemainingQtyFiltered]="sumRemainingQtyFiltered"
+            [sumLotsFiltered]="sumLotsFiltered"
+            (itemSort)="sortItemsByColumn($event)"
+            (rowToggle)="toggleItemExpand($event)"
+            (lotSort)="sortLotsByColumn($event)"
+            (lotPageChange)="onLotPageChange($event)"
+            (lotRowsPerPageChange)="onLotRowsPerPageChange($event)"
+            (assetSort)="sortAssetsByColumn($event)"
+            (assetPageChange)="onAssetPageChange($event)"
+            (assetRowsPerPageChange)="onAssetRowsPerPageChange($event)">
+          </app-inventory-item-summary-table>
+
+          <div class="flex w-full min-w-0 flex-col gap-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-3 py-3.5 sm:px-4 sm:flex-row sm:items-center sm:justify-between"
+            [class.sm:flex-row-reverse]="isRTL">
+            <app-rows-per-page [rowsPerPage]="itemRowsPerPage" [totalItems]="filteredItemCount"
+              [visibleItems]="paginatedItemSummaries.length" (rowsPerPageChange)="onItemRowsPerPageChange($event)">
+            </app-rows-per-page>
+            <div *ngIf="itemTotalPages > 1" class="flex items-center gap-3 shrink-0">
+              <app-pagination [currentPage]="itemCurrentPage" [totalPages]="itemTotalPages" (pageChange)="onItemPageChange($event)">
+              </app-pagination>
+              <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+                {{ itemCurrentPage }} {{ 'common.of' | translate }} {{ itemTotalPages }}
+              </span>
+            </div>
           </div>
         </div>
 

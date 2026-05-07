@@ -43,7 +43,7 @@ import {
   getItemTypeIcon as getItemTypeIconUtil,
   getItemProductId as getItemProductIdUtil
 } from '../utils/ui-helpers.utils';
-import { LoadingStateComponent, ModalComponent, ButtonComponent } from '@components/index';
+import { LoadingStateComponent, ModalComponent, ButtonComponent, TableClampTooltipDirective } from '@components/index';
 import { TranslationService } from '@services/translation.service';
 import { getCurrentLang } from '@utils/localization.utils';
 import { mapOrderPriorityToString as mapPriorityToString } from '@utils/priority.utils';
@@ -71,7 +71,8 @@ import { applyTempLotSelectionsToOrderItem } from './utils/supply-request-apply-
     ItemManagementModalsComponent,
     LoadingStateComponent,
     ModalComponent,
-    ButtonComponent
+    ButtonComponent,
+    TableClampTooltipDirective
   ],
   templateUrl: './supply-request-detail.component.html',
   styleUrls: ['./supply-request-detail.component.css'],

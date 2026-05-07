@@ -54,7 +54,9 @@
       <tbody class="divide-y divide-[var(--color-border)]">
         <tr *ngFor="let item of requestItems" (click)="navigateToItemDetails(item.itemId || item.id)"
           class="transition-colors hover:bg-[var(--color-background-hover)] cursor-pointer">
-          <td class="px-4 py-3 text-sm text-[var(--color-text)] font-medium">{{ item.itemName }}</td>
+          <td class="px-4 py-3 text-sm text-[var(--color-text)] font-medium min-w-0">
+            <span [appTableClampTooltip]="item.itemName">{{ item.itemName }}</span>
+          </td>
           <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">{{ item.itemNo || '-' }}</td>
           <td class="px-4 py-3 text-sm text-[var(--color-text)] text-end font-semibold">{{ item.quantity }}
           </td>
