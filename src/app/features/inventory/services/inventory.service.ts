@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable, EMPTY } from 'rxjs';
+import { map, catchError, expand, reduce } from 'rxjs/operators';
 import { ConfigService } from '@services/config.service';
 import { ApiService } from '@services/api.service';
 import { APIOperationResponse } from '@models/api-response.model';
-import { API_ENDPOINTS } from '@constants/app.constants';
+import { API_ENDPOINTS, defaultPageSize } from '@constants/app.constants';
 import {
   InventoryDto,
   CreateInventoryDto,
@@ -271,24 +271,77 @@ export class InventoryService implements IImportableService {
   }
 
   /**
-   * Get aggregated inventory summary for all items, optionally filtered by depot(s).
-   * Endpoint: GET /api/Inventory/items/summary[?depotIds=X&depotIds=Y]
-   * When depotIds is empty/undefined, returns data for all accessible depots.
+   * Full item summary list for all accessible depots (or selected depots), loaded via
+   * repeated `POST /api/Inventory/items/summary/paged` requests (same page size) until all pages are merged.
    */
-  getAllItemsSummary(depotIds?: number[]): Observable<ItemInventorySummaryDto[]> {
-    this.config.log('Fetching inventory summary for all items', { depotIds });
-    let params = '';
-    if (depotIds && depotIds.length > 0) {
-      params = '?' + depotIds.map(id => `depotIds=${id}`).join('&');
-    }
+  getAllItemsSummary(
+    depotIds?: number[],
+    pageSize: number = defaultPageSize
+  ): Observable<ItemInventorySummaryDto[]> {
+    this.config.log('Fetching inventory summary for all items (paged accumulation)', { depotIds, pageSize });
+    const maxPages = 5000;
+    const query = !depotIds?.length ? undefined : depotIds.length === 1
+      ? { depotId: depotIds[0] }
+      : { depotIds };
 
-    return this.apiService.get<ItemInventorySummaryDto[]>(`${this.endpoint}/items/summary${params}`).pipe(
-      map(items => items.map(item => ({
-        ...item,
-        itemType: typeof item.itemType === 'string'
-          ? this.convertItemTypeStringToNumber(item.itemType)
-          : item.itemType
-      })))
+    const fetchPage = (page: number) =>
+      this.getAllItemsSummaryPaginated({ page, pageSize }, query).pipe(
+        map(res => ({ res, requestedPage: page }))
+      );
+
+    return fetchPage(1).pipe(
+      expand(({ res, requestedPage }) => {
+        const totalPages = res.totalPages ?? 0;
+        if (requestedPage >= totalPages || totalPages === 0 || requestedPage >= maxPages) {
+          return EMPTY;
+        }
+        return fetchPage(requestedPage + 1);
+      }),
+      reduce<{ res: PaginatedList<ItemInventorySummaryDto>; requestedPage: number }, ItemInventorySummaryDto[]>(
+        (acc, { res }) => acc.concat(res.items ?? []),
+        []
+      )
+    );
+  }
+
+  /**
+   * Paginated aggregated inventory summary (item rows), same depot rules as getAllItemsSummary.
+   * Endpoint: POST /api/Inventory/items/summary/paged
+   */
+  getAllItemsSummaryPaginated(
+    request: PagedRequest,
+    query?: { depotId?: number; depotIds?: number[]; itemType?: number }
+  ): Observable<PaginatedList<ItemInventorySummaryDto>> {
+    let httpParams = new HttpParams();
+    if (query?.depotId != null) httpParams = httpParams.set('depotId', String(query.depotId));
+    if (query?.depotIds?.length) {
+      for (const id of query.depotIds) {
+        httpParams = httpParams.append('depotIds', String(id));
+      }
+    }
+    if (query?.itemType != null) {
+      httpParams = httpParams.set('itemType', String(query.itemType));
+    }
+    this.config.log('Fetching paginated inventory summary for all items', {
+      depotId: query?.depotId,
+      depotIds: query?.depotIds,
+      itemType: query?.itemType,
+      page: request.page
+    });
+    return this.apiService.post<PaginatedList<ItemInventorySummaryDto>>(
+      `${this.endpoint}/items/summary/paged`,
+      request,
+      { params: httpParams }
+    ).pipe(
+      map(list => ({
+        ...list,
+        items: (list?.items ?? []).map(item => ({
+          ...item,
+          itemType: typeof item.itemType === 'string'
+            ? this.convertItemTypeStringToNumber(item.itemType as string)
+            : item.itemType
+        }))
+      }))
     );
   }
 

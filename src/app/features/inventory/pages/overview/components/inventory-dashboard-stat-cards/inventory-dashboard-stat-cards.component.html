@@ -55,13 +55,13 @@
     <div class="flex items-start justify-between gap-3">
       <div class="min-w-0">
         <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1 truncate">
-          {{ 'inventoryDashboard.statistics.totalRemaining' | translate }}
+          {{ 'inventoryDashboard.statistics.totalLots' | translate }}
         </p>
-        <p class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ totalRemainingQty | number }}</p>
-        <p class="text-xs text-[var(--color-text-muted)] mt-1">{{ 'inventoryDashboard.statistics.availableUnits' | translate }}</p>
+        <p class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ lotCountStat | number }}</p>
+        <p class="text-xs text-[var(--color-text-muted)] mt-1">{{ 'inventoryDashboard.statistics.totalLotsHint' | translate }}</p>
       </div>
-      <div class="w-10 h-10 rounded-lg bg-[var(--color-success)]/10 flex items-center justify-center shrink-0">
-        <lucide-angular [img]="ChartBar" class="w-5 h-5 text-[var(--color-success)]"></lucide-angular>
+      <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center shrink-0">
+        <lucide-angular [img]="Layers" class="w-5 h-5 text-[var(--color-brand)]"></lucide-angular>
       </div>
     </div>
   </div>
@@ -70,13 +70,13 @@
     <div class="flex items-start justify-between gap-3">
       <div class="min-w-0">
         <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1 truncate">
-          {{ 'inventoryDashboard.statistics.totalLots' | translate }}
+          {{ 'inventoryDashboard.statistics.totalBatches' | translate }}
         </p>
-        <p class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ totalLotsStat | number }}</p>
-        <p class="text-xs text-[var(--color-text-muted)] mt-1">{{ 'inventoryDashboard.statistics.activeLots' | translate }}</p>
+        <p class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ batchCountStat | number }}</p>
+        <p class="text-xs text-[var(--color-text-muted)] mt-1">{{ 'inventoryDashboard.statistics.totalBatchesHint' | translate }}</p>
       </div>
       <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center shrink-0">
-        <lucide-angular [img]="Layers" class="w-5 h-5 text-[var(--color-brand)]"></lucide-angular>
+        <lucide-angular [img]="Boxes" class="w-5 h-5 text-[var(--color-brand)]"></lucide-angular>
       </div>
     </div>
   </div>

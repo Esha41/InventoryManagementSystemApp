@@ -10,6 +10,8 @@ import { AssetService } from '@assets/services/asset.service';
 import { AssetHistoryService, AssetHistoryDto } from '@assets/services/asset-history.service';
 import { ItemInventorySummaryDto } from '@models/inventory.model';
 import { AssetDto, AssetStatus, getAssetStatusLabel } from '@models/asset.model';
+import { PagedListRequest } from '@models/pagination.model';
+import { pageCountForLength } from '@inventory/pages/overview/inventory-dashboard.helpers';
 import { CardComponent } from '@components/card/card.component';
 import { LoadingStateComponent, ErrorStateComponent, TableClampTooltipDirective } from '@components/index';
 import { PaginationComponent } from '@components/pagination/pagination.component';
@@ -44,21 +46,25 @@ type ExpandChevronIcon = typeof ChevronDown | typeof ChevronLeft | typeof Chevro
         AppDatePipe,
         TableClampTooltipDirective
     ],
-    providers: [InventorySummaryDataService],
     templateUrl: './warehouse-inventory-summary.component.html',
     styleUrls: ['./warehouse-inventory-summary.component.css'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
-    // Data
-    items: ItemInventorySummaryDto[] = [];
-    filteredItems: ItemInventorySummaryDto[] = [];
-    paginatedItems: ItemInventorySummaryDto[] = [];
+    /** Current server page rows (before optional client search filter). */
+    pageItems: ItemInventorySummaryDto[] = [];
+    /** Total rows for active tab from API (pagination). */
+    serverTotalCount = 0;
 
     // Accordion state
     expandedItemIds = new Set<number>();
     lotsByItemId = new Map<number, LotDetailDto[]>();
+    /** Current server page of assets per expanded weapon row (POST .../item/{id}/paged). */
     assetsByItemId = new Map<number, AssetDto[]>();
+    assetTotalCountByItemId = new Map<number, number>();
+    assetCurrentPageByItemId = new Map<number, number>();
+    /** Page size for weapon asset accordion (one API request per page). */
+    assetRowsPerPage = defaultPageSize;
     loadingLots = new Set<number>();
     loadingAssets = new Set<number>();
 
@@ -73,10 +79,9 @@ export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
     activeTab: 'ammunition' | 'weapon' | 'explosive' = 'ammunition';
     searchTerm = '';
 
-    // Pagination
+    // Pagination (server-driven)
     currentPage = 1;
     rowsPerPage = defaultPageSize;
-    totalPages = 1;
 
     // Icons
     readonly ChevronDown = ChevronDown;
@@ -119,32 +124,54 @@ export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
         return this.isRTL ? ArrowRight : ArrowLeft;
     }
 
-    /** Aggregates for current tab + search (`filteredItems`, not the current page). */
+    /** Rows to show: server page, optionally narrowed by search (current page only). */
+    get displayRows(): ItemInventorySummaryDto[] {
+        if (!this.searchTerm.trim()) {
+            return this.pageItems;
+        }
+        const search = this.searchTerm.toLowerCase();
+        return this.pageItems.filter(item =>
+            item.itemName?.toLowerCase().includes(search) ||
+            item.itemNo?.toLowerCase().includes(search) ||
+            item.nsn?.toLowerCase().includes(search) ||
+            item.partNo?.toLowerCase().includes(search)
+        );
+    }
+
+    /** Total pages from server count. */
+    get totalPages(): number {
+        if (this.serverTotalCount <= 0) {
+            return 0;
+        }
+        return Math.ceil(this.serverTotalCount / this.rowsPerPage);
+    }
+
+    /** Aggregates: first chip = tab total from server; quantity chips = current visible rows only. */
     get summaryItemCount(): number {
-        return this.filteredItems.length;
+        return this.serverTotalCount;
     }
 
     get summaryTotalLots(): number {
-        return this.filteredItems.reduce((s, i) => s + (Number(i.totalLots) || 0), 0);
+        return this.displayRows.reduce((s, i) => s + (Number(i.totalLots) || 0), 0);
     }
 
     get summaryTotalQuantity(): number {
-        return this.filteredItems.reduce((s, i) => s + (Number(i.totalQuantity) || 0), 0);
+        return this.displayRows.reduce((s, i) => s + (Number(i.totalQuantity) || 0), 0);
     }
 
     get summaryUsedQuantity(): number {
-        return this.filteredItems.reduce((s, i) => s + (Number(i.usedQuantity) || 0), 0);
+        return this.displayRows.reduce((s, i) => s + (Number(i.usedQuantity) || 0), 0);
     }
 
     get summaryReservedQuantity(): number {
-        return this.filteredItems.reduce(
+        return this.displayRows.reduce(
             (s, i) => s + (Number(i.reservedQuantityByOrdersOnProcessing) || 0),
             0
         );
     }
 
     get summaryRemainingQuantity(): number {
-        return this.filteredItems.reduce((s, i) => s + (Number(i.remainingQuantity) || 0), 0);
+        return this.displayRows.reduce((s, i) => s + (Number(i.remainingQuantity) || 0), 0);
     }
 
     onBack(): void {
@@ -159,7 +186,7 @@ export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        this.loadInventorySummary();
+        this.loadPage();
     }
 
     ngOnDestroy(): void {
@@ -167,26 +194,26 @@ export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
         this.destroy$.complete();
     }
 
-    /**
-     * Load all inventory items from all sources
-     */
-    loadInventorySummary(): void {
+    private loadPage(): void {
         this.loading = true;
         this.error = null;
         this.cdr.markForCheck();
 
-        this.dataService.loadAllItems()
+        this.dataService
+            .loadWarehouseSummaryPage(this.activeTab, this.currentPage, this.rowsPerPage, undefined)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
-                next: (items) => {
-                    this.items = items;
-                    this.applyFilters();
+                next: ({ items, totalCount }) => {
+                    this.pageItems = items;
+                    this.serverTotalCount = totalCount;
                     this.loading = false;
                     this.cdr.markForCheck();
                 },
                 error: () => {
                     this.error = 'Failed to load inventory summary';
                     this.loading = false;
+                    this.pageItems = [];
+                    this.serverTotalCount = 0;
                     this.cdr.markForCheck();
                 }
             });
@@ -199,76 +226,38 @@ export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
         this.activeTab = tab;
         this.currentPage = 1;
         this.searchTerm = '';
-        this.applyFilters();
+        this.expandedItemIds.clear();
+        this.lotsByItemId.clear();
+        this.assetsByItemId.clear();
+        this.assetTotalCountByItemId.clear();
+        this.assetCurrentPageByItemId.clear();
+        this.expandedAssetIds.clear();
+        this.historyByAssetId.clear();
+        this.loadPage();
     }
 
     /**
      * Handle search input change
      */
     onSearchChange(): void {
-        this.currentPage = 1;
-        this.applyFilters();
+        this.cdr.markForCheck();
     }
 
-    /**
-     * Apply filters (tab + search) and update pagination
-     */
-    private applyFilters(): void {
-        let filtered = [...this.items];
-
-        // Filter by item type based on active tab
-        const itemType = InventorySummaryUtils.getItemTypeFromTab(this.activeTab);
-        filtered = filtered.filter(item => item.itemType === itemType);
-
-        // Apply search filter
-        if (this.searchTerm.trim()) {
-            const search = this.searchTerm.toLowerCase();
-            filtered = filtered.filter(item =>
-                item.itemName?.toLowerCase().includes(search) ||
-                item.itemNo?.toLowerCase().includes(search) ||
-                item.nsn?.toLowerCase().includes(search) ||
-                item.partNo?.toLowerCase().includes(search)
-            );
-        }
-
-        this.filteredItems = filtered;
-        this.updatePagination();
-    }
-
-    /**
-     * Update pagination based on filtered items
-     */
-    private updatePagination(): void {
-        this.totalPages = Math.ceil(this.filteredItems.length / this.rowsPerPage);
-
-        // Ensure current page is valid
-        if (this.currentPage > this.totalPages && this.totalPages > 0) {
-            this.currentPage = this.totalPages;
-        }
-        if (this.currentPage < 1) {
-            this.currentPage = 1;
-        }
-
-        const startIndex = (this.currentPage - 1) * this.rowsPerPage;
-        const endIndex = startIndex + this.rowsPerPage;
-        this.paginatedItems = this.filteredItems.slice(startIndex, endIndex);
-    }
-
-    /**
-     * Handle page change
-     */
     onPageChange(page: number): void {
+        if (page === this.currentPage) {
+            return;
+        }
         this.currentPage = page;
-        this.updatePagination();
+        this.loadPage();
     }
 
-    /**
-     * Handle rows per page change
-     */
     onRowsPerPageChange(rows: number): void {
+        if (rows === this.rowsPerPage) {
+            return;
+        }
         this.rowsPerPage = rows;
         this.currentPage = 1;
-        this.updatePagination();
+        this.loadPage();
     }
 
     /**
@@ -283,7 +272,8 @@ export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
             // For weapons (itemType 2), load assets instead of lots
             if (itemType === 2) {
                 if (!this.assetsByItemId.has(itemId)) {
-                    this.loadAssetsForItem(itemId);
+                    this.assetCurrentPageByItemId.set(itemId, 1);
+                    this.loadAssetsForItem(itemId, 1);
                 }
             } else {
                 // For ammunition and explosives, load lots
@@ -391,19 +381,24 @@ export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Load assets for a weapon item
+     * Load one page of assets for a weapon item (`POST /api/Asset/item/{itemId}/paged`).
      */
-    private loadAssetsForItem(itemId: number): void {
+    private loadAssetsForItem(itemId: number, page: number): void {
+        this.assetCurrentPageByItemId.set(itemId, page);
         this.loadingAssets.add(itemId);
         this.cdr.markForCheck();
 
-        this.assetService.getAll<AssetDto>({ search: '' })
+        const request: PagedListRequest = {
+            page,
+            pageSize: this.assetRowsPerPage
+        };
+
+        this.assetService.getAssetsByItemIdPaged(itemId, request)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
-                next: (assets) => {
-                    // Filter assets by itemId and not deleted
-                    const itemAssets = assets.filter(a => a.itemId === itemId && !a.isDeleted);
-                    this.assetsByItemId.set(itemId, itemAssets);
+                next: (res) => {
+                    this.assetsByItemId.set(itemId, res.items ?? []);
+                    this.assetTotalCountByItemId.set(itemId, res.totalCount ?? 0);
                     this.loadingAssets.delete(itemId);
                     this.cdr.markForCheck();
                 },
@@ -414,8 +409,24 @@ export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
             });
     }
 
+    getAssetTotalPages(itemId: number): number {
+        const total = this.assetTotalCountByItemId.get(itemId) ?? 0;
+        return pageCountForLength(total, this.assetRowsPerPage);
+    }
+
+    getAssetCurrentPage(itemId: number): number {
+        return this.assetCurrentPageByItemId.get(itemId) ?? 1;
+    }
+
+    onWeaponAssetPageChange(itemId: number, page: number): void {
+        if (page === this.getAssetCurrentPage(itemId)) {
+            return;
+        }
+        this.loadAssetsForItem(itemId, page);
+    }
+
     /**
-     * Get assets for a specific weapon item
+     * Get assets for a specific weapon item (current server page)
      */
     getAssetsForItem(itemId: number): AssetDto[] {
         return this.assetsByItemId.get(itemId) || [];
@@ -563,7 +574,7 @@ export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
             fileName: fileName,
             sheetName: 'Summary',
             columns: columns,
-            data: this.filteredItems,
+            data: this.displayRows,
             includeTimestamp: true
         });
 

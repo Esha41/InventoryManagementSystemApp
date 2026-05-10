@@ -3,8 +3,6 @@ import { forkJoin, Observable, of } from 'rxjs';
 import { catchError, filter, map, pairwise, startWith, skip, distinctUntilChanged } from 'rxjs/operators';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { MonitoringService } from '@services/monitoring.service';
-import { InventorySummaryDataService } from '@inventory/services/inventory-summary-data.service';
-import { ItemInventorySummaryDto } from '@models/inventory.model';
 import { InventoryDashboardSummaryDto, InventoryHeadlineMetricsDto } from '@models/inventory-dashboard-monitoring.model';
 
 export const INVENTORY_DASHBOARD_PATH_SEGMENT = 'inventory-dashboard';
@@ -40,6 +38,9 @@ export function emptyInventoryHeadlineMetrics(): InventoryHeadlineMetricsDto {
     totalDistinctItems: 0,
     totalRemainingQuantity: 0,
     totalLots: 0,
+    weaponCount: 0,
+    lotCount: 0,
+    totalBatches: 0,
     ammunitionItemCount: 0,
     explosiveItemCount: 0,
     accessoryItemCount: 0,
@@ -47,28 +48,22 @@ export function emptyInventoryHeadlineMetrics(): InventoryHeadlineMetricsDto {
   };
 }
 
-export interface InventoryDashboardDataResult {
+/** Headline + monitoring only; item table loads its own paged/sliced data in the component. */
+export interface InventoryDashboardShellResult {
   headlineMetrics: InventoryHeadlineMetricsDto;
-  itemSummaries: ItemInventorySummaryDto[];
   inventoryMonitoring: InventoryDashboardSummaryDto;
 }
 
-export function getInventoryDashboardData$(
+export function getInventoryDashboard$(
   selectedDepotIds: number[],
-  monitoringService: MonitoringService,
-  inventorySummaryData: InventorySummaryDataService,
-  weaponAssetsPage: number = 1,
-  weaponAssetsPageSize?: number
-): Observable<InventoryDashboardDataResult> {
+  monitoringService: MonitoringService
+): Observable<InventoryDashboardShellResult> {
   const ids = selectedDepotIds.length > 0 ? selectedDepotIds : undefined;
 
   return forkJoin({
     headlineMetrics: monitoringService
       .getInventoryHeadlineMetrics(ids)
       .pipe(catchError(() => of(emptyInventoryHeadlineMetrics()))),
-    itemSummaries: inventorySummaryData
-      .loadMergedItemSummaries(ids, weaponAssetsPage, weaponAssetsPageSize)
-      .pipe(catchError(() => of([]))),
     inventoryMonitoring: monitoringService
       .getInventoryDashboardSummary(ids)
       .pipe(catchError(() => of(emptyInventoryMonitoring())))
