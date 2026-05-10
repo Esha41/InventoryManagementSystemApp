@@ -52,7 +52,8 @@ import { OrderItemTrackingModalComponent } from './components/order-item-trackin
 import { WorkflowReturnDepotComponent } from './components/workflow-return-depot/workflow-return-depot.component';
 import { WorkflowReturnDeliveryDateComponent } from './components/workflow-return-delivery-date/workflow-return-delivery-date.component';
 import { WorkflowReturnApprovedSummaryComponent } from './components/workflow-return-approved-summary/workflow-return-approved-summary.component';
-import { AutoRejectCountdownService, OrderAutoRejectCountdownDto } from '@requests/services/auto-reject-countdown.service';
+import { AutoRejectCountdownService } from '@requests/services/auto-reject-countdown.service';
+import { RequestAutoRejectCountdownDto } from '@models/workflow.model';
 import { AutoRejectCountdownComponent } from '@requests/components/auto-reject-countdown/auto-reject-countdown.component';
 
 @Component({
@@ -135,7 +136,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   /** Incremented on each full/silent detail load so async completions can ignore stale work. */
   private detailLoadSeq = 0;
   requestDetail: RequestDetail | null = null;
-  autoRejectCountdown: OrderAutoRejectCountdownDto | null = null;
+  autoRejectCountdown: RequestAutoRejectCountdownDto | null = null;
   loading: boolean = true;
   error: string | null = null;
   orderFiles: FileUploadDto[] = []; // Files attached to the request (Order, Return, Discard)

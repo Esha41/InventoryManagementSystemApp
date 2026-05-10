@@ -16,7 +16,9 @@ import {
   WorkflowTypeItem,
   WorkflowStepNotifierDto,
   WorkflowStepDto,
-  workflowTypeToNumber
+  workflowTypeToNumber,
+  UpdateWorkflowAutoRejectTriggersDto,
+  WorkflowAutoRejectTriggerDto
 } from '@models/workflow.model';
 
 /**
@@ -79,7 +81,11 @@ export class WorkflowService {
             approvalStages: Array.isArray(w.workflowSteps) ? w.workflowSteps.length : 0,
             status: status,
             workflowType: numericWorkflowType,
-            workflowTypeName: w.workflowTypeName ?? undefined
+            workflowTypeName: w.workflowTypeName ?? undefined,
+            autoRejectTriggerMode: w.autoRejectTriggerMode ?? undefined,
+            autoRejectTriggerRoleIds: w.autoRejectTriggerRoleIds,
+            autoRejectTriggerStepIds: w.autoRejectTriggerStepIds,
+            autoRejectResetOnReApproval: w.autoRejectResetOnReApproval
           };
         });
 
@@ -154,6 +160,13 @@ export class WorkflowService {
   }
 
   /**
+   * Load workflow with steps and per-workflow auto-reject trigger fields (GET /api/Workflows/{id}).
+   */
+  getWorkflowAutoRejectTriggerConfig(workflowId: number): Observable<BackendWorkflowDto> {
+    return this.getWorkflowDetailById(workflowId);
+  }
+
+  /**
    * Create new workflow
    */
   createWorkflow(workflow: CreateWorkflowDto): Observable<WorkflowDto> {
@@ -223,6 +236,20 @@ export class WorkflowService {
         this.configService.logError('Failed to update backend workflow', error);
         return throwError(() => new Error(error.message || 'Failed to update workflow'));
       })
+    );
+  }
+
+  /**
+   * Per-workflow order auto-reject trigger configuration only.
+   */
+  updateWorkflowAutoRejectTriggers(
+    workflowId: number,
+    payload: UpdateWorkflowAutoRejectTriggersDto
+  ): Observable<WorkflowAutoRejectTriggerDto> {
+    this.configService.log('Updating workflow auto-reject triggers', { workflowId, mode: payload.mode });
+    return this.apiService.put<WorkflowAutoRejectTriggerDto>(
+      API_ENDPOINTS.WORKFLOWS.AUTO_REJECT_TRIGGERS(workflowId),
+      payload
     );
   }
 

@@ -103,5 +103,28 @@
     "view": "عرض",
     "viewDetails": "عرض التفاصيل",
     "yes": "نعم"
+  },
+  "workflow": {
+    "autoRejectSectionTitle": "مرجع الرفض التلقائي للطلبات",
+    "autoRejectSectionHint": "حدد أي موافقة تبدأ العد التنازلي نحو الرفض التلقائي (العتبة والتذكيرات لا تزال من إعدادات المنظمة). عند التعطيل يُستخدم دور المحفّز العام إن وُجد.",
+    "autoRejectModalTitle": "تهيئة محفّزات الرفض التلقائي — {{name}}",
+    "autoRejectTriggersSaved": "تم حفظ محفّزات الرفض التلقائي بنجاح.",
+    "autoRejectTriggerMode": "وضع المحفّز",
+    "autoRejectModeNone": "غير مُهيأ (استخدام دور المحفّز العام)",
+    "autoRejectModeRole": "عند موافقة هذه الأدوار",
+    "autoRejectModeStep": "عند اكتمال هذه الخطوات",
+    "autoRejectModeRoleLabel": "حسب الدور",
+    "autoRejectModeStepLabel": "حسب الخطوة",
+    "autoRejectRolesLabel": "أدوار المحفّز",
+    "autoRejectRolesPlaceholder": "اختر دوراً واحداً أو أكثر",
+    "autoRejectRolesHint": "تُحتسب الموافقات المطابقة عند اكتمال أي دور رئيسي أو موازٍ محدد لهذه الخطوة.",
+    "autoRejectStepsLabel": "خطوات المحفّز",
+    "autoRejectStepsPlaceholder": "اختر خطوات مسار محفوظة",
+    "autoRejectStepsHint": "تعتمد على معرفات خطوات التعريف بعد الحفظ. الصفوف الجديدة بدون معرف يجب حفظها قبل استخدامها كمحفّزات.",
+    "autoRejectSaveStepsFirst": "احفظ المسار مرةً لتُنشأ معرفات للخطوات ثم اختر المحفّزات.",
+    "autoRejectResetOnReApproval": "إعادة ضبط المرجع عند إعادة الموافقة",
+    "autoRejectResetHint": "إعادة ضبط العد التنازلي عند إعادة الموافقة: عند التفعيل يُعاد ضبط العد من آخر موافقة مطابقة؛ عند الإيقاف يُستخدم تاريخ أقدم موافقة مطابقة.",
+    "autoRejectValidationRoles": "اختر دوراً واحداً على الأقل لمحفّز يعتمد على الأدوار.",
+    "autoRejectValidationSteps": "اختر خطوة محفوظة واحدة على الأقل لمحفّز يعتمد على الخطوات."
   }
 }

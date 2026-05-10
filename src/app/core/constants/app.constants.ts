@@ -73,6 +73,7 @@ export const API_ENDPOINTS = {
     BY_ID: (id: number) => `/Workflows/${id}`,
     ALL: '/Workflows/all',
     ALL_LIST: '/Workflows/all-list',
+    AUTO_REJECT_TRIGGERS: (id: number) => `/Workflows/${id}/auto-reject-triggers`,
   },
 
   // workflow step notifiers

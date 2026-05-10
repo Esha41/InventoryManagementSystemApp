@@ -13,7 +13,7 @@ import { WorkflowService } from '@workflow/services/workflow.service';
 import { BackendUserService } from '@services/backend-user.service';
 import { RoleDto, BackendUserDto, ApplicationEntityDto } from '@models/backend-user.model';
 import { PaginatedList } from '@models/api-response.model';
-import { WorkflowStepDto, WorkflowStepTransitionDto, WorkflowStepNotifier, BackendUpdateWorkflowDto, workflowTypeToNumber } from '@models/workflow.model';
+import { WorkflowStepDto, WorkflowStepTransitionDto, WorkflowStepNotifier, BackendWorkflowDto, BackendUpdateWorkflowDto, workflowTypeToNumber } from '@models/workflow.model';
 import { TranslationService } from '@services/translation.service';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { ToastService } from '@services/toast.service';
@@ -219,8 +219,6 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Dropdown positioning is handled internally by `app-dropdown` (fixed panel when inside clipping scrollers).
-
   addEditStep(): void {
     const newStep = {
       order: this.editSteps.length + 1,
@@ -318,7 +316,7 @@ export class EditWorkflowComponent implements OnInit, OnDestroy {
         : []
     }));
 
-    // Build backend payload with workflow steps including canReturn
+    // Build backend payload — order auto-reject triggers are edited from Settings → Order auto-reject.
     const backendPayload = {
       id: editId,
       workflowName: this.editForm.name,

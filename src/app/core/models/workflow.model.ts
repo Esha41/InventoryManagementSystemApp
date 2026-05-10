@@ -27,6 +27,11 @@ export interface WorkflowDto {
   status: 'Active' | 'Inactive';
   workflowType: number;
   workflowTypeName?: string;
+  /** Summary fields when API returns full workflow rows (e.g. admin lists). */
+  autoRejectTriggerMode?: string | null;
+  autoRejectTriggerRoleIds?: string[];
+  autoRejectTriggerStepIds?: number[];
+  autoRejectResetOnReApproval?: boolean;
   visitorType?: string;
   locations?: string;
   gate?: string;
@@ -46,6 +51,12 @@ export interface BackendWorkflowDto {
   isActive: boolean;
   isDeleted?: boolean;
   isSpecialOrReserved?: boolean;
+  /** null | empty | "role" | "step" — per-workflow auto-reject trigger (edit workflow only). */
+  autoRejectTriggerMode?: string | null;
+  autoRejectTriggerRoleIds?: string[];
+  autoRejectTriggerStepIds?: number[];
+  /** Default true: anchor on latest matching approval after return/re-approval. */
+  autoRejectResetOnReApproval?: boolean;
   workflowSteps?: WorkflowStepDto[];
 }
 
@@ -131,6 +142,27 @@ export function workflowTypeToNumber(workflowType: number | string): number {
 }
 export interface BackendUpdateWorkflowDto extends BackendCreateWorkflowDto {
   id: number;
+}
+
+/** Matches Ettad.Data.Enums.AutoRejectTriggerMode — API uses JsonStringEnumConverter (PascalCase): "None" | "Role" | "Step". */
+export type AutoRejectTriggerModeValue = 'None' | 'Role' | 'Step';
+
+/** PUT /api/Workflows/{id}/auto-reject-triggers */
+export interface UpdateWorkflowAutoRejectTriggersDto {
+  mode: AutoRejectTriggerModeValue;
+  triggerRoleIds?: string[];
+  triggerStepIds?: number[];
+  resetOnReApproval?: boolean;
+}
+
+/** Unwrapped response from auto-reject triggers endpoint */
+export interface WorkflowAutoRejectTriggerDto {
+  id?: number;
+  workflowId?: number;
+  mode?: string | null;
+  triggerRoleIds?: string[];
+  triggerStepIds?: number[];
+  resetOnReApproval?: boolean;
 }
 
 /**
@@ -254,4 +286,20 @@ export interface WorkflowStepDto {
   parallelRoles?: WorkflowStepParallelRoleDto[];
   approvalSteps?: WorkflowApprovalStepDto[];
 }
+
+/**
+ * Request auto-reject countdown (order, return, or discard) — matches backend JSON for countdown rows.
+ */
+export interface RequestAutoRejectCountdownDto {
+  requestId: number;
+  triggerApprovedAt: string | null;
+  thresholdDays: number;
+  daysRemaining: number;
+  dueDate: string | null;
+  /** none | running | warning | expired */
+  state: string;
+}
+
+/** @deprecated Use {@link RequestAutoRejectCountdownDto} instead */
+export type OrderAutoRejectCountdownDto = RequestAutoRejectCountdownDto;
 

@@ -1,0 +1,104 @@
+<app-card>
+  <div class="p-6 space-y-4">
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+      <div class="space-y-1">
+        <h2 class="text-lg font-semibold text-[var(--color-text)] border-b border-[var(--color-border)] pb-2">
+          {{ 'orderAutoRejectSettings.sectionWorkflowTriggers' | translate }}
+        </h2>
+        <p class="text-sm text-[var(--color-text-muted)] max-w-3xl">
+          {{ 'orderAutoRejectSettings.sectionWorkflowTriggersIntro' | translate }}
+        </p>
+      </div>
+      <button
+        type="button"
+        class="shrink-0 text-sm font-medium text-[var(--color-brand)] hover:underline disabled:opacity-50"
+        [disabled]="isLoading"
+        (click)="reload()"
+      >
+        {{ 'orderAutoRejectSettings.workflowTriggersRefresh' | translate }}
+      </button>
+    </div>
+
+    <div *ngIf="loadError" class="rounded-lg border border-[var(--color-error)]/30 bg-[var(--color-error)]/10 px-4 py-3 text-sm text-[var(--color-error)]">
+      {{ loadError }}
+    </div>
+
+    <div *ngIf="isLoading && !loadError" class="text-center py-10 text-[var(--color-text-muted)]">
+      {{ 'common.loading' | translate }}
+    </div>
+
+    <div *ngIf="!isLoading && !loadError && workflows.length === 0" class="text-center py-10 text-[var(--color-text-muted)]">
+      {{ 'orderAutoRejectSettings.workflowTriggersEmpty' | translate }}
+    </div>
+
+    <div *ngIf="!isLoading && workflows.length > 0" class="w-full overflow-x-auto rounded-lg border border-[var(--color-border)]">
+      <table class="min-w-[720px] w-full text-sm border-collapse">
+        <thead>
+          <tr class="bg-[var(--color-background-muted)] text-start border-b border-[var(--color-border)]">
+            <th class="px-4 py-3 font-semibold text-[var(--color-text)]">{{ 'orderAutoRejectSettings.workflowTriggersColName' | translate }}</th>
+            <th class="px-4 py-3 font-semibold text-[var(--color-text)]">{{ 'orderAutoRejectSettings.workflowTriggersColType' | translate }}</th>
+            <th class="px-4 py-3 font-semibold text-[var(--color-text)]">{{ 'orderAutoRejectSettings.workflowTriggersColTrigger' | translate }}</th>
+            <th class="px-4 py-3 font-semibold text-[var(--color-text)] text-end">{{ 'orderAutoRejectSettings.workflowTriggersColAction' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let w of workflows; trackBy: trackByWorkflowId" class="border-b border-[var(--color-border)] hover:bg-[var(--color-background-hover)]/60">
+            <td class="px-4 py-3 align-top text-[var(--color-text)] font-medium">{{ w.name }}</td>
+            <td class="px-4 py-3 align-top text-[var(--color-text-muted)]">{{ displayWorkflowType(w) }}</td>
+            <td class="px-4 py-3 align-top">
+              <div class="flex flex-col gap-1">
+                <ng-container [ngSwitch]="triggerMode(w)">
+                  <span *ngSwitchCase="'none'" class="text-[var(--color-text)]">
+                    {{ 'orderAutoRejectSettings.workflowTriggerSummaryGlobal' | translate }}
+                  </span>
+                  <span *ngSwitchCase="'role'" class="text-[var(--color-text)]">
+                    {{
+                      'orderAutoRejectSettings.workflowTriggerSummaryRoles'
+                        | translate : { count: roleTriggerCount(w) }
+                    }}
+                  </span>
+                  <span *ngSwitchCase="'step'" class="text-[var(--color-text)]">
+                    {{
+                      'orderAutoRejectSettings.workflowTriggerSummarySteps'
+                        | translate : { count: stepTriggerCount(w) }
+                    }}
+                  </span>
+                </ng-container>
+                <span *ngIf="showAnchorDetail(w)" class="text-xs text-[var(--color-text-muted)]">
+                  {{ anchorDetailKey(w) | translate }}
+                </span>
+              </div>
+            </td>
+            <td class="px-4 py-3 align-top text-end whitespace-nowrap">
+              <button
+                *ngIf="canEditWorkflow()"
+                type="button"
+                (click)="openTriggerModal(w)"
+                class="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium rounded-lg border-2 border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-background-hover)] transition-colors"
+              >
+                {{ 'orderAutoRejectSettings.workflowTriggerConfigure' | translate }}
+              </button>
+              <span *ngIf="!canEditWorkflow()" class="text-xs text-[var(--color-text-muted)]">
+                {{ 'orderAutoRejectSettings.workflowTriggerNoEditPermission' | translate }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <app-order-auto-reject-workflow-triggers-modal
+      *ngIf="triggersModalWorkflow"
+      [workflowId]="triggersModalWorkflow.id"
+      [workflowName]="triggersModalWorkflow.name"
+      (closed)="onTriggersModalClosed($event)"
+    />
+
+    <p *ngIf="!isLoading" class="text-xs text-[var(--color-text-muted)] flex flex-wrap gap-x-2 gap-y-1 items-center">
+      <span>{{ 'orderAutoRejectSettings.workflowTriggersFootnote' | translate }}</span>
+      <a routerLink="/workflow" class="text-[var(--color-brand)] hover:underline font-medium">
+        {{ 'orderAutoRejectSettings.workflowTriggersOpenWorkflows' | translate }}
+      </a>
+    </p>
+  </div>
+</app-card>
