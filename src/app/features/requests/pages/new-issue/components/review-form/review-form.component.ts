@@ -30,6 +30,7 @@ export class ReviewFormComponent {
   @Input() orderType: string = '';
   @Input() fromReserve: string = '';
   @Input() usePurpose: string = '';
+  @Input() requestPurposeNotes: string = '';
   @Input() usageLocation: string = '';
   @Input() numberOfOfficers: number | null = null;
   @Input() numberOfOtherRanks: number | null = null;

@@ -90,6 +90,7 @@
         "outsideOfAllowance": "(خارج المقرر)",
         "requestType": "نوع الطلب",
         "usagePurpose": "الغرض من الاستخدام",
+        "usePurposeNotes": "ملاحظات غرض الطلب",
         "supplyDate": "تاريخ الصرف",
         "supplyDetails": "تفاصيل الصرف"
       },

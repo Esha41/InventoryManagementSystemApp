@@ -15,6 +15,8 @@ export interface OrderSummary {
   department: string;
   requester: string;
   usagePurpose: string;
+  /** Free-text notes for the selected usage / request purpose (API: `requestPurposeNotes`). */
+  usagePurposeNotes?: string;
   requestPurposeNameEn?: string;
   requestPurposeNameAr?: string;
   totalItems: number;

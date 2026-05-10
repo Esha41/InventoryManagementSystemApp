@@ -226,9 +226,15 @@ export class OrderReportPrintService {
       
       .print-info-item {
         display: flex !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
         padding: 6px 0 !important;
         border-bottom: 1px solid #ddd !important;
         margin: 0 !important;
+      }
+      
+      .print-info-item-span-full {
+        grid-column: 1 / -1 !important;
       }
       
       .print-info-label {
@@ -236,12 +242,19 @@ export class OrderReportPrintService {
         color: #333 !important;
         min-width: 120px !important;
         font-size: 9pt !important;
+        flex-shrink: 0 !important;
       }
       
       .print-info-value {
         color: #000 !important;
         font-size: 9pt !important;
         flex: 1 !important;
+        min-width: 0 !important;
+      }
+      
+      .print-info-value-multiline {
+        white-space: pre-wrap !important;
+        word-break: break-word !important;
       }
       
       .order-info-section {

@@ -323,9 +323,15 @@ img[alt="Order QR Code"] {
 
   .print-info-item {
     display: flex;
+    align-items: flex-start;
+    gap: 10px;
     padding: 6px 0;
     border-bottom: 1px solid #ddd;
     margin: 0;
+  }
+
+  .print-info-item-span-full {
+    grid-column: 1 / -1;
   }
 
   .print-info-label {
@@ -333,12 +339,19 @@ img[alt="Order QR Code"] {
     color: #333;
     min-width: 120px;
     font-size: 9pt;
+    flex-shrink: 0;
   }
 
   .print-info-value {
     color: #000;
     font-size: 9pt;
     flex: 1;
+    min-width: 0;
+  }
+
+  .print-info-value-multiline {
+    white-space: pre-wrap;
+    word-break: break-word;
   }
 
   /* ============================================
