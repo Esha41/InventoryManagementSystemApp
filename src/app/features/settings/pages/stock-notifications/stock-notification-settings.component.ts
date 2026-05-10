@@ -43,6 +43,7 @@ export class StockNotificationSettingsComponent implements OnInit, OnDestroy {
   criticalRecipientsForm!: FormGroup;
   scheduleForm!: FormGroup;
   criticalScheduleForm!: FormGroup;
+  activeStockTab: 'low' | 'critical' = 'low';
 
   constructor(
     private fb: FormBuilder,
@@ -264,6 +265,12 @@ export class StockNotificationSettingsComponent implements OnInit, OnDestroy {
         });
       }
     });
+  }
+
+  setActiveStockTab(tab: 'low' | 'critical'): void {
+    if (this.activeStockTab === tab) return;
+    this.activeStockTab = tab;
+    this.cdr.markForCheck();
   }
 
   openDateTimePicker(input: HTMLInputElement | null): void {

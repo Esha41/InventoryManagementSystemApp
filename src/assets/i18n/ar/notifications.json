@@ -106,6 +106,7 @@
   },
   "stockNotificationSettings": {
     "title": "إعدادات إشعارات المخزون",
+    "tabsAriaLabel": "نوع إعدادات إشعار المخزون",
     "lowStockSection": "المخزون المنخفض",
     "criticalStockSection": "المخزون الحرج",
     "recipientsSettings": "إعدادات المستلمين",

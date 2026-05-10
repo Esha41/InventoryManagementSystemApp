@@ -131,6 +131,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   caliberFilterCatalogLabels: string[] = [];
 
   lowStockCount = 0;
+  criticalStockCount = 0;
   expiringSoonCount = 0;
 
   inventoryMonitoring: InventoryDashboardSummaryDto = emptyInventoryMonitoring();
@@ -242,11 +243,13 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
   private applyDashboardData(result: {
     lowStockCount: number;
+    criticalStockCount: number;
     expiringSoonCount: number;
     itemSummaries: ItemInventorySummaryDto[];
     inventoryMonitoring: InventoryDashboardSummaryDto | null;
   }): void {
     this.lowStockCount = result.lowStockCount;
+    this.criticalStockCount = result.criticalStockCount;
     this.expiringSoonCount = result.expiringSoonCount;
     this.itemSummaries = result.itemSummaries;
     this._itemTypeCountMetrics = itemTypeTabAndStatCounts(this.itemSummaries);
@@ -705,6 +708,10 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
   onLowStockClick(): void {
     this.router.navigate(['/inventory-dashboard/low-stock']);
+  }
+
+  onCriticalStockClick(): void {
+    this.router.navigate(['/inventory-dashboard/critical-stock']);
   }
 
   onDraftSuppliesClick(): void {

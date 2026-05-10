@@ -55,7 +55,7 @@
 
     <!-- Loading skeleton -->
     <div *ngIf="isLoading" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-      <div *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11]"
+      <div *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12]"
         class="bg-[var(--color-background-muted)] rounded-xl h-28 animate-pulse border border-[var(--color-border)]">
       </div>
     </div>
@@ -64,12 +64,14 @@
 
       <app-inventory-dashboard-stat-cards
         [lowStockCount]="lowStockCount"
+        [criticalStockCount]="criticalStockCount"
         [expiringSoonCount]="expiringSoonCount"
         [itemCount]="itemSummaries.length"
         [totalRemainingQty]="totalRemainingQty"
         [totalLotsStat]="totalLotsStat"
         [byType]="itemTypeCountMetrics.byType"
         (lowStockClick)="onLowStockClick()"
+        (criticalStockClick)="onCriticalStockClick()"
         (expiringSoonClick)="onExpiringSoonClick()">
       </app-inventory-dashboard-stat-cards>
 

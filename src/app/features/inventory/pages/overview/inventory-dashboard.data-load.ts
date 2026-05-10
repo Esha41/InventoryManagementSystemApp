@@ -47,6 +47,7 @@ export function buildMonitoringCountQuery(
 
 export interface InventoryDashboardDataResult {
   lowStockCount: number;
+  criticalStockCount: number;
   expiringSoonCount: number;
   itemSummaries: ItemInventorySummaryDto[];
   inventoryMonitoring: InventoryDashboardSummaryDto;
@@ -62,6 +63,9 @@ export function getInventoryDashboardData$(
   return forkJoin({
     lowStockCount: monitoringService
       .getLowStockItemsCount(countQ.depotId, countQ.depotIds)
+      .pipe(catchError(() => of(0))),
+    criticalStockCount: monitoringService
+      .getCriticalStockItemsCount(countQ.depotId, countQ.depotIds)
       .pipe(catchError(() => of(0))),
     expiringSoonCount: monitoringService
       .getExpiringLotsCount(countQ.depotId, countQ.depotIds)

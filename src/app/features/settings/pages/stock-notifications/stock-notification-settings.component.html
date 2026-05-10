@@ -16,12 +16,39 @@
     >
     </app-error-state>
 
-    <!-- Low stock section -->
-    <div class="space-y-6">
-      <h2 class="text-lg font-semibold text-[var(--color-text)] pt-2 border-t border-[var(--color-border)] first:border-t-0 first:pt-0">
-        {{ "stockNotificationSettings.lowStockSection" | translate }}
-      </h2>
+    <div class="border-b border-[var(--color-border)] min-w-0">
+      <nav
+        class="flex gap-1 overflow-x-auto overflow-y-hidden -mb-px pb-px"
+        role="tablist"
+        aria-label="{{ 'stockNotificationSettings.tabsAriaLabel' | translate }}"
+      >
+        <button
+          type="button"
+          role="tab"
+          [attr.aria-selected]="activeStockTab === 'low'"
+          (click)="setActiveStockTab('low')"
+          [class]="activeStockTab === 'low'
+            ? 'whitespace-nowrap border-b-2 border-[var(--color-brand)] text-[var(--color-brand)] px-3 py-3 text-sm font-semibold transition-colors'
+            : 'whitespace-nowrap border-b-2 border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:border-[var(--color-border)] px-3 py-3 text-sm font-medium transition-colors'"
+        >
+          {{ "stockNotificationSettings.lowStockSection" | translate }}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          [attr.aria-selected]="activeStockTab === 'critical'"
+          (click)="setActiveStockTab('critical')"
+          [class]="activeStockTab === 'critical'
+            ? 'whitespace-nowrap border-b-2 border-[var(--color-brand)] text-[var(--color-brand)] px-3 py-3 text-sm font-semibold transition-colors'
+            : 'whitespace-nowrap border-b-2 border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:border-[var(--color-border)] px-3 py-3 text-sm font-medium transition-colors'"
+        >
+          {{ "stockNotificationSettings.criticalStockSection" | translate }}
+        </button>
+      </nav>
+    </div>
 
+    <!-- Low stock -->
+    <div *ngIf="activeStockTab === 'low'" class="space-y-6" role="tabpanel">
       <app-card>
         <form [formGroup]="recipientsForm" (ngSubmit)="onSubmitRecipientsForm()">
           <div class="p-6">
@@ -155,12 +182,8 @@
       </app-card>
     </div>
 
-    <!-- Critical stock section -->
-    <div class="space-y-6">
-      <h2 class="text-lg font-semibold text-[var(--color-text)] pt-2 border-t border-[var(--color-border)]">
-        {{ "stockNotificationSettings.criticalStockSection" | translate }}
-      </h2>
-
+    <!-- Critical stock -->
+    <div *ngIf="activeStockTab === 'critical'" class="space-y-6" role="tabpanel">
       <app-card>
         <form [formGroup]="criticalRecipientsForm" (ngSubmit)="onSubmitCriticalRecipientsForm()">
           <div class="p-6">

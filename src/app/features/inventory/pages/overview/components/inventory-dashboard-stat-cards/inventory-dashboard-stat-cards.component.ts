@@ -12,6 +12,7 @@ import { LucideAngularModule, Package, Layers, ChartBar } from 'lucide-angular';
 })
 export class InventoryDashboardStatCardsComponent {
   @Input({ required: true }) lowStockCount!: number;
+  @Input({ required: true }) criticalStockCount!: number;
   @Input({ required: true }) expiringSoonCount!: number;
   @Input({ required: true }) itemCount!: number;
   @Input({ required: true }) totalRemainingQty!: number;
@@ -19,6 +20,7 @@ export class InventoryDashboardStatCardsComponent {
   @Input({ required: true }) byType!: { ammo: number; weapon: number; explosive: number };
 
   @Output() lowStockClick = new EventEmitter<void>();
+  @Output() criticalStockClick = new EventEmitter<void>();
   @Output() expiringSoonClick = new EventEmitter<void>();
 
   readonly Package = Package;
