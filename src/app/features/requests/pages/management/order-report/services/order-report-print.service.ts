@@ -300,6 +300,25 @@ export class OrderReportPrintService {
         color: #ef4444 !important;
       }
       
+      /* Order info: status as plain text when printing (no pill) */
+      .order-info-section .status-badge {
+        display: inline !important;
+        align-items: unset !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        border-radius: 0 !important;
+        background: none !important;
+        background-color: transparent !important;
+        box-shadow: none !important;
+        font-size: 9pt !important;
+        font-weight: normal !important;
+        color: #000 !important;
+        line-height: inherit !important;
+        width: auto !important;
+        max-width: none !important;
+      }
+      
       /* Professional Tables */
       .print-table,
       table {
