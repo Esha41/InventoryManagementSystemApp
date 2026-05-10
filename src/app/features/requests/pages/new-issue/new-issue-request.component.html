@@ -33,7 +33,7 @@
       [canProceed]="facade.canProceedFromSelection"
       [selectedCartridges]="facade.selectedCartridges"
       [displayedItemTypeOptions]="facade.displayedItemTypeOptions"
-      [serverSideCatalog]="facade.fromReserve === 'No'"
+      [serverSideCatalog]="true"
       [catalogPagination]="facade.cartridgeState.catalogPagination"
       [appliedSearchTerm]="facade.filterState.searchTerm"
       (next)="facade.onNext()"
