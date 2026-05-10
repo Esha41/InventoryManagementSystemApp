@@ -103,5 +103,28 @@
     "view": "View",
     "viewDetails": "View Details",
     "yes": "Yes"
+  },
+  "workflow": {
+    "autoRejectSectionTitle": "Order auto-reject anchor",
+    "autoRejectSectionHint": "Define which approval completes start the countdown toward auto-reject (threshold and reminders still come from organization settings). Disabled workflows fall back to the global trigger role if configured.",
+    "autoRejectModalTitle": "Configure auto-reject triggers for {{name}}",
+    "autoRejectTriggersSaved": "Auto-reject triggers saved successfully.",
+    "autoRejectTriggerMode": "Trigger mode",
+    "autoRejectModeNone": "Not configured (use global trigger role)",
+    "autoRejectModeRole": "When these roles approve",
+    "autoRejectModeStep": "When these steps complete",
+    "autoRejectModeRoleLabel": "Role-based",
+    "autoRejectModeStepLabel": "Step-based",
+    "autoRejectRolesLabel": "Trigger roles",
+    "autoRejectRolesPlaceholder": "Select one or more roles",
+    "autoRejectRolesHint": "Matching approvals count when any selected primary or parallel approver role completes the step.",
+    "autoRejectStepsLabel": "Trigger steps",
+    "autoRejectStepsPlaceholder": "Select saved workflow steps",
+    "autoRejectStepsHint": "Uses definition step IDs after save. New rows without an ID must be saved before they can be triggers.",
+    "autoRejectSaveStepsFirst": "Save the workflow once so steps have IDs, then select triggers.",
+    "autoRejectResetOnReApproval": "Reset anchor on re-approval",
+    "autoRejectResetHint": "Reset countdown on re-approval: if checked, the countdown restarts from the latest matching approval; if unchecked, it uses the earliest matching approval date.",
+    "autoRejectValidationRoles": "Select at least one role for role-based triggers.",
+    "autoRejectValidationSteps": "Select at least one saved step for step-based triggers."
   }
 }

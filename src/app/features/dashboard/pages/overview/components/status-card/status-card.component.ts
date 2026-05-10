@@ -5,7 +5,7 @@ import { Subject, takeUntil } from 'rxjs';
 import {  formatDate } from '@utils/format.utils';
 import { localizedBilingualLabel } from '@utils/localization.utils';
 import { AutoRejectCountdownComponent } from '@requests/components/auto-reject-countdown/auto-reject-countdown.component';
-import { OrderAutoRejectCountdownDto } from '@requests/services/auto-reject-countdown.service';
+import { RequestAutoRejectCountdownDto } from '@models/workflow.model';
 import { getRequestStatusTranslationKey } from '@utils/status.utils';
 import type { OrderItem, ReturnItem } from '@models/dashboard-order-display.model';
 
@@ -33,8 +33,8 @@ export class StatusCardComponent implements OnInit, OnDestroy {
   @Input() returnRequestId: number | null = null;
   @Input() discardRequestId: number | null = null;
   @Input() isMyTurn: boolean = false;
-  /** Auto-reject countdown for order cards (null/undefined = not applicable) */
-  @Input() countdown: OrderAutoRejectCountdownDto | null | undefined;
+  /** Auto-reject countdown for this request card (null/undefined = not applicable). */
+  @Input() countdown: RequestAutoRejectCountdownDto | null | undefined;
   /** Numeric priority: 1=Normal, 2=Urgent, 3=VeryUrgent */
   @Input() priority: number | undefined;
   @Output() viewOrderDetails = new EventEmitter<number>();

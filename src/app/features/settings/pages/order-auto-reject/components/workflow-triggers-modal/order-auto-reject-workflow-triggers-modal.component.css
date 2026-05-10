@@ -1,0 +1,5 @@
+/* Modal scroll surfaces: reserve scrollbar gutter so opening the panel doesn’t shrink content and misalign fixed dropdown panels. */
+.oar-trigger-modal__backdrop,
+.oar-trigger-modal__body {
+  scrollbar-gutter: stable;
+}

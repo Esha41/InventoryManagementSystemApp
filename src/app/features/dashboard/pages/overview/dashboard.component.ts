@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Subject, takeUntil, merge } from 'rxjs';
+import { Subject, takeUntil, merge, forkJoin, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, filter, map } from 'rxjs/operators';
 import { LucideAngularModule, ShieldAlert, Grid, List, Eye, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-angular';
 import { StatusCardComponent, OrderItem } from './components/status-card/status-card.component';
@@ -18,7 +18,8 @@ import { DashboardCard } from '@models/dashboard.model';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { RequestFilterBarComponent, StatusFilter, PriorityFilter } from '@requests/components/request-filter-bar/request-filter-bar.component';
-import { AutoRejectCountdownService, OrderAutoRejectCountdownDto } from '@requests/services/auto-reject-countdown.service';
+import { AutoRejectCountdownService } from '@requests/services/auto-reject-countdown.service';
+import { RequestAutoRejectCountdownDto } from '@models/workflow.model';
 import { AutoRejectCountdownComponent } from '@requests/components/auto-reject-countdown/auto-reject-countdown.component';
 import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
 import { formatDateTimeExtended } from '@utils/format.utils';
@@ -76,8 +77,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   selectedStatusFilter: StatusFilter = 'all';
   selectedPriorityFilter: PriorityFilter = 'all';
 
-  // Auto-reject countdowns keyed by order request id
-  countdownByRequestId: Record<number, OrderAutoRejectCountdownDto> = {};
+  // Auto-reject countdowns keyed by request id (order, return, or discard)
+  countdownByRequestId: Record<number, RequestAutoRejectCountdownDto> = {};
 
   // Sort state
   sortState: { column: string | null; direction: 'asc' | 'desc' } = {
@@ -307,25 +308,46 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private loadAutoRejectCountdowns(): void {
-    const orderIds = this.visibleCards
-      .filter(c => !!c.orderRequestId)
-      .map(c => c.orderRequestId as number);
-    if (orderIds.length === 0) {
+    const orders = this.visibleCards.filter(c => c.orderRequestId).map(c => c.orderRequestId as number);
+    const returns = this.visibleCards.filter(c => c.returnRequestId).map(c => c.returnRequestId as number);
+    const discards = this.visibleCards.filter(c => c.discardRequestId).map(c => c.discardRequestId as number);
+
+    if (orders.length === 0 && returns.length === 0 && discards.length === 0) {
       this.countdownByRequestId = {};
       this.cdr.markForCheck();
       return;
     }
-    this.autoRejectCountdownService.getBulk(orderIds)
+
+    const orderCountdowns$ =
+      orders.length > 0 ? this.autoRejectCountdownService.getBulk(orders, 'order') : of([]);
+    const returnCountdowns$ =
+      returns.length > 0 ? this.autoRejectCountdownService.getBulk(returns, 'return') : of([]);
+    const discardCountdowns$ =
+      discards.length > 0 ? this.autoRejectCountdownService.getBulk(discards, 'discard') : of([]);
+
+    forkJoin([orderCountdowns$, returnCountdowns$, discardCountdowns$])
       .pipe(takeUntil(this.destroy$))
-      .subscribe(rows => {
-        this.countdownByRequestId = this.autoRejectCountdownService.mapByRequestId(rows);
+      .subscribe(([orderRows, returnRows, discardRows]) => {
+        this.countdownByRequestId = {
+          ...this.autoRejectCountdownService.mapByRequestId(orderRows),
+          ...this.autoRejectCountdownService.mapByRequestId(returnRows),
+          ...this.autoRejectCountdownService.mapByRequestId(discardRows)
+        };
         this.cdr.markForCheck();
       });
   }
 
-  getAutoRejectCountdown(card: DashboardCard): OrderAutoRejectCountdownDto | null {
-    if (!card.orderRequestId) return null;
-    return this.countdownByRequestId[card.orderRequestId] ?? null;
+  getAutoRejectCountdown(card: DashboardCard): RequestAutoRejectCountdownDto | null {
+    if (card.orderRequestId) {
+      return this.countdownByRequestId[card.orderRequestId] ?? null;
+    }
+    if (card.returnRequestId) {
+      return this.countdownByRequestId[card.returnRequestId] ?? null;
+    }
+    if (card.discardRequestId) {
+      return this.countdownByRequestId[card.discardRequestId] ?? null;
+    }
+    return null;
   }
 
   ngOnDestroy(): void {
