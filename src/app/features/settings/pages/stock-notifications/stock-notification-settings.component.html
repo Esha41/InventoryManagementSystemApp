@@ -48,7 +48,7 @@
     </div>
 
     <!-- Low stock -->
-    <div *ngIf="activeStockTab === 'low'" class="space-y-6" role="tabpanel">
+    <div *ngIf="activeStockTab === 'low'" class="flex flex-col gap-10 min-w-0" role="tabpanel">
       <app-card>
         <form [formGroup]="recipientsForm" (ngSubmit)="onSubmitRecipientsForm()">
           <div class="p-6">
@@ -183,7 +183,7 @@
     </div>
 
     <!-- Critical stock -->
-    <div *ngIf="activeStockTab === 'critical'" class="space-y-6" role="tabpanel">
+    <div *ngIf="activeStockTab === 'critical'" class="flex flex-col gap-10 min-w-0" role="tabpanel">
       <app-card>
         <form [formGroup]="criticalRecipientsForm" (ngSubmit)="onSubmitCriticalRecipientsForm()">
           <div class="p-6">
