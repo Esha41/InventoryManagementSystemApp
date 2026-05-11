@@ -39,15 +39,6 @@
           class="flex-1 max-w-xs px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
       </div>
 
-      <!-- Order Priority -->
-      <div class="flex items-center gap-4">
-        <label class="text-sm font-bold text-[var(--color-text)] min-w-[150px]" for="review-form-fld-4-4">{{ 'newIssueRequest.orderPriority' |
-          translate }}</label>
-        <input id="review-form-fld-4-4" type="text" [ngModel]="getTranslatedPriority()"
-          [placeholder]="'newIssueRequest.priorityPlaceholder' | translate" readonly
-          class="flex-1 max-w-xs px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
-      </div>
-
       <!-- Order Document -->
       <div class="flex items-center gap-4">
         <span class="text-sm font-bold text-[var(--color-text)] min-w-[150px]">{{ 'newIssueRequest.orderDocument' |

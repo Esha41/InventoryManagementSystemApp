@@ -6,6 +6,7 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { getApprovalStatusBadgeClass } from '@utils/status-class.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { AppDatePipe } from '@shared/pipes/app-date.pipe';
+import { getPriorityKey } from '@utils/priority.utils';
 
 /**
  * Component for displaying order information section
@@ -49,13 +50,18 @@ export class OrderInfoSectionComponent {
     return 'text-[var(--color-text-muted)] bg-[var(--color-background-muted)] border-[var(--color-border)]';
   }
 
+  /** Maps human label or enum text to Normal | Urgent | VeryUrgent for translation keys */
+  getPriorityI18nSuffix(priority: string): string {
+    return getPriorityKey(priority);
+  }
+
   getPriorityColorClass(priority: string): string {
-    const priorityLabel = priority.toLowerCase();
-    if (priorityLabel === 'normal') {
+    const key = getPriorityKey(priority).toLowerCase();
+    if (key === 'normal') {
       return 'priority-normal';
-    } else if (priorityLabel === 'urgent') {
+    } else if (key === 'urgent') {
       return 'priority-urgent';
-    } else if (priorityLabel === 'veryurgent') {
+    } else if (key === 'veryurgent') {
       return 'priority-veryurgent';
     }
     return 'priority-normal'; // default

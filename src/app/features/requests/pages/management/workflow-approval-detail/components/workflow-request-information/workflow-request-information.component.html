@@ -36,7 +36,7 @@
         {{ 'common.priority' | translate }}
       </span>
       <p class="text-sm mt-1 font-semibold" [ngClass]="getPriorityTextColor(requestDetail?.priority)">
-        {{ ('common.priorityLevels.' + requestDetail?.priority) | translate }}
+        {{ ('common.priorityLevels.' + getPriorityI18nSuffix(requestDetail?.priority)) | translate }}
       </p>
     </div>
 

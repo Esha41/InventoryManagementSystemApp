@@ -7,6 +7,7 @@ import { RequestDetail, FileUploadDto } from '@models/workflow-approval.model';
 import { WorkflowApprovalSupplyService } from '../../services/workflow-approval-supply.service';
 import { getLocalizedValue as getLocalizedValueHelper } from '../../utils/workflow-approval-helpers';
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
+import { getPriorityKey } from '@utils/priority.utils';
 
 @Component({
   selector: 'app-workflow-request-information',
@@ -41,6 +42,11 @@ export class WorkflowRequestInformationComponent {
    */
   getLocalizedValue(en: string | undefined, ar: string | undefined): string {
     return getLocalizedValueHelper(en, ar, this.translateService);
+  }
+
+  /** Stable key suffix for `common.priorityLevels.*` (Normal / Urgent / VeryUrgent). */
+  getPriorityI18nSuffix(priority?: string | number | null): string {
+    return getPriorityKey(priority);
   }
 
   /**

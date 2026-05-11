@@ -5,7 +5,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Search, X } from 'lucide-angular';
 import { OrderDto } from '@models/order.model';
 import { mapOrderStatusFromApi } from '@utils/status.utils';
-import { getPriorityText, getPriorityClass } from '@utils/priority.utils';
+import { getPriorityText, getPriorityClass, getPriorityKey } from '@utils/priority.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
 
@@ -121,6 +121,11 @@ export class OrderListComponent implements OnChanges, OnInit {
 
   getPriorityLabel(priority: number | string): string {
     return getPriorityText(priority);
+  }
+
+  /** Suffix for `common.priorityLevels.<key>` — must be Normal | Urgent | VeryUrgent, not display text. */
+  getPriorityI18nSuffix(priority: number | string): string {
+    return getPriorityKey(priority);
   }
 
   getPriorityColorClass(priority: number | string): string {

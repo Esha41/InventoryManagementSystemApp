@@ -10,7 +10,6 @@ import { getFileSizeFromFile, removeFile, validateFile, MAX_FILE_SIZE_MB, showFi
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { formatDateForInput, formatDateShort } from '@core/utils/format.utils';
-import { getOrderPriorityTranslationKeyFromUsageDateYmd } from '@requests/utils/order-priority-from-usage.utils';
 import type { ReserveDetailItem } from '@requests/pages/new-issue/new-issue-request.state';
 
 // Export MAX_FILE_SIZE_MB for template use
@@ -72,13 +71,6 @@ export class UsageFormComponent {
     if (!val || !val.trim()) return '';
     const formatted = formatDateShort(val);
     return formatted === 'N/A' ? '' : formatted;
-  }
-
-  /** Mirrors server priority from usage start date (display only). */
-  get autoDerivedPriorityLabel(): string {
-    const ymd = formatDateForInput(this.usageDateFrom) || this.usageDateFrom;
-    const key = getOrderPriorityTranslationKeyFromUsageDateYmd(ymd);
-    return this.translateService.instant(key);
   }
 
   @ViewChild('dateFromPicker') dateFromPickerRef?: ElementRef<HTMLInputElement>;

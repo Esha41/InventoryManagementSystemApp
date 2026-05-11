@@ -10,8 +10,6 @@ import { Cartridge } from '@models/cartridge.model';
 import { LucideAngularModule, Eye } from 'lucide-angular';
 import { getFileSizeFromFile, viewFile as viewFileUtil } from '@utils/file.utils';
 import { formatDateTimeExtended } from '@utils/format.utils';
-import { getOrderPriorityTranslationKeyFromUsageDateYmd } from '@requests/utils/order-priority-from-usage.utils';
-import { formatDateForInput } from '@core/utils/format.utils';
 
 @Component({
   selector: 'app-review-form',
@@ -61,13 +59,6 @@ export class ReviewFormComponent {
   onPrevious(): void {
     this.previous.emit();
   }
-
-  getTranslatedPriority(): string {
-    const ymd = formatDateForInput(this.usageDateFrom) || this.usageDateFrom;
-    const key = getOrderPriorityTranslationKeyFromUsageDateYmd(ymd);
-    return this.translateService.instant(key);
-  }
-
 
   getFormattedUsageDateFrom(): string {
     return formatDateTimeExtended(this.usageDateFrom, this.usageTimeFrom);

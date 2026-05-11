@@ -94,7 +94,7 @@
           <div class="flex items-center justify-end text-xs">
             <span class="font-bold shrink-0 priority-badge"
               [ngClass]="getPriorityColorClass(order.priority)">{{ ('common.priorityLevels.' +
-              getPriorityLabel(order.priority)) | translate }}</span>
+              getPriorityI18nSuffix(order.priority)) | translate }}</span>
           </div>
         </button>
       </li>

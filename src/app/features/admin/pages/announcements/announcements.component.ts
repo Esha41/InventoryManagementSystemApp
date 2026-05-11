@@ -11,7 +11,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { Announcement, AnnouncementDeliveryType } from '@models/announcement.model';
 import { RoleDto } from '@models/backend-user.model';
-import { getPriorityText, getPriorityClass } from '@utils/priority.utils';
+import { getPriorityText, getPriorityClass, getPriorityKey } from '@utils/priority.utils';
 import { getLocalizedName } from '@utils/localization.utils';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 
@@ -110,6 +110,11 @@ export class AnnouncementsComponent implements OnInit, OnDestroy {
 
     getPriorityText(priority: number): string {
         return getPriorityText(priority);
+    }
+
+    /** For `announcements.priorityLevels.*` keys (VeryUrgent, not "Very Urgent"). */
+    getPriorityI18nKey(priority: number): string {
+        return getPriorityKey(priority);
     }
 
     getPriorityClass(priority: number): string {

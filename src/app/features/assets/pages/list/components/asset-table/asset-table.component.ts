@@ -13,7 +13,6 @@ import { CardComponent } from '@components/card/card.component';
 import { LoadingStateComponent } from '@components/loading-state/loading-state.component';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
-import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { Asset, AssetType, AssetSortState, AssetPaginationState } from '@models/asset-list.model';
 import { AmmunitionReadDto } from '@models/ammunition.model';
@@ -31,7 +30,6 @@ import { ExplosiveDto } from '@models/explosive.model';
     LoadingStateComponent,
     PaginationComponent,
     RowsPerPageComponent,
-    TableClampTooltipDirective,
     HasPermissionDirective
   ],
   templateUrl: './asset-table.component.html',

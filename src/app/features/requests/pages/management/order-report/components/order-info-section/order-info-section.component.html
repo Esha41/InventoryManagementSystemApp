@@ -60,7 +60,7 @@
         }}:</span>
       <span class="print-info-value priority-value"
         [ngClass]="getPriorityColorClass(orderSummary.priority)">{{ ('common.priorityLevels.' +
-        orderSummary.priority) | translate
+        getPriorityI18nSuffix(orderSummary.priority)) | translate
         }}</span>
     </div>
   </div>
