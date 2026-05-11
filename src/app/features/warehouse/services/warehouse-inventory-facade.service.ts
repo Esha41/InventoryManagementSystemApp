@@ -579,14 +579,12 @@ export class WarehouseInventoryFacadeService {
     if (batchId == null) return;
     this.store.setLoadingBatchAssets(true);
     const allLoaded = this.store.expandedBatchAssetsAllLoaded();
-    const assetsItemId = this.store.expandedBatchAssetsDetailItemId();
     this.dataService.loadExpandedBatchAssets({
       batchId,
       filters: this.store.lastAppliedBatchFilter(),
       includeAllAssets: allLoaded,
       assetsPage: this.store.expandedBatchAssetsPage(),
-      assetsPageSize: this.store.expandedBatchAssetsPageSize(),
-      assetsItemId: assetsItemId ?? undefined
+      assetsPageSize: this.store.expandedBatchAssetsPageSize()
     })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({

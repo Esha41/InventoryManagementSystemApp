@@ -59,8 +59,6 @@ export class BatchService {
         assetsPageSize?: number;
         includeAllAssets?: boolean;
         filters?: BatchAssetFilter;
-        /** When set, only this slice is loaded into <code>assets</code>; <code>assetItemCounts</code> stays full-batch. */
-        assetsItemId?: number | null;
     }): Observable<BatchDto | null> {
         let params = new HttpParams();
         if (options?.serialNumberOnly != null)
@@ -73,8 +71,6 @@ export class BatchService {
             params = params.set('assetsPageSize', String(options.assetsPageSize));
         if (options?.includeAllAssets === true)
             params = params.set('includeAllAssets', 'true');
-        if (options?.assetsItemId != null && options.assetsItemId > 0)
-            params = params.set('assetsItemId', String(options.assetsItemId));
         params = this.appendFilterParams(params, options?.filters);
         return this.apiService.get<BatchDto | null>(`${this.basePath}/${id}`, params);
     }

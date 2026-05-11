@@ -26,7 +26,7 @@ export interface BatchDto {
     assetsPageIndex?: number;
     assetsPageSize?: number;
     assetsTotalPages?: number;
-    /** Totals per catalog item for the whole batch (same filters as the list; not narrowed by assetsItemId). */
+    /** Totals per catalog item for the whole batch (same filters as the assets list). */
     assetItemCounts?: BatchAssetItemCountDto[];
     depot?: DepotDto;
     assets: AssetDto[];

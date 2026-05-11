@@ -89,21 +89,17 @@ export class WarehouseInventoryDataService {
     includeAllAssets: boolean;
     assetsPage: number;
     assetsPageSize: number;
-    assetsItemId?: number | null;
   }) {
-    const assetsItemId = input.assetsItemId ?? undefined;
     if (input.includeAllAssets) {
       return this.batchService.getById(input.batchId, {
         includeAllAssets: true,
-        filters: input.filters,
-        assetsItemId
+        filters: input.filters
       });
     }
     return this.batchService.getById(input.batchId, {
       assetsPage: input.assetsPage,
       assetsPageSize: input.assetsPageSize,
-      filters: input.filters,
-      assetsItemId
+      filters: input.filters
     });
   }
 

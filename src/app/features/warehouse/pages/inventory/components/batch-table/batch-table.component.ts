@@ -53,7 +53,7 @@ export class BatchTableComponent implements OnChanges {
     @Input() expandedBatchAssets: AssetDto[] = [];
     /** Per-item totals for the whole batch (from API; not limited to the current assets page). */
     @Input() expandedBatchAssetItemCounts: BatchAssetItemCountDto[] = [];
-    /** When set, asset list is loaded for this item only; counts stay full-batch. */
+    /** Which item group's detail accordion is open (UI only; asset list is not filtered by item on the server). */
     @Input() expandedBatchDetailItemId: number | null = null;
     @Input() loadingBatchAssets = false;
     @Input() batchAssetsPage = 1;
