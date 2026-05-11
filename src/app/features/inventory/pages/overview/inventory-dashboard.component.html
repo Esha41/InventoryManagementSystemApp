@@ -53,23 +53,33 @@
 
   <div class="page-container w-full 2xl:max-w-none">
 
-    <!-- Loading skeleton -->
-    <div *ngIf="isLoading" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-      <div *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12]"
-        class="bg-[var(--color-background-muted)] rounded-xl h-28 animate-pulse border border-[var(--color-border)]">
+    <!-- Loading state: visible on first paint and during refresh -->
+    <div *ngIf="isLoading" class="mb-6 md:mb-8 rounded-xl border border-[var(--color-border)] bg-[var(--color-background-muted)]/40 px-4 py-16 md:py-20 flex flex-col items-center justify-center gap-4 text-center" role="status" aria-live="polite">
+      <div class="flex items-center justify-center rounded-full bg-[var(--color-brand)]/12 p-4">
+        <lucide-angular [img]="Loader2" class="w-10 h-10 md:w-12 md:h-12 text-[var(--color-brand)] animate-spin" aria-hidden="true"></lucide-angular>
+      </div>
+      <p class="text-sm md:text-base font-medium text-[var(--color-text)] max-w-md">
+        {{ 'inventoryDashboard.loading' | translate }}
+      </p>
+      <div class="w-full max-w-lg mx-auto grid grid-cols-3 gap-2 md:gap-3 opacity-60" aria-hidden="true">
+        <div *ngFor="let _ of [1,2,3,4,5,6]" class="h-2 rounded-full bg-[var(--color-background-muted)] animate-pulse"></div>
       </div>
     </div>
 
     <ng-container *ngIf="!isLoading">
 
+      <div *ngIf="errorMessage" class="mb-4 md:mb-6 rounded-lg border border-[var(--color-danger)]/35 bg-[var(--color-danger)]/10 px-4 py-3 text-sm text-[var(--color-danger)]" role="alert">
+        {{ errorMessage }}
+      </div>
+
       <app-inventory-dashboard-stat-cards
-        [lowStockCount]="lowStockCount"
+        [lowStockCount]="headlineMetrics.lowStockCount"
         [criticalStockCount]="criticalStockCount"
-        [expiringSoonCount]="expiringSoonCount"
-        [itemCount]="itemSummaries.length"
-        [totalRemainingQty]="totalRemainingQty"
-        [totalLotsStat]="totalLotsStat"
-        [byType]="itemTypeCountMetrics.byType"
+        [expiringSoonCount]="headlineMetrics.expiringSoonCount"
+        [itemCount]="headlineMetrics.totalDistinctItems"
+        [lotCountStat]="headlineMetrics.lotCount"
+        [batchCountStat]="headlineMetrics.totalBatches"
+        [byType]="statCardByType"
         (lowStockClick)="onLowStockClick()"
         (criticalStockClick)="onCriticalStockClick()"
         (expiringSoonClick)="onExpiringSoonClick()">
@@ -225,7 +235,7 @@
         </div>
 
         <!-- ── Tabs ──────────────────────────────────────────────────────── -->
-        <div *ngIf="itemSummaries.length > 0" class="-mx-4 sm:-mx-6 px-4 sm:px-6 border-b border-[var(--color-border)] min-w-0">
+        <div *ngIf="showItemTypeTabs" class="-mx-4 sm:-mx-6 px-4 sm:px-6 border-b border-[var(--color-border)] min-w-0">
           <nav class="flex gap-1 overflow-x-auto overflow-y-hidden -mb-px pb-px" aria-label="Item type tabs">
             <button *ngFor="let tab of [
               { id: 'ammunition', label: 'inventoryDashboard.tabs.ammunition', count: itemTypeCountMetrics.tabCounts.ammunition },
@@ -266,7 +276,8 @@
 
         <!-- Table + totals (tfoot) + pagination share one bordered shell so widths align -->
         <div *ngIf="itemSummaries.length > 0 && filteredItemCount > 0"
-          class="flex w-full min-w-0 max-w-full flex-col mt-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] overflow-hidden">
+          class="flex w-full min-w-0 max-w-full flex-col mt-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] overflow-hidden transition-opacity"
+          [class.opacity-60]="isItemTableLoading">
           <app-inventory-item-summary-table class="block min-w-0 w-full"
             [activeTab]="activeTab"
             [rows]="paginatedItemSummaries"
@@ -282,6 +293,7 @@
             [lotCurrentPage]="lotCurrentPage"
             [lotRowsPerPage]="lotRowsPerPage"
             [assetDetails]="assetDetails"
+            [assetTotalItemCount]="assetServerTotalCount"
             [isAssetsLoading]="isAssetsLoading"
             [assetSortColumn]="assetSortColumn"
             [assetSortDirection]="assetSortDirection"
@@ -309,7 +321,7 @@
 
           <div class="flex w-full min-w-0 flex-col gap-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-3 py-3.5 sm:px-4 sm:flex-row sm:items-center sm:justify-between"
             [class.sm:flex-row-reverse]="isRTL">
-            <app-rows-per-page [rowsPerPage]="itemRowsPerPage" [totalItems]="filteredItemCount"
+            <app-rows-per-page [rowsPerPage]="itemRowsPerPage" [totalItems]="itemTableTotalItemsForPager"
               [visibleItems]="paginatedItemSummaries.length" (rowsPerPageChange)="onItemRowsPerPageChange($event)">
             </app-rows-per-page>
             <div *ngIf="itemTotalPages > 1" class="flex items-center gap-3 shrink-0">

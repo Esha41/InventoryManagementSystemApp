@@ -10,18 +10,20 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Subject, merge, of, asyncScheduler } from 'rxjs';
+import { Subject, merge, of, asyncScheduler, forkJoin, Observable } from 'rxjs';
 import {
   catchError,
   switchMap,
   finalize,
   take,
   takeUntil,
-  debounceTime
+  debounceTime,
+  map
 } from 'rxjs/operators';
 import {
   LucideAngularModule,
   RefreshCw,
+  Loader2,
   Package,
   Warehouse,
   Search,
@@ -35,8 +37,9 @@ import { InventoryService, LotDetailDto } from '@inventory/services/inventory.se
 import { AssetService } from '@assets/services/asset.service';
 import { InventorySummaryDataService } from '@inventory/services/inventory-summary-data.service';
 import { LookupService } from '@services/lookup.service';
-import { ItemInventorySummaryDto, ItemType } from '@models/inventory.model';
+import { ItemInventorySummaryDto, ItemType, normalizeItemType } from '@models/inventory.model';
 import { AssetDto } from '@models/asset.model';
+import { FilterData, PagedListRequest, PaginatedList } from '@models/pagination.model';
 import { DepotDto } from '@models/depot.model';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
@@ -53,7 +56,7 @@ import {
   filterItemSummariesByActiveTab,
   formatItemPickLabel,
   hasSecondaryItemTableFilters,
-  itemTypeTabAndStatCounts,
+  itemTypeTabAndStatCountsFromHeadline,
   nextTableSort,
   pageCountForLength,
   paginatePage,
@@ -64,19 +67,18 @@ import {
   sumItemSummariesExcludingWeapon,
   sumItemSummariesField,
   sortAssetDetailsDtos,
-  totalRemainingFromSummaries,
-  totalLotsFromSummaries,
   ActiveTab
 } from './inventory-dashboard.helpers';
 import { InventoryItemSummaryTableComponent } from './inventory-item-summary-table.component';
 import { InventoryDashboardStatCardsComponent } from './components/inventory-dashboard-stat-cards/inventory-dashboard-stat-cards.component';
 import { InventoryDashboardWeaponPipelineComponent } from './components/inventory-dashboard-weapon-pipeline/inventory-dashboard-weapon-pipeline.component';
-import { InventoryDashboardSummaryDto } from '@models/inventory-dashboard-monitoring.model';
+import { InventoryDashboardSummaryDto, InventoryHeadlineMetricsDto } from '@models/inventory-dashboard-monitoring.model';
 import { InventoryDashboardExportService } from '@inventory/services/inventory-dashboard-export.service';
 import {
   emptyInventoryMonitoring,
+  emptyInventoryHeadlineMetrics,
   enterInventoryDashboard$,
-  getInventoryDashboardData$,
+  getInventoryDashboard$,
   userAccountRefetch$
 } from './inventory-dashboard.data-load';
 
@@ -107,7 +109,8 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   private readonly afterDepotsReady$ = new Subject<void>();
   private loadingPipelineWired = false;
 
-  isLoading = false;
+  /** True until initial depot list + first dashboard bundle resolve (also during refresh). */
+  isLoading = true;
   isExporting = false;
   errorMessage: string | null = null;
 
@@ -136,8 +139,13 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
   inventoryMonitoring: InventoryDashboardSummaryDto = emptyInventoryMonitoring();
 
+  headlineMetrics: InventoryHeadlineMetricsDto = emptyInventoryHeadlineMetrics();
+
   itemSummaries: ItemInventorySummaryDto[] = [];
-  private _itemTypeCountMetrics = itemTypeTabAndStatCounts([]);
+  /** Total non-weapon rows for active Ammunition/Explosive tab (server paged). */
+  serverNonWeaponTotalCount = 0;
+  isItemTableLoading = false;
+  private _itemTypeCountMetrics = itemTypeTabAndStatCountsFromHeadline(emptyInventoryHeadlineMetrics());
   itemSortColumn: string | null = null;
   itemSortDirection: 'asc' | 'desc' = 'asc';
   itemCurrentPage = 1;
@@ -152,6 +160,8 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   lotRowsPerPage = defaultPageSize;
 
   assetDetails: AssetDto[] = [];
+  /** Total weapon assets for expanded row (server paged); not the same as {@link assetDetails.length}. */
+  assetServerTotalCount = 0;
   isAssetsLoading = false;
   assetSortColumn: string | null = null;
   assetSortDirection: 'asc' | 'desc' = 'asc';
@@ -159,6 +169,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   assetRowsPerPage = defaultPageSize;
 
   readonly RefreshCw = RefreshCw;
+  readonly Loader2 = Loader2;
   readonly Package = Package;
   readonly Warehouse = Warehouse;
   readonly Search = Search;
@@ -242,35 +253,87 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   }
 
   private applyDashboardData(result: {
-    lowStockCount: number;
-    criticalStockCount: number;
-    expiringSoonCount: number;
+    headlineMetrics: InventoryHeadlineMetricsDto;
     itemSummaries: ItemInventorySummaryDto[];
     inventoryMonitoring: InventoryDashboardSummaryDto | null;
+    serverNonWeaponTotalCount: number;
   }): void {
-    this.lowStockCount = result.lowStockCount;
-    this.criticalStockCount = result.criticalStockCount;
-    this.expiringSoonCount = result.expiringSoonCount;
+    this.headlineMetrics = result.headlineMetrics ?? emptyInventoryHeadlineMetrics();
     this.itemSummaries = result.itemSummaries;
-    this._itemTypeCountMetrics = itemTypeTabAndStatCounts(this.itemSummaries);
+    this.serverNonWeaponTotalCount = result.serverNonWeaponTotalCount;
+    this._itemTypeCountMetrics = itemTypeTabAndStatCountsFromHeadline(this.headlineMetrics);
     this.inventoryMonitoring = result.inventoryMonitoring ?? emptyInventoryMonitoring();
     this.loadCaliberFilterLookups();
-    this.itemCurrentPage = 1;
     this.expandedItemId = null;
     this.lotDetails = [];
     this.assetDetails = [];
+    this.assetServerTotalCount = 0;
     if (this.selectedItemFilterIds.length > 0) {
       const validIds = new Set(this.itemSummaries.map(i => i.itemId));
       this.selectedItemFilterIds = this.selectedItemFilterIds.filter(id => validIds.has(id));
     }
   }
 
+  private loadDashboardItemsBundle$(): Observable<{
+    itemSummaries: ItemInventorySummaryDto[];
+    serverNonWeaponTotalCount: number;
+  }> {
+    const ids = this.selectedDepotIds.length > 0 ? this.selectedDepotIds : undefined;
+    if (this.activeTab === 'weapon') {
+      return this.inventorySummaryData.loadDashboardWeaponPage(
+        ids,
+        this.itemCurrentPage,
+        this.itemRowsPerPage
+      );
+    }
+    const itemType =
+      this.activeTab === 'ammunition' ? ItemType.Ammunition : ItemType.Explosive;
+    return this.inventorySummaryData.loadDashboardItemPage(
+      ids,
+      this.itemCurrentPage,
+      this.itemRowsPerPage,
+      itemType
+    );
+  }
+
+  /** Refetch item table only (server page / weapon list) after page or page-size change. */
+  private fetchItemSummariesPageOnly(): void {
+    this.isItemTableLoading = true;
+    this.cdr.markForCheck();
+    this.loadDashboardItemsBundle$()
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => {
+          this.isItemTableLoading = false;
+          this.cdr.markForCheck();
+        })
+      )
+      .subscribe(bundle => {
+        this.itemSummaries = bundle.itemSummaries;
+        this.serverNonWeaponTotalCount = bundle.serverNonWeaponTotalCount;
+        this.expandedItemId = null;
+        this.lotDetails = [];
+        this.assetDetails = [];
+        this.assetServerTotalCount = 0;
+        if (this.selectedItemFilterIds.length > 0) {
+          const validIds = new Set(this.itemSummaries.map(i => i.itemId));
+          this.selectedItemFilterIds = this.selectedItemFilterIds.filter(id => validIds.has(id));
+        }
+        this.cdr.markForCheck();
+      });
+  }
+
   private fetchAllData() {
-    return getInventoryDashboardData$(
-      this.selectedDepotIds,
-      this.monitoringService,
-      this.inventorySummaryData
-    ).pipe(
+    return forkJoin({
+      shell: getInventoryDashboard$(this.selectedDepotIds, this.monitoringService),
+      items: this.loadDashboardItemsBundle$()
+    }).pipe(
+      map(({ shell, items }) => ({
+        headlineMetrics: shell.headlineMetrics,
+        inventoryMonitoring: shell.inventoryMonitoring,
+        itemSummaries: items.itemSummaries,
+        serverNonWeaponTotalCount: items.serverNonWeaponTotalCount
+      })),
       catchError(err => {
         this.errorMessage = ErrorHandler.extractErrorMessage(err, 'Failed to load dashboard data');
         return of(null);
@@ -287,7 +350,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   }
 
   onExport(): void {
-    if (this.isLoading || this.isExporting || this.sortedItemSummaries.length === 0) return;
+    if (this.isLoading || this.isItemTableLoading || this.isExporting || this.sortedItemSummaries.length === 0) return;
 
     this.isExporting = true;
     this.cdr.markForCheck();
@@ -400,6 +463,16 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     return this._itemTypeCountMetrics;
   }
 
+  /** Stat cards "by type" — from headline API (excludes accessory in UI breakdown). */
+  get statCardByType(): { ammo: number; weapon: number; explosive: number } {
+    const h = this.headlineMetrics;
+    return {
+      ammo: h.ammunitionItemCount,
+      weapon: h.weaponItemGroupsCount,
+      explosive: h.explosiveItemCount
+    };
+  }
+
   setActiveTab(tab: ActiveTab): void {
     this.activeTab = tab;
     this.selectedItemFilterIds = [];
@@ -408,8 +481,32 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     this.expandedItemId = null;
     this.lotDetails = [];
     this.assetDetails = [];
+    this.assetServerTotalCount = 0;
     this.loadCaliberFilterLookups();
-    this.cdr.markForCheck();
+    this.fetchItemSummariesPageOnly();
+  }
+
+  /** Show type tabs from headline counts (table may be one server page only). */
+  get showItemTypeTabs(): boolean {
+    const h = this.headlineMetrics;
+    return (
+      !this.isLoading &&
+      h.ammunitionItemCount + h.explosiveItemCount + h.weaponItemGroupsCount > 0
+    );
+  }
+
+  /** When true, item page index is applied on the server (inventory summary or asset catalog paged APIs). */
+  private get useInventoryServerPaging(): boolean {
+    return (
+      (this.activeTab === 'ammunition' ||
+        this.activeTab === 'explosive' ||
+        this.activeTab === 'weapon') &&
+      !hasSecondaryItemTableFilters(
+        this.itemSearchText,
+        this.caliberFilter,
+        this.selectedItemFilterIds
+      )
+    );
   }
 
   /** Populate caliber filter labels from Caliber lookup (ammunition + weapon); explosives omit. */
@@ -451,16 +548,25 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
   onItemSearchInput(): void {
     this.itemCurrentPage = 1;
+    if (this.useInventoryServerPaging) {
+      this.fetchItemSummariesPageOnly();
+    }
     this.cdr.markForCheck();
   }
 
   onCaliberFilterChange(): void {
     this.itemCurrentPage = 1;
+    if (this.useInventoryServerPaging) {
+      this.fetchItemSummariesPageOnly();
+    }
     this.cdr.markForCheck();
   }
 
   onItemPickFilterChange(): void {
     this.itemCurrentPage = 1;
+    if (this.useInventoryServerPaging) {
+      this.fetchItemSummariesPageOnly();
+    }
     this.cdr.markForCheck();
   }
 
@@ -472,8 +578,13 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     this.expandedItemId = null;
     this.lotDetails = [];
     this.assetDetails = [];
+    this.assetServerTotalCount = 0;
     this.loadCaliberFilterLookups();
-    this.cdr.markForCheck();
+    if (this.activeTab === 'ammunition' || this.activeTab === 'explosive' || this.activeTab === 'weapon') {
+      this.fetchItemSummariesPageOnly();
+    } else {
+      this.cdr.markForCheck();
+    }
   }
 
   get filteredItemSummaries(): ItemInventorySummaryDto[] {
@@ -518,14 +629,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     return this.translate.instant('inventoryDashboard.itemSummary.singleItemTotalsNameOnly', { name: i.itemName });
   }
 
-  get totalRemainingQty(): number {
-    return totalRemainingFromSummaries(this.itemSummaries);
-  }
-
-  get totalLotsStat(): number {
-    return totalLotsFromSummaries(this.itemSummaries);
-  }
-
   get sumTotalQtyFiltered(): number {
     return sumItemSummariesField(this.filteredItemSummaries, 'totalQuantity');
   }
@@ -557,15 +660,28 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     );
   }
 
+  get itemTableTotalItemsForPager(): number {
+    if (this.useInventoryServerPaging) {
+      return this.serverNonWeaponTotalCount;
+    }
+    return this.filteredItemCount;
+  }
+
   get filteredItemCount(): number {
     return this.filteredItemSummaries.length;
   }
 
   get itemTotalPages(): number {
+    if (this.useInventoryServerPaging) {
+      return pageCountForLength(this.serverNonWeaponTotalCount, this.itemRowsPerPage);
+    }
     return pageCountForLength(this.filteredItemCount, this.itemRowsPerPage);
   }
 
   get paginatedItemSummaries(): ItemInventorySummaryDto[] {
+    if (this.useInventoryServerPaging) {
+      return this.sortedItemSummaries;
+    }
     return paginatePage(this.sortedItemSummaries, this.itemCurrentPage, this.itemRowsPerPage);
   }
 
@@ -573,20 +689,32 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     const next = nextTableSort(column, this.itemSortColumn, this.itemSortDirection);
     this.itemSortColumn = next.sortColumn;
     this.itemSortDirection = next.sortDirection;
-    this.itemCurrentPage = 1;
+    if (!this.useInventoryServerPaging) {
+      this.itemCurrentPage = 1;
+    }
     this.cdr.markForCheck();
   }
 
   onItemPageChange(page: number): void {
+    if (page === this.itemCurrentPage) return;
     this.itemCurrentPage = page;
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    this.cdr.markForCheck();
+    if (this.useInventoryServerPaging) {
+      this.fetchItemSummariesPageOnly();
+    } else {
+      this.cdr.markForCheck();
+    }
   }
 
   onItemRowsPerPageChange(rows: number): void {
+    if (rows === this.itemRowsPerPage) return;
     this.itemRowsPerPage = rows;
     this.itemCurrentPage = 1;
-    this.cdr.markForCheck();
+    if (this.useInventoryServerPaging) {
+      this.fetchItemSummariesPageOnly();
+    } else {
+      this.cdr.markForCheck();
+    }
   }
 
   toggleItemExpand(item: ItemInventorySummaryDto): void {
@@ -594,6 +722,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       this.expandedItemId = null;
       this.lotDetails = [];
       this.assetDetails = [];
+      this.assetServerTotalCount = 0;
       this.cdr.markForCheck();
       return;
     }
@@ -601,11 +730,12 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     this.expandedItemId = item.itemId;
     this.lotDetails = [];
     this.assetDetails = [];
+    this.assetServerTotalCount = 0;
     this.lotCurrentPage = 1;
     this.assetCurrentPage = 1;
     this.cdr.markForCheck();
 
-    if (item.itemType === ItemType.Weapon) {
+    if (normalizeItemType(item.itemType) === ItemType.Weapon) {
       this.loadAssets(item);
     } else {
       this.loadLots(item);
@@ -630,14 +760,48 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     this.isAssetsLoading = true;
     this.cdr.markForCheck();
     const depotId = this.selectedDepotIds.length === 1 ? this.selectedDepotIds[0] : undefined;
-    this.assetService.getAssetsByItemId(item.itemId, depotId).pipe(
-      catchError(() => of([])),
+    const request: PagedListRequest = {
+      page: this.assetCurrentPage,
+      pageSize: this.assetRowsPerPage,
+      filter: this.buildAssetSortFilter()
+    };
+    const emptyPage: PaginatedList<AssetDto> = {
+      items: [],
+      pageIndex: this.assetCurrentPage,
+      totalPages: 0,
+      totalCount: 0,
+      hasPreviousPage: false,
+      hasNextPage: false
+    };
+    this.assetService.getAssetsByItemIdPaged(item.itemId, request, depotId).pipe(
+      catchError(() => of(emptyPage)),
       finalize(() => { this.isAssetsLoading = false; this.cdr.markForCheck(); }),
       takeUntil(this.destroy$)
-    ).subscribe(assets => {
-      this.assetDetails = assets;
+    ).subscribe(res => {
+      this.assetDetails = res.items ?? [];
+      this.assetServerTotalCount = res.totalCount ?? 0;
       this.cdr.markForCheck();
     });
+  }
+
+  private buildAssetSortFilter(): FilterData | undefined {
+    if (!this.assetSortColumn) return undefined;
+    const sortField =
+      this.assetSortColumn === 'serialNumber'
+        ? 'SerialNumber'
+        : this.assetSortColumn === 'rfid'
+          ? 'RFID'
+          : undefined;
+    if (!sortField) return undefined;
+    return {
+      sortField,
+      sortDirection: this.assetSortDirection === 'asc' ? 1 : 2
+    };
+  }
+
+  private getExpandedItemSummary(): ItemInventorySummaryDto | undefined {
+    if (this.expandedItemId == null) return undefined;
+    return this.itemSummaries.find(i => i.itemId === this.expandedItemId);
   }
 
   get sortedLotDetails(): LotDetailDto[] {
@@ -676,11 +840,11 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   }
 
   get assetTotalPages(): number {
-    return pageCountForLength(this.assetDetails.length, this.assetRowsPerPage);
+    return pageCountForLength(this.assetServerTotalCount, this.assetRowsPerPage);
   }
 
   get paginatedAssetDetails(): AssetDto[] {
-    return paginatePage(this.sortedAssetDetails, this.assetCurrentPage, this.assetRowsPerPage);
+    return this.sortedAssetDetails;
   }
 
   sortAssetsByColumn(column: string): void {
@@ -688,18 +852,35 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     this.assetSortColumn = next.sortColumn;
     this.assetSortDirection = next.sortDirection;
     this.assetCurrentPage = 1;
-    this.cdr.markForCheck();
+    const summary = this.getExpandedItemSummary();
+    if (summary && normalizeItemType(summary.itemType) === ItemType.Weapon) {
+      this.loadAssets(summary);
+    } else {
+      this.cdr.markForCheck();
+    }
   }
 
   onAssetPageChange(page: number): void {
+    if (page === this.assetCurrentPage) return;
     this.assetCurrentPage = page;
-    this.cdr.markForCheck();
+    const summary = this.getExpandedItemSummary();
+    if (summary && normalizeItemType(summary.itemType) === ItemType.Weapon) {
+      this.loadAssets(summary);
+    } else {
+      this.cdr.markForCheck();
+    }
   }
 
   onAssetRowsPerPageChange(rows: number): void {
+    if (rows === this.assetRowsPerPage) return;
     this.assetRowsPerPage = rows;
     this.assetCurrentPage = 1;
-    this.cdr.markForCheck();
+    const summary = this.getExpandedItemSummary();
+    if (summary && normalizeItemType(summary.itemType) === ItemType.Weapon) {
+      this.loadAssets(summary);
+    } else {
+      this.cdr.markForCheck();
+    }
   }
 
   onExpiringSoonClick(): void {

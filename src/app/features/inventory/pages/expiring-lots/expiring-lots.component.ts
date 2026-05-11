@@ -12,6 +12,7 @@ import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.co
 import { LoadingStateComponent, ErrorStateComponent, TableClampTooltipDirective } from '@components/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { defaultPageSize } from '@constants/app.constants';
+import { PagedListRequest } from '@models/pagination.model';
 
 @Component({
   selector: 'app-expiring-lots',
@@ -37,10 +38,12 @@ export class ExpiringLotsComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
   expiringLots: ExpiringLotDto[] = [];
+  totalCount = 0;
+  totalPages = 0;
   loading = true;
   error: string | null = null;
 
-  // Pagination
+  // Pagination (server-side)
   currentPage = 1;
   rowsPerPage = defaultPageSize;
 
@@ -50,15 +53,6 @@ export class ExpiringLotsComponent implements OnInit, OnDestroy {
 
   get backIcon() {
     return this.isRTL ? ArrowRight : ArrowLeft;
-  }
-
-  get paginatedLots(): ExpiringLotDto[] {
-    const startIndex = (this.currentPage - 1) * this.rowsPerPage;
-    return this.expiringLots.slice(startIndex, startIndex + this.rowsPerPage);
-  }
-
-  get totalPages(): number {
-    return Math.ceil(this.expiringLots.length / this.rowsPerPage);
   }
 
   constructor(
@@ -83,13 +77,18 @@ export class ExpiringLotsComponent implements OnInit, OnDestroy {
     this.error = null;
     this.cdr.markForCheck();
 
-    this.monitoringService.getExpiringLots()
+    const request: PagedListRequest = { page: this.currentPage, pageSize: this.rowsPerPage };
+
+    this.monitoringService
+      .getExpiringLotsPaginated(request)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (lots) => {
-          this.expiringLots = lots;
+        next: (paged) => {
+          this.expiringLots = paged.items ?? [];
+          this.totalCount = paged.totalCount ?? 0;
+          this.totalPages = paged.totalPages ?? 0;
+          this.currentPage = paged.pageIndex ?? this.currentPage;
           this.loading = false;
-          this.currentPage = 1; // Reset to first page
           this.cdr.markForCheck();
         },
         error: (error) => {
@@ -106,14 +105,14 @@ export class ExpiringLotsComponent implements OnInit, OnDestroy {
 
   onPageChange(page: number): void {
     this.currentPage = page;
-    this.cdr.markForCheck();
+    this.loadExpiringLots();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   onRowsPerPageChange(rows: number): void {
     this.rowsPerPage = rows;
     this.currentPage = 1;
-    this.cdr.markForCheck();
+    this.loadExpiringLots();
   }
 
   getDepotName(lot: ExpiringLotDto): string {

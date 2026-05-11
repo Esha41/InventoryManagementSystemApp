@@ -172,6 +172,13 @@ export class ReturnDetailsModalComponent implements OnInit, OnDestroy {
     return 'N/A';
   }
 
+  resolveRequestPurposeNotes(request: ReturnDto | null): string {
+    if (!request) return 'N/A';
+    const raw = request.requestPurposeNotes;
+    if (raw == null || String(raw).trim() === '') return 'N/A';
+    return String(raw);
+  }
+
   resolveDepotName(request: ReturnDto | null): string {
     if (!request) return 'N/A';
     return 'N/A'; // Depot info not available in nested objects

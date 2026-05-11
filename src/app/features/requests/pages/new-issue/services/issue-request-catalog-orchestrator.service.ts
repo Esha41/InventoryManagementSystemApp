@@ -4,7 +4,6 @@ import { Cartridge } from '@models/cartridge.model';
 import { FilterData, PagedRequest } from '@models/api-response.model';
 import {
   CartridgeDataService,
-  CartridgeLoadResult,
   CartridgePaginatedLoadResult
 } from '@assets/services/cartridge-data.service';
 import {
@@ -148,22 +147,6 @@ export class IssueRequestCatalogOrchestratorService {
 
   // ---- Cartridge loading (inlined from IssueRequestCartridgeLoaderService) --
 
-  private loadCartridgesFromApi(
-    itemType: string,
-    isAllowance: boolean,
-    departmentId: number | null
-  ): Observable<CartridgeLoadResult> {
-    if (isAllowance && !departmentId) {
-      return new Observable(observer => {
-        observer.next({ cartridges: [], error: 'Department not found for current user.' });
-        observer.complete();
-      });
-    }
-    if (itemType === 'Weapon') return isAllowance ? this.cartridgeDataService.loadAllowanceWeapons(departmentId!) : this.cartridgeDataService.loadAllWeapons();
-    if (itemType === 'Explosive') return isAllowance ? this.cartridgeDataService.loadAllowanceExplosives(departmentId!) : this.cartridgeDataService.loadAllExplosives();
-    return isAllowance ? this.cartridgeDataService.loadAllowanceAmmunition(departmentId!) : this.cartridgeDataService.loadAllAmmunition();
-  }
-
   private loadCartridgesPaginated(
     itemType: string,
     page: number,
@@ -182,8 +165,9 @@ export class IssueRequestCatalogOrchestratorService {
 
   // ---- Public orchestration API -------------------------------------------
 
-  isServerCatalogMode(ctx: CatalogOrchestratorContext): boolean {
-    return ctx.fromReserve === 'No';
+  /** New-issue flow always uses paginated server catalog (same for allowance and non-allowance orders). */
+  isServerCatalogMode(_ctx: CatalogOrchestratorContext): boolean {
+    return true;
   }
 
   resetCatalogPagination(ctx: CatalogOrchestratorContext): void {
@@ -192,46 +176,9 @@ export class IssueRequestCatalogOrchestratorService {
 
   loadCartridges(ctx: CatalogOrchestratorContext, hooks: CatalogLoadHooks = {}): void {
     ctx.cartridgeState.cartridgeError = null;
-    const isAllowance = ctx.fromReserve === 'Yes';
-
-    if (this.isServerCatalogMode(ctx)) {
-      this.resetCatalogPagination(ctx);
-      this.loadAmmunitionFacetMetadataIfNeeded(ctx);
-      this.loadCatalogPage(1, 'initial', ctx, hooks);
-      return;
-    }
-
-    ctx.cartridgeState.loadingCartridges = true;
-    ctx.cdr.markForCheck();
-
-    if (isAllowance && !ctx.departmentId) {
-      ctx.cartridgeState.allCartridges = [];
-      ctx.cartridgeState.filteredCartridges = [];
-      ctx.cartridgeState.loadingCartridges = false;
-      ctx.cartridgeState.cartridgeError = 'Department not found for current user.';
-      ctx.cdr.markForCheck();
-      return;
-    }
-
-    this.loadCartridgesFromApi(ctx.filterState.selectedItemType, isAllowance, ctx.departmentId).subscribe({
-      next: (result: CartridgeLoadResult) => {
-        ctx.cartridgeState.allCartridges = result.cartridges;
-        this.buildFilterOptions(ctx);
-        this.filterCartridges(ctx);
-        hooks.onAfterLoad?.();
-        ctx.cartridgeState.loadingCartridges = false;
-        if (result.error) { ctx.cartridgeState.cartridgeError = result.error; } else { hooks.onLoadSuccess?.(); }
-        ctx.cdr.markForCheck();
-      },
-      error: (error: unknown) => {
-        const err = error as { error?: string } | null | undefined;
-        ctx.cartridgeState.allCartridges = [];
-        ctx.cartridgeState.filteredCartridges = [];
-        ctx.cartridgeState.loadingCartridges = false;
-        ctx.cartridgeState.cartridgeError = err?.error || 'Failed to load items. Please try again.';
-        ctx.cdr.markForCheck();
-      }
-    });
+    this.resetCatalogPagination(ctx);
+    this.loadAmmunitionFacetMetadataIfNeeded(ctx);
+    this.loadCatalogPage(1, 'initial', ctx, hooks);
   }
 
   loadAmmunitionFacetMetadataIfNeeded(ctx: CatalogOrchestratorContext): void {
@@ -262,6 +209,7 @@ export class IssueRequestCatalogOrchestratorService {
         this.mergeSelectedWithList(ctx.cartridgeState.allCartridges, ctx);
         ctx.cartridgeState.loadingCartridges = false;
         ctx.cartridgeState.catalogPageLoading = false;
+        hooks.onAfterLoad?.();
         if (result.error) { ctx.cartridgeState.cartridgeError = result.error; } else { hooks.onLoadSuccess?.(); }
         ctx.cdr.markForCheck();
       },
@@ -293,18 +241,6 @@ export class IssueRequestCatalogOrchestratorService {
     if (!this.isServerCatalogMode(ctx) || !ctx.cartridgeState.catalogPagination.hasPreviousPage) return;
     if (ctx.cartridgeState.catalogPageLoading || ctx.cartridgeState.loadingCartridges) return;
     this.loadCatalogPage(ctx.cartridgeState.catalogPagination.page - 1, 'overlay', ctx, hooks);
-  }
-
-  buildFilterOptions(ctx: CatalogOrchestratorContext): void {
-    if (this.isServerCatalogMode(ctx)) return;
-    const options = this.cartridgeDataService.buildFilterOptions(ctx.cartridgeState.allCartridges);
-    ctx.filterOptions.bulletDiameters = options.bulletDiameters;
-    ctx.filterOptions.natureOptions = options.natureOptions;
-  }
-
-  filterCartridges(ctx: CatalogOrchestratorContext): void {
-    if (this.isServerCatalogMode(ctx)) { this.mergeSelectedWithList(ctx.cartridgeState.allCartridges, ctx); return; }
-    this.mergeSelectedWithList(this.filterService.filterCartridges(ctx.cartridgeState.allCartridges, ctx.filterState), ctx);
   }
 
   mergeSelectedWithList(filtered: Cartridge[], ctx: CatalogOrchestratorContext): void {
@@ -350,12 +286,8 @@ export class IssueRequestCatalogOrchestratorService {
 
   handleClearFilters(ctx: CatalogOrchestratorContext, hooks: CatalogLoadHooks = {}): void {
     this.filterService.clearFilters(ctx.filterState, ctx.filterState.selectedItemType);
-    if (this.isServerCatalogMode(ctx)) {
-      if (ctx.cartridgeState.catalogPageLoading || ctx.cartridgeState.loadingCartridges) return;
-      this.resetCatalogPagination(ctx);
-      this.loadCatalogPage(1, 'overlay', ctx, hooks);
-    } else {
-      this.filterCartridges(ctx);
-    }
+    if (ctx.cartridgeState.catalogPageLoading || ctx.cartridgeState.loadingCartridges) return;
+    this.resetCatalogPagination(ctx);
+    this.loadCatalogPage(1, 'overlay', ctx, hooks);
   }
 }

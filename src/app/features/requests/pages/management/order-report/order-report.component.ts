@@ -75,6 +75,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     department: '',
     requester: '',
     usagePurpose: '',
+    usagePurposeNotes: '',
     totalItems: 0,
     totalQuantity: 0,
     lastUpdated: ''
@@ -323,6 +324,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       department: '',
       requester: '',
       usagePurpose: '',
+      usagePurposeNotes: '',
       totalItems: 0,
       totalQuantity: 0,
       lastUpdated: ''

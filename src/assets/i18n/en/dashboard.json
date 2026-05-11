@@ -30,6 +30,7 @@
     "usageInformation": "Usage Information",
     "additionalInformation": "Additional Information",
     "usagePurpose": "Usage Purpose",
+    "usePurposeNotes": "Use Purpose Notes",
     "usageLocation": "Usage Location",
     "usageDate": "Usage Date",
     "usageDateFrom": "Usage From Date",
@@ -75,6 +76,7 @@
   },
   "inventoryDashboard": {
     "title": "Inventory Dashboard",
+    "loading": "Loading dashboard…",
     "statistics": {
       "totalItems": "Total Items",
       "totalQuantity": "Total Quantity",
@@ -87,7 +89,12 @@
       "distinctItemTypes": "Distinct item types",
       "totalRemaining": "Total Remaining",
       "availableUnits": "Available units",
-      "totalLots": "Total lots/batches",
+      "totalLots": "Total lots",
+      "totalLotsHint": "Ammunition & explosive lots",
+      "totalBatches": "Total batches",
+      "totalBatchesHint": "Weapon batches in scope",
+      "totalWeapons": "Total weapons",
+      "totalWeaponsHint": "Tracked weapon assets",
       "activeLots": "Active lots/batches",
       "byType": "Items by Type"
     },
@@ -310,7 +317,9 @@
     "searchPlaceholder": "Search ....",
     "noResults": "No items match your search criteria",
     "exportWithDetails": "Export with lot details",
-    "exportingWithDetails": "Loading lot details for export. Please wait..."
+    "exportingWithDetails": "Loading lot details for export. Please wait...",
+    "totalItems": "Total items",
+    "totalsHint": "Quantity totals reflect the current page (and search filter, if any)."
   },
   "forecast": {
     "title": "Forecast",

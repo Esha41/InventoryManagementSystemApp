@@ -22,6 +22,26 @@ export interface InventoryDashboardSummaryDto {
   pipeline: InventoryPipelineDashboardDto;
 }
 
+/** Matches GET Monitoring/dashboard/inventory-headline-metrics */
+export interface InventoryHeadlineMetricsDto {
+  lowStockCount: number;
+  expiringSoonCount: number;
+  totalDistinctItems: number;
+  totalRemainingQuantity: number;
+  /** Combined headline figure (non-weapon lots + weapon line count); use {@link lotCount} for ammo/explosive lot totals. */
+  totalLots: number;
+  /** Total inventory lots (non-weapon); API `lotCount`. */
+  lotCount: number;
+  /** Tracked weapon assets; API `weaponCount`. */
+  weaponCount: number;
+  /** Weapon registry batches in scope; API `totalBatches`. */
+  totalBatches: number;
+  ammunitionItemCount: number;
+  explosiveItemCount: number;
+  accessoryItemCount: number;
+  weaponItemGroupsCount: number;
+}
+
 export interface DraftSupplyListItemDto {
   rowKind: string;
   rowId: number;

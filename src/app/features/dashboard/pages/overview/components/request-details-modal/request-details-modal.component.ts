@@ -257,6 +257,21 @@ export class RequestDetailsModalComponent implements OnInit, OnDestroy {
     return order ? formatOrderUsageDateTo(order) : 'N/A';
   }
 
+  /** Usage purpose notes from order payload. */
+  getOrderRequestPurposeNotesDisplay(): string {
+    const raw = this.getOrder()?.requestPurposeNotes;
+    if (raw == null || String(raw).trim() === '') return 'N/A';
+    return String(raw);
+  }
+
+  /** Usage purpose notes on return/discard (`requestPurposeNotes`). */
+  getReturnDiscardRequestPurposeNotesDisplay(): string {
+    if (!this.request) return 'N/A';
+    const raw = this.request.requestPurposeNotes;
+    if (raw == null || String(raw).trim() === '') return 'N/A';
+    return String(raw);
+  }
+
   getOrderAllowanceKey(): string {
     const order = this.getOrder();
     return order ? getOrderAllowanceKey(order.isFromAllowance) : 'common.no';

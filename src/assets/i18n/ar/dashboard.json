@@ -30,6 +30,7 @@
     "usageInformation": "معلومات الاستخدام",
     "additionalInformation": "معلومات إضافية",
     "usagePurpose": "غرض الاستخدام",
+    "usePurposeNotes": "ملاحظات غرض الطلب",
     "usageLocation": "موقع الاستخدام",
     "usageDate": "تاريخ الاستخدام",
     "usageDateFrom": "تاريخ الاستخدام من",
@@ -75,6 +76,7 @@
   },
   "inventoryDashboard": {
     "title": "لوحة تحكم المخزون",
+    "loading": "جاري تحميل لوحة المخزون…",
     "statistics": {
       "totalItems": "إجمالي المواد",
       "totalQuantity": "إجمالي الكمية",
@@ -87,8 +89,13 @@
       "distinctItemTypes": "أنواع المواد المختلفة",
       "totalRemaining": "إجمالي المتبقي",
       "availableUnits": "الوحدات المتاحة",
-      "totalLots": "Total lots/batches",
-      "activeLots": "Active lots/batches",
+      "totalLots": "إجمالي الدفعات",
+      "totalLotsHint": "دفعات الذخيرة والمتفجرات",
+      "totalBatches": "إجمالي الدفعات المجمّعة",
+      "totalBatchesHint": "دفعات تسجيل الأسلحة في النطاق",
+      "totalWeapons": "إجمالي الأسلحة",
+      "totalWeaponsHint": "أصول أسلحة مسجّلة",
+      "activeLots": "دفعات/دُفعات نشطة",
       "byType": "المواد حسب النوع"
     },
     "weaponsAndPipeline": {
@@ -310,7 +317,9 @@
     "searchPlaceholder": "البحث ....",
     "noResults": "لا توجد مواد تطابق معايير البحث",
     "exportWithDetails": "تصدير مع تفاصيل Lots",
-    "exportingWithDetails": "جارٍ تحميل تفاصيل Lots للتصدير. الرجاء الانتظار..."
+    "exportingWithDetails": "جارٍ تحميل تفاصيل Lots للتصدير. الرجاء الانتظار...",
+    "totalItems": "إجمالي المواد",
+    "totalsHint": "إجماليات الكميات تعكس الصفحة الحالية (ومرشح البحث إن وُجد)."
   },
   "forecast": {
     "title": "التوقعات",

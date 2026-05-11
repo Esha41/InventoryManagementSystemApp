@@ -1,4 +1,5 @@
-import { ItemInventorySummaryDto, ItemType } from '@models/inventory.model';
+import { ItemInventorySummaryDto, ItemType, normalizeItemType } from '@models/inventory.model';
+import { InventoryHeadlineMetricsDto } from '@models/inventory-dashboard-monitoring.model';
 import { LotDetailDto } from '@inventory/services/inventory.service';
 import { AssetDto } from '@models/asset.model';
 
@@ -22,7 +23,7 @@ export function filterItemSummaries(
     f.activeTab === 'ammunition' ? 1 :
     f.activeTab === 'weapon'     ? 2 :
                                    3;
-  list = list.filter(i => i.itemType === tabType);
+  list = list.filter(i => normalizeItemType(i.itemType) === tabType);
 
   if (f.selectedItemFilterIds.length > 0) {
     list = list.filter(i => f.selectedItemFilterIds.includes(i.itemId));
@@ -117,6 +118,25 @@ export function sumLotDetailsMetrics(lots: LotDetailDto[]): {
   );
 }
 
+/** Tab badge counts when the table uses server paging (headline metrics stay authoritative). */
+export function itemTypeTabAndStatCountsFromHeadline(h: InventoryHeadlineMetricsDto): {
+  tabCounts: { ammunition: number; weapon: number; explosive: number };
+  byType: { ammo: number; weapon: number; explosive: number };
+} {
+  return {
+    tabCounts: {
+      ammunition: h.ammunitionItemCount,
+      weapon: h.weaponItemGroupsCount,
+      explosive: h.explosiveItemCount
+    },
+    byType: {
+      ammo: h.ammunitionItemCount,
+      weapon: h.weaponItemGroupsCount,
+      explosive: h.explosiveItemCount
+    }
+  };
+}
+
 export function itemTypeTabAndStatCounts(
   itemSummaries: ItemInventorySummaryDto[]
 ): {
@@ -127,9 +147,10 @@ export function itemTypeTabAndStatCounts(
   let weapon = 0;
   let explosive = 0;
   for (const i of itemSummaries) {
-    if (i.itemType === ItemType.Ammunition) ammunition++;
-    else if (i.itemType === ItemType.Weapon) weapon++;
-    else if (i.itemType === ItemType.Explosive) explosive++;
+    const ty = normalizeItemType(i.itemType);
+    if (ty === ItemType.Ammunition) ammunition++;
+    else if (ty === ItemType.Weapon) weapon++;
+    else if (ty === ItemType.Explosive) explosive++;
   }
   return {
     tabCounts: { ammunition, weapon, explosive },
@@ -145,7 +166,7 @@ export function filterItemSummariesByActiveTab(
     activeTab === 'ammunition' ? ItemType.Ammunition :
     activeTab === 'weapon'     ? ItemType.Weapon     :
                                 ItemType.Explosive;
-  return itemSummaries.filter(i => i.itemType === tabType);
+  return itemSummaries.filter(i => normalizeItemType(i.itemType) === tabType);
 }
 
 /** Search, caliber, or item pick — excludes tab scope. */
@@ -171,7 +192,7 @@ export function sumItemSummariesExcludingWeapon(
   field: keyof ItemInventorySummaryDto
 ): number {
   return sumItemSummariesField(
-    filtered.filter(item => item.itemType !== ItemType.Weapon),
+    filtered.filter(item => normalizeItemType(item.itemType) !== ItemType.Weapon),
     field
   );
 }

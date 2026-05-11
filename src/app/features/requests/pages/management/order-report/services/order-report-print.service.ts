@@ -226,9 +226,15 @@ export class OrderReportPrintService {
       
       .print-info-item {
         display: flex !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
         padding: 6px 0 !important;
         border-bottom: 1px solid #ddd !important;
         margin: 0 !important;
+      }
+      
+      .print-info-item-span-full {
+        grid-column: 1 / -1 !important;
       }
       
       .print-info-label {
@@ -236,12 +242,19 @@ export class OrderReportPrintService {
         color: #333 !important;
         min-width: 120px !important;
         font-size: 9pt !important;
+        flex-shrink: 0 !important;
       }
       
       .print-info-value {
         color: #000 !important;
         font-size: 9pt !important;
         flex: 1 !important;
+        min-width: 0 !important;
+      }
+      
+      .print-info-value-multiline {
+        white-space: pre-wrap !important;
+        word-break: break-word !important;
       }
       
       .order-info-section {
@@ -285,6 +298,25 @@ export class OrderReportPrintService {
       
       .priority-value.priority-veryurgent {
         color: #ef4444 !important;
+      }
+      
+      /* Order info: status as plain text when printing (no pill) */
+      .order-info-section .status-badge {
+        display: inline !important;
+        align-items: unset !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        border-radius: 0 !important;
+        background: none !important;
+        background-color: transparent !important;
+        box-shadow: none !important;
+        font-size: 9pt !important;
+        font-weight: normal !important;
+        color: #000 !important;
+        line-height: inherit !important;
+        width: auto !important;
+        max-width: none !important;
       }
       
       /* Professional Tables */

@@ -96,17 +96,16 @@
             </div>
         </app-card>
 
-        <!-- Totals for current tab + search (full filtered set; table is paginated) -->
+        <!-- Totals: item count = server tab total; quantities = visible rows (current page, after search) -->
         <app-card *ngIf="!loading && !error" [shadow]="true" class="mb-6">
             <div class="p-4 sm:p-6">
                 <p class="mb-4 text-sm text-[var(--color-text-muted)]">
                     {{ 'inventorySummary.totalsHint' | translate }}
                 </p>
-                <div *ngIf="filteredItems.length === 0" class="text-center py-8 text-[var(--color-text-muted)] text-sm">
-                    {{ searchTerm ? ('inventorySummary.noResults' | translate) : ('inventorySummary.noItems' | translate)
-                    }}
+                <div *ngIf="serverTotalCount === 0" class="text-center py-8 text-[var(--color-text-muted)] text-sm">
+                    {{ 'inventorySummary.noItems' | translate }}
                 </div>
-                <div *ngIf="filteredItems.length > 0"
+                <div *ngIf="serverTotalCount > 0"
                     class="grid grid-cols-2 gap-3 sm:gap-4"
                     [ngClass]="activeTab === 'weapon' ? 'lg:grid-cols-2' : 'lg:grid-cols-3'">
                     <div
@@ -174,7 +173,7 @@
             </div>
             <!-- Mobile/Tablet Card View -->
             <div class="lg:hidden space-y-4">
-                <div *ngFor="let item of paginatedItems; trackBy: trackByItemId"
+                <div *ngFor="let item of displayRows; trackBy: trackByItemId"
                     class="bg-[var(--color-background)] rounded-xl shadow-sm border border-[var(--color-border)] overflow-hidden">
                     <!-- Card Header / Main Info -->
                     <div class="p-4" (click)="toggleRow(item.itemId, item.itemType)">
@@ -267,7 +266,8 @@
                                 {{ 'inventorySummary.noAssets' | translate }}
                             </div>
 
-                            <div *ngIf="!isLoadingAssets(item.itemId)" class="space-y-3">
+                            <div *ngIf="!isLoadingAssets(item.itemId) && getAssetsForItem(item.itemId).length > 0"
+                                class="space-y-3">
                                 <div *ngFor="let asset of getAssetsForItem(item.itemId); trackBy: trackById"
                                     class="bg-[var(--color-background)] rounded p-3 border border-[var(--color-border)] shadow-sm">
                                     <div class="flex justify-between items-start mb-2" (click)="toggleAsset(asset.id)">
@@ -319,6 +319,17 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                            <div *ngIf="!isLoadingAssets(item.itemId) && getAssetTotalPages(item.itemId) > 1"
+                                class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--color-border)] pt-3"
+                                [class.flex-row-reverse]="isRTL"
+                                (click)="$event.stopPropagation()">
+                                <app-pagination [currentPage]="getAssetCurrentPage(item.itemId)"
+                                    [totalPages]="getAssetTotalPages(item.itemId)"
+                                    (pageChange)="onWeaponAssetPageChange(item.itemId, $event)">
+                                </app-pagination>
+                                <span class="text-xs text-[var(--color-text-muted)]">{{ getAssetCurrentPage(item.itemId)
+                                    }} {{ 'common.of' | translate }} {{ getAssetTotalPages(item.itemId) }}</span>
                             </div>
                         </div>
 
@@ -435,7 +446,7 @@
                     </thead>
                     <tbody class="divide-y divide-[var(--color-border)]">
                         <!-- Empty State -->
-                        <tr *ngIf="paginatedItems.length === 0">
+                        <tr *ngIf="displayRows.length === 0">
                             <td [attr.colspan]="activeTab === 'weapon' ? 7 : 11" class="px-6 py-12 text-center">
                                 <!-- <td [attr.colspan]="activeTab === 'weapon' ? 9 : 11" class="px-6 py-12 text-center"> -->
                                 <p class="text-[var(--color-text-muted)]">
@@ -446,7 +457,7 @@
                         </tr>
 
                         <!-- Inventory Items -->
-                        <ng-container *ngFor="let item of paginatedItems; trackBy: trackByItemId">
+                        <ng-container *ngFor="let item of displayRows; trackBy: trackByItemId">
                             <!-- Main Row -->
                             <tr class="accordion-row hover:bg-[var(--color-background-muted)] transition-colors"
                                 [class.expanded]="isExpanded(item.itemId)"
@@ -692,6 +703,18 @@
                                                         </ng-container>
                                                     </tbody>
                                                 </table>
+                                                <div *ngIf="getAssetTotalPages(item.itemId) > 1"
+                                                    class="flex flex-wrap items-center justify-between gap-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 py-3"
+                                                    [class.flex-row-reverse]="isRTL"
+                                                    (click)="$event.stopPropagation()">
+                                                    <app-pagination [currentPage]="getAssetCurrentPage(item.itemId)"
+                                                        [totalPages]="getAssetTotalPages(item.itemId)"
+                                                        (pageChange)="onWeaponAssetPageChange(item.itemId, $event)">
+                                                    </app-pagination>
+                                                    <span class="text-xs text-[var(--color-text-muted)] whitespace-nowrap">{{
+                                                        getAssetCurrentPage(item.itemId) }} {{ 'common.of' | translate }} {{
+                                                        getAssetTotalPages(item.itemId) }}</span>
+                                                </div>
                                             </div>
 
                                             <div *ngIf="getAssetsForItem(item.itemId).length === 0"
@@ -844,12 +867,12 @@
             </div>
 
             <!-- Pagination Footer -->
-            <div *ngIf="filteredItems.length > 0 && !loading"
+            <div *ngIf="serverTotalCount > 0 && !loading"
                 class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-6 py-4">
                 <div class="flex items-center justify-between w-full flex-nowrap">
                     <!-- Rows Per Page Selector -->
-                    <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="filteredItems.length"
-                        [visibleItems]="paginatedItems.length" (rowsPerPageChange)="onRowsPerPageChange($event)">
+                    <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="serverTotalCount"
+                        [visibleItems]="displayRows.length" (rowsPerPageChange)="onRowsPerPageChange($event)">
                     </app-rows-per-page>
 
                     <!-- Pagination Controls -->

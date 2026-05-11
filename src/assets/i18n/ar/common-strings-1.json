@@ -26,6 +26,7 @@
     "exportError": "فشل تصدير البيانات",
     "exportSuccess": "تم تصدير البيانات بنجاح",
     "exportToExcel": "تصدير إلى Excel",
+    "estimatedTime": "الوقت المتوقع المتبقي",
     "exporting": "جاري التصدير...",
     "file": "ملف",
     "files": "ملفات",
@@ -53,6 +54,7 @@
     "noImage": "لا توجد صورة",
     "noResultsFound": "لم يتم العثور على نتائج",
     "notAvailable": "غير متوفر",
+    "records": "سجلات",
     "dataTypes": {
       "ammunition": "الذخاير",
       "weapon": "الأسلحة",

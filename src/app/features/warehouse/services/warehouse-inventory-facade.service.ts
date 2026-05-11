@@ -1,13 +1,15 @@
 import { DestroyRef, Injectable, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { merge } from 'rxjs';
+import { merge, timer } from 'rxjs';
+import { finalize, switchMap, takeWhile, tap } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { getCurrentLang, getLocalizedName } from '@utils/localization.utils';
 import { InventoryDetailDto, UpdateInventoryDetailDto, UpdateInventoryDto } from '@models/inventory.model';
-import { AssetDto } from '@models/asset.model';
+import { AssetBulkDeletionScope, AssetDto } from '@models/asset.model';
+import { AssetService } from '@assets/services/asset.service';
 import { BatchSummaryDto } from '@models/batch.model';
 import { WarehouseInventoryStore, WarehouseInventoryTab } from './warehouse-inventory.store';
 import { WarehouseInventoryService } from './warehouse-inventory.service';
@@ -23,6 +25,8 @@ import { BatchTableSortColumn } from '../pages/inventory/components/batch-table/
  * `DestroyRef` tracks the host. Owns no state — see {@link WarehouseInventoryStore}. */
 @Injectable()
 export class WarehouseInventoryFacadeService {
+  private static readonly ASYNC_BATCH_DELETE_THRESHOLD = 500;
+
   private readonly destroyRef = inject(DestroyRef);
   private readonly store = inject(WarehouseInventoryStore);
   private readonly route = inject(ActivatedRoute);
@@ -35,6 +39,7 @@ export class WarehouseInventoryFacadeService {
   private readonly importFlow = inject(WarehouseInventoryImportService);
   private readonly crudService = inject(WarehouseInventoryCrudService);
   private readonly exportService = inject(WarehouseInventoryExportService);
+  private readonly assetService = inject(AssetService);
 
   initialize(): void {
     this.bootstrapFromInitialQuery();
@@ -238,6 +243,13 @@ export class WarehouseInventoryFacadeService {
     const batch = this.store.selectedBatch();
     if (!batch) return;
     this.store.closeDeleteBatch();
+
+    const assetCount = batch.quantity ?? 0;
+    if (assetCount >= WarehouseInventoryFacadeService.ASYNC_BATCH_DELETE_THRESHOLD) {
+      this.runAsyncBatchDeletion(batch);
+      return;
+    }
+
     this.dataService.deleteBatch(batch.id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -308,6 +320,68 @@ export class WarehouseInventoryFacadeService {
   }
 
   onWarehousePreviewCancelled(): void { this.store.cancelPreview(); }
+
+  private runAsyncBatchDeletion(batch: BatchSummaryDto): void {
+    this.store.beginLargeBatchDeletion(
+      this.translateService.instant('warehouseInventory.batchDeleteQueuedLarge')
+    );
+
+    this.assetService
+      .startBulkDelete({
+        scope: AssetBulkDeletionScope.Batch,
+        batchId: batch.id
+      })
+      .pipe(
+        switchMap((start) =>
+          timer(0, 1200).pipe(
+            switchMap(() => this.assetService.getBulkDeleteStatus(start.jobId)),
+            tap((status) => {
+              const detail =
+                status.message?.trim() ||
+                `${status.processedCount.toLocaleString()} / ${status.totalCandidates.toLocaleString()}`;
+              this.store.updateLargeBatchDeletionProgress(status.progressPercent, detail);
+            }),
+            takeWhile(
+              (s) => s.status !== 'Completed' && s.status !== 'Failed',
+              true
+            )
+          )
+        ),
+        finalize(() => this.store.endLargeBatchDeletion()),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: (final) => {
+          if (final.status !== 'Completed' && final.status !== 'Failed') {
+            return;
+          }
+          if (final.status === 'Failed') {
+            const msg =
+              final.message?.trim() ||
+              this.translateService.instant('warehouseInventory.batchDeleteJobFailed');
+            this.toastService.error(msg, this.translateService.instant('toast.error'));
+            return;
+          }
+          if (this.store.expandedBatchId() === batch.id) {
+            this.store.collapseExpandedBatch();
+          }
+          this.store.removeBatchById(batch.id, (bs) => this.applyBatchSearch(bs));
+          this.toastService.success(
+            this.translateService.instant('warehouseInventory.batchDeleted'),
+            this.translateService.instant('toast.success')
+          );
+        },
+        error: (err: unknown) => {
+          const fallback = this.translateService.instant('warehouseInventory.failedToDeleteBatch');
+          const msg = ErrorHandler.extractAndTranslateErrorMessage(
+            err,
+            fallback,
+            this.translateService
+          );
+          this.toastService.error(msg, this.translateService.instant('toast.error'));
+        }
+      });
+  }
 
   private bootstrapFromInitialQuery(): void {
     const tabParam = this.route.snapshot.queryParams['tab'];

@@ -133,6 +133,7 @@ export class DropdownComponent<T = Primitive>
   private appMainEl: HTMLElement | null = null;
   private openMainScrollTop: number | null = null;
   private static readonly mainScrollJitterThresholdPx = 4;
+  private panelLayoutObserver: ResizeObserver | null = null;
 
   private getAppMain(): HTMLElement | null {
     if (!this.appMainEl || !this.appMainEl.isConnected) {
@@ -153,8 +154,14 @@ export class DropdownComponent<T = Primitive>
     if (!this.isOpen) {
       return;
     }
-    const target = event.target as Node;
-    if (this.host.nativeElement.contains(target)) {
+    const target = event.target as Node | null;
+    // Scroll on any ancestor of this dropdown (e.g. modal body overflow-y-auto): keep open and
+    // refresh fixed panel geometry instead of treating it like an unrelated document scroll.
+    if (target instanceof HTMLElement && target.contains(this.host.nativeElement)) {
+      requestAnimationFrame(() => this.adjustPanelPosition());
+      return;
+    }
+    if (target && this.host.nativeElement.contains(target)) {
       return;
     }
     const main = this.getAppMain();
@@ -183,6 +190,7 @@ export class DropdownComponent<T = Primitive>
   ) { }
 
   ngOnDestroy(): void {
+    this.detachPanelLayoutObserver();
     document.removeEventListener('scroll', this.scrollHandler, { capture: true });
   }
 
@@ -382,9 +390,11 @@ export class DropdownComponent<T = Primitive>
     this.isOpen = !this.isOpen;
     if (this.isOpen) {
       this.syncOpenMainScrollTop();
-      setTimeout(() => this.adjustPanelPosition(), 0);
+      this.attachPanelLayoutObserver();
+      this.syncPanelGeometryAfterOpen();
       document.addEventListener('scroll', this.scrollHandler, { passive: true, capture: true });
     } else {
+      this.detachPanelLayoutObserver();
       this.openMainScrollTop = null;
       document.removeEventListener('scroll', this.scrollHandler, { capture: true });
     }
@@ -399,7 +409,8 @@ export class DropdownComponent<T = Primitive>
     this.isOpen = true;
     this.searchTerm = '';
     this.syncOpenMainScrollTop();
-    setTimeout(() => this.adjustPanelPosition(), 0);
+    this.attachPanelLayoutObserver();
+    this.syncPanelGeometryAfterOpen();
     document.addEventListener('scroll', this.scrollHandler, { passive: true, capture: true });
     this.openedChange.emit(true);
     this.ensureTriggerFocusNoScroll();
@@ -421,15 +432,45 @@ export class DropdownComponent<T = Primitive>
     const rect = trigger.getBoundingClientRect();
     this.positionPanelFixedToTrigger(panel, rect);
     requestAnimationFrame(() => {
-      this.clampFixedPanelVertically(panel, rect);
+      const triggerNow = this.host.nativeElement.querySelector('.app-dropdown-trigger') as HTMLElement;
+      const rectNow = triggerNow?.getBoundingClientRect() ?? rect;
+      this.clampFixedPanelVertically(panel, rectNow);
       this.syncOpenMainScrollTop();
     });
+  }
+
+  /** After open, scrollbar gutters / overflow can settle one frame later — remeasure width & edges. */
+  private syncPanelGeometryAfterOpen(): void {
+    queueMicrotask(() => this.adjustPanelPosition());
+    requestAnimationFrame(() => {
+      this.adjustPanelPosition();
+      requestAnimationFrame(() => this.adjustPanelPosition());
+    });
+  }
+
+  private attachPanelLayoutObserver(): void {
+    this.detachPanelLayoutObserver();
+    if (typeof ResizeObserver === 'undefined') {
+      return;
+    }
+    this.panelLayoutObserver = new ResizeObserver(() => {
+      if (!this.isOpen) {
+        return;
+      }
+      requestAnimationFrame(() => this.adjustPanelPosition());
+    });
+    this.panelLayoutObserver.observe(this.host.nativeElement);
+  }
+
+  private detachPanelLayoutObserver(): void {
+    this.panelLayoutObserver?.disconnect();
+    this.panelLayoutObserver = null;
   }
 
   /** Normal case: panel under trigger, CSS handles width. */
   private positionPanelAnchored(panel: HTMLElement): void {
     panel.style.cssText =
-      'position:absolute;top:calc(100% + 0.5rem);bottom:auto;left:0;right:0;z-index:99999';
+      'position:absolute;top:calc(100% + 0.5rem);bottom:auto;left:0;right:0;z-index:100050';
   }
 
   /** Escape overflow:hidden ancestors (e.g. table scroll regions). */
@@ -438,11 +479,11 @@ export class DropdownComponent<T = Primitive>
     if (this.isRTL) {
       panel.style.cssText =
         `position:fixed;top:${rect.bottom + PANEL_GAP_PX}px;bottom:auto;left:auto;right:${window.innerWidth - rect.right}px;` +
-        `width:${w};min-width:${w};max-width:;z-index:99999`;
+        `width:${w};min-width:${w};z-index:100050`;
     } else {
       panel.style.cssText =
         `position:fixed;top:${rect.bottom + PANEL_GAP_PX}px;bottom:auto;left:${rect.left}px;right:auto;` +
-        `width:${w};min-width:${w};max-width:;z-index:99999`;
+        `width:${w};min-width:${w};z-index:100050`;
     }
   }
 
@@ -499,6 +540,7 @@ export class DropdownComponent<T = Primitive>
     this.hoveredIndex = null;
     this.searchTerm = '';
     this.openMainScrollTop = null;
+    this.detachPanelLayoutObserver();
     document.removeEventListener('scroll', this.scrollHandler, { capture: true });
 
     const panel = this.host.nativeElement.querySelector('.app-dropdown-panel') as HTMLElement;

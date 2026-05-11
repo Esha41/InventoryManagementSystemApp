@@ -71,4 +71,10 @@ export class OrderInfoSectionComponent {
       currentLang
     ) || this.orderSummary.usagePurpose || 'N/A';
   }
+
+  resolveUsagePurposeNotes(): string {
+    const raw = this.orderSummary.usagePurposeNotes;
+    if (raw == null || String(raw).trim() === '') return 'N/A';
+    return String(raw);
+  }
 }

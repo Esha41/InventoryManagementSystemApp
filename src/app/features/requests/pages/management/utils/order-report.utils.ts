@@ -165,6 +165,10 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
     department: departmentName,
     requester: requesterName,
     usagePurpose: usagePurpose,
+    usagePurposeNotes:
+      order.requestPurposeNotes != null && String(order.requestPurposeNotes).trim() !== ''
+        ? String(order.requestPurposeNotes)
+        : '',
     requestPurposeNameEn: order.requestPurpose?.nameEn || order.requestPurposeNameEn,
     requestPurposeNameAr: order.requestPurpose?.nameAr || order.requestPurposeNameAr,
     totalItems: order.requestItems?.length || 0,
@@ -449,8 +453,11 @@ export function generateQrCodeData(orderSummary: OrderSummary, localizedUsagePur
           orderSummary.status.includes('cancelled') ? 'CANCELLED' :
             orderSummary.status.includes('Pending') ? 'PENDING' : 'NEW';
 
-  // Use localized usage purpose when provided, otherwise fallback to summary field
   const usagePurpose = localizedUsagePurpose || orderSummary.usagePurpose;
+  const usagePurposeNotes =
+    orderSummary.usagePurposeNotes != null && String(orderSummary.usagePurposeNotes).trim() !== ''
+      ? String(orderSummary.usagePurposeNotes)
+      : 'N/A';
 
   // Create a human-readable format that's easy to scan and verify
   const qrLines = [
@@ -461,6 +468,7 @@ export function generateQrCodeData(orderSummary: OrderSummary, localizedUsagePur
     `Status: ${statusText}`,
     `Priority: ${orderSummary.priority}`,
     `Usage Purpose: ${usagePurpose}`,
+    `Use Purpose Notes: ${usagePurposeNotes}`,
     `Submitted: ${orderSummary.submittedOn}`,
     `Total Items: ${orderSummary.totalItems}`,
     `Total Quantity: ${orderSummary.totalQuantity}`,
@@ -477,6 +485,7 @@ export function generateQrCodeData(orderSummary: OrderSummary, localizedUsagePur
     status: statusText,
     priority: orderSummary.priority,
     usagePurpose: usagePurpose,
+    usagePurposeNotes: usagePurposeNotes === 'N/A' ? '' : usagePurposeNotes,
     submittedOn: orderSummary.submittedOn,
     totalItems: orderSummary.totalItems,
     totalQuantity: orderSummary.totalQuantity,
