@@ -84,8 +84,7 @@ export class WorkflowService {
             workflowTypeName: w.workflowTypeName ?? undefined,
             autoRejectTriggerMode: w.autoRejectTriggerMode ?? undefined,
             autoRejectTriggerRoleIds: w.autoRejectTriggerRoleIds,
-            autoRejectTriggerStepIds: w.autoRejectTriggerStepIds,
-            autoRejectResetOnReApproval: w.autoRejectResetOnReApproval
+            autoRejectTriggerStepIds: w.autoRejectTriggerStepIds
           };
         });
 

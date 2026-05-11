@@ -88,16 +88,6 @@ export class OrderAutoRejectWorkflowTriggersPanelComponent implements OnInit, On
     return (w.autoRejectTriggerStepIds ?? []).filter(id => id != null && id > 0).length;
   }
 
-  showAnchorDetail(w: WorkflowDto): boolean {
-    return this.triggerMode(w) !== 'none';
-  }
-
-  anchorDetailKey(w: WorkflowDto): string {
-    return w.autoRejectResetOnReApproval !== false
-      ? 'orderAutoRejectSettings.workflowTriggerAnchorDetailLatest'
-      : 'orderAutoRejectSettings.workflowTriggerAnchorDetailEarliest';
-  }
-
   trackByWorkflowId(_: number, w: WorkflowDto): number {
     return w.id;
   }
