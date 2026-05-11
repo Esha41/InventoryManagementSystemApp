@@ -25,4 +25,10 @@ export interface Environment {
   idleLogoutCountdownSeconds?: number;
   persistAuthAcrossSessions?: boolean;
   enableOnboardingTour?: boolean;
+  /**
+   * When true (typically production — aligned with {@link enableOnboardingTour}), runs the post-login
+   * terms/security acknowledgment modal until the user accepts.
+   * When false (typical dev/local), skips that flow so logins are not blocked during development.
+   */
+  enableSecurityAcknowledgmentOnLogin?: boolean;
 }
