@@ -60,9 +60,6 @@ export class BatchTableComponent implements OnChanges {
     @Input() batchAssetsPageSize = defaultPageSize;
     @Input() batchAssetsTotalPages = 1;
     @Input() batchAssetsTotalCount = 0;
-    @Input() batchAssetsAllLoaded = false;
-    /** Page size choices for batch assets (default from `APP_CONSTANTS.PAGE_SIZE_OPTIONS` pattern: 20, 50, …). */
-    @Input() batchAssetsPageSizeOptions: number[] = [20, 50, 100, 200, 500];
     @Input() getAssetItemName: (asset: AssetDto) => string = () => '';
     @Input() getAssetStatusLabel: (asset: AssetDto) => string = () => '';
     @Input() formatDate: (date?: Date | string) => string = () => '';
@@ -86,8 +83,6 @@ export class BatchTableComponent implements OnChanges {
     @Output() sortChange = new EventEmitter<BatchTableSortColumn>();
     @Output() batchAssetsPageChange = new EventEmitter<number>();
     @Output() batchAssetsPageSizeChange = new EventEmitter<number>();
-    @Output() batchAssetsLoadAll = new EventEmitter<void>();
-    @Output() batchAssetsUsePagination = new EventEmitter<void>();
     @Output() batchAssetsDetailItemChange = new EventEmitter<number | null>();
 
     @Input() sortColumn: BatchTableSortColumn = 'batchNumber';

@@ -10,7 +10,7 @@ import { getCurrentLang, getLocalizedName } from '@utils/localization.utils';
 import { InventoryDetailDto, UpdateInventoryDetailDto, UpdateInventoryDto } from '@models/inventory.model';
 import { AssetBulkDeletionScope, AssetDto } from '@models/asset.model';
 import { AssetService } from '@assets/services/asset.service';
-import { BatchSummaryDto } from '@models/batch.model';
+import { BatchSummaryDto, BatchAssetFilter } from '@models/batch.model';
 import { WarehouseInventoryStore, WarehouseInventoryTab } from './warehouse-inventory.store';
 import { WarehouseInventoryService } from './warehouse-inventory.service';
 import { WarehouseInventoryDataService } from './warehouse-inventory-data.service';
@@ -167,19 +167,6 @@ export class WarehouseInventoryFacadeService {
 
   onExpandedBatchAssetsPageSizeChange(size: number): void {
     this.store.setExpandedBatchAssetsPageSize(size);
-    this.store.setExpandedBatchAssetsPage(1);
-    this.fetchExpandedBatchAssets();
-  }
-
-  onExpandedBatchAssetsLoadAll(): void {
-    this.store.setExpandedBatchAssetsAllLoaded(true);
-    this.store.setExpandedBatchAssetsPage(1);
-    this.fetchExpandedBatchAssets();
-  }
-
-  onExpandedBatchAssetsUsePagination(): void {
-    this.store.setExpandedBatchAssetsAllLoaded(false);
-    this.store.setExpandedBatchAssetsDetailItemId(null);
     this.store.setExpandedBatchAssetsPage(1);
     this.fetchExpandedBatchAssets();
   }
@@ -574,15 +561,30 @@ export class WarehouseInventoryFacadeService {
       });
   }
 
+  /**
+   * When an item detail accordion is open, scope the asset list to that catalog item so pagination
+   * is not tied to global asset Id order (otherwise page 1 can omit an item that still has a non-zero count).
+   */
+  private expandedBatchFetchFilters(): BatchAssetFilter | undefined {
+    const base = this.store.lastAppliedBatchFilter();
+    const detailItemId = this.store.expandedBatchAssetsDetailItemId();
+    if (detailItemId == null) return base;
+    if (base?.itemIds?.length && !base.itemIds.includes(detailItemId)) {
+      return { ...base, itemIds: [-1] };
+    }
+    return { ...(base ?? {}), itemIds: [detailItemId] };
+  }
+
   private fetchExpandedBatchAssets(): void {
     const batchId = this.store.expandedBatchId();
     if (batchId == null) return;
     this.store.setLoadingBatchAssets(true);
-    const allLoaded = this.store.expandedBatchAssetsAllLoaded();
+    const detailItemId = this.store.expandedBatchAssetsDetailItemId();
+    const filters = this.expandedBatchFetchFilters();
     this.dataService.loadExpandedBatchAssets({
       batchId,
-      filters: this.store.lastAppliedBatchFilter(),
-      includeAllAssets: allLoaded,
+      filters,
+      includeAllAssets: false,
       assetsPage: this.store.expandedBatchAssetsPage(),
       assetsPageSize: this.store.expandedBatchAssetsPageSize()
     })
@@ -595,7 +597,8 @@ export class WarehouseInventoryFacadeService {
             totalPages: full?.assetsTotalPages ?? 1,
             page: full?.assetsPageIndex ?? 1,
             pageSize: full?.assetsPageSize,
-            assetItemCounts: full?.assetItemCounts ?? []
+            assetItemCounts: full?.assetItemCounts ?? [],
+            preserveAssetItemCounts: detailItemId != null
           });
           this.store.setLoadingBatchAssets(false);
         },

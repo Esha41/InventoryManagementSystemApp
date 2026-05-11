@@ -55,7 +55,6 @@ export class WarehouseInventoryStore {
   private readonly _expandedBatchAssetsPageSize = signal(defaultPageSize);
   private readonly _expandedBatchAssetsTotalPages = signal(1);
   private readonly _expandedBatchAssetTotalCount = signal(0);
-  private readonly _expandedBatchAssetsAllLoaded = signal(false);
   private readonly _expandedBatchAssetItemCounts = signal<BatchAssetItemCountDto[]>([]);
   private readonly _expandedBatchAssetsDetailItemId = signal<number | null>(null);
   private readonly _lastAppliedBatchFilter = signal<BatchAssetFilter | undefined>(undefined);
@@ -120,7 +119,6 @@ export class WarehouseInventoryStore {
   readonly expandedBatchAssetsPageSize: Signal<number> = this._expandedBatchAssetsPageSize.asReadonly();
   readonly expandedBatchAssetsTotalPages: Signal<number> = this._expandedBatchAssetsTotalPages.asReadonly();
   readonly expandedBatchAssetTotalCount: Signal<number> = this._expandedBatchAssetTotalCount.asReadonly();
-  readonly expandedBatchAssetsAllLoaded: Signal<boolean> = this._expandedBatchAssetsAllLoaded.asReadonly();
   readonly expandedBatchAssetItemCounts: Signal<BatchAssetItemCountDto[]> = this._expandedBatchAssetItemCounts.asReadonly();
   readonly expandedBatchAssetsDetailItemId: Signal<number | null> = this._expandedBatchAssetsDetailItemId.asReadonly();
   readonly lastAppliedBatchFilter: Signal<BatchAssetFilter | undefined> = this._lastAppliedBatchFilter.asReadonly();
@@ -274,26 +272,28 @@ export class WarehouseInventoryStore {
     page: number;
     pageSize?: number;
     assetItemCounts?: BatchAssetItemCountDto[];
+    /** When true, keep existing per-item totals (e.g. detail row uses item-scoped asset fetch). */
+    preserveAssetItemCounts?: boolean;
   }): void {
     this._expandedBatchAssets.set(input.assets);
     this._expandedBatchAssetTotalCount.set(input.totalCount);
     this._expandedBatchAssetsTotalPages.set(input.totalPages);
     this._expandedBatchAssetsPage.set(input.page);
     if (input.pageSize != null) this._expandedBatchAssetsPageSize.set(input.pageSize);
-    this._expandedBatchAssetItemCounts.set(input.assetItemCounts ?? []);
+    if (!input.preserveAssetItemCounts) {
+      this._expandedBatchAssetItemCounts.set(input.assetItemCounts ?? []);
+    }
   }
   setExpandedBatchAssetsDetailItemId(itemId: number | null): void {
     this._expandedBatchAssetsDetailItemId.set(itemId);
   }
   setExpandedBatchAssetsPage(page: number): void { this._expandedBatchAssetsPage.set(page); }
   setExpandedBatchAssetsPageSize(size: number): void { this._expandedBatchAssetsPageSize.set(size); }
-  setExpandedBatchAssetsAllLoaded(allLoaded: boolean): void { this._expandedBatchAssetsAllLoaded.set(allLoaded); }
   resetExpandedBatchAssetState(): void {
     this._expandedBatchAssetsPage.set(1);
     this._expandedBatchAssetsPageSize.set(defaultPageSize);
     this._expandedBatchAssetsTotalPages.set(1);
     this._expandedBatchAssetTotalCount.set(0);
-    this._expandedBatchAssetsAllLoaded.set(false);
     this._expandedBatchAssetItemCounts.set([]);
     this._expandedBatchAssetsDetailItemId.set(null);
   }

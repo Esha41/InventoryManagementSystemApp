@@ -34,7 +34,7 @@ export class WarehouseInventoryExportService {
    * Export filtered inventory to Excel (for ammunition and explosives)
    */
   /**
-   * Export weapon batch summary rows (batch tab list).
+   * Export weapon inventory summary rows (policy number tab list).
    */
   exportBatchSummariesToExcel(batches: BatchSummaryDto[], depoName: string): void {
     if (!batches?.length) {

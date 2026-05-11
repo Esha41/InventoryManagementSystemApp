@@ -234,8 +234,6 @@
         [batchAssetsPageSize]="store.expandedBatchAssetsPageSize()"
         [batchAssetsTotalPages]="store.expandedBatchAssetsTotalPages()"
         [batchAssetsTotalCount]="store.expandedBatchAssetTotalCount()"
-        [batchAssetsAllLoaded]="store.expandedBatchAssetsAllLoaded()"
-        [batchAssetsPageSizeOptions]="batchAssetsPageSizeOptions"
         [batchAssetExcelExportPerms]="warehouseExportPerms"
         [batchAssetExcelImportPerms]="warehouseAssetImportPerms"
         [showPrimaryPurposeColumn]="store.activeTab() === 'ammunition' || store.activeTab() === 'explosive'"
@@ -268,8 +266,6 @@
         (batchSortChange)="orchestrator.onBatchSort($event)"
         (batchAssetsPageChange)="orchestrator.onExpandedBatchAssetsPageChange($event)"
         (batchAssetsPageSizeChange)="orchestrator.onExpandedBatchAssetsPageSizeChange($event)"
-        (batchAssetsLoadAll)="orchestrator.onExpandedBatchAssetsLoadAll()"
-        (batchAssetsUsePagination)="orchestrator.onExpandedBatchAssetsUsePagination()"
         (batchAssetsDetailItemChange)="orchestrator.onExpandedBatchAssetsDetailItemChange($event)"
         (editItem)="orchestrator.onEditItem($event)"
         (deleteItem)="orchestrator.onDeleteItem($event)"
@@ -279,7 +275,7 @@
       </app-warehouse-inventory-table>
 
       <div
-        *ngIf="(store.activeTab() === 'batch' ? store.filteredBatches().length : store.filteredInventoryDetails().length) > 0 && !store.loading()"
+        *ngIf="(store.activeTab() === 'batch' ? store.filteredBatches().length : store.filteredInventoryDetails().length) > 0 && !store.loading() && !(store.activeTab() === 'batch' && store.expandedBatchId() !== null)"
         class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 py-4 sm:px-6">
         <div class="flex flex-col md:flex-row items-center justify-between gap-4 w-full">
           <div class="w-full md:w-auto flex justify-center md:justify-start">

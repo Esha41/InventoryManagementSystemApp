@@ -321,6 +321,7 @@
       "itemNo": "Item No",
       "partNo": "Part No",
       "batchNo": "Batch No",
+      "policyNumber": "Policy number",
       "hcc": "HCC",
       "nsn": "NSN",
       "caseType": "Case Type",

@@ -162,45 +162,12 @@
                                                     </tbody>
                                                 </table>
                                             </div>
+                                            <ng-container *ngTemplateOutlet="batchAssetsPaginationTpl"></ng-container>
                                         </td>
                                     </tr>
                                 </ng-container>
                             </tbody>
                         </table>
-<div *ngIf="batchAssetsTotalCount > 0"
-    class="border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-3 py-3 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-    <div *ngIf="!batchAssetsAllLoaded" class="flex flex-wrap items-center gap-3 justify-between md:justify-start">
-        <app-rows-per-page
-            [rowsPerPage]="batchAssetsPageSize"
-            [totalItems]="batchAssetsTotalCount"
-            [visibleItems]="expandedBatchAssets.length"
-            [optionValues]="batchAssetsPageSizeOptions"
-            (rowsPerPageChange)="batchAssetsPageSizeChange.emit($event)">
-        </app-rows-per-page>
-        <button type="button"
-            class="text-sm font-medium text-[var(--color-brand)] hover:underline whitespace-nowrap"
-            (click)="$event.stopPropagation(); batchAssetsLoadAll.emit()">
-            {{ 'warehouseInventory.showAllBatchAssets' | translate }}
-        </button>
-    </div>
-    <div *ngIf="batchAssetsAllLoaded" class="flex flex-wrap items-center gap-2 text-sm text-[var(--color-text-muted)]">
-        <span>{{ 'warehouseInventory.showingAllBatchAssets' | translate: { count: batchAssetsTotalCount } }}</span>
-        <button type="button"
-            class="text-sm font-medium text-[var(--color-brand)] hover:underline whitespace-nowrap"
-            (click)="$event.stopPropagation(); batchAssetsUsePagination.emit()">
-            {{ 'warehouseInventory.usePagedBatchAssets' | translate }}
-        </button>
-    </div>
-    <div *ngIf="!batchAssetsAllLoaded && batchAssetsTotalPages > 1"
-        class="flex flex-col sm:flex-row items-center gap-2 justify-center md:justify-end">
-        <app-pagination [currentPage]="batchAssetsPage" [totalPages]="batchAssetsTotalPages"
-            (pageChange)="batchAssetsPageChange.emit($event)">
-        </app-pagination>
-        <span class="text-xs text-[var(--color-text-muted)] whitespace-nowrap">
-            {{ batchAssetsPage }} {{ 'common.of' | translate }} {{ batchAssetsTotalPages }}
-        </span>
-    </div>
-</div>
                         </div>
                     </div>
                 </td>
@@ -208,3 +175,28 @@
         </ng-container>
     </tbody>
 </table>
+
+<ng-template #batchAssetsPaginationTpl>
+    <div *ngIf="batchAssetsTotalCount > 0"
+        class="mt-3 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 py-4 sm:px-6">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4 w-full">
+            <div class="w-full md:w-auto flex justify-center md:justify-start">
+                <app-rows-per-page
+                    [rowsPerPage]="batchAssetsPageSize"
+                    [totalItems]="batchAssetsTotalCount"
+                    [visibleItems]="expandedBatchAssets.length"
+                    (rowsPerPageChange)="batchAssetsPageSizeChange.emit($event)">
+                </app-rows-per-page>
+            </div>
+            <div *ngIf="batchAssetsTotalPages > 1"
+                class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto justify-center md:justify-end">
+                <app-pagination [currentPage]="batchAssetsPage" [totalPages]="batchAssetsTotalPages"
+                    (pageChange)="batchAssetsPageChange.emit($event)">
+                </app-pagination>
+                <span class="text-xs sm:text-sm text-[var(--color-text-muted)] whitespace-nowrap mt-2 sm:mt-0 text-center">
+                    {{ batchAssetsPage }} {{ 'common.of' | translate }} {{ batchAssetsTotalPages }}
+                </span>
+            </div>
+        </div>
+    </div>
+</ng-template>
