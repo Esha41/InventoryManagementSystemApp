@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { Observable, EMPTY, of } from 'rxjs';
+import { map, catchError, expand, reduce } from 'rxjs/operators';
 import { AssetDto, CreateAssetDto, UpdateAssetDto, CreateBulkAssetsFromTemplateDto, BulkCreateFromTemplateResultDto, BulkDeleteAssetsEnqueueResultDto, BulkDeleteAssetsStatusDto, StartBulkDeleteAssetsDto } from '@models/asset.model';
+import { AssetItemCatalogSummaryDto } from '@models/inventory.model';
 import { PagedListRequest, PaginatedList } from '@models/pagination.model';
 import { APIOperationResponse } from '@models/api-response.model';
 import { ConfigService } from '@services/config.service';
@@ -11,6 +11,7 @@ import { ApiService } from '@services/api.service';
 
 import { IImportableService } from '@core/interfaces/importable-service.interface';
 import { ImportResult } from '@models/import-result.model';
+import { defaultPageSize } from '@constants/app.constants';
 
 /**
  * Asset Service
@@ -58,6 +59,41 @@ export class AssetService implements IImportableService {
     }
 
     /**
+     * Catalog items that have assets: id, name, item no, type, total asset count (paged).
+     * POST /api/Asset/catalog-items/paged
+     */
+    getAssetCatalogItemSummariesPaged(
+        request: PagedListRequest,
+        query?: { depotId?: number; depotIds?: number[]; itemType?: number }
+    ): Observable<PaginatedList<AssetItemCatalogSummaryDto>> {
+        let params = new HttpParams();
+        if (query?.depotId != null) params = params.set('depotId', String(query.depotId));
+        if (query?.depotIds?.length) {
+            for (const id of query.depotIds) {
+                params = params.append('depotIds', String(id));
+            }
+        }
+        if (query?.itemType != null) params = params.set('itemType', String(query.itemType));
+
+        return this.apiService.post<PaginatedList<AssetItemCatalogSummaryDto>>(
+            `${this.basePath}/catalog-items/paged`,
+            request,
+            { params }
+        ).pipe(
+            map(response => {
+                if (!response || !response.items) {
+                    throw new Error('Invalid response structure');
+                }
+                return response;
+            }),
+            catchError(error => {
+                console.error('Error fetching paged asset catalog summaries:', error);
+                throw error;
+            })
+        );
+    }
+
+    /**
      * Get all assets for a specific catalog item, optionally scoped to one depot.
      * Used by the inventory dashboard accordion for weapon items.
      */
@@ -65,6 +101,50 @@ export class AssetService implements IImportableService {
         let params = new HttpParams();
         if (depotId) params = params.set('depotId', depotId.toString());
         return this.apiService.get<AssetDto[]>(`${this.basePath}/item/${itemId}`, params);
+    }
+
+    /**
+     * Same as {@link getAssetsByItemId} but paged. POST /api/Asset/item/{itemId}/paged
+     */
+    getAssetsByItemIdPaged(itemId: number, request: PagedListRequest, depotId?: number): Observable<PaginatedList<AssetDto>> {
+        let params = new HttpParams();
+        if (depotId) params = params.set('depotId', depotId.toString());
+        return this.apiService.post<PaginatedList<AssetDto>>(`${this.basePath}/item/${itemId}/paged`, request, { params }).pipe(
+            map(response => {
+                if (!response || !response.items) {
+                    throw new Error('Invalid response structure');
+                }
+                return response;
+            }),
+            catchError(error => {
+                console.error('Error fetching assets by item (paged):', error);
+                throw error;
+            })
+        );
+    }
+
+    /**
+     * All assets for one catalog item via repeated `POST /api/Asset/item/{itemId}/paged` (no `GET /api/Asset`).
+     */
+    getAssetsByItemIdAllPages(itemId: number, depotId?: number, pageSize: number = defaultPageSize): Observable<AssetDto[]> {
+        const maxPages = 5000;
+        const fetchPage = (page: number) =>
+            this.getAssetsByItemIdPaged(itemId, { page, pageSize }, depotId).pipe(
+                map(res => ({ res, requestedPage: page }))
+            );
+        return fetchPage(1).pipe(
+            expand(({ res, requestedPage }) => {
+                const totalPages = res.totalPages ?? 0;
+                if (requestedPage >= totalPages || totalPages === 0 || requestedPage >= maxPages) {
+                    return EMPTY;
+                }
+                return fetchPage(requestedPage + 1);
+            }),
+            reduce<{ res: PaginatedList<AssetDto>; requestedPage: number }, AssetDto[]>(
+                (acc, { res }) => acc.concat(res.items ?? []),
+                []
+            )
+        );
     }
 
     /**

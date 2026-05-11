@@ -20,7 +20,7 @@ import {
   ChevronDown,
   ChevronUp
 } from 'lucide-angular';
-import { ItemInventorySummaryDto, ItemType } from '@models/inventory.model';
+import { ItemInventorySummaryDto, ItemType, normalizeItemType } from '@models/inventory.model';
 import { ActiveTab } from './inventory-dashboard.helpers';
 import { AssetDto } from '@models/asset.model';
 import { LotDetailDto } from '@inventory/services/inventory.service';
@@ -83,6 +83,8 @@ export class InventoryItemSummaryTableComponent implements OnInit, OnDestroy {
   @Input() lotRowsPerPage = defaultPageSize;
 
   @Input() assetDetails: AssetDto[] = [];
+  /** Total assets for expanded weapon (server count); parent sets from paged API. */
+  @Input() assetTotalItemCount = 0;
   @Input() isAssetsLoading = false;
   @Input() assetSortColumn: string | null = null;
   @Input() assetSortDirection: 'asc' | 'desc' = 'asc';
@@ -156,7 +158,7 @@ export class InventoryItemSummaryTableComponent implements OnInit, OnDestroy {
   }
 
   isWeaponItem(item: ItemInventorySummaryDto): boolean {
-    return item.itemType === ItemType.Weapon;
+    return normalizeItemType(item.itemType) === ItemType.Weapon;
   }
 
   get showLotQuantityColumns(): boolean {

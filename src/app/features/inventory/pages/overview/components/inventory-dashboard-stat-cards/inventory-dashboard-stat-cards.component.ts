@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, Package, Layers, ChartBar } from 'lucide-angular';
+import { LucideAngularModule, Package, Layers, Boxes } from 'lucide-angular';
 
 @Component({
   selector: 'app-inventory-dashboard-stat-cards',
@@ -14,8 +14,9 @@ export class InventoryDashboardStatCardsComponent {
   @Input({ required: true }) lowStockCount!: number;
   @Input({ required: true }) expiringSoonCount!: number;
   @Input({ required: true }) itemCount!: number;
-  @Input({ required: true }) totalRemainingQty!: number;
-  @Input({ required: true }) totalLotsStat!: number;
+  /** Headline `lotCount`: total inventory lots (ammo/explosive lots, excluding weapon assets). */
+  @Input({ required: true }) lotCountStat!: number;
+  @Input({ required: true }) batchCountStat!: number;
   @Input({ required: true }) byType!: { ammo: number; weapon: number; explosive: number };
 
   @Output() lowStockClick = new EventEmitter<void>();
@@ -23,5 +24,5 @@ export class InventoryDashboardStatCardsComponent {
 
   readonly Package = Package;
   readonly Layers = Layers;
-  readonly ChartBar = ChartBar;
+  readonly Boxes = Boxes;
 }

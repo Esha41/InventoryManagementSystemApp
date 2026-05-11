@@ -39,6 +39,40 @@ export enum ItemType {
 }
 
 /**
+ * API may return {@link ItemType} as a number or as a string (e.g. ASP.NET default "Weapon").
+ */
+export function normalizeItemType(raw: unknown): number {
+  if (raw === null || raw === undefined) return 0;
+  if (typeof raw === 'number' && !Number.isNaN(raw)) return raw;
+  if (typeof raw === 'string') {
+    const t = raw.trim();
+    if (/^-?\d+$/.test(t)) return Number(t);
+    switch (t) {
+      case 'Ammunition':
+        return ItemType.Ammunition;
+      case 'Weapon':
+        return ItemType.Weapon;
+      case 'Explosive':
+        return ItemType.Explosive;
+      default:
+        return 0;
+    }
+  }
+  return 0;
+}
+
+/** Minimal row from POST /api/Asset/catalog-items/paged */
+export interface AssetItemCatalogSummaryDto {
+  itemId: number;
+  itemName: string;
+  itemNo: string;
+  nsn: string;
+  partNo: string;
+  itemType: ItemType;
+  totalAssets: number;
+}
+
+/**
  * Inventory Detail DTO
  */
 export interface InventoryDetailDto {
