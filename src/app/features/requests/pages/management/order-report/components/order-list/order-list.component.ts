@@ -5,7 +5,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Search, X } from 'lucide-angular';
 import { OrderDto } from '@models/order.model';
 import { mapOrderStatusFromApi } from '@utils/status.utils';
-import { mapOrderPriorityToString } from '@utils/priority.utils';
+import { getPriorityText, getPriorityClass } from '@utils/priority.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
 
@@ -120,19 +120,11 @@ export class OrderListComponent implements OnChanges, OnInit {
   }
 
   getPriorityLabel(priority: number | string): string {
-    return mapOrderPriorityToString(priority);
+    return getPriorityText(priority);
   }
 
   getPriorityColorClass(priority: number | string): string {
-    const priorityLabel = this.getPriorityLabel(priority).toLowerCase();
-    if (priorityLabel === 'normal') {
-      return 'priority-normal';
-    } else if (priorityLabel === 'urgent') {
-      return 'priority-urgent';
-    } else if (priorityLabel === 'veryurgent') {
-      return 'priority-veryurgent';
-    }
-    return 'priority-normal'; // default
+    return getPriorityClass(priority);
   }
 
   getDepartmentName(order: OrderDto): string {

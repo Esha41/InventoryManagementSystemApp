@@ -8,7 +8,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { OrderDto } from '@models/order.model';
 import { OrderSummary, OrderReportItem, OrderReportApprovalStep, WorkflowDetail } from '@models/order-report.model';
 import { mapOrderStatusFromApi } from '@utils/status.utils';
-import { mapOrderPriorityToString } from '@utils/priority.utils';
+import { getPriorityText, getPriorityClass } from '@utils/priority.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
@@ -278,19 +278,11 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   }
 
   getPriorityLabel(priority: number | string): string {
-    return mapOrderPriorityToString(priority);
+    return getPriorityText(priority);
   }
 
   getPriorityColorClass(priority: number | string): string {
-    const priorityLabel = this.getPriorityLabel(priority).toLowerCase();
-    if (priorityLabel === 'normal') {
-      return 'priority-normal';
-    } else if (priorityLabel === 'urgent') {
-      return 'priority-urgent';
-    } else if (priorityLabel === 'veryurgent') {
-      return 'priority-veryurgent';
-    }
-    return 'priority-normal'; // default
+    return getPriorityClass(priority);
   }
 
   getDepartmentName(order: OrderDto): string {

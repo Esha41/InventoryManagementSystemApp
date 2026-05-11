@@ -7,7 +7,7 @@ import { OrderDto } from '@models/order.model';
 import { OrderSummary, OrderReportItem, OrderReportApprovalStep, WorkflowDetail } from '@models/order-report.model';
 import { WorkflowApprovalStep } from '@models/workflow-approval.model';
 import { getRequestStatusTranslationKey } from '@utils/status.utils';
-import { mapOrderPriorityToString } from '@utils/priority.utils';
+import { getPriorityText } from '@utils/priority.utils';
 import { formatDate, formatTimeToMilitary, formatDateShort } from '@utils/format.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
@@ -159,7 +159,7 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
   return {
     orderId: orderId,
     status: statusTranslationKey, // This will be a translation key like 'dashboard.statusLabels.new'
-    priority: mapOrderPriorityToString(order.priority),
+    priority: getPriorityText(order.priority),
     submittedOn: submittedDateTime, // Keep as formatted string (complex date range)
     requestDate: requestDate, // Raw date for pipe formatting
     department: departmentName,

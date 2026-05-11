@@ -76,35 +76,30 @@ export function getDisplayApprovalHistory(
   };
 
   const steps: WorkflowApprovalStep[] = [requesterStep, ...(requestDetail.approvalHistory || [])];
-  return applyTerminalAutoRejectToTimeline(steps, requestDetail.status);
-}
 
-function applyTerminalAutoRejectToTimeline(
-  steps: WorkflowApprovalStep[],
-  requestStatus: RequestDetail['status'] | undefined
-): WorkflowApprovalStep[] {
-  if (requestStatus !== 'AutoRejected') {
-    return steps;
+  // Append a virtual system auto-reject terminal node when the request was auto-rejected.
+  // The pending step stays as-is (the approver never acted — the SYSTEM rejected).
+  if (requestDetail.status === 'AutoRejected') {
+    const systemStep: WorkflowApprovalStep = {
+      id: -1,
+      isSystemAutoReject: true,
+      status: 'AutoRejected',
+      isPending: false,
+      approverNameEn: translateService.instant('workflowApprovalDetail.systemAutoRejectedBy'),
+      approverNameAr: translateService.instant('workflowApprovalDetail.systemAutoRejectedBy'),
+      applicationRoleName: translateService.instant('workflowApprovalDetail.systemAutoRejectedRole'),
+      applicationRoleNameAr: translateService.instant('workflowApprovalDetail.systemAutoRejectedRole'),
+      approvedDateTime: requestDetail.autoRejectedAt
+        ? formatApprovalDateTime(requestDetail.autoRejectedAt, undefined, translateService)
+        : undefined,
+      changedAt: requestDetail.autoRejectedAt,
+      files: [],
+      transitions: []
+    };
+    steps.push(systemStep);
   }
 
-
-  let lastPendingIndex = -1;
-  for (let i = steps.length - 1; i >= 0; i--) {
-    const s: WorkflowApprovalStep = steps[i];
-    if (s.status === 'Pending' && s.isPending === true) {
-      lastPendingIndex = i;
-      break;
-    }
-  }
-  if (lastPendingIndex === -1) {
-    return steps;
-  }
-
-  return steps.map((s, idx) =>
-    idx === lastPendingIndex
-      ? { ...s, status: 'AutoRejected', isPending: false }
-      : s
-  );
+  return steps;
 }
 
 /**

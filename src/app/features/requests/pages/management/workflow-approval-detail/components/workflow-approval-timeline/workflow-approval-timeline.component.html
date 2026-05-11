@@ -88,8 +88,12 @@
                       {{ 'workflowApprovalDetail.rejectedAt' | translate }}:
                       {{ approval.approvedDateTime || formatApprovalDateTime(approval.changedAt) }}
                     </span>
-                    <span *ngIf="approval.status === 'AutoRejected'">
+                    <span *ngIf="approval.status === 'AutoRejected' && !approval.isSystemAutoReject">
                       {{ 'workflowApprovalDetail.rejectedAt' | translate }}:
+                      {{ approval.approvedDateTime || formatApprovalDateTime(approval.changedAt) }}
+                    </span>
+                    <span *ngIf="approval.status === 'AutoRejected' && approval.isSystemAutoReject">
+                      {{ 'workflowApprovalDetail.autoRejectedAt' | translate }}:
                       {{ approval.approvedDateTime || formatApprovalDateTime(approval.changedAt) }}
                     </span>
                     <span *ngIf="approval.status === 'ReturnedForReview' || approval.status === 'Returned'">

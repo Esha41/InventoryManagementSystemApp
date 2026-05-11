@@ -46,7 +46,7 @@ import {
 import { LoadingStateComponent, ModalComponent, ButtonComponent, TableClampTooltipDirective } from '@components/index';
 import { TranslationService } from '@services/translation.service';
 import { getCurrentLang } from '@utils/localization.utils';
-import { mapOrderPriorityToString as mapPriorityToString } from '@utils/priority.utils';
+import { getPriorityKey, getPriorityText } from '@utils/priority.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { trackByKey } from '@utils/trackby.utils';
 import {
@@ -612,11 +612,10 @@ export class SupplyRequestDetailComponent implements OnInit {
   }
 
   getPriorityTranslationKey(priority?: number | string | null): string {
-    const priorityString = mapPriorityToString(priority);
-    return `common.priorityLevels.${priorityString}`;
+    return `common.priorityLevels.${getPriorityKey(priority)}`;
   }
 
   mapOrderPriorityToString(priority?: number | string | null): string {
-    return mapPriorityToString(priority);
+    return getPriorityKey(priority);
   }
 }

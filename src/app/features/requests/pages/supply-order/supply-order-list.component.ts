@@ -11,7 +11,7 @@ import { OrderDto } from '@models/order.model';
 import { SupplyService } from '@requests/services/supply.service';
 import { ToastService } from '@services/toast.service';
 import { LoadingStateComponent } from '@components/index';
-import { mapOrderPriorityToString } from '@utils/priority.utils';
+import { getPriorityKey, getPriorityText } from '@utils/priority.utils';
 import { trackById } from '@utils/trackby.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 
@@ -175,20 +175,11 @@ export class SupplyOrderListComponent implements OnInit, OnDestroy {
    * Handles both number and string priority values
    */
   getPriorityText(priority: number | string): string {
-    // Use mapOrderPriorityToString to normalize priority to string format
-    // This handles: 1 = Normal, 2 = Urgent, 3 = VeryUrgent, 4 = Critical
-    const priorityString = this.mapOrderPriorityToString(priority);
-    
-    // Return the correct translation key using common.priorityLevels prefix
-    return `common.priorityLevels.${priorityString}`;
+    return `common.priorityLevels.${getPriorityKey(priority)}`;
   }
 
-  /**
-   * Map order priority to string (for use in template)
-   * Exposes mapOrderPriorityToString utility function to template
-   */
-  mapOrderPriorityToString(priority?: number | string | null): string {
-    return mapOrderPriorityToString(priority);
+  getPriorityDisplayText(priority?: number | string | null): string {
+    return getPriorityText(priority);
   }
 
   private showSuccessToast(messageKey: string, titleKey: string = 'toast.success'): void {

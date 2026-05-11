@@ -68,6 +68,8 @@ export interface WorkflowApprovalStep {
   eligibleParallelRoleNamesAr?: string;
   files?: FileUploadDto[];
   transitions?: WorkflowStepTransition[];
+  /** True only for the virtual system auto-reject terminal node appended by the frontend. */
+  isSystemAutoReject?: boolean;
 }
 
 /**
@@ -149,6 +151,12 @@ export interface RequestDetail {
   deliveryDate?: string | Date | null;
   /** True when backend marks this request as the current user's action (list APIs); may be absent on some detail payloads. */
   isMyTurn?: boolean;
+  /**
+   * Populated only when status is AutoRejected.
+   * Reflects the exact moment the auto-reject job fired.
+   * Null/undefined for all other statuses.
+   */
+  autoRejectedAt?: string | Date;
 }
 
 /**
@@ -209,6 +217,8 @@ export interface BaseRequestDto {
     isDeleted: boolean;
   };
   isMyTurn?: boolean;
+  /** Populated only when status is AutoRejected. Mirrors RequestDetail.autoRejectedAt. */
+  autoRejectedAt?: string | Date;
 }
 
 

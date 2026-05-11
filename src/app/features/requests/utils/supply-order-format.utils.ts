@@ -12,7 +12,7 @@ import { WorkflowApprovalStep } from '@models/workflow-approval.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
-import { mapOrderPriorityToString } from '@utils/priority.utils';
+import { getPriorityKey } from '@utils/priority.utils';
 
 /**
  * Get priority translation key
@@ -24,12 +24,7 @@ export function getPriorityTranslationKey(priority?: number | string | null): st
     return 'common.priorityLevels.Urgent';
   }
 
-  // Use mapOrderPriorityToString to normalize priority to string format
-  // This handles: 1 = Normal, 2 = Urgent, 3 = VeryUrgent, 4 = Critical
-  const priorityString = mapOrderPriorityToString(priority);
-
-  // Return the correct translation key using common.priorityLevels prefix
-  return `common.priorityLevels.${priorityString}`;
+  return `common.priorityLevels.${getPriorityKey(priority)}`;
 }
 
 /**

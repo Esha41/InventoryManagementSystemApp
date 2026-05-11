@@ -1,5 +1,1 @@
-/* Depot Management — pagination footer: rows-per-page block layout inside flex footer */
-.depot-pagination-footer app-rows-per-page {
-  display: block;
-}
-
+/* Rows-per-page layout is centralized on `app-rows-per-page`. */

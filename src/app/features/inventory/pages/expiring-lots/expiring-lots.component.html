@@ -114,7 +114,7 @@
 
     <!-- Pagination Footer -->
     <div *ngIf="!loading && !error && totalCount > 0"
-      class="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] rounded-lg px-6 py-4 mb-8"
+      class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] rounded-lg px-4 sm:px-6 py-4 mb-8"
       [class.sm:flex-row-reverse]="isRTL">
       <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="totalCount"
         [visibleItems]="expiringLots.length" (rowsPerPageChange)="onRowsPerPageChange($event)">

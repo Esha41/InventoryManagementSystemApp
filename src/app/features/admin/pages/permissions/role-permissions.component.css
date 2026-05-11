@@ -52,32 +52,6 @@ table tbody tr {
   transition: background-color 0.15s ease;
 }
 
-:host ::ng-deep app-rows-per-page {
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-}
-
-:host ::ng-deep app-rows-per-page > div {
-  display: flex !important;
-  align-items: center !important;
-  gap: 0.5rem !important;
-  flex-wrap: wrap !important;
-  flex-direction: row !important;
-}
-
-:host ::ng-deep app-rows-per-page span {
-  display: inline-block !important;
-  vertical-align: middle;
-}
-
-:host ::ng-deep app-rows-per-page app-dropdown {
-  display: inline-block !important;
-  width: auto !important;
-  min-width: 80px;
-  flex-shrink: 0;
-}
-
 /* Sticky header for permissions table */
 table thead th.sticky {
   position: sticky;
