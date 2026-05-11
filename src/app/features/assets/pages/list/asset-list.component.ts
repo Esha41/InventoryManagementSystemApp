@@ -36,6 +36,7 @@ import { ErrorHandler } from '@utils/error-handler.utils';
 import { mapImportResultToPreviewData } from '@core/utils/asset-master-import-preview.utils';
 import { AssetType } from '@models/asset-list.model';
 import { LookupItem } from '@models/lookup.model';
+import { BackendAuthService } from '@services/backend-auth.service';
 
 @Component({
   selector: 'app-asset-list',
@@ -83,8 +84,13 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
     private readonly toastService: ToastService,
     private readonly propertyAccessor: AssetPropertyAccessor,
     private readonly cdr: ChangeDetectorRef,
+    private readonly authService: BackendAuthService,
     @Optional() @Inject(ONBOARDING_TOUR) private readonly onboardingTourService: IOnboardingTourProvider | null
   ) {}
+
+  get isSuperAdmin(): boolean {
+    return this.authService.isSuperAdmin();
+  }
 
   get isRTL(): boolean {
     return this.translationService.isRTL();
@@ -286,6 +292,9 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   onPermanentDelete(assetId: string): void {
+    if (!this.isSuperAdmin) {
+      return;
+    }
     const asset = this.facade.assets.find((a) => a.id === assetId);
     if (asset) {
       this.assetModalService.openPermanentDeleteModal(asset, this.facade.modalState);
@@ -331,6 +340,10 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   confirmPermanentDelete(): void {
+    if (!this.isSuperAdmin) {
+      this.closePermanentDeleteModal();
+      return;
+    }
     this.crudHandler.confirmPermanentDelete(
       this.facade.modalState,
       this.facade.activeTab,
