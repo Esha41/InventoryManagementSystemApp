@@ -24,7 +24,7 @@ export const INVENTORY_ROUTES: Routes = [
   },
   {
     path: 'critical-stock',
-    loadComponent: () => import('@inventory/pages/critical-stock').then(m => m.CriticalStockComponent),
+    loadComponent: () => import('./pages/critical-stock/critical-stock.component').then(m => m.CriticalStockComponent),
     canActivate: [permissionGuard],
     data: { permissions: [PERMISSIONS.INVENTORY.CRITICAL_STOCK_REPORT.PAGE] }
   },
