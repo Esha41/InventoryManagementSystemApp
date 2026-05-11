@@ -8,6 +8,14 @@ export interface BatchSummaryDto {
     quantity: number;
 }
 
+export interface BatchAssetItemCountDto {
+    itemId: number;
+    itemName: string;
+    itemNo?: string | null;
+    nsn?: string | null;
+    count: number;
+}
+
 export interface BatchDto {
     id: number;
     batchNumber: string;
@@ -18,6 +26,8 @@ export interface BatchDto {
     assetsPageIndex?: number;
     assetsPageSize?: number;
     assetsTotalPages?: number;
+    /** Totals per catalog item for the whole batch (same filters as the list; not narrowed by assetsItemId). */
+    assetItemCounts?: BatchAssetItemCountDto[];
     depot?: DepotDto;
     assets: AssetDto[];
 }

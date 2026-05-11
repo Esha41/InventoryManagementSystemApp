@@ -6,7 +6,7 @@ import { WeaponService } from '@assets/services/weapon.service';
 import { InventoryService } from '@inventory/services/inventory.service';
 import { BatchService } from '@warehouse/services/batch.service';
 import { LookupItem } from '@models/lookup.model';
-import { BatchAssetFilter } from '@models/batch.model';
+import { BatchAssetFilter, BatchAssetItemCountDto } from '@models/batch.model';
 import { AssetDto } from '@models/asset.model';
 import { PagedRequest } from '@models/api-response.model';
 import { WeaponDto } from '@models/weapon.model';
@@ -25,6 +25,7 @@ export interface ExpandedBatchAssetsResponse {
   assetsTotalPages: number;
   assetsPageIndex: number;
   assetsPageSize: number;
+  assetItemCounts: BatchAssetItemCountDto[];
 }
 
 @Injectable({
@@ -88,17 +89,21 @@ export class WarehouseInventoryDataService {
     includeAllAssets: boolean;
     assetsPage: number;
     assetsPageSize: number;
+    assetsItemId?: number | null;
   }) {
+    const assetsItemId = input.assetsItemId ?? undefined;
     if (input.includeAllAssets) {
       return this.batchService.getById(input.batchId, {
         includeAllAssets: true,
-        filters: input.filters
+        filters: input.filters,
+        assetsItemId
       });
     }
     return this.batchService.getById(input.batchId, {
       assetsPage: input.assetsPage,
       assetsPageSize: input.assetsPageSize,
-      filters: input.filters
+      filters: input.filters,
+      assetsItemId
     });
   }
 

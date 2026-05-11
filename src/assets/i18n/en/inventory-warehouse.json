@@ -38,13 +38,15 @@
     "filtersSearch": "Search",
     "clearFilters": "Clear Filters",
     "searchPlaceholder": "Search ....",
-    "searchPlaceholderBatch": "Search by Batch Number",
+    "searchPlaceholderBatch": "Search .....",
     "filterByItem": "Items",
     "filterBySupplier": "Suppliers",
     "filterByManufacturer": "Manufacturers",
     "filterByPrimaryPurpose": "Primary Purposes",
     "applyBatchFilters": "Apply Filters",
     "itemName": "Item Name",
+    "nsn": "NSN",
+    "itemAssetCount": "Count",
     "itemNo": "Item No / Caliber",
     "hcc": "HCC",
     "caliber": "Caliber",
@@ -144,6 +146,7 @@
     "showAllBatchAssets": "Show All",
     "showingAllBatchAssets": "Showing All {{count}} Assets",
     "usePagedBatchAssets": "Use Pages",
+    "batchItemDetailEmptyPage": "No assets for this item on the current page. Try another page or \"Show All\".",
     "errors": {
       "lotLinkedToSupplyOrder": "You cannot delete or change this lot because it is linked to a supply order."
     }

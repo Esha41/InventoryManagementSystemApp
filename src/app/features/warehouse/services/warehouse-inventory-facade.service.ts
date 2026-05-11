@@ -179,6 +179,13 @@ export class WarehouseInventoryFacadeService {
 
   onExpandedBatchAssetsUsePagination(): void {
     this.store.setExpandedBatchAssetsAllLoaded(false);
+    this.store.setExpandedBatchAssetsDetailItemId(null);
+    this.store.setExpandedBatchAssetsPage(1);
+    this.fetchExpandedBatchAssets();
+  }
+
+  onExpandedBatchAssetsDetailItemChange(itemId: number | null): void {
+    this.store.setExpandedBatchAssetsDetailItemId(itemId);
     this.store.setExpandedBatchAssetsPage(1);
     this.fetchExpandedBatchAssets();
   }
@@ -572,12 +579,14 @@ export class WarehouseInventoryFacadeService {
     if (batchId == null) return;
     this.store.setLoadingBatchAssets(true);
     const allLoaded = this.store.expandedBatchAssetsAllLoaded();
+    const assetsItemId = this.store.expandedBatchAssetsDetailItemId();
     this.dataService.loadExpandedBatchAssets({
       batchId,
       filters: this.store.lastAppliedBatchFilter(),
       includeAllAssets: allLoaded,
       assetsPage: this.store.expandedBatchAssetsPage(),
-      assetsPageSize: this.store.expandedBatchAssetsPageSize()
+      assetsPageSize: this.store.expandedBatchAssetsPageSize(),
+      assetsItemId: assetsItemId ?? undefined
     })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -586,7 +595,9 @@ export class WarehouseInventoryFacadeService {
             assets: full?.assets ?? [],
             totalCount: full?.assetCount ?? 0,
             totalPages: full?.assetsTotalPages ?? 1,
-            page: full?.assetsPageIndex ?? 1
+            page: full?.assetsPageIndex ?? 1,
+            pageSize: full?.assetsPageSize,
+            assetItemCounts: full?.assetItemCounts ?? []
           });
           this.store.setLoadingBatchAssets(false);
         },

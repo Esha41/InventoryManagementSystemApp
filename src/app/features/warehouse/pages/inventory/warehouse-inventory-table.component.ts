@@ -9,7 +9,7 @@ import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.co
 import { trackById } from '@utils/trackby.utils';
 import { InventoryDetailDto } from '@models/inventory.model';
 import { AssetDto } from '@models/asset.model';
-import { BatchSummaryDto } from '@models/batch.model';
+import { BatchSummaryDto, BatchAssetItemCountDto } from '@models/batch.model';
 import {
   BatchTableComponent,
   BatchTableSortColumn
@@ -270,6 +270,8 @@ import { defaultPageSize } from '@constants/app.constants';
           [batches]="paginatedBatches"
           [expandedBatchId]="expandedBatchId"
           [expandedBatchAssets]="expandedBatchAssets"
+          [expandedBatchAssetItemCounts]="expandedBatchAssetItemCounts"
+          [expandedBatchDetailItemId]="expandedBatchDetailItemId"
           [loadingBatchAssets]="loadingBatchAssets"
           [batchAssetsPage]="batchAssetsPage"
           [batchAssetsPageSize]="batchAssetsPageSize"
@@ -300,7 +302,8 @@ import { defaultPageSize } from '@constants/app.constants';
           (batchAssetsPageChange)="batchAssetsPageChange.emit($event)"
           (batchAssetsPageSizeChange)="batchAssetsPageSizeChange.emit($event)"
           (batchAssetsLoadAll)="batchAssetsLoadAll.emit()"
-          (batchAssetsUsePagination)="batchAssetsUsePagination.emit()">
+          (batchAssetsUsePagination)="batchAssetsUsePagination.emit()"
+          (batchAssetsDetailItemChange)="batchAssetsDetailItemChange.emit($event)">
         </app-batch-table>
 
         <app-inventory-table
@@ -337,6 +340,8 @@ export class WarehouseInventoryTableComponent {
 
   @Input() expandedBatchId: number | null = null;
   @Input() expandedBatchAssets: AssetDto[] = [];
+  @Input() expandedBatchAssetItemCounts: BatchAssetItemCountDto[] = [];
+  @Input() expandedBatchDetailItemId: number | null = null;
   @Input() loadingBatchAssets = false;
   @Input() batchAssetsPage = 1;
   @Input() batchAssetsPageSize = defaultPageSize;
@@ -383,6 +388,7 @@ export class WarehouseInventoryTableComponent {
   @Output() batchAssetsPageSizeChange = new EventEmitter<number>();
   @Output() batchAssetsLoadAll = new EventEmitter<void>();
   @Output() batchAssetsUsePagination = new EventEmitter<void>();
+  @Output() batchAssetsDetailItemChange = new EventEmitter<number | null>();
 
   @Output() editItem = new EventEmitter<InventoryDetailDto>();
   @Output() deleteItem = new EventEmitter<InventoryDetailDto>();
