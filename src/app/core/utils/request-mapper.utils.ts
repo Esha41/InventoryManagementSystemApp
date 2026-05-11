@@ -318,7 +318,7 @@ export function mapApprovalHistory(history: unknown[], requestStatus?: RequestSt
   const mappedHistory = history
     .map(h => asRecord(h))
     .filter((h): h is LooseRecord => !!h && !!(h['id'] || h['workflowApprovalstepId'] || h['workflowStepId'] || h['workflowstepId']))
-    .map((h, index) => {
+    .map((h, index): WorkflowApprovalStep => {
       // Backend now properly sets IsPending flag - trust it first
       // Fallback to checking changedBy and status if IsPending is not explicitly set
       const backendIsPending = h['isPending'] === true || h['IsPending'] === true;
@@ -415,20 +415,21 @@ export function mapApprovalHistory(history: unknown[], requestStatus?: RequestSt
         files: (readField<WorkflowApprovalStep['files']>(h, 'files', 'Files') ?? []),
         transitions: (readField<WorkflowApprovalStep['transitions']>(h, 'transitions', 'Transitions') ?? [])
       };
-    })
-    // Sort chronologically by ID (which represents creation order)
-    // This ensures the workflow displays in the order events actually happened:
-    // 1. Original steps in sequential order
-    // 2. Return action
-    // 3. New pending step created after return (appears at the end, not in the middle)
-    .sort((a, b) => (a.id || 0) - (b.id || 0));
+    });
+
+  // AutoRejected: keep API sequence — log ids can be zero for pending placeholders and diverge from workflow order.
+  // Other statuses: sort by approval log id for return/re-pending so newer steps follow older ones.
+  const orderedHistory =
+    requestStatus === 'AutoRejected'
+      ? mappedHistory
+      : [...mappedHistory].sort((a, b) => (a.id || 0) - (b.id || 0));
 
   // If base request is approved, filter out pending steps
   if (requestStatus === 'Approved') {
-    return mappedHistory.filter(step => step.status !== 'Pending');
+    return orderedHistory.filter(step => step.status !== 'Pending');
   }
 
-  return mappedHistory;
+  return orderedHistory;
 }
 
 /**
