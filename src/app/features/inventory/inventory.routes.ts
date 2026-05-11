@@ -23,6 +23,12 @@ export const INVENTORY_ROUTES: Routes = [
     data: { permissions: [PERMISSIONS.INVENTORY.LOW_STOCK_REPORT.PAGE] }
   },
   {
+    path: 'critical-stock',
+    loadComponent: () => import('./pages/critical-stock/critical-stock.component').then(m => m.CriticalStockComponent),
+    canActivate: [permissionGuard],
+    data: { permissions: [PERMISSIONS.INVENTORY.CRITICAL_STOCK_REPORT.PAGE] }
+  },
+  {
     path: 'draft-supplies',
     loadComponent: () => import('./pages/draft-supplies/draft-supplies.component').then(m => m.DraftSuppliesComponent),
     canActivate: [permissionGuard],

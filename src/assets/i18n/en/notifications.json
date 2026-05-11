@@ -106,6 +106,9 @@
   },
   "stockNotificationSettings": {
     "title": "Stock Notification Settings",
+    "tabsAriaLabel": "Stock notification settings type",
+    "lowStockSection": "Low stock",
+    "criticalStockSection": "Critical stock",
     "recipientsSettings": "Recipients Settings",
     "roles": "Roles",
     "rolesPlaceholder": "Select roles",

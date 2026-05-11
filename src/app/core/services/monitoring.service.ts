@@ -49,6 +49,18 @@ export interface LowStockItemDto {
   remaining: number;
 }
 
+export interface CriticalStockItemDto {
+  itemId: number;
+  itemName: string;
+  itemNo?: string;
+  nsn?: string;
+  criticalQuantity?: number;
+  totalStock: number;
+  holdQuantity: number;
+  suppliedQuantity: number;
+  remaining: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -114,6 +126,14 @@ export class MonitoringService {
     );
   }
 
+  getCriticalStockItemsCount(depotId?: number, depotIds?: number[]): Observable<number> {
+    return this.apiService.get<number>(`${this.baseEndpoint}/critical-stock/count`, this.buildCountParams(depotId, depotIds));
+  }
+
+  getCriticalStockItems(): Observable<CriticalStockItemDto[]> {
+    return this.apiService.get<CriticalStockItemDto[]>(`${this.baseEndpoint}/critical-stock`);
+  }
+
   getInventoryDashboardSummary(depotIds?: number[]): Observable<InventoryDashboardSummaryDto> {
     let params = '';
     if (depotIds && depotIds.length > 0) {
@@ -122,7 +142,7 @@ export class MonitoringService {
     return this.apiService.get<InventoryDashboardSummaryDto>(`${this.baseEndpoint}/dashboard/inventory-summary${params}`);
   }
 
-  /** Stat-card headline metrics (totals, by-type, low stock, expiring soon). */
+  /** Stat-card headline metrics (totals, by-type, low/critical stock, expiring soon). */
   getInventoryHeadlineMetrics(depotIds?: number[]): Observable<InventoryHeadlineMetricsDto> {
     let params = '';
     if (depotIds && depotIds.length > 0) {

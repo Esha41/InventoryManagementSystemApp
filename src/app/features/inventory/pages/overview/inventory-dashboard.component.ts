@@ -887,6 +887,10 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     this.router.navigate(['/inventory-dashboard/low-stock']);
   }
 
+  onCriticalStockClick(): void {
+    this.router.navigate(['/inventory-dashboard/critical-stock']);
+  }
+
   onDraftSuppliesClick(): void {
     const ids = this.selectedDepotIds.length > 0 ? this.selectedDepotIds : undefined;
     this.router.navigate(

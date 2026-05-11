@@ -229,6 +229,8 @@ export const API_ENDPOINTS = {
     BASE: '/ItemNotification',
     SETTINGS: '/ItemNotification/settings',
     SCHEDULE: '/ItemNotification/schedule',
+    CRITICAL_SETTINGS: '/ItemNotification/critical-settings',
+    CRITICAL_SCHEDULE: '/ItemNotification/critical-schedule',
   },
 
   // Order auto-reject settings + countdown (Workflows API)

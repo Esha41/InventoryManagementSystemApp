@@ -33,4 +33,20 @@ export class StockNotificationService {
   getSettings<T = LowStockNotificationSettingsDto>(): Observable<T> {
     return this.apiService.get<T>(API_ENDPOINTS.STOCK_NOTIFICATION.SETTINGS);
   }
+
+  updateCriticalSchedule<T>(data: LowStockNotificationScheduleDto): Observable<T> {
+    return this.apiService.put<T>(API_ENDPOINTS.STOCK_NOTIFICATION.CRITICAL_SCHEDULE, data);
+  }
+
+  getCriticalSchedule<T = Date | null>(): Observable<T> {
+    return this.apiService.get<T>(API_ENDPOINTS.STOCK_NOTIFICATION.CRITICAL_SCHEDULE);
+  }
+
+  updateCriticalSettings<T>(data: LowStockNotificationSettingsDto): Observable<T> {
+    return this.apiService.put<T>(API_ENDPOINTS.STOCK_NOTIFICATION.CRITICAL_SETTINGS, data);
+  }
+
+  getCriticalSettings<T = LowStockNotificationSettingsDto>(): Observable<T> {
+    return this.apiService.get<T>(API_ENDPOINTS.STOCK_NOTIFICATION.CRITICAL_SETTINGS);
+  }
 }

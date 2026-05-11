@@ -16,144 +16,305 @@
     >
     </app-error-state>
 
-    <!-- Roles and Users Settings Card -->
-    <app-card>
-      <form [formGroup]="recipientsForm" (ngSubmit)="onSubmitRecipientsForm()">
-        <div class="p-6">
-          <h4 class="text-xl font-semibold text-[var(--color-text)] mb-6">
-            {{ "stockNotificationSettings.recipientsSettings" | translate }}
-          </h4>
-          <!-- Roles -->
-          <div class="mb-4">
-            <span
-              class="block text-sm font-semibold text-[var(--color-text)] mb-2"
-            >
-              {{ "stockNotificationSettings.roles" | translate }}
-            </span>
-            <app-dropdown
-              class="w-full"
-              formControlName="rolesIds"
-              [options]="roles"
-              [multiple]="true"
-              [required]="false"
-              optionValue="id"
-              optionLabel="name"
-              [placeholderSelectable]="false"
-              placeholder="{{
-                isLoadingRoles
-                  ? ('common.loading' | translate)
-                  : ('stockNotificationSettings.rolesPlaceholder' | translate)
-              }}"
-            >
-            </app-dropdown>
-          </div>
+    <div class="border-b border-[var(--color-border)] min-w-0">
+      <nav
+        class="flex gap-1 overflow-x-auto overflow-y-hidden -mb-px pb-px"
+        role="tablist"
+        aria-label="{{ 'stockNotificationSettings.tabsAriaLabel' | translate }}"
+      >
+        <button
+          type="button"
+          role="tab"
+          [attr.aria-selected]="activeStockTab === 'low'"
+          (click)="setActiveStockTab('low')"
+          [class]="activeStockTab === 'low'
+            ? 'whitespace-nowrap border-b-2 border-[var(--color-brand)] text-[var(--color-brand)] px-3 py-3 text-sm font-semibold transition-colors'
+            : 'whitespace-nowrap border-b-2 border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:border-[var(--color-border)] px-3 py-3 text-sm font-medium transition-colors'"
+        >
+          {{ "stockNotificationSettings.lowStockSection" | translate }}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          [attr.aria-selected]="activeStockTab === 'critical'"
+          (click)="setActiveStockTab('critical')"
+          [class]="activeStockTab === 'critical'
+            ? 'whitespace-nowrap border-b-2 border-[var(--color-brand)] text-[var(--color-brand)] px-3 py-3 text-sm font-semibold transition-colors'
+            : 'whitespace-nowrap border-b-2 border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:border-[var(--color-border)] px-3 py-3 text-sm font-medium transition-colors'"
+        >
+          {{ "stockNotificationSettings.criticalStockSection" | translate }}
+        </button>
+      </nav>
+    </div>
 
-          <!-- Users -->
-          <div>
-            <span
-              class="block text-sm font-semibold text-[var(--color-text)] mb-2"
-            >
-              {{ "stockNotificationSettings.users" | translate }}
-            </span>
-            <app-dropdown
-              class="w-full"
-              formControlName="usersIds"
-              optionValue="id"
-              optionLabel="userName"
-              [options]="users"
-              [multiple]="true"
-              [required]="false"
-              placeholder="{{
-                isLoadingUsers
-                  ? ('common.loading' | translate)
-                  : ('stockNotificationSettings.usersPlaceholder' | translate)
-              }}"
-            >
-            </app-dropdown>
-          </div>
-          <!-- Actions -->
-          <div class="flex items-center justify-end gap-3 pt-4 mt-4">
-            <app-button type="submit" variant="primary">
-              {{ "common.save" | translate }}
-            </app-button>
-          </div>
-        </div>
-      </form>
-    </app-card>
-
-    <!-- Date and Time Settings Card -->
-    <app-card>
-      <!-- Loading State -->
-      <form [formGroup]="scheduleForm" (ngSubmit)="onSubmitScheduleForm()">
-        <div *ngIf="isLoadingSchedule" class="text-center py-12">
-          <p class="text-[var(--color-text-muted)]">
-            {{ "common.loading" | translate }}
-          </p>
-        </div>
-        <div class="p-6" *ngIf="!isLoadingSchedule">
-          <h4 class="text-xl font-semibold text-[var(--color-text)] mb-6">
-            {{ "stockNotificationSettings.dateTimeSettings" | translate }}
-          </h4>
-
-          <!-- Date and Time -->
-          <div class="mb-4">
-            <span
-              class="block text-sm font-semibold text-[var(--color-text)] mb-2"
-            >
-              {{ "stockNotificationSettings.dateAndTime" | translate }}
-            </span>
-            <div
-              class="relative min-h-[52px] w-full px-3 border-2 border-[var(--color-border)] rounded-xl text-sm bg-[var(--color-background)] text-[var(--color-text)] hover:bg-[var(--color-background-hover)] cursor-pointer transition-all focus-within:border-[var(--color-brand)] focus-within:ring-2 focus-within:ring-[var(--color-brand)]/25"
-              (click)="openDateTimePicker(dateTimePicker)"
-            >
-              <div class="absolute inset-0 flex items-center px-3 py-3 pointer-events-none">
-                <ng-container *ngIf="scheduleForm.get('dateTime')?.value; else dateTimePlaceholder">
-                  <span class="text-sm text-[var(--color-text)]">{{
-                    getDateTimeDisplay(scheduleForm.get('dateTime')?.value)
-                  }}</span>
-                </ng-container>
-                <ng-template #dateTimePlaceholder>
-                  <span class="text-sm text-[var(--color-text-muted)]"
-                    >dd/mm/yyyy hh:mm AM/PM</span
-                  >
-                </ng-template>
-                <svg
-                  class="w-4 h-4 ml-auto text-[var(--color-text-muted)] flex-shrink-0"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  aria-hidden="true"
-                >
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                  <line x1="16" y1="2" x2="16" y2="6"></line>
-                  <line x1="8" y1="2" x2="8" y2="6"></line>
-                  <line x1="3" y1="10" x2="21" y2="10"></line>
-                </svg>
-              </div>
-
-              <input
-                #dateTimePicker
-                name="usageDateTo"
-                type="datetime-local"
-                formControlName="dateTime"
-                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer pointer-events-none"
-              />
+    <!-- Low stock -->
+    <div *ngIf="activeStockTab === 'low'" class="flex flex-col gap-10 min-w-0" role="tabpanel">
+      <app-card>
+        <form [formGroup]="recipientsForm" (ngSubmit)="onSubmitRecipientsForm()">
+          <div class="p-6">
+            <h4 class="text-xl font-semibold text-[var(--color-text)] mb-6">
+              {{ "stockNotificationSettings.recipientsSettings" | translate }}
+            </h4>
+            <div class="mb-4">
+              <span
+                class="block text-sm font-semibold text-[var(--color-text)] mb-2"
+              >
+                {{ "stockNotificationSettings.roles" | translate }}
+              </span>
+              <app-dropdown
+                class="w-full"
+                formControlName="rolesIds"
+                [options]="roles"
+                [multiple]="true"
+                [required]="false"
+                optionValue="id"
+                optionLabel="name"
+                [placeholderSelectable]="false"
+                placeholder="{{
+                  isLoadingRoles
+                    ? ('common.loading' | translate)
+                    : ('stockNotificationSettings.rolesPlaceholder' | translate)
+                }}"
+              >
+              </app-dropdown>
             </div>
-            <p class="mt-2 text-xs text-[var(--color-text-muted)]">
-              {{ "stockNotificationSettings.dateTimeNote" | translate }}
+
+            <div>
+              <span
+                class="block text-sm font-semibold text-[var(--color-text)] mb-2"
+              >
+                {{ "stockNotificationSettings.users" | translate }}
+              </span>
+              <app-dropdown
+                class="w-full"
+                formControlName="usersIds"
+                optionValue="id"
+                optionLabel="userName"
+                [options]="users"
+                [multiple]="true"
+                [required]="false"
+                placeholder="{{
+                  isLoadingUsers
+                    ? ('common.loading' | translate)
+                    : ('stockNotificationSettings.usersPlaceholder' | translate)
+                }}"
+              >
+              </app-dropdown>
+            </div>
+            <div class="flex items-center justify-end gap-3 pt-4 mt-4">
+              <app-button type="submit" variant="primary">
+                {{ "common.save" | translate }}
+              </app-button>
+            </div>
+          </div>
+        </form>
+      </app-card>
+
+      <app-card>
+        <form [formGroup]="scheduleForm" (ngSubmit)="onSubmitScheduleForm()">
+          <div *ngIf="isLoadingSchedule" class="text-center py-12">
+            <p class="text-[var(--color-text-muted)]">
+              {{ "common.loading" | translate }}
             </p>
           </div>
-          <!-- Actions -->
-          <div class="flex items-center justify-end gap-3 pt-4 mt-4">
-            <app-button type="submit" variant="primary">
-              {{ "common.save" | translate }}
-            </app-button>
+          <div class="p-6" *ngIf="!isLoadingSchedule">
+            <h4 class="text-xl font-semibold text-[var(--color-text)] mb-6">
+              {{ "stockNotificationSettings.dateTimeSettings" | translate }}
+            </h4>
+
+            <div class="mb-4">
+              <span
+                class="block text-sm font-semibold text-[var(--color-text)] mb-2"
+              >
+                {{ "stockNotificationSettings.dateAndTime" | translate }}
+              </span>
+              <div
+                class="relative min-h-[52px] w-full px-3 border-2 border-[var(--color-border)] rounded-xl text-sm bg-[var(--color-background)] text-[var(--color-text)] hover:bg-[var(--color-background-hover)] cursor-pointer transition-all focus-within:border-[var(--color-brand)] focus-within:ring-2 focus-within:ring-[var(--color-brand)]/25"
+                (click)="openDateTimePicker(lowStockDateTimePicker)"
+              >
+                <div class="absolute inset-0 flex items-center px-3 py-3 pointer-events-none">
+                  <ng-container *ngIf="scheduleForm.get('dateTime')?.value; else lowStockDateTimePlaceholder">
+                    <span class="text-sm text-[var(--color-text)]">{{
+                      getDateTimeDisplay(scheduleForm.get('dateTime')?.value)
+                    }}</span>
+                  </ng-container>
+                  <ng-template #lowStockDateTimePlaceholder>
+                    <span class="text-sm text-[var(--color-text-muted)]"
+                      >dd/mm/yyyy hh:mm AM/PM</span
+                    >
+                  </ng-template>
+                  <svg
+                    class="w-4 h-4 ml-auto text-[var(--color-text-muted)] flex-shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                </div>
+
+                <input
+                  #lowStockDateTimePicker
+                  name="lowStockScheduleDateTime"
+                  type="datetime-local"
+                  formControlName="dateTime"
+                  class="absolute inset-0 w-full h-full opacity-0 cursor-pointer pointer-events-none"
+                />
+              </div>
+              <p class="mt-2 text-xs text-[var(--color-text-muted)]">
+                {{ "stockNotificationSettings.dateTimeNote" | translate }}
+              </p>
+            </div>
+            <div class="flex items-center justify-end gap-3 pt-4 mt-4">
+              <app-button type="submit" variant="primary">
+                {{ "common.save" | translate }}
+              </app-button>
+            </div>
           </div>
-        </div>
-      </form>
-    </app-card>
+        </form>
+      </app-card>
+    </div>
+
+    <!-- Critical stock -->
+    <div *ngIf="activeStockTab === 'critical'" class="flex flex-col gap-10 min-w-0" role="tabpanel">
+      <app-card>
+        <form [formGroup]="criticalRecipientsForm" (ngSubmit)="onSubmitCriticalRecipientsForm()">
+          <div class="p-6">
+            <h4 class="text-xl font-semibold text-[var(--color-text)] mb-6">
+              {{ "stockNotificationSettings.recipientsSettings" | translate }}
+            </h4>
+            <div class="mb-4">
+              <span
+                class="block text-sm font-semibold text-[var(--color-text)] mb-2"
+              >
+                {{ "stockNotificationSettings.roles" | translate }}
+              </span>
+              <app-dropdown
+                class="w-full"
+                formControlName="rolesIds"
+                [options]="roles"
+                [multiple]="true"
+                [required]="false"
+                optionValue="id"
+                optionLabel="name"
+                [placeholderSelectable]="false"
+                placeholder="{{
+                  isLoadingRoles
+                    ? ('common.loading' | translate)
+                    : ('stockNotificationSettings.rolesPlaceholder' | translate)
+                }}"
+              >
+              </app-dropdown>
+            </div>
+
+            <div>
+              <span
+                class="block text-sm font-semibold text-[var(--color-text)] mb-2"
+              >
+                {{ "stockNotificationSettings.users" | translate }}
+              </span>
+              <app-dropdown
+                class="w-full"
+                formControlName="usersIds"
+                optionValue="id"
+                optionLabel="userName"
+                [options]="users"
+                [multiple]="true"
+                [required]="false"
+                placeholder="{{
+                  isLoadingUsers
+                    ? ('common.loading' | translate)
+                    : ('stockNotificationSettings.usersPlaceholder' | translate)
+                }}"
+              >
+              </app-dropdown>
+            </div>
+            <div class="flex items-center justify-end gap-3 pt-4 mt-4">
+              <app-button type="submit" variant="primary">
+                {{ "common.save" | translate }}
+              </app-button>
+            </div>
+          </div>
+        </form>
+      </app-card>
+
+      <app-card>
+        <form [formGroup]="criticalScheduleForm" (ngSubmit)="onSubmitCriticalScheduleForm()">
+          <div *ngIf="isLoadingCriticalSchedule" class="text-center py-12">
+            <p class="text-[var(--color-text-muted)]">
+              {{ "common.loading" | translate }}
+            </p>
+          </div>
+          <div class="p-6" *ngIf="!isLoadingCriticalSchedule">
+            <h4 class="text-xl font-semibold text-[var(--color-text)] mb-6">
+              {{ "stockNotificationSettings.dateTimeSettings" | translate }}
+            </h4>
+
+            <div class="mb-4">
+              <span
+                class="block text-sm font-semibold text-[var(--color-text)] mb-2"
+              >
+                {{ "stockNotificationSettings.dateAndTime" | translate }}
+              </span>
+              <div
+                class="relative min-h-[52px] w-full px-3 border-2 border-[var(--color-border)] rounded-xl text-sm bg-[var(--color-background)] text-[var(--color-text)] hover:bg-[var(--color-background-hover)] cursor-pointer transition-all focus-within:border-[var(--color-brand)] focus-within:ring-2 focus-within:ring-[var(--color-brand)]/25"
+                (click)="openDateTimePicker(criticalDateTimePicker)"
+              >
+                <div class="absolute inset-0 flex items-center px-3 py-3 pointer-events-none">
+                  <ng-container *ngIf="criticalScheduleForm.get('dateTime')?.value; else criticalDateTimePlaceholder">
+                    <span class="text-sm text-[var(--color-text)]">{{
+                      getDateTimeDisplay(criticalScheduleForm.get('dateTime')?.value)
+                    }}</span>
+                  </ng-container>
+                  <ng-template #criticalDateTimePlaceholder>
+                    <span class="text-sm text-[var(--color-text-muted)]"
+                      >dd/mm/yyyy hh:mm AM/PM</span
+                    >
+                  </ng-template>
+                  <svg
+                    class="w-4 h-4 ml-auto text-[var(--color-text-muted)] flex-shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                </div>
+
+                <input
+                  #criticalDateTimePicker
+                  name="criticalStockScheduleDateTime"
+                  type="datetime-local"
+                  formControlName="dateTime"
+                  class="absolute inset-0 w-full h-full opacity-0 cursor-pointer pointer-events-none"
+                />
+              </div>
+              <p class="mt-2 text-xs text-[var(--color-text-muted)]">
+                {{ "stockNotificationSettings.dateTimeNote" | translate }}
+              </p>
+            </div>
+            <div class="flex items-center justify-end gap-3 pt-4 mt-4">
+              <app-button type="submit" variant="primary">
+                {{ "common.save" | translate }}
+              </app-button>
+            </div>
+          </div>
+        </form>
+      </app-card>
+    </div>
   </div>
 </div>

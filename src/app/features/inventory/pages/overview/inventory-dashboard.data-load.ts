@@ -34,6 +34,7 @@ export function emptyInventoryMonitoring(): InventoryDashboardSummaryDto {
 export function emptyInventoryHeadlineMetrics(): InventoryHeadlineMetricsDto {
   return {
     lowStockCount: 0,
+    criticalStockCount: 0,
     expiringSoonCount: 0,
     totalDistinctItems: 0,
     totalRemainingQuantity: 0,

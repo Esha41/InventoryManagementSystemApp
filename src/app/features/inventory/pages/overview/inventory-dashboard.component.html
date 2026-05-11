@@ -74,12 +74,14 @@
 
       <app-inventory-dashboard-stat-cards
         [lowStockCount]="headlineMetrics.lowStockCount"
+        [criticalStockCount]="headlineMetrics.criticalStockCount"
         [expiringSoonCount]="headlineMetrics.expiringSoonCount"
         [itemCount]="headlineMetrics.totalDistinctItems"
         [lotCountStat]="headlineMetrics.lotCount"
         [batchCountStat]="headlineMetrics.totalBatches"
         [byType]="statCardByType"
         (lowStockClick)="onLowStockClick()"
+        (criticalStockClick)="onCriticalStockClick()"
         (expiringSoonClick)="onExpiringSoonClick()">
       </app-inventory-dashboard-stat-cards>
 

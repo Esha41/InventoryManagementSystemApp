@@ -370,6 +370,9 @@ export const PERMISSIONS = {
     LOW_STOCK_REPORT: {
       PAGE: 'lowStockReportPage'
     },
+    CRITICAL_STOCK_REPORT: {
+      PAGE: 'criticalStockReportPage'
+    },
     SUMMARY_REPORT: {
       PAGE: 'inventorySummaryReportPage'
     }

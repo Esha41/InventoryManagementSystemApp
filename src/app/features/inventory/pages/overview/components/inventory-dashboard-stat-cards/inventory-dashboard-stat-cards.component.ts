@@ -12,6 +12,7 @@ import { LucideAngularModule, Package, Layers, Boxes } from 'lucide-angular';
 })
 export class InventoryDashboardStatCardsComponent {
   @Input({ required: true }) lowStockCount!: number;
+  @Input({ required: true }) criticalStockCount!: number;
   @Input({ required: true }) expiringSoonCount!: number;
   @Input({ required: true }) itemCount!: number;
   /** Headline `lotCount`: total inventory lots (ammo/explosive lots, excluding weapon assets). */
@@ -20,6 +21,7 @@ export class InventoryDashboardStatCardsComponent {
   @Input({ required: true }) byType!: { ammo: number; weapon: number; explosive: number };
 
   @Output() lowStockClick = new EventEmitter<void>();
+  @Output() criticalStockClick = new EventEmitter<void>();
   @Output() expiringSoonClick = new EventEmitter<void>();
 
   readonly Package = Package;
