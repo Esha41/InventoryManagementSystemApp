@@ -15,6 +15,7 @@ import {
   OrderAutoRejectSettingsService,
   UpdateOrderAutoRejectSettingsDto
 } from '@settings/services/order-auto-reject-settings.service';
+import { OrderAutoRejectWorkflowTriggersPanelComponent } from './components/workflow-triggers-panel/order-auto-reject-workflow-triggers-panel.component';
 
 /** Preset crons (5-field, standard). Backend validates with the same format. */
 interface OrderAutoRejectScanSchedulePreset {
@@ -25,7 +26,7 @@ interface OrderAutoRejectScanSchedulePreset {
 @Component({
   selector: 'app-order-auto-reject-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, TranslateModule, CardComponent, DropdownComponent, ButtonComponent, ErrorStateComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, TranslateModule, CardComponent, DropdownComponent, ButtonComponent, ErrorStateComponent, OrderAutoRejectWorkflowTriggersPanelComponent],
   templateUrl: './order-auto-reject-settings.component.html',
   styleUrl: './order-auto-reject-settings.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush

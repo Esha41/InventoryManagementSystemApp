@@ -137,6 +137,38 @@ export interface BulkCreateFromTemplateResultDto {
     firstAssetId?: number;
 }
 
+/** Matches backend `AssetBulkDeletionScopeDto`. */
+export enum AssetBulkDeletionScope {
+    Batch = 0,
+    Depot = 1,
+    ExplicitIds = 2
+}
+
+export interface StartBulkDeleteAssetsDto {
+    scope: AssetBulkDeletionScope;
+    batchId?: number | null;
+    depotId?: number | null;
+    assetIds?: number[] | null;
+}
+
+export interface BulkDeleteAssetsEnqueueResultDto {
+    jobId: string;
+    hangfireJobId?: string | null;
+    totalCandidates: number;
+}
+
+export interface BulkDeleteAssetsStatusDto {
+    jobId: string;
+    status: string;
+    totalCandidates: number;
+    processedCount: number;
+    deletedCount: number;
+    progressPercent: number;
+    message?: string | null;
+    startedUtc?: string | null;
+    completedUtc?: string | null;
+}
+
 /**
  * Update Asset DTO
  */

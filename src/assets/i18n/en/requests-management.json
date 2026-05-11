@@ -89,6 +89,7 @@
         "outsideOfAllowance": "(Outside of Allowance)",
         "requestType": "Request Type",
         "usagePurpose": "Usage Purpose",
+        "usePurposeNotes": "Use Purpose Notes",
         "supplyDate": "Supply Date",
         "supplyDetails": "Supply Details"
       },

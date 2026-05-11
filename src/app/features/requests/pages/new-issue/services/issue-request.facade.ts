@@ -247,14 +247,9 @@ export class IssueRequestFacade {
 
   onCatalogPageNext(): void { this.catalogOrchestrator.onCatalogPageNext(this.catalogCtx, this.catalogHooks); }
   onCatalogPagePrev(): void { this.catalogOrchestrator.onCatalogPagePrev(this.catalogCtx, this.catalogHooks); }
-  filterCartridges(): void { this.catalogOrchestrator.filterCartridges(this.catalogCtx); }
 
   onFilterSidebarChange(): void {
-    if (this.fromReserve !== 'No') {
-      this.filterCartridges();
-    } else {
-      this.requestServerRefilter();
-    }
+    this.requestServerRefilter();
   }
 
   onClearFilters(): void { this.catalogOrchestrator.handleClearFilters(this.catalogCtx, this.catalogHooks); }
@@ -263,10 +258,6 @@ export class IssueRequestFacade {
   onFromReserveChange(value: string): void {
     if (this.fromReserve === value) return;
     this.fromReserve = value;
-    if (value === 'Yes' && this.filterState.selectedItemType === 'Weapon') {
-      this.filterState.selectedItemType = 'Ammunition';
-      this.onClearFilters();
-    }
     this.updateQueryParams(this.currentStep);
     this.cdr.markForCheck();
     if (this.currentStep >= 1) this.loadCartridges();

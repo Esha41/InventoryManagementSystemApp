@@ -138,13 +138,28 @@
           </div>
         </div>
 
-        <!-- Use purpose -->
-        <div class="flex items-center gap-4">
-          <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]" for="review-form-fld-7-7">{{ 'newIssueRequest.usePurpose' |
-            translate }}</label>
-          <input id="review-form-fld-7-7" type="text" [ngModel]="usePurpose" [placeholder]="'newIssueRequest.usePurposePlaceholder' | translate"
-            readonly
-            class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
+        <!-- Use purpose + use purpose notes -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-4">
+            <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]" for="review-form-fld-7-7">{{ 'newIssueRequest.usePurpose' |
+              translate }}</label>
+            <input id="review-form-fld-7-7" type="text" [ngModel]="usePurpose" [placeholder]="'newIssueRequest.usePurposePlaceholder' | translate"
+              readonly
+              class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
+          </div>
+          <div class="flex items-start gap-4">
+            <span class="text-sm font-bold text-[var(--color-text)] min-w-[120px] pt-2.5" id="review-form-lbl-purpose-notes">{{
+              'newIssueRequest.requestPurposeNotes' | translate }}</span>
+            <div
+              class="flex-1 min-h-[5rem] px-4 py-2.5 border border-[var(--color-border)] rounded text-sm bg-[var(--color-background)] cursor-default"
+              aria-labelledby="review-form-lbl-purpose-notes">
+              <span *ngIf="requestPurposeNotes?.trim(); else reviewNoPurposeNotes" class="text-[var(--color-text)] whitespace-pre-wrap">{{
+                requestPurposeNotes }}</span>
+              <ng-template #reviewNoPurposeNotes>
+                <span class="text-[var(--color-text-muted)]">{{ 'newIssueRequest.commentsNonePlaceholder' | translate }}</span>
+              </ng-template>
+            </div>
+          </div>
         </div>
 
         <!-- Usage Location -->
@@ -173,8 +188,8 @@
         </div>
       </div>
 
-      <!-- Right Column -->
-      <div class="space-y-6">
+      <!-- Right Column: offset on md+ so Usage Date From aligns with Use purpose row -->
+      <div class="space-y-6 md:pt-14">
         <!-- Usage Date From -->
         <div class="flex items-center gap-4">
           <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]" for="review-form-fld-11-11">{{ 'newIssueRequest.usageDateFrom' |
@@ -185,7 +200,7 @@
         </div>
 
         <!-- Usage Date To -->
-        <div class="flex items-center gap-4" *ngIf="usageDateTo">
+        <div class="flex items-center gap-4">
           <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]" for="review-form-fld-12-12">{{ 'newIssueRequest.usageDateTo' |
             translate }}</label>
           <input id="review-form-fld-12-12" type="text" [ngModel]="getFormattedUsageDateTo()"

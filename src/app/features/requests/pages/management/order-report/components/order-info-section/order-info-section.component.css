@@ -88,3 +88,13 @@
   font-size: 12px;
   font-weight: 600;
 }
+
+.print-info-item-span-full {
+  grid-column: 1 / -1;
+}
+
+.print-info-value-multiline {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-weight: 500;
+}

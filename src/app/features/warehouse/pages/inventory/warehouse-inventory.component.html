@@ -97,6 +97,39 @@
         </div>
       </div>
 
+      <div *ngIf="store.largeBatchDeletionActive()"
+        class="fixed top-4 right-4 z-[1000] w-[420px] max-w-[calc(100vw-2rem)] rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] shadow-lg px-4 py-3"
+        role="status" aria-live="polite">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-sm font-semibold text-[var(--color-text)] mb-1">
+              {{ 'warehouseInventory.batchDeleteInProgressTitle' | translate }}
+            </p>
+            <p class="text-xs text-[var(--color-text-muted)] break-words">
+              {{ store.largeBatchDeletionMessage() }}
+            </p>
+          </div>
+          <button type="button"
+            class="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-background-muted)] transition-colors"
+            (click)="store.endLargeBatchDeletion()">
+            ✕
+          </button>
+        </div>
+
+        <div class="mt-3 h-2 w-full rounded-full bg-[var(--color-border)] overflow-hidden">
+          <div class="h-full bg-[var(--color-brand)] transition-[width] duration-300 ease-out"
+            [style.width.%]="store.largeBatchDeletionPercent()"></div>
+        </div>
+        <div class="mt-2 flex items-center justify-between">
+          <p class="text-[11px] text-[var(--color-text-muted)]">
+            {{ store.largeBatchDeletionPercent() }}%
+          </p>
+          <p class="text-[11px] text-[var(--color-text-muted)]">
+            {{ 'common.pleaseWait' | translate }}
+          </p>
+        </div>
+      </div>
+
       <!-- Enhanced Tabs -->
       <div
         class="mb-6 bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg shadow-custom-sm overflow-hidden">

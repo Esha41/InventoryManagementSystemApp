@@ -18,7 +18,8 @@ import { Subject, takeUntil } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { RequestStatusUpdateService } from '@requests/services/request-status-update.service';
 import { defaultPageSize } from '@constants/app.constants';
-import { AutoRejectCountdownService, OrderAutoRejectCountdownDto } from '@requests/services/auto-reject-countdown.service';
+import { AutoRejectCountdownService } from '@requests/services/auto-reject-countdown.service';
+import { RequestAutoRejectCountdownDto } from '@models/workflow.model';
 import { AutoRejectCountdownComponent } from '@requests/components/auto-reject-countdown/auto-reject-countdown.component';
 
 
@@ -40,7 +41,7 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
 
   requests: Request[] = [];
   loading = false;
-  countdownByRequestId: Record<number, OrderAutoRejectCountdownDto> = {};
+  countdownByRequestId: Record<number, RequestAutoRejectCountdownDto> = {};
 
   // Filter state (managed by shared component)
   searchQuery: string = '';
@@ -273,7 +274,7 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
       });
   }
 
-  getAutoRejectCountdown(request: Request): OrderAutoRejectCountdownDto | null {
+  getAutoRejectCountdown(request: Request): RequestAutoRejectCountdownDto | null {
     if (request.requestType !== 'Order') return null;
     return this.countdownByRequestId[request.id] ?? null;
   }

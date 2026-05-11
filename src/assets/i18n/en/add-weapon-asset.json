@@ -32,6 +32,7 @@
         "required": "This field is required",
         "maxLength": "Maximum length is {{max}} characters",
         "minValue": "Minimum value is {{min}}",
+        "maxValue": "Maximum value is {{max}}",
         "validationError": "Please fix the validation errors before submitting",
         "loadError": "Failed to load data. Please try again.",
         "createError": "Failed to create weapon asset. Please try again.",
@@ -80,6 +81,7 @@
         "bulk": {
             "setup": "Bulk Entry Setup",
             "quantity": "Quantity",
+            "quantityHint": "Maximum {{max}} per submission.",
             "fillIdentifiers": "Fill RFID/Serial Numbers",
             "fillIdentifiersDescription": "Enable this option to fill serial numbers and RFID tags for each item individually on the next page",
             "fillIdentifiersDisabledReason": "Assets will be created without serial numbers. Per-item serial/RFID entry is only available for quantities up to {{max}}.",
@@ -114,6 +116,7 @@
         "progress": {
             "title": "Creating assets",
             "subtitle": "Hang tight — this may take a moment.",
+            "percentLabel": "Progress",
             "status": "Processed {{current}} of {{total}}"
         }
     }

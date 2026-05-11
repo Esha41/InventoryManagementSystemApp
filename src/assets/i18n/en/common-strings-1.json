@@ -26,6 +26,7 @@
     "exportError": "Failed to export data",
     "exportSuccess": "Data exported successfully",
     "exportToExcel": "Export to Excel",
+    "estimatedTime": "Estimated time remaining",
     "exporting": "Exporting...",
     "file": "file",
     "files": "files",
@@ -52,6 +53,7 @@
     "noFileChosen": "No file chosen",
     "noImage": "No Image",
     "noResultsFound": "No results found",
-    "notAvailable": "Not Available"
+    "notAvailable": "Not Available",
+    "records": "records"
   }
 }

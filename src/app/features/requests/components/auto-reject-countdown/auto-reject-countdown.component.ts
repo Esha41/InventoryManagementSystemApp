@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { OrderAutoRejectCountdownDto } from '@requests/services/auto-reject-countdown.service';
+import { RequestAutoRejectCountdownDto } from '@models/workflow.model';
 
 @Component({
   selector: 'app-auto-reject-countdown',
@@ -12,7 +12,7 @@ import { OrderAutoRejectCountdownDto } from '@requests/services/auto-reject-coun
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AutoRejectCountdownComponent {
-  @Input() countdown: OrderAutoRejectCountdownDto | null | undefined;
+  @Input() countdown: RequestAutoRejectCountdownDto | null | undefined;
 
   pillClass(): string {
     const s = this.countdown?.state ?? 'none';

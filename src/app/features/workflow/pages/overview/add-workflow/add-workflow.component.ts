@@ -22,6 +22,8 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslationMap } from '@models/common.types';
 import { trackByIndex } from '@utils/trackby.utils';
 
+/** Create workflow: auto-reject triggers are configured only on the edit screen (API ignores trigger fields on create). */
+
 /** Add workflow step form shape */
 interface AddStepForm {
   roleId: string | null;
