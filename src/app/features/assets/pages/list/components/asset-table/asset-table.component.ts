@@ -89,22 +89,6 @@ export class AssetTableComponent {
     return asset.id;
   }
 
-  /** Matches thead column count for empty-state row. HTML colspan must be an integer (not %). */
-  get desktopTableColumnCount(): number {
-    const base = 4; // name, itemNo, partNo, nsn
-    const tail = 3; // price, minimumQuantity, actions
-    switch (this.activeTab) {
-      case 'ammunition':
-        return base + 2 + tail; // caliber, primaryPurpose
-      case 'weapon':
-        return base + 3 + tail; // weaponType, primaryPurpose, caliber
-      case 'explosive':
-        return base + 3 + tail; // armNumber, primaryPurpose, unNumber
-      default:
-        return base + tail;
-    }
-  }
-
   onView(assetId: string): void {
     this.view.emit(assetId);
   }
