@@ -142,7 +142,7 @@ export class MonitoringService {
     return this.apiService.get<InventoryDashboardSummaryDto>(`${this.baseEndpoint}/dashboard/inventory-summary${params}`);
   }
 
-  /** Stat-card headline metrics (totals, by-type, low stock, expiring soon). */
+  /** Stat-card headline metrics (totals, by-type, low/critical stock, expiring soon). */
   getInventoryHeadlineMetrics(depotIds?: number[]): Observable<InventoryHeadlineMetricsDto> {
     let params = '';
     if (depotIds && depotIds.length > 0) {

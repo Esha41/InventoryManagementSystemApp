@@ -25,6 +25,7 @@ export interface InventoryDashboardSummaryDto {
 /** Matches GET Monitoring/dashboard/inventory-headline-metrics */
 export interface InventoryHeadlineMetricsDto {
   lowStockCount: number;
+  criticalStockCount: number;
   expiringSoonCount: number;
   totalDistinctItems: number;
   totalRemainingQuantity: number;

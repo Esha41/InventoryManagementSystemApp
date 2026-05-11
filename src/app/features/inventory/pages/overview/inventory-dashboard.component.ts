@@ -133,10 +133,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   /** Caliber display labels from lookup API (merged into filter dropdown with {@link distinctCalibers}). */
   caliberFilterCatalogLabels: string[] = [];
 
-  lowStockCount = 0;
-  criticalStockCount = 0;
-  expiringSoonCount = 0;
-
   inventoryMonitoring: InventoryDashboardSummaryDto = emptyInventoryMonitoring();
 
   headlineMetrics: InventoryHeadlineMetricsDto = emptyInventoryHeadlineMetrics();
