@@ -11,5 +11,6 @@ export const environment: Environment = {
   debugMode: true,
   idleWarningAfterMinutes: 15,
   idleLogoutCountdownSeconds: 60,
-  enableOnboardingTour: false
+  enableOnboardingTour: false,
+  enableSecurityAcknowledgmentOnLogin: false
 };

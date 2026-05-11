@@ -7,6 +7,7 @@ import { ONBOARDING_TOUR } from '@core/tokens/onboarding-tour.token';
 import { IOnboardingTourProvider } from '@core/interfaces/onboarding-tour-provider.interface';
 import { HelpCenterTermsDto, TermsAcceptanceStatusDto } from '@models/help-center.model';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { environment } from '@environments/environment';
 
 /**
  * Terms blocking flow after login (Help Center API).
@@ -19,12 +20,19 @@ export class TermsAcceptanceFacade {
   private readonly onboarding = inject(ONBOARDING_TOUR, { optional: true }) as IOnboardingTourProvider | null;
   private readonly toast = inject(ToastService);
   private readonly i18n = inject(TranslationService);
+  /** Same pattern as onboarding: {@link Environment.enableOnboardingTour}. */
+  private readonly isSecurityAcknowledgmentOnLoginEnabled = environment.enableSecurityAcknowledgmentOnLogin === true;
 
   readonly showModal = signal(false);
   readonly pendingTerms = signal<HelpCenterTermsDto | null>(null);
   readonly accepting = signal(false);
 
   beginPostLoginFlow(): void {
+    if (!this.isSecurityAcknowledgmentOnLoginEnabled) {
+      this.onboarding?.checkAndStartTour();
+      return;
+    }
+
     this.helpCenter
       .getTermsAcceptanceStatus()
       .pipe(
