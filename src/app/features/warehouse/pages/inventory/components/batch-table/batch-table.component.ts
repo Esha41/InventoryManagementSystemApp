@@ -1,8 +1,16 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import {
+    Component,
+    Input,
+    Output,
+    EventEmitter,
+    ChangeDetectionStrategy,
+    OnChanges,
+    SimpleChanges
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Edit2, Eye, ChevronDown, ChevronRight, Trash2, ArrowUp, ArrowDown, ArrowUpDown, Download, Upload } from 'lucide-angular';
-import { BatchSummaryDto } from '@models/batch.model';
+import { BatchSummaryDto, BatchAssetItemCountDto } from '@models/batch.model';
 import { AssetDto } from '@models/asset.model';
 import { trackById } from '@utils/trackby.utils';
 import { PaginationComponent } from '@components/pagination/pagination.component';
@@ -11,6 +19,18 @@ import { HasPermissionDirective } from '@core/directives/has-permission.directiv
 import { defaultPageSize } from '@constants/app.constants';
 
 export type BatchTableSortColumn = 'batchNumber' | 'quantity';
+
+/** One row per catalog item in the expanded batch (counts from API; assets = current page slice). */
+export interface BatchAssetGroupRow {
+    itemId: number;
+    itemName: string;
+    /** Item / catalog number from API counts or assets in group. */
+    itemNo: string;
+    /** NSN from API counts or first asset in group. */
+    nsn: string;
+    count: number;
+    assets: AssetDto[];
+}
 
 @Component({
     selector: 'app-batch-table',
@@ -27,18 +47,19 @@ export type BatchTableSortColumn = 'batchNumber' | 'quantity';
     styles: [`.batch-row-expanded { background-color: var(--color-background-hover) !important; }`],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class BatchTableComponent {
+export class BatchTableComponent implements OnChanges {
     @Input() batches: BatchSummaryDto[] = [];
     @Input() expandedBatchId: number | null = null;
     @Input() expandedBatchAssets: AssetDto[] = [];
+    /** Per-item totals for the whole batch (from API; not limited to the current assets page). */
+    @Input() expandedBatchAssetItemCounts: BatchAssetItemCountDto[] = [];
+    /** Which item group's detail accordion is open (UI only; asset list is not filtered by item on the server). */
+    @Input() expandedBatchDetailItemId: number | null = null;
     @Input() loadingBatchAssets = false;
     @Input() batchAssetsPage = 1;
     @Input() batchAssetsPageSize = defaultPageSize;
     @Input() batchAssetsTotalPages = 1;
     @Input() batchAssetsTotalCount = 0;
-    @Input() batchAssetsAllLoaded = false;
-    /** Page size choices for batch assets (default from `APP_CONSTANTS.PAGE_SIZE_OPTIONS` pattern: 20, 50, …). */
-    @Input() batchAssetsPageSizeOptions: number[] = [20, 50, 100, 200, 500];
     @Input() getAssetItemName: (asset: AssetDto) => string = () => '';
     @Input() getAssetStatusLabel: (asset: AssetDto) => string = () => '';
     @Input() formatDate: (date?: Date | string) => string = () => '';
@@ -62,8 +83,7 @@ export class BatchTableComponent {
     @Output() sortChange = new EventEmitter<BatchTableSortColumn>();
     @Output() batchAssetsPageChange = new EventEmitter<number>();
     @Output() batchAssetsPageSizeChange = new EventEmitter<number>();
-    @Output() batchAssetsLoadAll = new EventEmitter<void>();
-    @Output() batchAssetsUsePagination = new EventEmitter<void>();
+    @Output() batchAssetsDetailItemChange = new EventEmitter<number | null>();
 
     @Input() sortColumn: BatchTableSortColumn = 'batchNumber';
     @Input() sortDirection: 'asc' | 'desc' = 'asc';
@@ -79,6 +99,87 @@ export class BatchTableComponent {
     readonly Download = Download;
     readonly Upload = Upload;
     readonly trackById = trackById;
+
+    groupedExpandedBatchAssets: BatchAssetGroupRow[] = [];
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (
+            changes['expandedBatchAssets'] ||
+            changes['expandedBatchAssetItemCounts'] ||
+            changes['getAssetItemName']
+        ) {
+            this.rebuildGroupedExpandedBatchAssets();
+        }
+    }
+
+    private rebuildGroupedExpandedBatchAssets(): void {
+        const counts = this.expandedBatchAssetItemCounts;
+        if (counts?.length) {
+            this.groupedExpandedBatchAssets = counts.map((c) => ({
+                itemId: c.itemId,
+                itemName: c.itemName,
+                itemNo: (c.itemNo ?? '').trim(),
+                nsn: (c.nsn ?? '').trim(),
+                count: c.count,
+                assets: this.expandedBatchAssets.filter((a) => a.itemId === c.itemId)
+            }));
+            return;
+        }
+
+        const assets = this.expandedBatchAssets;
+        if (!assets?.length) {
+            this.groupedExpandedBatchAssets = [];
+            return;
+        }
+        const map = new Map<string, { itemId: number; itemName: string; assets: AssetDto[] }>();
+        const order: string[] = [];
+        for (const asset of assets) {
+            const raw = (this.getAssetItemName(asset) || '').trim();
+            const key = raw || '-';
+            if (!map.has(key)) {
+                map.set(key, { itemId: asset.itemId, itemName: key, assets: [] });
+                order.push(key);
+            }
+            map.get(key)!.assets.push(asset);
+        }
+        this.groupedExpandedBatchAssets = order.map((itemName) => {
+            const g = map.get(itemName)!;
+            const itemNo =
+                g.assets.map((a) => (a.item?.itemNo ?? '').trim()).find((s) => s.length > 0) ?? '';
+            const nsn =
+                g.assets.map((a) => (a.item?.nsn ?? '').trim()).find((s) => s.length > 0) ?? '';
+            return {
+                itemId: g.itemId,
+                itemName: g.itemName,
+                itemNo,
+                nsn,
+                count: g.assets.length,
+                assets: g.assets
+            };
+        });
+    }
+
+    groupItemNoLabel(group: BatchAssetGroupRow): string {
+        return group.itemNo || '—';
+    }
+
+    groupNsnLabel(group: BatchAssetGroupRow): string {
+        return group.nsn || '—';
+    }
+
+    isAssetDetailExpanded(group: BatchAssetGroupRow): boolean {
+        return this.expandedBatchDetailItemId === group.itemId;
+    }
+
+    toggleAssetDetail(group: BatchAssetGroupRow, event: Event): void {
+        event.stopPropagation();
+        const next = this.expandedBatchDetailItemId === group.itemId ? null : group.itemId;
+        this.batchAssetsDetailItemChange.emit(next);
+    }
+
+    trackByGroupItemId(_index: number, row: BatchAssetGroupRow): number {
+        return row.itemId;
+    }
 
     toggleSort(column: BatchTableSortColumn): void {
         this.sortChange.emit(column);

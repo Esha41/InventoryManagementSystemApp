@@ -110,7 +110,7 @@
       "expectedReturn": "تاريخ العودة المتوقع",
       "actualReturn": "تاريخ العودة الفعلي",
       "location": "الموقع",
-      "batch": "الدفعة",
+      "batch": "رقم البوليصة",
       "openCatalog": "فتح بطاقة المادة"
     }
   }

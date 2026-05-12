@@ -223,7 +223,7 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
           }
         },
         error: (error) => {
-          this.config.logError('Failed to load batches', error);
+          this.config.logError('Failed to load policy numbers', error);
           this.toastService.error(
             this.translate.instant('weaponSupplyReview.failedToLoadBatches'),
             this.translate.instant('toast.error')

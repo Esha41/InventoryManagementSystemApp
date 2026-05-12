@@ -25,7 +25,7 @@
     "item": "Item",
     "remove": "Remove",
     "itemId": "Item ID",
-    "itemIdPlaceholder": "Search by name, item no, NSN...",
+    "itemIdPlaceholder": "Search ...",
     "clearFilter": "Clear filter",
     "itemNo": "Item No",
     "batchNo": "Batch No",
@@ -37,7 +37,7 @@
     "sending": "Saving...",
     "noAllowances": "No allowances found",
     "noAllowancesDescription": "Get started by creating a new allowance request",
-    "searchPlaceholder": "Search by department...",
+    "searchPlaceholder": "Search...",
     "table": {
       "department": "Department",
       "date": "Date",

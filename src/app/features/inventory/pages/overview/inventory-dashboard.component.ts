@@ -547,6 +547,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     if (this.useInventoryServerPaging) {
       this.fetchItemSummariesPageOnly();
     }
+    this.syncExpandedWeaponAssetsAfterClientTableFilterChange();
     this.cdr.markForCheck();
   }
 
@@ -555,6 +556,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     if (this.useInventoryServerPaging) {
       this.fetchItemSummariesPageOnly();
     }
+    this.syncExpandedWeaponAssetsAfterClientTableFilterChange();
     this.cdr.markForCheck();
   }
 
@@ -563,6 +565,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     if (this.useInventoryServerPaging) {
       this.fetchItemSummariesPageOnly();
     }
+    this.syncExpandedWeaponAssetsAfterClientTableFilterChange();
     this.cdr.markForCheck();
   }
 
@@ -755,7 +758,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   private loadAssets(item: ItemInventorySummaryDto): void {
     this.isAssetsLoading = true;
     this.cdr.markForCheck();
-    const depotId = this.selectedDepotIds.length === 1 ? this.selectedDepotIds[0] : undefined;
+    const depotScope = this.getAssetDepotQueryArgs();
     const request: PagedListRequest = {
       page: this.assetCurrentPage,
       pageSize: this.assetRowsPerPage,
@@ -769,7 +772,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       hasPreviousPage: false,
       hasNextPage: false
     };
-    this.assetService.getAssetsByItemIdPaged(item.itemId, request, depotId).pipe(
+    this.assetService.getAssetsByItemIdPaged(item.itemId, request, depotScope.depotId, depotScope.depotIds).pipe(
       catchError(() => of(emptyPage)),
       finalize(() => { this.isAssetsLoading = false; this.cdr.markForCheck(); }),
       takeUntil(this.destroy$)
@@ -793,6 +796,39 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       sortField,
       sortDirection: this.assetSortDirection === 'asc' ? 1 : 2
     };
+  }
+
+  /** When the item table uses client-side filters, collapse expansion if the row disappears; optionally refetch assets. */
+  private syncExpandedWeaponAssetsAfterClientTableFilterChange(): void {
+    if (this.activeTab !== 'weapon' || this.useInventoryServerPaging) {
+      return;
+    }
+    const summary = this.getExpandedItemSummary();
+    if (!summary || normalizeItemType(summary.itemType) !== ItemType.Weapon) {
+      return;
+    }
+    if (!this.sortedItemSummaries.some(s => s.itemId === summary.itemId)) {
+      this.expandedItemId = null;
+      this.lotDetails = [];
+      this.assetDetails = [];
+      this.assetServerTotalCount = 0;
+      this.cdr.markForCheck();
+      return;
+    }
+    this.assetCurrentPage = 1;
+    this.loadAssets(summary);
+  }
+
+  /** Align expanded weapon assets with summary row: same depot scope as catalog paged API. */
+  private getAssetDepotQueryArgs(): { depotId?: number; depotIds?: number[] } {
+    const ids = this.selectedDepotIds.filter(id => id > 0);
+    if (ids.length === 1) {
+      return { depotId: ids[0] };
+    }
+    if (ids.length > 1) {
+      return { depotIds: ids };
+    }
+    return {};
   }
 
   private getExpandedItemSummary(): ItemInventorySummaryDto | undefined {
