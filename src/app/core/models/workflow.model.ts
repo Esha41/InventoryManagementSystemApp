@@ -31,7 +31,6 @@ export interface WorkflowDto {
   autoRejectTriggerMode?: string | null;
   autoRejectTriggerRoleIds?: string[];
   autoRejectTriggerStepIds?: number[];
-  autoRejectResetOnReApproval?: boolean;
   visitorType?: string;
   locations?: string;
   gate?: string;
@@ -55,8 +54,6 @@ export interface BackendWorkflowDto {
   autoRejectTriggerMode?: string | null;
   autoRejectTriggerRoleIds?: string[];
   autoRejectTriggerStepIds?: number[];
-  /** Default true: anchor on latest matching approval after return/re-approval. */
-  autoRejectResetOnReApproval?: boolean;
   workflowSteps?: WorkflowStepDto[];
 }
 
@@ -152,7 +149,6 @@ export interface UpdateWorkflowAutoRejectTriggersDto {
   mode: AutoRejectTriggerModeValue;
   triggerRoleIds?: string[];
   triggerStepIds?: number[];
-  resetOnReApproval?: boolean;
 }
 
 /** Unwrapped response from auto-reject triggers endpoint */
@@ -162,7 +158,6 @@ export interface WorkflowAutoRejectTriggerDto {
   mode?: string | null;
   triggerRoleIds?: string[];
   triggerStepIds?: number[];
-  resetOnReApproval?: boolean;
 }
 
 /**
@@ -292,7 +287,7 @@ export interface WorkflowStepDto {
  */
 export interface RequestAutoRejectCountdownDto {
   requestId: number;
-  triggerApprovedAt: string | null;
+  triggerReachedAt: string | null;
   thresholdDays: number;
   daysRemaining: number;
   dueDate: string | null;

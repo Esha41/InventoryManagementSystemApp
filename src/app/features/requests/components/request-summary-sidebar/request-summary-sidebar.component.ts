@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { RequestDetail } from '@models/workflow-approval.model';
 import { getRequestStatusBadgeClass } from '@utils/status-class.utils';
+import { getPriorityKey } from '@utils/priority.utils';
 
 @Component({
     selector: 'app-request-summary-sidebar',
@@ -53,7 +54,7 @@ import { getRequestStatusBadgeClass } from '@utils/status-class.utils';
             <span class="text-sm text-[var(--color-text-muted)]">{{ 'supplyRequestManagement.detail.prioritySuffix' |
               translate }}</span>
             <span class="text-sm font-semibold text-[var(--color-text)]">
-              {{ ('common.priorityLevels.' + requestDetail.priority) | translate }}
+              {{ ('common.priorityLevels.' + priorityI18nSuffix(requestDetail.priority)) | translate }}
             </span>
           </div>
           <div class="flex justify-between items-center py-2" *ngIf="requestDetail.requestItems">
@@ -70,6 +71,10 @@ import { getRequestStatusBadgeClass } from '@utils/status-class.utils';
 })
 export class RequestSummarySidebarComponent {
     @Input() requestDetail!: RequestDetail;
+
+    priorityI18nSuffix(priority: RequestDetail['priority']): string {
+        return getPriorityKey(priority);
+    }
 
     getStatusClass(status: string): string {
         return getRequestStatusBadgeClass(status);

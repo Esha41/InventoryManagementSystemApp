@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, FileDown, Printer, ArrowRight, ArrowLeft } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import { OrderDto } from '@models/order.model';
 import { OrderSummary, OrderReportItem, OrderReportApprovalStep, WorkflowDetail } from '@models/order-report.model';
 import { mapOrderStatusFromApi } from '@utils/status.utils';
@@ -25,6 +26,7 @@ import { OrderItemsTableComponent } from './components/order-items-table/order-i
 import { ApprovalWorkflowComponent } from './components/approval-workflow/approval-workflow.component';
 import { OrderReportSupplySummaryComponent } from './components/order-report-supply-summary/order-report-supply-summary.component';
 import { WorkflowApprovalPermissionsService } from '@requests/pages/management/workflow-approval-detail/services/workflow-approval-permissions.service';
+import { defaultPageSize } from '@constants/app.constants';
 
 @Component({
   selector: 'app-order-report',
@@ -56,6 +58,7 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   readonly ArrowLeft = ArrowLeft;
 
   private destroy$ = new Subject<void>();
+  private searchDebounce$ = new Subject<void>();
   ordersLoading = false;
   detailsLoading = false;
   ordersError: string | null = null;
@@ -65,6 +68,9 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   filteredOrders: OrderDto[] = [];
   selectedOrderId: number | null = null;
   searchTerm: string = '';
+  ordersPage = 1;
+  ordersRowsPerPage = defaultPageSize;
+  ordersTotalCount = 0;
 
   orderSummary: OrderSummary = {
     orderId: '',
@@ -115,6 +121,10 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     );
   }
 
+  get ordersTotalPages(): number {
+    return Math.ceil(this.ordersTotalCount / this.ordersRowsPerPage);
+  }
+
   ngOnInit(): void {
     this.updateCurrentDate();
     const user = this.authService.getCurrentUser();
@@ -130,8 +140,14 @@ export class OrderReportComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       });
 
-    // Directly load orders; skip roles/me fetches to reduce calls
-    this.loadOrders();
+    this.searchDebounce$
+      .pipe(debounceTime(400), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.ordersPage = 1;
+        this.loadOrdersPage(1);
+      });
+
+    this.loadOrdersPage(1);
   }
 
 
@@ -141,14 +157,21 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   }
 
   loadOrders(): void {
+    this.loadOrdersPage(this.ordersPage);
+  }
+
+  loadOrdersPage(page: number): void {
     this.ordersLoading = true;
     this.ordersError = null;
 
-    this.orderReportService.loadOrders()
+    this.orderReportService
+      .loadOrdersPaginated(page, this.ordersRowsPerPage, this.searchTerm)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (orders) => {
-          this.orders = orders;
+        next: (result) => {
+          this.ordersPage = result.pageIndex;
+          this.ordersTotalCount = result.totalCount;
+          this.orders = result.items;
           this.filteredOrders = [...this.orders];
           this.ordersLoading = false;
           this.selectedOrderId = null;
@@ -164,36 +187,32 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   * Filter orders based on search term
-   */
-  filterOrders(): void {
-    this.filteredOrders = this.orderReportService.filterOrders(
-      this.orders,
-      this.searchTerm,
-      (order) => this.getDepartmentName(order),
-      (status) => this.getStatusLabel(status),
-      (priority) => this.getPriorityLabel(priority)
-    );
-    this.cdr.markForCheck();
-  }
-
-  /**
-   * Handle search input change
-   */
-  onSearchChange(searchTerm?: string): void {
-    if (searchTerm !== undefined) {
-      this.searchTerm = searchTerm;
+  onOrdersPageChange(page: number): void {
+    if (this.ordersPage !== page) {
+      this.ordersPage = page;
+      this.loadOrdersPage(page);
     }
-    this.filterOrders();
+  }
+
+  onOrdersRowsPerPageChange(rows: number): void {
+    if (this.ordersRowsPerPage !== rows) {
+      this.ordersRowsPerPage = rows;
+      this.ordersPage = 1;
+      this.loadOrdersPage(1);
+    }
   }
 
   /**
-   * Clear search
+   * Handle search input change (server-side filter via paginated API)
    */
-  clearSearch(): void {
-    this.searchTerm = '';
-    this.filterOrders();
+  onSearchChange(searchTerm: string): void {
+    this.searchTerm = searchTerm;
+    if (!searchTerm.trim()) {
+      this.ordersPage = 1;
+      this.loadOrdersPage(1);
+      return;
+    }
+    this.searchDebounce$.next();
   }
 
   selectOrder(order: OrderDto): void {

@@ -10,6 +10,7 @@ export const environment: Environment = {
   idleWarningAfterMinutes: 15,
   idleLogoutCountdownSeconds: 60,
   persistAuthAcrossSessions: true,
-  enableOnboardingTour: true
+  enableOnboardingTour: true,
+  enableSecurityAcknowledgmentOnLogin: true
 };
 

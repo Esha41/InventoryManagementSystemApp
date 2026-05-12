@@ -9,7 +9,7 @@ import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.co
 import { trackById } from '@utils/trackby.utils';
 import { InventoryDetailDto } from '@models/inventory.model';
 import { AssetDto } from '@models/asset.model';
-import { BatchSummaryDto } from '@models/batch.model';
+import { BatchSummaryDto, BatchAssetItemCountDto } from '@models/batch.model';
 import {
   BatchTableComponent,
   BatchTableSortColumn
@@ -156,46 +156,28 @@ import { defaultPageSize } from '@constants/app.constants';
             </div>
             <div
               *ngIf="!loadingBatchAssets && batchAssetsTotalCount > 0"
-              class="mt-3 pt-3 border-t border-[var(--color-border-muted)] flex flex-col gap-3">
-              <div *ngIf="!batchAssetsAllLoaded" class="flex flex-wrap items-center gap-2 justify-between">
-                <app-rows-per-page
-                  [rowsPerPage]="batchAssetsPageSize"
-                  [totalItems]="batchAssetsTotalCount"
-                  [visibleItems]="expandedBatchAssets.length"
-                  [optionValues]="batchAssetsPageSizeOptions"
-                  (rowsPerPageChange)="batchAssetsPageSizeChange.emit($event)">
-                </app-rows-per-page>
-                <button
-                  type="button"
-                  class="text-xs font-medium text-[var(--color-brand)] hover:underline"
-                  (click)="$event.stopPropagation(); batchAssetsLoadAll.emit()">
-                  {{ 'warehouseInventory.showAllBatchAssets' | translate }}
-                </button>
-              </div>
-              <div
-                *ngIf="batchAssetsAllLoaded"
-                class="text-xs text-[var(--color-text-muted)] flex flex-wrap items-center gap-2">
-                <span>
-                  {{ 'warehouseInventory.showingAllBatchAssets' | translate: { count: batchAssetsTotalCount } }}
-                </span>
-                <button
-                  type="button"
-                  class="font-medium text-[var(--color-brand)] hover:underline"
-                  (click)="$event.stopPropagation(); batchAssetsUsePagination.emit()">
-                  {{ 'warehouseInventory.usePagedBatchAssets' | translate }}
-                </button>
-              </div>
-              <div
-                *ngIf="!batchAssetsAllLoaded && batchAssetsTotalPages > 1"
-                class="flex flex-wrap items-center justify-center gap-2">
-                <app-pagination
-                  [currentPage]="batchAssetsPage"
-                  [totalPages]="batchAssetsTotalPages"
-                  (pageChange)="batchAssetsPageChange.emit($event)">
-                </app-pagination>
-                <span class="text-xs text-[var(--color-text-muted)] whitespace-nowrap">
-                  {{ batchAssetsPage }} {{ 'common.of' | translate }} {{ batchAssetsTotalPages }}
-                </span>
+              class="mt-3 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 py-4 sm:px-6">
+              <div class="flex flex-col md:flex-row items-center justify-between gap-4 w-full">
+                <div class="w-full md:w-auto flex justify-center md:justify-start">
+                  <app-rows-per-page
+                    [rowsPerPage]="batchAssetsPageSize"
+                    [totalItems]="batchAssetsTotalCount"
+                    [visibleItems]="expandedBatchAssets.length"
+                    (rowsPerPageChange)="batchAssetsPageSizeChange.emit($event)">
+                  </app-rows-per-page>
+                </div>
+                <div
+                  *ngIf="batchAssetsTotalPages > 1"
+                  class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto justify-center md:justify-end">
+                  <app-pagination
+                    [currentPage]="batchAssetsPage"
+                    [totalPages]="batchAssetsTotalPages"
+                    (pageChange)="batchAssetsPageChange.emit($event)">
+                  </app-pagination>
+                  <span class="text-xs sm:text-sm text-[var(--color-text-muted)] whitespace-nowrap mt-2 sm:mt-0 text-center">
+                    {{ batchAssetsPage }} {{ 'common.of' | translate }} {{ batchAssetsTotalPages }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -270,13 +252,13 @@ import { defaultPageSize } from '@constants/app.constants';
           [batches]="paginatedBatches"
           [expandedBatchId]="expandedBatchId"
           [expandedBatchAssets]="expandedBatchAssets"
+          [expandedBatchAssetItemCounts]="expandedBatchAssetItemCounts"
+          [expandedBatchDetailItemId]="expandedBatchDetailItemId"
           [loadingBatchAssets]="loadingBatchAssets"
           [batchAssetsPage]="batchAssetsPage"
           [batchAssetsPageSize]="batchAssetsPageSize"
           [batchAssetsTotalPages]="batchAssetsTotalPages"
           [batchAssetsTotalCount]="batchAssetsTotalCount"
-          [batchAssetsAllLoaded]="batchAssetsAllLoaded"
-          [batchAssetsPageSizeOptions]="batchAssetsPageSizeOptions"
           [getAssetItemName]="getAssetItemName"
           [getAssetStatusLabel]="getAssetStatusLabel"
           [formatDate]="formatDate"
@@ -299,8 +281,7 @@ import { defaultPageSize } from '@constants/app.constants';
           (sortChange)="batchSortChange.emit($event)"
           (batchAssetsPageChange)="batchAssetsPageChange.emit($event)"
           (batchAssetsPageSizeChange)="batchAssetsPageSizeChange.emit($event)"
-          (batchAssetsLoadAll)="batchAssetsLoadAll.emit()"
-          (batchAssetsUsePagination)="batchAssetsUsePagination.emit()">
+          (batchAssetsDetailItemChange)="batchAssetsDetailItemChange.emit($event)">
         </app-batch-table>
 
         <app-inventory-table
@@ -337,13 +318,13 @@ export class WarehouseInventoryTableComponent {
 
   @Input() expandedBatchId: number | null = null;
   @Input() expandedBatchAssets: AssetDto[] = [];
+  @Input() expandedBatchAssetItemCounts: BatchAssetItemCountDto[] = [];
+  @Input() expandedBatchDetailItemId: number | null = null;
   @Input() loadingBatchAssets = false;
   @Input() batchAssetsPage = 1;
   @Input() batchAssetsPageSize = defaultPageSize;
   @Input() batchAssetsTotalPages = 1;
   @Input() batchAssetsTotalCount = 0;
-  @Input() batchAssetsAllLoaded = false;
-  @Input() batchAssetsPageSizeOptions: number[] = [20, 50, 100, 200, 500];
 
   @Input() batchAssetExcelExportPerms: string[] = [];
   @Input() batchAssetExcelImportPerms: string[] = [];
@@ -381,8 +362,7 @@ export class WarehouseInventoryTableComponent {
   @Output() batchSortChange = new EventEmitter<BatchTableSortColumn>();
   @Output() batchAssetsPageChange = new EventEmitter<number>();
   @Output() batchAssetsPageSizeChange = new EventEmitter<number>();
-  @Output() batchAssetsLoadAll = new EventEmitter<void>();
-  @Output() batchAssetsUsePagination = new EventEmitter<void>();
+  @Output() batchAssetsDetailItemChange = new EventEmitter<number | null>();
 
   @Output() editItem = new EventEmitter<InventoryDetailDto>();
   @Output() deleteItem = new EventEmitter<InventoryDetailDto>();

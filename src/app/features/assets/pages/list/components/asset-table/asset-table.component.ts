@@ -13,7 +13,6 @@ import { CardComponent } from '@components/card/card.component';
 import { LoadingStateComponent } from '@components/loading-state/loading-state.component';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
-import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { Asset, AssetType, AssetSortState, AssetPaginationState } from '@models/asset-list.model';
 import { AmmunitionReadDto } from '@models/ammunition.model';
@@ -31,7 +30,6 @@ import { ExplosiveDto } from '@models/explosive.model';
     LoadingStateComponent,
     PaginationComponent,
     RowsPerPageComponent,
-    TableClampTooltipDirective,
     HasPermissionDirective
   ],
   templateUrl: './asset-table.component.html',
@@ -89,6 +87,22 @@ export class AssetTableComponent {
 
   trackByAssetId(_index: number, asset: Asset): string {
     return asset.id;
+  }
+
+  /** Matches thead column count for empty-state row. HTML colspan must be an integer (not %). */
+  get desktopTableColumnCount(): number {
+    const base = 4; // name, itemNo, partNo, nsn
+    const tail = 3; // price, minimumQuantity, actions
+    switch (this.activeTab) {
+      case 'ammunition':
+        return base + 2 + tail; // caliber, primaryPurpose
+      case 'weapon':
+        return base + 3 + tail; // weaponType, primaryPurpose, caliber
+      case 'explosive':
+        return base + 3 + tail; // armNumber, primaryPurpose, unNumber
+      default:
+        return base + tail;
+    }
   }
 
   onView(assetId: string): void {

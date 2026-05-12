@@ -52,7 +52,6 @@ export class OrderAutoRejectWorkflowTriggersModalComponent implements OnInit, On
   triggerMode: 'none' | 'role' | 'step' = 'none';
   triggerRoleIds: string[] = [];
   triggerStepIds: number[] = [];
-  resetOnReApproval = true;
 
   stepSelectOptions: Array<{ id: number; displayName: string }> = [];
 
@@ -137,7 +136,6 @@ export class OrderAutoRejectWorkflowTriggersModalComponent implements OnInit, On
       this.triggerMode = 'none';
       this.triggerRoleIds = [];
       this.triggerStepIds = [];
-      this.resetOnReApproval = true;
       return;
     }
     const modeRaw = String(wf.autoRejectTriggerMode ?? '').trim().toLowerCase();
@@ -154,7 +152,6 @@ export class OrderAutoRejectWorkflowTriggersModalComponent implements OnInit, On
       this.triggerRoleIds = [];
       this.triggerStepIds = [];
     }
-    this.resetOnReApproval = wf.autoRejectResetOnReApproval !== false;
   }
 
   private rebuildStepOptions(): void {
@@ -248,8 +245,7 @@ export class OrderAutoRejectWorkflowTriggersModalComponent implements OnInit, On
               ? 'Role'
               : 'Step',
         triggerRoleIds: rolePayload,
-        triggerStepIds: stepPayload,
-        resetOnReApproval: this.resetOnReApproval
+        triggerStepIds: stepPayload
       })
       .pipe(takeUntil(this.destroy$))
       .subscribe({

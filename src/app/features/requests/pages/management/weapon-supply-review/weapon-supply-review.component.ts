@@ -228,7 +228,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         },
         error: (error) => {
-          this.handleError('Failed to load batches', error, 'weaponSupplyReview.failedToLoadAssets');
+          this.handleError('Failed to load policy numbers', error, 'weaponSupplyReview.failedToLoadAssets');
           this.loadingBatches = false;
           this.cdr.markForCheck();
         }

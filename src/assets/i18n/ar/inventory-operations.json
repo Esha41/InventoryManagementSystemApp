@@ -134,16 +134,16 @@
     "cacheCleared": "تم مسح ذاكرة التخزين المؤقت للخريطة."
   },
   "editBatch": {
-    "batchId": "معرّف الدفعة",
-    "title": "تعديل دفعة الأسلحة",
+    "batchId": "معرّف رقم البوليصة",
+    "title": "تعديل رقم البوليصة",
     "backToBatches": "العودة إلى الأسلحة",
-    "commonInfo": "معلومات دفعة الأسلحة",
+    "commonInfo": "معلومات رقم البوليصة",
     "purchaseDetails": "تفاصيل الشراء",
     "assetsTable": "الأصول",
     "assetsPaginationHint": "يتم تحميل الأصول على صفحات (افتراضيًا 50 لكل صفحة). يطبق الحفظ على الصفوف في هذه الصفحة والأصول التي أزلتها. استخدم التصفح لتعديل أصول أخرى.",
     "removeRow": "إزالة الصف",
-    "noAssets": "لا توجد أصول في دفعة الأسلحة هذه",
-    "assetCount": "الأصول في دفعة الأسلحة",
+    "noAssets": "لا توجد أصول ضمن رقم البوليصة هذا",
+    "assetCount": "الأصول ضمن رقم البوليصة",
     "saveAll": "حفظ الكل",
     "saving": "جاري الحفظ...",
     "saveSuccess": "تم تحديث جميع الأصول بنجاح",
@@ -161,8 +161,8 @@
     "assignmentNotesPlaceholder": "اختياري",
     "assignmentNotesHint": "تُطبق عند تغيير خيارات التعيين أو الملاحظات.",
     "clearAssignee": "غير معيّن",
-    "invalidBatchId": "معرّف الدفعة أو المستودع غير صالح. ارجع وحاول مرة أخرى.",
-    "batchNumberPlaceholder": "Enter batch number",
-    "batchNumberRequired": "Batch number is required."
+    "invalidBatchId": "معرّف رقم البوليصة أو المستودع غير صالح. ارجع وحاول مرة أخرى.",
+    "batchNumberPlaceholder": "أدخل رقم البوليصة",
+    "batchNumberRequired": "رقم البوليصة مطلوب."
   }
 }

@@ -109,7 +109,7 @@
       "expectedReturn": "Expected return",
       "actualReturn": "Actual return",
       "location": "Location",
-      "batch": "Batch",
+      "batch": "Policy number",
       "openCatalog": "Open catalog item"
     }
   }

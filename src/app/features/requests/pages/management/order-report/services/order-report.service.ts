@@ -10,6 +10,8 @@ import { RoleDto } from '@models/backend-user.model';
 import { BaseRequestDto, WorkflowApprovalStep } from '@models/workflow-approval.model';
 import { OrderSummary, OrderReportItem, OrderReportApprovalStep } from '@models/order-report.model';
 import { API_ENDPOINTS } from '@constants/app.constants';
+import { UnifiedRequestService } from '@requests/services/unified-request.service';
+import { PaginatedList, PagedRequest } from '@models/api-response.model';
 import { 
   mapOrderToSummary, 
   mapOrderItems, 
@@ -40,26 +42,43 @@ export class OrderReportService {
     private apiService: ApiService,
     private backendUserService: BackendUserService,
     private toastService: ToastService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private unifiedRequestService: UnifiedRequestService
   ) {}
 
   /**
-   * Load orders from API
+   * Load orders from the paginated user-actions API (Request/UserActionsPaginated).
    */
-  loadOrders(): Observable<OrderDto[]> {
-    return this.apiService.get<OrderDto[]>('/Request/user-actions')
-      .pipe(
-        map((res: OrderDto[]) => Array.isArray(res) ? res : []),
-        map((orders: OrderDto[]) => {
-          // Sort orders by ID
-          return orders.sort((a, b) => (a.id || 0) - (b.id || 0));
-        }),
-        catchError((error) => {
-          console.error('Failed to load requests', error);
-          this.toastService.error('Failed to load request list. Please try again.');
-          return of([] as OrderDto[]);
-        })
-      );
+  loadOrdersPaginated(
+    page: number,
+    pageSize: number,
+    search?: string
+  ): Observable<PaginatedList<OrderDto>> {
+    const trimmed = search?.trim() ?? '';
+    const request: PagedRequest = {
+      page,
+      pageSize,
+      filter: trimmed ? { value: trimmed } : undefined
+    };
+
+    return this.unifiedRequestService.getUserActionRequestsPaginated(request).pipe(
+      map((paginated) => ({
+        ...paginated,
+        items: (paginated.items ?? []).map((item) => item as OrderDto)
+      })),
+      catchError((error) => {
+        console.error('Failed to load requests', error);
+        this.toastService.error('Failed to load request list. Please try again.');
+        return of({
+          items: [] as OrderDto[],
+          pageIndex: page,
+          totalPages: 0,
+          totalCount: 0,
+          hasPreviousPage: false,
+          hasNextPage: false
+        });
+      })
+    );
   }
 
   /**

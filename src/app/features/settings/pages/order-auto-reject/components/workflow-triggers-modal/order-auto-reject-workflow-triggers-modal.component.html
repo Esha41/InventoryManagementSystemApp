@@ -127,14 +127,6 @@
           <p class="text-xs text-[var(--color-text-muted)]">{{ 'workflow.autoRejectStepsHint' | translate }}</p>
         </div>
 
-        <label class="flex items-start gap-3 text-sm text-[var(--color-text)] cursor-pointer">
-          <input type="checkbox" [(ngModel)]="resetOnReApproval" name="resetOnReApproval" class="mt-0.5 h-4 w-4 shrink-0" />
-          <span class="space-y-1">
-            <span class="font-medium block">{{ 'workflow.autoRejectResetOnReApproval' | translate }}</span>
-            <span class="text-[var(--color-text-muted)] text-xs block">{{ 'workflow.autoRejectResetHint' | translate }}</span>
-          </span>
-        </label>
-
         <div
           *ngIf="saveError"
           class="rounded-lg border border-[var(--color-error)]/30 bg-[var(--color-error)]/10 px-4 py-3 text-sm text-[var(--color-error)]"
