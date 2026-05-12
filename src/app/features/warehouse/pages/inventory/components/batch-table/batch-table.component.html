@@ -125,10 +125,9 @@
                                                 {{ 'warehouseInventory.batchItemDetailEmptyPage' | translate }}
                                             </div>
                                             <div *ngIf="group.assets.length > 0" class="overflow-x-auto max-w-full border border-[var(--color-border)] rounded-lg bg-[var(--color-background)]">
-                                                <table class="w-full min-w-[64rem] text-sm">
+                                                <table class="w-full min-w-[52rem] text-sm">
                                                     <thead>
                                                         <tr class="border-b border-[var(--color-border)] bg-[var(--color-background-muted)]">
-                                                            <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'warehouseInventory.itemName' | translate }}</th>
                                                             <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'warehouseInventory.serialNumber' | translate }}</th>
                                                             <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'warehouseInventory.rfidTag' | translate }}</th>
                                                             <th class="px-3 py-2 text-start text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap">{{ 'warehouseInventory.status' | translate }}</th>
@@ -145,7 +144,6 @@
                                                     </thead>
                                                     <tbody class="divide-y divide-[var(--color-border-muted)]">
                                                         <tr *ngFor="let asset of group.assets; trackBy: trackById">
-                                                            <td class="px-3 py-2 align-top break-words max-w-[14rem] text-[var(--color-text)]">{{ getAssetItemName(asset) }}</td>
                                                             <td class="px-3 py-2 align-top break-all text-[var(--color-text)]">{{ asset.serialNumber || '-' }}</td>
                                                             <td class="px-3 py-2 align-top break-all text-[var(--color-text)]">{{ asset.rfid || '-' }}</td>
                                                             <td class="px-3 py-2 align-top whitespace-nowrap text-[var(--color-text)]">{{ getAssetStatusLabel(asset) }}</td>

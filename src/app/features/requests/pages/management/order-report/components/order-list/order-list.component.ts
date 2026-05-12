@@ -8,6 +8,8 @@ import { mapOrderStatusFromApi } from '@utils/status.utils';
 import { getPriorityText, getPriorityClass, getPriorityKey } from '@utils/priority.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
+import { PaginationComponent, RowsPerPageComponent } from '@components/index';
+import { defaultPageSize } from '@constants/app.constants';
 
 /**
  * Component for displaying and filtering the order list sidebar
@@ -15,7 +17,7 @@ import { TranslateService } from '@ngx-translate/core';
 @Component({
   selector: 'app-order-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, PaginationComponent, RowsPerPageComponent],
   templateUrl: './order-list.component.html',
   styleUrls: ['./order-list.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -27,11 +29,18 @@ export class OrderListComponent implements OnChanges, OnInit {
   @Input() loading: boolean = false;
   @Input() error: string | null = null;
   @Input() searchTerm: string = '';
+  /** Total requests matching filters (all pages). */
+  @Input() totalCount = 0;
+  @Input() currentPage = 1;
+  @Input() totalPages = 0;
+  @Input() rowsPerPage = defaultPageSize;
   localSearchTerm: string = '';
 
   @Output() orderSelected = new EventEmitter<OrderDto>();
   @Output() refreshRequested = new EventEmitter<void>();
   @Output() searchChanged = new EventEmitter<string>();
+  @Output() pageChange = new EventEmitter<number>();
+  @Output() rowsPerPageChange = new EventEmitter<number>();
 
   readonly Search = Search;
   readonly X = X;
@@ -66,6 +75,14 @@ export class OrderListComponent implements OnChanges, OnInit {
 
   refresh(): void {
     this.refreshRequested.emit();
+  }
+
+  onPaginationPageChange(page: number): void {
+    this.pageChange.emit(page);
+  }
+
+  onRowsPerPageSelected(rows: number): void {
+    this.rowsPerPageChange.emit(rows);
   }
 
   trackByOrderId(_: number, order: OrderDto): number | undefined {

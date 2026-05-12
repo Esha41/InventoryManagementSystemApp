@@ -32,9 +32,15 @@
         [loading]="ordersLoading"
         [error]="ordersError"
         [searchTerm]="searchTerm"
+        [totalCount]="ordersTotalCount"
+        [currentPage]="ordersPage"
+        [totalPages]="ordersTotalPages"
+        [rowsPerPage]="ordersRowsPerPage"
         (orderSelected)="selectOrder($event)"
         (refreshRequested)="loadOrders()"
-        (searchChanged)="onSearchChange($event)">
+        (searchChanged)="onSearchChange($event)"
+        (pageChange)="onOrdersPageChange($event)"
+        (rowsPerPageChange)="onOrdersRowsPerPageChange($event)">
       </app-order-list>
 
       <!-- Order Details Main Content -->
