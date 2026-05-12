@@ -215,6 +215,11 @@ export class WorkflowApprovalStateService {
     return this.permissionsService.canApproveOrReject(state.requestDetail, state.processing);
   }
 
+  canCancelRequest(): boolean {
+    const state = this.getState();
+    return this.permissionsService.canCancelRequest(state.requestDetail, state.processing);
+  }
+
   canRejectRequest(): boolean {
     return this.permissionsService.canRejectRequest();
   }

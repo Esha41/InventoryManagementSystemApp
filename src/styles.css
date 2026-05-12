@@ -44,7 +44,7 @@
 
   /**
    * White-on-transparent EMDAD PNG masked with --emdad-logo-mark (navy in light theme, white in dark).
-   * Login + order report only; navbar keeps the unmodified white PNG.
+   * Login + requests report only; navbar keeps the unmodified white PNG.
    */
   .emdad-logo-mark--brand {
     display: block;
@@ -132,7 +132,7 @@ body:has(main.overflow-y-auto) {
     /* For rgba(var(--color-brand-rgb), a) — matches #183553 */
     --color-brand-rgb: 24, 53, 83;
 
-    /* EMDAD logo tint on login + order report (brand navy on light backgrounds) */
+    /* EMDAD logo tint on login + requests report (brand navy on light backgrounds) */
     --emdad-logo-mark: #183553;
 
     /* Accent Colors */

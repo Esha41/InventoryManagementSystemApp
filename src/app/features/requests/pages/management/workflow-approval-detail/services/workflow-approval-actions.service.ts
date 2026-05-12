@@ -103,6 +103,50 @@ export class WorkflowApprovalActionsService {
   }
 
   /**
+   * Build FormData for cancel (RequestStatus.Cancelled = 5).
+   */
+  createCancelFormData(data: ApprovalFormData): FormData {
+    const formData = new FormData();
+    formData.append('BaseRequestID', data.requestId.toString());
+    formData.append('IsApproved', 'false');
+    formData.append('Action', RequestStatusEnum.Cancelled.toString());
+    if (data.comments) {
+      formData.append('Comments', data.comments);
+    }
+    if (data.files && data.files.length > 0) {
+      data.files.forEach((file) => {
+        formData.append('files', file);
+      });
+    }
+    return formData;
+  }
+
+  /**
+   * Cancel request
+   */
+  cancelRequest(data: ApprovalFormData, destroy$: Subject<void>): Observable<void> {
+    return new Observable(observer => {
+      const formData = this.createCancelFormData(data);
+      this.apiService.post<void>(
+        API_ENDPOINTS.WORKFLOW_APPROVAL.PROCESS_ACTION,
+        formData
+      )
+        .pipe(takeUntil(destroy$))
+        .subscribe({
+          next: () => {
+            this.requestStatusUpdateService.notifyRequestStatusUpdated(data.requestId);
+            observer.next();
+            observer.complete();
+          },
+          error: (error) => {
+            const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to cancel request');
+            observer.error(errorMessage);
+          }
+        });
+    });
+  }
+
+  /**
    * Approve request
    */
   approveRequest(

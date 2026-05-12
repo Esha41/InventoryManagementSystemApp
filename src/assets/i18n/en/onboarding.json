@@ -19,7 +19,7 @@
     },
     "approvalManagement": {
       "title": "Approval Management",
-      "description": "Review and manage approval workflows for all requests. Track request statuses, approve or reject pending items, and view detailed order reports."
+      "description": "Review and manage approval workflows for all requests. Track request statuses, approve or reject pending items, and open detailed request reports."
     },
     "theme": {
       "title": "Theme Toggle",

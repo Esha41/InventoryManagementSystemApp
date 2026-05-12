@@ -37,7 +37,10 @@ export class OrderInfoSectionComponent {
     if (key.includes('approved') || key.includes('completed')) {
       return getApprovalStatusBadgeClass('Approved');
     }
-    if (key.includes('rejected') || key.includes('cancelled')) {
+    if (key.includes('cancelled')) {
+      return getApprovalStatusBadgeClass('Cancelled');
+    }
+    if (key.includes('rejected')) {
       return getApprovalStatusBadgeClass('Rejected');
     }
     if (key.includes('returned')) {
