@@ -244,7 +244,7 @@ export function mapRequestStatus(status: number | string): RequestStatus {
     if (statusLower === 'autorejected' || statusLower === 'auto rejected' || statusLower === 'auto-rejected' || statusLower === '7') {
       return 'AutoRejected';
     }
-    if (statusLower === 'cancelled' || statusLower === 'canceled' || statusLower === '5') {
+    if (statusLower === 'cancelled' || statusLower === '5') {
       return 'Cancelled';
     }
     if (statusLower === 'new' || statusLower === '1') {
