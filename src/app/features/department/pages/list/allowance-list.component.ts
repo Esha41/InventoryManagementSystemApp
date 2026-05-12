@@ -80,7 +80,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   selectedDepartment: number | string | null = null;
   isAdminUser = false;
   userDepartmentId: number | null = null;
-  allItems: (AmmunitionReadDto | WeaponDto | ExplosiveDto)[] = []; // All items from API
+  allItems: (AmmunitionReadDto | WeaponDto | ExplosiveDto)[] = []; // Full catalog snapshot from mapper (dropdown uses filteredItems — items with allowances only)
   ammunitionItems: AmmunitionReadDto[] = []; // Ammunition items
   weaponItems: WeaponDto[] = []; // Weapon items
   explosiveItems: ExplosiveDto[] = []; // Explosive items
@@ -88,6 +88,12 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   selectedItem: number | string | null = null;
   selectedItemType: ItemType | null = null; // Filter by item type: Ammunition, Weapon, or Explosive
   itemTypeOptions: { value: ItemType | null; label: string }[] = []; // Item type dropdown options
+
+  /**
+   * (itemType, itemId) for rows that appear in loaded allowance data, scoped by department filter when set.
+   * Used so the item dropdown lists only catalog items that have at least one matching allowance row (no extra API).
+   */
+  private allowanceItemLookupKeys = new Set<string>();
 
   // Dropdown label functions
   readonly departmentOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null) =>
@@ -274,16 +280,17 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
       this.filteredDepartments = processed.departments;
     }
 
-    // Store items separately by type
+    // Store allowances first so item dropdown keys match current dataset
+    this.allAllowances = processed.allAllowances;
+    this.filteredAllowances = [...this.allAllowances];
+
+    // Store items separately by type (still used for lookup labels); dropdown shows allowance-linked subset only
     this.ammunitionItems = ammunitionItems || [];
     this.weaponItems = weaponItems || [];
     this.explosiveItems = explosiveItems || [];
     this.allItems = processed.allItems;
-    
-    // Update filtered items based on selected item type
+
     this.updateFilteredItems();
-    this.allAllowances = processed.allAllowances;
-    this.filteredAllowances = [...this.allAllowances];
 
     this.validateCurrentPage();
     this.updatePagination();
@@ -315,19 +322,52 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
+  private rebuildAllowanceItemLookupKeys(): void {
+    this.allowanceItemLookupKeys.clear();
+    let rows = this.allAllowances;
+    const dept = this.selectedDepartment;
+    if (dept !== null && dept !== undefined && dept !== '') {
+      rows = rows.filter(
+        (r) =>
+          r.departmentId !== undefined &&
+          r.departmentId !== null &&
+          (r.departmentId === Number(dept) || String(r.departmentId) === String(dept))
+      );
+    }
+    for (const row of rows) {
+      this.allowanceItemLookupKeys.add(`${row.itemType}-${row.itemId}`);
+    }
+  }
+
+  /** Catalog row appears in allowance data (same itemType + id as backend rows). */
+  private itemMatchesAllowanceCatalogRow(item: AmmunitionReadDto | WeaponDto | ExplosiveDto, itemType: ItemType): boolean {
+    return this.allowanceItemLookupKeys.has(`${itemType}-${item.id}`);
+  }
+
   updateFilteredItems(): void {
-    // Filter items based on selected item type
+    this.rebuildAllowanceItemLookupKeys();
+
+    const filterByAllowance = (items: AmmunitionReadDto[] | WeaponDto[] | ExplosiveDto[], type: ItemType) =>
+      items.filter((i) => this.itemMatchesAllowanceCatalogRow(i, type));
+
     if (this.selectedItemType === null) {
-      // Show all items
-      this.filteredItems = [...this.allItems];
+      this.filteredItems = [
+        ...filterByAllowance(this.ammunitionItems, ItemType.Ammunition),
+        ...filterByAllowance(this.weaponItems, ItemType.Weapon),
+        ...filterByAllowance(this.explosiveItems, ItemType.Explosive)
+      ];
     } else if (this.selectedItemType === ItemType.Ammunition) {
-      this.filteredItems = [...this.ammunitionItems];
+      this.filteredItems = filterByAllowance(this.ammunitionItems, ItemType.Ammunition);
     } else if (this.selectedItemType === ItemType.Weapon) {
-      this.filteredItems = [...this.weaponItems];
+      this.filteredItems = filterByAllowance(this.weaponItems, ItemType.Weapon);
     } else if (this.selectedItemType === ItemType.Explosive) {
-      this.filteredItems = [...this.explosiveItems];
+      this.filteredItems = filterByAllowance(this.explosiveItems, ItemType.Explosive);
     } else {
-      this.filteredItems = [...this.allItems];
+      this.filteredItems = [
+        ...filterByAllowance(this.ammunitionItems, ItemType.Ammunition),
+        ...filterByAllowance(this.weaponItems, ItemType.Weapon),
+        ...filterByAllowance(this.explosiveItems, ItemType.Explosive)
+      ];
     }
   }
 
