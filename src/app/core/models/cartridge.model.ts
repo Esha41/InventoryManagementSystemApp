@@ -35,6 +35,7 @@ export interface Cartridge {
 
   weaponType?: string;
   caliber?: string;
+  caliberId?: number | null;
   actionType?: string;
   barrelLength?: number;
   barrelLengthLabel?: string;

@@ -13,6 +13,7 @@ import {
   OrderSubmissionState,
   RequestPurposeDto
 } from '../new-issue-request.state';
+import type { WeaponAssociation } from '@models/request-item.model';
 import { getDepartmentIdForRequest as getDepartmentIdForRequestUtil } from '@requests/utils/issue-request.utils';
 import { ToastService } from '@services/toast.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
@@ -30,6 +31,7 @@ export interface RunSubmissionContext {
   defaultRequestTypeId: number;
   files: File[] | undefined;
   orderSubmissionState: OrderSubmissionState;
+  weaponAssociations: Map<number, WeaponAssociation[]>;
 }
 
 export interface RunSubmissionCallbacks {
@@ -88,6 +90,23 @@ export class IssueRequestSubmissionService {
   // ---- Submission ---------------------------------------------------------
 
   validateSubmission(ctx: RunSubmissionContext): { isValid: boolean; error?: string } {
+    const ammoIds = ctx.cartridgeState.selectedEntries
+      .filter(e => e.itemType === 'Ammunition')
+      .map(e => e.id);
+
+    const missingAssociation = ammoIds.some(id => {
+      const list = ctx.weaponAssociations.get(id);
+      if (!list?.length) return true;
+      return !list.every(row =>
+        (row.type === 'catalog' && !!row.weaponItemId) ||
+        (row.type === 'other' && !!row.otherName?.trim())
+      );
+    });
+
+    if (missingAssociation) {
+      return { isValid: false, error: 'newIssueRequest.validation.ammoMustHaveWeapon' };
+    }
+
     return this.orderSubmissionService.validateOrder(this.buildSubmissionDataFromContext(ctx));
   }
 
@@ -109,10 +128,13 @@ export class IssueRequestSubmissionService {
   }
 
   runSubmission(ctx: RunSubmissionContext, callbacks: RunSubmissionCallbacks): void {
-    const submissionData = this.buildSubmissionDataFromContext(ctx);
-    const validation = this.orderSubmissionService.validateOrder(submissionData);
-    if (!validation.isValid) { callbacks.onValidationFailure(validation.error ?? 'Validation failed'); return; }
+    const validation = this.validateSubmission(ctx);
+    if (!validation.isValid) {
+      callbacks.onValidationFailure(validation.error ?? 'Validation failed');
+      return;
+    }
 
+    const submissionData = this.buildSubmissionDataFromContext(ctx);
     const payload = this.orderSubmissionService.buildOrderPayload(submissionData);
     ctx.orderSubmissionState.submittingOrder = true;
     ctx.orderSubmissionState.orderSubmitError = null;
@@ -163,7 +185,8 @@ export class IssueRequestSubmissionService {
       departmentId: getDepartmentIdForRequestUtil(ctx.currentUserDepartmentId, ctx.defaultDepartmentId),
       defaultRequestPurposeId: ctx.defaultRequestPurposeId,
       defaultRequestTypeId: ctx.defaultRequestTypeId,
-      orderType: ctx.reviewFormData.orderType
+      orderType: ctx.reviewFormData.orderType,
+      weaponAssociations: ctx.weaponAssociations
     };
   }
 }

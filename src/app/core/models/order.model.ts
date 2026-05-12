@@ -1,4 +1,5 @@
 import type { RequestManagementBaseRequestDto } from './request-management-base.model';
+import type { CreateRequestItemDto } from './request-item.model';
 
 // Re-export for backward compatibility
 export { OrderRequestItemDto } from './request-item.model';
@@ -34,11 +35,7 @@ export interface CreateOrderDto {
     usageLocation: string;
     numberOfOfficer?: number | null;
     numberOfOtherRank?: number | null;
-    requestItems: Array<{
-        itemId: number;
-        quantity: number;
-        notes?: string;
-    }>;
+    requestItems: CreateRequestItemDto[];
 }
 
 /**

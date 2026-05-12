@@ -13,7 +13,7 @@
     </app-stepper>
 
     <app-error-banner
-      *ngIf="facade.orderSubmissionState.orderSubmitError && facade.currentStep === 3"
+      *ngIf="facade.orderSubmissionState.orderSubmitError && facade.currentStep === 4"
       [error]="facade.orderSubmissionState.orderSubmitError">
     </app-error-banner>
 
@@ -49,8 +49,27 @@
       (removeSelection)="facade.onRemoveSelectedCartridge($event)">
     </app-step-selection>
 
-    <!-- Step 2: Usage -->
-    <app-usage-form *ngIf="facade.currentStep === 2"
+    <!-- Step 2: Weapon Association (ammunition only) -->
+    <div *ngIf="facade.currentStep === 2"
+      class="bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] p-4 sm:p-6 lg:p-8 shadow-sm">
+      <app-weapon-association
+        [ammunitionItems]="facade.ammunitionCartridges"
+        [allWeapons]="facade.weaponAssociationState.allWeapons"
+        [weaponsByAmmunitionCaliberId]="facade.weaponAssociationState.weaponsByAmmunitionCaliberId"
+        [associations]="facade.weaponAssociationState.associations"
+        [loadingWeapons]="facade.weaponAssociationState.loadingWeapons"
+        [weaponLoadError]="facade.weaponAssociationState.weaponLoadError"
+        [canProceed]="facade.canProceedFromWeaponAssociation"
+        (associateCatalogWeapons)="facade.onAssociateCatalogWeapons($event)"
+        (associateOtherWeapon)="facade.onAssociateOtherWeapon($event)"
+        (clearAssociation)="facade.onClearWeaponAssociation($event)"
+        (next)="facade.onNext()"
+        (previous)="facade.onPrevious()">
+      </app-weapon-association>
+    </div>
+
+    <!-- Step 3: Usage -->
+    <app-usage-form *ngIf="facade.currentStep === 3"
       [fromReserve]="facade.fromReserve"
       [usePurpose]="facade.usageFormData.usePurpose"
       [selectedUsePurposeId]="facade.requestPurposeState.selectedRequestPurposeId"
@@ -88,8 +107,8 @@
       (next)="facade.onNext()">
     </app-usage-form>
 
-    <!-- Step 3: Review -->
-    <app-review-form *ngIf="facade.currentStep === 3"
+    <!-- Step 4: Review -->
+    <app-review-form *ngIf="facade.currentStep === 4"
       [requesterName]="facade.currentRequesterName"
       [requesterComments]="facade.reviewFormData.requesterComments"
       [orderType]="facade.reviewFormData.orderType"
@@ -104,13 +123,14 @@
       [usageDateTo]="facade.usageFormData.usageDateTo"
       [usageTimeTo]="facade.usageFormData.usageTimeTo"
       [selectedCartridges]="facade.selectedCartridges"
+      [weaponAssociations]="facade.weaponAssociationState.associations"
       [files]="facade.usageFormFiles"
       (previous)="facade.onPrevious()"
       (next)="facade.onNext()">
     </app-review-form>
 
-    <!-- Step 4: Send -->
-    <app-order-success *ngIf="facade.currentStep === 4"
+    <!-- Step 5: Send -->
+    <app-order-success *ngIf="facade.currentStep === 5"
       [orderNumber]="facade.orderSubmissionState.orderNumber"
       [createdOrderId]="facade.orderSubmissionState.createdOrderId"
       (trackOrder)="facade.onTrackOrder()">

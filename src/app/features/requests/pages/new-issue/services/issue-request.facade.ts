@@ -5,10 +5,17 @@ import {
   Inject
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, forkJoin, takeUntil } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import { Cartridge } from '@models/cartridge.model';
+import { WeaponDto } from '@models/weapon.model';
+import {
+  createInitialWeaponAssociationState,
+  WeaponAssociation,
+  WeaponAssociationState
+} from '@models/request-item.model';
 import { CartridgeDataService } from '@assets/services/cartridge-data.service';
+import { WeaponService } from '@assets/services/weapon.service';
 import { UserContextService } from '@services/user-context.service';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { getWeaponTypeOptions } from '@utils/weapon.utils';
@@ -67,6 +74,7 @@ import {
   applyUserContext as applyUserContextUtil,
   applyAuthenticatedUserContext as applyAuthenticatedUserContextUtil
 } from '@requests/utils/issue-request.utils';
+import { resolveCatalogItemCaliberId, isCatalogItemExplicitlyDeleted } from '@utils/catalog-caliber.utils';
 
 const TRAINING_ORDER_ID = 4;
 
@@ -86,6 +94,10 @@ export class IssueRequestFacade {
   private pendingSelections: Array<{ id: number; quantity: number }> | null = null;
   private requestServerRefilter: () => void = () => undefined;
   private requestPurposeOptionsMap: Map<number, { usePurpose: string }> = new Map();
+  /** In-flight / stale-response guard for weapon association API. */
+  private weaponAssociationLoadSeq = 0;
+  /** Distinct sorted ammo caliber ids (joined) for which association weapons were loaded successfully. */
+  private weaponAssociationLoadedKey: string | null = null;
 
   // ---- State --------------------------------------------------------------
 
@@ -93,6 +105,7 @@ export class IssueRequestFacade {
   steps: Step[] = [
     { label: 'newIssueRequest.allowanceSelection', completed: false },
     { label: 'newIssueRequest.selection', completed: false },
+    { label: 'newIssueRequest.weaponAssociation.title', completed: false },
     { label: 'newIssueRequest.usage', completed: false },
     { label: 'newIssueRequest.review', completed: false },
     { label: 'newIssueRequest.send', completed: false }
@@ -101,6 +114,7 @@ export class IssueRequestFacade {
   filterState: ExtendedFilterState = createInitialFilterState();
   filterOptions: ExtendedFilterOptions = createInitialFilterOptions();
   cartridgeState: CartridgeState = createInitialCartridgeState();
+  weaponAssociationState: WeaponAssociationState = createInitialWeaponAssociationState();
   usageFormData: UsageFormData = createInitialUsageFormData();
   usageFormFiles: File[] = [];
   reserveDetailsState: ReserveDetailsState = createInitialReserveDetailsState();
@@ -124,6 +138,7 @@ export class IssueRequestFacade {
     private stateService: IssueRequestStateService,
     private submissionService: IssueRequestSubmissionService,
     private catalogOrchestrator: IssueRequestCatalogOrchestratorService,
+    private weaponService: WeaponService,
     @Optional() @Inject(ONBOARDING_TOUR) private onboardingTourService: IOnboardingTourProvider | null
   ) {}
 
@@ -147,6 +162,26 @@ export class IssueRequestFacade {
 
   get canProceedFromSelection(): boolean {
     return canProceedFromSelection(this.cartridgeState.selectedEntries);
+  }
+
+  get hasAmmunitionSelected(): boolean {
+    return this.cartridgeState.selectedEntries.some(e => e.itemType === 'Ammunition');
+  }
+
+  get ammunitionCartridges(): Cartridge[] {
+    return this.selectedCartridges.filter(c => c.itemType === 'Ammunition');
+  }
+
+  get canProceedFromWeaponAssociation(): boolean {
+    return this.ammunitionCartridges.every(ammo => {
+      const list = this.weaponAssociationState.associations.get(ammo.id);
+      if (!list?.length) return false;
+      return list.every(
+        a =>
+          (a.type === 'catalog' && !!a.weaponItemId) ||
+          (a.type === 'other' && !!a.otherName?.trim())
+      );
+    });
   }
 
   get currentRequesterName(): string {
@@ -281,6 +316,7 @@ export class IssueRequestFacade {
   onRemoveSelectedCartridge(cartridgeId: number): void {
     this.cartridgeState.selectedCartridgesCache.delete(cartridgeId);
     this.removeCartridge(cartridgeId);
+    this.weaponAssociationState.associations.delete(cartridgeId);
     this.stateService.persistSelections(this.cartridgeState.selectedEntries);
     this.cdr.markForCheck();
   }
@@ -309,6 +345,9 @@ export class IssueRequestFacade {
   onStepChange(step: number): void {
     this.currentStep = step;
     this.updateQueryParams(step);
+    if (step === 2 && this.hasAmmunitionSelected) {
+      this.onLoadWeaponAssociationStep();
+    }
     this.cdr.markForCheck();
   }
 
@@ -325,9 +364,40 @@ export class IssueRequestFacade {
 
   onNext(): void {
     if (this.orderSubmissionState.submittingOrder) return;
-    if (this.currentStep === 0) { this.onConfirmAllowanceSelection(); return; }
-    if (this.currentStep === 1 && !this.canProceedFromSelection) return;
-    if (this.currentStep === 3) { this.onSubmitOrder(); return; }
+
+    if (this.currentStep === 0) {
+      this.onConfirmAllowanceSelection();
+      return;
+    }
+
+    if (this.currentStep === 1) {
+      if (!this.canProceedFromSelection) return;
+      this.steps[1].completed = true;
+      if (this.hasAmmunitionSelected) {
+        this.currentStep = 2;
+        this.onLoadWeaponAssociationStep();
+      } else {
+        this.currentStep = 3;
+      }
+      this.updateQueryParams(this.currentStep);
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (this.currentStep === 2) {
+      if (!this.canProceedFromWeaponAssociation) return;
+      this.steps[2].completed = true;
+      this.currentStep = 3;
+      this.updateQueryParams(3);
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (this.currentStep === 4) {
+      this.onSubmitOrder();
+      return;
+    }
+
     if (this.currentStep < this.steps.length - 1) {
       this.steps[this.currentStep].completed = true;
       this.currentStep++;
@@ -337,11 +407,158 @@ export class IssueRequestFacade {
   }
 
   onPrevious(): void {
-    if (this.currentStep > 0) {
+    if (this.currentStep === 3 && !this.hasAmmunitionSelected) {
+      this.currentStep = 1;
+    } else if (this.currentStep > 0) {
       this.currentStep--;
-      this.updateQueryParams(this.currentStep);
-      this.cdr.markForCheck();
     }
+    this.updateQueryParams(this.currentStep);
+    this.cdr.markForCheck();
+  }
+
+  onLoadWeaponAssociationStep(): void {
+    const rawIds = this.ammunitionCartridges.map(c => resolveCatalogItemCaliberId(c));
+    const distinctSorted = [
+      ...new Set(
+        rawIds.filter((id): id is number => id != null && Number.isFinite(id) && id > 0)
+      )
+    ].sort((a, b) => a - b);
+    const key = distinctSorted.join(',');
+
+    if (this.weaponAssociationLoadedKey === key) {
+      return;
+    }
+
+    const seq = ++this.weaponAssociationLoadSeq;
+
+    if (distinctSorted.length === 0) {
+      this.weaponAssociationLoadedKey = key;
+      this.weaponAssociationState.weaponsByAmmunitionCaliberId = new Map();
+      this.weaponAssociationState.loadingWeapons = true;
+      this.weaponAssociationState.weaponLoadError = null;
+      this.cdr.markForCheck();
+
+      this.weaponService.getAll().pipe(takeUntil(this.destroy$)).subscribe({
+        next: (weapons) => {
+          if (seq !== this.weaponAssociationLoadSeq) return;
+          this.weaponAssociationState.allWeapons = (weapons ?? []).filter(
+            w => !isCatalogItemExplicitlyDeleted(w)
+          );
+          this.weaponAssociationState.loadingWeapons = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          if (seq !== this.weaponAssociationLoadSeq) return;
+          this.weaponAssociationState.weaponLoadError =
+            'Failed to load weapons. Please try again.';
+          this.weaponAssociationState.allWeapons = [];
+          this.weaponAssociationState.loadingWeapons = false;
+          this.cdr.markForCheck();
+        }
+      });
+      return;
+    }
+
+    this.weaponAssociationState.loadingWeapons = true;
+    this.weaponAssociationState.weaponLoadError = null;
+    this.cdr.markForCheck();
+
+    forkJoin({
+      groups: this.weaponService.getForAmmunitionAssociation(distinctSorted),
+      weapons: this.weaponService.getAll()
+    })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: ({ groups, weapons }) => {
+          if (seq !== this.weaponAssociationLoadSeq) return;
+
+          const byCal = new Map<number, WeaponDto[]>();
+          for (const g of groups) {
+            const calId = Number(g.ammunitionCaliberId);
+            byCal.set(calId, g.weapons ?? []);
+          }
+
+          this.weaponAssociationState.weaponsByAmmunitionCaliberId = byCal;
+          this.weaponAssociationState.allWeapons = (weapons ?? []).filter(
+            w => !isCatalogItemExplicitlyDeleted(w)
+          );
+          this.weaponAssociationState.loadingWeapons = false;
+          this.weaponAssociationLoadedKey = key;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          if (seq !== this.weaponAssociationLoadSeq) return;
+          this.weaponAssociationState.weaponLoadError =
+            'Failed to load weapons. Please try again.';
+          this.weaponAssociationState.allWeapons = [];
+          this.weaponAssociationState.loadingWeapons = false;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  onAssociateCatalogWeapons(event: {
+    ammoItemId: number;
+    weaponIds: number[];
+    caliberId: number | null;
+  }): void {
+    const uniq = [...new Set(event.weaponIds.filter(id => id > 0))].sort((a, b) => a - b);
+    const existing = this.weaponAssociationState.associations.get(event.ammoItemId) ?? [];
+    const existingCatalogIds = existing
+      .filter(a => a.type === 'catalog' && a.weaponItemId != null)
+      .map(a => a.weaponItemId as number)
+      .sort((a, b) => a - b);
+
+    if (
+      existingCatalogIds.length === uniq.length &&
+      existingCatalogIds.every((id, i) => id === uniq[i])
+    ) {
+      return;
+    }
+
+    const entries: WeaponAssociation[] = uniq.map(wid => {
+      const w = this.weaponAssociationState.allWeapons.find(x => x.id === wid);
+      return {
+        type: 'catalog',
+        weaponItemId: wid,
+        caliberId: event.caliberId,
+        weaponName: w?.name ?? null
+      };
+    });
+    this.replaceWeaponAssociations(map => {
+      map.set(event.ammoItemId, entries);
+    });
+  }
+
+  onAssociateOtherWeapon(event: {
+    ammoItemId: number;
+    otherName: string;
+    caliberId: number | null;
+  }): void {
+    this.replaceWeaponAssociations(map => {
+      map.set(event.ammoItemId, [
+        {
+          type: 'other',
+          otherName: event.otherName,
+          caliberId: event.caliberId
+        }
+      ]);
+    });
+  }
+
+  onClearWeaponAssociation(ammoItemId: number): void {
+    this.replaceWeaponAssociations(map => {
+      map.delete(ammoItemId);
+    });
+  }
+
+  private replaceWeaponAssociations(
+    mutator: (map: Map<number, WeaponAssociation[]>) => void
+  ): void {
+    const next = new Map(this.weaponAssociationState.associations);
+    mutator(next);
+    this.weaponAssociationState.associations = next;
+    this.cdr.markForCheck();
   }
 
   onUsePurposeIdChange(value: number | null): void {
@@ -357,8 +574,8 @@ export class IssueRequestFacade {
     const validation = this.submissionService.validateSubmission(this.buildSubmissionContext());
     if (!validation.isValid) {
       this.orderSubmissionState.orderSubmitError = validation.error ?? 'Validation failed';
-      this.currentStep = 3;
-      this.updateQueryParams(3);
+      this.currentStep = 4;
+      this.updateQueryParams(4);
       this.cdr.markForCheck();
       return;
     }
@@ -378,22 +595,22 @@ export class IssueRequestFacade {
         this.orderSubmissionState.createdOrderId = orderId;
         this.orderSubmissionState.orderNumber = orderNumber;
         this.orderSubmissionState.orderSubmitted = true;
-        this.steps[3].completed = true;
         this.steps[4].completed = true;
-        this.currentStep = 4;
-        this.updateQueryParams(4);
+        this.steps[5].completed = true;
+        this.currentStep = 5;
+        this.updateQueryParams(5);
         this.cdr.markForCheck();
       },
       onValidationFailure: (message) => {
         this.orderSubmissionState.orderSubmitError = message;
-        this.currentStep = 3;
-        this.updateQueryParams(3);
+        this.currentStep = 4;
+        this.updateQueryParams(4);
         this.cdr.markForCheck();
       },
       onTransportError: (message) => {
         this.orderSubmissionState.orderSubmitError = message;
-        this.currentStep = 3;
-        this.updateQueryParams(3);
+        this.currentStep = 4;
+        this.updateQueryParams(4);
         this.cdr.markForCheck();
       }
     });
@@ -423,7 +640,8 @@ export class IssueRequestFacade {
       defaultRequestPurposeId: this.DEFAULT_REQUEST_PURPOSE_ID,
       defaultRequestTypeId: this.DEFAULT_REQUEST_TYPE_ID,
       files: this.usageFormFiles,
-      orderSubmissionState: this.orderSubmissionState
+      orderSubmissionState: this.orderSubmissionState,
+      weaponAssociations: this.weaponAssociationState.associations
     };
   }
 
@@ -448,7 +666,7 @@ export class IssueRequestFacade {
 
   private initializeStepFromQueryParams(): void {
     this.stateService.getQueryParamsState(this.steps.length).pipe(takeUntil(this.destroy$)).subscribe(params => {
-      if (params.step === 4 && !this.orderSubmissionState.orderSubmitted) {
+      if (params.step === 5 && !this.orderSubmissionState.orderSubmitted) {
         this.resetForm(); this.clearQueryParams(); this.cdr.markForCheck(); return;
       }
       if (this.orderSubmissionState.orderSubmitted && params.step === 0) {
@@ -463,7 +681,10 @@ export class IssueRequestFacade {
       if (params.step >= 1 && this.cartridgeState.allCartridges.length === 0 && !this.cartridgeState.loadingCartridges) {
         this.loadCartridges();
       }
-      if (params.step === 3) this.syncRequesterNameFromUserDetails();
+      if (params.step === 2 && this.hasAmmunitionSelected) {
+        this.onLoadWeaponAssociationStep();
+      }
+      if (params.step === 4) this.syncRequesterNameFromUserDetails();
       this.cdr.markForCheck();
     });
   }
@@ -528,6 +749,8 @@ export class IssueRequestFacade {
   }
 
   private resetForm(): void {
+    this.weaponAssociationLoadSeq++;
+    this.weaponAssociationLoadedKey = null;
     this.currentStep = 0;
     this.steps.forEach(s => (s.completed = false));
     this.filterState = createInitialFilterState();
@@ -543,6 +766,7 @@ export class IssueRequestFacade {
     this.orderSubmissionState = createInitialOrderSubmissionState();
     this.reviewFormData = createInitialReviewFormData();
     this.pendingSelections = null;
+    this.weaponAssociationState = createInitialWeaponAssociationState();
     this.syncRequesterNameFromUserDetails();
   }
 }

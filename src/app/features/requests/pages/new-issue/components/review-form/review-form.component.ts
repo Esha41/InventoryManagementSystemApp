@@ -7,6 +7,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { Cartridge } from '@models/cartridge.model';
+import type { WeaponAssociation } from '@models/request-item.model';
 import { LucideAngularModule, Eye } from 'lucide-angular';
 import { getFileSizeFromFile, viewFile as viewFileUtil } from '@utils/file.utils';
 import { formatDateTimeExtended } from '@utils/format.utils';
@@ -37,6 +38,7 @@ export class ReviewFormComponent {
   @Input() usageDateTo: string = '';
   @Input() usageTimeTo: string = '';
   @Input() selectedCartridges: Cartridge[] = [];
+  @Input() weaponAssociations: Map<number, WeaponAssociation[]> = new Map();
   @Input() files: File[] = [];
 
   @Output() next = new EventEmitter<void>();
@@ -50,6 +52,19 @@ export class ReviewFormComponent {
 
   get isArabic(): boolean {
     return this.currentLang === 'ar';
+  }
+
+  getWeaponLabel(cartridge: Cartridge): string {
+    const list = this.weaponAssociations.get(cartridge.id);
+    if (!list?.length) return '—';
+    return list
+      .map(a => {
+        if (a.type === 'catalog') return a.weaponName ?? `Catalog #${a.weaponItemId}`;
+        if (a.type === 'other') return `${a.otherName} (Custom)`;
+        return '';
+      })
+      .filter(Boolean)
+      .join(', ');
   }
 
   onNext(): void {

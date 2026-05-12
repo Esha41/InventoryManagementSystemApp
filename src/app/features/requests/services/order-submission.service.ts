@@ -5,10 +5,11 @@ import { OrderService } from './order.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { APIOperationResponse } from '@models/api-response.model';
 import { CreateOrderDto, OrderDto } from '@models/order.model';
+import type { WeaponAssociation } from '@models/request-item.model';
 import { formatDateForInput } from '@core/utils/format.utils';
 
 export interface OrderSubmissionData {
-  selectedEntries: Array<{ id: number; quantity: number }>;
+  selectedEntries: Array<{ id: number; quantity: number; itemType?: string }>;
   selectedRequestPurposeId: number | null;
   usePurpose: string;
   requestPurposeNotes: string;
@@ -26,6 +27,7 @@ export interface OrderSubmissionData {
   defaultRequestTypeId: number;
   orderType: string;
   files?: File[];
+  weaponAssociations?: Map<number, WeaponAssociation[]>;
 }
 
 export interface OrderValidationResult {
@@ -141,11 +143,31 @@ export class OrderSubmissionService {
     const usageDateTimeFrom = this.combineDateAndTime(data.usageDateFrom, data.usageTimeFrom);
     const usageDateTimeTo = this.combineDateAndTime(data.usageDateTo, data.usageTimeTo);
 
-    const requestItems = data.selectedEntries.map(entry => ({
-      itemId: entry.id,
-      quantity: entry.quantity,
-      notes: ''
-    }));
+    const requestItems = data.selectedEntries.map(entry => {
+      const isAmmo = entry.itemType === 'Ammunition';
+      const associations =
+        isAmmo && data.weaponAssociations
+          ? data.weaponAssociations.get(entry.id) ?? []
+          : [];
+
+      const weaponAssociations =
+        !isAmmo || associations.length === 0
+          ? []
+          : associations.map(row => ({
+              associatedWeaponItemId:
+                row.type === 'catalog' ? row.weaponItemId ?? null : null,
+              associatedWeaponOtherName:
+                row.type === 'other' ? (row.otherName ?? '').trim() || null : null,
+              associatedWeaponCaliberId: row.caliberId ?? null
+            }));
+
+      return {
+        itemId: entry.id,
+        quantity: entry.quantity,
+        notes: '',
+        ...(weaponAssociations.length > 0 ? { weaponAssociations } : {})
+      };
+    });
 
     const orderNumber = this.generateOrderNumber();
 
