@@ -53,6 +53,7 @@ export interface OrderReportApprovalStep {
     | 'rejected'
     | 'auto-rejected'
     | 'autorejected'
+    | 'cancelled'
     | 'in-progress'
     | 'returned'
     | 'returnedforreview';

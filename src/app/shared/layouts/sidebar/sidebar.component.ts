@@ -133,7 +133,7 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
         },
         {
           label: 'nav.orderReport',
-          route: '/requests/requests-management/order-report',
+          route: '/requests/requests-management/requests-report',
           permissions: [PERMISSIONS.REQUESTS.VIEW_REQUEST.PAGE, PERMISSIONS.REQUESTS.REQUEST.PAGE, PERMISSIONS.REQUESTS.RECEIVER.PAGE]
         }
       ]

@@ -32,8 +32,8 @@
     "confirmed": "مؤكد",
     "rejected": "مرفوض",
     "orderReport": {
-      "breadcrumb": "الطلبات · تقرير الطلب",
-      "title": "تقرير الطلب",
+      "breadcrumb": "الطلبات · تقرير الطلبات",
+      "title": "تقرير الطلبات",
       "print": "طباعة",
       "exportPdf": "تصدير PDF",
       "generating": "جاري التحضير...",

@@ -22,10 +22,11 @@ export class ApprovalWorkflowComponent {
 
   private readonly statusMap: Record<string, string> = {
     'approved': 'Approved',
-    'submitted': 'Approved',
+    'submitted': 'Submitted',
     'rejected': 'Rejected',
     'auto-rejected': 'AutoRejected',
     'autorejected': 'AutoRejected',
+    'cancelled': 'Cancelled',
     'returned': 'Returned',
     'returnedforreview': 'ReturnedForReview',
     'pending': 'Pending',
@@ -35,7 +36,7 @@ export class ApprovalWorkflowComponent {
   getStepStatusClass(status: string): string {
     const badgeClass = this.statusMap[status.toLowerCase()];
     return badgeClass
-      ? getApprovalStatusBadgeClass(badgeClass)
-      : 'text-[var(--color-text-muted)] bg-[var(--color-background-muted)] border-[var(--color-border)]';
+      ? `${getApprovalStatusBadgeClass(badgeClass)} border`
+      : 'text-[var(--color-text-muted)] bg-[var(--color-background-muted)] border border-[var(--color-border)]';
   }
 }

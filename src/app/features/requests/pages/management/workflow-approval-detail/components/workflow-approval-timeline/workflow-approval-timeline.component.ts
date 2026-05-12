@@ -2,7 +2,7 @@ import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
-import { LucideAngularModule, CheckCircle, AlertTriangle, Clock, FileText, Eye, ChevronDown, ChevronUp, Download } from 'lucide-angular';
+import { LucideAngularModule, CheckCircle, AlertTriangle, Clock, FileText, Eye, ChevronDown, ChevronUp, Download, Ban } from 'lucide-angular';
 import { RequestDetail, WorkflowApprovalStep } from '@models/workflow-approval.model';
 import { FileUploadDto } from '@models/file-upload.model';
 import { WorkflowApprovalSupplyService } from '../../services/workflow-approval-supply.service';
@@ -35,6 +35,7 @@ export class WorkflowApprovalTimelineComponent {
   readonly Download = Download;
   readonly ChevronDown = ChevronDown;
   readonly ChevronUp = ChevronUp;
+  readonly Ban = Ban;
 
   @Input() requestDetail: RequestDetail | null = null;
   @Input() destroy$!: Subject<void>;
@@ -64,11 +65,12 @@ export class WorkflowApprovalTimelineComponent {
   /**
    * Get approval status icon based on status
    */
-  getApprovalStatusIcon(status: string): typeof CheckCircle | typeof AlertTriangle | typeof Clock {
+  getApprovalStatusIcon(status: string): typeof CheckCircle | typeof AlertTriangle | typeof Clock | typeof Ban {
     switch (status) {
       case 'Approved': return this.CheckCircle;
       case 'Rejected': return this.AlertTriangle;
       case 'AutoRejected': return this.AlertTriangle;
+      case 'Cancelled': return this.Ban;
       case 'Pending': return this.Clock;
       case 'Returned':
       case 'ReturnedForReview': return this.CheckCircle;
@@ -98,6 +100,20 @@ export class WorkflowApprovalTimelineComponent {
   }
 
   /**
+   * Show acting-role caption for cancellation (parallel to delegation line for approve/reject).
+   */
+  showCancelledActingRole(approval: WorkflowApprovalStep): boolean {
+    if (approval.status !== 'Cancelled') {
+      return false;
+    }
+    if (approval.isDelegation === true || approval.isDelegation === 1) {
+      return false;
+    }
+    const role = this.getLocalizedValue(approval.changedByRoleName, approval.changedByRoleNameAr);
+    return !!role;
+  }
+
+  /**
    * Get localized value
    */
   getLocalizedValue(en: string | undefined, ar: string | undefined): string {
@@ -115,6 +131,8 @@ export class WorkflowApprovalTimelineComponent {
       case 'Returned':
       case 'ReturnedForReview':
         return 'workflowApprovalDetail.returnedThroughDelegation';
+      case 'Cancelled':
+        return 'common.statuses.Cancelled';
       default:
         return 'workflowApprovalDetail.actedThroughDelegation';
     }

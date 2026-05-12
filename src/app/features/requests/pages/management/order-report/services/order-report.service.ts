@@ -365,6 +365,7 @@ export class OrderReportService {
           | 'rejected'
           | 'auto-rejected'
           | 'autorejected'
+          | 'cancelled'
           | 'in-progress'
           | 'returned'
           | 'returnedforreview' || 'pending',
@@ -384,6 +385,15 @@ export class OrderReportService {
       }
     }
 
+    if (requestStatus === 'Cancelled') {
+      for (let i = mapped.length - 1; i >= 0; i--) {
+        if (mapped[i].status === 'pending') {
+          mapped[i] = { ...mapped[i], status: 'cancelled' };
+          break;
+        }
+      }
+    }
+
     return mapped;
   }
 
@@ -398,6 +408,8 @@ export class OrderReportService {
       case 'Returned':
       case 'ReturnedForReview':
         return 'workflowApprovalDetail.returnedThroughDelegation';
+      case 'Cancelled':
+        return 'common.statuses.Cancelled';
       default:
         return 'workflowApprovalDetail.actedThroughDelegation';
     }
@@ -411,6 +423,8 @@ export class OrderReportService {
         return 'common.statuses.Rejected';
       case 'AutoRejected':
         return 'common.statuses.AutoRejected';
+      case 'Cancelled':
+        return 'common.statuses.Cancelled';
       case 'Returned':
       case 'ReturnedForReview':
         return 'common.statuses.ReturnedForReview';

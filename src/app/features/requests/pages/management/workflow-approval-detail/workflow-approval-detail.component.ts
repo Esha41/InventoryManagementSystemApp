@@ -218,6 +218,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     return this.permissionsService.canReturnForReview(this.requestDetail, this.processing);
   }
 
+  canShowWorkflowActionsPanel(): boolean {
+    return this.permissionsService.canShowWorkflowActionsPanel(this.requestDetail, this.processing);
+  }
 
   canSetSupplyPickupDate(): boolean {
     return this.permissionsService.canSetSupplyPickupDate(this.requestDetail);

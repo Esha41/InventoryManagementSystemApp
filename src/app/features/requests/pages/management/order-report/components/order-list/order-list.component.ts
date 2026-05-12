@@ -5,6 +5,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Search, X } from 'lucide-angular';
 import { OrderDto } from '@models/order.model';
 import { mapOrderStatusFromApi } from '@utils/status.utils';
+import { getRequestStatusBadgeClass } from '@utils/status-class.utils';
 import { getPriorityText, getPriorityClass } from '@utils/priority.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
@@ -101,21 +102,21 @@ export class OrderListComponent implements OnChanges, OnInit {
     const label = mapOrderStatusFromApi(status);
     switch (label) {
       case 'Approved':
-        return 'bg-green-100 text-green-800 border border-green-200 dark:bg-green-900/20 dark:text-green-300';
+        return `${getRequestStatusBadgeClass('Approved')} border`;
       case 'New':
-        return 'bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-300';
+        return `${getRequestStatusBadgeClass('Pending')} border`;
       case 'In Progress':
-        return 'bg-yellow-100 text-yellow-800 border border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300';
+        return `${getRequestStatusBadgeClass('Pending')} border`;
       case 'Auto-Rejected':
-        return 'bg-red-100 text-red-800 border border-red-200 dark:bg-red-900/20 dark:text-red-300';
+        return `${getRequestStatusBadgeClass('AutoRejected')} border`;
       case 'Rejected':
-        return 'bg-red-100 text-red-800 border border-red-200 dark:bg-red-900/20 dark:text-red-300';
+        return `${getRequestStatusBadgeClass('Rejected')} border`;
       case 'Cancelled':
-        return 'bg-gray-100 text-gray-800 border border-gray-200 dark:bg-gray-900/20 dark:text-gray-300';
+        return `${getRequestStatusBadgeClass('Cancelled')} border`;
       case 'Returned for Review':
-        return 'bg-purple-100 text-purple-800 border border-purple-200 dark:bg-purple-900/20 dark:text-purple-300';
+        return `${getRequestStatusBadgeClass('ReturnedForReview')} border`;
       default:
-        return 'text-[var(--color-text-muted)] bg-[var(--color-background-muted)] border-[var(--color-border)]';
+        return 'text-[var(--color-text-muted)] bg-[var(--color-background-muted)] border border-[var(--color-border)]';
     }
   }
 

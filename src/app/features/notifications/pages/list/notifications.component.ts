@@ -538,7 +538,29 @@ export class NotificationsComponent implements OnInit, OnDestroy {
       return this.translateService.instant('notifications.genericType');
     }
 
-    const titleLower = title.trim();
+    const trimmed = title.trim();
+
+    const returned = trimmed.match(/^Request #(.+) Returned for Review$/i);
+    if (returned) {
+      return this.translateService.instant('notifications.titles.workflowRequestReturnedForReview', {
+        requestNo: returned[1].trim()
+      });
+    }
+
+    const workflowTitle = trimmed.match(/^Request #(.+) (Approved|Rejected|Cancelled)$/i);
+    if (workflowTitle) {
+      const requestNo = workflowTitle[1].trim();
+      const action = workflowTitle[2].toLowerCase();
+      const key =
+        action === 'approved'
+          ? 'notifications.titles.workflowRequestApproved'
+          : action === 'rejected'
+            ? 'notifications.titles.workflowRequestRejected'
+            : 'notifications.titles.workflowRequestCancelled';
+      return this.translateService.instant(key, { requestNo });
+    }
+
+    const titleLower = trimmed.toLowerCase();
 
     // Map common title patterns to translation keys
     const titleMap: Record<string, string> = {
@@ -636,6 +658,35 @@ export class NotificationsComponent implements OnInit, OnDestroy {
       });
     }
 
+    const workflowTranslated =
+      this.translateWorkflowRequestActionMessage(
+        messageTrimmed,
+        /^Request #(.+?) has been approved\.(?: Comments: (.*))?$/i,
+        /^Request #(.+?) has been approved by (.+?)\.(?: Comments: (.*))?$/i,
+        'notifications.messages.workflowRequestApprovedMessage'
+      ) ??
+      this.translateWorkflowRequestActionMessage(
+        messageTrimmed,
+        /^Request #(.+?) has been rejected\.(?: Comments: (.*))?$/i,
+        /^Request #(.+?) has been rejected by (.+?)\.(?: Comments: (.*))?$/i,
+        'notifications.messages.workflowRequestRejectedMessage'
+      ) ??
+      this.translateWorkflowRequestActionMessage(
+        messageTrimmed,
+        /^Request #(.+?) has been cancelled\.(?: Comments: (.*))?$/i,
+        /^Request #(.+?) has been cancelled by (.+?)\.(?: Comments: (.*))?$/i,
+        'notifications.messages.workflowRequestCancelledMessage'
+      ) ??
+      this.translateWorkflowRequestActionMessage(
+        messageTrimmed,
+        /^Request #(.+?) has been returned for review\.(?: Comments: (.*))?$/i,
+        /^Request #(.+?) has been returned for review by (.+?)\.(?: Comments: (.*))?$/i,
+        'notifications.messages.workflowRequestReturnedForReviewMessage'
+      );
+    if (workflowTranslated !== null) {
+      return workflowTranslated;
+    }
+
     // If no match, return original (might be already translated or custom)
     // Approval workflow notifications
     if (messageLower.includes('awaits your approval')) {
@@ -670,6 +721,32 @@ export class NotificationsComponent implements OnInit, OnDestroy {
 
     // If still no match, return original
     return type;
+  }
+
+  private translateWorkflowRequestActionMessage(
+    messageTrimmed: string,
+    patternNoActor: RegExp,
+    patternWithActor: RegExp,
+    messageKey: string
+  ): string | null {
+    let m = messageTrimmed.match(patternNoActor);
+    let commentsGroupIndex = 2;
+    if (!m) {
+      m = messageTrimmed.match(patternWithActor);
+      commentsGroupIndex = 3;
+    }
+    if (!m) {
+      return null;
+    }
+    const requestNo = m[1].trim();
+    const comments = m[commentsGroupIndex]?.trim();
+    let out = this.translateService.instant(messageKey, { requestNo });
+    if (comments) {
+      out +=
+        ' ' +
+        this.translateService.instant('notifications.messages.workflowRequestCommentsAppend', { comments });
+    }
+    return out;
   }
 
   hasNotificationActions(notification: Notification | null): boolean {

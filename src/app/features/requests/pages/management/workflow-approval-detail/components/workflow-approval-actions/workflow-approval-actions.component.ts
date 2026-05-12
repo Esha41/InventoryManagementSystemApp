@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
-import { LucideAngularModule, CheckCircle, XCircle, RotateCcw, ChevronDown } from 'lucide-angular';
+import { LucideAngularModule, CheckCircle, XCircle, RotateCcw, ChevronDown, Ban } from 'lucide-angular';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { RequestDetail, WorkflowStepTransition } from '@models/workflow-approval.model';
 import { WorkflowApprovalActionsService } from '../../services/workflow-approval-actions.service';
@@ -37,6 +37,7 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
   readonly XCircle = XCircle;
   readonly RotateCcw = RotateCcw;
   readonly ChevronDown = ChevronDown;
+  readonly Ban = Ban;
 
   @Input() requestId!: number;
   @Input() requestDetail: RequestDetail | null = null;
@@ -59,6 +60,9 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
 
   // File upload for approval/rejection
   approvalFiles: File[] = [];
+
+  /** After cancel-only user clicks Cancel with no files; cleared when files are added or form resets. */
+  showCancelAttachmentsValidation = false;
 
   // Higher approval dropdown options
   higherApprovalOptions: { value: string; label: string }[] = [];
@@ -184,6 +188,14 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
     return this.stateService.canRejectRequest();
   }
 
+  canApproveOrRejectForWorkflow(): boolean {
+    return this.stateService.canApproveOrReject();
+  }
+
+  canCancelRequest(): boolean {
+    return this.stateService.canCancelRequest();
+  }
+
   canReturnForReview(): boolean {
     return this.stateService.canReturnForReview();
   }
@@ -225,6 +237,9 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
   }
 
   shouldShowApproveButton(): boolean {
+    if (!this.stateService.canApproveOrReject()) {
+      return false;
+    }
     if (this.stateService.shouldHideStandaloneApproveForReturn()) {
       return false;
     }
@@ -358,10 +373,14 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
 
       // Add valid files
       this.approvalFiles = [...this.approvalFiles, ...newFiles];
+      if (this.approvalFiles.length > 0) {
+        this.showCancelAttachmentsValidation = false;
+      }
       // Reset input to allow selecting the same file again
       if (input) {
         input.value = '';
       }
+      this.cdr.markForCheck();
     }
   }
 
@@ -371,6 +390,7 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
   removeApprovalFile(index: number): void {
     if (index >= 0 && index < this.approvalFiles.length) {
       this.approvalFiles.splice(index, 1);
+      this.cdr.markForCheck();
     }
   }
 
@@ -536,6 +556,62 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
   }
 
   /**
+   * Cancel request (requires CanCancelRequest or super admin on backend).
+   */
+  cancelRequest(): void {
+    if (this.processing || this.isProcessingAction || !this.requestDetail) return;
+
+    if (this.approvalFiles.length === 0) {
+      this.showCancelAttachmentsValidation = true;
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.translateService.get([
+      'workflowApprovalDetail.confirmCancel',
+      'workflowApprovalDetail.confirmCancelMessage',
+      'common.yes',
+      'common.cancel'
+    ]).pipe(takeUntil(this.destroy$)).subscribe(translations => {
+      this.showConfirmationDialog(
+        translations['workflowApprovalDetail.confirmCancel'] || 'Confirm cancellation',
+        translations['workflowApprovalDetail.confirmCancelMessage'] ||
+          'Are you sure you want to cancel this request? Draft supply and batch selections will be released.',
+        'danger',
+        translations['common.yes'] || 'Yes',
+        translations['common.cancel'] || 'Cancel',
+        () => {
+          this.isProcessingAction = true;
+
+          this.actionsService.cancelRequest({
+            requestId: this.requestId,
+            isApproved: false,
+            comments: this.comments,
+            files: this.approvalFiles
+          }, this.destroy$)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: () => {
+                this.resetForm();
+                this.isProcessingAction = false;
+                this.actionCompleted.emit();
+                this.showSuccessToast('workflowApprovalDetail.success.cancelled', 'toast.success', 'Request cancelled successfully');
+              },
+              error: (error: unknown) => {
+                this.isProcessingAction = false;
+                const fallback =
+                  this.translateService.instant('workflowApprovalDetail.errors.cancelFailed') ||
+                  'Failed to cancel request';
+                this.showErrorToast(error, fallback);
+                this.actionCompleted.emit();
+              }
+            });
+        }
+      );
+    });
+  }
+
+  /**
    * Return request for review to a previous workflow step
    */
   returnForReview(): void {
@@ -668,6 +744,7 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
     this.comments = '';
     this.sendToHigherApproval = 'no';
     this.approvalFiles = [];
+    this.showCancelAttachmentsValidation = false;
     this.selectedNextStepId = null;
     this.returnToStepId = null;
   }

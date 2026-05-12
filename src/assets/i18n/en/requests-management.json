@@ -31,15 +31,15 @@
     "confirmed": "Confirmed",
     "rejected": "Rejected",
     "orderReport": {
-      "breadcrumb": "Requests · Order Report",
-      "title": "Order Report",
+      "breadcrumb": "Requests · Requests Report",
+      "title": "Requests Report",
       "print": "Print",
       "exportPdf": "Export PDF",
       "generating": "Generating...",
       "section": {
-        "orderDetails": "Order Detail",
+        "orderDetails": "Request details",
         "approvalWorkflow": "Approval Workflow",
-        "workflowDetails": "Workflow Details from Order",
+        "workflowDetails": "Workflow details from request",
         "qrCode": "QR Code",
         "supplySummary": "Supply Summary"
       },
@@ -118,11 +118,11 @@
       "noApprovalHistory": "No approval history available yet.",
       "list": {
         "title": "Requests",
-        "count": "{{count}} orders",
-        "empty": "No orders available yet.",
+        "count": "{{count}} requests",
+        "empty": "No requests available yet.",
         "unknown": "Unknown department"
       },
-      "detailPlaceholder": "Select an order from the list to view its report."
+      "detailPlaceholder": "Select a request from the list to view its report."
     }
   }
 }

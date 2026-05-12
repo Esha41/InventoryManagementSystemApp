@@ -51,6 +51,12 @@
                       {{ getLocalizedExtra(approval.changedByRoleName, approval.changedByRoleNameAr) }}
                     </ng-container>
                   </p>
+                  <p class="text-xs text-amber-700 dark:text-amber-400 mt-1 mb-1" *ngIf="showPerformedAsRole(approval)">
+                    {{ getNonDelegationActionKey(approval) | translate }}
+                    <ng-container *ngIf="getPerformedAsRoleValue(approval)">
+                      {{ getByLabel() }} {{ getPerformedAsRoleValue(approval) }}
+                    </ng-container>
+                  </p>
                   <p class="text-xs text-[var(--color-text-muted)]"
                     *ngIf="approval.applicationRoleName || approval.applicationRoleNameAr">
                     {{ getLocalizedExtra(approval.applicationRoleName, approval.applicationRoleNameAr) }}
@@ -59,10 +65,6 @@
                     *ngIf="approval.eligibleParallelRoleNamesEn || approval.eligibleParallelRoleNamesAr">
                     {{ 'workflowApprovalDetail.parallelApproversLabel' | translate }}:
                     {{ getLocalizedExtra(approval.eligibleParallelRoleNamesEn, approval.eligibleParallelRoleNamesAr) }}
-                  </p>
-                  <p class="text-xs text-[var(--color-text-muted)] mt-1" *ngIf="showPerformedAsRole(approval)">
-                    {{ 'workflowApprovalDetail.performedAsRole' | translate }}:
-                    {{ getLocalizedExtra(approval.changedByRoleName, approval.changedByRoleNameAr) }}
                   </p>
                 </div>
                 <div class="text-end ms-4">

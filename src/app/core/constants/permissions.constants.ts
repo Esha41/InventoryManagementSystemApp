@@ -244,6 +244,7 @@ export const PERMISSIONS = {
       SUPPLY_REVIEW: 'UpdateRequestAndSuggestLots',
       UPDATE_REQUEST_AND_SUPPLY: 'UpdateRequestAndSupply',
       CANNOT_REJECT: 'CannotRejectRequest',
+      CAN_CANCEL_REQUEST: 'CanCancelRequest',
       SET_SUPPLY_PICKUP_DATE: 'SetSupplyPickupDate',
       CONFIRM_SUPPLY_PICKUP_DATE: 'ConfirmSupplyPickupDate',
       VIEW_SUPPLY_DATE: 'ViewSupplyDate',

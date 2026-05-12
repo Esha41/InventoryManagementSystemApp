@@ -6,7 +6,7 @@
 import { OrderDto } from '@models/order.model';
 import { OrderSummary, OrderReportItem, OrderReportApprovalStep, WorkflowDetail } from '@models/order-report.model';
 import { WorkflowApprovalStep } from '@models/workflow-approval.model';
-import { getRequestStatusTranslationKey } from '@utils/status.utils';
+import { getStatusMetadata } from '@utils/request-mapper.utils';
 import { getPriorityText } from '@utils/priority.utils';
 import { formatDate, formatTimeToMilitary, formatDateShort } from '@utils/format.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
@@ -21,55 +21,11 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
   const orderNo = order.orderNo?.trim() || '';
   const orderId = requestNo || orderNo || (order.id ? `#${order.id}` : 'N/A');
 
-  let statusValue: number;
-  if (typeof order.status === 'string') {
-    const orderStatusLower = order.status.toLowerCase().trim();
-    if (orderStatusLower === 'new' || orderStatusLower === 'pending' || orderStatusLower === '1') {
-      statusValue = 1;
-    } else if (orderStatusLower === 'underprocess' || orderStatusLower === 'under process' || orderStatusLower === 'inprogress' || orderStatusLower === 'in progress' || orderStatusLower === '2') {
-      statusValue = 2;
-    } else if (orderStatusLower === 'approved' || orderStatusLower === 'completed' || orderStatusLower === 'confirmed' || orderStatusLower === '3') {
-      statusValue = 3;
-    } else if (orderStatusLower === 'rejected' || orderStatusLower === 'declined' || orderStatusLower === '4') {
-      statusValue = 4;
-    } else if (orderStatusLower === 'autorejected' || orderStatusLower === 'auto rejected' || orderStatusLower === 'auto-rejected' || orderStatusLower === '7') {
-      statusValue = 7;
-    } else {
-      const parsed = parseInt(order.status, 10);
-      statusValue = isNaN(parsed) ? 1 : parsed;
-    }
-  } else {
-    statusValue = order.status;
-  }
-
-  // Override with baseRequestStatus if provided
-  if (baseRequestStatus !== undefined && baseRequestStatus !== null) {
-    if (typeof baseRequestStatus === 'number') {
-      statusValue = baseRequestStatus;
-    } else if (typeof baseRequestStatus === 'string') {
-      // Try to parse string status to number
-      const statusLower = baseRequestStatus.toLowerCase().trim();
-      if (statusLower === 'new' || statusLower === '1') {
-        statusValue = 1;
-      } else if (statusLower === 'underprocess' || statusLower === 'under process' || statusLower === 'inprogress' || statusLower === 'in progress' || statusLower === 'pending' || statusLower === '2') {
-        statusValue = 2;
-      } else if (statusLower === 'approved' || statusLower === 'completed' || statusLower === 'confirmed' || statusLower === '3') {
-        statusValue = 3;
-      } else if (statusLower === 'rejected' || statusLower === 'declined' || statusLower === '4') {
-        statusValue = 4;
-      } else if (statusLower === 'autorejected' || statusLower === 'auto rejected' || statusLower === 'auto-rejected' || statusLower === '7') {
-        statusValue = 7;
-      } else {
-        const parsed = parseInt(baseRequestStatus, 10);
-        if (!isNaN(parsed)) {
-          statusValue = parsed;
-        }
-      }
-    }
-  }
-
-  // Use the same status translation key system as dashboard
-  const statusTranslationKey = getRequestStatusTranslationKey(statusValue);
+  const statusSource: number | string | null | undefined =
+    baseRequestStatus !== undefined && baseRequestStatus !== null ? baseRequestStatus : order.status;
+  const statusMeta = getStatusMetadata(statusSource);
+  const statusValue = statusMeta.id;
+  const statusTranslationKey = statusMeta.translationKey;
 
   // Keep submittedOn as formatted string since it's a complex date range with times
   // Format submitted date with time (for submittedOn field) - use DD/MM/YYYY for dates
@@ -461,7 +417,7 @@ export function generateQrCodeData(orderSummary: OrderSummary, localizedUsagePur
 
   // Create a human-readable format that's easy to scan and verify
   const qrLines = [
-    '=== ORDER REPORT ===',
+    '=== REQUESTS REPORT ===',
     `Order ID: ${orderSummary.orderId}`,
     `Department: ${orderSummary.department}`,
     `Requester: ${orderSummary.requester}`,
@@ -478,7 +434,7 @@ export function generateQrCodeData(orderSummary: OrderSummary, localizedUsagePur
 
   // Also include JSON format for programmatic parsing
   const qrData = {
-    type: 'order-report',
+    type: 'requests-report',
     orderId: orderSummary.orderId,
     department: orderSummary.department,
     requester: orderSummary.requester,

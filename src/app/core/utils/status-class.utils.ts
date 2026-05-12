@@ -11,6 +11,7 @@ const BADGE_CLASS_MAP: Record<string, string> = {
   'AutoRejected': 'bg-red-50 text-red-700 border-red-200',
   'Returned': 'bg-purple-50 text-purple-700 border-purple-200',
   'ReturnedForReview': 'bg-purple-50 text-purple-700 border-purple-200',
+  'Cancelled': 'bg-red-50 text-red-700 border-red-200',
 };
 
 const APPROVAL_BADGE_CLASS_MAP: Record<string, string> = {
@@ -21,6 +22,7 @@ const APPROVAL_BADGE_CLASS_MAP: Record<string, string> = {
   'Returned': 'text-purple-700 bg-purple-50 border-purple-200',
   'ReturnedForReview': 'text-purple-700 bg-purple-50 border-purple-200',
   'Submitted': 'text-emerald-700 bg-emerald-50 border-emerald-200',
+  'Cancelled': 'text-red-700 bg-red-50 border-red-200',
 };
 
 /**

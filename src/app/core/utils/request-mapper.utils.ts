@@ -89,8 +89,8 @@ export const STATUS_METADATA: Record<RequestStatusEnum, StatusMetadata> = {
   [RequestStatusEnum.Cancelled]: {
     id: RequestStatusEnum.Cancelled,
     translationKey: 'dashboard.statusLabels.cancelled',
-    badgeClass: 'Pending',
-    cardStatus: 'new'
+    badgeClass: 'Cancelled',
+    cardStatus: 'declined'
   },
   [RequestStatusEnum.ReturnedForReview]: {
     id: RequestStatusEnum.ReturnedForReview,
@@ -223,6 +223,8 @@ export function mapRequestStatus(status: number | string): RequestStatus {
         return 'Rejected';
       case RequestStatusEnum.AutoRejected:
         return 'AutoRejected';
+      case RequestStatusEnum.Cancelled:
+        return 'Cancelled';
       case RequestStatusEnum.New:
       case RequestStatusEnum.UnderProcess:
       default:
@@ -242,6 +244,9 @@ export function mapRequestStatus(status: number | string): RequestStatus {
     if (statusLower === 'autorejected' || statusLower === 'auto rejected' || statusLower === 'auto-rejected' || statusLower === '7') {
       return 'AutoRejected';
     }
+    if (statusLower === 'cancelled' || statusLower === 'canceled' || statusLower === '5') {
+      return 'Cancelled';
+    }
     if (statusLower === 'new' || statusLower === '1') {
       return 'Pending'; // New maps to Pending in RequestStatus type
     }
@@ -257,7 +262,7 @@ export function mapRequestStatus(status: number | string): RequestStatus {
 /**
  * Map numeric approval status to string
  */
-export function mapApprovalStatus(status: number): 'Pending' | 'Approved' | 'Rejected' | 'AutoRejected' | 'Returned' {
+export function mapApprovalStatus(status: number): 'Pending' | 'Approved' | 'Rejected' | 'AutoRejected' | 'Returned' | 'Cancelled' {
   switch (status) {
     case RequestStatusEnum.Approved:
       return 'Approved';
@@ -266,6 +271,7 @@ export function mapApprovalStatus(status: number): 'Pending' | 'Approved' | 'Rej
     case RequestStatusEnum.AutoRejected:
       return 'AutoRejected';
     case RequestStatusEnum.Cancelled:
+      return 'Cancelled';
     case RequestStatusEnum.ReturnedForReview:
       return 'Returned';
     case RequestStatusEnum.New:

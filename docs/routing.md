@@ -88,7 +88,7 @@ path: 'new-issue-request'  → NewIssueRequestComponent
 path: 'return-request'  → ReturnRequestComponent
 path: 'discard-request'  → DiscardRequestComponent
 path: 'requests-management'  → RequestsManagementComponent
-path: 'requests-management/order-report'  → OrderReportComponent
+path: 'requests-management/requests-report'  → OrderReportComponent (Requests Report UI). Legacy `order-report` redirects here.
 path: 'requests-management/:id/workflow-approval'  → WorkflowApprovalDetailComponent
 ```
 

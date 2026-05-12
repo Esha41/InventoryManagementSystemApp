@@ -163,7 +163,7 @@
 
       <!-- Approval/Rejection Actions - At the end -->
       <app-workflow-approval-actions
-        *ngIf="!loading && !error && requestDetail && canApproveOrReject() && !isUserRestricted"
+        *ngIf="!loading && !error && requestDetail && canShowWorkflowActionsPanel() && !isUserRestricted"
         [requestId]="requestId" [requestDetail]="requestDetail" [processing]="processing"
         [previousWorkflowSteps]="previousWorkflowSteps" [loadingPreviousSteps]="loadingPreviousSteps"
         [destroy$]="destroy$" (approved)="onActionCompleted()" (rejected)="onActionCompleted()"
