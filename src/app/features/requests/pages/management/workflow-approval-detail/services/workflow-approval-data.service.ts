@@ -109,8 +109,11 @@ export class WorkflowApprovalDataService {
               Object.assign(baseRequest, detailData);
             }
 
-            if (detailData?.requestItems && Array.isArray(detailData.requestItems)) {
-              baseRequest.requestItems = detailData.requestItems;
+            const detailRecord = detailData as unknown as Record<string, unknown> | null | undefined;
+            const detailItems = detailRecord?.['requestItems'] ?? detailRecord?.['RequestItems'];
+
+            if (Array.isArray(detailItems)) {
+              baseRequest.requestItems = detailItems as BaseRequestDto['requestItems'];
             }
 
             resolve();

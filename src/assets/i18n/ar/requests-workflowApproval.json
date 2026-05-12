@@ -48,6 +48,8 @@
     "itemCode": "رقم المادة",
     "nsn": "NSN",
     "quantity": "الكمية",
+    "associatedWeapons": "الأسلحة المرتبطة",
+    "associatedWeaponOther": "أخرى",
     "noItemsFound": "لم يتم العثور على مواد",
     "status": "الحالة",
     "currentStatus": "الحالة الحالية",

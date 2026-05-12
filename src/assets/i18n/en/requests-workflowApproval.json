@@ -48,6 +48,8 @@
     "itemCode": "Item No",
     "nsn": "NSN",
     "quantity": "Quantity",
+    "associatedWeapons": "Associated Weapons",
+    "associatedWeaponOther": "Others",
     "noItemsFound": "No items found for this request",
     "status": "Status",
     "currentStatus": "Current Status",
