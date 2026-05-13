@@ -206,7 +206,7 @@
       "allowanceExceeded": "Requested quantity ({{requestedQuantity}}) exceeds available allowance. Available: {{availableQuantity}}",
       "failedToVerifyAllowance": "Failed to verify allowance. Please try again.",
       "fileSizeExceeded": "File size exceeds the maximum allowed size of",
-      "invalidFileFormat": "File \"{{fileName}}\" has an invalid format. Allowed formats: JPEG, JPG, PNG, PDF, XLSX, DOCX."
+      "invalidFileFormat": "File \"{{fileName}}\" has an invalid format. Allowed formats: PDF, DOCX."
     },
     "confirmDialog": {
       "title": "Confirm Request",

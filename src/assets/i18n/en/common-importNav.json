@@ -141,6 +141,7 @@
     "orderExportedToPdfSuccessfully": "Successfully exported order to PDF",
     "failedToExportPdf": "Failed to export PDF. Please try again.",
     "onlyImageFilesAllowed": "Only JPG, JPEG, and PNG image files are allowed.",
+    "onlyPdfDocxFilesAllowed": "Only PDF and DOCX files are allowed.",
     "imageUpdatedSuccessfully": "Image updated successfully",
     "failedToLoadItemDetails": "Failed to load item details",
     "failedToLoadOrders": "Failed to load orders",

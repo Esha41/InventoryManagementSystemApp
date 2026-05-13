@@ -346,7 +346,7 @@
         </div>
 
         <div class="space-y-3">
-          <input #attachmentInput type="file" multiple accept=".jpg,.jpeg,.png,.pdf,.xlsx,.docx" class="hidden"
+          <input #attachmentInput type="file" multiple accept=".pdf,.docx" class="hidden"
             (change)="onAttachmentInputChange($event)">
           <span (click)="!processing && attachmentInput.click()"
             [class.opacity-50]="processing"

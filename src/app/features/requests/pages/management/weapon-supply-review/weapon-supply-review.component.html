@@ -402,7 +402,7 @@ class="assets-table-input w-full min-w-0">
                 <!-- File Input -->
                 <div class="relative flex items-center gap-2">
                   <input type="file" #fileInput (change)="onFilesSelected($event)"
-                    [disabled]="submitting" multiple accept=".jpg,.jpeg,.png,.pdf,.xlsx,.docx" class="hidden">
+                    [disabled]="submitting" multiple accept=".pdf,.docx" class="hidden">
                   <span (click)="!submitting && fileInput.click()"
                     [class.opacity-50]="submitting"
                     [class.cursor-not-allowed]="submitting"

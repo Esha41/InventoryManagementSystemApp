@@ -37,7 +37,7 @@
       "filesRequired": "At least one file attachment is required",
       "requestPurposeNotesRequired": "Request purpose notes are required",
       "fileSizeExceeded": "File size exceeds the maximum allowed size of",
-      "invalidFileFormat": "File \"{{fileName}}\" has an invalid format. Allowed formats: JPEG, JPG, PNG, PDF, XLSX, DOCX."
+      "invalidFileFormat": "File \"{{fileName}}\" has an invalid format. Allowed formats: PDF, DOCX."
     },
     "success": {
       "created": "Return request created successfully"
@@ -86,7 +86,7 @@
       "filesRequired": "At least one file attachment is required",
       "requestPurposeNotesRequired": "Request purpose notes are required",
       "fileSizeExceeded": "File size exceeds the maximum allowed size of",
-      "invalidFileFormat": "File \"{{fileName}}\" has an invalid format. Allowed formats: JPEG, JPG, PNG, PDF, XLSX, DOCX."
+      "invalidFileFormat": "File \"{{fileName}}\" has an invalid format. Allowed formats: PDF, DOCX."
     },
     "success": {
       "created": "Discard request created successfully"

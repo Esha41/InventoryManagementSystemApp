@@ -9,7 +9,7 @@ import {
   inject
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Trash2, Upload, FileText } from 'lucide-angular';
 import { Subject, of, takeUntil } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
@@ -28,6 +28,7 @@ import { ErrorHandler } from '@utils/error-handler.utils';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
 import { ButtonComponent } from '@components/button/button.component';
 import { CardComponent } from '@components/card/card.component';
+import { validateAttachments, showAttachmentValidationToast } from '@utils/file.utils';
 
 @Component({
   selector: 'app-help-center-manual-tab',
@@ -47,6 +48,7 @@ export class HelpCenterManualTabComponent implements OnInit, OnDestroy {
   private readonly fileUpload = inject(FileUploadService);
   private readonly toast = inject(ToastService);
   private readonly i18n = inject(TranslationService);
+  private readonly translate = inject(TranslateService);
   private readonly auth = inject(BackendAuthService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly destroy$ = new Subject<void>();
@@ -120,6 +122,13 @@ export class HelpCenterManualTabComponent implements OnInit, OnDestroy {
       return;
     }
     const selected = Array.from(raw);
+    const check = validateAttachments(selected);
+    if (!check.valid) {
+      showAttachmentValidationToast(this.translate, this.toast, check.errorMessage);
+      input.value = '';
+      this.cdr.markForCheck();
+      return;
+    }
     this.uploading = true;
     this.cdr.markForCheck();
     this.fileUpload

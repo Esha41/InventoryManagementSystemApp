@@ -68,7 +68,7 @@
           <div class="relative flex items-center gap-2">
             <input type="file" #fileInput (change)="onFilesSelected($event)"
               [disabled]="isSubmittingSupply || isSupplySubmitted() || supplyData?.submissionStatus === 2 || isLastApprovalCompleted"
-              multiple accept=".jpg,.jpeg,.png,.pdf,.xlsx,.docx" class="hidden">
+              multiple accept=".pdf,.docx" class="hidden">
             <span
               (click)="!isSubmittingSupply && !isSupplySubmitted() && supplyData?.submissionStatus !== 2 && !isLastApprovalCompleted && fileInput.click()"
               [class.opacity-50]="isSubmittingSupply || isSupplySubmitted() || supplyData?.submissionStatus === 2 || isLastApprovalCompleted"
@@ -186,7 +186,7 @@
         <!-- File Input -->
         <div class="relative flex items-center gap-2">
           <input type="file" #additionalFileInput (change)="onAdditionalFilesSelected($event)"
-            [disabled]="isUploadingAdditionalFiles" multiple accept="*/*" class="hidden">
+            [disabled]="isUploadingAdditionalFiles" multiple accept=".pdf,.docx" class="hidden">
           <span (click)="!isUploadingAdditionalFiles && additionalFileInput.click()"
             [class.opacity-50]="isUploadingAdditionalFiles"
             [class.cursor-not-allowed]="isUploadingAdditionalFiles"

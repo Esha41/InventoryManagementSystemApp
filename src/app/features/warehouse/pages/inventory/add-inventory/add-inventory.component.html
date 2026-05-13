@@ -232,7 +232,7 @@
             </span>
             <div class="space-y-3">
               <div class="relative flex items-center gap-2">
-                <input type="file" #invAddFileInput (change)="onDeliveryAttachmentChange($event)" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx" class="hidden">
+                <input type="file" #invAddFileInput (change)="onDeliveryAttachmentChange($event)" multiple accept=".pdf,.docx" class="hidden">
                 <button type="button" (click)="invAddFileInput.click()"
                   class="px-4 py-2 rounded-lg text-sm font-medium bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand)]/90 cursor-pointer transition-all">
                   {{ 'common.chooseFiles' | translate }}

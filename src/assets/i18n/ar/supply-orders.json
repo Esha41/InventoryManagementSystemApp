@@ -283,11 +283,11 @@
     "clickApplyToLoadAssets": "انقر على تطبيق لتحميل الأصول",
     "clickApplyToLoadAssetsHint": "قم بتكوين المرشحات أعلاه (أرقام تسلسلية فقط، حد الكمية) وانقر على تطبيق لجلب الأصول من المستودعات وأرقام البوليصة المحددة.",
     "fileAttachments": "المرفقات",
-    "fileAttachmentsHint": "الصيغ المسموحة: JPG, JPEG, PNG, PDF, XLSX, DOCX.",
+    "fileAttachmentsHint": "الصيغ المسموحة: PDF، DOCX.",
     "filesRequired": "يجب إرفاق ملف واحد على الأقل",
     "fileUploadFailed": "فشل رفع المرفقات",
     "errors": {
-      "invalidFileFormat": "الملف \"{{fileName}}\" بصيغة غير مسموحة. الصيغ المسموحة: JPG, PNG, PDF, XLSX, DOCX.",
+      "invalidFileFormat": "الملف \"{{fileName}}\" بصيغة غير مسموحة. الصيغ المسموحة: PDF، DOCX.",
       "fileSizeExceeded": "حجم الملف كبير جداً. الحد الأقصى:"
     }
   }

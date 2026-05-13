@@ -206,7 +206,7 @@
       "allowanceExceeded": "الكمية المحجوزة ({{requestedQuantity}}) تتجاوز المقرر المتاح. المتاح: {{availableQuantity}}",
       "failedToVerifyAllowance": "فشل التحقق من المقرر. يرجى المحاولة مرة أخرى.",
       "fileSizeExceeded": "حجم الملف يتجاوز الحد الأقصى المسموح به وهو",
-      "invalidFileFormat": "الملف \"{{fileName}}\" له تنسيق غير صالح. التنسيقات المسموحة: JPEG، JPG، PNG، PDF، XLSX، DOCX."
+      "invalidFileFormat": "الملف \"{{fileName}}\" له تنسيق غير صالح. التنسيقات المسموحة: PDF، DOCX."
     },
     "confirmDialog": {
       "title": "تأكيد الطلب",

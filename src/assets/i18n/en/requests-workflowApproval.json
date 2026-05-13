@@ -205,7 +205,7 @@
       "failedToLoadOrder": "Failed to load order data",
       "notOrderRequest": "This is not an order request",
       "fileSizeExceeded": "File size exceeds the maximum allowed size of",
-      "invalidFileFormat": "File \"{{fileName}}\" has an invalid format. Allowed formats: JPEG, JPG, PNG, PDF, XLSX, DOCX.",
+      "invalidFileFormat": "File \"{{fileName}}\" has an invalid format. Allowed formats: PDF, DOCX.",
       "pickupDateRequired": "Please set the supply pickup date before approving.",
       "supplySubmissionRequired": "Please submit the supply information before approving.",
       "depotSelectionRequired": "Please select at least one depot before approving.",
