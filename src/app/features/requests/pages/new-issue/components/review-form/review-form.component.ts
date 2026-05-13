@@ -1,4 +1,13 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  inject
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PERMISSIONS } from '@constants/permissions.constants';
 
 import { CommonModule } from '@angular/common';
@@ -23,10 +32,11 @@ import { formatDateTimeExtended } from '@utils/format.utils';
 export class ReviewFormComponent {
   readonly PERMISSIONS = PERMISSIONS;
 
+  private readonly cdr = inject(ChangeDetectorRef);
+
   readonly Eye = Eye;
   @Input() requesterName: string = '';
   @Input() requesterComments: string = '';
-  @Input() orderType: string = '';
   @Input() fromReserve: string = '';
   @Input() usePurpose: string = '';
   @Input() requestPurposeNotes: string = '';
@@ -44,7 +54,9 @@ export class ReviewFormComponent {
   @Output() next = new EventEmitter<void>();
   @Output() previous = new EventEmitter<void>();
 
-  constructor(public translateService: TranslateService) { }
+  constructor(public translateService: TranslateService) {
+    this.translateService.onLangChange.pipe(takeUntilDestroyed()).subscribe(() => this.cdr.markForCheck());
+  }
 
   get currentLang(): string {
     return this.translateService.currentLang || 'en';

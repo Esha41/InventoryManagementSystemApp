@@ -34,7 +34,7 @@
       <div class="flex items-center gap-4">
         <label class="text-sm font-bold text-[var(--color-text)] min-w-[150px]" for="review-form-fld-3-3">{{ 'newIssueRequest.orderType' |
           translate }}</label>
-        <input id="review-form-fld-3-3" type="text" [ngModel]="orderType" [placeholder]="'newIssueRequest.orderTypePlaceholder' | translate"
+        <input id="review-form-fld-3-3" type="text" [ngModel]="'newIssueRequest.orderTypePlaceholder' | translate"
           readonly
           class="flex-1 max-w-xs px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
       </div>
@@ -74,7 +74,7 @@
         <thead class="bg-[var(--color-background-muted)] text-[var(--color-text)]">
           <tr>
             <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.name' | translate }}</th>
-            <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.productId' | translate }}</th>
+            <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.itemNo' | translate }}</th>
             <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.nsn' | translate }}</th>
             <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.quantity' | translate }}</th>
             <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.weaponAssociation.weapon' | translate }}</th>

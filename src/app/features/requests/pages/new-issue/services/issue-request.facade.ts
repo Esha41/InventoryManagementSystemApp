@@ -185,10 +185,12 @@ export class IssueRequestFacade {
   }
 
   get currentRequesterName(): string {
+    const lang = this.translate.currentLang || 'en';
     return resolveCurrentRequesterName(
       this.userContextState.currentUserDetails,
       this.userContextState.fallbackRequesterName,
-      this.reviewFormData.requesterName
+      this.reviewFormData.requesterName,
+      lang
     );
   }
 
@@ -217,6 +219,8 @@ export class IssueRequestFacade {
     this.translate.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.rebuildRequestPurposeOptions();
       this.updateUsePurposeFromSelection(this.requestPurposeState.selectedRequestPurposeId);
+      this.syncRequesterNameFromUserDetails();
+      this.cdr.markForCheck();
     });
 
     this.requestServerRefilter = this.catalogOrchestrator.setupFilterDebounce(
@@ -745,7 +749,8 @@ export class IssueRequestFacade {
   }
 
   private syncRequesterNameFromUserDetails(): void {
-    this.reviewFormData.requesterName = syncRequesterNameUtil(this.userContextState.currentUserDetails);
+    const lang = this.translate.currentLang || 'en';
+    this.reviewFormData.requesterName = syncRequesterNameUtil(this.userContextState.currentUserDetails, lang);
   }
 
   private resetForm(): void {
