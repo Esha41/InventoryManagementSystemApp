@@ -118,24 +118,27 @@ export class OrderItemTrackingModalComponent implements OnDestroy, OnChanges {
     }
 
     getActionColorClass(actionType: string | number): string {
-        // Normalize to number for switch case
         let typeVal: number;
 
         if (typeof actionType === 'string' && isNaN(Number(actionType))) {
-            // Map "Added" -> 1
             typeVal = OrderItemActionType[actionType as keyof typeof OrderItemActionType];
         } else {
             typeVal = Number(actionType);
         }
 
+        const strongBrand = 'text-white bg-[var(--color-brand)] border-[var(--color-brand)]';
+        const softBrand = 'text-[var(--color-brand)] bg-[var(--color-brand)]/10 border-[var(--color-brand)]/30';
+
         switch (typeVal) {
-            case OrderItemActionType.Added: return 'text-green-700 bg-green-50 border-green-200';
-            case OrderItemActionType.Deleted: return 'text-red-700 bg-red-50 border-red-200';
-            case OrderItemActionType.QuantityModified: return 'text-blue-700 bg-blue-50 border-blue-200';
-            case OrderItemActionType.FinalApproved: return 'text-purple-700 bg-purple-50 border-purple-200';
+            case OrderItemActionType.Added:
+            case OrderItemActionType.Deleted:
+            case OrderItemActionType.QuantityModified:
+            case OrderItemActionType.FinalApproved:
+                return strongBrand;
             case OrderItemActionType.Supplied:
-            case OrderItemActionType.AssetSupplied: return 'text-teal-700 bg-teal-50 border-teal-200';
-            default: return 'text-gray-700 bg-gray-50 border-gray-200';
+            case OrderItemActionType.AssetSupplied:
+            default:
+                return softBrand;
         }
     }
 

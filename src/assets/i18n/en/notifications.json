@@ -180,6 +180,7 @@
     "workflowTriggerSummaryGlobal": "Not configured",
     "workflowTriggerSummaryRoles": "Role-based · {{count}} role(s)",
     "workflowTriggerSummarySteps": "Step-based · {{count}} step(s)",
+    "workflowTriggerSummaryDisabled": "Monitoring disabled for this workflow",
     "workflowTriggerConfigure": "Configure",
     "workflowTriggerNoEditPermission": "Workflow edit permission required",
     "workflowTriggersFootnote": "Configure countdown anchors here; edit workflow steps from Workflows.",

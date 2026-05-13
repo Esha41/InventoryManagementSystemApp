@@ -63,6 +63,7 @@
                         | translate : { count: stepTriggerCount(w) }
                     }}
                   </span>
+                  <span *ngSwitchCase="'disabled'">{{ 'orderAutoRejectSettings.workflowTriggerSummaryDisabled' | translate }}</span>
                 </ng-container>
               </div>
             </td>

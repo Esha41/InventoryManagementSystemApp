@@ -85,6 +85,19 @@
               />
               <span class="text-sm text-[var(--color-text)] font-medium">{{ 'workflow.autoRejectModeStepLabel' | translate }}</span>
             </label>
+            <label
+              class="flex items-start gap-3 cursor-pointer px-4 py-3 hover:bg-[var(--color-background-hover)]/50 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[var(--color-brand)]/40"
+            >
+              <input
+                type="radio"
+                name="autoRejectTriggerMode"
+                class="mt-1 h-4 w-4 shrink-0"
+                [(ngModel)]="triggerMode"
+                value="disabled"
+                (ngModelChange)="onTriggerModeChange()"
+              />
+              <span class="text-sm text-[var(--color-text)]">{{ 'workflow.autoRejectModeDisabled' | translate }}</span>
+            </label>
           </div>
         </fieldset>
 

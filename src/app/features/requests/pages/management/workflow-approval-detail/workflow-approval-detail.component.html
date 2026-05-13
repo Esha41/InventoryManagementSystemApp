@@ -122,16 +122,16 @@
       </app-workflow-supply-submission>
 
       <!-- Delegation Restriction Warning -->
-      <div *ngIf="isUserRestricted" class="bg-red-50 border border-red-200 rounded-lg p-4">
+      <div *ngIf="isUserRestricted" class="bg-[var(--color-brand)]/10 border border-[var(--color-brand)]/30 rounded-lg p-4">
         <div class="flex items-start">
           <div class="flex-shrink-0">
-            <lucide-angular [img]="AlertTriangle" class="h-5 w-5 text-red-400"></lucide-angular>
+            <lucide-angular [img]="AlertTriangle" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
           </div>
           <div class="ml-3 rtl:mr-3 rtl:ml-0 flex-1">
-            <h3 class="text-sm font-medium text-red-800">
+            <h3 class="text-sm font-medium text-[var(--color-brand)]">
               {{ 'DELEGATION.RESTRICTED_ACCESS_TITLE' | translate }}
             </h3>
-            <div class="mt-2 text-sm text-red-700">
+            <div class="mt-2 text-sm text-[var(--color-brand)]/90">
               <p>{{ 'DELEGATION.RESTRICTED_ACCESS_MSG' | translate }}</p>
             </div>
           </div>

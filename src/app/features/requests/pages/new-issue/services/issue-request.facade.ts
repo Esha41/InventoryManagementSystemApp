@@ -111,6 +111,15 @@ export class IssueRequestFacade {
     { label: 'newIssueRequest.send', completed: false }
   ];
 
+  /** Stable reference when weapon step is hidden — avoids *ngFor churn in the stepper. */
+  private readonly collapsedStepperSteps: Step[] = [
+    this.steps[0],
+    this.steps[1],
+    this.steps[3],
+    this.steps[4],
+    this.steps[5]
+  ];
+
   filterState: ExtendedFilterState = createInitialFilterState();
   filterOptions: ExtendedFilterOptions = createInitialFilterOptions();
   cartridgeState: CartridgeState = createInitialCartridgeState();
@@ -166,6 +175,25 @@ export class IssueRequestFacade {
 
   get hasAmmunitionSelected(): boolean {
     return this.cartridgeState.selectedEntries.some(e => e.itemType === 'Ammunition');
+  }
+
+  /** Steps shown in the stepper: omits weapon association when no ammunition is selected. */
+  get stepperSteps(): Step[] {
+    return this.hasAmmunitionSelected ? this.steps : this.collapsedStepperSteps;
+  }
+
+  /** Display index for the stepper (collapsed when weapon step is hidden). */
+  get stepperCurrentStep(): number {
+    if (this.hasAmmunitionSelected) {
+      return this.currentStep;
+    }
+    if (this.currentStep <= 1) {
+      return this.currentStep;
+    }
+    if (this.currentStep >= 3) {
+      return this.currentStep - 1;
+    }
+    return 1;
   }
 
   get ammunitionCartridges(): Cartridge[] {
@@ -346,7 +374,22 @@ export class IssueRequestFacade {
 
   // ---- Step navigation (inlined from IssueRequestNavigationService) -------
 
+  /** Maps stepper UI index to internal `currentStep` when weapon step is hidden. */
+  onStepperStepChange(displayIndex: number): void {
+    const internal = this.hasAmmunitionSelected
+      ? displayIndex
+      : displayIndex <= 1
+        ? displayIndex
+        : displayIndex + 1;
+    this.applyInternalStepChange(internal);
+  }
+
+  /** Direct internal step (e.g. tests); prefer `onStepperStepChange` from the stepper UI. */
   onStepChange(step: number): void {
+    this.applyInternalStepChange(step);
+  }
+
+  private applyInternalStepChange(step: number): void {
     this.currentStep = step;
     this.updateQueryParams(step);
     if (step === 2 && this.hasAmmunitionSelected) {
@@ -520,7 +563,9 @@ export class IssueRequestFacade {
       return;
     }
 
-    const entries: WeaponAssociation[] = uniq.map(wid => {
+    // Preserve any 'other' (custom) entries already associated with this ammo line.
+    const preservedOtherEntries = existing.filter(a => a.type === 'other');
+    const catalogEntries: WeaponAssociation[] = uniq.map(wid => {
       const w = this.weaponAssociationState.allWeapons.find(x => x.id === wid);
       return {
         type: 'catalog',
@@ -529,8 +574,14 @@ export class IssueRequestFacade {
         weaponName: w?.name ?? null
       };
     });
+    const merged = [...preservedOtherEntries, ...catalogEntries];
+
     this.replaceWeaponAssociations(map => {
-      map.set(event.ammoItemId, entries);
+      if (merged.length === 0) {
+        map.delete(event.ammoItemId);
+      } else {
+        map.set(event.ammoItemId, merged);
+      }
     });
   }
 
@@ -539,14 +590,34 @@ export class IssueRequestFacade {
     otherName: string;
     caliberId: number | null;
   }): void {
+    const name = (event.otherName ?? '').trim();
+    const existing = this.weaponAssociationState.associations.get(event.ammoItemId) ?? [];
+    const existingOther = existing.find(a => a.type === 'other');
+    const existingOtherName = (existingOther?.otherName ?? '').trim();
+
+    if (existingOtherName === name) {
+      return;
+    }
+
+    // Preserve any 'catalog' entries already associated with this ammo line.
+    const preservedCatalogEntries = existing.filter(a => a.type === 'catalog');
+    const otherEntries: WeaponAssociation[] = name
+      ? [
+          {
+            type: 'other',
+            otherName: name,
+            caliberId: event.caliberId
+          }
+        ]
+      : [];
+    const merged = [...preservedCatalogEntries, ...otherEntries];
+
     this.replaceWeaponAssociations(map => {
-      map.set(event.ammoItemId, [
-        {
-          type: 'other',
-          otherName: event.otherName,
-          caliberId: event.caliberId
-        }
-      ]);
+      if (merged.length === 0) {
+        map.delete(event.ammoItemId);
+      } else {
+        map.set(event.ammoItemId, merged);
+      }
     });
   }
 
@@ -682,10 +753,15 @@ export class IssueRequestFacade {
       this.fromReserve = params.fromReserve;
       this.pendingSelections = params.pendingSelections;
 
+      if (this.currentStep === 2 && !this.hasAmmunitionSelected) {
+        this.currentStep = 1;
+        this.updateQueryParams(this.currentStep);
+      }
+
       if (params.step >= 1 && this.cartridgeState.allCartridges.length === 0 && !this.cartridgeState.loadingCartridges) {
         this.loadCartridges();
       }
-      if (params.step === 2 && this.hasAmmunitionSelected) {
+      if (this.currentStep === 2 && this.hasAmmunitionSelected) {
         this.onLoadWeaponAssociationStep();
       }
       if (params.step === 4) this.syncRequesterNameFromUserDetails();

@@ -62,6 +62,15 @@ export class WorkflowRequestItemsComponent {
     return this.requestDetail?.requestType === 'Order';
   }
 
+  /** Colspan for the full-width “associated weapons” row under a line item. */
+  get requestItemsTableColspan(): number {
+    return this.showViewHistory ? 4 : 3;
+  }
+
+  trackByItemId(_index: number, item: RequestItem): number {
+    return item.itemId ?? item.id ?? _index;
+  }
+
   // Permission check methods using state service
   canReviewWeaponSupply(): boolean {
     return this.stateService.canReviewWeaponSupply();

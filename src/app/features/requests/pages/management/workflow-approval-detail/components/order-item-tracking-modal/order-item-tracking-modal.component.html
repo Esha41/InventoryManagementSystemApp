@@ -10,8 +10,8 @@
 
     <!-- Error -->
     <div *ngIf="error" class="flex flex-col items-center justify-center py-12">
-        <div class="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
-            <lucide-angular [img]="Activity" class="h-6 w-6 text-red-600"></lucide-angular>
+        <div class="h-12 w-12 rounded-full bg-[var(--color-brand)]/10 flex items-center justify-center mb-4">
+            <lucide-angular [img]="Activity" class="h-6 w-6 text-[var(--color-brand)]"></lucide-angular>
         </div>
         <p class="text-[var(--color-text)] font-medium">{{ 'common.errorOccurred' | translate }}</p>
         <button (click)="loadHistory()" class="mt-4 text-[var(--color-brand)] font-medium hover:underline">

@@ -30,7 +30,7 @@
         {{ getReviewButtonText() | translate }}
       </button>
       <button *ngIf="canUpdateRequestAndSupply()" (click)="navigateToSupplyOrder()"
-        class="px-4 py-2 bg-[var(--color-success)] text-white rounded-lg font-medium hover:opacity-90 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-success)] focus:ring-offset-2 shadow-custom-sm">
+        class="px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg font-medium hover:bg-[var(--color-brand-dark)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2 shadow-custom-sm">
         {{ 'workflowApprovalDetail.updateRequestAndSupply' | translate }}
       </button>
     </div>
@@ -51,18 +51,37 @@
           </th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-[var(--color-border)]">
-        <tr *ngFor="let item of requestItems" class="transition-colors hover:bg-[var(--color-background-hover)]">
-          <td class="px-4 py-3 text-sm min-w-0">
-            <button
-              type="button"
-              class="max-w-full font-medium text-start text-[var(--color-text)] underline-offset-2 transition-colors hover:text-[var(--color-brand)] hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 rounded-sm"
-              [appTableClampTooltip]="item.itemName"
-              [attr.aria-label]="('common.viewDetails' | translate) + ': ' + item.itemName"
-              (click)="onItemNameClick($event, item)">
-              {{ item.itemName }}
-            </button>
-            <div *ngIf="hasWeaponAssociations(item)" class="mt-2.5 border-t border-[var(--color-border)]/70 pt-2.5">
+      <tbody>
+        <ng-container *ngFor="let item of requestItems; trackBy: trackByItemId">
+          <tr
+            class="transition-colors hover:bg-[var(--color-background-hover)]"
+            [ngClass]="{
+              'border-b border-[var(--color-border)]': !hasWeaponAssociations(item)
+            }">
+            <td class="px-4 py-3 text-sm min-w-0">
+              <button
+                type="button"
+                class="max-w-full font-medium text-start text-[var(--color-text)] underline-offset-2 transition-colors hover:text-[var(--color-brand)] hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 rounded-sm"
+                [appTableClampTooltip]="item.itemName"
+                [attr.aria-label]="('common.viewDetails' | translate) + ': ' + item.itemName"
+                (click)="onItemNameClick($event, item)">
+                {{ item.itemName }}
+              </button>
+            </td>
+            <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">{{ item.itemNo || '-' }}</td>
+            <td class="px-4 py-3 text-sm text-[var(--color-text)] text-end font-semibold">{{ item.quantity }}</td>
+            <td *ngIf="showViewHistory" class="px-4 py-3 text-center">
+              <button (click)="onHistoryClick($event, item)"
+                class="p-1.5 hover:bg-[var(--color-background-muted)] rounded-lg transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                title="{{ 'ORDER_TRACKING.VIEW_HISTORY' | translate }}">
+                <lucide-angular [img]="HistoryIcon" class="h-4 w-4"></lucide-angular>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="hasWeaponAssociations(item)"
+            class="transition-colors hover:bg-[var(--color-background-hover)] border-b border-[var(--color-border)]">
+            <td [attr.colspan]="requestItemsTableColspan"
+              class="px-4 pt-3 pb-3 text-sm border-t border-[var(--color-border)]">
               <p class="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
                 {{ 'workflowApprovalDetail.associatedWeapons' | translate }}
               </p>
@@ -72,19 +91,9 @@
                 [linkable]="true"
                 customLabelKey="workflowApprovalDetail.associatedWeaponOther"
                 (catalogAssociationClick)="onCatalogWeaponAssociationClick($event)" />
-            </div>
-          </td>
-          <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">{{ item.itemNo || '-' }}</td>
-          <td class="px-4 py-3 text-sm text-[var(--color-text)] text-end font-semibold">{{ item.quantity }}
-          </td>
-          <td *ngIf="showViewHistory" class="px-4 py-3 text-center">
-            <button (click)="onHistoryClick($event, item)"
-              class="p-1.5 hover:bg-[var(--color-background-muted)] rounded-lg transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-              title="{{ 'ORDER_TRACKING.VIEW_HISTORY' | translate }}">
-              <lucide-angular [img]="HistoryIcon" class="h-4 w-4"></lucide-angular>
-            </button>
-          </td>
-        </tr>
+            </td>
+          </tr>
+        </ng-container>
       </tbody>
     </table>
   </div>

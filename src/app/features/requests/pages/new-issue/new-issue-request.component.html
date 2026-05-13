@@ -7,9 +7,10 @@
 
     <!-- Stepper -->
     <app-stepper data-onboarding="issue-stepper"
-      [steps]="facade.steps"
-      [currentStep]="facade.currentStep"
-      (stepChange)="facade.onStepChange($event)">
+      [steps]="facade.stepperSteps"
+      [currentStep]="facade.stepperCurrentStep"
+      [animateWhenAmmunitionSelected]="facade.hasAmmunitionSelected"
+      (stepChange)="facade.onStepperStepChange($event)">
     </app-stepper>
 
     <app-error-banner
@@ -80,7 +81,7 @@
       [usageDateFrom]="facade.usageFormData.usageDateFrom"
       [usageTimeFrom]="facade.usageFormData.usageTimeFrom"
       [usageDateTo]="facade.usageFormData.usageDateTo"
-      [usageTimeTo]="facade.usageFormData.usageTimeTo"      
+      [usageTimeTo]="facade.usageFormData.usageTimeTo"
       [requestPurposeNotes]="facade.usageFormData.requestPurposeNotes"
       [requesterComments]="facade.reviewFormData.requesterComments"
       [selectedFiles]="facade.usageFormFiles"

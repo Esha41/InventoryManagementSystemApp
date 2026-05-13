@@ -180,6 +180,7 @@
     "workflowTriggerSummaryGlobal": "غير مُهيأ",
     "workflowTriggerSummaryRoles": "حسب الدور · {{count}} دور",
     "workflowTriggerSummarySteps": "حسب الخطوة · {{count}} خطوة",
+    "workflowTriggerSummaryDisabled": "المراقبة معطّلة لهذا المسار",
     "workflowTriggerConfigure": "تهيئة",
     "workflowTriggerNoEditPermission": "يتطلب صلاحية تعديل مسار العمل",
     "workflowTriggersFootnote": "اضبط مراسي العد هنا؛ وحرّر خطوات مسار العمل من صفحة مسارات العمل.",

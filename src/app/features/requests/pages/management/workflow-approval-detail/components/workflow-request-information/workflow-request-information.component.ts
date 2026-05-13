@@ -50,50 +50,13 @@ export class WorkflowRequestInformationComponent {
   }
 
   /**
-   * Get priority text color class
-   * Colors: Normal = Green, Urgent = Orange, VeryUrgent = Red, Critical = Red
+   * Get priority text color class.
+   * All priority levels now render in the brand color for visual cohesion with
+   * the workflow approval page theme; the priority text label itself remains
+   * the source of differentiation between levels.
    */
   getPriorityTextColor(priority?: number | string | null): string {
-    if (!priority) return 'text-gray-600';
-
-    // Normalize priority to string
-    let priorityStr: string;
-    if (typeof priority === 'number') {
-      switch (priority) {
-        case 1: priorityStr = 'Normal'; break;
-        case 2: priorityStr = 'Urgent'; break;
-        case 3: priorityStr = 'VeryUrgent'; break;
-        case 4: priorityStr = 'Critical'; break;
-        default: return 'text-gray-600';
-      }
-    } else {
-      priorityStr = priority.toString();
-    }
-
-    // Handle Priority type values: 'Normal' | 'Urgent' | 'VeryUrgent' | 'Critical'
-    switch (priorityStr) {
-      case 'Normal':
-        return 'text-green-600';
-      case 'Urgent':
-        return 'text-orange-600';
-      case 'VeryUrgent':
-        return 'text-red-600';
-      case 'Critical':
-        return 'text-red-600';
-      default: {
-        const priorityLower = priorityStr.toLowerCase().trim().replace(/\s+/g, '');
-        if (priorityLower === 'normal' || priorityLower === '1') {
-          return 'text-green-600';
-        } else if (priorityLower === 'urgent' || priorityLower === '2') {
-          return 'text-orange-600';
-        } else if (priorityLower === 'veryurgent' || priorityLower === '3') {
-          return 'text-red-600';
-        } else if (priorityLower === 'critical' || priorityLower === '4') {
-          return 'text-red-600';
-        }
-        return 'text-gray-600';
-      }
-    }
+    return priority ? 'text-[var(--color-brand)]' : 'text-[var(--color-text-muted)]';
   }
 
   private normalizePriorityToNumber(priority?: number | string | null): number | undefined {

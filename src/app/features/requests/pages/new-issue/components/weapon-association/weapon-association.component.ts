@@ -88,8 +88,14 @@ export class WeaponAssociationComponent implements OnChanges {
   @Output() next = new EventEmitter<void>();
   @Output() previous = new EventEmitter<void>();
 
-  selectionMode: Map<number, 'catalog' | 'other'> = new Map();
   otherNameInput: Map<number, string> = new Map();
+  /**
+   * Explicit per-ammo section toggles. Unset entries fall back to
+   * "is there an existing association of that type?" so re-entering the step
+   * pre-expands the sections that already have data.
+   */
+  private readonly catalogSectionEnabled = new Map<number, boolean>();
+  private readonly customSectionEnabled = new Map<number, boolean>();
   /** Per ammunition line: when true, catalog dropdown lists all assignable weapons. */
   private readonly viewAllWeaponsByAmmoId = new Map<number, boolean>();
 
@@ -132,12 +138,50 @@ export class WeaponAssociationComponent implements OnChanges {
     return this.associationsForAmmo(ammoItemId).filter(a => a.type === 'catalog').length;
   }
 
-  /** Prefer persisted associations, then explicit UI toggle. */
-  getEffectiveMode(ammoItemId: number): 'catalog' | 'other' | null {
-    const list = this.associationsForAmmo(ammoItemId);
-    if (list.length === 0) return this.selectionMode.get(ammoItemId) ?? null;
-    const t = list[0].type;
-    return list.every(x => x.type === t) ? t : 'catalog';
+
+  isCatalogSectionEnabled(ammoItemId: number): boolean {
+    const explicit = this.catalogSectionEnabled.get(ammoItemId);
+    if (explicit !== undefined) return explicit;
+    return this.associationsForAmmo(ammoItemId).some(a => a.type === 'catalog');
+  }
+
+  isCustomSectionEnabled(ammoItemId: number): boolean {
+    const explicit = this.customSectionEnabled.get(ammoItemId);
+    if (explicit !== undefined) return explicit;
+    return this.associationsForAmmo(ammoItemId).some(a => a.type === 'other');
+  }
+
+  toggleCatalogSection(ammoItemId: number): void {
+    const next = !this.isCatalogSectionEnabled(ammoItemId);
+    this.catalogSectionEnabled.set(ammoItemId, next);
+
+    if (!next) {
+      this.catalogWeaponIdsByAmmoId.delete(ammoItemId);
+      const ammo = this.ammunitionItems.find(a => a.id === ammoItemId);
+      this.associateCatalogWeapons.emit({
+        ammoItemId,
+        weaponIds: [],
+        caliberId: ammo ? this.resolveAssociationCaliberId(ammo, []) : null
+      });
+    }
+    this.cdr.markForCheck();
+  }
+
+  toggleCustomSection(ammoItemId: number): void {
+    const next = !this.isCustomSectionEnabled(ammoItemId);
+    this.customSectionEnabled.set(ammoItemId, next);
+
+    if (!next) {
+      this.otherNameInput.set(ammoItemId, '');
+      const ammo = this.ammunitionItems.find(a => a.id === ammoItemId);
+      const cal = ammo ? this.effectiveAmmoCaliberId(ammo) : null;
+      this.associateOtherWeapon.emit({
+        ammoItemId,
+        otherName: '',
+        caliberId: cal != null && Number.isFinite(Number(cal)) ? Number(cal) : null
+      });
+    }
+    this.cdr.markForCheck();
   }
 
   onCatalogDropdownChange(
@@ -152,17 +196,14 @@ export class WeaponAssociationComponent implements OnChanges {
 
     if (uniq.length === 0) {
       this.catalogWeaponIdsByAmmoId.delete(ammo.id);
-      this.clearAssociation.emit(ammo.id);
-      return;
+    } else {
+      this.catalogWeaponIdsByAmmoId.set(ammo.id, [...uniq]);
     }
 
-    const cal = this.resolveAssociationCaliberId(ammo, uniq);
-
-    this.catalogWeaponIdsByAmmoId.set(ammo.id, [...uniq]);
     this.associateCatalogWeapons.emit({
       ammoItemId: ammo.id,
       weaponIds: uniq,
-      caliberId: cal
+      caliberId: this.resolveAssociationCaliberId(ammo, uniq)
     });
   }
 
@@ -241,19 +282,6 @@ export class WeaponAssociationComponent implements OnChanges {
     });
   }
 
-  onModeChange(ammoItemId: number, mode: 'catalog' | 'other'): void {
-    const current = this.getEffectiveMode(ammoItemId);
-    if (current === mode) return;
-
-    this.selectionMode.set(ammoItemId, mode);
-    this.catalogWeaponIdsByAmmoId.delete(ammoItemId);
-    this.clearAssociation.emit(ammoItemId);
-    if (mode === 'other') {
-      this.otherNameInput.set(ammoItemId, '');
-    }
-    this.cdr.markForCheck();
-  }
-
   onOtherNameChange(ammoItemId: number, name: string): void {
     this.otherNameInput.set(ammoItemId, name);
     this.cdr.markForCheck();
@@ -308,6 +336,9 @@ export class WeaponAssociationComponent implements OnChanges {
         this.weaponOptionsByAmmoId.delete(id);
         this.catalogWeaponIdsByAmmoId.delete(id);
         this.viewAllWeaponsByAmmoId.delete(id);
+        this.catalogSectionEnabled.delete(id);
+        this.customSectionEnabled.delete(id);
+        this.otherNameInput.delete(id);
       }
     }
 

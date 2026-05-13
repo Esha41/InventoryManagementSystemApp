@@ -49,7 +49,7 @@ export class OrderAutoRejectWorkflowTriggersModalComponent implements OnInit, On
   roles: RoleDto[] = [];
   loadedWorkflow: BackendWorkflowDto | null = null;
 
-  triggerMode: 'none' | 'role' | 'step' = 'none';
+  triggerMode: 'none' | 'role' | 'step' | 'disabled' = 'none';
   triggerRoleIds: string[] = [];
   triggerStepIds: number[] = [];
 
@@ -147,6 +147,10 @@ export class OrderAutoRejectWorkflowTriggersModalComponent implements OnInit, On
       this.triggerMode = 'step';
       this.triggerStepIds = [...(wf.autoRejectTriggerStepIds ?? []).filter(id => id != null)];
       this.triggerRoleIds = [];
+    } else if (modeRaw === 'disabled') {
+      this.triggerMode = 'disabled';
+      this.triggerRoleIds = [];
+      this.triggerStepIds = [];
     } else {
       this.triggerMode = 'none';
       this.triggerRoleIds = [];
@@ -198,6 +202,9 @@ export class OrderAutoRejectWorkflowTriggersModalComponent implements OnInit, On
       this.triggerStepIds = [];
     } else if (this.triggerMode === 'step') {
       this.triggerRoleIds = [];
+    } else if (this.triggerMode === 'disabled') {
+      this.triggerRoleIds = [];
+      this.triggerStepIds = [];
     } else {
       this.triggerRoleIds = [];
       this.triggerStepIds = [];
@@ -243,7 +250,9 @@ export class OrderAutoRejectWorkflowTriggersModalComponent implements OnInit, On
             ? 'None'
             : this.triggerMode === 'role'
               ? 'Role'
-              : 'Step',
+              : this.triggerMode === 'step'
+                ? 'Step'
+                : 'Disabled',
         triggerRoleIds: rolePayload,
         triggerStepIds: stepPayload
       })

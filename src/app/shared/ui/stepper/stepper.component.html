@@ -1,4 +1,9 @@
-<div class="w-full mb-6 sm:mb-8">
+<div
+  class="w-full mb-6 sm:mb-8"
+  [ngClass]="{
+    'animate-slide-in motion-reduce:animate-none':
+      stepperEnterActive && animateWhenAmmunitionSelected
+  }">
   <div class="overflow-x-auto scrollbar-hide">
     <div class="flex items-center justify-center min-w-max px-2 sm:px-4 py-2">
       <div class="flex items-center gap-0">
@@ -7,7 +12,7 @@
           <div class="flex flex-col items-center gap-1.5 sm:gap-2">
             <!-- Step Number Circle -->
             <div
-              class="relative flex items-center justify-center w-7 h-7 sm:w-10 sm:h-10 rounded-full transition-all flex-shrink-0"
+              class="relative flex items-center justify-center w-7 h-7 sm:w-10 sm:h-10 rounded-full flex-shrink-0 transition-[transform,background-color,box-shadow,color,border-color] duration-200 ease-out"
               [ngClass]="{
                 'bg-[var(--color-brand)] text-white shadow-lg scale-105 sm:scale-110': isStepActive(i),
                 'bg-[var(--color-background-muted)] text-[var(--color-text-muted)] border-2 border-[var(--color-border)]': !isStepActive(i)
@@ -23,7 +28,7 @@
             <!-- Step Label -->
             <div class="flex flex-col items-center gap-0.5 sm:gap-1">
               <span
-                class="text-[10px] sm:text-sm font-medium whitespace-nowrap text-center max-w-[60px] sm:max-w-none leading-tight"
+                class="text-[10px] sm:text-sm font-medium whitespace-nowrap text-center max-w-[60px] sm:max-w-none leading-tight transition-[color,font-weight] duration-200 ease-out"
                 [ngClass]="{
                   'text-[var(--color-brand)] font-semibold': isStepActive(i),
                   'text-[var(--color-text-muted)]': !isStepActive(i)
@@ -41,9 +46,9 @@
 
           <!-- Connector Line -->
           <div *ngIf="i < steps.length - 1"
-            class="h-0.5 w-8 sm:w-16 lg:w-24 mx-1 sm:mx-4 mb-6 sm:mb-8 transition-all flex-shrink-0" [ngClass]="{
-              'bg-[var(--color-brand)]': isStepActive(i),
-              'bg-[var(--color-border)]': !isStepActive(i)
+            class="h-0.5 w-8 sm:w-16 lg:w-24 mx-1 sm:mx-4 mb-6 sm:mb-8 flex-shrink-0 transition-colors duration-200 ease-out" [ngClass]="{
+              'bg-[var(--color-brand)]': isConnectorCompleted(i),
+              'bg-[var(--color-border)]': !isConnectorCompleted(i)
             }">
           </div>
         </div>

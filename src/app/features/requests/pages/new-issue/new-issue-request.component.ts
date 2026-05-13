@@ -38,7 +38,6 @@ import { IssueRequestFacade } from './services/issue-request.facade';
     WeaponAssociationComponent
   ],
   templateUrl: './new-issue-request.component.html',
-  styleUrls: ['./new-issue-request.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NewIssueRequestComponent implements OnInit, OnDestroy, AfterViewInit {

@@ -115,6 +115,7 @@
     "autoRejectModeStep": "عند الوصول لهذه الخطوات",
     "autoRejectModeRoleLabel": "حسب الدور",
     "autoRejectModeStepLabel": "حسب الخطوة",
+    "autoRejectModeDisabled": "معطّل",
     "autoRejectRolesLabel": "أدوار المحفّز",
     "autoRejectRolesPlaceholder": "اختر دوراً واحداً أو أكثر",
     "autoRejectRolesHint": "يبدأ العد التنازلي عند وصول الطلب إلى خطوة مُعيَّن لها أي دور رئيسي أو موازٍ محدد.",
