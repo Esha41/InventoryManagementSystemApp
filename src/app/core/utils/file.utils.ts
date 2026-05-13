@@ -78,19 +78,49 @@ export const MAX_FILE_SIZE_MB = 30;
 /**
  * Allowed file types/extensions
  */
-export const ALLOWED_FILE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.pdf', '.xlsx', '.docx'];
+export const ALLOWED_FILE_EXTENSIONS = ['.pdf', '.docx'];
 
 /**
  * Allowed MIME types
  */
 export const ALLOWED_MIME_TYPES = [
-  'image/jpeg',
-  'image/jpg',
-  'image/png',
   'application/pdf',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 ];
+
+/** User-facing copy for attachment type errors (matches toast / i18n `toast.onlyPdfDocxFilesAllowed`). */
+export const ONLY_PDF_DOCX_FILES_ALLOWED_MESSAGE = 'Only PDF and DOCX files are allowed.';
+
+/**
+ * Validates each file in order; stops at the first invalid file.
+ */
+export function validateAttachments(
+  files: File[]
+): { valid: true } | { valid: false; errorMessage: string } {
+  for (const file of files) {
+    const r = validateFile(file);
+    if (!r.isValid) {
+      return { valid: false, errorMessage: r.errorMessage };
+    }
+  }
+  return { valid: true };
+}
+
+/**
+ * Shows attachment validation errors; maps the standard PDF/DOCX message to i18n when available.
+ */
+export function showAttachmentValidationToast(
+  translate: TranslateService,
+  toastService: ToastService,
+  errorMessage: string
+): void {
+  const title = translate.instant('toast.error') || 'Error';
+  const body =
+    errorMessage === ONLY_PDF_DOCX_FILES_ALLOWED_MESSAGE
+      ? translate.instant('toast.onlyPdfDocxFilesAllowed')
+      : errorMessage;
+  toastService.error(body, title);
+}
 
 /**
  * Validates if a file type is allowed
@@ -102,22 +132,20 @@ export function validateFileType(file: File): { isValid: boolean; errorMessage: 
     return { isValid: false, errorMessage: 'No file provided' };
   }
 
-  const fileName = file.name.toLowerCase();
-  const _fileExtension = fileName.substring(fileName.lastIndexOf('.'));
-  
-  // Check by extension
-  const isValidExtension = ALLOWED_FILE_EXTENSIONS.some(ext => 
-    fileName.endsWith(ext.toLowerCase())
-  );
+  const fileName = file.name.toLowerCase().trim();
+  const dot = fileName.lastIndexOf('.');
+  const extension = dot >= 0 ? fileName.slice(dot) : '';
 
-  // Check by MIME type (if available)
-  const isValidMimeType = !file.type || ALLOWED_MIME_TYPES.includes(file.type.toLowerCase());
+  const isValidExtension = ALLOWED_FILE_EXTENSIONS.some(ext => extension === ext.toLowerCase());
 
-  if (!isValidExtension && !isValidMimeType) {
-    return {
-      isValid: false,
-      errorMessage: `File "${file.name}" has an invalid format. Allowed formats: JPEG, JPG, PNG, PDF, XLSX, DOCX.`
-    };
+  if (!isValidExtension) {
+    return { isValid: false, errorMessage: ONLY_PDF_DOCX_FILES_ALLOWED_MESSAGE };
+  }
+
+  const mime = (file.type || '').trim().toLowerCase();
+  const mimeAmbiguous = !mime || mime === 'application/octet-stream';
+  if (!mimeAmbiguous && !ALLOWED_MIME_TYPES.includes(mime)) {
+    return { isValid: false, errorMessage: ONLY_PDF_DOCX_FILES_ALLOWED_MESSAGE };
   }
 
   return { isValid: true, errorMessage: '' };
@@ -209,6 +237,13 @@ export function showFileValidationErrors(
   const errorTitle = translate.instant('toast.error') || 'Error';
 
   const translatedErrors = invalidErrors.map(errorMsg => {
+    if (
+      errorMsg === ONLY_PDF_DOCX_FILES_ALLOWED_MESSAGE ||
+      errorMsg.includes('Only PDF and DOCX files are allowed')
+    ) {
+      return translate.instant('toast.onlyPdfDocxFilesAllowed');
+    }
+
     // Match backend/frontend format error:
     // File "name.ext" has an invalid format. Allowed formats: ...
     const formatMatch = errorMsg.match(/File "([^"]+)" has an invalid format/);
