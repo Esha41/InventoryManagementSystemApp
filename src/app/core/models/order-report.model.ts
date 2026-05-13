@@ -27,6 +27,11 @@ export interface OrderSummary {
   supplyDate?: string | Date | null; // Supply/pickup date (permission-gated)
   /** Numeric request status (e.g. 3 = approved); used for permission-gated sections. */
   requestStatusCode?: number;
+  /** Planned usage window (orders only); raw values for display pipes/formatters. */
+  usageDateFrom?: string | Date | null;
+  usageTimeFrom?: string | null;
+  usageDateTo?: string | Date | null;
+  usageTimeTo?: string | null;
 }
 
 /**

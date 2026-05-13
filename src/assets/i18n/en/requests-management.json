@@ -88,6 +88,8 @@
         "fromAllowance": "(From Allowance)",
         "outsideOfAllowance": "(Outside of Allowance)",
         "requestType": "Request Type",
+        "usageFromDate": "Usage From Date",
+        "usageToDate": "Usage To Date",
         "usagePurpose": "Usage Purpose",
         "usePurposeNotes": "Use Purpose Notes",
         "supplyDate": "Supply Date",

@@ -133,7 +133,11 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
     isFromAllowance: order.isFromAllowance || false,
     requestType: requestType,
     supplyDate: order.supplyDate ?? null,
-    requestStatusCode: statusValue
+    requestStatusCode: statusValue,
+    usageDateFrom: order.usageDateFrom ?? null,
+    usageTimeFrom: order.usageTimeFrom ?? null,
+    usageDateTo: order.usageDateTo ?? null,
+    usageTimeTo: order.usageTimeTo ?? null
   };
 }
 

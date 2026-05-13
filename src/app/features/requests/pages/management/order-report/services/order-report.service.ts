@@ -544,6 +544,19 @@ export class OrderReportService {
       ) || 'N/A';
     }
 
+    if (baseRequest.usageDateFrom !== undefined) {
+      updatedSummary.usageDateFrom = baseRequest.usageDateFrom ?? null;
+    }
+    if (baseRequest.usageTimeFrom !== undefined) {
+      updatedSummary.usageTimeFrom = baseRequest.usageTimeFrom ?? null;
+    }
+    if (baseRequest.usageDateTo !== undefined) {
+      updatedSummary.usageDateTo = baseRequest.usageDateTo ?? null;
+    }
+    if (baseRequest.usageTimeTo !== undefined) {
+      updatedSummary.usageTimeTo = baseRequest.usageTimeTo ?? null;
+    }
+
     // Update lastUpdated with raw date for pipe formatting
     if (!updatedSummary.lastUpdated) {
       updatedSummary.lastUpdated = baseRequest.requestDate || baseRequest.creationDate || null;
