@@ -398,14 +398,15 @@ export class DropdownComponent<T = Primitive>
 
     this.isOpen = !this.isOpen;
     if (this.isOpen) {
+      // Match {@link open}: trigger-toggle must not reuse a previous session's search text.
+      this.searchTerm = '';
       this.syncOpenMainScrollTop();
       this.attachPanelLayoutObserver();
       this.syncPanelGeometryAfterOpen();
       document.addEventListener('scroll', this.scrollHandler, { passive: true, capture: true });
     } else {
-      this.detachPanelLayoutObserver();
-      this.openMainScrollTop = null;
-      document.removeEventListener('scroll', this.scrollHandler, { capture: true });
+      // Closing via the trigger skipped {@link close}; apply the same cleanup (search + parent sync).
+      this.applyPanelCloseCleanup();
     }
     this.openedChange.emit(this.isOpen);
     this.ensureTriggerFocusNoScroll();
@@ -546,6 +547,15 @@ export class DropdownComponent<T = Primitive>
       return;
     }
     this.isOpen = false;
+    this.applyPanelCloseCleanup();
+    this.openedChange.emit(false);
+  }
+
+  /** Shared when the panel closes (backdrop, select, or trigger toggle). */
+  private applyPanelCloseCleanup(): void {
+    if (this.paginationOnScroll) {
+      this.remoteSearchChange.emit('');
+    }
     this.hoveredIndex = null;
     this.searchTerm = '';
     this.openMainScrollTop = null;
@@ -560,8 +570,6 @@ export class DropdownComponent<T = Primitive>
         list.style.maxHeight = '';
       }
     }
-
-    this.openedChange.emit(false);
   }
 
   onSearchChange(event: Event): void {

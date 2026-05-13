@@ -18,7 +18,7 @@ import { API_ENDPOINTS } from '@constants/app.constants';
 import { PaginatedList, PagedRequest } from '@models/api-response.model';
 import { FilterData } from '@models/pagination.model';
 import { LookupItem } from '@models/lookup.model';
-import { Subject, takeUntil, filter, take, switchMap, finalize } from 'rxjs';
+import { Subject, takeUntil, filter, take, switchMap } from 'rxjs';
 import { Observable } from 'rxjs';
 import { UserContextService } from '@services/user-context.service';
 import { BackendAuthService } from '@services/backend-auth.service';
@@ -28,6 +28,7 @@ import { BackendUserDto } from '@models/backend-user.model';
 import { getLocalizedName, getCurrentLang, Localizable } from '@utils/localization.utils';
 import { getFileSizeFromFile, removeFile, validateFile, MAX_FILE_SIZE_MB, showFileValidationErrors } from '@utils/file.utils';
 import { ConfirmationDialogComponent, ConfirmationType } from '@components/confirmation-dialog/confirmation-dialog.component';
+import { VirtualPagedListLoader } from '@components/virtual-paged-list-loader/virtual-paged-list.loader';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { ONBOARDING_TOUR } from '@core/tokens/onboarding-tour.token';
 import { IOnboardingTourProvider } from '@core/interfaces/onboarding-tour-provider.interface';
@@ -66,7 +67,7 @@ type CatalogListItem = AmmunitionReadDto | WeaponDto | ExplosiveDto;
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit {
-  private static readonly CATALOG_PAGE_SIZE = 10;
+  private static readonly CATALOG_PAGE_SIZE = 20;
 
   readonly Plus = Plus;
   readonly X = X;
@@ -94,13 +95,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
   departments: LookupItem[] = [];
   requesters: LookupItem[] = [];
   requestPurposes: RequestPurpose[] = [];
-  /** Accumulated catalog rows for discard line item picker (Ammo / Weapon / Explosive tabs). */
-  items: CatalogListItem[] = [];
-  /** Server paging / search for catalog only — other dropdowns unchanged. */
-  itemCatalogHasMore = false;
-  itemCatalogLoadingMore = false;
-  itemCatalogNextPage = 1;
-  private itemCatalogSearchTerm = '';
+  readonly itemCatalog: VirtualPagedListLoader<CatalogListItem>;
   priorityOptions = [
     { value: 1, labelKey: 'common.priorityLevels.Normal' },
     { value: 2, labelKey: 'common.priorityLevels.Urgent' },
@@ -111,7 +106,6 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
   isLoadingDepartments = false;
   isLoadingRequesters = false;
   isLoadingRequestPurposes = false;
-  isLoadingItems = false;
 
   isSubmitted = false;
   errors: { [key: string]: string } = {};
@@ -161,7 +155,26 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
     private backendUserService: BackendUserService,
     private cdr: ChangeDetectorRef,
     @Optional() @Inject(ONBOARDING_TOUR) private onboardingTourService: IOnboardingTourProvider | null
-  ) { }
+  ) {
+    this.itemCatalog = new VirtualPagedListLoader<CatalogListItem>({
+      destroy$: this.destroy$,
+      fetchPage: (page) => this.getCatalogPaginated(page),
+      markForCheck: () => this.cdr.markForCheck(),
+      onFetchError: () => {
+        this.translate
+          .get(['toast.error', 'discardRequest.errors.failedToLoadItems'])
+          .pipe(takeUntil(this.destroy$))
+          .subscribe((translations: Record<string, string>) => {
+            this.toastService.error(
+              translations['discardRequest.errors.failedToLoadItems'] || 'Failed to load items',
+              translations['toast.error']
+            );
+          });
+      },
+      afterPageLoaded: () => this.ensureDiscardCatalogSelectionsMerged(),
+      getItemId: (row) => Number(row.id)
+    });
+  }
 
   ngAfterViewInit(): void {
     setTimeout(() => this.onboardingTourService?.checkAndStartPageTour('discard-request'), 300);
@@ -206,7 +219,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
     this.loadDepartments();
     this.loadRequesters();
     this.loadRequestPurposes();
-    this.loadDiscardCatalogInitial();
+    this.itemCatalog.loadInitial();
   }
 
   private loadDepartments(): void {
@@ -302,31 +315,6 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
       });
   }
 
-  private loadDiscardCatalogInitial(): void {
-    this.itemCatalogSearchTerm = '';
-    this.itemCatalogNextPage = 1;
-    this.items = [];
-    this.itemCatalogHasMore = false;
-    this.fetchDiscardCatalogPage(false);
-  }
-
-  onDiscardCatalogLoadMore(): void {
-    if (!this.itemCatalogHasMore || this.itemCatalogLoadingMore || this.isLoadingItems) return;
-    this.fetchDiscardCatalogPage(true);
-  }
-
-  onDiscardCatalogRemoteSearch(term: string): void {
-    const t = (term ?? '').trim();
-    if (t === this.itemCatalogSearchTerm.trim()) {
-      return;
-    }
-    this.itemCatalogSearchTerm = t;
-    this.itemCatalogNextPage = 1;
-    this.items = [];
-    this.itemCatalogHasMore = false;
-    this.fetchDiscardCatalogPage(false);
-  }
-
   private buildCatalogPagedRequest(page: number, searchTerm: string): PagedRequest {
     const term = searchTerm.trim();
     let filter: FilterData | undefined;
@@ -347,7 +335,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   private getCatalogPaginated(page: number): Observable<PaginatedList<CatalogListItem>> {
-    const req = this.buildCatalogPagedRequest(page, this.itemCatalogSearchTerm);
+    const req = this.buildCatalogPagedRequest(page, this.itemCatalog.searchTerm);
     if (this.selectedItemType === 'Weapon') {
       return this.weaponService.getAllPaginated(req) as Observable<PaginatedList<CatalogListItem>>;
     }
@@ -357,71 +345,15 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
     return this.ammunitionService.getAllPaginated(req) as Observable<PaginatedList<CatalogListItem>>;
   }
 
-  private fetchDiscardCatalogPage(append: boolean): void {
-    const pageNum = append ? this.itemCatalogNextPage : 1;
-    if (append) {
-      this.itemCatalogLoadingMore = true;
-    } else {
-      this.isLoadingItems = true;
-    }
-
-    this.getCatalogPaginated(pageNum)
-      .pipe(
-        takeUntil(this.destroy$),
-        finalize(() => {
-          this.isLoadingItems = false;
-          this.itemCatalogLoadingMore = false;
-          this.cdr.markForCheck();
-        })
-      )
-      .subscribe({
-        next: page => {
-          const batch = page?.items ?? [];
-          if (append && batch.length > 0) {
-            const seen = new Set(this.items.map(row => Number(row.id)));
-            for (const row of batch) {
-              const id = Number(row.id);
-              if (!seen.has(id)) {
-                seen.add(id);
-                this.items.push(row);
-              }
-            }
-          } else {
-            this.items = batch;
-          }
-          this.itemCatalogHasMore = page?.hasNextPage ?? false;
-          this.itemCatalogNextPage = (page?.pageIndex ?? pageNum) + 1;
-          this.ensureDiscardCatalogSelectionsMerged();
-          this.cdr.markForCheck();
-        },
-        error: () => {
-          this.translate
-            .get(['toast.error', 'discardRequest.errors.failedToLoadItems'])
-            .pipe(takeUntil(this.destroy$))
-            .subscribe((translations: Record<string, string>) => {
-              this.toastService.error(
-                translations['discardRequest.errors.failedToLoadItems'] || 'Failed to load items',
-                translations['toast.error']
-              );
-            });
-          if (!append) {
-            this.items = [];
-            this.itemCatalogHasMore = false;
-          }
-          this.cdr.markForCheck();
-        }
-      });
-  }
-
   private ensureDiscardCatalogSelectionsMerged(): void {
     for (let i = 0; i < this.discardItems.length; i++) {
       const id = this.discardItems[i]?.itemId;
       if (id == null) continue;
-      if (this.items.some(row => Number(row.id) === Number(id))) continue;
+      if (this.itemCatalog.items.some(row => Number(row.id) === Number(id))) continue;
       this.fetchCatalogRowById(Number(id)).pipe(takeUntil(this.destroy$)).subscribe({
         next: row => {
-          if (!row || this.items.some(x => Number(x.id) === Number(row.id))) return;
-          this.items = [row, ...this.items];
+          if (!row || this.itemCatalog.items.some(x => Number(x.id) === Number(row.id))) return;
+          this.itemCatalog.items = [row, ...this.itemCatalog.items];
           this.cdr.markForCheck();
         },
         error: () => {}
@@ -450,7 +382,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
       this.discardItems.forEach(item => {
         item.itemId = null;
       });
-      this.loadDiscardCatalogInitial();
+      this.itemCatalog.loadInitial();
     }
   }
 
@@ -699,7 +631,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
     this.errors = {};
     // Reset item type to default and reload items
     this.selectedItemType = 'Ammunition';
-    this.loadDiscardCatalogInitial();
+    this.itemCatalog.loadInitial();
   }
 
   onFilesSelected(event: Event): void {

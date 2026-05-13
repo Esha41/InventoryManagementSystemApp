@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Subject, takeUntil, forkJoin, of } from 'rxjs';
+import { Observable, Subject, takeUntil, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { LucideAngularModule, Plus, Edit2, Trash2, Search, X } from 'lucide-angular';
 import { ApiService } from '@services/api.service';
@@ -22,8 +22,10 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
 import { TranslationService } from '@services/translation.service';
 import { ToastService } from '@services/toast.service';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
+import { MultiPhaseItemCatalogLoader, ItemCatalogPhase } from '@components/multi-phase-item-catalog-loader/multi-phase-item-catalog.loader';
 import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
-import { AllowanceItemDto, AllowanceTableRow } from '@models/allowance.model';
+import { AllowanceItemDto, AllowanceItemType, AllowanceTableRow } from '@models/allowance.model';
+import { PagedRequest, PaginatedList } from '@models/api-response.model';
 import { TranslationMap } from '@models/common.types';
 import { processAllowanceData } from '@utils/allowance.mapper';
 import { filterAllowances } from '@utils/allowance.utils';
@@ -80,11 +82,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   selectedDepartment: number | string | null = null;
   isAdminUser = false;
   userDepartmentId: number | null = null;
-  allItems: (AmmunitionReadDto | WeaponDto | ExplosiveDto)[] = []; // All items from API
-  ammunitionItems: AmmunitionReadDto[] = []; // Ammunition items
-  weaponItems: WeaponDto[] = []; // Weapon items
-  explosiveItems: ExplosiveDto[] = []; // Explosive items
-  filteredItems: (AmmunitionReadDto | WeaponDto | ExplosiveDto)[] = []; // Items filtered by selected type and department
+  readonly itemCatalog: MultiPhaseItemCatalogLoader<AllowanceItemType, ItemType | null>;
   selectedItem: number | string | null = null;
   selectedItemType: ItemType | null = null; // Filter by item type: Ammunition, Weapon, or Explosive
   itemTypeOptions: { value: ItemType | null; label: string }[] = []; // Item type dropdown options
@@ -92,7 +90,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   // Dropdown label functions
   readonly departmentOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null) =>
     getLocalizedName(this.unwrapOption(option), getCurrentLang(this.translateService));
-  readonly itemOptionLabel = (option: DropdownOption<AmmunitionReadDto | WeaponDto | ExplosiveDto> | AmmunitionReadDto | WeaponDto | ExplosiveDto | null) => {
+  readonly itemOptionLabel = (option: DropdownOption<AllowanceItemType> | AllowanceItemType | null) => {
     const item = this.unwrapOption(option);
     if (!item) return '';
     const localizedName = getLocalizedName(item, getCurrentLang(this.translateService));
@@ -114,6 +112,8 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
+  private static readonly ITEM_FILTER_PAGE_SIZE = 20;
+
   constructor(
     private apiService: ApiService,
     private lookupService: LookupService,
@@ -129,7 +129,19 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     private userContextService: UserContextService,
     private cdr: ChangeDetectorRef
   ) {
-    // Initialize user context
+    this.itemCatalog = new MultiPhaseItemCatalogLoader<AllowanceItemType, ItemType | null>({
+      destroy$: this.destroy$,
+      pageSize: AllowanceListComponent.ITEM_FILTER_PAGE_SIZE,
+      getSelectedItem: () => this.selectedItem,
+      isAllTypesMode: () => this.selectedItemType === null,
+      getItemType: () => this.selectedItemType,
+      getSingleTypePaginated: (req) => this.getSingleTypePaginated(req),
+      getAllTypesPaginated: (phase, req) => this.getAllTypesPaginatedForPhase(phase, req),
+      fetchItemByIdForLabel: (id, type) => this.fetchAllowanceItemForDropdownLabel(id, type),
+      sameItemId: (a, b) => this.sameItemId(a, b),
+      getItemNumericId: (row) => Number(row.id),
+      markForCheck: () => this.cdr.markForCheck()
+    });
     this.initializeUserContext();
   }
 
@@ -230,16 +242,13 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     // and returns all departments' data if user has permission, or only their department if not
     forkJoin({
       allowances: this.apiService.get<AllowanceItemDto[]>(API_ENDPOINTS.ALLOWANCE.BASE),
-      departments: this.lookupService.getDepartments(),
-      ammunitionItems: this.ammunitionService.getAll<AmmunitionReadDto>().pipe(catchError(() => of([]))),
-      weaponItems: this.weaponService.getAll<WeaponDto>().pipe(catchError(() => of([]))),
-      explosiveItems: this.explosiveService.getAll<ExplosiveDto>().pipe(catchError(() => of([])))
+      departments: this.lookupService.getDepartments()
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: ({ allowances, departments, ammunitionItems, weaponItems, explosiveItems }) => {
+        next: ({ allowances, departments }) => {
           if (allowances && Array.isArray(allowances)) {
-            this.processAllowanceData(allowances, departments, ammunitionItems || [], weaponItems || [], explosiveItems || []);
+            this.processAllowanceData(allowances, departments, [], [], []);
           } else {
             this.error = this.translateService.instant('allowance.errors.failedToLoad');
             this.loading = false;
@@ -274,14 +283,9 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
       this.filteredDepartments = processed.departments;
     }
 
-    // Store items separately by type
-    this.ammunitionItems = ammunitionItems || [];
-    this.weaponItems = weaponItems || [];
-    this.explosiveItems = explosiveItems || [];
-    this.allItems = processed.allItems;
-    
-    // Update filtered items based on selected item type
-    this.updateFilteredItems();
+    // Item catalog for the filter dropdown is loaded on demand via Paginated APIs.
+
+    this.itemCatalog.resetAfterParentDataLoad();
     this.allAllowances = processed.allAllowances;
     this.filteredAllowances = [...this.allAllowances];
 
@@ -302,36 +306,66 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
 
 
   onDepartmentChange(): void {
-    this.selectedItem = null; // Clear item selection when department changes
-    this.updateFilteredItems();
+    this.selectedItem = null;
+    this.itemCatalog.clearSelectedDetail();
+    this.itemCatalog.resetOnUserFilterChange();
     this.currentPage = 1;
     this.applyFilters();
   }
 
   onItemTypeChange(): void {
-    this.selectedItem = null; // Clear item selection when item type changes
-    this.updateFilteredItems();
+    this.selectedItem = null;
+    this.itemCatalog.clearSelectedDetail();
+    this.itemCatalog.resetOnUserFilterChange();
     this.currentPage = 1;
     this.applyFilters();
   }
 
-  updateFilteredItems(): void {
-    // Filter items based on selected item type
-    if (this.selectedItemType === null) {
-      // Show all items
-      this.filteredItems = [...this.allItems];
-    } else if (this.selectedItemType === ItemType.Ammunition) {
-      this.filteredItems = [...this.ammunitionItems];
-    } else if (this.selectedItemType === ItemType.Weapon) {
-      this.filteredItems = [...this.weaponItems];
-    } else if (this.selectedItemType === ItemType.Explosive) {
-      this.filteredItems = [...this.explosiveItems];
-    } else {
-      this.filteredItems = [...this.allItems];
+  private getSingleTypePaginated(req: PagedRequest): Observable<PaginatedList<AllowanceItemType>> {
+    if (this.selectedItemType === ItemType.Weapon) {
+      return this.weaponService.getAllPaginated(req) as Observable<PaginatedList<AllowanceItemType>>;
+    }
+    if (this.selectedItemType === ItemType.Explosive) {
+      return this.explosiveService.getAllPaginated(req) as Observable<PaginatedList<AllowanceItemType>>;
+    }
+    return this.ammunitionService.getAllPaginated(req) as Observable<PaginatedList<AllowanceItemType>>;
+  }
+
+  private getAllTypesPaginatedForPhase(
+    phase: ItemCatalogPhase,
+    req: PagedRequest
+  ): Observable<PaginatedList<AllowanceItemType>> {
+    if (phase === 'ammunition') {
+      return this.ammunitionService.getAllPaginated(req) as Observable<PaginatedList<AllowanceItemType>>;
+    }
+    if (phase === 'weapon') {
+      return this.weaponService.getAllPaginated(req) as Observable<PaginatedList<AllowanceItemType>>;
+    }
+    return this.explosiveService.getAllPaginated(req) as Observable<PaginatedList<AllowanceItemType>>;
+  }
+
+  private fetchAllowanceItemForDropdownLabel(id: number, itemType: ItemType | null): Observable<AllowanceItemType> {
+    switch (itemType) {
+      case ItemType.Weapon:
+        return this.weaponService.getById(id) as Observable<AllowanceItemType>;
+      case ItemType.Explosive:
+        return this.explosiveService.getById(id) as Observable<AllowanceItemType>;
+      case ItemType.Ammunition:
+        return this.ammunitionService.getById(id) as Observable<AllowanceItemType>;
+      default:
+        return this.ammunitionService.getById(id).pipe(
+          catchError(() => this.weaponService.getById(id)),
+          catchError(() => this.explosiveService.getById(id))
+        ) as Observable<AllowanceItemType>;
     }
   }
 
+  private sameItemId(a: number, b: number | string): boolean {
+    return a === b || String(a) === String(b) || Number(a) === Number(b);
+  }
+
   onItemChange(): void {
+    this.itemCatalog.onPrimarySelectionChange(this.selectedItem);
     this.currentPage = 1;
     this.applyFilters();
   }
@@ -344,21 +378,25 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
 
     this.selectedDepartment = null;
     this.currentPage = 1;
-    this.updateFilteredItems();
+    this.itemCatalog.resetAfterParentDataLoad();
     this.applyFilters();
   }
 
   clearItemFilter(): void {
     this.selectedItem = null;
+    this.itemCatalog.clearSelectedDetail();
     this.currentPage = 1;
+    this.itemCatalog.resetAfterParentDataLoad();
     this.applyFilters();
+    this.cdr.markForCheck();
   }
 
   clearItemTypeFilter(): void {
     this.selectedItemType = null;
     this.selectedItem = null; // Clear item selection when clearing type filter
+    this.itemCatalog.clearSelectedDetail();
     this.currentPage = 1;
-    this.updateFilteredItems();
+    this.itemCatalog.resetOnUserFilterChange();
     this.applyFilters();
   }
 
@@ -366,8 +404,9 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     this.selectedDepartment = null;
     this.selectedItem = null;
     this.selectedItemType = null;
+    this.itemCatalog.clearSelectedDetail();
     this.currentPage = 1;
-    this.updateFilteredItems();
+    this.itemCatalog.resetOnUserFilterChange();
     this.applyFilters();
   }
 
