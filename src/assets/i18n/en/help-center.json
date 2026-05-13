@@ -13,7 +13,7 @@
     "tabTermsAdmin": "Terms",
     "tabContactAdmin": "Contact",
     "tabManualAdmin": "User manual",
-    "manualAdminIntro": "Upload one or more documents (PDF, Office, etc.). Users will see them on the Help Center «User manual» tab for download.",
+    "manualAdminIntro": "Upload one or more documents (PDF or DOCX only). Users will see them on the Help Center «User manual» tab for download.",
     "manualUploadFiles": "Upload files",
     "manualUploadHint": "You can select multiple files at once.",
     "manualEmptyAdmin": "No manual files yet. Upload documents for users to download.",

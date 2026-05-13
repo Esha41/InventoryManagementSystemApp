@@ -49,7 +49,7 @@
         <!-- File Input -->
         <div class="relative flex items-center gap-2">
           <input type="file" #approvalFileInput (change)="onApprovalFileSelected($event)"
-            [disabled]="processing || isProcessingAction" multiple accept=".jpg,.jpeg,.png,.pdf,.xlsx,.docx"
+            [disabled]="processing || isProcessingAction" multiple accept=".pdf,.docx"
             class="hidden">
           <button type="button" (click)="approvalFileInput.click()"
             [disabled]="processing || isProcessingAction"

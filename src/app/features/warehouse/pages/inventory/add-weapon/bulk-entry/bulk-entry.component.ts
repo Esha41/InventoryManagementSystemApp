@@ -25,6 +25,7 @@ import { WeaponAssetBulkProgressOverlayComponent } from '../components/weapon-as
 // Utils
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { trackByIndex } from '@utils/trackby.utils';
+import { validateAttachments, showAttachmentValidationToast } from '@utils/file.utils';
 
 type BulkAssignMode = 'none' | 'department' | 'employee';
 
@@ -324,6 +325,13 @@ export class BulkEntryComponent implements OnInit, OnDestroy {
         const input = event.target as HTMLInputElement;
         const newlySelected = input.files ? Array.from(input.files) : [];
         if (newlySelected.length) {
+            const check = validateAttachments(newlySelected);
+            if (!check.valid) {
+                showAttachmentValidationToast(this.translateService, this.toastService, check.errorMessage);
+                input.value = '';
+                this.cdr.markForCheck();
+                return;
+            }
             const combined = [...this.deliveryReceiptFiles, ...newlySelected];
             const seen = new Set<string>();
             this.deliveryReceiptFiles = combined.filter(f => {

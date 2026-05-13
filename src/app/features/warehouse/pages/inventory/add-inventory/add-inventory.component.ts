@@ -26,6 +26,7 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslationService } from '@services/translation.service';
 import { trackByIndex } from '@utils/trackby.utils';
 import { AppDatePipe } from '@shared/pipes/app-date.pipe';
+import { validateAttachments, showAttachmentValidationToast } from '@utils/file.utils';
 
 @Component({
   selector: 'app-add-inventory',
@@ -633,6 +634,13 @@ export class AddInventoryComponent implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     const newlySelected = input.files ? Array.from(input.files) : [];
     if (newlySelected.length) {
+      const check = validateAttachments(newlySelected);
+      if (!check.valid) {
+        showAttachmentValidationToast(this.translateService, this.toastService, check.errorMessage);
+        input.value = '';
+        this.cdr.markForCheck();
+        return;
+      }
       const combined = [...this.deliveryReceiptFiles, ...newlySelected];
       const seen = new Set<string>();
       this.deliveryReceiptFiles = combined.filter(f => {

@@ -71,6 +71,7 @@ import {
   touchControlIfPresent
 } from './utils/weapon-asset-form-errors.util';
 import { formatFileSizeHuman, mergeUploadedFilesDeduped } from './utils/weapon-asset-files.util';
+import { validateAttachments, showAttachmentValidationToast } from '@utils/file.utils';
 import {
   departmentOrLookupDropdownLabelFactory,
   weaponDropdownLabel
@@ -583,6 +584,13 @@ export class AddWeaponAssetComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     const newlySelected = input.files ? Array.from(input.files) : [];
     if (newlySelected.length) {
+      const check = validateAttachments(newlySelected);
+      if (!check.valid) {
+        showAttachmentValidationToast(this.translateService, this.toastService, check.errorMessage);
+        input.value = '';
+        this.cdr.markForCheck();
+        return;
+      }
       this.deliveryReceiptFiles = mergeUploadedFilesDeduped(this.deliveryReceiptFiles, newlySelected);
     }
   }
