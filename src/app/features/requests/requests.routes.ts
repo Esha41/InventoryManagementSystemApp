@@ -42,6 +42,11 @@ export const REQUESTS_ROUTES: Routes = [
   },
   {
     path: 'requests-management/order-report',
+    redirectTo: 'requests-management/requests-report',
+    pathMatch: 'full'
+  },
+  {
+    path: 'requests-management/requests-report',
     loadComponent: () => import('./pages/management/order-report/order-report.component').then(m => m.OrderReportComponent),
     canActivate: [permissionGuard],
     data: { permissions: [PERMISSIONS.REQUESTS.VIEW_REQUEST.PAGE, PERMISSIONS.REQUESTS.VIEW_REQUEST.VIEW, PERMISSIONS.REQUESTS.ORDER.VIEW] }

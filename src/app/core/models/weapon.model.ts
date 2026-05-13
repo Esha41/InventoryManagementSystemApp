@@ -4,6 +4,12 @@
 
 import { CatalogBaseItemDto, LookupDto } from './ammunition.model';
 
+/** Matches backend `WeaponAssociationGroupDto` (camelCase JSON). */
+export interface WeaponAssociationGroupDto {
+  ammunitionCaliberId: number;
+  weapons: WeaponDto[];
+}
+
 /**
  * Matches Ettad.Inventory.Service.Weapons.Dtos.WeaponDto (extends catalog base).
  */

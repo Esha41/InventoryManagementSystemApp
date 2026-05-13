@@ -4,6 +4,7 @@ import { AmmunitionReadDto, LookupDto } from '@models/ammunition.model';
 import { WeaponDto } from '@models/weapon.model';
 import { ExplosiveDto } from '@models/explosive.model';
 import { getLocalizedName } from '@utils/localization.utils';
+import { resolveCatalogItemCaliberId } from '@utils/catalog-caliber.utils';
 import { getWeaponTypeName, getActionTypeName } from '@utils/weapon.utils';
 import { getExplosiveTypeName } from '@utils/explosive.utils';
 
@@ -89,6 +90,7 @@ export class CartridgeMapperService {
             ? getLocalizedName(dto.caliber, currentLang)
             : String(dto.caliber)
           : undefined,
+      caliberId: resolveCatalogItemCaliberId(dto),
       linkedLabel,
       linkedLabelAr: linkedLabelAr || undefined,
       linkedLabelEn: linkedLabelEn || undefined,
@@ -151,6 +153,7 @@ export class CartridgeMapperService {
             ? getLocalizedName(dto.caliber, currentLang)
             : String(dto.caliber)
           : undefined,
+      caliberId: resolveCatalogItemCaliberId(dto),
       actionType: dto.actionType ? getActionTypeName(dto.actionType) : undefined,
       barrelLength: dto.barrelLength,
       barrelLengthLabel: barrelLengthLabel,

@@ -25,12 +25,10 @@
               [ngClass]="{
                 'approved': approval.status === 'Approved',
                 'pending': approval.status === 'Pending',
-                'rejected': approval.status === 'Rejected' || approval.status === 'AutoRejected',
+                'rejected': approval.status === 'Rejected' || approval.status === 'AutoRejected' || approval.status === 'Cancelled',
                 'submitted': approval.status === 'Submitted',
                 'border-[var(--color-success)]': approval.status === 'Approved' || approval.status === 'Submitted',
-                'border-amber-300': approval.status === 'Pending',
-                'border-red-300': approval.status === 'Rejected' || approval.status === 'AutoRejected',
-                'border-purple-300': approval.status === 'ReturnedForReview' || approval.status === 'Returned'
+                'border-[var(--color-brand)]/40': approval.status === 'Pending' || approval.status === 'Rejected' || approval.status === 'AutoRejected' || approval.status === 'Cancelled' || approval.status === 'ReturnedForReview' || approval.status === 'Returned'
               }">
               <lucide-angular [img]="getApprovalStatusIcon(approval.status)" class="h-6 w-6">
               </lucide-angular>
@@ -44,12 +42,26 @@
                 <div class="flex-1">
                   <p class="font-semibold text-[var(--color-text)] mb-1">{{ getApproverName(approval) ||
                     ('workflowApprovalDetail.unknownApprover' | translate) }}</p>
-                  <p class="text-xs text-amber-700 dark:text-amber-400 mt-1 mb-1"
+                  <p class="text-xs text-[var(--color-brand)] mt-1 mb-1"
                     *ngIf="approval.isDelegation === true || approval.isDelegation === 1">
                     {{ getDelegationMessageKey(approval) | translate }}
                     <ng-container *ngIf="approval.changedByRoleName || approval.changedByRoleNameAr">
                       {{ 'workflowApprovalDetail.delegationByRoleLabel' | translate }}
                       {{ getLocalizedValue(approval.changedByRoleName, approval.changedByRoleNameAr) }}
+                    </ng-container>
+                  </p>
+                  <p class="text-xs text-[var(--color-brand)] mt-1 mb-1"
+                    *ngIf="showCancelledActingRole(approval)">
+                    {{ 'common.statuses.Cancelled' | translate }}
+                    <ng-container *ngIf="approval.changedByRoleName || approval.changedByRoleNameAr">
+                      {{ 'workflowApprovalDetail.delegationByRoleLabel' | translate }}
+                      {{ getLocalizedValue(approval.changedByRoleName, approval.changedByRoleNameAr) }}
+                    </ng-container>
+                  </p>
+                  <p class="text-xs text-[var(--color-brand)] mt-1 mb-1" *ngIf="showPerformedAsRole(approval)">
+                    {{ getNonDelegationActionKey(approval) | translate }}
+                    <ng-container *ngIf="getPerformedAsRoleValue(approval)">
+                      {{ getByLabel() }} {{ getPerformedAsRoleValue(approval) }}
                     </ng-container>
                   </p>
                   <p class="text-xs text-[var(--color-text-muted)]"
@@ -60,12 +72,6 @@
                     *ngIf="approval.eligibleParallelRoleNamesEn || approval.eligibleParallelRoleNamesAr">
                     {{ 'workflowApprovalDetail.parallelApproversLabel' | translate }}:
                     {{ getLocalizedValue(approval.eligibleParallelRoleNamesEn, approval.eligibleParallelRoleNamesAr) }}
-                  </p>
-                  <p class="text-xs text-[var(--color-text-muted)] mt-1" *ngIf="showPerformedAsRole(approval)">
-                    {{ getNonDelegationActionKey(approval) | translate }}
-                    <ng-container *ngIf="getPerformedAsRoleValue(approval)">
-                      {{ getByLabel() }} {{ getPerformedAsRoleValue(approval) }}
-                    </ng-container>
                   </p>
                 </div>
                 <div class="text-end ltr:ms-4 rtl:me-4">
@@ -86,6 +92,10 @@
                     </span>
                     <span *ngIf="approval.status === 'Rejected'">
                       {{ 'workflowApprovalDetail.rejectedAt' | translate }}:
+                      {{ approval.approvedDateTime || formatApprovalDateTime(approval.changedAt) }}
+                    </span>
+                    <span *ngIf="approval.status === 'Cancelled'">
+                      {{ 'workflowApprovalDetail.cancelledAt' | translate }}:
                       {{ approval.approvedDateTime || formatApprovalDateTime(approval.changedAt) }}
                     </span>
                     <span *ngIf="approval.status === 'AutoRejected' && !approval.isSystemAutoReject">

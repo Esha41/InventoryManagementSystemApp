@@ -275,16 +275,11 @@ img[alt="Order QR Code"] {
     margin: 0 !important;
   }
 
-  .priority-value.priority-normal {
-    color: #22c55e !important;
-  }
-
-  .priority-value.priority-urgent {
-    color: #f97316 !important;
-  }
-
+  .priority-value,
+  .priority-value.priority-normal,
+  .priority-value.priority-urgent,
   .priority-value.priority-veryurgent {
-    color: #ef4444 !important;
+    color: #000000 !important;
   }
 
   .order-info-section .status-badge {

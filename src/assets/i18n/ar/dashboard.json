@@ -43,6 +43,8 @@
     "depot": "المستودع",
     "itemName": "اسم الماده",
     "itemNo": "رقم المادة",
+    "associatedWeapons": "الأسلحة المرتبطة",
+    "associatedWeaponOther": "أخرى",
     "nsn": "NSN",
     "priorityLabels": {
       "normal": "عادية",

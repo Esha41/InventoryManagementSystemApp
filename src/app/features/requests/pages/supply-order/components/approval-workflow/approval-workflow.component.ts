@@ -91,16 +91,53 @@ export class ApprovalWorkflowComponent implements OnInit {
   }
 
   showPerformedAsRole(approval: WorkflowApprovalStep): boolean {
-    if (
-      approval.isPending ||
-      approval.isDelegation === true ||
-      approval.isDelegation === 1 ||
-      !approval.changedByRoleId ||
-      !approval.applicationRoleId
-    ) {
+    if (approval.isPending || approval.isDelegation === true || approval.isDelegation === 1) {
       return false;
     }
-    return String(approval.changedByRoleId) !== String(approval.applicationRoleId);
+
+    if (!approval.changedByRoleId) {
+      return false;
+    }
+
+    if (approval.applicationRoleId && String(approval.changedByRoleId) === String(approval.applicationRoleId)) {
+      return false;
+    }
+
+    return (
+      approval.status === 'Approved' ||
+      approval.status === 'Rejected' ||
+      approval.status === 'AutoRejected' ||
+      approval.status === 'Returned' ||
+      approval.status === 'ReturnedForReview'
+    );
+  }
+
+  getPerformedAsRoleValue(approval: WorkflowApprovalStep): string {
+    return (
+      this.getLocalizedExtra(approval.changedByRoleName, approval.changedByRoleNameAr) ||
+      this.getLocalizedExtra(approval.applicationRoleName, approval.applicationRoleNameAr) ||
+      ''
+    );
+  }
+
+  getNonDelegationActionKey(approval: WorkflowApprovalStep): string {
+    switch (approval.status) {
+      case 'Approved':
+        return 'common.statuses.Approved';
+      case 'Rejected':
+        return 'common.statuses.Rejected';
+      case 'AutoRejected':
+        return 'common.statuses.AutoRejected';
+      case 'Returned':
+      case 'ReturnedForReview':
+        return 'common.statuses.ReturnedForReview';
+      default:
+        return 'common.statuses.Pending';
+    }
+  }
+
+  getByLabel(): string {
+    return this.translate.instant('workflowApprovalDetail.delegationByRoleLabel');
   }
 }
 

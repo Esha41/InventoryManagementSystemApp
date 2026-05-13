@@ -74,7 +74,11 @@
       "returnRejected": "تم رفض طلب الإرجاع",
       "discardApproved": "تمت الموافقة على طلب الإتلاف",
       "discardRejected": "تم رفض طلب الإتلاف",
-      "approvalRequired": "مطلوب موافقة جديدة"
+      "approvalRequired": "مطلوب موافقة جديدة",
+      "workflowRequestApproved": "تمت الموافقة على الطلب {{requestNo}}",
+      "workflowRequestRejected": "تم رفض الطلب {{requestNo}}",
+      "workflowRequestCancelled": "تم إلغاء الطلب {{requestNo}}",
+      "workflowRequestReturnedForReview": "تم إرجاع الطلب {{requestNo}} للمراجعة"
     },
     "messages": {
       "orderCreated": "تم إنشاء الطلب {{requestNo}}{{fromAllowance}}.",
@@ -87,7 +91,12 @@
       "returnRejected": "تم رفض طلب الإرجاع {{requestNo}}.",
       "discardApproved": "تمت الموافقة على طلب الإتلاف {{requestNo}}.",
       "discardRejected": "تم رفض طلب الإتلاف {{requestNo}}.",
-      "requestAwaitingApproval": "طلب بانتظار موافقتك."
+      "requestAwaitingApproval": "طلب بانتظار موافقتك.",
+      "workflowRequestApprovedMessage": "تمت الموافقة على الطلب {{requestNo}}.",
+      "workflowRequestRejectedMessage": "تم رفض الطلب {{requestNo}}.",
+      "workflowRequestCancelledMessage": "تم إلغاء الطلب {{requestNo}}.",
+      "workflowRequestReturnedForReviewMessage": "تم إرجاع الطلب {{requestNo}} للمراجعة.",
+      "workflowRequestCommentsAppend": "ملاحظات: {{comments}}."
     },
     "entityTypes": {
       "order": "صرف",
@@ -171,6 +180,7 @@
     "workflowTriggerSummaryGlobal": "غير مُهيأ",
     "workflowTriggerSummaryRoles": "حسب الدور · {{count}} دور",
     "workflowTriggerSummarySteps": "حسب الخطوة · {{count}} خطوة",
+    "workflowTriggerSummaryDisabled": "المراقبة معطّلة لهذا المسار",
     "workflowTriggerConfigure": "تهيئة",
     "workflowTriggerNoEditPermission": "يتطلب صلاحية تعديل مسار العمل",
     "workflowTriggersFootnote": "اضبط مراسي العد هنا؛ وحرّر خطوات مسار العمل من صفحة مسارات العمل.",

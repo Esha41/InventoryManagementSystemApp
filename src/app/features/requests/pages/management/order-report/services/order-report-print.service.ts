@@ -288,16 +288,11 @@ export class OrderReportPrintService {
         margin: 0 !important;
       }
       
-      .priority-value.priority-normal {
-        color: #22c55e !important;
-      }
-      
-      .priority-value.priority-urgent {
-        color: #f97316 !important;
-      }
-      
+      .priority-value,
+      .priority-value.priority-normal,
+      .priority-value.priority-urgent,
       .priority-value.priority-veryurgent {
-        color: #ef4444 !important;
+        color: #000000 !important;
       }
       
       /* Order info: status as plain text when printing (no pill) */
@@ -435,6 +430,13 @@ export class OrderReportPrintService {
         background: #d1ecf1 !important;
         color: #0c5460 !important;
         border: 1px solid #0c5460 !important;
+      }
+
+      .approval-status.status-returned,
+      .approval-status.status-returnedforreview {
+        background: #fff4e6 !important;
+        color: #d9480f !important;
+        border: 1px solid #d9480f !important;
       }
       
       .approval-card-body {

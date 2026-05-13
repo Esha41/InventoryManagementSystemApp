@@ -73,10 +73,11 @@ export class OrderAutoRejectWorkflowTriggersPanelComponent implements OnInit, On
     });
   }
 
-  triggerMode(w: WorkflowDto): 'none' | 'role' | 'step' {
+  triggerMode(w: WorkflowDto): 'none' | 'role' | 'step' | 'disabled' {
     const m = String(w.autoRejectTriggerMode ?? '').trim().toLowerCase();
     if (m === 'role') return 'role';
     if (m === 'step') return 'step';
+    if (m === 'disabled') return 'disabled';
     return 'none';
   }
 

@@ -285,7 +285,7 @@ export function hasPendingStep(requestDetail: RequestDetail | null): boolean {
     return false;
   }
   
-  if (requestDetail.status === 'Rejected' || requestDetail.status === 'AutoRejected') {
+  if (requestDetail.status === 'Rejected' || requestDetail.status === 'AutoRejected' || requestDetail.status === 'Cancelled') {
     return false;
   }
   return requestDetail.approvalHistory.some(

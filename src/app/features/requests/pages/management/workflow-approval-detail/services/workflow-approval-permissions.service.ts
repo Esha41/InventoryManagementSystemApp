@@ -13,6 +13,7 @@ export class WorkflowApprovalPermissionsService {
   private readonly SUPPLY_REVIEW_PERMISSION = PERMISSIONS.REQUESTS.WORKFLOW_APPROVAL.SUPPLY_REVIEW;
   private readonly UPDATE_REQUEST_AND_SUPPLY_PERMISSION = PERMISSIONS.REQUESTS.WORKFLOW_APPROVAL.UPDATE_REQUEST_AND_SUPPLY;
   private readonly CANNOT_REJECT_PERMISSION = PERMISSIONS.REQUESTS.WORKFLOW_APPROVAL.CANNOT_REJECT;
+  private readonly CAN_CANCEL_REQUEST_PERMISSION = PERMISSIONS.REQUESTS.WORKFLOW_APPROVAL.CAN_CANCEL_REQUEST;
   private readonly SET_SUPPLY_PICKUP_DATE_PERMISSION = PERMISSIONS.REQUESTS.WORKFLOW_APPROVAL.SET_SUPPLY_PICKUP_DATE;
   private readonly CONFIRM_SUPPLY_PICKUP_DATE_PERMISSION = PERMISSIONS.REQUESTS.WORKFLOW_APPROVAL.CONFIRM_SUPPLY_PICKUP_DATE;
   private readonly VIEW_SUPPLY_DATE_PERMISSION = PERMISSIONS.REQUESTS.WORKFLOW_APPROVAL.VIEW_SUPPLY_DATE;
@@ -86,6 +87,46 @@ export class WorkflowApprovalPermissionsService {
     return (
       requestDetail.isMyTurn === true || currentPendingStep.isCurrentUserApprover === true
     );
+  }
+
+  /**
+   * Users with CanCancelRequest (or super admin) may cancel in-flight workflow requests without being the current approver.
+   */
+  canCancelRequest(requestDetail: RequestDetail | null, processing: boolean): boolean {
+    if (!requestDetail || processing) {
+      return false;
+    }
+
+    if (requestDetail.status !== 'Pending' && requestDetail.status !== 'ReturnedForReview' && requestDetail.status !== 'Returned') {
+      return false;
+    }
+
+    if (!hasPendingStep(requestDetail)) {
+      return false;
+    }
+
+    const currentPendingStep = requestDetail.approvalHistory?.find(
+      step => step.status === 'Pending' && step.isPending
+    );
+
+    // Current step approver should use Reject, not Cancel.
+    if (
+      currentPendingStep &&
+      (requestDetail.isMyTurn === true || currentPendingStep.isCurrentUserApprover === true)
+    ) {
+      return false;
+    }
+
+    if (this.authService.isSuperAdmin()) {
+      return true;
+    }
+
+    return this.authService.hasPermission(this.CAN_CANCEL_REQUEST_PERMISSION);
+  }
+
+  /** Show workflow actions card (approve/reject/return and/or cancel). */
+  canShowWorkflowActionsPanel(requestDetail: RequestDetail | null, processing: boolean): boolean {
+    return this.canApproveOrReject(requestDetail, processing) || this.canCancelRequest(requestDetail, processing);
   }
 
   /**

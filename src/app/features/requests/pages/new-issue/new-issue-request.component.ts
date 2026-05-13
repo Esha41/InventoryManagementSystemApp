@@ -14,6 +14,7 @@ import { ReviewFormComponent } from './components/review-form/review-form.compon
 import { AllowanceSelectionComponent } from './components/allowance-selection/allowance-selection.component';
 import { OrderSuccessComponent } from './components/order-success/order-success.component';
 import { StepSelectionComponent } from './components/step-selection/step-selection.component';
+import { WeaponAssociationComponent } from './components/weapon-association/weapon-association.component';
 import { ErrorBannerComponent } from './components/error-banner/error-banner.component';
 import { ConfirmationDialogComponent } from '@components/confirmation-dialog/confirmation-dialog.component';
 import { IssueRequestFacade } from './services/issue-request.facade';
@@ -33,10 +34,10 @@ import { IssueRequestFacade } from './services/issue-request.facade';
     OrderSuccessComponent,
     ErrorBannerComponent,
     ConfirmationDialogComponent,
-    StepSelectionComponent
+    StepSelectionComponent,
+    WeaponAssociationComponent
   ],
   templateUrl: './new-issue-request.component.html',
-  styleUrls: ['./new-issue-request.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NewIssueRequestComponent implements OnInit, OnDestroy, AfterViewInit {

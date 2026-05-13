@@ -11,7 +11,7 @@
 
   <div class="space-y-6">
     <!-- Higher Approval Dropdown -->
-    <div *ngIf="hasHigherApproval()">
+    <div *ngIf="hasHigherApproval() && canApproveOrRejectForWorkflow()">
       <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'workflowApprovalDetail.sendToHigherApproval' | translate }}
       </span>
@@ -23,7 +23,7 @@
     </div>
 
     <!-- Transitions (Skip-to Steps) Dropdown - User must manually select, no auto-selection -->
-    <div *ngIf="hasTransitions() && shouldShowTransitionsDropdown()">
+    <div *ngIf="hasTransitions() && shouldShowTransitionsDropdown() && canApproveOrRejectForWorkflow()">
       <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'workflowApprovalDetail.skipToStep' | translate }}
         <span class="text-[var(--color-error)]">*</span>
@@ -40,7 +40,9 @@
     <!-- File Upload for Approval/Rejection -->
     <div>
       <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-        {{ 'newIssueRequest.attachments' | translate }} <span class="text-[var(--color-text-muted)] font-normal">({{
+        {{ 'newIssueRequest.attachments' | translate }}
+        <span *ngIf="canCancelRequest() && !canApproveOrRejectForWorkflow()" class="text-[var(--color-error)]">*</span>
+        <span *ngIf="!(canCancelRequest() && !canApproveOrRejectForWorkflow())" class="text-[var(--color-text-muted)] font-normal">({{
           'common.optional' | translate }})</span>
       </span>
       <div class="space-y-3">
@@ -71,7 +73,7 @@
               <p class="text-xs text-[var(--color-text-muted)]">{{ getFileSize(file) }}</p>
             </div>
             <button type="button" (click)="removeApprovalFile(i)" [disabled]="processing"
-              class="ms-3 p-1 text-[var(--color-error)] hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+              class="ms-3 p-1 text-[var(--color-error)] hover:text-[var(--color-brand-dark)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
               </svg>
@@ -82,6 +84,10 @@
         <!-- Helper Text -->
         <p class="text-xs text-[var(--color-text-muted)]">
           {{ 'newIssueRequest.attachmentsHint' | translate }}
+        </p>
+        <p *ngIf="showCancelAttachmentsValidation && canCancelRequest() && approvalFiles.length === 0"
+          class="text-xs text-[var(--color-error)] font-medium">
+          {{ 'workflowApprovalDetail.errors.cancelAttachmentsRequired' | translate }}
         </p>
         <p class="text-xs text-[var(--color-text-muted)] font-medium">
           {{ 'common.maximumFileSize' | translate: {size: MAX_FILE_SIZE_MB} }}
@@ -104,7 +110,7 @@
     <!-- Action Buttons -->
     <div class="flex flex-col sm:flex-row gap-3 pt-2">
       <!-- Reject Button -->
-      <button *ngIf="canRejectRequest()" (click)="rejectRequest()" [disabled]="processing"
+      <button *ngIf="canApproveOrRejectForWorkflow() && canRejectRequest()" (click)="rejectRequest()" [disabled]="processing"
         class="action-btn btn-reject flex-1">
         <lucide-angular *ngIf="!processing" [img]="XCircle" class="h-4 w-4"></lucide-angular>
         <span *ngIf="!processing && !isProcessingAction">{{ 'workflowApprovalDetail.reject' | translate }}</span>
@@ -145,7 +151,7 @@
               [disabled]="processing || loadingPreviousSteps" class="w-full">
             </app-dropdown>
             <p *ngIf="previousWorkflowSteps.length === 0 && !loadingPreviousSteps"
-              class="mt-2 text-xs text-red-600 font-medium">
+              class="mt-2 text-xs text-[var(--color-brand)] font-medium">
               {{ 'workflowApprovalDetail.noPreviousSteps' | translate }}
             </p>
           </div>
@@ -191,6 +197,24 @@
         <p *ngIf="canSetReturnDeliveryDate() && !isReturnDeliveryDateSet() && !isElevatedWorkflowAdmin"
           class="text-[10px] text-[var(--color-error)] mt-2 text-center font-semibold uppercase tracking-wider">
           {{ 'workflowApprovalDetail.errors.returnDeliveryDateRequired' | translate }}
+        </p>
+      </div>
+
+      <!-- Cancel request (plain permission CanCancelRequest / super admin) -->
+      <div *ngIf="canCancelRequest()" class="flex flex-col flex-1">
+        <button type="button" (click)="cancelRequest()"
+          [disabled]="processing || isProcessingAction"
+          class="action-btn btn-reject w-full">
+          <lucide-angular *ngIf="!processing && !isProcessingAction" [img]="Ban" class="h-4 w-4"></lucide-angular>
+          <span *ngIf="!processing && !isProcessingAction">{{ 'workflowApprovalDetail.cancelRequest' | translate }}</span>
+          <span *ngIf="processing || isProcessingAction" class="flex items-center gap-2">
+            <div class="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin"></div>
+            {{ 'common.processing' | translate }}...
+          </span>
+        </button>
+        <p *ngIf="showCancelAttachmentsValidation && approvalFiles.length === 0"
+          class="text-[10px] text-[var(--color-error)] mt-2 text-center font-semibold uppercase tracking-wider">
+          {{ 'workflowApprovalDetail.errors.cancelAttachmentsRequired' | translate }}
         </p>
       </div>
     </div>

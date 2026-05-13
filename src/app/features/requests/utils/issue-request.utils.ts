@@ -113,13 +113,20 @@ export function computeUsedQuantity(reserveDetails: ReserveDetailItem[]): number
 export function resolveCurrentRequesterName(
   currentUserDetails: BackendUserDto | null,
   fallbackRequesterName: string,
-  reviewFormRequesterName: string
+  reviewFormRequesterName: string,
+  lang: string = 'en'
 ): string {
-  return resolveUserDisplayName(
-    currentUserDetails?.nameEn,
-    currentUserDetails?.nameAr,
-    currentUserDetails?.userName
-  ) || fallbackRequesterName || reviewFormRequesterName || '';
+  return (
+    resolveUserDisplayName(
+      currentUserDetails?.nameEn,
+      currentUserDetails?.nameAr,
+      currentUserDetails?.userName,
+      lang
+    ) ||
+    fallbackRequesterName ||
+    reviewFormRequesterName ||
+    ''
+  );
 }
 
 /**
@@ -128,13 +135,17 @@ export function resolveCurrentRequesterName(
  * @returns Resolved requester name
  */
 export function syncRequesterNameFromUserDetails(
-  currentUserDetails: BackendUserDto | null
+  currentUserDetails: BackendUserDto | null,
+  lang: string = 'en'
 ): string {
-  return resolveUserDisplayName(
-    currentUserDetails?.nameEn,
-    currentUserDetails?.nameAr,
-    currentUserDetails?.userName
-  ) || '';
+  return (
+    resolveUserDisplayName(
+      currentUserDetails?.nameEn,
+      currentUserDetails?.nameAr,
+      currentUserDetails?.userName,
+      lang
+    ) || ''
+  );
 }
 
 /**

@@ -6,6 +6,10 @@ import { RequestDetail, RequestItem } from '@models/workflow-approval.model';
 import { WorkflowApprovalStateService } from '../../services/workflow-approval-state.service';
 import { WorkflowApprovalNavigationService } from '../../services/workflow-approval-navigation.service';
 import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
+import { WeaponAssociationListComponent } from '@components/weapon-association-list/weapon-association-list.component';
+import { hasWeaponAssociations as itemHasWeaponAssociations } from '@utils/weapon-association-label.utils';
+import type { RequestManagementRequestItemWeaponAssociationDto } from '@models/request-management-base.model';
+import { ItemType } from '@models/inventory.model';
 
 @Component({
   selector: 'app-workflow-request-items',
@@ -14,7 +18,8 @@ import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/tabl
     CommonModule,
     TranslateModule,
     LucideAngularModule,
-    TableClampTooltipDirective
+    TableClampTooltipDirective,
+    WeaponAssociationListComponent
   ],
   templateUrl: './workflow-request-items.component.html',
   styleUrls: ['./workflow-request-items.component.css'],
@@ -48,9 +53,22 @@ export class WorkflowRequestItemsComponent {
     return this.requestItems.length > 0;
   }
 
+  hasWeaponAssociations(item: RequestItem): boolean {
+    return itemHasWeaponAssociations(item);
+  }
+
   /** Order item tracking history applies only to issue orders, not returns/discards. */
   get showViewHistory(): boolean {
     return this.requestDetail?.requestType === 'Order';
+  }
+
+  /** Colspan for the full-width “associated weapons” row under a line item. */
+  get requestItemsTableColspan(): number {
+    return this.showViewHistory ? 4 : 3;
+  }
+
+  trackByItemId(_index: number, item: RequestItem): number {
+    return item.itemId ?? item.id ?? _index;
   }
 
   // Permission check methods using state service
@@ -120,16 +138,32 @@ export class WorkflowRequestItemsComponent {
     }
   }
 
-  navigateToItemDetails(itemId: number | undefined): void {
+  navigateToItemDetails(itemId: number | undefined, itemType?: number | string): void {
     if (!itemId || itemId <= 0) {
       return;
     }
+
     const state = this.stateService.getState();
-    if (state.requestId) {
-      // Try to get itemType from the request item
-      const item = this.requestItems.find(i => (i.itemId || i.id) === itemId);
-      const itemType = item?.itemType;
-      this.navigationService.navigateToItemDetails(itemId, state.requestId, itemType);
+    if (!state.requestId) {
+      return;
     }
+
+    const resolvedItemType = itemType ?? this.requestItems.find(
+      item => (item.itemId ?? item.id) === itemId
+    )?.itemType;
+
+    this.navigationService.navigateToItemDetails(itemId, state.requestId, resolvedItemType);
+  }
+
+  onItemNameClick(event: MouseEvent, item: RequestItem): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.navigateToItemDetails(item.itemId ?? item.id, item.itemType);
+  }
+
+  onCatalogWeaponAssociationClick(
+    association: RequestManagementRequestItemWeaponAssociationDto
+  ): void {
+    this.navigateToItemDetails(association.associatedWeaponItemId ?? undefined, ItemType.Weapon);
   }
 }

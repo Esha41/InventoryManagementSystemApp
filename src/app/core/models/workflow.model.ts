@@ -141,8 +141,8 @@ export interface BackendUpdateWorkflowDto extends BackendCreateWorkflowDto {
   id: number;
 }
 
-/** Matches Ettad.Data.Enums.AutoRejectTriggerMode — API uses JsonStringEnumConverter (PascalCase): "None" | "Role" | "Step". */
-export type AutoRejectTriggerModeValue = 'None' | 'Role' | 'Step';
+/** Matches Ettad.Data.Enums.AutoRejectTriggerMode — API uses JsonStringEnumConverter (PascalCase). */
+export type AutoRejectTriggerModeValue = 'None' | 'Role' | 'Step' | 'Disabled';
 
 /** PUT /api/Workflows/{id}/auto-reject-triggers */
 export interface UpdateWorkflowAutoRejectTriggersDto {

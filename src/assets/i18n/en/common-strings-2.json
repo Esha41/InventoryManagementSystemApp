@@ -115,6 +115,7 @@
     "autoRejectModeStep": "When these steps are reached",
     "autoRejectModeRoleLabel": "Role-based",
     "autoRejectModeStepLabel": "Step-based",
+    "autoRejectModeDisabled": "Disabled",
     "autoRejectRolesLabel": "Trigger roles",
     "autoRejectRolesPlaceholder": "Select one or more roles",
     "autoRejectRolesHint": "Countdown starts when the order reaches a step assigned to any selected primary or parallel role.",

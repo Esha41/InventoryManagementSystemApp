@@ -18,6 +18,7 @@
             <span *ngSwitchCase="'returned'">{{ 'common.statuses.Returned' | translate }}</span>
             <span *ngSwitchCase="'returnedforreview'">{{ 'common.statuses.ReturnedForReview' | translate
               }}</span>
+            <span *ngSwitchCase="'cancelled'">{{ 'common.statuses.Cancelled' | translate }}</span>
             <span *ngSwitchDefault>{{ step.status }}</span>
           </ng-container>
         </span>

@@ -46,12 +46,12 @@
             <td class="px-4 py-3 text-center">
               <div class="flex items-center justify-center gap-2">
                 <button (click)="openEditItemModal(item)"
-                  class="px-2 py-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded text-sm font-medium transition-colors flex items-center gap-1">
+                  class="px-2 py-1 text-[var(--color-brand)] hover:text-[var(--color-brand-dark)] hover:bg-[var(--color-brand)]/10 rounded text-sm font-medium transition-colors flex items-center gap-1">
                   <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
                   {{ 'common.edit' | translate }}
                 </button>
                 <button (click)="openRemoveItemModal(item)"
-                  class="px-2 py-1 text-red-600 hover:text-red-800 hover:bg-red-50 rounded text-sm font-medium transition-colors flex items-center gap-1">
+                  class="px-2 py-1 text-[var(--color-brand)] hover:text-[var(--color-brand-dark)] hover:bg-[var(--color-brand)]/10 rounded text-sm font-medium transition-colors flex items-center gap-1">
                   <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
                   {{ 'common.remove' | translate }}
                 </button>
@@ -82,7 +82,7 @@
     <!-- Weapon Selection -->
     <div>
       <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-        {{ 'supplyRequestDetail.selectItem' | translate }} <span class="text-red-600">*</span>
+        {{ 'supplyRequestDetail.selectItem' | translate }} <span class="text-[var(--color-brand)]">*</span>
       </span>
       <app-dropdown 
         class="w-full" 
@@ -97,7 +97,7 @@
         placeholder="{{ 'supplyRequestDetail.selectItemPlaceholder' | translate }}">
       </app-dropdown>
       <p *ngIf="addItemForm.get('itemId')?.invalid && (addItemForm.get('itemId')?.touched || addItemForm.get('itemId')?.dirty)"
-        class="mt-1 text-sm text-red-600">
+        class="mt-1 text-sm text-[var(--color-brand)]">
         {{ 'workflowApprovalDetail.itemRequired' | translate }}
       </p>
     </div>
@@ -105,16 +105,16 @@
     <!-- Quantity -->
     <div>
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="weapon-review-items-modal-quantity-2">
-        {{ 'workflowApprovalDetail.quantity' | translate }} <span class="text-red-600">*</span>
+        {{ 'workflowApprovalDetail.quantity' | translate }} <span class="text-[var(--color-brand)]">*</span>
       </label>
       <input id="weapon-review-items-modal-quantity-2" 
         type="number" 
         formControlName="quantity" 
         min="1"
         class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
-        [class.border-red-500]="addItemForm.get('quantity')?.invalid && (addItemForm.get('quantity')?.touched || addItemForm.get('quantity')?.dirty)" />
+        [ngClass]="{ 'border-[var(--color-brand)]': addItemForm.get('quantity')?.invalid && (addItemForm.get('quantity')?.touched || addItemForm.get('quantity')?.dirty) }" />
       <p *ngIf="addItemForm.get('quantity')?.invalid && (addItemForm.get('quantity')?.touched || addItemForm.get('quantity')?.dirty)"
-        class="mt-1 text-sm text-red-600">
+        class="mt-1 text-sm text-[var(--color-brand)]">
         {{ 'workflowApprovalDetail.quantityRequired' | translate }}
       </p>
     </div>
@@ -138,11 +138,7 @@
       {{ 'common.cancel' | translate }}
     </button>
     <button (click)="onSaveAddItem()" [disabled]="addItemForm.invalid || savingItem || loadingWeapons"
-      class="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-      [ngClass]="{
-        'bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)]': !addItemForm.invalid && !savingItem && !loadingWeapons,
-        'bg-gray-400': addItemForm.invalid || savingItem || loadingWeapons
-      }">
+      class="px-4 py-2 rounded-lg text-sm font-medium text-white bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
       <span *ngIf="!savingItem">{{ 'common.save' | translate }}</span>
       <span *ngIf="savingItem">{{ 'common.saving' | translate }}</span>
     </button>
@@ -164,20 +160,20 @@
     <!-- Quantity -->
     <div>
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="weapon-review-items-modal-quantity-4">
-        {{ 'workflowApprovalDetail.quantity' | translate }} <span class="text-red-600">*</span>
+        {{ 'workflowApprovalDetail.quantity' | translate }} <span class="text-[var(--color-brand)]">*</span>
       </label>
       <input id="weapon-review-items-modal-quantity-4" 
         type="number" 
         formControlName="quantity" 
         min="1"
         class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent"
-        [class.border-red-500]="editItemForm.get('quantity')?.invalid && (editItemForm.get('quantity')?.touched || editItemForm.get('quantity')?.dirty)" />
+        [ngClass]="{ 'border-[var(--color-brand)]': editItemForm.get('quantity')?.invalid && (editItemForm.get('quantity')?.touched || editItemForm.get('quantity')?.dirty) }" />
       <p *ngIf="editItemForm.get('quantity')?.hasError('required') && (editItemForm.get('quantity')?.touched || editItemForm.get('quantity')?.dirty)"
-        class="mt-1 text-sm text-red-600">
+        class="mt-1 text-sm text-[var(--color-brand)]">
         {{ 'workflowApprovalDetail.quantityRequired' | translate }}
       </p>
       <p *ngIf="editItemForm.get('quantity')?.hasError('min') && (editItemForm.get('quantity')?.touched || editItemForm.get('quantity')?.dirty)"
-        class="mt-1 text-sm text-red-600">
+        class="mt-1 text-sm text-[var(--color-brand)]">
         {{ 'workflowApprovalDetail.quantityMinError' | translate: { min: 1 } }}
       </p>
     </div>
@@ -201,11 +197,7 @@
       {{ 'common.cancel' | translate }}
     </button>
     <button (click)="onSaveEditItem()" [disabled]="editItemForm.invalid || savingItem"
-      class="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-      [ngClass]="{
-        'bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)]': !editItemForm.invalid && !savingItem,
-        'bg-gray-400': editItemForm.invalid || savingItem
-      }">
+      class="px-4 py-2 rounded-lg text-sm font-medium text-white bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
       <span *ngIf="!savingItem">{{ 'common.save' | translate }}</span>
       <span *ngIf="savingItem">{{ 'common.saving' | translate }}</span>
     </button>
@@ -226,7 +218,7 @@
       {{ 'common.cancel' | translate }}
     </button>
     <button (click)="onConfirmRemoveItem()"
-      class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors">
+      class="px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg text-sm font-medium hover:bg-[var(--color-brand-dark)] transition-colors">
       {{ 'common.remove' | translate }}
     </button>
   </div>

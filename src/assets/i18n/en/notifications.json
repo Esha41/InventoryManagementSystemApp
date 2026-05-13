@@ -74,7 +74,11 @@
       "returnRejected": "Return Rejected",
       "discardApproved": "Discard Approved",
       "discardRejected": "Discard Rejected",
-      "approvalRequired": "New Approval Required"
+      "approvalRequired": "New Approval Required",
+      "workflowRequestApproved": "Request {{requestNo}} approved",
+      "workflowRequestRejected": "Request {{requestNo}} rejected",
+      "workflowRequestCancelled": "Request {{requestNo}} cancelled",
+      "workflowRequestReturnedForReview": "Request {{requestNo}} returned for review"
     },
     "messages": {
       "orderCreated": "Order request {{requestNo}} has been created{{fromAllowance}}.",
@@ -87,7 +91,12 @@
       "returnRejected": "Return request {{requestNo}} has been rejected.",
       "discardApproved": "Discard request {{requestNo}} has been approved.",
       "discardRejected": "Discard request {{requestNo}} has been rejected.",
-      "requestAwaitingApproval": "A request awaits your approval."
+      "requestAwaitingApproval": "A request awaits your approval.",
+      "workflowRequestApprovedMessage": "Request {{requestNo}} has been approved.",
+      "workflowRequestRejectedMessage": "Request {{requestNo}} has been rejected.",
+      "workflowRequestCancelledMessage": "Request {{requestNo}} has been cancelled.",
+      "workflowRequestReturnedForReviewMessage": "Request {{requestNo}} has been returned for review.",
+      "workflowRequestCommentsAppend": "Comments: {{comments}}."
     },
     "entityTypes": {
       "order": "Order",
@@ -171,6 +180,7 @@
     "workflowTriggerSummaryGlobal": "Not configured",
     "workflowTriggerSummaryRoles": "Role-based · {{count}} role(s)",
     "workflowTriggerSummarySteps": "Step-based · {{count}} step(s)",
+    "workflowTriggerSummaryDisabled": "Monitoring disabled for this workflow",
     "workflowTriggerConfigure": "Configure",
     "workflowTriggerNoEditPermission": "Workflow edit permission required",
     "workflowTriggersFootnote": "Configure countdown anchors here; edit workflow steps from Workflows.",

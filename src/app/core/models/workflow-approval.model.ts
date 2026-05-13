@@ -1,5 +1,6 @@
 import { FileUploadDto } from './file-upload.model';
 import { RequestItemDto } from './common.model';
+import type { RequestManagementRequestItemWeaponAssociationDto } from './request-management-base.model';
 
 // Re-export for backward compatibility
 export { FileUploadDto };
@@ -48,7 +49,7 @@ export interface WorkflowApprovalStep {
   approverName?: string;
   approverNameEn?: string;
   approverNameAr?: string;
-  status: 'Pending' | 'Approved' | 'Rejected' | 'AutoRejected' | 'Returned' | 'ReturnedForReview' | 'Submitted';
+  status: 'Pending' | 'Approved' | 'Rejected' | 'AutoRejected' | 'Returned' | 'ReturnedForReview' | 'Submitted' | 'Cancelled';
   approvedDate?: string;
   approvedDateTime?: string | Date;
   applicationRoleName?: string;
@@ -85,7 +86,7 @@ export type Priority = 'Normal' | 'Urgent' | 'VeryUrgent' | 'Critical';
 /**
  * Request status options
  */
-export type RequestStatus = 'Pending' | 'Approved' | 'Rejected' | 'AutoRejected' | 'Returned' | 'ReturnedForReview';
+export type RequestStatus = 'Pending' | 'Approved' | 'Rejected' | 'AutoRejected' | 'Returned' | 'ReturnedForReview' | 'Cancelled';
 
 /**
  * Request item in a request
@@ -100,6 +101,7 @@ export interface RequestItem {
   nsn?: string; // National Stock Number
   /** 1=Ammunition, 2=Weapon, 3=Explosive — when present, drives return summary column labels. */
   itemType?: number;
+  weaponAssociations?: RequestManagementRequestItemWeaponAssociationDto[];
 }
 
 
