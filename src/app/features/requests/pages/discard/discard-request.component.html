@@ -255,47 +255,30 @@
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <!-- Item Selection -->
+                  <!-- Item Selection (server-paged catalog; shared scroll/search across rows) -->
                   <div class="sm:col-span-2 lg:col-span-1">
                     <span class="block text-xs font-bold text-[var(--color-text-muted)] mb-2">
                       {{ 'discardRequest.item' | translate }} <span class="text-[var(--color-error)]">*</span>
                     </span>
-                    <div class="relative" #itemDropdown>
-                      <button type="button" (click)="toggleItemDropdown(i); $event.stopPropagation()"
-                        [disabled]="isLoadingItems"
-                        class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] disabled:bg-[var(--color-background-active)] flex items-center justify-between transition-all hover:border-[var(--color-brand)]"
-                        [class.border-[var(--color-error)]]="hasError('discardItems.' + i + '.itemId')"
-                        [class.opacity-60]="isLoadingItems">
-                        <span class="truncate pr-4">
-                          {{ getSelectedItemLabel(i) || (isLoadingItems ? ('common.loading' | translate) :
-                          ('discardRequest.selectItem' | translate)) }}
-                        </span>
-                        <lucide-angular [img]="ChevronDown" class="h-4 w-4 shrink-0 transition-transform"
-                          [class.rotate-180]="itemDropdownOpen[i]"></lucide-angular>
-                      </button>
-
-                      <div *ngIf="itemDropdownOpen[i]"
-                        class="absolute z-50 mt-2 w-full bg-[var(--color-background)] rounded-xl shadow-2xl border border-[var(--color-border)] overflow-hidden">
-                        <div class="p-3 bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
-                          <input type="text" [(ngModel)]="itemDropdownSearchTerms[i]"
-                            [ngModelOptions]="{ standalone: true }"
-                            [placeholder]="'lookupManagement.searchPlaceholder' | translate"
-                            class="w-full px-3 py-2 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none"
-                            (click)="$event.stopPropagation()" (keydown.escape)="closeItemDropdown(i)" />
-                        </div>
-                        <div class="max-h-60 overflow-y-auto">
-                          <button *ngFor="let itemOption of getFilteredItems(i)" type="button"
-                            (click)="onItemSelect(i, itemOption)"
-                            class="w-full text-start px-4 py-3 text-sm hover:bg-[var(--color-brand)]/5 transition-colors border-b border-[var(--color-border)] last:border-0"
-                            [ngClass]="{'bg-[var(--color-brand)]/10': isOptionSelected(itemOption, discardItems[i].itemId)}">
-                            <span class="block font-semibold text-[var(--color-text)]">{{ getItemOptionLabel(itemOption)
-                              }}</span>
-                            <span class="block text-xs text-[var(--color-text-muted)] mt-0.5">{{ itemOption.itemNo
-                              }}</span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
+                    <app-dropdown class="w-full"
+                      [(ngModel)]="discardItems[i].itemId"
+                      [name]="'discard_itemId_' + i"
+                      [options]="itemCatalog.items"
+                      optionValue="id"
+                      [optionLabelFn]="discardCatalogOptionLabel"
+                      [placeholderSelectable]="false"
+                      [placeholderValue]="null"
+                      [disabled]="itemCatalog.loading && itemCatalog.items.length === 0"
+                      [error]="hasError('discardItems.' + i + '.itemId')"
+                      [paginationOnScroll]="true"
+                      [hasMore]="itemCatalog.hasMore"
+                      [loadingMore]="itemCatalog.loadingMore"
+                      [showSearch]="true"
+                      (loadMore)="itemCatalog.loadMore()"
+                      (remoteSearchChange)="itemCatalog.onRemoteSearch($event)"
+                      (selectionChange)="onDiscardItemSelected(i)"
+                      placeholder="{{ 'discardRequest.selectItem' | translate }}">
+                    </app-dropdown>
                     <p *ngIf="hasError('discardItems.' + i + '.itemId')"
                       class="mt-1.5 text-xs text-[var(--color-error)] font-medium">
                       {{ getError('discardItems.' + i + '.itemId') }}

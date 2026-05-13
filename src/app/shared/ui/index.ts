@@ -15,4 +15,5 @@ export * from './import-progress-loader/import-progress-loader.component';
 export * from './error-state/error-state.component';
 export * from './image-preview-tooltip/image-preview-tooltip.component';
 export * from './table-clamp-tooltip/table-clamp-tooltip.directive';
+export * from './virtual-paged-list-loader/virtual-paged-list.loader';
 export * from './weapon-association-list/weapon-association-list.component';

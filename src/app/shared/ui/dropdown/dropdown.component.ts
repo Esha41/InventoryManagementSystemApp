@@ -83,6 +83,12 @@ export class DropdownComponent<T = Primitive>
   @Input() panelClass = '';
   @Input() translateLabels = false;
   @Input() showSearch = true;
+  /** When true, search is delegated to the parent via {@link remoteSearchChange} and options are not client-filtered. */
+  @Input() paginationOnScroll = false;
+  /** Parent indicates more pages exist (used with {@link paginationOnScroll}). */
+  @Input() hasMore = false;
+  /** Parent indicates a "load next page" request is in flight. */
+  @Input() loadingMore = false;
 
   @Input()
   set required(value: boolean | string) {
@@ -119,6 +125,10 @@ export class DropdownComponent<T = Primitive>
   @Output() openedChange = new EventEmitter<boolean>();
   @Output() selectionChange = new EventEmitter<T | null | T[]>();
   @Output() addActionClick = new EventEmitter<void>();
+  /** Emitted when the list is scrolled near the bottom and {@link hasMore} is true. */
+  @Output() loadMore = new EventEmitter<void>();
+  /** Emitted on search input when {@link paginationOnScroll} is true (server-side filtering). */
+  @Output() remoteSearchChange = new EventEmitter<string>();
 
   isOpen = false;
   hoveredIndex: number | null = null;
@@ -220,8 +230,7 @@ export class DropdownComponent<T = Primitive>
   get computedOptions(): Array<DropdownOption<T> | T> {
     let baseOptions = this.options ?? [];
 
-    // Apply search filter
-    if (this.searchTerm && this.searchTerm.trim()) {
+    if (!this.paginationOnScroll && this.searchTerm && this.searchTerm.trim()) {
       const searchLower = this.searchTerm.toLowerCase().trim();
       baseOptions = baseOptions.filter(option => {
         const label = this.getOptionLabel(option).toLowerCase();
@@ -389,14 +398,15 @@ export class DropdownComponent<T = Primitive>
 
     this.isOpen = !this.isOpen;
     if (this.isOpen) {
+      // Match {@link open}: trigger-toggle must not reuse a previous session's search text.
+      this.searchTerm = '';
       this.syncOpenMainScrollTop();
       this.attachPanelLayoutObserver();
       this.syncPanelGeometryAfterOpen();
       document.addEventListener('scroll', this.scrollHandler, { passive: true, capture: true });
     } else {
-      this.detachPanelLayoutObserver();
-      this.openMainScrollTop = null;
-      document.removeEventListener('scroll', this.scrollHandler, { capture: true });
+      // Closing via the trigger skipped {@link close}; apply the same cleanup (search + parent sync).
+      this.applyPanelCloseCleanup();
     }
     this.openedChange.emit(this.isOpen);
     this.ensureTriggerFocusNoScroll();
@@ -537,6 +547,15 @@ export class DropdownComponent<T = Primitive>
       return;
     }
     this.isOpen = false;
+    this.applyPanelCloseCleanup();
+    this.openedChange.emit(false);
+  }
+
+  /** Shared when the panel closes (backdrop, select, or trigger toggle). */
+  private applyPanelCloseCleanup(): void {
+    if (this.paginationOnScroll) {
+      this.remoteSearchChange.emit('');
+    }
     this.hoveredIndex = null;
     this.searchTerm = '';
     this.openMainScrollTop = null;
@@ -551,14 +570,26 @@ export class DropdownComponent<T = Primitive>
         list.style.maxHeight = '';
       }
     }
-
-    this.openedChange.emit(false);
   }
 
   onSearchChange(event: Event): void {
     event.stopPropagation();
     const input = event.target as HTMLInputElement;
     this.searchTerm = input.value;
+    if (this.paginationOnScroll) {
+      this.remoteSearchChange.emit(this.searchTerm);
+    }
+  }
+
+  onOptionsListScroll(event: Event): void {
+    if (!this.paginationOnScroll || !this.hasMore || this.loadingMore) {
+      return;
+    }
+    const el = event.target as HTMLElement;
+    const thresholdPx = 48;
+    if (el.scrollHeight - el.scrollTop - el.clientHeight <= thresholdPx) {
+      this.loadMore.emit();
+    }
   }
 
   onSearchClick(event: Event): void {
