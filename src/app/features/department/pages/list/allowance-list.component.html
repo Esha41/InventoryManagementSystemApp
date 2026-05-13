@@ -41,10 +41,7 @@
           </div>
           <div class="flex-1 relative min-w-[180px] sm:min-w-[200px]">
             <app-dropdown class="w-full" [(ngModel)]="selectedItem" (ngModelChange)="onItemChange()"
-              [options]="itemCatalog.options" optionValue="id" [optionLabelFn]="itemOptionLabel"
-              [paginationOnScroll]="true" [hasMore]="itemCatalog.hasMore" [loadingMore]="itemCatalog.loadingMore"
-              (loadMore)="itemCatalog.loadMore()" (remoteSearchChange)="itemCatalog.onSearchChange($event)"
-              (openedChange)="itemCatalog.onDropdownOpened($event)"
+              [options]="filteredItems" optionValue="id" [optionLabelFn]="itemOptionLabel"
               placeholder="{{ 'allowance.selectItem' | translate }}">
             </app-dropdown>
             <!-- Clear Item Filter Button -->
