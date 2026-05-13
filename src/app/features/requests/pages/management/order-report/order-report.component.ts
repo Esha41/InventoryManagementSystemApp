@@ -11,6 +11,7 @@ import { OrderSummary, OrderReportItem, OrderReportApprovalStep, WorkflowDetail 
 import { mapOrderStatusFromApi } from '@utils/status.utils';
 import { getPriorityText, getPriorityClass } from '@utils/priority.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { getUserName } from '@utils/profile.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
 import { BackendAuthService } from '@services/backend-auth.service';
@@ -127,13 +128,13 @@ export class OrderReportComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.updateCurrentDate();
-    const user = this.authService.getCurrentUser();
-    this.currentUser = user?.userName || user?.email || 'N/A';
+    this.refreshPrintFooterUser();
 
     this.translate.onLangChange
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
         this.updateCurrentDate();
+        this.refreshPrintFooterUser();
         if (this.selectedOrderId) {
           this.loadOrder(this.selectedOrderId);
         }
@@ -353,6 +354,9 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.updateCurrentDate();
+    this.refreshPrintFooterUser();
+
     this.orderReportPrintService.printReport(
       this.reportContent.nativeElement,
       this.orderSummary,
@@ -368,6 +372,21 @@ export class OrderReportComponent implements OnInit, OnDestroy {
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
     this.currentDate = `${day}/${month}/${year} ${hours}${minutes}`;
+  }
+
+  /** Printed-by line: localized display name (Arabic / English) when available. */
+  private refreshPrintFooterUser(): void {
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      this.currentUser = 'N/A';
+      return;
+    }
+    const localized = getUserName(user, this.translate)?.trim();
+    if (localized) {
+      this.currentUser = localized;
+      return;
+    }
+    this.currentUser = user.email?.trim() || user.userName?.trim() || 'N/A';
   }
 
   resolveUsagePurpose(): string {
