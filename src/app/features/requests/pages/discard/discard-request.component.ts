@@ -1,10 +1,10 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, HostListener, ElementRef, ViewChildren, QueryList, ChangeDetectionStrategy, ChangeDetectorRef, Optional, Inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Optional, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
-import { LucideAngularModule, Plus, X, ChevronDown, Search, Send } from 'lucide-angular';
+import { LucideAngularModule, Plus, X, Send } from 'lucide-angular';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { DiscardService } from '@requests/services/discard.service';
 import { CreateDiscardDto } from '@models/discard.model';
@@ -15,9 +15,10 @@ import { ExplosiveService } from '@assets/services/explosive.service';
 import { ToastService } from '@services/toast.service';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { PaginatedList } from '@models/api-response.model';
+import { PaginatedList, PagedRequest } from '@models/api-response.model';
+import { FilterData } from '@models/pagination.model';
 import { LookupItem } from '@models/lookup.model';
-import { Subject, takeUntil, filter, take, switchMap } from 'rxjs';
+import { Subject, takeUntil, filter, take, switchMap, finalize } from 'rxjs';
 import { Observable } from 'rxjs';
 import { UserContextService } from '@services/user-context.service';
 import { BackendAuthService } from '@services/backend-auth.service';
@@ -65,10 +66,10 @@ type CatalogListItem = AmmunitionReadDto | WeaponDto | ExplosiveDto;
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit {
+  private static readonly CATALOG_PAGE_SIZE = 10;
+
   readonly Plus = Plus;
   readonly X = X;
-  readonly ChevronDown = ChevronDown;
-  readonly Search = Search;
   readonly Send = Send;
 
   // Item type selection
@@ -93,7 +94,13 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
   departments: LookupItem[] = [];
   requesters: LookupItem[] = [];
   requestPurposes: RequestPurpose[] = [];
+  /** Accumulated catalog rows for discard line item picker (Ammo / Weapon / Explosive tabs). */
   items: CatalogListItem[] = [];
+  /** Server paging / search for catalog only — other dropdowns unchanged. */
+  itemCatalogHasMore = false;
+  itemCatalogLoadingMore = false;
+  itemCatalogNextPage = 1;
+  private itemCatalogSearchTerm = '';
   priorityOptions = [
     { value: 1, labelKey: 'common.priorityLevels.Normal' },
     { value: 2, labelKey: 'common.priorityLevels.Urgent' },
@@ -109,12 +116,6 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
   isSubmitted = false;
   errors: { [key: string]: string } = {};
 
-  itemDropdownSearchTerms: string[] = [];
-  itemDropdownOpen: boolean[] = [];
-
-  @ViewChildren('itemDropdown') itemDropdownRefs?: QueryList<ElementRef<HTMLElement>>;
-
-  // Confirmation dialog state
   showConfirmDialog = false;
   confirmDialogTitle = '';
   confirmDialogMessage = '';
@@ -137,6 +138,13 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
     this.getLocalizedName(this.unwrapOption(option));
   readonly requestPurposeOptionLabel = (option: DropdownOption<RequestPurpose> | RequestPurpose | null) =>
     this.getLocalizedName(this.unwrapOption(option));
+
+  readonly discardCatalogOptionLabel = (
+    option: DropdownOption<CatalogListItem> | CatalogListItem | null
+  ): string => {
+    const row = this.unwrapOption(option) as CatalogListItem | null;
+    return row ? this.getItemOptionLabel(row) : '';
+  };
 
   constructor(
     private discardService: DiscardService,
@@ -194,34 +202,11 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
       });
   }
 
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent): void {
-    if (!this.itemDropdownRefs) {
-      return;
-    }
-    const target = event.target as Node;
-    const clickedInside = this.itemDropdownRefs.toArray().some(ref => ref.nativeElement.contains(target));
-
-    if (!clickedInside) {
-      this.closeAllItemDropdowns();
-      this.cdr.markForCheck();
-    }
-  }
-
-  @HostListener('window:scroll')
-  @HostListener('document:scroll')
-  onScroll(): void {
-    if (this.itemDropdownOpen.some(open => open)) {
-      this.closeAllItemDropdowns();
-      this.cdr.markForCheck();
-    }
-  }
-
   private loadDropdownData(): void {
     this.loadDepartments();
     this.loadRequesters();
     this.loadRequestPurposes();
-    this.loadItems();
+    this.loadDiscardCatalogInitial();
   }
 
   private loadDepartments(): void {
@@ -317,47 +302,155 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
       });
   }
 
-  private loadItems(): void {
-    this.isLoadingItems = true;
-    let load$: Observable<CatalogListItem[]>;
+  private loadDiscardCatalogInitial(): void {
+    this.itemCatalogSearchTerm = '';
+    this.itemCatalogNextPage = 1;
+    this.items = [];
+    this.itemCatalogHasMore = false;
+    this.fetchDiscardCatalogPage(false);
+  }
 
+  onDiscardCatalogLoadMore(): void {
+    if (!this.itemCatalogHasMore || this.itemCatalogLoadingMore || this.isLoadingItems) return;
+    this.fetchDiscardCatalogPage(true);
+  }
+
+  onDiscardCatalogRemoteSearch(term: string): void {
+    const t = (term ?? '').trim();
+    if (t === this.itemCatalogSearchTerm.trim()) {
+      return;
+    }
+    this.itemCatalogSearchTerm = t;
+    this.itemCatalogNextPage = 1;
+    this.items = [];
+    this.itemCatalogHasMore = false;
+    this.fetchDiscardCatalogPage(false);
+  }
+
+  private buildCatalogPagedRequest(page: number, searchTerm: string): PagedRequest {
+    const term = searchTerm.trim();
+    let filter: FilterData | undefined;
+    if (term) {
+      filter = {
+        logic: 'or',
+        filters: [
+          { field: 'Name', operator: 'contains', value: term },
+          { field: 'ItemNo', operator: 'contains', value: term }
+        ]
+      };
+    }
+    return {
+      page,
+      pageSize: DiscardRequestComponent.CATALOG_PAGE_SIZE,
+      filter
+    };
+  }
+
+  private getCatalogPaginated(page: number): Observable<PaginatedList<CatalogListItem>> {
+    const req = this.buildCatalogPagedRequest(page, this.itemCatalogSearchTerm);
     if (this.selectedItemType === 'Weapon') {
-      load$ = this.weaponService.getAll();
-    } else if (this.selectedItemType === 'Explosive') {
-      load$ = this.explosiveService.getAll();
+      return this.weaponService.getAllPaginated(req) as Observable<PaginatedList<CatalogListItem>>;
+    }
+    if (this.selectedItemType === 'Explosive') {
+      return this.explosiveService.getAllPaginated(req) as Observable<PaginatedList<CatalogListItem>>;
+    }
+    return this.ammunitionService.getAllPaginated(req) as Observable<PaginatedList<CatalogListItem>>;
+  }
+
+  private fetchDiscardCatalogPage(append: boolean): void {
+    const pageNum = append ? this.itemCatalogNextPage : 1;
+    if (append) {
+      this.itemCatalogLoadingMore = true;
     } else {
-      // Ammunition (default)
-      load$ = this.ammunitionService.getAll();
+      this.isLoadingItems = true;
     }
 
-    load$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (items) => {
-          this.items = items || [];
+    this.getCatalogPaginated(pageNum)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => {
           this.isLoadingItems = false;
-          this.discardItems.forEach(item => {
-            item.itemId = null;
-          });
+          this.itemCatalogLoadingMore = false;
+          this.cdr.markForCheck();
+        })
+      )
+      .subscribe({
+        next: page => {
+          const batch = page?.items ?? [];
+          if (append && batch.length > 0) {
+            const seen = new Set(this.items.map(row => Number(row.id)));
+            for (const row of batch) {
+              const id = Number(row.id);
+              if (!seen.has(id)) {
+                seen.add(id);
+                this.items.push(row);
+              }
+            }
+          } else {
+            this.items = batch;
+          }
+          this.itemCatalogHasMore = page?.hasNextPage ?? false;
+          this.itemCatalogNextPage = (page?.pageIndex ?? pageNum) + 1;
+          this.ensureDiscardCatalogSelectionsMerged();
           this.cdr.markForCheck();
         },
         error: () => {
-          this.translate.get(['toast.error', 'discardRequest.errors.failedToLoadItems']).pipe(takeUntil(this.destroy$)).subscribe((translations: Record<string, string>) => {
-            this.toastService.error(
-              translations['discardRequest.errors.failedToLoadItems'] || 'Failed to load items',
-              translations['toast.error']
-            );
-          });
-          this.isLoadingItems = false;
+          this.translate
+            .get(['toast.error', 'discardRequest.errors.failedToLoadItems'])
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((translations: Record<string, string>) => {
+              this.toastService.error(
+                translations['discardRequest.errors.failedToLoadItems'] || 'Failed to load items',
+                translations['toast.error']
+              );
+            });
+          if (!append) {
+            this.items = [];
+            this.itemCatalogHasMore = false;
+          }
           this.cdr.markForCheck();
         }
       });
   }
 
+  private ensureDiscardCatalogSelectionsMerged(): void {
+    for (let i = 0; i < this.discardItems.length; i++) {
+      const id = this.discardItems[i]?.itemId;
+      if (id == null) continue;
+      if (this.items.some(row => Number(row.id) === Number(id))) continue;
+      this.fetchCatalogRowById(Number(id)).pipe(takeUntil(this.destroy$)).subscribe({
+        next: row => {
+          if (!row || this.items.some(x => Number(x.id) === Number(row.id))) return;
+          this.items = [row, ...this.items];
+          this.cdr.markForCheck();
+        },
+        error: () => {}
+      });
+    }
+  }
+
+  private fetchCatalogRowById(id: number): Observable<CatalogListItem> {
+    if (this.selectedItemType === 'Weapon') {
+      return this.weaponService.getById(id) as Observable<CatalogListItem>;
+    }
+    if (this.selectedItemType === 'Explosive') {
+      return this.explosiveService.getById(id) as Observable<CatalogListItem>;
+    }
+    return this.ammunitionService.getById(id) as Observable<CatalogListItem>;
+  }
+
+  onDiscardItemSelected(index: number): void {
+    this.clearItemError(index, 'itemId');
+    if (this.isSubmitted && this.discardItems[index]?.itemId) this.clearItemError(index, 'itemId');
+  }
+
   onItemTypeChange(itemType: 'Ammunition' | 'Weapon' | 'Explosive'): void {
     if (this.selectedItemType !== itemType) {
       this.selectedItemType = itemType;
-      this.loadItems();
+      this.discardItems.forEach(item => {
+        item.itemId = null;
+      });
+      this.loadDiscardCatalogInitial();
     }
   }
 
@@ -367,14 +460,10 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
       quantity: null,
       notes: ''
     });
-    this.itemDropdownSearchTerms.push('');
-    this.itemDropdownOpen.push(false);
   }
 
   removeDiscardItem(index: number): void {
     this.discardItems.splice(index, 1);
-    this.itemDropdownSearchTerms.splice(index, 1);
-    this.itemDropdownOpen.splice(index, 1);
   }
 
   private validateForm(): void {
@@ -406,70 +495,8 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
     }
   }
 
-  toggleItemDropdown(index: number): void {
-    if (this.isLoadingItems) return;
-
-    this.itemDropdownOpen = this.itemDropdownOpen.map((open, i) => (i === index ? !open : false));
-    if (!this.itemDropdownOpen[index]) {
-      this.itemDropdownSearchTerms[index] = '';
-    }
-  }
-
-  closeItemDropdown(index: number): void {
-    if (this.itemDropdownOpen[index]) {
-      this.itemDropdownOpen[index] = false;
-      this.itemDropdownSearchTerms[index] = '';
-    }
-  }
-
-  closeAllItemDropdowns(): void {
-    this.itemDropdownOpen = this.itemDropdownOpen.map(() => false);
-    this.itemDropdownSearchTerms = this.itemDropdownSearchTerms.map(() => '');
-  }
-
-  onItemSelect(index: number, itemOption: CatalogListItem): void {
-    const optionValue = itemOption.id ?? itemOption.itemNo ?? null;
-    this.discardItems[index].itemId = optionValue;
-    this.closeItemDropdown(index);
-    // Clear error when item is selected
-    this.clearItemError(index, 'itemId');
-    if (this.isSubmitted && optionValue) this.clearItemError(index, 'itemId');
-  }
-
   getItemOptionLabel(itemOption: CatalogListItem): string {
     return itemOption?.name || itemOption?.itemNo || 'Unknown';
-  }
-
-  getSelectedItemLabel(index: number): string {
-    const itemId = this.discardItems[index]?.itemId;
-    if (itemId === null || itemId === undefined) return '';
-
-    const selected = this.items.find(option => this.isSameItem(option, itemId));
-    return selected ? this.getItemOptionLabel(selected) : '';
-  }
-
-  getFilteredItems(index: number): CatalogListItem[] {
-    if (!this.items?.length) return [];
-
-    const term = (this.itemDropdownSearchTerms[index] || '').trim().toLowerCase();
-    if (!term) return this.items;
-
-    return this.items.filter(option => {
-      const label = this.getItemOptionLabel(option).toLowerCase();
-      const code = option?.itemNo ? String(option.itemNo).toLowerCase() : '';
-      return label.includes(term) || code.includes(term);
-    });
-  }
-
-  isOptionSelected(option: CatalogListItem, itemId: string | number | null): boolean {
-    return this.isSameItem(option, itemId);
-  }
-
-  private isSameItem(option: CatalogListItem, itemId: string | number | null): boolean {
-    const optionValue = option?.id ?? option?.itemNo;
-    if (optionValue === undefined || optionValue === null) return false;
-
-    return String(optionValue) === String(itemId);
   }
 
   private getLocalizedName(
@@ -663,8 +690,6 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
     }
     this.requestPurposeId = null;
     this.discardItems = [];
-    this.itemDropdownOpen = [];
-    this.itemDropdownSearchTerms = [];
     this.addDiscardItem();
     this.selectedFiles = [];
     if (this.fileInputElement) {
@@ -674,7 +699,7 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
     this.errors = {};
     // Reset item type to default and reload items
     this.selectedItemType = 'Ammunition';
-    this.loadItems();
+    this.loadDiscardCatalogInitial();
   }
 
   onFilesSelected(event: Event): void {

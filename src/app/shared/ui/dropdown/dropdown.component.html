@@ -79,7 +79,7 @@
     </div>
     <div
       class="p-3 border-b border-border bg-background transition-colors duration-200 ease-in-out motion-reduce:transition-none"
-      *ngIf="showSearch && options && options.length > 0"
+      *ngIf="showSearch && (paginationOnScroll || (options && options.length > 0))"
     >
       <div class="relative flex items-center">
         <span
@@ -109,6 +109,7 @@
     <ul
       class="app-dropdown-list dropdown-list-scroll max-h-60 overflow-y-auto m-0 p-0 list-none [scrollbar-width:thin] [scrollbar-color:var(--app-scrollbar-thumb)_var(--app-scrollbar-track)]"
       [ngClass]="panelClass"
+      (scroll)="onOptionsListScroll($event)"
     >
       <li
         class="app-dropdown-option py-2.5 px-4 text-sm text-text cursor-pointer transition-[background-color,color] duration-150 ease-in-out motion-reduce:transition-none hover:bg-background-hover"
@@ -139,6 +140,12 @@
       </li>
       <li class="py-3 px-4 text-sm text-text-muted text-center" *ngIf="computedOptions.length === 0">
         {{ searchTerm ? ('common.noResultsFound' | translate) : noDataText }}
+      </li>
+      <li
+        *ngIf="paginationOnScroll && loadingMore"
+        class="py-2.5 px-4 text-xs text-text-muted text-center border-t border-border"
+      >
+        {{ 'common.loading' | translate }}
       </li>
     </ul>
   </div>
