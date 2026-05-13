@@ -35,7 +35,7 @@
       "filesRequired": "مطلوب ملف مرفق واحد على الأقل",
       "requestPurposeNotesRequired": "ملاحظات الغرض من الطلب مطلوبة",
       "fileSizeExceeded": "حجم الملف يتجاوز الحد الأقصى المسموح به وهو",
-      "invalidFileFormat": "الملف \"{{fileName}}\" له تنسيق غير صالح. التنسيقات المسموحة: JPEG، JPG، PNG، PDF، XLSX، DOCX."
+      "invalidFileFormat": "الملف \"{{fileName}}\" له تنسيق غير صالح. التنسيقات المسموحة: PDF، DOCX."
     },
     "success": {
       "created": "تم إنشاء طلب الإرجاع بنجاح"
@@ -82,7 +82,7 @@
       "filesRequired": "مطلوب ملف مرفق واحد على الأقل",
       "requestPurposeNotesRequired": "ملاحظات الغرض من الطلب مطلوبة",
       "fileSizeExceeded": "حجم الملف يتجاوز الحد الأقصى المسموح به وهو",
-      "invalidFileFormat": "الملف \"{{fileName}}\" له تنسيق غير صالح. التنسيقات المسموحة: JPEG، JPG، PNG، PDF، XLSX، DOCX."
+      "invalidFileFormat": "الملف \"{{fileName}}\" له تنسيق غير صالح. التنسيقات المسموحة: PDF، DOCX."
     },
     "success": {
       "created": "تم إنشاء طلب الإتلاف بنجاح"

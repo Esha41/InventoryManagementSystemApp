@@ -283,11 +283,11 @@
     "clickApplyToLoadAssets": "Click Apply to load assets",
     "clickApplyToLoadAssetsHint": "Configure filters above (serial numbers only, limit count) and click Apply to fetch assets from the selected depots and policy numbers.",
     "fileAttachments": "File Attachments",
-    "fileAttachmentsHint": "Allowed formats: JPG, JPEG, PNG, PDF, XLSX, DOCX.",
+    "fileAttachmentsHint": "Allowed formats: PDF, DOCX.",
     "filesRequired": "At least one file attachment is required",
     "fileUploadFailed": "Failed to upload file attachments",
     "errors": {
-      "invalidFileFormat": "File \"{{fileName}}\" has an invalid format. Allowed: JPG, PNG, PDF, XLSX, DOCX.",
+      "invalidFileFormat": "File \"{{fileName}}\" has an invalid format. Allowed: PDF, DOCX.",
       "fileSizeExceeded": "File is too large. Maximum size:"
     }
   }

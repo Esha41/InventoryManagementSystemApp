@@ -37,6 +37,7 @@ import { FileUploadService } from '@services/file-upload.service';
 import { PERMISSIONS } from '@constants/permissions.constants';
 import { defaultPageSize } from '@constants/app.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
+import { validateAttachments, showAttachmentValidationToast } from '@utils/file.utils';
 
 export type BatchEditAssignMode = 'none' | 'department' | 'employee';
 
@@ -644,18 +645,25 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
     const input = event.target as HTMLInputElement;
     const newlySelected = input.files ? Array.from(input.files) : [];
     if (newlySelected.length) {
-        const combined = [...this.deliveryReceiptFiles, ...newlySelected];
-        const seen = new Set<string>();
-        this.deliveryReceiptFiles = combined.filter(f => {
-            const key = `${f.name}::${f.size}::${(f as any).lastModified ?? 0}`;
-            if (seen.has(key)) return false;
-            seen.add(key);
-            return true;
-        });
+      const check = validateAttachments(newlySelected);
+      if (!check.valid) {
+        showAttachmentValidationToast(this.translateService, this.toastService, check.errorMessage);
+        input.value = '';
+        this.cdr.markForCheck();
+        return;
+      }
+      const combined = [...this.deliveryReceiptFiles, ...newlySelected];
+      const seen = new Set<string>();
+      this.deliveryReceiptFiles = combined.filter(f => {
+        const key = `${f.name}::${f.size}::${(f as any).lastModified ?? 0}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
     }
-}
+  }
 
-removeAttachment(index: number): void {
+  removeAttachment(index: number): void {
     if (index >= 0 && index < this.deliveryReceiptFiles.length) {
         this.deliveryReceiptFiles.splice(index, 1);
     }

@@ -15,6 +15,8 @@ import { AmmunitionService } from '@assets/services/ammunition.service';
 import { ExplosiveService } from '@assets/services/explosive.service';
 import { Subscription, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { ToastService } from '@services/toast.service';
+import { validateAttachments, showAttachmentValidationToast } from '@utils/file.utils';
 
 @Component({
   selector: 'app-edit-inventory-detail-modal',
@@ -80,7 +82,8 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges, OnD
     private cdr: ChangeDetectorRef,
     private fileUploadService: FileUploadService,
     private ammunitionService: AmmunitionService,
-    private explosiveService: ExplosiveService
+    private explosiveService: ExplosiveService,
+    private toastService: ToastService
   ) {
     this.initializeForm();
   }
@@ -530,6 +533,13 @@ export class EditInventoryDetailModalComponent implements OnInit, OnChanges, OnD
     const input = event.target as HTMLInputElement;
     const newlySelected = input.files ? Array.from(input.files) : [];
     if (newlySelected.length) {
+      const check = validateAttachments(newlySelected);
+      if (!check.valid) {
+        showAttachmentValidationToast(this.translateService, this.toastService, check.errorMessage);
+        input.value = '';
+        this.cdr.markForCheck();
+        return;
+      }
       const combined = [...this.selectedFiles, ...newlySelected];
       const seen = new Set<string>();
       this.selectedFiles = combined.filter(f => {

@@ -14,6 +14,7 @@ import { LookupItem } from '@models/lookup.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { formatDateForInput } from '@utils/format.utils';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
+import { validateAttachments, showAttachmentValidationToast } from '@utils/file.utils';
 
 @Component({
   selector: 'app-edit-asset-modal',
@@ -245,6 +246,13 @@ export class EditAssetModalComponent implements OnChanges, OnDestroy {
     const input = event.target as HTMLInputElement;
     const newlySelected = input.files ? Array.from(input.files) : [];
     if (newlySelected.length) {
+      const check = validateAttachments(newlySelected);
+      if (!check.valid) {
+        showAttachmentValidationToast(this.translateService, this.toastService, check.errorMessage);
+        input.value = '';
+        this.cdr.markForCheck();
+        return;
+      }
       const combined = [...this.selectedFiles, ...newlySelected];
       const seen = new Set<string>();
       this.selectedFiles = combined.filter(f => {
