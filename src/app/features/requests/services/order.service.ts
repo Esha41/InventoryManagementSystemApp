@@ -52,6 +52,20 @@ export class OrderService {
         if (item.notes) {
           formData.append(`RequestItems[${index}].Notes`, item.notes);
         }
+        const assocRows = item.weaponAssociations ?? [];
+        assocRows.forEach((wa, wIdx) => {
+          const prefix = `RequestItems[${index}].WeaponAssociations[${wIdx}]`;
+          if (wa.associatedWeaponItemId != null && wa.associatedWeaponItemId > 0) {
+            formData.append(`${prefix}.AssociatedWeaponItemId`, String(wa.associatedWeaponItemId));
+          }
+          const otherName = wa.associatedWeaponOtherName?.trim();
+          if (otherName) {
+            formData.append(`${prefix}.AssociatedWeaponOtherName`, otherName);
+          }
+          if (wa.associatedWeaponCaliberId != null && wa.associatedWeaponCaliberId !== undefined) {
+            formData.append(`${prefix}.AssociatedWeaponCaliberId`, String(wa.associatedWeaponCaliberId));
+          }
+        });
       });
     }
 

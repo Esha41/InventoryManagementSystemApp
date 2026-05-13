@@ -1,5 +1,6 @@
 import { FileUploadDto } from './file-upload.model';
 import { RequestItemDto } from './common.model';
+import type { RequestManagementRequestItemWeaponAssociationDto } from './request-management-base.model';
 
 // Re-export for backward compatibility
 export { FileUploadDto };
@@ -100,6 +101,7 @@ export interface RequestItem {
   nsn?: string; // National Stock Number
   /** 1=Ammunition, 2=Weapon, 3=Explosive — when present, drives return summary column labels. */
   itemType?: number;
+  weaponAssociations?: RequestManagementRequestItemWeaponAssociationDto[];
 }
 
 

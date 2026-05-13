@@ -43,6 +43,8 @@
     "depot": "Depot",
     "itemName": "Item Name",
     "itemNo": "Item Number",
+    "associatedWeapons": "Associated Weapons",
+    "associatedWeaponOther": "Others",
     "nsn": "NSN",
     "priorityLabels": {
       "normal": "Normal",

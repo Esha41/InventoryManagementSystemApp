@@ -4,7 +4,7 @@ import { Observable, map, forkJoin, catchError, of, switchMap } from 'rxjs';
 import { ConfigService } from '@services/config.service';
 import { ApiService } from '@services/api.service';
 import { APIOperationResponse, PagedRequest, PaginatedList } from '@models/api-response.model';
-import { WeaponDto, CreateUpdateWeaponDto } from '@models/weapon.model';
+import { WeaponDto, CreateUpdateWeaponDto, WeaponAssociationGroupDto } from '@models/weapon.model';
 import { FileUploadService, FileUploadDto, FileEntityType } from '@services/file-upload.service';
 import { IImportableService } from '@core/interfaces/importable-service.interface';
 import { ImportResult } from '@models/import-result.model';
@@ -26,6 +26,17 @@ export class WeaponService implements IImportableService {
     if (query?.search) params = params.set('search', query.search);
 
     return this.apiService.get<T[]>(this.endpoint, params);
+  }
+
+  /** Weapons assignable to the user for catalog association, grouped by ammunition caliber id. */
+  getForAmmunitionAssociation(ammunitionCaliberIds: number[]): Observable<WeaponAssociationGroupDto[]> {
+    let params = new HttpParams();
+    for (const id of ammunitionCaliberIds) {
+      if (id != null && Number.isFinite(id) && id > 0) {
+        params = params.append('ammunitionCaliberIds', String(id));
+      }
+    }
+    return this.apiService.get<WeaponAssociationGroupDto[]>(`${this.endpoint}/for-ammunition-association`, params);
   }
 
   // Get paginated weapons

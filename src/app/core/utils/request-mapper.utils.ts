@@ -5,6 +5,8 @@
 
 import { RequestType, Priority, RequestStatus, RequestItem, WorkflowApprovalStep, RequestDetail, BaseRequestDto } from '@models/workflow-approval.model';
 import { formatTimeToMilitary, formatDateShort } from '@utils/format.utils';
+import { normalizeItemType } from '@models/inventory.model';
+import type { RequestManagementRequestItemWeaponAssociationDto } from '@models/request-management-base.model';
 
 type LooseRecord = Record<string, unknown>;
 
@@ -284,6 +286,27 @@ export function mapApprovalStatus(status: number): 'Pending' | 'Approved' | 'Rej
 /**
  * Map request items from backend format
  */
+function mapWeaponAssociationRows(
+  rows: unknown
+): RequestManagementRequestItemWeaponAssociationDto[] | undefined {
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return undefined;
+  }
+
+  const mapped = rows
+    .map(row => asRecord(row))
+    .filter((row): row is LooseRecord => !!row)
+    .map(row => ({
+      id: Number(readField<unknown>(row, 'id', 'Id') ?? 0),
+      associatedWeaponItemId: readField<number | null>(row, 'associatedWeaponItemId', 'AssociatedWeaponItemId') ?? null,
+      associatedWeaponOtherName: readField<string | null>(row, 'associatedWeaponOtherName', 'AssociatedWeaponOtherName') ?? null,
+      associatedWeaponCaliberId: readField<number | null>(row, 'associatedWeaponCaliberId', 'AssociatedWeaponCaliberId') ?? null,
+      associatedWeaponName: readField<string | null>(row, 'associatedWeaponName', 'AssociatedWeaponName') ?? null
+    }));
+
+  return mapped.length > 0 ? mapped : undefined;
+}
+
 export function mapRequestItems(items: unknown[]): RequestItem[] {
   if (!items || items.length === 0) {
     return [];
@@ -291,22 +314,26 @@ export function mapRequestItems(items: unknown[]): RequestItem[] {
 
   return items
     .map(item => asRecord(item))
-    .filter((item): item is LooseRecord => !!item && !!(item['id'] || item['itemId']))
+    .filter((item): item is LooseRecord => !!item && !!(
+      readField<unknown>(item, 'id', 'Id') || readField<unknown>(item, 'itemId', 'ItemId')
+    ))
     .map(item => {
-      const nestedItem = asRecord(item['item']);
-      const rawItemType = item['itemType'] ?? nestedItem?.['itemType'];
-      const parsedItemType =
-        rawItemType != null && rawItemType !== '' ? Number(rawItemType) : undefined;
+      const nestedItem = asRecord(item['item'] ?? item['Item']);
+      const rawItemType = readField<unknown>(item, 'itemType', 'ItemType') ?? readField<unknown>(nestedItem ?? {}, 'itemType', 'ItemType');
+      const normalizedItemType = normalizeItemType(rawItemType);
 
       return {
-        id: Number(item['id'] ?? 0), // RequestItem ID
-        itemId: Number(item['itemId'] ?? item['id']) || undefined, // Item ID (prefer itemId, fallback to id)
-        itemName: String(item['itemName'] ?? item['name'] ?? 'Unknown Item'),
-        itemNo: String(item['itemNo'] ?? item['itemCode'] ?? item['code'] ?? '-'),
-        quantity: Number(item['quantity'] ?? item['requestedQuantity'] ?? 0),
-        unit: String(item['unit'] ?? item['unitName'] ?? '-'),
-        nsn: typeof item['nsn'] === 'string' ? item['nsn'] : undefined,
-        itemType: Number.isFinite(parsedItemType) ? parsedItemType : undefined
+        id: Number(readField<unknown>(item, 'id', 'Id') ?? 0), // RequestItem ID
+        itemId: Number(readField<unknown>(item, 'itemId', 'ItemId') ?? readField<unknown>(item, 'id', 'Id')) || undefined, // Item ID (prefer itemId, fallback to id)
+        itemName: String(readField<unknown>(item, 'itemName', 'ItemName') ?? item['name'] ?? 'Unknown Item'),
+        itemNo: String(readField<unknown>(item, 'itemNo', 'ItemNo') ?? item['itemCode'] ?? item['code'] ?? '-'),
+        quantity: Number(readField<unknown>(item, 'quantity', 'Quantity') ?? item['requestedQuantity'] ?? 0),
+        unit: String(readField<unknown>(item, 'unit', 'Unit') ?? item['unitName'] ?? '-'),
+        nsn: typeof readField<unknown>(item, 'nsn', 'Nsn') === 'string' ? String(readField<unknown>(item, 'nsn', 'Nsn')) : undefined,
+        itemType: normalizedItemType > 0 ? normalizedItemType : undefined,
+        weaponAssociations: mapWeaponAssociationRows(
+          readField<unknown[]>(item, 'weaponAssociations', 'WeaponAssociations')
+        )
       };
     });
 }

@@ -23,6 +23,7 @@ export {
 } from './dashboard.utils';
 export { mapRequestItems as mapDashboardRequestItems } from './dashboard.utils';
 export * from './request-mapper.utils';
+export * from './weapon-association-label.utils';
 export * from './profile.mapper';
 export * from './profile.utils';
 export * from './allowance.mapper';

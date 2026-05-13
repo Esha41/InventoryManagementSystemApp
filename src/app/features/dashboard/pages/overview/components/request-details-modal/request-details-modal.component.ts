@@ -21,6 +21,8 @@ import {
   formatOrderUsageDateTo
 } from '@dashboard/utils/dashboard-order.utils';
 import { RequestType } from '@utils/request-type-mapper.utils';
+import { hasWeaponAssociations as itemHasWeaponAssociations } from '@utils/weapon-association-label.utils';
+import { WeaponAssociationListComponent } from '@components/weapon-association-list/weapon-association-list.component';
 
 /**
  * Unified Request DTO type
@@ -35,7 +37,7 @@ export type UnifiedRequestItemDto = OrderRequestItemDto | ReturnItemDto | Discar
 @Component({
   selector: 'app-request-details-modal',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, TranslateModule],
+  imports: [CommonModule, LucideAngularModule, TranslateModule, WeaponAssociationListComponent],
   templateUrl: './request-details-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -290,6 +292,10 @@ export class RequestDetailsModalComponent implements OnInit, OnDestroy {
    */
   getRequestItems(): UnifiedRequestItemDto[] {
     return this.request?.requestItems || [];
+  }
+
+  hasWeaponAssociations(item: UnifiedRequestItemDto): boolean {
+    return itemHasWeaponAssociations(item);
   }
 
   /**
