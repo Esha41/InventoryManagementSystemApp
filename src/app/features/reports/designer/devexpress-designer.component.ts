@@ -30,7 +30,9 @@ export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit,
   private static readonly builtInTemplateUrls = new Set([
     'BaseReportTemplate',
     'AssetsReportTemplate',
-    'UsersReportTemplate'
+    'UsersReportTemplate',
+    'LoginAuditReportTemplate',
+    'PendingAuditorOrderReportTemplate'
   ]);
 
   // IIS: `^DXXRD(.*)` → backend `/api/DXXRD...` — keep path at site root, not `/api/DXXRD`
