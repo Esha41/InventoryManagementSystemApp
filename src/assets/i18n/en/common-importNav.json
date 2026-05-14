@@ -98,7 +98,9 @@
     "itemDepartmentAssignment": "Item Assignment",
     "announcements": "Announcements",
     "help": "Help",
-    "helpCenterAdmin": "Help center (admin)"
+    "helpCenterAdmin": "Help center (admin)",
+    "settingsConfiguration": "Settings & configuration",
+    "requesterQtyNotifications": "Requester quantity notifications"
   },
   "footer": {
     "copyright": "Copyright © Barzan Holdings {{year}}"
