@@ -135,7 +135,9 @@ export class RequesterQtyNotificationComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this.loadingDetail = false;
-          this.toastService.error('workflow.requesterQtyNotifyLoadDetailFailed');
+          this.toastService.error(
+            this.translationService.getTranslation('workflow.requesterQtyNotifyLoadDetailFailed')
+          );
           this.cdr.markForCheck();
         },
       });
@@ -147,7 +149,9 @@ export class RequesterQtyNotificationComponent implements OnInit, OnDestroy {
     }
     const wfId = this.selectedWorkflowId;
     if (wfId == null || wfId <= 0) {
-      this.toastService.error('workflow.requesterQtyNotifySaveNeedWorkflow');
+      this.toastService.error(
+        this.translationService.getTranslation('workflow.requesterQtyNotifySaveNeedWorkflow')
+      );
       return;
     }
     this.saving = true;
@@ -161,7 +165,9 @@ export class RequesterQtyNotificationComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.saving = false;
-          this.toastService.success('workflow.requesterQtyNotifySaved');
+          this.toastService.success(
+            this.translationService.getTranslation('workflow.requesterQtyNotifySaved')
+          );
           this.cdr.markForCheck();
         },
         error: () => {
@@ -242,7 +248,9 @@ export class RequesterQtyNotificationComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         },
         error: () => {
-          this.toastService.error('workflow.requesterQtyNotifyLoadDetailFailed');
+          this.toastService.error(
+            this.translationService.getTranslation('workflow.requesterQtyNotifyLoadDetailFailed')
+          );
           this.cdr.markForCheck();
         },
       });

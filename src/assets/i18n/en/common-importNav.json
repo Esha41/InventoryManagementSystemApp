@@ -99,8 +99,8 @@
     "announcements": "Announcements",
     "help": "Help",
     "helpCenterAdmin": "Help center (admin)",
-    "settingsConfiguration": "Settings & configuration",
-    "requesterQtyNotifications": "Requester quantity notifications"
+    "settingsConfiguration": "Settings",
+    "requesterQtyNotifications": "Quantity Change Notifications"
   },
   "footer": {
     "copyright": "Copyright © Barzan Holdings {{year}}"

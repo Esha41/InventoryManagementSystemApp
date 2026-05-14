@@ -176,7 +176,7 @@
     "selectSkipToSteps": "اختر الخطوات للتخطي إليها",
     "saveWorkflowFirst": "احفظ سير العمل أولاً",
     "selectNotifyingRoles": "اختر الأدوار المراد إشعارها",
-    "requesterQtyNotifyTitle": "إشعارات مقدم الطلب — تغيير كمية السطر",
+    "requesterQtyNotifyTitle": "إشعار بتغييرات الكمية إلى مقدم الطلب",
     "requesterQtyNotifySectionTitle": "إعدادات الإشعارات",
     "requesterQtyNotifySubtitle": "اختر خطوات سير العمل التي عند وصول الطلب إليها، إذا تغيرت كمية بند أمر فتُشعر هذه الخاصية مقدم الطلب. الإعداد منفصل عن محرر تعريف سير العمل.",
     "requesterQtyNotifyWorkflowLabel": "سير العمل",
