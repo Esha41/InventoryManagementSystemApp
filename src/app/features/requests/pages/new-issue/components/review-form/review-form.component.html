@@ -1,10 +1,10 @@
-<div class="space-y-6">
+<div class="space-y-4">
   <!-- Requester Details -->
-  <div class="bg-[var(--color-background-muted)] rounded-lg p-6">
-    <h2 class="text-base font-bold text-[var(--color-text)] mb-6">{{ 'newIssueRequest.requesterDetails' | translate }}
+  <div class="bg-[var(--color-background-muted)] rounded-lg p-4">
+    <h2 class="text-base font-bold text-[var(--color-brand)] mb-3">{{ 'newIssueRequest.requesterDetails' | translate }}
     </h2>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <!-- Name -->
       <div class="flex items-center gap-4">
         <label class="text-sm font-bold text-[var(--color-text)] min-w-[100px]" for="review-form-fld-1-1">{{ 'newIssueRequest.name' | translate
@@ -26,24 +26,24 @@
   </div>
 
   <!-- Order Details -->
-  <div class="bg-[var(--color-background-muted)] rounded-lg p-6">
-    <h2 class="text-base font-bold text-[var(--color-text)] mb-6">{{ 'newIssueRequest.orderDetails' | translate }}</h2>
+  <div class="bg-[var(--color-background-muted)] rounded-lg p-4">
+    <h2 class="text-base font-bold text-[var(--color-brand)] mb-3">{{ 'newIssueRequest.orderDetails' | translate }}</h2>
 
-    <div class="space-y-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 items-start">
       <!-- Order Type -->
-      <div class="flex items-center gap-4">
-        <label class="text-sm font-bold text-[var(--color-text)] min-w-[150px]" for="review-form-fld-3-3">{{ 'newIssueRequest.orderType' |
+      <div class="flex items-center gap-4 min-w-0">
+        <label class="text-sm font-bold text-[var(--color-text)] min-w-[150px] shrink-0" for="review-form-fld-3-3">{{ 'newIssueRequest.orderType' |
           translate }}</label>
         <input id="review-form-fld-3-3" type="text" [ngModel]="'newIssueRequest.orderTypePlaceholder' | translate"
           readonly
-          class="flex-1 max-w-xs px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
+          class="flex-1 min-w-0 max-w-xs px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
       </div>
 
-      <!-- Order Document -->
-      <div class="flex items-center gap-4">
-        <span class="text-sm font-bold text-[var(--color-text)] min-w-[150px]">{{ 'newIssueRequest.orderDocument' |
+      <!-- Order Document (attachments) — same row as order type on md+ -->
+      <div class="flex items-start gap-4 min-w-0">
+        <span class="text-sm font-bold text-[var(--color-text)] min-w-[150px] shrink-0 pt-2.5">{{ 'newIssueRequest.orderDocument' |
           translate }}</span>
-        <div class="flex-1 max-w-xs">
+        <div class="flex-1 min-w-0 max-w-xs">
           <div *ngIf="files && files.length > 0" class="space-y-2">
             <div *ngFor="let file of files"
               class="flex items-center gap-2 px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)]">
@@ -65,8 +65,8 @@
   </div>
 
   <!-- Selected Cartridges Summary -->
-  <div *ngIf="selectedCartridges.length > 0" class="bg-[var(--color-background-muted)] rounded-lg p-6 mb-6">
-    <h2 class="text-base font-bold text-[var(--color-text)] mb-6">{{ 'newIssueRequest.selectedItems' | translate }}
+  <div *ngIf="selectedCartridges.length > 0" class="bg-[var(--color-background-muted)] rounded-lg p-4">
+    <h2 class="text-base font-bold text-[var(--color-brand)] mb-3">{{ 'newIssueRequest.selectedItems' | translate }}
     </h2>
 
     <div class="overflow-x-auto border border-[var(--color-border)] rounded-lg bg-[var(--color-background)]">
@@ -102,12 +102,12 @@
   </div>
 
   <!-- Usage Details -->
-  <div class="bg-[var(--color-background-muted)] rounded-lg p-6">
-    <h2 class="text-base font-bold text-[var(--color-text)] mb-6">{{ 'newIssueRequest.usageDetails' | translate }}</h2>
+  <div class="bg-[var(--color-background-muted)] rounded-lg p-4">
+    <h2 class="text-base font-bold text-[var(--color-brand)] mb-3">{{ 'newIssueRequest.usageDetails' | translate }}</h2>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
       <!-- Left Column -->
-      <div class="space-y-6">
+      <div class="space-y-4">
         <!-- From Reserve -->
         <div class="flex items-center">
           <span class="text-sm font-bold text-[var(--color-text)] min-w-[120px]">{{ 'newIssueRequest.fromReserve' |
@@ -137,7 +137,7 @@
         </div>
 
         <!-- Use purpose + use purpose notes -->
-        <div class="space-y-4">
+        <div class="space-y-3">
           <div class="flex items-center gap-4">
             <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]" for="review-form-fld-7-7">{{ 'newIssueRequest.usePurpose' |
               translate }}</label>
@@ -187,7 +187,7 @@
       </div>
 
       <!-- Right Column: offset on md+ so Usage Date From aligns with Use purpose row -->
-      <div class="space-y-6 md:pt-14">
+      <div class="space-y-4 md:pt-12">
         <!-- Usage Date From -->
         <div class="flex items-center gap-4">
           <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px]" for="review-form-fld-11-11">{{ 'newIssueRequest.usageDateFrom' |

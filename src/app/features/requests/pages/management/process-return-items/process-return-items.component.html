@@ -359,12 +359,6 @@
             <lucide-angular [img]="Paperclip" class="h-4 w-4 opacity-95"></lucide-angular>
             {{ 'common.chooseFiles' | translate }}
           </span>
-          <p class="text-xs text-[var(--color-text-muted)]">
-            {{ 'newIssueRequest.attachmentsHint' | translate }}
-          </p>
-          <p class="text-xs text-[var(--color-text-muted)] font-medium">
-            {{ 'common.maximumFileSize' | translate: { size: MAX_FILE_SIZE_MB } }}
-          </p>
         </div>
 
         <div *ngIf="attachmentFiles.length > 0" class="mt-4 space-y-2">

@@ -105,11 +105,11 @@
           </ul>
         </div>
 
-        <!-- Profile Details Grid -->
+        <!-- Profile Details: user info | divider | additional (side-by-side on large screens) -->
         <div class="px-6 py-4">
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="flex flex-col gap-8 lg:flex-row lg:items-stretch lg:gap-0">
             <!-- User Information Section -->
-            <div class="space-y-3">
+            <div class="min-w-0 flex-1 space-y-3 lg:pe-10">
               <div class="flex items-center gap-2 mb-4">
                 <div class="w-8 h-8 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
                   <lucide-angular [img]="User" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
@@ -192,10 +192,23 @@
                       </span>
                     </div>
                   </div>
+                </div>
+              </div>
             </div>
 
+            <div
+              class="hidden h-auto w-px shrink-0 self-stretch bg-[var(--color-border)] lg:block"
+              role="separator"
+              aria-orientation="vertical"
+              aria-hidden="true"></div>
+
+            <div
+              class="h-px w-full shrink-0 bg-[var(--color-border)] lg:hidden"
+              role="separator"
+              aria-hidden="true"></div>
+
             <!-- Additional Information Section -->
-            <div class="space-y-3">
+            <div class="min-w-0 flex-1 space-y-3 lg:ps-10">
               <div class="flex items-center gap-2 mb-4">
                 <div class="w-8 h-8 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
                   <lucide-angular [img]="Award" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>

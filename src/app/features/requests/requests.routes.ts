@@ -28,12 +28,13 @@ export const REQUESTS_ROUTES: Routes = [
     canActivate: [permissionGuard],
     data: { permissions: [PERMISSIONS.REQUESTS.RETURN_REQUEST.PAGE, PERMISSIONS.REQUESTS.RETURN_REQUEST.CREATE, PERMISSIONS.REQUESTS.ORDER.CREATE] }
   },
-  {
-    path: 'discard-request',
-    loadComponent: () => import('./pages/discard/discard-request.component').then(m => m.DiscardRequestComponent),
-    canActivate: [permissionGuard],
-    data: { permissions: [PERMISSIONS.REQUESTS.DISCARD.PAGE, PERMISSIONS.REQUESTS.DISCARD.CREATE, PERMISSIONS.REQUESTS.ORDER.CREATE] }
-  },
+  // Discard request — not used by client for now (restore block to re-enable /requests/discard-request).
+  // {
+  //   path: 'discard-request',
+  //   loadComponent: () => import('./pages/discard/discard-request.component').then(m => m.DiscardRequestComponent),
+  //   canActivate: [permissionGuard],
+  //   data: { permissions: [PERMISSIONS.REQUESTS.DISCARD.PAGE, PERMISSIONS.REQUESTS.DISCARD.CREATE, PERMISSIONS.REQUESTS.ORDER.CREATE] }
+  // },
   {
     path: 'requests-management',
     loadComponent: () => import('./pages/management/requests-management.component').then(m => m.RequestsManagementComponent),

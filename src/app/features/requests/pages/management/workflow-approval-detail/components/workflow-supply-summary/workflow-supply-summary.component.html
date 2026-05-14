@@ -160,38 +160,63 @@
       <h3 class="text-sm font-semibold text-[var(--color-text)] mb-3">
         {{ 'workflowApprovalDetail.workflowSupplySummary.linesTitle' | translate }}
       </h3>
-      <div *ngIf="summary.lines?.length" class="overflow-x-auto border border-[var(--color-border)] rounded-lg">
-        <table class="w-full text-sm">
+      <div *ngIf="summary.lines?.length" class="overflow-x-auto rounded-lg border border-[var(--color-border)]">
+        <table class="w-full border-collapse text-sm">
           <thead class="bg-[var(--color-background-muted)]">
             <tr>
-              <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+              <th class="px-4 py-2.5 text-start text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
                 {{ 'workflowApprovalDetail.workflowSupplySummary.colItemName' | translate }}</th>
-              <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+              <th class="px-4 py-2.5 text-start text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
                 {{ 'workflowApprovalDetail.workflowSupplySummary.colItemNo' | translate }}</th>
-              <th class="px-3 py-2 text-end text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+              <th class="px-4 py-2.5 text-end text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
                 {{ 'workflowApprovalDetail.workflowSupplySummary.colRequested' | translate }}</th>
-              <th class="px-3 py-2 text-end text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+              <th class="px-4 py-2.5 text-end text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
                 {{ 'workflowApprovalDetail.workflowSupplySummary.colApproved' | translate }}</th>
-              <th class="px-3 py-2 text-end text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+              <th class="px-4 py-2.5 text-end text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
                 {{ suppliedColumnKey() | translate }}</th>
-              <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+              <th class="px-4 py-2.5 text-end text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
                 {{ 'workflowApprovalDetail.workflowSupplySummary.colLot' | translate }}</th>
-              <th class="px-3 py-2 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase">
+              <th class="px-4 py-2.5 text-start text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
                 {{ 'workflowApprovalDetail.workflowSupplySummary.colDepot' | translate }}</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-[var(--color-border)]">
-            <tr *ngFor="let line of summary.lines" class="hover:bg-[var(--color-background-hover)]">
-              <td class="px-3 py-2 text-[var(--color-text)] min-w-0">
-                <span [appTableClampTooltip]="line.itemName">{{ line.itemName }}</span>
-              </td>
-              <td class="px-3 py-2 text-[var(--color-text-muted)]">{{ line.itemNo || '—' }}</td>
-              <td class="px-3 py-2 text-end font-medium">{{ line.requestedQuantity }}</td>
-              <td class="px-3 py-2 text-end font-medium">{{ line.approvedQuantity ?? line.requestedQuantity }}</td>
-              <td class="px-3 py-2 text-end font-medium">{{ line.suppliedQuantity }}</td>
-              <td class="px-3 py-2 text-[var(--color-text)]">{{ line.lot || '—' }}</td>
-              <td class="px-3 py-2 text-[var(--color-text)]">{{ depotDisplay(line) }}</td>
-            </tr>
+          <tbody>
+            <ng-container *ngFor="let group of ammoGroups; let gi = index">
+              <tr *ngFor="let line of group.splits; let ri = index"
+                class="border-b border-[var(--color-border)] transition-colors last:border-b-0 hover:bg-[var(--color-background-hover)]/50"
+                [ngClass]="{ 'border-t-2 border-[var(--color-border)]': gi > 0 && ri === 0 }">
+                <!-- Shared request line: vertically centered in rowspan -->
+                <td *ngIf="ri === 0" [attr.rowspan]="group.splits.length"
+                  class="h-full align-middle border-r border-[var(--color-border)] bg-[var(--color-background-muted)]/40 px-4 py-3">
+                  <span class="block max-w-xs font-semibold leading-snug text-[var(--color-text)]" [appTableClampTooltip]="group.itemName">{{ group.itemName }}</span>
+                </td>
+                <td *ngIf="ri === 0" [attr.rowspan]="group.splits.length"
+                  class="h-full align-middle whitespace-nowrap border-r border-[var(--color-border)] bg-[var(--color-background-muted)]/40 px-4 py-3 text-start text-sm font-medium tabular-nums text-[var(--color-text)]">
+                  <span class="inline-flex min-h-[2.5rem] items-center">{{ group.itemNo || '—' }}</span>
+                </td>
+                <td *ngIf="ri === 0" [attr.rowspan]="group.splits.length"
+                  class="h-full align-middle border-r border-[var(--color-border)] bg-[var(--color-background-muted)]/40 px-4 py-3 text-end text-sm font-semibold tabular-nums text-[var(--color-text)]">
+                  <span class="inline-flex min-h-[2.5rem] w-full items-center justify-end">{{ group.requestedQuantity }}</span>
+                </td>
+                <td *ngIf="ri === 0" [attr.rowspan]="group.splits.length"
+                  class="h-full align-middle border-r border-[var(--color-border)] bg-[var(--color-background-muted)]/40 px-4 py-3 text-end text-sm font-semibold tabular-nums text-[var(--color-text)]">
+                  <span class="inline-flex min-h-[2.5rem] w-full items-center justify-end">{{ group.approvedQuantity }}</span>
+                </td>
+                <!-- Per split: consistent row height, subtle separator between splits -->
+                <td class="align-middle px-4 py-2.5 text-end text-sm font-semibold tabular-nums text-[var(--color-text)]"
+                  [ngClass]="ri > 0 ? 'border-t border-[var(--color-border)]' : ''">
+                  {{ line.suppliedQuantity }}
+                </td>
+                <td class="align-middle px-4 py-2.5 text-end text-sm tabular-nums text-[var(--color-text)]"
+                  [ngClass]="ri > 0 ? 'border-t border-[var(--color-border)]' : ''">
+                  {{ line.lot || '—' }}
+                </td>
+                <td class="min-w-0 align-middle px-4 py-2.5 text-start text-sm text-[var(--color-text)]"
+                  [ngClass]="ri > 0 ? 'border-t border-[var(--color-border)]' : ''">
+                  <span class="break-words">{{ depotDisplay(line) }}</span>
+                </td>
+              </tr>
+            </ng-container>
           </tbody>
         </table>
       </div>
