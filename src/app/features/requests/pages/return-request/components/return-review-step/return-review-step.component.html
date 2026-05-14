@@ -1,0 +1,122 @@
+<div class="space-y-4">
+
+  <!-- Selected items: same read-only table as new-issue review-form -->
+  <div *ngIf="selectedCartridges.length > 0" class="bg-[var(--color-background-muted)] rounded-lg p-4">
+    <h2 class="text-base font-bold text-[var(--color-brand)] mb-3">{{ 'newIssueRequest.selectedItems' | translate }}</h2>
+
+    <div class="overflow-x-auto border border-[var(--color-border)] rounded-lg bg-[var(--color-background)]">
+      <table class="min-w-full text-sm">
+        <thead class="bg-[var(--color-background-muted)] text-[var(--color-text)]">
+          <tr>
+            <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.name' | translate }}</th>
+            <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.itemNo' | translate }}</th>
+            <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.nsn' | translate }}</th>
+            <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.quantity' | translate }}</th>
+            <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.weaponAssociation.weapon' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cartridge of selectedCartridges" class="border-t border-[var(--color-border)]">
+            <td class="px-4 py-2 text-[var(--color-text)]">
+              <span *ngIf="isArabic">{{ cartridge.nameAr || cartridge.nameEn || cartridge.name }}</span>
+              <span *ngIf="!isArabic">{{ cartridge.nameEn || cartridge.name }}</span>
+            </td>
+            <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.itemNo || cartridge.productId }}</td>
+            <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.ncn || '-' }}</td>
+            <td class="px-4 py-2 text-[var(--color-text)]">{{ cartridge.quantity || 0 }}</td>
+            <td class="px-4 py-2 text-[var(--color-text-muted)]">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Request Details Section -->
+  <div class="bg-[var(--color-background-muted)] rounded-lg p-4">
+    <h2 class="text-base font-bold text-[var(--color-brand)] mb-3">{{ 'returnRequest.steps.details' | translate }}</h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 items-start">
+
+      <!-- Item Type -->
+      <div class="flex items-center gap-4">
+        <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px] shrink-0">{{ 'returnRequest.itemType' | translate }}</label>
+        <input type="text"
+          [ngModel]="('warehouseInventory.tabs.' + selectedItemType.toLowerCase()) | translate"
+          readonly
+          class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
+      </div>
+
+      <!-- Priority -->
+      <div class="flex items-center gap-4">
+        <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px] shrink-0">{{ 'returnRequest.priority' | translate }}</label>
+        <input type="text"
+          [ngModel]="getPriorityLabel(priority) | translate"
+          readonly
+          class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
+      </div>
+
+      <!-- Request Purpose -->
+      <div class="flex items-center gap-4">
+        <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px] shrink-0">{{ 'returnRequest.requestPurpose' | translate }}</label>
+        <input type="text" [ngModel]="requestPurposeName || '—'" readonly
+          class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
+      </div>
+
+      <!-- Reason (optional) -->
+      <div *ngIf="reason" class="flex items-center gap-4">
+        <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px] shrink-0">{{ 'returnRequest.reason' | translate }}</label>
+        <input type="text" [ngModel]="reason" readonly
+          class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
+      </div>
+
+      <!-- Purpose Notes -->
+      <div *ngIf="requestPurposeNotes" class="md:col-span-2 flex items-start gap-4">
+        <span class="text-sm font-bold text-[var(--color-text)] min-w-[120px] shrink-0 pt-2.5" id="rr-review-lbl-purpose-notes">
+          {{ 'returnRequest.requestPurposeNotes' | translate }}
+        </span>
+        <div class="flex-1 min-h-[5rem] px-4 py-2.5 border border-[var(--color-border)] rounded text-sm bg-[var(--color-background)] cursor-default"
+             aria-labelledby="rr-review-lbl-purpose-notes">
+          <span class="text-[var(--color-text)] whitespace-pre-wrap">{{ requestPurposeNotes }}</span>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div *ngIf="notes" class="md:col-span-2 flex items-start gap-4">
+        <span class="text-sm font-bold text-[var(--color-text)] min-w-[120px] shrink-0 pt-2.5">
+          {{ 'returnRequest.notes' | translate }}
+        </span>
+        <div class="flex-1 min-h-[3rem] px-4 py-2.5 border border-[var(--color-border)] rounded text-sm bg-[var(--color-background)] cursor-default">
+          <span class="text-[var(--color-text)] whitespace-pre-wrap">{{ notes }}</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Attachments Section -->
+  <div class="bg-[var(--color-background-muted)] rounded-lg p-4">
+    <h2 class="text-base font-bold text-[var(--color-brand)] mb-3">{{ 'returnRequest.attachments' | translate }}</h2>
+    <div class="space-y-2 max-w-xs">
+      <div *ngFor="let file of selectedFiles"
+        class="flex items-center gap-2 px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)]">
+        <span class="text-sm text-[var(--color-text-muted)] flex-1 truncate">{{ file.name }}</span>
+      </div>
+      <div *ngIf="selectedFiles.length === 0"
+        class="px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed">
+        {{ 'returnRequest.noFilesAttached' | translate }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <div class="flex justify-between items-center">
+    <app-button variant="outline" (clicked)="previous.emit()">
+      {{ 'common.previous' | translate }}
+    </app-button>
+    <app-button variant="primary" (clicked)="submit.emit()" [disabled]="isLoading"
+      class="bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand-dark)]">
+      {{ isLoading ? ('common.loading' | translate) : ('returnRequest.sendRequest' | translate) }}
+    </app-button>
+  </div>
+
+</div>

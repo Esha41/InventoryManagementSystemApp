@@ -62,6 +62,7 @@ export class CartridgeListComponent implements OnChanges {
   @Input() appliedSearchTerm = '';
   /** Server catalog: true while paginating or refreshing results (list shows with overlay). */
   @Input() catalogPageLoading = false;
+  @Input() showPreviousButton = true;
 
   @Output() cartridgeClick = new EventEmitter<Cartridge>();
   @Output() allowanceError = new EventEmitter<string>();

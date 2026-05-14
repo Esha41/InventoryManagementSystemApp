@@ -126,16 +126,10 @@
               [noDataText]="'common.noResultsFound' | translate"
             >
               <div
-                *ngIf="ammoHasCaliberForFilter(ammo)"
+                *ngIf="hasCaliberFilterEffect(ammo)"
                 appDropdownPanelFooter
                 class="space-y-2 bg-[var(--color-background-muted)]/30 p-2.5"
               >
-                <p
-                  *ngIf="shouldShowCompatibleOnlyEmptyHint(ammo)"
-                  class="text-xs leading-relaxed text-[var(--color-text-muted)]"
-                >
-                  {{ 'newIssueRequest.weaponAssociation.noCompatibleWeaponsHint' | translate }}
-                </p>
                 <div
                   class="grid grid-cols-2 gap-1.5"
                   role="radiogroup"

@@ -227,6 +227,12 @@ export class WeaponAssociationComponent implements OnChanges {
     return caliberId != null && Number.isFinite(Number(caliberId));
   }
 
+  hasCaliberFilterEffect(ammo: Cartridge): boolean {
+    if (!this.ammoHasCaliberForFilter(ammo)) return false;
+    const compatible = this.getCompatibleWeapons(this.effectiveAmmoCaliberId(ammo));
+    return compatible.length > 0 && compatible.length < this.getAllAssignableWeapons().length;
+  }
+
   isViewingAllWeapons(ammoItemId: number): boolean {
     return this.viewAllWeaponsByAmmoId.get(ammoItemId) === true;
   }
@@ -246,13 +252,6 @@ export class WeaponAssociationComponent implements OnChanges {
     }
     this.rebuildWeaponOptionsForAmmo(ammoItemId);
     this.cdr.markForCheck();
-  }
-
-  shouldShowCompatibleOnlyEmptyHint(ammo: Cartridge): boolean {
-    if (!this.ammoHasCaliberForFilter(ammo) || this.isViewingAllWeapons(ammo.id)) {
-      return false;
-    }
-    return this.getCompatibleWeapons(this.effectiveAmmoCaliberId(ammo)).length === 0;
   }
 
   getCompatibleWeapons(ammoCaliberId: number | null | undefined): WeaponDto[] {
@@ -348,7 +347,7 @@ export class WeaponAssociationComponent implements OnChanges {
     if (caliberId == null || !Number.isFinite(Number(caliberId))) {
       return this.getCompatibleWeapons(null);
     }
-    if (this.isViewingAllWeapons(ammo.id)) {
+    if (this.isViewingAllWeapons(ammo.id) || !this.hasCaliberFilterEffect(ammo)) {
       return this.getAllAssignableWeapons();
     }
     return this.getCompatibleWeapons(caliberId);

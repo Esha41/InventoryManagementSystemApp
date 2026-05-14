@@ -35,6 +35,8 @@ export class StepSelectionComponent {
     @Input() serverSideCatalog = false;
     @Input() catalogPagination!: CatalogPaginationState;
     @Input() appliedSearchTerm = '';
+    /** Passed through to cartridge list footer (hide on return step 0). */
+    @Input() showPreviousButton = true;
 
     @Output() next = new EventEmitter<void>();
     @Output() previous = new EventEmitter<void>();

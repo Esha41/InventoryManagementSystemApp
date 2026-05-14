@@ -38,6 +38,7 @@
     [serverSideCatalog]="serverSideCatalog" [catalogPagination]="catalogPagination"
     [appliedSearchTerm]="appliedSearchTerm"
     [catalogPageLoading]="serverSideCatalog && cartridgeState.catalogPageLoading"
+    [showPreviousButton]="showPreviousButton"
     (cartridgeClick)="onCartridgeClick($event)" (allowanceError)="onAllowanceError($event)"
     (itemTypeValidationError)="onAllowanceError($event)" (addSelection)="addSelection.emit($event)"
     (filterChange)="filterChange.emit()" (clearFilters)="clearFilters.emit()" (next)="next.emit()"

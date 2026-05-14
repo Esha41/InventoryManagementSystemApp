@@ -16,6 +16,11 @@ import { TranslateModule } from '@ngx-translate/core';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class OrderSuccessComponent {
+  /** i18n keys — override for flows other than new issue (e.g. return request). */
+  @Input() titleTranslateKey = 'newIssueRequest.orderSentSuccessfully';
+  @Input() orderNumberLabelKey = 'newIssueRequest.orderNumber';
+  @Input() trackButtonTranslateKey = 'newIssueRequest.trackOrder';
+
   @Input() orderNumber: string | null = null;
   @Input() createdOrderId: number | null = null;
   @Output() trackOrder = new EventEmitter<void>();
