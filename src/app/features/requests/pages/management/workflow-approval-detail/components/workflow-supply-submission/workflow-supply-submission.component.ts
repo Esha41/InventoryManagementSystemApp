@@ -8,7 +8,7 @@ import { SupplyDto } from '@requests/services/supply.service';
 import { LookupItem } from '@services/lookup.service';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { DropdownOption } from '@components/dropdown/dropdown.component';
-import { getFileSizeFromFile, removeFile, MAX_FILE_SIZE_MB, validateFile, showFileValidationErrors } from '@utils/file.utils';
+import { getFileSizeFromFile, removeFile, validateFile, showFileValidationErrors } from '@utils/file.utils';
 import { WorkflowApprovalSupplyService } from '../../services/workflow-approval-supply.service';
 import { WorkflowApprovalDataService } from '../../services/workflow-approval-data.service';
 import { WorkflowApprovalStateService } from '../../services/workflow-approval-state.service';
@@ -95,7 +95,6 @@ export class WorkflowSupplySubmissionComponent implements OnInit, OnDestroy, OnC
 
   // Helper properties
   getFileSize = getFileSizeFromFile;
-  MAX_FILE_SIZE_MB = MAX_FILE_SIZE_MB;
 
   constructor(
     private translateService: TranslateService,

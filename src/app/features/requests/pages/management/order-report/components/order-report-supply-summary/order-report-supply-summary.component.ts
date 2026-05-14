@@ -9,12 +9,18 @@ import {
   ChangeDetectorRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { getCurrentLang, getLocalizedName } from '@core/utils/localization.utils';
 import { Subscription } from 'rxjs';
 import { SupplyService, WorkflowSupplySummaryDto } from '@requests/services/supply.service';
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
+import {
+  ammoSupplyTableRowNumber,
+  groupAmmoSupplyLines,
+  type AmmoSupplyLineGroup
+} from '../../../utils/ammo-supply-line-groups.util';
 
 @Component({
   selector: 'app-order-report-supply-summary',
@@ -30,15 +36,19 @@ export class OrderReportSupplySummaryComponent implements OnInit, OnChanges, OnD
   loading = true;
   error: string | null = null;
   summary: WorkflowSupplySummaryDto | null = null;
+  ammoGroups: AmmoSupplyLineGroup[] = [];
 
   private loadSub?: Subscription;
+  private langSub?: Subscription;
 
   constructor(
     private supplyService: SupplyService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private translate: TranslateService
   ) {}
 
   ngOnInit(): void {
+    this.langSub = this.translate.onLangChange.subscribe(() => this.cdr.markForCheck());
     this.fetchSummary();
   }
 
@@ -50,6 +60,7 @@ export class OrderReportSupplySummaryComponent implements OnInit, OnChanges, OnD
 
   ngOnDestroy(): void {
     this.loadSub?.unsubscribe();
+    this.langSub?.unsubscribe();
   }
 
   submissionLabelKey(status: number): string {
@@ -72,8 +83,19 @@ export class OrderReportSupplySummaryComponent implements OnInit, OnChanges, OnD
       : 'requestsManagement.orderReport.table.shouldBeSuppliedQty';
   }
 
-  depotDisplay(line: { depotName?: string | null; depotCode?: string | null }): string {
-    const name = (line.depotName || '').trim();
+  depotDisplay(line: {
+    depotName?: string | null;
+    depotNameEn?: string | null;
+    depotNameAr?: string | null;
+    depotCode?: string | null;
+  }): string {
+    const name = getLocalizedName(
+      {
+        nameEn: line.depotNameEn ?? line.depotName ?? undefined,
+        nameAr: line.depotNameAr ?? undefined
+      },
+      getCurrentLang(this.translate)
+    ).trim();
     const code = (line.depotCode || '').trim();
     if (name && code) {
       return `${name} (${code})`;
@@ -97,6 +119,10 @@ export class OrderReportSupplySummaryComponent implements OnInit, OnChanges, OnD
     return !!this.summary?.weaponLines?.length;
   }
 
+  ammoSupplyRowNumber(groupIndex: number, splitIndex: number): number {
+    return ammoSupplyTableRowNumber(this.ammoGroups, groupIndex, splitIndex);
+  }
+
   private fetchSummary(): void {
     if (this.orderId == null) {
       return;
@@ -105,11 +131,13 @@ export class OrderReportSupplySummaryComponent implements OnInit, OnChanges, OnD
     this.loading = true;
     this.error = null;
     this.summary = null;
+    this.ammoGroups = [];
     this.cdr.markForCheck();
 
     this.loadSub = this.supplyService.getWorkflowSupplySummary(this.orderId).subscribe({
       next: (data) => {
         this.summary = data;
+        this.ammoGroups = groupAmmoSupplyLines(data.lines ?? []);
         this.loading = false;
         this.error = null;
         this.cdr.markForCheck();
@@ -121,6 +149,7 @@ export class OrderReportSupplySummaryComponent implements OnInit, OnChanges, OnD
         );
         this.loading = false;
         this.summary = null;
+        this.ammoGroups = [];
         this.cdr.markForCheck();
       }
     });

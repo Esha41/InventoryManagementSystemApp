@@ -106,7 +106,7 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       permissions: [
         PERMISSIONS.REQUESTS.ORDER.PAGE,
         PERMISSIONS.REQUESTS.RETURN_REQUEST.PAGE_NAV,
-        PERMISSIONS.REQUESTS.DISCARD.PAGE_NAV,
+        // PERMISSIONS.REQUESTS.DISCARD.PAGE_NAV, // discard flow hidden — match commented route in requests.routes.ts
         PERMISSIONS.REQUESTS.REQUEST.PAGE,
         PERMISSIONS.REQUESTS.RECEIVER.PAGE
       ],
@@ -121,11 +121,11 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
           route: '/requests/return-request',
           permissions: [PERMISSIONS.REQUESTS.RETURN_REQUEST.PAGE_NAV]
         },
-        {
-          label: 'nav.newDiscardRequest',
-          route: '/requests/discard-request',
-          permissions: [PERMISSIONS.REQUESTS.DISCARD.PAGE_NAV]
-        },
+        // {
+        //   label: 'nav.newDiscardRequest',
+        //   route: '/requests/discard-request',
+        //   permissions: [PERMISSIONS.REQUESTS.DISCARD.PAGE_NAV]
+        // },
         {
           label: 'nav.requestsOverview',
           route: '/requests/requests-management',
@@ -396,7 +396,7 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     if (
       url.startsWith('/requests/new-issue-request') ||
       url.startsWith('/requests/return-request') ||
-      url.startsWith('/requests/discard-request') ||
+      // url.startsWith('/requests/discard-request') ||
       url.startsWith('/requests/requests-management')
     ) {
       this.expandedMenus.add('nav.requestManagement');

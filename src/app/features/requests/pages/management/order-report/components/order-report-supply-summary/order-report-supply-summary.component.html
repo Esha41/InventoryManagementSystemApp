@@ -110,18 +110,27 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let line of summary.lines; let i = index" class="print-table-row">
-            <td class="print-table-cell">{{ i + 1 }}</td>
-            <td class="print-table-cell min-w-0">
-              <span [appTableClampTooltip]="line.itemName">{{ line.itemName }}</span>
-            </td>
-            <td class="print-table-cell">{{ line.itemNo || '—' }}</td>
-            <td class="print-table-cell print-table-cell-right">{{ line.requestedQuantity | number }}</td>
-            <td class="print-table-cell print-table-cell-right">{{ (line.approvedQuantity ?? line.requestedQuantity) | number }}</td>
-            <td class="print-table-cell print-table-cell-right">{{ line.suppliedQuantity | number }}</td>
-            <td class="print-table-cell">{{ line.lot || '—' }}</td>
-            <td class="print-table-cell">{{ depotDisplay(line) }}</td>
-          </tr>
+          <ng-container *ngFor="let group of ammoGroups; let gi = index">
+            <tr *ngFor="let line of group.splits; let ri = index" class="print-table-row"
+              [class.print-table-row-group-start]="gi > 0 && ri === 0">
+              <td class="print-table-cell">{{ ammoSupplyRowNumber(gi, ri) }}</td>
+              <td *ngIf="ri === 0" [attr.rowspan]="group.splits.length" class="print-table-cell min-w-0 align-top print-table-group-cell">
+                <span [appTableClampTooltip]="group.itemName">{{ group.itemName }}</span>
+              </td>
+              <td *ngIf="ri === 0" [attr.rowspan]="group.splits.length" class="print-table-cell align-top print-table-group-cell">
+                {{ group.itemNo || '—' }}
+              </td>
+              <td *ngIf="ri === 0" [attr.rowspan]="group.splits.length" class="print-table-cell print-table-cell-right align-top print-table-group-cell">
+                {{ group.requestedQuantity | number }}
+              </td>
+              <td *ngIf="ri === 0" [attr.rowspan]="group.splits.length" class="print-table-cell print-table-cell-right align-top print-table-group-cell">
+                {{ group.approvedQuantity | number }}
+              </td>
+              <td class="print-table-cell print-table-cell-right">{{ line.suppliedQuantity | number }}</td>
+              <td class="print-table-cell">{{ line.lot || '—' }}</td>
+              <td class="print-table-cell">{{ depotDisplay(line) }}</td>
+            </tr>
+          </ng-container>
         </tbody>
       </table>
       <p *ngIf="!summary.lines?.length" class="print-table-empty">

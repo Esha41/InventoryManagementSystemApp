@@ -1,12 +1,9 @@
 <div class="space-y-6">
   <header class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-    <div class="min-w-0 space-y-1">
+    <div class="min-w-0">
       <h2 class="text-lg font-bold text-[var(--color-text)] sm:text-xl">
         {{ 'newIssueRequest.weaponAssociation.title' | translate }}
       </h2>
-      <p class="max-w-2xl text-sm leading-relaxed text-[var(--color-text-muted)]">
-        {{ 'newIssueRequest.weaponAssociation.subtitle' | translate }}
-      </p>
     </div>
     <p
       *ngIf="ammunitionItems.length > 0 && !loadingWeapons && !weaponLoadError"
@@ -69,17 +66,10 @@
           </div>
 
           <div
-            *ngIf="hasValidAssociation(ammo.id)"
+            *ngIf="firstOtherName(ammo.id)"
             class="flex shrink-0 flex-col items-start gap-1 text-sm font-medium text-emerald-700 dark:text-emerald-400 sm:items-end"
           >
-            <p *ngIf="catalogAssociationCount(ammo.id) > 0" class="inline-flex items-center gap-1.5">
-              <lucide-angular [img]="CircleCheck" class="h-4 w-4 shrink-0" />
-              {{
-                'newIssueRequest.weaponAssociation.weaponsLinked'
-                  | translate: { count: catalogAssociationCount(ammo.id) }
-              }}
-            </p>
-            <p *ngIf="firstOtherName(ammo.id)" class="inline-flex items-center gap-1.5">
+            <p class="inline-flex items-center gap-1.5">
               <lucide-angular [img]="CircleCheck" class="h-4 w-4 shrink-0" />
               {{ firstOtherName(ammo.id) }}
               <span class="font-normal text-[var(--color-text-muted)]">

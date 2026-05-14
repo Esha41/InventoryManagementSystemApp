@@ -113,7 +113,10 @@ export interface WorkflowSupplySummaryLineDto {
   suppliedQuantity: number;
   lot: string;
   depotId?: number | null;
+  /** Legacy single name (often English); prefer depotNameEn / depotNameAr when present. */
   depotName?: string | null;
+  depotNameEn?: string | null;
+  depotNameAr?: string | null;
   depotCode?: string | null;
   notes?: string | null;
 }
@@ -123,6 +126,8 @@ export interface WeaponSelectionLineDto {
   itemName: string;
   depotId: number;
   depotName?: string | null;
+  depotNameEn?: string | null;
+  depotNameAr?: string | null;
   depotCode?: string | null;
   batchId: number;
   batchNumber: string;
@@ -136,6 +141,8 @@ export interface WeaponSuppliedLineDto {
   serialNumber?: string | null;
   depotId?: number | null;
   depotName?: string | null;
+  depotNameEn?: string | null;
+  depotNameAr?: string | null;
   depotCode?: string | null;
   batchNumber?: string | null;
   assigneeName?: string | null;

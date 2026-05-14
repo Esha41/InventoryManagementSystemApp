@@ -71,7 +71,6 @@
 
     <!-- Step 3: Usage -->
     <app-usage-form *ngIf="facade.currentStep === 3"
-      [fromReserve]="facade.fromReserve"
       [usePurpose]="facade.usageFormData.usePurpose"
       [selectedUsePurposeId]="facade.requestPurposeState.selectedRequestPurposeId"
       [usePurposeOptions]="facade.displayedUsePurposeOptions"
@@ -85,11 +84,6 @@
       [requestPurposeNotes]="facade.usageFormData.requestPurposeNotes"
       [requesterComments]="facade.reviewFormData.requesterComments"
       [selectedFiles]="facade.usageFormFiles"
-      [totalReserve]="facade.selectedTotalReserve"
-      [availableReserve]="facade.selectedAvailableReserve"
-      [orderedQuantity]="facade.selectedOrderedQuantity"
-      [usedQuantity]="facade.selectedUsedQuantity"
-      [reserveDetailsByItem]="facade.selectedItemsReserveDetails"
       [selectedCartridges]="facade.selectedCartridges"
       (removeCartridge)="facade.onRemoveSelectedCartridge($event)"
       (usePurposeChange)="facade.usageFormData.usePurpose = $event"

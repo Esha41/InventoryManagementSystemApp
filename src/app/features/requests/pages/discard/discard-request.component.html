@@ -209,9 +209,6 @@
                   <p *ngIf="hasError('selectedFiles')" class="text-xs font-medium text-[var(--color-error)]">
                     {{ getError('selectedFiles') }}
                   </p>
-                  <p class="text-xs text-[var(--color-text-muted)] font-medium">
-                    {{ 'common.maximumFileSize' | translate: {size: MAX_FILE_SIZE_MB} }}
-                  </p>
                 </div>
               </div>
             </div>

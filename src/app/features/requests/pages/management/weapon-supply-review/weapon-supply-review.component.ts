@@ -17,7 +17,7 @@ import { DropdownOption } from '@components/dropdown/dropdown.component';
 import { ToastService } from '@services/toast.service';
 import { ConfigService } from '@services/config.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
-import { getFileSizeFromFile, removeFile, MAX_FILE_SIZE_MB, validateFile, showFileValidationErrors } from '@utils/file.utils';
+import { getFileSizeFromFile, removeFile, validateFile, showFileValidationErrors } from '@utils/file.utils';
 import { TranslationService } from '@services/translation.service';
 import { WeaponSupplyReviewService, BatchWithSelection, ReceiverInfo } from './services/weapon-supply-review.service';
 import { WeaponSupplyLookupService } from './services/weapon-supply-lookup.service';
@@ -88,7 +88,6 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
   selectedFiles: File[] = [];
   private fileInputElement: HTMLInputElement | null = null;
   getFileSize = getFileSizeFromFile;
-  MAX_FILE_SIZE_MB = MAX_FILE_SIZE_MB;
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;

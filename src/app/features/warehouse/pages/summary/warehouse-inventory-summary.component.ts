@@ -1,10 +1,9 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, ChevronDown, ChevronRight, ChevronLeft, Package, AlertCircle, Search, Download, History, ArrowRight, ArrowLeft, User, Building } from 'lucide-angular';
+import { LucideAngularModule, ChevronDown, ChevronRight, ChevronLeft, Package, AlertCircle, Search, Download, History, ArrowRight, User, Building } from 'lucide-angular';
 import { InventoryService, LotDetailDto } from '@inventory/services/inventory.service';
 import { AssetService } from '@assets/services/asset.service';
 import { AssetHistoryService, AssetHistoryDto } from '@assets/services/asset-history.service';
@@ -35,7 +34,6 @@ type ExpandChevronIcon = typeof ChevronDown | typeof ChevronLeft | typeof Chevro
     imports: [
         CommonModule,
         FormsModule,
-        RouterModule,
         TranslateModule,
         LucideAngularModule,
         CardComponent,
@@ -93,7 +91,6 @@ export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
     readonly Download = Download;
     readonly History = History;
     readonly ArrowRight = ArrowRight;
-    readonly ArrowLeft = ArrowLeft;
     readonly User = User;
     readonly Building = Building;
     readonly trackByItemId = trackByKey('itemId');
@@ -112,16 +109,11 @@ export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
         private translationService: TranslationService,
         private excelService: ExcelService,
         private toastService: ToastService,
-        private router: Router,
         private cdr: ChangeDetectorRef
     ) { }
 
     get isRTL(): boolean {
         return this.translationService?.isRTL() ?? false;
-    }
-
-    get backIcon() {
-        return this.isRTL ? ArrowRight : ArrowLeft;
     }
 
     /** Rows to show: server page, optionally narrowed by search (current page only). */
@@ -172,10 +164,6 @@ export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
 
     get summaryRemainingQuantity(): number {
         return this.displayRows.reduce((s, i) => s + (Number(i.remainingQuantity) || 0), 0);
-    }
-
-    onBack(): void {
-        this.router.navigate(['/inventory-dashboard']);
     }
 
     getExpandIcon(isExpanded: boolean): ExpandChevronIcon {

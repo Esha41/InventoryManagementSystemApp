@@ -3,20 +3,9 @@
     <div
         class="bg-gradient-to-r from-[var(--color-brand)]/10 via-[var(--color-brand)]/5 to-transparent border-b border-[var(--color-border)]">
         <div class="page-container">
-            <div class="flex items-center gap-3">
-                <button
-                    type="button"
-                    (click)="onBack()"
-                    class="detail-header-back-btn detail-header-back-btn--icon-only"
-                    [attr.aria-label]="'common.back' | translate">
-                    <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
-                </button>
-                <div>
-                    <h1 class="text-4xl font-bold text-[var(--color-text)]">
-                        {{ 'inventorySummary.title' | translate }}
-                    </h1>
-                </div>
-            </div>
+            <h1 class="text-4xl font-bold text-[var(--color-text)]">
+                {{ 'inventorySummary.title' | translate }}
+            </h1>
         </div>
     </div>
 

@@ -134,11 +134,6 @@ export class WeaponAssociationComponent implements OnChanges {
     return this.associations.get(ammoItemId) ?? [];
   }
 
-  catalogAssociationCount(ammoItemId: number): number {
-    return this.associationsForAmmo(ammoItemId).filter(a => a.type === 'catalog').length;
-  }
-
-
   isCatalogSectionEnabled(ammoItemId: number): boolean {
     const explicit = this.catalogSectionEnabled.get(ammoItemId);
     if (explicit !== undefined) return explicit;
@@ -312,16 +307,6 @@ export class WeaponAssociationComponent implements OnChanges {
     if (this.canConfirmOtherWeapon(ammo)) {
       this.onOtherWeaponConfirm(ammo);
     }
-  }
-
-  hasValidAssociation(ammoItemId: number): boolean {
-    const list = this.associationsForAmmo(ammoItemId);
-    if (!list.length) return false;
-    return list.every(
-      a =>
-        (a.type === 'catalog' && !!a.weaponItemId) ||
-        (a.type === 'other' && !!a.otherName?.trim())
-    );
   }
 
   firstOtherName(ammoItemId: number): string | null {
