@@ -49,15 +49,8 @@
             </span>
           </div>
         </th>
-        <th scope="col" class="px-3 py-2.5 align-middle text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)]" (click)="onItemSort('itemType')">
-          <div class="flex w-full min-w-0 items-center justify-between gap-2">
-            <span class="min-w-0 break-words leading-snug">{{ 'inventoryDashboard.itemSummary.cols.type' | translate }}</span>
-            <span class="shrink-0 inline-flex">
-              <lucide-angular *ngIf="itemSortColumn !== 'itemType'" [img]="ArrowUpDown" class="h-3.5 w-3.5 text-[var(--color-text-muted)]"></lucide-angular>
-              <lucide-angular *ngIf="itemSortColumn === 'itemType' && itemSortDirection === 'asc'" [img]="ArrowUp" class="h-3.5 w-3.5 text-[var(--color-brand)]"></lucide-angular>
-              <lucide-angular *ngIf="itemSortColumn === 'itemType' && itemSortDirection === 'desc'" [img]="ArrowDown" class="h-3.5 w-3.5 text-[var(--color-brand)]"></lucide-angular>
-            </span>
-          </div>
+        <th scope="col" class="px-3 py-2.5 align-middle text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+          <span class="min-w-0 break-words leading-snug">{{ 'inventoryDashboard.itemSummary.cols.type' | translate }}</span>
         </th>
         <th scope="col" class="px-2 py-2.5 align-middle text-right text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)]" (click)="onItemSort('totalQuantity')">
           <div class="flex w-full min-w-0 flex-nowrap items-center gap-1.5" [class.justify-end]="!isRTL" [class.justify-start]="isRTL">

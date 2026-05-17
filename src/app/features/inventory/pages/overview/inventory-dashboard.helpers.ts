@@ -63,7 +63,7 @@ export function sortItemSummaries(
   column: string | null,
   direction: 'asc' | 'desc'
 ): ItemInventorySummaryDto[] {
-  if (!column) return items;
+  if (!column || column === 'itemType') return items;
   return sortByColumn(items, column, direction);
 }
 
