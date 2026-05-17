@@ -14,7 +14,8 @@
       "otherOption": "أخرى (غير في المعامل)",
       "selectWeapon": "اختر سلاحاً...",
       "selectWeapons": "اختر الأسلحة...",
-      "weaponsLinked": "تم ربط {{count}} سلاح(ة)",
+      "searchWeapons": "بحث عن الأسلحة...",
+      "weaponsLinked": "تم ربط {{count}} من الأسلحة",
       "weaponName": "اسم السلاح",
       "weaponNamePlaceholder": "أدخل اسم السلاح",
       "confirm": "تأكيد",
@@ -27,7 +28,8 @@
       "viewAllWeapons": "عرض جميع الأسلحة",
       "viewCompatibleOnly": "عرض المتوافقة فقط",
       "compatibleWeapons": "متوافقة",
-      "weaponListScope": "نطاق قائمة الأسلحة"
+      "weaponListScope": "نطاق قائمة الأسلحة",
+      "selectOptionHint": "اختر متوافقة، أو عرض جميع الأسلحة، أو أخرى لربط سلاح ببند الذخيرة هذا."
     },
     "selectOrderSource": "اختر نوع الصرف",
     "selectOrderSourceDescription": "اختر ما إذا كنت تريد الطلب من مقرر وحدتك أو خارجه",

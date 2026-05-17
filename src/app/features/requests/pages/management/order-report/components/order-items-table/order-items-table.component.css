@@ -86,3 +86,16 @@
   font-weight: bold;
   color: var(--color-text);
 }
+
+.order-report-weapon-associations {
+  min-width: 140px;
+  max-width: 280px;
+}
+
+.order-report-weapon-associations li {
+  align-items: center;
+}
+
+.order-report-weapon-associations-empty {
+  color: var(--color-text-muted);
+}

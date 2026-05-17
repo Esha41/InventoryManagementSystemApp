@@ -19,8 +19,9 @@ import {
 } from '../../utils/order-report.utils';
 import { 
   mapApprovalHistory, 
-  mapRequestStatus 
+  mapRequestStatus
 } from '@utils/request-mapper.utils';
+import { resolveRequestDetailEndpoint } from '@utils/request-detail-endpoint.utils';
 import { 
   getLocalizedName, 
   getCurrentLang 
@@ -119,6 +120,30 @@ export class OrderReportService {
     const items = mapOrderItems(order);
     
     return { summary, items };
+  }
+
+  /**
+   * Load full request detail (includes weapon associations on line items).
+   * Paginated user-actions list omits weapon association rows on request items.
+   */
+  loadRequestDetailForReport(order: OrderDto): Observable<OrderDto> {
+    const endpoint = resolveRequestDetailEndpoint(order.requestType, order.id, {
+      defaultToOrderWhenMissing: true
+    });
+    if (!endpoint) {
+      return of(order);
+    }
+
+    return this.apiService.get<OrderDto>(endpoint).pipe(
+      map((detail) => this.mergeRequestDetail(order, detail)),
+      catchError((error) => {
+        console.error('Failed to load request detail for report', error);
+        this.toastService.warning(
+          this.translate.instant('requestsManagement.orderReport.detailLoadWarning')
+        );
+        return of(order);
+      })
+    );
   }
 
   /**
@@ -573,5 +598,19 @@ export class OrderReportService {
         getLocalizedName(role, currentLang) || role.name || role.id
       ])
     );
+  }
+
+  private mergeRequestDetail(cached: OrderDto, detail: OrderDto): OrderDto {
+    const merged: OrderDto = { ...cached, ...detail };
+    const detailRecord = detail as unknown as Record<string, unknown>;
+    const detailItems =
+      detail.requestItems ??
+      (detailRecord['RequestItems'] as OrderDto['requestItems']);
+
+    if (Array.isArray(detailItems) && detailItems.length > 0) {
+      merged.requestItems = detailItems;
+    }
+
+    return merged;
   }
 }

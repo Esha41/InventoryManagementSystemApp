@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, filter } from 'rxjs';
-import { LucideAngularModule, House, Boxes, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Badge, FileText, Plus, TrendingUp, Settings, Warehouse, ClipboardList, Package, Building2, GitBranch, Upload, BarChart3, Database, Calendar, Megaphone, BookMarked, SlidersHorizontal } from 'lucide-angular';
+import { LucideAngularModule, House, Boxes, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Badge, FileText, Plus, TrendingUp, Settings, Warehouse, ClipboardList, Package, Building2, BarChart3 } from 'lucide-angular';
 import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { TranslationService } from '@services/translation.service';
@@ -37,10 +37,6 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   readonly ChevronUp = ChevronUp;
   readonly Package = Package;
   readonly Building2 = Building2;
-  readonly GitBranch = GitBranch;
-  readonly Database = Database;
-  readonly Calendar = Calendar;
-  readonly SlidersHorizontal = SlidersHorizontal;
   expandedMenus: Set<string> = new Set();
 
   private destroy$ = new Subject<void>();
@@ -266,26 +262,8 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       permissions: [PERMISSIONS.ADMIN.SYSTEM_USERS.PAGE]
     },
     {
-      label: 'nav.lookupTables',
-      icon: Database,
-      route: '/admin/lookup-tables',
-      permissions: [PERMISSIONS.ADMIN.LOOKUP_TABLES.PAGE]
-    },
-    {
-      label: 'nav.adminRoles',
-      icon: Badge,
-      route: '/admin/roles',
-      permissions: [PERMISSIONS.ADMIN.ROLES.PAGE]
-    },
-    {
-      label: 'nav.rolePermissions',
-      icon: Settings,
-      route: '/admin/role-permissions',
-      permissions: [PERMISSIONS.ADMIN.ROLES.PAGE]
-    },
-    {
       label: 'nav.settingsConfiguration',
-      icon: SlidersHorizontal,
+      icon: Settings,
       route: '/settings',
       permissions: [
         PERMISSIONS.SETTINGS.LDAP.PAGE_NAV,
@@ -294,34 +272,19 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
         PERMISSIONS.SETTINGS.STOCK_NOTIFICATIONS.PAGE,
         PERMISSIONS.SETTINGS.ORDER_AUTO_REJECT.PAGE,
         PERMISSIONS.SETTINGS.REQUESTER_QTY_NOTIFICATIONS.PAGE,
+        PERMISSIONS.ADMIN.LOOKUP_TABLES.PAGE,
+        PERMISSIONS.ADMIN.ROLES.PAGE,
+        PERMISSIONS.ADMIN.ROLES.EDIT,
+        PERMISSIONS.ADMIN.ROLES.VIEW,
+        PERMISSIONS.ADMIN.IMPORT_EXPORT.PAGE,
+        PERMISSIONS.ADMIN.HELP_CENTER.PAGE,
+        PERMISSIONS.ADMIN.HELP_CENTER.VIEW,
+        PERMISSIONS.ADMIN.ANNOUNCEMENTS.PAGE,
+        PERMISSIONS.ADMIN.ANNOUNCEMENTS.VIEW,
         PERMISSIONS.WORKFLOW.PAGE,
         PERMISSIONS.WORKFLOW.VIEW,
       ],
     },
-    {
-      label: 'nav.workflow',
-      icon: GitBranch,
-      route: '/workflow',
-      permissions: [PERMISSIONS.WORKFLOW.PAGE]
-    },
-    {
-      label: 'nav.adminImportExport',
-      icon: Upload,
-      route: '/admin/import-export',
-      permissions: [PERMISSIONS.ADMIN.IMPORT_DATA.CAN_IMPORT]
-    },
-    {
-      label: 'nav.helpCenterAdmin',
-      icon: BookMarked,
-      route: '/admin/help-center',
-      permissions: [PERMISSIONS.ADMIN.HELP_CENTER.PAGE, PERMISSIONS.ADMIN.HELP_CENTER.VIEW]
-    },
-    {
-      label: 'nav.announcements',
-      icon: Megaphone,
-      route: '/admin/announcements',
-      permissions: [PERMISSIONS.ADMIN.ANNOUNCEMENTS.PAGE, PERMISSIONS.ADMIN.ANNOUNCEMENTS.VIEW]
-    }
   ];
 
   menuItems: MenuItem[] = [];

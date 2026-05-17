@@ -108,6 +108,7 @@
         "date": "Date",
         "itemName": "Item Name",
         "itemNo": "Item No",
+        "associatedWeapons": "Associated Weapons",
         "quantity": "Quantity",
         "requestedQty": "Requested",
         "approvedQty": "Approved",
@@ -124,7 +125,8 @@
         "empty": "No requests available yet.",
         "unknown": "Unknown department"
       },
-      "detailPlaceholder": "Select a request from the list to view its report."
+      "detailPlaceholder": "Select a request from the list to view its report.",
+      "detailLoadWarning": "Could not load full request details. Associated weapons may be incomplete."
     }
   }
 }

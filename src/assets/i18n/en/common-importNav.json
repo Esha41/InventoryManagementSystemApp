@@ -102,6 +102,10 @@
     "settingsConfiguration": "Settings",
     "requesterQtyNotifications": "Quantity Change Notifications"
   },
+  "settingsLayout": {
+    "collapseNav": "Collapse settings menu",
+    "expandNav": "Expand settings menu"
+  },
   "footer": {
     "copyright": "Copyright © Barzan Holdings {{year}}"
   },

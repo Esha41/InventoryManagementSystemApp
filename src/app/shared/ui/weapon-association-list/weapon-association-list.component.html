@@ -5,12 +5,14 @@
   role="list">
   <li
     *ngFor="let association of associations ?? []"
-    class="flex items-start gap-2 text-[var(--color-text)]"
+    class="flex gap-2 text-[var(--color-text)]"
     role="listitem">
     <span
-      class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-brand)]"
-      aria-hidden="true"></span>
-    <div class="min-w-0 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+      class="flex h-[1lh] shrink-0 items-center"
+      aria-hidden="true">
+      <span class="h-1.5 w-1.5 rounded-full bg-[var(--color-brand)]"></span>
+    </span>
+    <div class="min-w-0 flex flex-wrap items-center gap-x-2 gap-y-0.5 leading-snug">
       <button
         *ngIf="linkable && isCatalogAssociation(association); else associationLabel"
         type="button"

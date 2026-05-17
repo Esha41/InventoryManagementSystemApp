@@ -6,7 +6,7 @@
 import { OrderDto } from '@models/order.model';
 import { OrderSummary, OrderReportItem, OrderReportApprovalStep, WorkflowDetail } from '@models/order-report.model';
 import { WorkflowApprovalStep } from '@models/workflow-approval.model';
-import { getStatusMetadata } from '@utils/request-mapper.utils';
+import { getStatusMetadata, mapRequestItems } from '@utils/request-mapper.utils';
 import { getPriorityText } from '@utils/priority.utils';
 import { formatDate, formatTimeToMilitary, formatDateShort } from '@utils/format.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
@@ -145,11 +145,15 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
  * Map OrderDto request items to OrderReportItem array
  */
 export function mapOrderItems(order: OrderDto): OrderReportItem[] {
-  return (order.requestItems || []).map(item => ({
+  const normalized = mapRequestItems((order.requestItems ?? []) as unknown[]);
+
+  return normalized.map(item => ({
     name: item.itemName || 'Unknown Item',
     caliber: item.itemNo || 'N/A',
     quantity: item.quantity,
-    status: mapItemStatus(order.status)
+    status: mapItemStatus(order.status),
+    itemType: item.itemType,
+    weaponAssociations: item.weaponAssociations
   }));
 }
 
