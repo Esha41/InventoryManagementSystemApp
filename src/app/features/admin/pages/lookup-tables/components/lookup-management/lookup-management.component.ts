@@ -11,9 +11,7 @@ import {
   Download,
   Upload,
   ChevronRight,
-  ChevronDown,
-  Eye,
-  EyeOff
+  ChevronDown
 } from 'lucide-angular';
 import {
   AttachmentRequirementLookupDraft,
@@ -82,8 +80,6 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
   readonly Upload = Upload;
   readonly ChevronRight = ChevronRight;
   readonly ChevronDown = ChevronDown;
-  readonly Eye = Eye;
-  readonly EyeOff = EyeOff;
 
   lookupTables: LookupTableConfig[] = [];
   selectedTable?: LookupTableConfig;
@@ -476,7 +472,7 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
     if (t.name === 'ItemType' || t.name === 'Unit') n++;
     if (t.name === 'Caliber') n++;
     if (t.requestPurposeType) n++;
-    if (this.canEdit() || this.canDelete() || t.requestPurposeType) n++;
+    if (this.canEdit() || this.canDelete()) n++;
     return n;
   }
 

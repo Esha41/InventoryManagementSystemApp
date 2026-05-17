@@ -35,4 +35,8 @@ export interface FileUploadDto {
     isMain: boolean;
     entity: number;
     entityId: number;
+    /** Present when the file fulfills a request-purpose attachment slot (order create). */
+    attachmentRequirementId?: number | null;
+    attachmentRequirementNameEn?: string | null;
+    attachmentRequirementNameAr?: string | null;
 }

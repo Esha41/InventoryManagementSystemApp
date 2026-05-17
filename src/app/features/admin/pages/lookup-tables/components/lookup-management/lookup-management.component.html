@@ -49,15 +49,7 @@
         <div class="flex items-start justify-between gap-2">
           <h3 class="font-bold text-[var(--color-text)] text-sm break-words flex-1 min-w-0 text-start">{{ item.nameEn }}</h3>
 
-          <div *ngIf="canEdit() || canDelete() || selectedTable.requestPurposeType" class="flex items-center gap-1 flex-shrink-0">
-            <button type="button" *ngIf="selectedTable.requestPurposeType"
-              (click)="togglePurposeExpanded(item.id)"
-              class="p-1.5 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/12 rounded-lg transition-colors border border-transparent hover:border-[var(--color-brand)]/25"
-              [attr.aria-expanded]="isPurposeExpanded(item.id)"
-              [title]="'lookupManagement.toggleAttachmentsHint' | translate"
-              [attr.aria-label]="'lookupManagement.toggleAttachmentsAria' | translate">
-              <lucide-angular [img]="isPurposeExpanded(item.id) ? EyeOff : Eye" class="h-4 w-4"></lucide-angular>
-            </button>
+          <div *ngIf="canEdit() || canDelete()" class="flex items-center gap-1 flex-shrink-0">
             <button type="button" *ngIf="canEdit()" (click)="onEditLookup(item)"
               class="p-1.5 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors"
               [title]="'lookupManagement.edit' | translate">
@@ -242,7 +234,7 @@
               class="px-6 py-3 text-center align-middle text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider whitespace-nowrap">
               {{ 'lookupManagement.attachmentSlots' | translate }}
             </th>
-            <th *ngIf="canEdit() || canDelete() || selectedTable.requestPurposeType"
+            <th *ngIf="canEdit() || canDelete()"
               class="px-6 py-3 text-center align-middle text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
               {{ 'lookupManagement.actions' | translate }}
             </th>
@@ -303,16 +295,8 @@
             <td *ngIf="selectedTable.requestPurposeType" class="px-6 py-4 text-center align-middle">
               <span class="text-sm tabular-nums text-[var(--color-text-muted)]">{{ getAttachmentSlotCount(item) }}</span>
             </td>
-            <td *ngIf="canEdit() || canDelete() || selectedTable.requestPurposeType" class="px-6 py-4 text-center align-middle">
+            <td *ngIf="canEdit() || canDelete()" class="px-6 py-4 text-center align-middle">
               <div class="inline-flex items-center gap-2">
-                <button type="button" *ngIf="selectedTable.requestPurposeType"
-                  (click)="togglePurposeExpanded(item.id); $event.stopPropagation()"
-                  class="p-2 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/12 rounded-lg transition-colors border border-transparent hover:border-[var(--color-brand)]/25"
-                  [attr.aria-expanded]="isPurposeExpanded(item.id)"
-                  [title]="'lookupManagement.toggleAttachmentsHint' | translate"
-                  [attr.aria-label]="'lookupManagement.toggleAttachmentsAria' | translate">
-                  <lucide-angular [img]="isPurposeExpanded(item.id) ? EyeOff : Eye" class="h-4 w-4"></lucide-angular>
-                </button>
                 <button type="button" *ngIf="canEdit()" (click)="onEditLookup(item); $event.stopPropagation()"
                   class="p-2 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors"
                   [title]="'lookupManagement.edit' | translate">
