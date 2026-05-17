@@ -56,7 +56,7 @@ export class SettingsLayoutComponent implements OnInit, OnDestroy {
     {
       labelKey: 'nav.requesterQtyNotifications',
       link: 'requester-qty-notifications',
-      permissions: [PERMISSIONS.WORKFLOW.PAGE, PERMISSIONS.WORKFLOW.VIEW],
+      permissions: [PERMISSIONS.SETTINGS.REQUESTER_QTY_NOTIFICATIONS.PAGE],
     },
   ];
 

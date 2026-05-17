@@ -44,7 +44,7 @@ export const SETTINGS_ROUTES: Routes = [
             m => m.RequesterQtyNotificationComponent
           ),
         canActivate: [permissionGuard],
-        data: { permissions: [PERMISSIONS.WORKFLOW.VIEW, PERMISSIONS.WORKFLOW.PAGE] },
+        data: { permissions: [PERMISSIONS.SETTINGS.REQUESTER_QTY_NOTIFICATIONS.PAGE] },
       },
     ],
   },

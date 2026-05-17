@@ -310,6 +310,9 @@ export const PERMISSIONS = {
     STOCK_NOTIFICATIONS: {
       PAGE: 'stockNotificationSettingsPage'
     },
+    REQUESTER_QTY_NOTIFICATIONS: {
+      PAGE: 'requesterQtyChangeNotificationSettingsPage'
+    },
     ORDER_AUTO_REJECT: {
       PAGE: 'orderAutoRejectSettings.page'
     }
