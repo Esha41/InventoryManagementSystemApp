@@ -20,6 +20,8 @@ export interface LookupItem {
   phone?: string;
   /** Employee-specific: email */
   email?: string;
+  /** RequestPurpose admin: persisted attachment slots (from GET all/by id). */
+  attachmentRequirements?: AttachmentRequirementLookupDraft[];
 }
 
 // Backward compatibility aliases
@@ -31,11 +33,24 @@ export type HccDto = LookupItem;
 export type NatureOptionDto = LookupItem;
 
 
+/** Attachment slot definitions for Request Purpose admin (mirrors backend CreateUpdateAttachmentRequirementDto). */
+export interface AttachmentRequirementLookupDraft {
+  id?: number | null;
+  nameEn: string;
+  nameAr: string;
+  isRequired: boolean;
+  minCount: number;
+  maxCount: number;
+  displayOrder: number;
+}
+
 export interface CreateUpdateLookupDto {
   nameAr: string;
   nameEn: string;
   code?: string;
   itemType?: number;
+  /** When managing RequestPurpose via lookup admin, persisted with create/update APIs. */
+  attachmentRequirements?: AttachmentRequirementLookupDraft[];
 }
 
 export type RequestPurposeType = 'discard' | 'return' | 'order';

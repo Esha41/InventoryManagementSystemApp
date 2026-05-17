@@ -17,6 +17,11 @@ import { ButtonComponent } from '@components/button/button.component';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { Cartridge } from '@models/cartridge.model';
 import type { WeaponAssociation } from '@models/request-item.model';
+import {
+  AttachmentRequirementDto,
+  AttachmentUploadsState,
+  createInitialAttachmentUploadsState
+} from '../../new-issue-request.state';
 import { LucideAngularModule, Eye } from 'lucide-angular';
 import { getFileSizeFromFile, viewFile as viewFileUtil } from '@utils/file.utils';
 import { formatDateTimeExtended } from '@utils/format.utils';
@@ -49,7 +54,10 @@ export class ReviewFormComponent {
   @Input() usageTimeTo: string = '';
   @Input() selectedCartridges: Cartridge[] = [];
   @Input() weaponAssociations: Map<number, WeaponAssociation[]> = new Map();
+  /** Legacy / “other” bucket files from the usage step (`usageFormFiles`). */
   @Input() files: File[] = [];
+  @Input() attachmentRequirements: AttachmentRequirementDto[] = [];
+  @Input() attachmentUploads: AttachmentUploadsState = createInitialAttachmentUploadsState();
 
   @Output() next = new EventEmitter<void>();
   @Output() previous = new EventEmitter<void>();
@@ -64,6 +72,36 @@ export class ReviewFormComponent {
 
   get isArabic(): boolean {
     return this.currentLang === 'ar';
+  }
+
+  get hasAttachmentRequirementSlots(): boolean {
+    return (this.attachmentRequirements?.length ?? 0) > 0;
+  }
+
+  trackRequirementById = (_: number, req: AttachmentRequirementDto): number => req.id;
+
+  getRequirementLabel(req: AttachmentRequirementDto): string {
+    if (this.isArabic) {
+      return req.nameAr || req.nameEn || '';
+    }
+    return req.nameEn || req.nameAr || '';
+  }
+
+  getFilesForRequirement(requirementId: number): File[] {
+    return this.attachmentUploads?.filesByRequirementId?.get(requirementId) ?? [];
+  }
+
+  /**
+   * Files shown next to “Other Attachments”: optional bucket + legacy picker list,
+   * mirroring `IssueRequestFacade.buildSubmissionContext`.
+   */
+  get reviewBucketFiles(): File[] {
+    const legacy = this.files ?? [];
+    if (!this.hasAttachmentRequirementSlots) {
+      return legacy;
+    }
+    const fromState = this.attachmentUploads?.otherFiles ?? [];
+    return [...fromState, ...legacy];
   }
 
   getWeaponLabel(cartridge: Cartridge): string {

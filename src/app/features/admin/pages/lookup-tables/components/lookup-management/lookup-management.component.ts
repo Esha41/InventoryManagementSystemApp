@@ -1,9 +1,26 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CardComponent } from '@components/card/card.component';
-import { LucideAngularModule, Plus, Edit, Trash2, Download, Upload } from 'lucide-angular';
-import { LookupItem, LookupTableConfig, CreateUpdateLookupDto } from '@models/lookup.model';
+import {
+  LucideAngularModule,
+  Plus,
+  Edit,
+  Trash2,
+  Download,
+  Upload,
+  ChevronRight,
+  ChevronDown,
+  Eye,
+  EyeOff
+} from 'lucide-angular';
+import {
+  AttachmentRequirementLookupDraft,
+  LookupItem,
+  LookupTableConfig,
+  CreateUpdateLookupDto
+} from '@models/lookup.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
@@ -24,6 +41,8 @@ import { mapImportResultToPreviewData } from '@core/utils/asset-master-import-pr
 import { defaultPageSize } from '@constants/app.constants';
 import { APIOperationResponse } from '@models/api-response.model';
 import { ImportResult } from '@models/import-result.model';
+import { ModalComponent } from '@components/modal/modal.component';
+import { ButtonComponent } from '@components/button/button.component';
 
 /**
  * Lookup Management Component
@@ -42,6 +61,9 @@ import { ImportResult } from '@models/import-result.model';
     LookupFiltersComponent,
     LookupFormModalComponent,
     ConfirmDialogComponent,
+    ModalComponent,
+    ButtonComponent,
+    ReactiveFormsModule,
     PaginationComponent,
     RowsPerPageComponent,
     EmployeeFormModalComponent,
@@ -58,6 +80,10 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
   readonly Trash2 = Trash2;
   readonly Download = Download;
   readonly Upload = Upload;
+  readonly ChevronRight = ChevronRight;
+  readonly ChevronDown = ChevronDown;
+  readonly Eye = Eye;
+  readonly EyeOff = EyeOff;
 
   lookupTables: LookupTableConfig[] = [];
   selectedTable?: LookupTableConfig;
@@ -91,6 +117,25 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
+  /** Request purpose rows that show the nested attachments table */
+  expandedPurposeIds: number[] = [];
+  purposeAttachmentBusyId: number | null = null;
+
+  /** Inline attachment slot modal (nested table CRUD) */
+  showAttachmentSlotModal = false;
+  attachmentSlotModalPurpose: LookupItem | null = null;
+  attachmentSlotModalEditingId: number | null = null;
+  readonly attachmentSlotForm = inject(FormBuilder).nonNullable.group({
+    nameEn: ['', [Validators.required, Validators.maxLength(500)]],
+    nameAr: ['', [Validators.required, Validators.maxLength(500)]],
+    isRequired: [false],
+    minCount: [1, [Validators.min(0)]],
+    maxCount: [1, [Validators.min(1)]]
+  });
+  showAttachmentSlotDeleteConfirm = false;
+  pendingAttachmentDeletePurpose: LookupItem | null = null;
+  pendingAttachmentDelete: AttachmentRequirementLookupDraft | null = null;
+
   constructor(
     private lookupManagementService: LookupManagementService,
     private toastService: ToastService,
@@ -121,6 +166,7 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
   onTableSelect(table: LookupTableConfig | undefined): void {
     this.selectedTable = table;
     this.currentPage = 1;
+    this.expandedPurposeIds = [];
     if (table) {
       this.loadLookupItems();
     }
@@ -173,11 +219,13 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
 
   onPageChange(page: number): void {
     if (page < 1 || page > this.totalPages) return;
+    this.expandedPurposeIds = [];
     this.currentPage = page;
     this.cdr.markForCheck();
   }
 
   onRowsPerPageChange(rows: number): void {
+    this.expandedPurposeIds = [];
     this.rowsPerPage = rows;
     this.currentPage = 1;
     this.validateCurrentPage();
@@ -186,6 +234,7 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
 
   onSearchChange(searchTerm: string): void {
     this.lookupSearchTerm = searchTerm;
+    this.expandedPurposeIds = [];
     this.currentPage = 1;
     this.cdr.markForCheck();
   }
@@ -408,6 +457,230 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
 
   getItemType(item: LookupItem): number {
     return this.lookupManagementService.getItemType(item);
+  }
+
+  getAttachmentSlotCount(item: LookupItem): number {
+    return item.attachmentRequirements?.length ?? 0;
+  }
+
+  isRequestPurposeTable(): boolean {
+    return !!this.selectedTable?.requestPurposeType;
+  }
+
+  getDesktopLookupColSpan(): number {
+    const t = this.selectedTable;
+    if (!t) return 2;
+    let n = 2;
+    if (t.hasCode) n++;
+    if (t.name === 'Employee') n += 5;
+    if (t.name === 'ItemType' || t.name === 'Unit') n++;
+    if (t.name === 'Caliber') n++;
+    if (t.requestPurposeType) n++;
+    if (this.canEdit() || this.canDelete() || t.requestPurposeType) n++;
+    return n;
+  }
+
+  isPurposeExpanded(id: number | undefined): boolean {
+    return id != null && this.expandedPurposeIds.includes(id);
+  }
+
+  togglePurposeExpanded(id: number | undefined): void {
+    if (id == null) return;
+    if (this.expandedPurposeIds.includes(id)) {
+      this.expandedPurposeIds = this.expandedPurposeIds.filter(x => x !== id);
+    } else {
+      this.expandedPurposeIds = [...this.expandedPurposeIds, id];
+    }
+    this.cdr.markForCheck();
+  }
+
+  onPurposeMasterRowActivate(item: LookupItem, event: MouseEvent): void {
+    if (!this.isRequestPurposeTable()) return;
+    const el = event.target as HTMLElement | null;
+    if (el?.closest('button, [role="button"], app-button, input, textarea, select, label')) return;
+    this.togglePurposeExpanded(item.id);
+  }
+
+  sortedPurposeAttachments(item: LookupItem): AttachmentRequirementLookupDraft[] {
+    const list = [...(item.attachmentRequirements ?? [])];
+    list.sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+    return list;
+  }
+
+  private reorderAttachmentDrafts(rows: AttachmentRequirementLookupDraft[]): AttachmentRequirementLookupDraft[] {
+    return rows.map((row, displayOrder) => ({ ...row, displayOrder }));
+  }
+
+  persistPurposeAttachments(
+    purpose: LookupItem,
+    attachments: AttachmentRequirementLookupDraft[],
+    successToastKey: string
+  ): void {
+    if (!purpose.id || !this.selectedTable?.requestPurposeType) return;
+    const msg = this.translateService.instant(successToastKey);
+    this.purposeAttachmentBusyId = purpose.id;
+    const normalized = this.reorderAttachmentDrafts(attachments);
+    const dto: CreateUpdateLookupDto = {
+      nameEn: purpose.nameEn,
+      nameAr: purpose.nameAr,
+      attachmentRequirements: normalized
+    };
+    this.lookupManagementService
+      .updateLookupItem(this.selectedTable!, purpose.id, dto)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.purposeAttachmentBusyId = null;
+          this.toastService.success(msg);
+          this.cdr.markForCheck();
+          this.loadLookupItems();
+        },
+        error: error => {
+          this.purposeAttachmentBusyId = null;
+          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to save attachment requirements');
+          this.lookupErrorMessage = errorMessage;
+          this.cdr.markForCheck();
+          this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
+            this.toastService.error(errorMessage, translations['toast.error']);
+          });
+        }
+      });
+  }
+
+  openNestedAddAttachmentSlot(purpose: LookupItem, event?: Event): void {
+    event?.stopPropagation?.();
+    this.attachmentSlotModalPurpose = purpose;
+    this.attachmentSlotModalEditingId = null;
+    this.attachmentSlotForm.reset({
+      nameEn: '',
+      nameAr: '',
+      isRequired: false,
+      minCount: 1,
+      maxCount: 1
+    });
+    this.showAttachmentSlotModal = true;
+    this.cdr.markForCheck();
+  }
+
+  openNestedEditAttachmentSlot(purpose: LookupItem, row: AttachmentRequirementLookupDraft, event?: Event): void {
+    event?.stopPropagation?.();
+    this.attachmentSlotModalPurpose = purpose;
+    this.attachmentSlotModalEditingId = row.id != null && row.id > 0 ? row.id : null;
+    this.attachmentSlotForm.patchValue({
+      nameEn: row.nameEn,
+      nameAr: row.nameAr,
+      isRequired: row.isRequired,
+      minCount: row.minCount,
+      maxCount: row.maxCount
+    });
+    this.showAttachmentSlotModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeAttachmentSlotModal(): void {
+    this.showAttachmentSlotModal = false;
+    this.attachmentSlotModalPurpose = null;
+    this.attachmentSlotModalEditingId = null;
+    this.attachmentSlotForm.markAsUntouched();
+    this.cdr.markForCheck();
+  }
+
+  onAttachmentSlotModalSave(): void {
+    const purpose = this.attachmentSlotModalPurpose;
+    if (!purpose?.id || !this.selectedTable?.requestPurposeType) return;
+    this.attachmentSlotForm.markAllAsTouched();
+    if (this.attachmentSlotForm.invalid) return;
+    const raw = this.attachmentSlotForm.getRawValue();
+    const minCount = Number(raw.minCount);
+    const maxCount = Number(raw.maxCount);
+    if (!Number.isFinite(minCount) || minCount < 0) return;
+    if (!Number.isFinite(maxCount) || maxCount < 1 || maxCount < minCount) {
+      this.toastService.error(this.translateService.instant('lookupFormModal.attachmentCountsInvalid'));
+      return;
+    }
+
+    let list = this.sortedPurposeAttachments(purpose).map(a => ({ ...a }));
+    const editId = this.attachmentSlotModalEditingId;
+
+    if (editId != null && editId > 0) {
+      const ix = list.findIndex(x => x.id === editId);
+      if (ix >= 0) {
+        list[ix] = {
+          ...list[ix],
+          nameEn: raw.nameEn.trim(),
+          nameAr: raw.nameAr.trim(),
+          isRequired: !!raw.isRequired,
+          minCount,
+          maxCount
+        };
+      }
+    } else {
+      list.push({
+        id: null,
+        nameEn: raw.nameEn.trim(),
+        nameAr: raw.nameAr.trim(),
+        isRequired: !!raw.isRequired,
+        minCount,
+        maxCount,
+        displayOrder: list.length
+      });
+    }
+
+    const toastKey =
+      editId != null && editId > 0 ? 'lookupManagement.nestedAttachmentUpdated' : 'lookupManagement.nestedAttachmentAdded';
+    this.closeAttachmentSlotModal();
+    this.persistPurposeAttachments(purpose, list, toastKey);
+  }
+
+  nestedAttachmentConfirmMessage(): string {
+    const row = this.pendingAttachmentDelete;
+    const lang =
+      this.translateService.currentLang || this.translateService.defaultLang || 'en';
+    const name =
+      lang === 'ar' ? row?.nameAr?.trim() || row?.nameEn?.trim() : row?.nameEn?.trim() || row?.nameAr?.trim();
+    return this.translateService.instant('lookupManagement.deleteAttachmentSlotConfirm', {
+      name: name || ''
+    });
+  }
+
+  nestedAttachmentModalTitle(): string {
+    const key =
+      this.attachmentSlotModalEditingId != null ? 'lookupManagement.attachmentSlotEditTitle' : 'lookupManagement.attachmentSlotAddTitle';
+    return this.translateService.instant(key);
+  }
+
+  requestNestedAttachmentDelete(purpose: LookupItem, row: AttachmentRequirementLookupDraft, event?: Event): void {
+    event?.stopPropagation?.();
+    if (!row.id || row.id <= 0) return;
+    this.pendingAttachmentDeletePurpose = purpose;
+    this.pendingAttachmentDelete = row;
+    this.showAttachmentSlotDeleteConfirm = true;
+    this.cdr.markForCheck();
+  }
+
+  cancelNestedAttachmentDelete(): void {
+    this.showAttachmentSlotDeleteConfirm = false;
+    this.pendingAttachmentDeletePurpose = null;
+    this.pendingAttachmentDelete = null;
+    this.cdr.markForCheck();
+  }
+
+  confirmNestedAttachmentDelete(): void {
+    if (!this.pendingAttachmentDeletePurpose?.id || !this.pendingAttachmentDelete?.id) {
+      this.cancelNestedAttachmentDelete();
+      return;
+    }
+    const purpose = this.pendingAttachmentDeletePurpose;
+    const delId = this.pendingAttachmentDelete.id;
+    const next = this.reorderAttachmentDrafts(
+      this.sortedPurposeAttachments(purpose).filter(r => r.id !== delId)
+    );
+    this.cancelNestedAttachmentDelete();
+    this.persistPurposeAttachments(purpose, next, 'lookupManagement.nestedAttachmentRemoved');
+  }
+
+  isPurposeAttachmentBusy(purposeId: number | undefined): boolean {
+    return purposeId != null && this.purposeAttachmentBusyId === purposeId;
   }
 
   canAdd(): boolean {

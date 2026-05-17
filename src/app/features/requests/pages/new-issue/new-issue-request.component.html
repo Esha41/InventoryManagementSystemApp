@@ -84,6 +84,8 @@
       [requestPurposeNotes]="facade.usageFormData.requestPurposeNotes"
       [requesterComments]="facade.reviewFormData.requesterComments"
       [selectedFiles]="facade.usageFormFiles"
+      [attachmentRequirements]="facade.selectedAttachmentRequirements"
+      [attachmentUploads]="facade.attachmentUploads"
       [selectedCartridges]="facade.selectedCartridges"
       (removeCartridge)="facade.onRemoveSelectedCartridge($event)"
       (usePurposeChange)="facade.usageFormData.usePurpose = $event"
@@ -98,6 +100,7 @@
       (requestPurposeNotesChange)="facade.usageFormData.requestPurposeNotes = $event"
       (requesterCommentsChange)="facade.reviewFormData.requesterComments = $event"
       (filesChange)="facade.usageFormFiles = $event"
+      (attachmentUploadsChange)="facade.attachmentUploads = $event"
       (previous)="facade.onPrevious()"
       (next)="facade.onNext()">
     </app-usage-form>
@@ -119,6 +122,8 @@
       [selectedCartridges]="facade.selectedCartridges"
       [weaponAssociations]="facade.weaponAssociationState.associations"
       [files]="facade.usageFormFiles"
+      [attachmentRequirements]="facade.selectedAttachmentRequirements"
+      [attachmentUploads]="facade.attachmentUploads"
       (previous)="facade.onPrevious()"
       (next)="facade.onNext()">
     </app-review-form>

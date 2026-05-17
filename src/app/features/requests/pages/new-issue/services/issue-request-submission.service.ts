@@ -29,7 +29,12 @@ export interface RunSubmissionContext {
   defaultDepartmentId: number;
   defaultRequestPurposeId: number;
   defaultRequestTypeId: number;
-  files: File[] | undefined;
+  /**
+   * Per-AttachmentRequirement files (the new slot model) and optional
+   * entity-only "other" files. Replaces the legacy flat `files` array.
+   */
+  attachmentUploads: Map<number, File[]> | undefined;
+  otherFiles: File[] | undefined;
   orderSubmissionState: OrderSubmissionState;
   weaponAssociations: Map<number, WeaponAssociation[]>;
 }
@@ -138,9 +143,15 @@ export class IssueRequestSubmissionService {
     const payload = this.orderSubmissionService.buildOrderPayload(submissionData);
     ctx.orderSubmissionState.submittingOrder = true;
     ctx.orderSubmissionState.orderSubmitError = null;
-    const files = ctx.files && ctx.files.length > 0 ? ctx.files : undefined;
 
-    this.orderSubmissionService.submitOrder(payload, files).subscribe({
+    const attachmentUploads = ctx.attachmentUploads && ctx.attachmentUploads.size > 0
+      ? ctx.attachmentUploads
+      : undefined;
+    const otherFiles = ctx.otherFiles && ctx.otherFiles.length > 0
+      ? ctx.otherFiles
+      : undefined;
+
+    this.orderSubmissionService.submitOrder(payload, attachmentUploads, otherFiles).subscribe({
       next: (result) => {
         ctx.orderSubmissionState.submittingOrder = false;
         if (result.success) {
@@ -186,6 +197,8 @@ export class IssueRequestSubmissionService {
       defaultRequestPurposeId: ctx.defaultRequestPurposeId,
       defaultRequestTypeId: ctx.defaultRequestTypeId,
       orderType: ctx.reviewFormData.orderType,
+      attachmentUploads: ctx.attachmentUploads,
+      otherFiles: ctx.otherFiles,
       weaponAssociations: ctx.weaponAssociations
     };
   }

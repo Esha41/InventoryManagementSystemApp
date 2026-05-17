@@ -29,7 +29,7 @@
   <div class="bg-[var(--color-background-muted)] rounded-lg p-4">
     <h2 class="text-base font-bold text-[var(--color-brand)] mb-3">{{ 'newIssueRequest.orderDetails' | translate }}</h2>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 items-start">
+    <div class="space-y-4">
       <!-- Order Type -->
       <div class="flex items-center gap-4 min-w-0">
         <label class="text-sm font-bold text-[var(--color-text)] min-w-[150px] shrink-0" for="review-form-fld-3-3">{{ 'newIssueRequest.orderType' |
@@ -39,13 +39,42 @@
           class="flex-1 min-w-0 max-w-xs px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
       </div>
 
-      <!-- Order Document (attachments) — same row as order type on md+ -->
+      <!-- Purpose-defined attachment slots (same labels as usage step) -->
+      <div *ngIf="hasAttachmentRequirementSlots" class="space-y-4">
+        <div *ngFor="let requirement of attachmentRequirements; trackBy: trackRequirementById" class="flex items-start gap-4 min-w-0">
+          <span class="text-sm font-bold text-[var(--color-text)] min-w-[150px] shrink-0 pt-2.5">
+            {{ getRequirementLabel(requirement) }}
+            <span *ngIf="requirement.isRequired" class="text-red-500">*</span>
+          </span>
+          <div class="flex-1 min-w-0 max-w-xs">
+            <div *ngIf="getFilesForRequirement(requirement.id).length > 0" class="space-y-2">
+              <div *ngFor="let file of getFilesForRequirement(requirement.id)"
+                class="flex items-center gap-2 px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)]">
+                <span class="text-sm text-[var(--color-text-muted)] flex-1 truncate">{{ file.name }}</span>
+                <button type="button" (click)="viewFile(file)"
+                  class="text-[var(--color-brand)] hover:text-[var(--color-brand-dark)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 rounded p-1 flex-shrink-0"
+                  [title]="'newIssueRequest.view' | translate">
+                  <lucide-angular [img]="Eye" class="h-4 w-4"></lucide-angular>
+                </button>
+              </div>
+            </div>
+            <div *ngIf="getFilesForRequirement(requirement.id).length === 0"
+              class="px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed">
+              {{ 'newIssueRequest.noFilesAttached' | translate }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Other attachments (when slots exist) vs single Attachments row (legacy flow) -->
       <div class="flex items-start gap-4 min-w-0">
-        <span class="text-sm font-bold text-[var(--color-text)] min-w-[150px] shrink-0 pt-2.5">{{ 'newIssueRequest.orderDocument' |
-          translate }}</span>
+        <span class="text-sm font-bold text-[var(--color-text)] min-w-[150px] shrink-0 pt-2.5">
+          <ng-container *ngIf="hasAttachmentRequirementSlots">{{ 'newIssueRequest.otherFiles' | translate }}</ng-container>
+          <ng-container *ngIf="!hasAttachmentRequirementSlots">{{ 'newIssueRequest.attachments' | translate }}</ng-container>
+        </span>
         <div class="flex-1 min-w-0 max-w-xs">
-          <div *ngIf="files && files.length > 0" class="space-y-2">
-            <div *ngFor="let file of files"
+          <div *ngIf="reviewBucketFiles.length > 0" class="space-y-2">
+            <div *ngFor="let file of reviewBucketFiles"
               class="flex items-center gap-2 px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)]">
               <span class="text-sm text-[var(--color-text-muted)] flex-1 truncate">{{ file.name }}</span>
               <button type="button" (click)="viewFile(file)"
@@ -55,7 +84,7 @@
               </button>
             </div>
           </div>
-          <div *ngIf="!files || files.length === 0"
+          <div *ngIf="reviewBucketFiles.length === 0"
             class="px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed">
             {{ 'newIssueRequest.noFilesAttached' | translate }}
           </div>

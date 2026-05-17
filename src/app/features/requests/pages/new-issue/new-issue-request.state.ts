@@ -3,10 +3,31 @@ import { BackendUserDto } from '@models/backend-user.model';
 import { DropdownOption } from '@components/dropdown/dropdown.component';
 import { defaultPageSize } from '@constants/app.constants';
 
+export interface AttachmentRequirementDto {
+  id: number;
+  nameEn?: string | null;
+  nameAr?: string | null;
+  isRequired: boolean;
+  minCount: number;
+  maxCount: number;
+  displayOrder: number;
+}
+
 export interface RequestPurposeDto {
   id: number;
   nameEn?: string | null;
   nameAr?: string | null;
+  attachmentRequirements?: AttachmentRequirementDto[];
+}
+
+/**
+ * Tracks files chosen per AttachmentRequirementId plus an optional
+ * entity-only "other" files bucket. Wired through the new-issue flow
+ * down to OrderService.createOrder.
+ */
+export interface AttachmentUploadsState {
+  filesByRequirementId: Map<number, File[]>;
+  otherFiles: File[];
 }
 
 export interface FilterState {
@@ -270,6 +291,13 @@ export function createInitialReviewFormData(): ReviewFormData {
     requesterComments: '',
     orderType: 'New Issue Request',
     orderDocument: ''
+  };
+}
+
+export function createInitialAttachmentUploadsState(): AttachmentUploadsState {
+  return {
+    filesByRequirementId: new Map<number, File[]>(),
+    otherFiles: []
   };
 }
 
