@@ -1,13 +1,6 @@
-import { CommonModule, Location } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { PERMISSIONS } from '@constants/permissions.constants';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { WorkflowDto, BackendWorkflowDto, WorkflowStepDto } from '@models/workflow.model';
@@ -16,7 +9,6 @@ import { ToastService } from '@services/toast.service';
 import { WorkflowService } from '@workflow/services/workflow.service';
 import { getLocalizedName } from '@utils/localization.utils';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, ArrowLeft } from 'lucide-angular';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
@@ -31,7 +23,6 @@ import { ErrorStateComponent } from '@components/index';
     CommonModule,
     FormsModule,
     TranslateModule,
-    LucideAngularModule,
     HasPermissionDirective,
     DropdownComponent,
     CardComponent,
@@ -43,7 +34,6 @@ import { ErrorStateComponent } from '@components/index';
 })
 export class RequesterQtyNotificationComponent implements OnInit, OnDestroy {
   readonly PERMISSIONS = PERMISSIONS;
-  readonly ArrowLeft = ArrowLeft;
 
   workflows: WorkflowDto[] = [];
   selectedWorkflowId: number | null = null;
@@ -60,11 +50,9 @@ export class RequesterQtyNotificationComponent implements OnInit, OnDestroy {
 
   constructor(
     private workflowService: WorkflowService,
-    private router: Router,
     private toastService: ToastService,
     private translationService: TranslationService,
-    private cdr: ChangeDetectorRef,
-    private location: Location
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -74,14 +62,6 @@ export class RequesterQtyNotificationComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  get isRTL(): boolean {
-    return this.translationService.isRTL();
-  }
-
-  get backIcon(): typeof ArrowLeft {
-    return this.isRTL ? ArrowLeft : ArrowLeft;
   }
 
   get sortedSteps(): WorkflowStepDto[] {
@@ -175,14 +155,6 @@ export class RequesterQtyNotificationComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         },
       });
-  }
-
-  goBack(): void {
-    if (window.history.length > 1) {
-      this.location.back();
-    } else {
-      void this.router.navigate(['/settings', 'requester-qty-notifications']);
-    }
   }
 
   getWorkflowTypeLabel(w: WorkflowDto): string {

@@ -222,10 +222,9 @@
 
                 <ng-container *ngIf="showEditDelete">
                   <button *appHasPermission="PERMISSIONS.ASSETS.AMMUNITION.EDIT" (click)="onEdit(asset.id)"
-                    class="p-2 rounded-lg hover:bg-[var(--color-background-hover)] transition-colors group"
+                    class="p-2 rounded-lg text-[var(--color-info)] hover:bg-[var(--color-info)]/10 transition-colors"
                     [title]="'common.edit' | translate">
-                    <lucide-angular [img]="Edit"
-                      class="h-4 w-4 text-[var(--color-text-muted)] group-hover:text-[var(--color-info)]"></lucide-angular>
+                    <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
                   </button>
                   <button *appHasPermission="PERMISSIONS.ASSETS.AMMUNITION.DELETE" (click)="onDelete(asset.id)"
                     class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors group"

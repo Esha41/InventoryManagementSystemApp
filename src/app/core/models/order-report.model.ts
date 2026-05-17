@@ -3,6 +3,8 @@
  * Interfaces for order report display and data structures
  */
 
+import type { RequestManagementRequestItemWeaponAssociationDto } from './request-management-base.model';
+
 /**
  * Order summary information for report display
  */
@@ -42,6 +44,8 @@ export interface OrderReportItem {
   caliber: string;
   quantity: number;
   status: string;
+  itemType?: number | string;
+  weaponAssociations?: RequestManagementRequestItemWeaponAssociationDto[];
 }
 
 /**

@@ -240,11 +240,22 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // user-action API already returns full order details; use the cached entry
-    this.mapOrderToReport(request);
-    this.generateQrCode();
-    this.detailsLoading = false;
-    this.cdr.markForCheck();
+    this.orderReportService
+      .loadRequestDetailForReport(request)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (fullRequest) => {
+          const index = this.orders.findIndex(r => r.id === id);
+          if (index >= 0) {
+            this.orders[index] = fullRequest;
+            this.filteredOrders = [...this.orders];
+          }
+          this.mapOrderToReport(fullRequest);
+          this.generateQrCode();
+          this.detailsLoading = false;
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   private mapOrderToReport(order: OrderDto): void {

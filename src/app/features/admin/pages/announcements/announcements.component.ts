@@ -150,11 +150,11 @@ export class AnnouncementsComponent implements OnInit, OnDestroy {
     }
 
     createAnnouncement(): void {
-        this.router.navigate(['/admin/announcements/create']);
+        this.router.navigate(['/settings/announcements/create']);
     }
 
     editAnnouncement(id: number): void {
-        this.router.navigate(['/admin/announcements/edit', id]);
+        this.router.navigate(['/settings/announcements/edit', id]);
     }
 
     deleteAnnouncement(announcement: Announcement): void {

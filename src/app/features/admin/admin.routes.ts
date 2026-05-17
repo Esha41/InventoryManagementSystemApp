@@ -26,54 +26,18 @@ export const ADMIN_ROUTES: Routes = [
     path: 'manage-admins',
     loadComponent: () => import('./pages/manage-users/manage-admins.component').then(m => m.ManageAdminsComponent),
     canActivate: [permissionGuard],
-    data: { permissions: [PERMISSIONS.ADMIN.SYSTEM_USERS.PAGE, PERMISSIONS.ADMIN.SYSTEM_USERS.VIEW] }
+    data: { permissions: [PERMISSIONS.ADMIN.SYSTEM_USERS.PAGE, PERMISSIONS.ADMIN.SYSTEM_USERS.VIEW] },
   },
-  {
-    path: 'lookup-tables',
-    loadComponent: () => import('./pages/lookup-tables/lookup-tables.component').then(m => m.LookupTablesComponent),
-    canActivate: [permissionGuard],
-    data: { permissions: [PERMISSIONS.ADMIN.LOOKUP_TABLES.PAGE] }
-  },
-  {
-    path: 'roles',
-    loadComponent: () => import('./pages/roles/admin-roles.component').then(m => m.AdminRolesComponent),
-    canActivate: [permissionGuard],
-    data: { permissions: [PERMISSIONS.ADMIN.ROLES.PAGE, PERMISSIONS.ADMIN.ROLES.VIEW] }
-  },
-  {
-    path: 'role-permissions',
-    loadComponent: () => import('./pages/permissions/role-permissions.component').then(m => m.RolePermissionsComponent),
-    canActivate: [permissionGuard],
-    data: { permissions: [PERMISSIONS.ADMIN.ROLES.EDIT, PERMISSIONS.ADMIN.ROLES.VIEW] }
-  },
-  {
-    path: 'import-export',
-    loadComponent: () => import('./pages/import-export/admin-import-export.component').then(m => m.AdminImportExportComponent),
-    canActivate: [permissionGuard],
-    data: { permissions: [PERMISSIONS.ADMIN.IMPORT_EXPORT.PAGE] }
-  },
-  {
-    path: 'help-center',
-    loadComponent: () => import('./pages/help-center-management/help-center-management.component').then(m => m.HelpCenterManagementComponent),
-    canActivate: [permissionGuard],
-    data: { permissions: [PERMISSIONS.ADMIN.HELP_CENTER.PAGE, PERMISSIONS.ADMIN.HELP_CENTER.VIEW] }
-  },
-  {
-    path: 'announcements',
-    loadComponent: () => import('./pages/announcements/announcements.component').then(m => m.AnnouncementsComponent),
-    canActivate: [permissionGuard],
-    data: { permissions: [PERMISSIONS.ADMIN.ANNOUNCEMENTS.PAGE, PERMISSIONS.ADMIN.ANNOUNCEMENTS.VIEW] }
-  },
-  {
-    path: 'announcements/create',
-    loadComponent: () => import('./pages/announcements/announcement-form/announcement-form.component').then(m => m.AnnouncementFormComponent),
-    canActivate: [permissionGuard],
-    data: { permissions: [PERMISSIONS.ADMIN.ANNOUNCEMENTS.CREATE] }
-  },
+  { path: 'lookup-tables', redirectTo: '/settings/lookup-tables', pathMatch: 'full' },
+  { path: 'roles', redirectTo: '/settings/roles', pathMatch: 'full' },
+  { path: 'role-permissions', redirectTo: '/settings/role-permissions', pathMatch: 'full' },
+  { path: 'import-export', redirectTo: '/settings/import-export', pathMatch: 'full' },
+  { path: 'help-center', redirectTo: '/settings/help-center', pathMatch: 'full' },
+  { path: 'announcements/create', redirectTo: '/settings/announcements/create', pathMatch: 'full' },
   {
     path: 'announcements/edit/:id',
-    loadComponent: () => import('./pages/announcements/announcement-form/announcement-form.component').then(m => m.AnnouncementFormComponent),
-    canActivate: [permissionGuard],
-    data: { permissions: [PERMISSIONS.ADMIN.ANNOUNCEMENTS.EDIT] }
-  }
+    redirectTo: (rd) => `/settings/announcements/edit/${rd.paramMap.get('id') ?? ''}`,
+    pathMatch: 'full',
+  },
+  { path: 'announcements', redirectTo: '/settings/announcements', pathMatch: 'full' }
 ];
