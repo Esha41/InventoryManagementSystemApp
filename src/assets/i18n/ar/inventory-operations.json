@@ -51,7 +51,7 @@
   "editInventoryDetail": {
     "title": "تعديل عنصر المخزون",
     "itemInformation": "معلومات مادة",
-    "itemName": "اسم الماده",
+    "itemName": "اسم المادة",
     "itemNo": "رقم المادة",
     "lotNumber": "رقم ال Lot",
     "batchNo": "Batch No",

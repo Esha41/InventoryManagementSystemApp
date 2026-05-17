@@ -98,7 +98,7 @@
           "description": "Switch between Ammunition, Explosives, and Weapons tabs to view each category. Use the Add button to register a new asset."
         },
         "filters": {
-          "title": "Filters & Search",
+          "title": "Filters",
           "description": "Narrow down the list using filters and the search bar. You can filter by various attributes and clear them at any time."
         }
       }
