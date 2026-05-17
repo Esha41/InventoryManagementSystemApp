@@ -1,0 +1,4 @@
+/* Reserve space when inner nav stacks on mobile */
+.settings-layout nav a {
+  text-decoration: none;
+}

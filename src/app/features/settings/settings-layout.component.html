@@ -1,0 +1,30 @@
+<div
+  class="settings-layout flex flex-col md:flex-row flex-1 min-h-0 min-h-[calc(100dvh-8rem)] border-t border-[var(--color-border)] bg-[var(--color-background-muted)]">
+  <!-- Inner sidebar -->
+  <aside
+    [class.order-first]="!isRTL"
+    [class.order-last]="isRTL"
+    class="w-full md:w-56 shrink-0 border-b md:border-b-0 md:border-e border-[var(--color-border)] bg-[var(--color-sidebar-bg)]">
+    <div class="px-3 py-3 md:py-4 border-b border-[var(--color-sidebar-border)] flex items-center gap-2">
+      <lucide-angular [img]="SlidersHorizontal" class="h-5 w-5 text-[var(--color-text-muted)] shrink-0"></lucide-angular>
+      <span class="text-sm font-semibold text-[var(--color-text)]">
+        {{ 'nav.settingsConfiguration' | translate }}
+      </span>
+    </div>
+    <nav class="p-2 space-y-0.5 overflow-y-auto max-h-[40vh] md:max-h-none md:py-2">
+      <a
+        *ngFor="let item of visibleNavItems"
+        [routerLink]="['/settings', item.link]"
+        routerLinkActive="bg-[var(--color-sidebar-hover)] text-[var(--color-text)] font-medium"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="block px-3 py-2 rounded-lg text-sm text-[var(--color-text-muted)] hover:bg-[var(--color-sidebar-active)] transition-colors">
+        {{ item.labelKey | translate }}
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Content -->
+  <div class="flex-1 min-w-0 min-h-0 overflow-y-auto">
+    <router-outlet></router-outlet>
+  </div>
+</div>

@@ -411,6 +411,34 @@ export class WorkflowService {
       })
     );
   }
+
+  /**
+   * Step IDs configured for requester notification (approval at that step) for a single workflow.
+   */
+  getRequesterQtyNotificationStepIds(workflowId: number): Observable<number[]> {
+    return this.apiService.get<number[]>(
+      API_ENDPOINTS.WORKFLOW_STEP_REQUESTER_QTY_NOTIFICATIONS.BY_WORKFLOW(workflowId)
+    ).pipe(
+      map(data => (Array.isArray(data) ? data : []) as number[]),
+      catchError(error => {
+        this.configService.logError('Failed to fetch requester qty notification config', error);
+        return throwError(() => new Error(error.message || 'Failed to load configuration'));
+      })
+    );
+  }
+
+  replaceRequesterQtyNotificationStepIds(workflowId: number, workflowStepIds: number[]): Observable<boolean> {
+    return this.apiService.put<boolean>(
+      API_ENDPOINTS.WORKFLOW_STEP_REQUESTER_QTY_NOTIFICATIONS.BASE,
+      { workflowId, workflowStepIds }
+    ).pipe(
+      map(() => true),
+      catchError(error => {
+        this.configService.logError('Failed to save requester qty notification config', error);
+        return throwError(() => new Error(error.message || 'Failed to save configuration'));
+      })
+    );
+  }
 }
 
 
