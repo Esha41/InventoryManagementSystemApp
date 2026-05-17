@@ -6,7 +6,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Save, X, ArrowLeft, ArrowRight, Plus, Trash2, Mail } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
 import { ReportService, Report, CreateScheduledReportDto, CreateScheduledReportRecipientDto } from '@reports/services/report.service';
-import { UsersApiService } from '@services/user-management';import { LoadingStateComponent } from '@components/index';
+import { UsersApiService } from '@services/user-management';
+import { LoadingStateComponent } from '@components/index';
 import { ButtonComponent } from '@components/button/button.component';
 import { catchError, finalize, switchMap } from 'rxjs/operators';
 import { of, Subject, takeUntil, EMPTY } from 'rxjs';
@@ -313,8 +314,7 @@ export class ScheduledReportFormComponent implements OnInit, OnDestroy {
       this.formData.reportId &&
       this.formData.timeOfDay &&
       (this.formData.frequency !== 'Weekly' || this.formData.dayOfWeek !== undefined) &&
-      (this.formData.frequency !== 'Monthly' || this.formData.dayOfMonth !== undefined) &&
-      this.formData.recipients.length > 0
+      (this.formData.frequency !== 'Monthly' || this.formData.dayOfMonth !== undefined)
     );
   }
 

@@ -127,11 +127,15 @@
           </div>
         </div>
 
-        <!-- Section 3: Recipients -->
+        <!-- Section 3: Recipients (optional) -->
         <div class="space-y-4 pt-6 border-t border-[var(--color-border)]">
-          <h2 class="text-xl font-semibold text-[var(--color-text)] border-b border-[var(--color-border)] pb-2">
-            {{ 'scheduledReports.section.recipients' | translate }}
-          </h2>
+          <div class="border-b border-[var(--color-border)] pb-2 space-y-1">
+            <h2 class="text-xl font-semibold text-[var(--color-text)]">
+              {{ 'scheduledReports.section.recipients' | translate }}
+              <span class="text-sm font-normal text-[var(--color-text-muted)]">({{ 'scheduledReports.recipientsOptional' | translate }})</span>
+            </h2>
+            <p class="text-sm text-[var(--color-text-muted)]">{{ 'scheduledReports.recipientsOptionalHint' | translate }}</p>
+          </div>
 
           <!-- Recipients List -->
           <div *ngIf="formData.recipients.length > 0" class="space-y-2">
