@@ -203,7 +203,7 @@ export class ReportDesignerComponent implements OnInit {
           'UsersReportTemplate',
           'AssetsReportTemplate',
           'LoginAuditReportTemplate',
-          'PendingAuditorOrderReportTemplate',
+          'AuditorPendingApprovalsReportTemplate',
           'BaseReportTemplate'
         ];
         this.reportTemplates = [...templates].sort((a, b) => {
