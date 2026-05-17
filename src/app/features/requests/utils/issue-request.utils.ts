@@ -3,6 +3,7 @@ import { ReserveDetailItem, UserContextState } from '@requests/pages/new-issue/n
 import { BackendUserDto } from '@models/backend-user.model';
 import { AuthenticatedUser } from '@models/auth.model';
 import { resolveUserDisplayName } from '@utils/user.utils';
+import { getLocalizedName } from '@utils/localization.utils';
 import { DropdownOption } from '@components/dropdown/dropdown.component';
 
 /**
@@ -127,6 +128,23 @@ export function resolveCurrentRequesterName(
     reviewFormRequesterName ||
     ''
   );
+}
+
+/** Localized department label for review screens (user context / backend profile). */
+export function resolveRequesterDepartmentDisplay(
+  currentUserDetails: BackendUserDto | null,
+  lang: string = 'en'
+): string {
+  if (!currentUserDetails) return '';
+  const fromBilingual = getLocalizedName(
+    {
+      nameEn: currentUserDetails.departmentNameEn,
+      nameAr: currentUserDetails.departmentNameAr
+    },
+    lang
+  );
+  if (fromBilingual.trim()) return fromBilingual.trim();
+  return currentUserDetails.departmentName?.trim() ?? '';
 }
 
 /**

@@ -21,11 +21,12 @@ export class ReturnReviewStepComponent {
   }
 
   @Input() selectedItemType: ReturnItemType = 'Ammunition';
+  @Input() requesterName = '';
+  @Input() requesterDepartment = '';
   @Input() reason = '';
   @Input() priority = 1;
   @Input() requestPurposeName = '';
   @Input() requestPurposeNotes = '';
-  @Input() notes = '';
   @Input() selectedFiles: File[] = [];
   @Input() selectedCartridges: Cartridge[] = [];
   @Input() getPriorityLabel!: (priority: number) => string;

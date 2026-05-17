@@ -23,7 +23,6 @@ export class ReturnDetailsStepComponent {
 
   @Input() requestPurposeId: number | null = null;
   @Input() requestPurposeNotes = '';
-  @Input() notes = '';
   @Input() reason = '';
   @Input() priority = 1;
   @Input() selectedFiles: File[] = [];
@@ -40,7 +39,6 @@ export class ReturnDetailsStepComponent {
 
   @Output() requestPurposeIdChange = new EventEmitter<number | null>();
   @Output() requestPurposeNotesChange = new EventEmitter<string>();
-  @Output() notesChange = new EventEmitter<string>();
   @Output() reasonChange = new EventEmitter<string>();
   @Output() priorityChange = new EventEmitter<number>();
   @Output() filesSelected = new EventEmitter<Event>();

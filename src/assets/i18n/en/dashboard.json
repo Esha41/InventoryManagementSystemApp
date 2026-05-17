@@ -137,7 +137,7 @@
       "items": "items",
       "empty": "No inventory items found",
       "noFilterMatch": "No items match your filters",
-      "clickHint": "Click a row to expand details (lots for ammunition/explosives, assets for weapons)",
+      "clickHint": "Click a row to expand details (Lots for ammunition/explosives, assets for weapons)",
       "filteredHint": "of {{total}} in current depot scope",
       "totalsHint": "Table totals reflect the filtered list above.",
       "totalsRow": "Totals",

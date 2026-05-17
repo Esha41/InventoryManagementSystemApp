@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, ChevronDown, Inbox, Eye } from 'lucide-angular';
+import { LucideAngularModule, ChevronDown, Inbox, Eye, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-angular';
 import { PaginationComponent, RowsPerPageComponent } from '@components/index';
 import {
   RequestFilterBarComponent,
@@ -38,6 +38,17 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
   readonly ChevronDown = ChevronDown;
   readonly Inbox = Inbox;
   readonly Eye = Eye;
+  readonly ArrowUp = ArrowUp;
+  readonly ArrowDown = ArrowDown;
+  readonly ArrowUpDown = ArrowUpDown;
+
+  readonly requestListSortColumns: { key: string; translationKey: string }[] = [
+    { key: 'orderNumber', translationKey: 'requestsManagement.orderId' },
+    { key: 'usageDate', translationKey: 'requestsManagement.requestDate' },
+    { key: 'priority', translationKey: 'requestsManagement.priority' },
+    { key: 'requestType', translationKey: 'requestsManagement.requestType' },
+    { key: 'status', translationKey: 'requestsManagement.status' }
+  ];
 
   requests: Request[] = [];
   loading = false;
@@ -51,6 +62,11 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
   currentPage: number = 1;
   rowsPerPage: number = defaultPageSize;
   totalItems: number = 0;
+
+  sortState: { column: string | null; direction: 'asc' | 'desc' } = {
+    column: null,
+    direction: 'asc'
+  };
 
   constructor(
     private requestsManagementService: RequestsManagementService,
@@ -75,7 +91,10 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
     this.router.events
       .pipe(
         filter(event => event instanceof NavigationEnd),
-        filter(() => this.router.url === '/requests-management' || this.router.url.startsWith('/requests-management')),
+        filter(() => {
+          const path = this.router.url.split(/[?#]/)[0];
+          return path === '/requests/requests-management' || path.startsWith('/requests/requests-management/');
+        }),
         takeUntil(this.destroy$)
       )
       .subscribe(() => {
@@ -98,7 +117,8 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
       this.rowsPerPage,
       this.searchQuery,
       this.selectedStatusFilter,
-      this.selectedPriorityFilter
+      this.selectedPriorityFilter,
+      this.sortState
     )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -143,6 +163,18 @@ export class RequestsManagementComponent implements OnInit, OnDestroy {
     this.selectedStatusFilter = 'all';
     this.selectedPriorityFilter = 'all';
     this.searchQuery = '';
+    this.currentPage = 1;
+    this.loadRequests();
+  }
+
+  sortByColumn(column: string): void {
+    if (this.sortState.column === column) {
+      this.sortState.direction = this.sortState.direction === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortState.column = column;
+      this.sortState.direction =
+        column === 'priority' || column === 'usageDate' ? 'desc' : 'asc';
+    }
     this.currentPage = 1;
     this.loadRequests();
   }

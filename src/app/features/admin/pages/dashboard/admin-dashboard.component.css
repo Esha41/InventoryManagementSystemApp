@@ -89,13 +89,6 @@
     margin: 0;
 }
 
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-}
-
-/* Refresh button animation - uses Tailwind animate-spin, this is fallback */
 @keyframes spin {
     from {
         transform: rotate(0deg);
@@ -334,11 +327,6 @@
     .header-content {
         flex-direction: column;
         align-items: stretch;
-    }
-
-    .header-actions button {
-        width: 100%;
-        min-height: 2.75rem;
     }
 
     .kpi-grid {

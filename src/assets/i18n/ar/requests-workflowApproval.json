@@ -64,7 +64,7 @@
     "supplyDate": "تاريخ الصرف",
     "supplyDetails": "تفاصيل الصرف",
     "workflowSupplySummary": {
-      "title": "ملخص التوريد وتاريخ الاستلام",
+      "title": "ملخص",
       "provisionalBanner": "يعكس هذا المعلومات الحالية للتوريد وتاريخ الاستلام وقد يتغير حتى اكتمال الطلب بالكامل.",
       "loadError": "تعذر تحميل ملخص التوريد.",
       "loading": "جاري تحميل ملخص التوريد...",
@@ -76,7 +76,6 @@
       "receiverRank": "الرتبة",
       "receiverMilitaryId": "الرقم العسكري",
       "supplyNotes": "ملاحظات التوريد",
-      "linesTitle": "بنود التوريد",
       "colItemName": "المادة",
       "colItemNo": "رقم المادة",
       "colRequested": "المطلوب",

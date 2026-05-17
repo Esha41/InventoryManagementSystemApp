@@ -2,7 +2,6 @@
   "allowance": {
     "title": "مقرر",
     "addAllowance": "إضافة مقرر",
-    "addSubtitle": "إنشاء طلب مقرر جديد لوحدة",
     "backToList": "العودة إلى القائمة",
     "department": "الوحدة",
     "selectDepartment": "اختر الوحدة",
@@ -27,7 +26,6 @@
   "title": "مقرر",
   "subtitle": "إدارة وعرض مواد المقرر حسب الوحدة",
   "addAllowance": "إضافة مقرر",
-  "addSubtitle": "إنشاء طلب مقرر جديد لوحدة",
   "backToList": "العودة إلى القائمة",
   "department": "الوحدة",
   "selectDepartment": "اختر الوحدة",
@@ -63,7 +61,12 @@
     "usedQuantity": "المسحوب سابقا",
     "reservedQuantity": "الكمية المحجوزة",
     "remainingQuantity": "الرصيد المتبقي",
-    "actions": "الإجراءات"
+    "actions": "الإجراءات",
+    "sortQuantitiesHint": "فرز الكميات:",
+    "sortAscending": "تصاعدي",
+    "sortDescending": "تنازلي",
+    "sortColumnAriaInactive": "{{ column }} — غير مُفرَز؛ اضغط للفرز التنازلي",
+    "sortColumnAriaSorted": "{{ column }} — مُفرَز {{ direction }}"
   },
     "edit": "تعديل",
     "delete": "حذف",

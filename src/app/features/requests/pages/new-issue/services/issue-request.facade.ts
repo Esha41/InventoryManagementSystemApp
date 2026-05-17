@@ -66,6 +66,7 @@ import {
   computeOrderedQuantity,
   computeUsedQuantity,
   resolveCurrentRequesterName,
+  resolveRequesterDepartmentDisplay,
   syncRequesterNameFromUserDetails as syncRequesterNameUtil,
   hasWeaponInSelection,
   getDisplayedItemTypeOptions,
@@ -219,6 +220,14 @@ export class IssueRequestFacade {
       this.userContextState.currentUserDetails,
       this.userContextState.fallbackRequesterName,
       this.reviewFormData.requesterName,
+      lang
+    );
+  }
+
+  get currentRequesterDepartmentDisplay(): string {
+    const lang = this.translate.currentLang || this.translate.defaultLang || 'en';
+    return resolveRequesterDepartmentDisplay(
+      this.userContextState.currentUserDetails,
       lang
     );
   }

@@ -377,8 +377,8 @@ img[alt="Order QR Code"] {
   }
 
   .print-table-header {
-    background-color: #2563eb !important;
-    color: #ffffff !important;
+    background-color: var(--color-brand) !important;
+    color: var(--color-text-inverse) !important;
     font-weight: bold;
     font-size: 10pt;
     padding: 6px 12px;
@@ -701,7 +701,7 @@ img[alt="Order QR Code"] {
     align-items: center;
     margin-bottom: 16px;
     padding-bottom: 8px;
-    border-bottom: 2px solid var(--color-primary);
+    border-bottom: 2px solid var(--color-brand);
   }
 
   .print-section-title {
@@ -801,8 +801,8 @@ img[alt="Order QR Code"] {
   }
 
   .print-table-header {
-    background-color: #2563eb;
-    color: white;
+    background-color: var(--color-brand);
+    color: var(--color-text-inverse);
     font-weight: bold;
     font-size: 12px;
     padding: 12px;

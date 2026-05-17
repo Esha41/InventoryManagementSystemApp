@@ -7,20 +7,23 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <!-- Name -->
       <div class="flex items-center gap-4">
-        <label class="text-sm font-bold text-[var(--color-text)] min-w-[100px]" for="review-form-fld-1-1">{{ 'newIssueRequest.name' | translate
+        <label class="text-sm font-bold text-[var(--color-text-muted)] min-w-[100px]" for="review-form-fld-1-1">{{ 'newIssueRequest.name' | translate
           }}</label>
         <input id="review-form-fld-1-1" type="text" [ngModel]="requesterName"
-          [placeholder]="'newIssueRequest.requesterNamePlaceholder' | translate" readonly
-          class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
+          [placeholder]="'newIssueRequest.requesterNamePlaceholder' | translate"
+          readonly
+          aria-readonly="true"
+          class="flex-1 min-w-0 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-sm shadow-inner bg-[var(--color-background-muted)] text-[var(--color-text-muted)] cursor-default focus:outline-none focus-visible:outline-none focus-visible:ring-0">
       </div>
 
-      <!-- Comments -->
+      <!-- Department -->
       <div class="flex items-center gap-4">
-        <label class="text-sm font-bold text-[var(--color-text)] min-w-[100px]" for="review-form-fld-2-2">{{ 'newIssueRequest.comments' |
-          translate }}</label>
-        <input id="review-form-fld-2-2" type="text" [ngModel]="requesterComments"
-          [placeholder]="'newIssueRequest.commentsNonePlaceholder' | translate" readonly
-          class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
+        <label class="text-sm font-bold text-[var(--color-text-muted)] min-w-[100px]" for="review-form-dept">{{ 'newIssueRequest.department' | translate
+          }}</label>
+        <input id="review-form-dept" type="text" [ngModel]="requesterDepartment"
+          readonly
+          aria-readonly="true"
+          class="flex-1 min-w-0 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-sm shadow-inner bg-[var(--color-background-muted)] text-[var(--color-text-muted)] cursor-default focus:outline-none focus-visible:outline-none focus-visible:ring-0">
       </div>
     </div>
   </div>

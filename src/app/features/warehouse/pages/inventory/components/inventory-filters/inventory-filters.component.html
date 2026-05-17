@@ -1,16 +1,16 @@
 <div class="mb-6">
-  <app-card [shadow]="true">
-    <div class="p-6">
-      <div class="mb-4">
+  <app-card [shadow]="true" [padding]="false">
+    <div class="p-4 sm:p-5">
+      <div class="mb-3">
         <h3 class="text-lg font-semibold text-[var(--color-text)]">
           {{ 'warehouseInventory.filtersSection' | translate }}
         </h3>
       </div>
 
-      <div class="flex flex-wrap items-end gap-4">
+      <div class="flex flex-wrap items-end gap-3">
         <!-- Search -->
         <div class="relative flex-1 min-w-0 w-full sm:min-w-[200px]">
-          <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
+          <span class="block text-sm font-medium text-[var(--color-text)] mb-1.5">
             {{ 'warehouseInventory.filtersSearch' | translate }}
           </span>
           <div class="app-search-field">
@@ -34,7 +34,7 @@
 
         <!-- Supplier & manufacturer -->
         <div *ngIf="showSupplierManufacturerFilters" class="w-full sm:w-[180px]">
-          <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
+          <span class="block text-sm font-medium text-[var(--color-text)] mb-1.5">
             {{ 'warehouseInventory.supplier' | translate }}
           </span>
           <app-dropdown class="w-full" [formControl]="supplierFilterControl" [options]="suppliers" optionValue="id"
@@ -44,7 +44,7 @@
         </div>
 
         <div *ngIf="showSupplierManufacturerFilters" class="w-full sm:w-[180px]">
-          <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
+          <span class="block text-sm font-medium text-[var(--color-text)] mb-1.5">
             {{ 'warehouseInventory.manufacturer' | translate }}
           </span>
           <app-dropdown class="w-full" [formControl]="manufacturerFilterControl" [options]="manufacturers" optionValue="id"
@@ -54,7 +54,7 @@
         </div>
 
         <div *ngIf="showSupplierManufacturerFilters" class="w-full sm:w-[180px]">
-          <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
+          <span class="block text-sm font-medium text-[var(--color-text)] mb-1.5">
             {{ 'warehouseInventory.primaryPurpose' | translate }}
           </span>
           <app-dropdown class="w-full" [formControl]="primaryPurposeFilterControl" [options]="primaryPurposes" optionValue="id"
@@ -65,7 +65,7 @@
 
         <!-- Batch multi-select filters -->
         <div *ngIf="showBatchFilters" class="w-full sm:w-[200px]">
-          <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
+          <span class="block text-sm font-medium text-[var(--color-text)] mb-1.5">
             {{ 'warehouseInventory.filterByItem' | translate }}
           </span>
           <app-dropdown class="w-full" [formControl]="batchItemFilterControl" [options]="batchItems" optionValue="id"
@@ -75,7 +75,7 @@
         </div>
 
         <div *ngIf="showBatchFilters" class="w-full sm:w-[200px]">
-          <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
+          <span class="block text-sm font-medium text-[var(--color-text)] mb-1.5">
             {{ 'warehouseInventory.filterBySupplier' | translate }}
           </span>
           <app-dropdown class="w-full" [formControl]="batchSupplierFilterControl" [options]="suppliers" optionValue="id"
@@ -85,7 +85,7 @@
         </div>
 
         <div *ngIf="showBatchFilters" class="w-full sm:w-[200px]">
-          <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
+          <span class="block text-sm font-medium text-[var(--color-text)] mb-1.5">
             {{ 'warehouseInventory.filterByManufacturer' | translate }}
           </span>
           <app-dropdown class="w-full" [formControl]="batchManufacturerFilterControl" [options]="manufacturers" optionValue="id"
@@ -95,7 +95,7 @@
         </div>
 
         <div *ngIf="showBatchFilters" class="w-full sm:w-[200px]">
-          <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
+          <span class="block text-sm font-medium text-[var(--color-text)] mb-1.5">
             {{ 'warehouseInventory.filterByPrimaryPurpose' | translate }}
           </span>
           <app-dropdown class="w-full" [formControl]="batchPrimaryPurposeFilterControl" [options]="primaryPurposes" optionValue="id"
@@ -105,7 +105,7 @@
         </div>
 
         <div *ngIf="showBatchFilters" class="w-full sm:w-auto shrink-0 min-w-0">
-          <span class="block text-sm font-medium text-[var(--color-text)] mb-2 invisible pointer-events-none select-none" aria-hidden="true">.</span>
+          <span class="block text-sm font-medium text-[var(--color-text)] mb-1.5 invisible pointer-events-none select-none" aria-hidden="true">.</span>
           <button
             type="button"
             (click)="onApplyBatchFiltersClick()"
@@ -116,7 +116,7 @@
         </div>
       </div>
 
-      <div class="mt-4 flex justify-end">
+      <div class="mt-3 flex justify-end">
         <button
           type="button"
           (click)="onClearFilters()"

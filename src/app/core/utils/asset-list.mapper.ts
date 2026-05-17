@@ -87,6 +87,7 @@ export function mapWeaponToAsset(dto: WeaponDto, currentLang: string): Asset {
     readyForIssue: dto.readyForIssue ?? true,
     price: nilUndef(dto.price),
     minimumQuantity: nilUndef(dto.minimumQuantity),
+    criticalQuantity: nilUndef(dto.criticalQuantity),
     imageUrl: undefined, // Will be set in loadImagesFromResponse() using image ID from response
     originalData: dto
   };
@@ -130,6 +131,7 @@ export function mapExplosiveToAsset(dto: ExplosiveDto, currentLang: string): Ass
     readyForIssue: dto.readyForIssue ?? true,
     price: nilUndef(dto.price),
     minimumQuantity: nilUndef(dto.minimumQuantity),
+    criticalQuantity: nilUndef(dto.criticalQuantity),
     imageUrl: undefined, // Will be set in loadImagesFromResponse() using image ID from response
     originalData: dto
   };

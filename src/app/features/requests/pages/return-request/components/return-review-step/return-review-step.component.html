@@ -1,6 +1,28 @@
-<div class="space-y-4">
+﻿<div class="space-y-4">
 
-  <!-- Selected items: same read-only table as new-issue review-form -->
+  <!-- Requester Details -->
+  <div class="bg-[var(--color-background-muted)] rounded-lg p-4">
+    <h2 class="text-base font-bold text-[var(--color-brand)] mb-3">{{ 'newIssueRequest.requesterDetails' | translate }}</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="flex items-center gap-4">
+        <label class="text-sm font-bold text-[var(--color-text-muted)] min-w-[100px]" for="rr-review-requester-name">{{ 'newIssueRequest.name' | translate }}</label>
+        <input id="rr-review-requester-name" type="text" [ngModel]="requesterName"
+          [placeholder]="'newIssueRequest.requesterNamePlaceholder' | translate"
+          readonly
+          aria-readonly="true"
+          class="flex-1 min-w-0 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-sm shadow-inner bg-[var(--color-background-muted)] text-[var(--color-text-muted)] cursor-default focus:outline-none focus-visible:outline-none focus-visible:ring-0">
+      </div>
+      <div class="flex items-center gap-4">
+        <label class="text-sm font-bold text-[var(--color-text-muted)] min-w-[100px]" for="rr-review-requester-dept">{{ 'newIssueRequest.department' | translate }}</label>
+        <input id="rr-review-requester-dept" type="text" [ngModel]="requesterDepartment"
+          readonly
+          aria-readonly="true"
+          class="flex-1 min-w-0 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-sm shadow-inner bg-[var(--color-background-muted)] text-[var(--color-text-muted)] cursor-default focus:outline-none focus-visible:outline-none focus-visible:ring-0">
+      </div>
+    </div>
+  </div>
+
+  <!-- Selected items -->
   <div *ngIf="selectedCartridges.length > 0" class="bg-[var(--color-background-muted)] rounded-lg p-4">
     <h2 class="text-base font-bold text-[var(--color-brand)] mb-3">{{ 'newIssueRequest.selectedItems' | translate }}</h2>
 
@@ -77,16 +99,6 @@
         <div class="flex-1 min-h-[5rem] px-4 py-2.5 border border-[var(--color-border)] rounded text-sm bg-[var(--color-background)] cursor-default"
              aria-labelledby="rr-review-lbl-purpose-notes">
           <span class="text-[var(--color-text)] whitespace-pre-wrap">{{ requestPurposeNotes }}</span>
-        </div>
-      </div>
-
-      <!-- Notes -->
-      <div *ngIf="notes" class="md:col-span-2 flex items-start gap-4">
-        <span class="text-sm font-bold text-[var(--color-text)] min-w-[120px] shrink-0 pt-2.5">
-          {{ 'returnRequest.notes' | translate }}
-        </span>
-        <div class="flex-1 min-h-[3rem] px-4 py-2.5 border border-[var(--color-border)] rounded text-sm bg-[var(--color-background)] cursor-default">
-          <span class="text-[var(--color-text)] whitespace-pre-wrap">{{ notes }}</span>
         </div>
       </div>
 

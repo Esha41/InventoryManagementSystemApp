@@ -23,28 +23,23 @@
       (confirm)="onPreviewConfirmed($event)" (importCancelled)="onPreviewCancelled()">
     </app-import-preview-dialog>
 
-    <!-- Filters Card -->
-    <div class="mb-6">
-      <app-asset-filter-bar data-onboarding="asset-list-filters" [activeTab]="activeTab" [filterState]="filterState" [isRTL]="isRTL"
+    <app-asset-filter-bar data-onboarding="asset-list-filters" [activeTab]="activeTab" [filterState]="filterState" [isRTL]="isRTL"
       [filterOptions]="filterOptions"
       (filterChange)="onFilterChange()" (searchTriggered)="onFilterChange()" (searchCleared)="onSearchCleared()" (clearFilters)="clearFilters()">
-      </app-asset-filter-bar>
-    </div>
+    </app-asset-filter-bar>
 
-    <!-- Assets Table Card (heading + sub-tabs + table inside one card) -->
-    <div class="mt-6">
+    <div class="pt-3">
       <app-asset-table [assets]="(facade.assets$ | async) ?? []" [activeTab]="activeTab" [loading]="(facade.loading$ | async) ?? false" [sortState]="sortState"
-      [ammunitionViewMode]="ammunitionViewMode" [explosivesViewMode]="explosivesViewMode" [weaponsViewMode]="weaponsViewMode"
-      [totalItems]="(facade.totalItems$ | async) ?? 0" [showEditDelete]="(activeTab !== 'ammunition' || ammunitionViewMode === 'available') && (activeTab !== 'explosive' || explosivesViewMode === 'available') && (activeTab !== 'weapon' || weaponsViewMode === 'available')"
-      [showRestore]="(activeTab === 'ammunition' && ammunitionViewMode === 'deleted') || (activeTab === 'explosive' && explosivesViewMode === 'deleted') || (activeTab === 'weapon' && weaponsViewMode === 'deleted')"
-      [showPermanentDelete]="isSuperAdmin && ((activeTab === 'ammunition' && ammunitionViewMode === 'deleted') || (activeTab === 'explosive' && explosivesViewMode === 'deleted') || (activeTab === 'weapon' && weaponsViewMode === 'deleted'))"
-      [paginationState]="paginationState" [totalPages]="totalPages" [getAssetName]="getAssetName"
-      (view)="onView($event)" (edit)="onEdit($event)" (delete)="onDelete($event)" (restore)="onRestore($event)" (permanentDelete)="onPermanentDelete($event)" (sort)="sortByColumn($event)"
-      (pageChange)="onPageChange($event)" (rowsPerPageChange)="onRowsPerPageChange($event)"
-      (ammunitionViewModeChange)="switchAmmunitionViewMode($event)" (explosivesViewModeChange)="switchExplosivesViewMode($event)" (weaponsViewModeChange)="switchWeaponsViewMode($event)">
+        [ammunitionViewMode]="ammunitionViewMode" [explosivesViewMode]="explosivesViewMode" [weaponsViewMode]="weaponsViewMode"
+        [totalItems]="(facade.totalItems$ | async) ?? 0" [showEditDelete]="(activeTab !== 'ammunition' || ammunitionViewMode === 'available') && (activeTab !== 'explosive' || explosivesViewMode === 'available') && (activeTab !== 'weapon' || weaponsViewMode === 'available')"
+        [showRestore]="(activeTab === 'ammunition' && ammunitionViewMode === 'deleted') || (activeTab === 'explosive' && explosivesViewMode === 'deleted') || (activeTab === 'weapon' && weaponsViewMode === 'deleted')"
+        [showPermanentDelete]="isSuperAdmin && ((activeTab === 'ammunition' && ammunitionViewMode === 'deleted') || (activeTab === 'explosive' && explosivesViewMode === 'deleted') || (activeTab === 'weapon' && weaponsViewMode === 'deleted'))"
+        [paginationState]="paginationState" [totalPages]="totalPages" [getAssetName]="getAssetName"
+        (view)="onView($event)" (edit)="onEdit($event)" (delete)="onDelete($event)" (restore)="onRestore($event)" (permanentDelete)="onPermanentDelete($event)" (sort)="sortByColumn($event)"
+        (pageChange)="onPageChange($event)" (rowsPerPageChange)="onRowsPerPageChange($event)"
+        (ammunitionViewModeChange)="switchAmmunitionViewMode($event)" (explosivesViewModeChange)="switchExplosivesViewMode($event)" (weaponsViewModeChange)="switchWeaponsViewMode($event)">
       </app-asset-table>
     </div>
-
 
     <!-- Edit Modal -->
     <app-asset-edit-modal [isOpen]="modalState.showEditModal" [activeTab]="activeTab"

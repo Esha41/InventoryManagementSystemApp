@@ -5,7 +5,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Search, X } from 'lucide-angular';
 import { OrderDto } from '@models/order.model';
 import { mapOrderStatusFromApi } from '@utils/status.utils';
-import { getRequestStatusBadgeClass } from '@utils/status-class.utils';
+import { getOrderWorkflowStatusBadgeClassesFromApi } from '@utils/status-class.utils';
 import { getPriorityText, getPriorityClass, getPriorityKey } from '@utils/priority.utils';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
@@ -38,7 +38,6 @@ export class OrderListComponent implements OnChanges, OnInit {
   localSearchTerm: string = '';
 
   @Output() orderSelected = new EventEmitter<OrderDto>();
-  @Output() refreshRequested = new EventEmitter<void>();
   @Output() searchChanged = new EventEmitter<string>();
   @Output() pageChange = new EventEmitter<number>();
   @Output() rowsPerPageChange = new EventEmitter<number>();
@@ -72,10 +71,6 @@ export class OrderListComponent implements OnChanges, OnInit {
       return;
     }
     this.orderSelected.emit(order);
-  }
-
-  refresh(): void {
-    this.refreshRequested.emit();
   }
 
   onPaginationPageChange(page: number): void {
@@ -116,25 +111,7 @@ export class OrderListComponent implements OnChanges, OnInit {
   }
 
   getOrderListStatusClass(status: number | string): string {
-    const label = mapOrderStatusFromApi(status);
-    switch (label) {
-      case 'Approved':
-        return `${getRequestStatusBadgeClass('Approved')} border`;
-      case 'New':
-        return `${getRequestStatusBadgeClass('Pending')} border`;
-      case 'In Progress':
-        return `${getRequestStatusBadgeClass('Pending')} border`;
-      case 'Auto-Rejected':
-        return `${getRequestStatusBadgeClass('AutoRejected')} border`;
-      case 'Rejected':
-        return `${getRequestStatusBadgeClass('Rejected')} border`;
-      case 'Cancelled':
-        return `${getRequestStatusBadgeClass('Cancelled')} border`;
-      case 'Returned for Review':
-        return `${getRequestStatusBadgeClass('ReturnedForReview')} border`;
-      default:
-        return 'text-[var(--color-text-muted)] bg-[var(--color-background-muted)] border border-[var(--color-border)]';
-    }
+    return getOrderWorkflowStatusBadgeClassesFromApi(status);
   }
 
   getPriorityLabel(priority: number | string): string {

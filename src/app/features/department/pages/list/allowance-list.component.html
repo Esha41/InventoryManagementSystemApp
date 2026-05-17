@@ -1,5 +1,5 @@
-<div class="page-wrapper">
-  <div class="page-container space-y-6">
+<div class="page-wrapper min-w-0 max-w-full">
+  <div class="page-container space-y-6 min-w-0 max-w-full">
     <!-- Header -->
     <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
       <div>
@@ -75,7 +75,28 @@
 
     <!-- Allowance Table -->
     <div *ngIf="!loading && !error"
-      class="bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg shadow-custom-sm">
+      class="allowance-table-card bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg shadow-custom-sm min-w-0 max-w-full">
+      <!-- Mobile: quantity sort (same behavior as desktop column headers) -->
+      <div
+        class="lg:hidden border-b border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 py-3 space-y-2">
+        <span class="block text-xs font-medium text-[var(--color-text-muted)]">{{ 'allowance.table.sortQuantitiesHint' | translate }}</span>
+        <div dir="ltr" class="flex flex-wrap gap-2 justify-end">
+          <button *ngFor="let qc of quantitySortColumnDefs" type="button"
+            (click)="onQuantitySort(qc.key)"
+            [attr.aria-pressed]="quantitySortColumn === qc.key"
+            [attr.aria-label]="qtySortButtonAriaLabel(qc.key)"
+            class="inline-flex min-h-9 items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]"
+            [ngClass]="quantitySortColumn === qc.key ? 'border-[var(--color-brand)] bg-[var(--color-brand)]/10 text-[var(--color-text)]' : 'border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)]'">
+            <span class="max-w-[8.5rem] truncate text-start">{{ qc.labelKey | translate }}</span>
+            <span class="shrink-0 inline-flex items-center">
+              <lucide-angular *ngIf="quantitySortColumn !== qc.key" [img]="ArrowUpDown" class="h-3.5 w-3.5 text-[var(--color-text-muted)]"></lucide-angular>
+              <lucide-angular *ngIf="quantitySortColumn === qc.key && quantitySortDirection === 'asc'" [img]="ArrowUp" class="h-3.5 w-3.5 text-[var(--color-brand)]"></lucide-angular>
+              <lucide-angular *ngIf="quantitySortColumn === qc.key && quantitySortDirection === 'desc'" [img]="ArrowDown" class="h-3.5 w-3.5 text-[var(--color-brand)]"></lucide-angular>
+            </span>
+          </button>
+        </div>
+      </div>
+
       <!-- Mobile Card View -->
       <div class="lg:hidden grid grid-cols-1 gap-4 p-4">
         <div *ngFor="let allowance of allowances; trackBy: trackById"
@@ -104,27 +125,35 @@
 
           <!-- Stats Grid -->
           <div
-            class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs border-t border-b border-[var(--color-border-muted)] py-3 my-1">
+            class="grid grid-cols-2 gap-x-4 gap-y-2 text-xs border-t border-b border-[var(--color-border-muted)] py-3 my-1 [&>div]:min-w-0">
             <div>
               <span class="text-[var(--color-text-muted)] block mb-0.5">{{ 'allowance.table.totalQuantity' | translate
                 }}</span>
-              <span class="font-semibold text-[var(--color-text)]">{{ allowance.quantity | number }}</span>
+              <div dir="ltr" class="text-right tabular-nums">
+                <span class="font-semibold text-[var(--color-text)]">{{ allowance.quantity | number }}</span>
+              </div>
             </div>
             <div>
               <span class="text-[var(--color-text-muted)] block mb-0.5">{{ 'allowance.table.remainingQuantity' |
                 translate }}</span>
-              <span class="font-bold text-[var(--color-brand)]">{{ allowance.remainingQuantityFromAllowance | number
-                }}</span>
+              <div dir="ltr" class="text-right tabular-nums">
+                <span class="font-bold text-[var(--color-brand)]">{{ allowance.remainingQuantityFromAllowance | number
+                  }}</span>
+              </div>
             </div>
             <div>
               <span class="text-[var(--color-text-muted)] block mb-0.5">{{ 'allowance.table.usedQuantity' | translate
                 }}</span>
-              <span class="text-[var(--color-text)]">{{ allowance.usedQuantityFromAllowance | number }}</span>
+              <div dir="ltr" class="text-right tabular-nums">
+                <span class="text-[var(--color-text)]">{{ allowance.usedQuantityFromAllowance | number }}</span>
+              </div>
             </div>
             <div>
               <span class="text-[var(--color-text-muted)] block mb-0.5">{{ 'allowance.table.reservedQuantity' |
                 translate }}</span>
-              <span class="text-[var(--color-text)]">{{ allowance.reservedQuantityByOrdersOnProcessing | number }}</span>
+              <div dir="ltr" class="text-right tabular-nums">
+                <span class="text-[var(--color-text)]">{{ allowance.reservedQuantityByOrdersOnProcessing | number }}</span>
+              </div>
             </div>
           </div>
 
@@ -146,41 +175,52 @@
       </div>
 
       <!-- Desktop Table View -->
-      <div class="hidden lg:block overflow-hidden rounded-t-lg">
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-[var(--color-border)]">
+      <div class="hidden lg:block min-w-0 max-w-full overflow-hidden rounded-t-lg">
+        <div class="allowance-table-scroll min-w-0 max-w-full overflow-x-auto overscroll-x-contain">
+          <table class="w-full min-w-0 table-fixed border-collapse divide-y divide-[var(--color-border)]">
+            <colgroup>
+              <col style="width: 13%" />
+              <col style="width: 5%" />
+              <col style="width: 22%" />
+              <col style="width: 12%" />
+              <col style="width: 12%" />
+              <col style="width: 12%" />
+              <col style="width: 12%" />
+              <col style="width: 12%" />
+            </colgroup>
             <thead class="bg-[var(--color-background-muted)]">
               <tr>
-                <th
-                  class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                <th scope="col"
+                  class="px-4 py-3 text-start align-middle text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
                   {{ 'allowance.table.department' | translate }}
                 </th>
-                <th
-                  class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                <th scope="col"
+                  class="px-4 py-3 text-start align-middle text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
                   {{ 'allowance.table.date' | translate }}
                 </th>
-                <th
-                  class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                <th scope="col"
+                  class="px-4 py-3 text-start align-middle text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider min-w-0">
                   {{ 'allowance.table.item' | translate }}
                 </th>
-                <th
-                  class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
-                  {{ 'allowance.table.totalQuantity' | translate }}
+                <th *ngFor="let qc of quantitySortColumnDefs" scope="col"
+                  class="quantity-sort-th px-4 py-3 align-top font-medium leading-snug text-[var(--color-text-muted)] min-w-0 uppercase tracking-wide"
+                  [attr.aria-sort]="qtyAriaSort(qc.key)">
+                  <button type="button" dir="ltr"
+                    class="quantity-sort-btn flex w-full min-w-0 items-start gap-1.5 px-0 py-0 text-xs font-medium text-inherit transition-colors hover:bg-[var(--color-background-hover)]/90 hover:rounded-md cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--color-brand)] uppercase"
+                    (click)="onQuantitySort(qc.key)"
+                    [attr.aria-label]="qtySortButtonAriaLabel(qc.key)">
+                    <span class="flex-1 min-w-0 text-end leading-snug text-balance break-words whitespace-normal hyphens-auto">
+                      {{ qc.labelKey | translate }}
+                    </span>
+                    <span class="inline-flex shrink-0 translate-y-px pt-px" aria-hidden="true">
+                      <lucide-angular *ngIf="quantitySortColumn !== qc.key" [img]="ArrowUpDown" class="h-3.5 w-3.5 text-[var(--color-text-muted)]"></lucide-angular>
+                      <lucide-angular *ngIf="quantitySortColumn === qc.key && quantitySortDirection === 'asc'" [img]="ArrowUp" class="h-3.5 w-3.5 text-[var(--color-brand)]"></lucide-angular>
+                      <lucide-angular *ngIf="quantitySortColumn === qc.key && quantitySortDirection === 'desc'" [img]="ArrowDown" class="h-3.5 w-3.5 text-[var(--color-brand)]"></lucide-angular>
+                    </span>
+                  </button>
                 </th>
-                <th
-                  class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
-                  {{ 'allowance.table.usedQuantity' | translate }}
-                </th>
-                <th
-                  class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
-                  {{ 'allowance.table.reservedQuantity' | translate }}
-                </th>
-                <th
-                  class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
-                  {{ 'allowance.table.remainingQuantity' | translate }}
-                </th>
-                <th
-                  class="px-6 py-3 text-center text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider"
+                <th scope="col"
+                  class="px-4 py-3 text-center align-middle text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider"
                   style="text-align: center;">
                   {{ 'allowance.table.actions' | translate }}
                 </th>
@@ -189,38 +229,43 @@
             <tbody class="bg-[var(--color-background)] divide-y divide-[var(--color-border)]">
               <tr *ngFor="let allowance of allowances; trackBy: trackById"
                 class="hover:bg-[var(--color-background-hover)] transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">
-                  {{ allowance.departmentName }}
+                <td class="px-4 py-4 max-w-0 whitespace-nowrap text-sm text-[var(--color-text)] text-start overflow-hidden align-middle">
+                  <span class="block text-sm text-[var(--color-text)]" [clampLines]="1" [appTableClampTooltip]="allowance.departmentName">{{ allowance.departmentName }}</span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-muted)] text-start">
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-[var(--color-text-muted)] text-start align-middle">
                   {{ formatDate(allowance.year) }}
                 </td>
-                <td class="px-6 py-4 text-sm text-[var(--color-text)] text-start">
-                  <div class="font-medium">
-                    {{ allowance.itemName || allowance.itemNo || ('allowance.item' | translate) + ' ' + allowance.itemId
-                    }}
-                  </div>
-                  <div *ngIf="allowance.itemNo || allowance.batchNo"
-                    class="text-xs text-[var(--color-text-muted)] mt-1">
-                    <span *ngIf="allowance.itemNo">{{ 'allowance.itemNo' | translate }}: {{ allowance.itemNo }}</span>
-                    <span *ngIf="allowance.itemNo && allowance.batchNo">, </span>
-                    <span *ngIf="allowance.batchNo">{{ 'allowance.batchNo' | translate }}: {{ allowance.batchNo
-                      }}</span>
+                <td class="allowance-item-cell px-4 py-4 min-w-0 max-w-0 text-sm text-[var(--color-text)] text-start overflow-hidden align-middle">
+                  <div class="flex min-w-0 flex-col gap-0.5 justify-center">
+                    <span
+                      class="block text-sm font-medium leading-snug text-[var(--color-text)]"
+                      [clampLines]="1"
+                      [appTableClampTooltip]="getAllowanceItemTitle(allowance)">
+                      {{ getAllowanceItemTitle(allowance) }}
+                    </span>
+                    <ng-container *ngIf="getAllowanceItemSubline(allowance) as subLine">
+                      <span
+                        class="block text-xs leading-snug text-[var(--color-text-muted)]"
+                        [clampLines]="1"
+                        [appTableClampTooltip]="subLine">
+                        {{ subLine }}
+                      </span>
+                    </ng-container>
                   </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)] text-end">
+                <td dir="ltr" class="px-4 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)] text-right tabular-nums align-middle">
                   {{ allowance.quantity | number }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
+                <td dir="ltr" class="px-4 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-right tabular-nums align-middle">
                   {{ allowance.usedQuantityFromAllowance | number }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
+                <td dir="ltr" class="px-4 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-right tabular-nums align-middle">
                   {{ allowance.reservedQuantityByOrdersOnProcessing | number }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)] text-end">
+                <td dir="ltr" class="px-4 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)] text-right tabular-nums align-middle">
                   {{ allowance.remainingQuantityFromAllowance | number }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" style="text-align: center;">
+                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium align-middle" style="text-align: center;">
                   <div class="flex items-center justify-center gap-2 mx-auto w-fit">
                     <!-- Edit Button -->
                     <button *appHasPermission="PERMISSIONS.DEPARTMENT.ALLOWANCE_ITEM.EDIT" (click)="onEdit(allowance)"

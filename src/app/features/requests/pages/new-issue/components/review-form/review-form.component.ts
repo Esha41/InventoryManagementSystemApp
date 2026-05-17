@@ -36,7 +36,7 @@ export class ReviewFormComponent {
 
   readonly Eye = Eye;
   @Input() requesterName: string = '';
-  @Input() requesterComments: string = '';
+  @Input() requesterDepartment = '';
   @Input() fromReserve: string = '';
   @Input() usePurpose: string = '';
   @Input() requestPurposeNotes: string = '';

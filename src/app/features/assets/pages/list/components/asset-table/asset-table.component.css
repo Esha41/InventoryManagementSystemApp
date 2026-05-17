@@ -1,7 +1,5 @@
-/* Asset Table — component tokens (tune name column share of fixed layout here) */
-:host {
-  display: block;
-  --asset-table-name-col-width: 38%;
+/* Keep "(n)" parentheses + digits in correct visual order across LTR/RTL switches (BiDi-neutral chars). */.asset-table-item-count-suffix {
+  unicode-bidi: isolate;
 }
 
 /* View sub-tabs (Available / Deleted) */
@@ -45,25 +43,21 @@
   font-weight: 600;
 }
 
-/* Fixed grid: stable column widths; name column ellipsis */
-.asset-table {
-  width: 100%;
-  table-layout: fixed;
-}
-
-.asset-table th:first-child,
-.asset-table td.asset-table__name-col {
-  width: var(--asset-table-name-col-width);
-  min-width: 0;
-  vertical-align: top;
-}
-
+/* Name column: truncate long labels without fixed table layout */
 .asset-table__name-col {
-  overflow: hidden;
+  max-width: min(20rem, 28vw);
+  min-width: 0;
 }
 
-/* Single-line ellipsis; full string via [title] in template */
 .asset-table__name-label {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.asset-table__name-col .asset-table__cell-wrap {
   display: block;
   min-width: 0;
   overflow: hidden;

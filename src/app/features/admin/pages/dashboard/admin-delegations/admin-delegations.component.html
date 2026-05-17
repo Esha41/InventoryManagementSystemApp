@@ -184,8 +184,15 @@
                 </div>
             </div>
 
-            <div *ngIf="filteredDelegations.length === 0" class="text-center py-8 text-[var(--color-text-muted)]">
-                <p>{{ 'common.noData' | translate }}</p>
+            <div *ngIf="filteredDelegations.length === 0"
+                class="col-span-full flex w-full flex-col items-center justify-center gap-3 py-10 px-4 text-center text-[var(--color-text-muted)]">
+                <div class="rounded-full bg-[var(--color-background-muted)] p-4" aria-hidden="true">
+                    <lucide-angular [img]="AlertCircle" class="h-8 w-8 text-[var(--color-text-tertiary)]"></lucide-angular>
+                </div>
+                <div class="max-w-md space-y-1">
+                    <p class="text-lg font-semibold text-[var(--color-text)]">{{ 'common.noData' | translate }}</p>
+                    <p class="text-sm leading-relaxed">{{ 'DELEGATION.NO_DELEGATIONS_FOUND' | translate }}</p>
+                </div>
             </div>
         </div>
 
@@ -293,16 +300,17 @@
                         </td>
                     </tr>
                     <tr *ngIf="filteredDelegations.length === 0">
-                        <td colspan="6" class="px-6 py-16 text-center text-[var(--color-text-muted)]">
-                            <div class="flex flex-col items-center gap-4">
-                                <div class="p-4 rounded-full bg-[var(--color-background-muted)]">
+                        <td colspan="6" class="!text-center align-middle px-6 py-16">
+                            <div class="mx-auto flex w-full max-w-lg flex-col items-center text-center">
+                                <div class="rounded-full bg-[var(--color-background-muted)] p-4" aria-hidden="true">
                                     <lucide-angular [img]="AlertCircle"
-                                        class="h-8 w-8 text-[var(--color-text-tertiary)]"></lucide-angular>
+                                        class="mx-auto block h-8 w-8 text-[var(--color-text-tertiary)]"></lucide-angular>
                                 </div>
-                                <div>
+                                <div class="mt-4 max-w-md space-y-1">
                                     <p class="text-lg font-semibold text-[var(--color-text)]">{{ 'common.noData' |
                                         translate }}</p>
-                                    <p class="text-sm">{{ 'DELEGATION.NO_DELEGATIONS_FOUND' | translate }}</p>
+                                    <p class="text-sm leading-relaxed text-[var(--color-text-muted)]">{{
+                                        'DELEGATION.NO_DELEGATIONS_FOUND' | translate }}</p>
                                 </div>
                             </div>
                         </td>

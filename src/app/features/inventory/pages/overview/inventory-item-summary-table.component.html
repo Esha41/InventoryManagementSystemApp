@@ -60,7 +60,7 @@
           </div>
         </th>
         <th scope="col" class="px-2 py-2.5 align-middle text-right text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)]" (click)="onItemSort('totalQuantity')">
-          <div class="flex w-full min-w-0 flex-nowrap items-center justify-end gap-1.5">
+          <div class="flex w-full min-w-0 flex-nowrap items-center gap-1.5" [class.justify-end]="!isRTL" [class.justify-start]="isRTL">
             <span class="min-w-0 break-words text-right leading-snug">{{ (activeTab === 'weapon' ? 'inventorySummary.totalAssets' : 'inventoryDashboard.itemSummary.cols.totalQty') | translate }}</span>
             <span class="shrink-0 inline-flex">
               <lucide-angular *ngIf="itemSortColumn !== 'totalQuantity'" [img]="ArrowUpDown" class="h-3.5 w-3.5 text-[var(--color-text-muted)]"></lucide-angular>
@@ -70,7 +70,7 @@
           </div>
         </th>
         <th *ngIf="showLotQuantityColumns" scope="col" class="px-2 py-2.5 align-middle text-right text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)]" (click)="onItemSort('usedQuantity')">
-          <div class="flex w-full min-w-0 flex-nowrap items-center justify-end gap-1.5">
+          <div class="flex w-full min-w-0 flex-nowrap items-center gap-1.5" [class.justify-end]="!isRTL" [class.justify-start]="isRTL">
             <span class="min-w-0 break-words text-right leading-snug">{{ 'inventoryDashboard.itemSummary.cols.usedQty' | translate }}</span>
             <span class="shrink-0 inline-flex">
               <lucide-angular *ngIf="itemSortColumn !== 'usedQuantity'" [img]="ArrowUpDown" class="h-3.5 w-3.5 text-[var(--color-text-muted)]"></lucide-angular>
@@ -80,7 +80,7 @@
           </div>
         </th>
         <th *ngIf="showLotQuantityColumns" scope="col" class="px-2 py-2.5 align-middle text-right text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)]" (click)="onItemSort('reservedQuantityByOrdersOnProcessing')">
-          <div class="flex w-full min-w-0 flex-nowrap items-center justify-end gap-1.5">
+          <div class="flex w-full min-w-0 flex-nowrap items-center gap-1.5" [class.justify-end]="!isRTL" [class.justify-start]="isRTL">
             <span class="min-w-0 break-words text-right leading-snug">{{ 'inventoryDashboard.itemSummary.cols.reservedQty' | translate }}</span>
             <span class="shrink-0 inline-flex">
               <lucide-angular *ngIf="itemSortColumn !== 'reservedQuantityByOrdersOnProcessing'" [img]="ArrowUpDown" class="h-3.5 w-3.5 text-[var(--color-text-muted)]"></lucide-angular>
@@ -90,7 +90,7 @@
           </div>
         </th>
         <th *ngIf="showLotQuantityColumns" scope="col" class="px-2 py-2.5 align-middle text-right text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)]" (click)="onItemSort('remainingQuantity')">
-          <div class="flex w-full min-w-0 flex-nowrap items-center justify-end gap-1.5">
+          <div class="flex w-full min-w-0 flex-nowrap items-center gap-1.5" [class.justify-end]="!isRTL" [class.justify-start]="isRTL">
             <span class="min-w-0 break-words text-right leading-snug">{{ 'inventoryDashboard.itemSummary.cols.remainingQty' | translate }}</span>
             <span class="shrink-0 inline-flex">
               <lucide-angular *ngIf="itemSortColumn !== 'remainingQuantity'" [img]="ArrowUpDown" class="h-3.5 w-3.5 text-[var(--color-text-muted)]"></lucide-angular>
@@ -99,8 +99,8 @@
             </span>
           </div>
         </th>
-        <th *ngIf="showLotQuantityColumns" scope="col" class="px-2 py-2.5 align-middle text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)]" [class.text-left]="isRTL" [class.text-right]="!isRTL" (click)="onItemSort('totalLots')">
-          <span class="block w-full min-w-0 break-words leading-snug" [class.text-left]="isRTL" [class.text-right]="!isRTL">
+        <th *ngIf="showLotQuantityColumns" scope="col" class="px-2 py-2.5 align-middle text-right text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)]" (click)="onItemSort('totalLots')">
+          <span class="block w-full min-w-0 break-words leading-snug">
             {{ 'inventoryDashboard.itemSummary.cols.lots' | translate }}
           </span>
         </th>
@@ -143,7 +143,7 @@
             <ng-container *ngIf="showLotMetricForRow(item)">{{ item.remainingQuantity | number }}</ng-container>
             <ng-container *ngIf="!showLotMetricForRow(item)">—</ng-container>
           </td>
-          <td *ngIf="showLotQuantityColumns" dir="ltr" class="px-2 py-2.5 align-middle text-sm tabular-nums text-[var(--color-text)] whitespace-nowrap" [class.text-left]="isRTL" [class.text-end]="!isRTL">
+          <td *ngIf="showLotQuantityColumns" dir="ltr" class="px-2 py-2.5 align-middle text-end text-sm tabular-nums text-[var(--color-text)] whitespace-nowrap">
             <ng-container *ngIf="showLotMetricForRow(item)">{{ item.totalLots | number }}</ng-container>
             <ng-container *ngIf="!showLotMetricForRow(item)">—</ng-container>
           </td>
@@ -168,15 +168,15 @@
 
               <!-- ── LOT TABLE (Ammunition / Explosives) ─────────────── -->
               <div *ngIf="!isWeaponItem(item) && !isLotsLoading && lotDetails.length > 0" class="w-full min-w-0 overflow-x-auto px-4 sm:px-6">
-                <div class="w-full -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 flex items-center justify-between gap-3 border-b border-[var(--color-border)]"
-                  [class.flex-row-reverse]="isRTL">
-                  <p class="text-xs font-semibold text-[var(--color-brand)] uppercase tracking-wider min-w-0 text-start">
+                <div class="w-full -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-border)]"
+                  [attr.dir]="tableDir">
+                  <p class="min-w-0 flex-1 text-xs font-semibold text-[var(--color-brand)] uppercase tracking-wider text-start leading-snug">
                     {{ 'inventoryDashboard.lotDetail.title' | translate }} — {{ item.itemName }}
                     <span class="ms-2 text-[var(--color-text-muted)] font-normal normal-case">
                       ({{ lotDetails.length }} {{ 'inventoryDashboard.lotDetail.lots' | translate }})
                     </span>
                   </p>
-                  <span *ngIf="selectedDepotId" class="text-xs text-[var(--color-text-muted)]">{{ selectedDepotLabel }}</span>
+                  <span *ngIf="selectedDepotId" class="shrink-0 text-xs text-[var(--color-text-muted)] text-start">{{ selectedDepotLabel }}</span>
                 </div>
 
                 <table [attr.dir]="tableDir" class="w-full min-w-[56rem] max-w-full table-fixed border-collapse text-sm">
@@ -206,7 +206,7 @@
                       <th class="px-2.5 sm:px-3 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider align-middle whitespace-nowrap">{{ 'inventoryDashboard.lotDetail.cols.depot' | translate }}</th>
                       <th class="px-2.5 sm:px-3 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider align-middle whitespace-nowrap">{{ 'inventoryDashboard.lotDetail.cols.batchNo' | translate }}</th>
                       <th class="px-2.5 sm:px-3 py-3 text-right text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer align-middle" (click)="onLotSort('originalQuantity')">
-                        <div class="flex w-full min-w-0 flex-nowrap items-center justify-end gap-1">
+                        <div class="flex w-full min-w-0 flex-nowrap items-center gap-1" [class.justify-end]="!isRTL" [class.justify-start]="isRTL">
                           <span class="min-w-0 text-right leading-tight">{{ 'inventoryDashboard.lotDetail.cols.originalQty' | translate }}</span>
                           <span class="shrink-0 inline-flex">
                             <lucide-angular *ngIf="lotSortColumn !== 'originalQuantity'" [img]="ArrowUpDown" class="h-3 w-3 text-[var(--color-text-muted)]"></lucide-angular>
@@ -216,7 +216,7 @@
                         </div>
                       </th>
                       <th class="px-2.5 sm:px-3 py-3 text-right text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer align-middle" (click)="onLotSort('usedQuantity')">
-                        <div class="flex w-full min-w-0 flex-nowrap items-center justify-end gap-1">
+                        <div class="flex w-full min-w-0 flex-nowrap items-center gap-1" [class.justify-end]="!isRTL" [class.justify-start]="isRTL">
                           <span class="min-w-0 text-right leading-tight">{{ 'inventoryDashboard.lotDetail.cols.usedQty' | translate }}</span>
                           <span class="shrink-0 inline-flex">
                             <lucide-angular *ngIf="lotSortColumn !== 'usedQuantity'" [img]="ArrowUpDown" class="h-3 w-3 text-[var(--color-text-muted)]"></lucide-angular>
@@ -226,7 +226,7 @@
                         </div>
                       </th>
                       <th class="px-2.5 sm:px-3 py-3 text-right text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer align-middle" (click)="onLotSort('reservedQuantityByOrdersOnProcessing')">
-                        <div class="flex w-full min-w-0 flex-nowrap items-center justify-end gap-1">
+                        <div class="flex w-full min-w-0 flex-nowrap items-center gap-1" [class.justify-end]="!isRTL" [class.justify-start]="isRTL">
                           <span class="min-w-0 text-right leading-tight">{{ 'inventoryDashboard.lotDetail.cols.reservedQty' | translate }}</span>
                           <span class="shrink-0 inline-flex">
                             <lucide-angular *ngIf="lotSortColumn !== 'reservedQuantityByOrdersOnProcessing'" [img]="ArrowUpDown" class="h-3 w-3 text-[var(--color-text-muted)]"></lucide-angular>
@@ -236,7 +236,7 @@
                         </div>
                       </th>
                       <th class="px-2.5 sm:px-3 py-3 text-right text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer align-middle" (click)="onLotSort('remainingQuantity')">
-                        <div class="flex w-full min-w-0 flex-nowrap items-center justify-end gap-1">
+                        <div class="flex w-full min-w-0 flex-nowrap items-center gap-1" [class.justify-end]="!isRTL" [class.justify-start]="isRTL">
                           <span class="min-w-0 text-right leading-tight">{{ 'inventoryDashboard.lotDetail.cols.remainingQty' | translate }}</span>
                           <span class="shrink-0 inline-flex">
                             <lucide-angular *ngIf="lotSortColumn !== 'remainingQuantity'" [img]="ArrowUpDown" class="h-3 w-3 text-[var(--color-text-muted)]"></lucide-angular>
@@ -246,7 +246,7 @@
                         </div>
                       </th>
                       <th class="px-2.5 sm:px-3 py-3 text-right text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer align-middle" (click)="onLotSort('expiryDate')">
-                        <div class="flex w-full min-w-0 flex-nowrap items-center justify-end gap-1">
+                        <div class="flex w-full min-w-0 flex-nowrap items-center gap-1" [class.justify-end]="!isRTL" [class.justify-start]="isRTL">
                           <span class="min-w-0 text-right leading-tight">{{ 'inventoryDashboard.lotDetail.cols.expiryDate' | translate }}</span>
                           <span class="shrink-0 inline-flex">
                             <lucide-angular *ngIf="lotSortColumn !== 'expiryDate'" [img]="ArrowUpDown" class="h-3 w-3 text-[var(--color-text-muted)]"></lucide-angular>
@@ -313,15 +313,15 @@
 
               <!-- ── ASSET TABLE (Weapons) ───────────────────────────── -->
               <div *ngIf="isWeaponItem(item) && !isAssetsLoading && assetDetails.length > 0" class="w-full min-w-0 overflow-x-auto px-4 sm:px-6">
-                <div class="w-full -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 flex items-center justify-between gap-3 border-b border-[var(--color-border)]"
-                  [class.flex-row-reverse]="isRTL">
-                  <p class="text-xs font-semibold text-[var(--color-brand)] uppercase tracking-wider min-w-0 text-start">
+                <div class="w-full -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-border)]"
+                  [attr.dir]="tableDir">
+                  <p class="min-w-0 flex-1 text-xs font-semibold text-[var(--color-brand)] uppercase tracking-wider text-start leading-snug">
                     {{ 'inventoryDashboard.assetDetail.title' | translate }} — {{ item.itemName }}
                     <span class="ms-2 text-[var(--color-text-muted)] font-normal normal-case">
                       ({{ assetTotalItemCount || assetDetails.length }} {{ 'inventoryDashboard.assetDetail.assets' | translate }})
                     </span>
                   </p>
-                  <span *ngIf="selectedDepotId" class="text-xs text-[var(--color-text-muted)]">{{ selectedDepotLabel }}</span>
+                  <span *ngIf="selectedDepotId" class="shrink-0 text-xs text-[var(--color-text-muted)] text-start">{{ selectedDepotLabel }}</span>
                 </div>
 
                 <table [attr.dir]="tableDir" class="w-full min-w-[44rem] max-w-full table-fixed border-collapse text-sm">
@@ -412,7 +412,7 @@
         <td *ngIf="showLotQuantityColumns" dir="ltr" class="px-2 py-2.5 align-middle text-sm text-end tabular-nums font-semibold text-[var(--color-text-muted)] whitespace-nowrap">{{ sumUsedQtyFiltered | number }}</td>
         <td *ngIf="showLotQuantityColumns" dir="ltr" class="px-2 py-2.5 align-middle text-sm text-end tabular-nums font-semibold text-[var(--color-text-muted)] whitespace-nowrap">{{ sumReservedQtyFiltered | number }}</td>
         <td *ngIf="showLotQuantityColumns" dir="ltr" class="px-2 py-2.5 align-middle text-sm text-end tabular-nums font-semibold whitespace-nowrap" [ngClass]="getRemainingQtyClass(sumRemainingQtyFiltered, sumTotalQtyFiltered)">{{ sumRemainingQtyFiltered | number }}</td>
-        <td *ngIf="showLotQuantityColumns" dir="ltr" class="px-2 py-2.5 align-middle text-sm tabular-nums font-semibold text-[var(--color-text)] whitespace-nowrap" [class.text-left]="isRTL" [class.text-end]="!isRTL">{{ sumLotsFiltered | number }}</td>
+        <td *ngIf="showLotQuantityColumns" dir="ltr" class="px-2 py-2.5 align-middle text-end text-sm tabular-nums font-semibold text-[var(--color-text)] whitespace-nowrap">{{ sumLotsFiltered | number }}</td>
       </tr>
     </tfoot>
   </table>

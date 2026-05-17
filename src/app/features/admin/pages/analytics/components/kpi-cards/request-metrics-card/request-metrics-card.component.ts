@@ -7,7 +7,7 @@ import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 
 /**
  * Request Metrics Card Component
- * Displays request management statistics
+ * Displays request management statistics (orders & returns pending; discard KPI hidden while discard flow is off).
  */
 @Component({
   selector: 'app-request-metrics-card',
@@ -56,14 +56,6 @@ import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
           <div class="flex-1 flex justify-between items-center">
             <div class="text-xs text-[var(--color-text-muted)]">{{ 'adminDashboard.requests.returns' | translate }}</div>
             <div class="text-lg font-bold text-[var(--color-text)]">{{ metrics.pendingReturns }}</div>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-3 p-3 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)]">
-          <div class="w-3 h-3 rounded-full bg-orange-500"></div>
-          <div class="flex-1 flex justify-between items-center">
-            <div class="text-xs text-[var(--color-text-muted)]">{{ 'adminDashboard.requests.discards' | translate }}</div>
-            <div class="text-lg font-bold text-[var(--color-text)]">{{ metrics.pendingDiscards }}</div>
           </div>
         </div>
       </div>

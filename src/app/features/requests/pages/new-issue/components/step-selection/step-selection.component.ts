@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { CartridgeListComponent } from '../cartridge-list/cartridge-list.component';
 import { Cartridge } from '@models/cartridge.model';
-import { AssetDetailsComponent } from '@assets/components/asset-details/asset-details.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ErrorBannerComponent } from '../error-banner/error-banner.component';
 import { FilterState, FilterOptions, CartridgeState, CatalogPaginationState } from '../../new-issue-request.state';
@@ -15,7 +14,6 @@ import { FilterState, FilterOptions, CartridgeState, CatalogPaginationState } fr
         CommonModule,
         TranslateModule,
         CartridgeListComponent,
-        AssetDetailsComponent,
         LoadingStateComponent,
         ErrorStateComponent,
         ErrorBannerComponent
@@ -118,37 +116,6 @@ export class StepSelectionComponent {
         // Actually, if we pass allCartridges here, we can filter here.
         // Let's emit for now to be safe, or just call the local helper if we want to move logic down.
         this.filterChange.emit();
-    }
-
-    onCartridgeClick(cartridge: Cartridge): void {
-        this.cartridgeState.selectedCartridgeForView = cartridge;
-        this.cartridgeState.showCartridgeDetails = true;
-    }
-
-    // Helper method to convert Cartridge itemType to asset-details format
-    getAssetType(cartridge: Cartridge | null): 'ammunition' | 'weapon' | 'explosive' | undefined {
-        if (!cartridge || !cartridge.itemType) return undefined;
-        const itemType = cartridge.itemType.toLowerCase();
-        if (itemType === 'ammunition' || itemType === 'weapon' || itemType === 'explosive') {
-            return itemType as 'ammunition' | 'weapon' | 'explosive';
-        }
-        return undefined;
-    }
-
-    onCloseCartridgeDetails(): void {
-        this.cartridgeState.showCartridgeDetails = false;
-        this.cartridgeState.selectedCartridgeForView = null;
-    }
-
-    onSelectCartridge(): void {
-        if (!this.cartridgeState.selectedCartridgeForView) return;
-
-        const cartridge = this.cartridgeState.allCartridges.find(c => c.id === this.cartridgeState.selectedCartridgeForView?.id) || this.cartridgeState.selectedCartridgeForView;
-        const quantity = cartridge.quantity && cartridge.quantity > 0 ? cartridge.quantity : 1;
-
-        this.addSelection.emit({ cartridge, quantity });
-        this.cartridgeState.showCartridgeDetails = false;
-        this.cartridgeState.selectedCartridgeForView = null;
     }
 
     onAllowanceError(message: string): void {

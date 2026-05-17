@@ -53,10 +53,10 @@ export class AssetExportService {
         format: (value: string) => value || '-'
       },
       {
-        header: 'Part No',
-        key: 'partNo',
+        header: this.translateService.instant('addAsset.criticalQuantity'),
+        key: 'criticalQuantity',
         width: 15,
-        format: (value: string) => value || '-'
+        format: (value: number) => (value != null ? value.toString() : '-')
       },
       {
         header: this.translateService.instant('assetList.table.nsn'),

@@ -59,7 +59,7 @@ export enum RequestStatusEnum {
 export interface StatusMetadata {
   id: RequestStatusEnum;
   translationKey: string;
-  badgeClass: string; // 'Approved' | 'Rejected' | 'AutoRejected' | 'Pending' | 'Returned'
+  badgeClass: string; // Keys for `getRequestStatusBadgeClass` (e.g. New, InProgress, Approved)
   cardStatus: string; // 'new' | 'on-progress' | 'completed' | 'declined' | 'returned'
 }
 
@@ -67,13 +67,13 @@ export const STATUS_METADATA: Record<RequestStatusEnum, StatusMetadata> = {
   [RequestStatusEnum.New]: {
     id: RequestStatusEnum.New,
     translationKey: 'dashboard.statusLabels.new',
-    badgeClass: 'Pending',
+    badgeClass: 'New',
     cardStatus: 'new'
   },
   [RequestStatusEnum.UnderProcess]: {
     id: RequestStatusEnum.UnderProcess,
     translationKey: 'dashboard.statusLabels.underProcess',
-    badgeClass: 'Pending',
+    badgeClass: 'InProgress',
     cardStatus: 'on-progress'
   },
   [RequestStatusEnum.Approved]: {

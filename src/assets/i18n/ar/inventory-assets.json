@@ -296,8 +296,7 @@
       "moreColumnFilters": "فلاتر إضافية",
       "hideColumnFilters": "إخفاء الفلاتر الإضافية",
       "applyColumnFilters": "تطبيق الفلاتر الإضافية",
-      "clearColumnFilters": "مسح الفلاتر الإضافية",
-      "columnFiltersHint": "فلاتر إضافية حسب الحقول. تُدمج مع مربع البحث والقوائم (يجب أن تتحقق كل الشروط). اضغط Enter أو تطبيق للبحث."
+      "clearColumnFilters": "مسح الفلاتر الإضافية"
     },
     "sort": {
       "nameAsc": "الاسم (أ-ي)",
@@ -329,6 +328,7 @@
       "status": "الحالة",
       "price": "السعر",
       "minimumQuantity": "الحد الأدنى للكمية",
+      "criticalQuantity": "الكمية الحرجة",
       "actions": "الإجراءات"
     },
     "actions": {

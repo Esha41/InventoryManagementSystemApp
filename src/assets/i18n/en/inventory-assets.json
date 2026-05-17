@@ -297,8 +297,7 @@
       "moreColumnFilters": "Additional filters",
       "hideColumnFilters": "Hide additional filters",
       "applyColumnFilters": "Apply additional filters",
-      "clearColumnFilters": "Clear additional filters",
-      "columnFiltersHint": "Additional filters by field. These combine with the search box and dropdowns (all must match). Press Enter or Apply to search."
+      "clearColumnFilters": "Clear additional filters"
     },
     "sort": {
       "nameAsc": "Name (A-Z)",
@@ -331,6 +330,7 @@
       "status": "Status",
       "price": "Price",
       "minimumQuantity": "Low Stock",
+      "criticalQuantity": "Critical",
       "actions": "Actions"
     },
     "actions": {

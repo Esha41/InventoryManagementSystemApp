@@ -3,11 +3,11 @@
  * Displays assets in table (desktop) and card (mobile) views
  */
 
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { PERMISSIONS } from '@constants/permissions.constants';
 
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Eye, Edit, Trash2, RotateCcw, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-angular';
 import { CardComponent } from '@components/card/card.component';
 import { LoadingStateComponent } from '@components/loading-state/loading-state.component';
@@ -18,6 +18,7 @@ import { Asset, AssetType, AssetSortState, AssetPaginationState } from '@models/
 import { AmmunitionReadDto } from '@models/ammunition.model';
 import { WeaponDto } from '@models/weapon.model';
 import { ExplosiveDto } from '@models/explosive.model';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-asset-table',
@@ -36,8 +37,10 @@ import { ExplosiveDto } from '@models/explosive.model';
   styleUrls: ['./asset-table.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AssetTableComponent {
+export class AssetTableComponent implements OnInit, OnDestroy {
   readonly PERMISSIONS = PERMISSIONS;
+
+  private readonly destroy$ = new Subject<void>();
 
   @Input() assets: Asset[] = [];
   @Input() activeTab: AssetType = 'ammunition';
@@ -69,6 +72,22 @@ export class AssetTableComponent {
   @Output() explosivesViewModeChange = new EventEmitter<'available' | 'deleted'>();
   @Output() weaponsViewModeChange = new EventEmitter<'available' | 'deleted'>();
 
+  constructor(
+    private readonly translate: TranslateService,
+    private readonly cdr: ChangeDetectorRef
+  ) { }
+
+  ngOnInit(): void {
+    this.translate.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.cdr.markForCheck();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   readonly Eye = Eye;
   readonly Edit = Edit;
   readonly Trash2 = Trash2;
@@ -91,8 +110,8 @@ export class AssetTableComponent {
 
   /** Matches thead column count for empty-state row. HTML colspan must be an integer (not %). */
   get desktopTableColumnCount(): number {
-    const base = 4; // name, itemNo, partNo, nsn
-    const tail = 3; // price, minimumQuantity, actions
+    const base = 3; // name, itemNo, nsn
+    const tail = 3; // minimumQuantity, criticalQuantity, actions
     switch (this.activeTab) {
       case 'ammunition':
         return base + 2 + tail; // caliber, primaryPurpose
@@ -103,6 +122,10 @@ export class AssetTableComponent {
       default:
         return base + tail;
     }
+  }
+
+  formatQuantity(value: number | null | undefined): string {
+    return value != null ? String(value) : '-';
   }
 
   onView(assetId: string): void {

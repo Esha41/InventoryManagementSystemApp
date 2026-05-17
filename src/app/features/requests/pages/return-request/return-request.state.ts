@@ -32,7 +32,6 @@ export interface ReturnDetailsState {
   priority: number;
   requestPurposeId: number | null;
   requestPurposeNotes: string;
-  notes: string;
   selectedFiles: File[];
 }
 
@@ -78,7 +77,13 @@ export function createInitialSelectionState(): ReturnSelectionState {
 }
 
 export function createInitialDetailsState(): ReturnDetailsState {
-  return { reason: '', priority: 1, requestPurposeId: null, requestPurposeNotes: '', notes: '', selectedFiles: [] };
+  return {
+    reason: '',
+    priority: 1,
+    requestPurposeId: null,
+    requestPurposeNotes: '',
+    selectedFiles: []
+  };
 }
 
 export function createInitialLookupState(): ReturnLookupState {

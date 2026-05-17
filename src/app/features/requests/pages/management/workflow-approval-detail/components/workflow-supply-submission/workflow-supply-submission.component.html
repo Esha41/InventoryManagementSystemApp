@@ -69,13 +69,12 @@
             <input type="file" #fileInput (change)="onFilesSelected($event)"
               [disabled]="isSubmittingSupply || isSupplySubmitted() || supplyData?.submissionStatus === 2 || isLastApprovalCompleted"
               multiple accept=".pdf,.docx" class="hidden">
-            <span
+            <button type="button"
               (click)="!isSubmittingSupply && !isSupplySubmitted() && supplyData?.submissionStatus !== 2 && !isLastApprovalCompleted && fileInput.click()"
-              [class.opacity-50]="isSubmittingSupply || isSupplySubmitted() || supplyData?.submissionStatus === 2 || isLastApprovalCompleted"
-              [class.cursor-not-allowed]="isSubmittingSupply || isSupplySubmitted() || supplyData?.submissionStatus === 2 || isLastApprovalCompleted"
-              class="px-4 py-2 rounded-lg border-0 text-sm font-semibold bg-[var(--color-brand)]/10 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20 cursor-pointer transition-all">
+              [disabled]="isSubmittingSupply || isSupplySubmitted() || supplyData?.submissionStatus === 2 || isLastApprovalCompleted"
+              class="px-4 py-2 rounded-lg text-sm font-medium bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand)]/90 cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0">
               {{ 'common.chooseFiles' | translate }}
-            </span>
+            </button>
             <span class="text-sm text-[var(--color-text-muted)] flex-1">
               <span *ngIf="selectedFiles.length === 0">{{ 'common.noFileChosen' | translate }}</span>
               <span *ngIf="selectedFiles.length > 0">{{ selectedFiles.length }} {{ selectedFiles.length === 1
@@ -111,8 +110,7 @@
     <!-- Notes (Full Width) -->
     <div>
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="workflow-supply-submission-fld-4-4">
-        {{ 'workflowApprovalDetail.notes' | translate }} <span
-          class="text-[var(--color-text-muted)] font-normal">({{ 'common.optional' | translate }})</span>
+        {{ 'workflowApprovalDetail.notes' | translate }}
       </label>
       <textarea id="workflow-supply-submission-fld-4-4" [(ngModel)]="receiverInfo.notes" [disabled]="isSubmittingSupply || isLastApprovalCompleted"
         rows="3" [placeholder]="'workflowApprovalDetail.enterAdditionalNotes' | translate"
@@ -180,12 +178,11 @@
         <div class="relative flex items-center gap-2">
           <input type="file" #additionalFileInput (change)="onAdditionalFilesSelected($event)"
             [disabled]="isUploadingAdditionalFiles" multiple accept=".pdf,.docx" class="hidden">
-          <span (click)="!isUploadingAdditionalFiles && additionalFileInput.click()"
-            [class.opacity-50]="isUploadingAdditionalFiles"
-            [class.cursor-not-allowed]="isUploadingAdditionalFiles"
-            class="px-4 py-2 rounded-lg border-0 text-sm font-semibold bg-[var(--color-brand)]/10 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20 cursor-pointer transition-all">
+          <button type="button" (click)="!isUploadingAdditionalFiles && additionalFileInput.click()"
+            [disabled]="isUploadingAdditionalFiles"
+            class="px-4 py-2 rounded-lg text-sm font-medium bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand)]/90 cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0">
             {{ 'common.chooseFiles' | translate }}
-          </span>
+          </button>
           <span class="text-sm text-[var(--color-text-muted)] flex-1">
             <span *ngIf="additionalFiles.length === 0">{{ 'common.noFileChosen' | translate }}</span>
             <span *ngIf="additionalFiles.length > 0">{{ additionalFiles.length }} {{ additionalFiles.length

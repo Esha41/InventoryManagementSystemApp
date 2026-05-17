@@ -22,7 +22,6 @@ import {
 } from 'rxjs/operators';
 import {
   LucideAngularModule,
-  RefreshCw,
   Loader2,
   Package,
   Warehouse,
@@ -164,7 +163,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   assetCurrentPage = 1;
   assetRowsPerPage = defaultPageSize;
 
-  readonly RefreshCw = RefreshCw;
   readonly Loader2 = Loader2;
   readonly Package = Package;
   readonly Warehouse = Warehouse;
@@ -339,10 +337,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       })
     );
-  }
-
-  onRefresh(): void {
-    this.manualRefresh$.next();
   }
 
   onExport(): void {

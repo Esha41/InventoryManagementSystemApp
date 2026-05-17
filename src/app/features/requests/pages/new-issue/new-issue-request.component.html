@@ -82,7 +82,6 @@
       [usageDateTo]="facade.usageFormData.usageDateTo"
       [usageTimeTo]="facade.usageFormData.usageTimeTo"
       [requestPurposeNotes]="facade.usageFormData.requestPurposeNotes"
-      [requesterComments]="facade.reviewFormData.requesterComments"
       [selectedFiles]="facade.usageFormFiles"
       [selectedCartridges]="facade.selectedCartridges"
       (removeCartridge)="facade.onRemoveSelectedCartridge($event)"
@@ -96,7 +95,6 @@
       (usageDateToChange)="facade.usageFormData.usageDateTo = $event"
       (usageTimeToChange)="facade.usageFormData.usageTimeTo = $event"
       (requestPurposeNotesChange)="facade.usageFormData.requestPurposeNotes = $event"
-      (requesterCommentsChange)="facade.reviewFormData.requesterComments = $event"
       (filesChange)="facade.usageFormFiles = $event"
       (previous)="facade.onPrevious()"
       (next)="facade.onNext()">
@@ -105,7 +103,7 @@
     <!-- Step 4: Review -->
     <app-review-form *ngIf="facade.currentStep === 4"
       [requesterName]="facade.currentRequesterName"
-      [requesterComments]="facade.reviewFormData.requesterComments"
+      [requesterDepartment]="facade.currentRequesterDepartmentDisplay"
       [fromReserve]="facade.fromReserve"
       [usePurpose]="facade.usageFormData.usePurpose"
       [requestPurposeNotes]="facade.usageFormData.requestPurposeNotes"
