@@ -4,16 +4,16 @@
   <div class="bg-[var(--color-background-muted)] rounded-lg p-4">
     <h2 class="text-base font-bold text-[var(--color-brand)] mb-3">{{ 'newIssueRequest.requesterDetails' | translate }}</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div class="flex items-center gap-4">
-        <label class="text-sm font-bold text-[var(--color-text-muted)] min-w-[100px]" for="rr-review-requester-name">{{ 'newIssueRequest.name' | translate }}</label>
+      <div class="flex items-center gap-4 min-w-0">
+        <label class="text-sm font-bold text-[var(--color-text-muted)] min-w-[150px] shrink-0" for="rr-review-requester-name">{{ 'newIssueRequest.name' | translate }}</label>
         <input id="rr-review-requester-name" type="text" [ngModel]="requesterName"
           [placeholder]="'newIssueRequest.requesterNamePlaceholder' | translate"
           readonly
           aria-readonly="true"
           class="flex-1 min-w-0 px-4 py-2.5 rounded-lg border border-[var(--color-border)] text-sm shadow-inner bg-[var(--color-background-muted)] text-[var(--color-text-muted)] cursor-default focus:outline-none focus-visible:outline-none focus-visible:ring-0">
       </div>
-      <div class="flex items-center gap-4">
-        <label class="text-sm font-bold text-[var(--color-text-muted)] min-w-[100px]" for="rr-review-requester-dept">{{ 'newIssueRequest.department' | translate }}</label>
+      <div class="flex items-center gap-4 min-w-0">
+        <label class="text-sm font-bold text-[var(--color-text-muted)] min-w-[150px] shrink-0" for="rr-review-requester-dept">{{ 'newIssueRequest.department' | translate }}</label>
         <input id="rr-review-requester-dept" type="text" [ngModel]="requesterDepartment"
           readonly
           aria-readonly="true"
@@ -60,43 +60,43 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 items-start">
 
       <!-- Item Type -->
-      <div class="flex items-center gap-4">
-        <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px] shrink-0">{{ 'returnRequest.itemType' | translate }}</label>
+      <div class="flex items-center gap-4 min-w-0">
+        <label class="text-sm font-bold text-[var(--color-text)] min-w-[150px] shrink-0">{{ 'returnRequest.itemType' | translate }}</label>
         <input type="text"
           [ngModel]="('warehouseInventory.tabs.' + selectedItemType.toLowerCase()) | translate"
           readonly
-          class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
+          class="flex-1 min-w-0 px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
       </div>
 
       <!-- Priority -->
-      <div class="flex items-center gap-4">
-        <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px] shrink-0">{{ 'returnRequest.priority' | translate }}</label>
+      <div class="flex items-center gap-4 min-w-0">
+        <label class="text-sm font-bold text-[var(--color-text)] min-w-[150px] shrink-0">{{ 'returnRequest.priority' | translate }}</label>
         <input type="text"
           [ngModel]="getPriorityLabel(priority) | translate"
           readonly
-          class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
+          class="flex-1 min-w-0 px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
       </div>
 
       <!-- Request Purpose -->
-      <div class="flex items-center gap-4">
-        <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px] shrink-0">{{ 'returnRequest.requestPurpose' | translate }}</label>
+      <div class="flex items-center gap-4 min-w-0">
+        <label class="text-sm font-bold text-[var(--color-text)] min-w-[150px] shrink-0">{{ 'returnRequest.requestPurpose' | translate }}</label>
         <input type="text" [ngModel]="requestPurposeName || '—'" readonly
-          class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
+          class="flex-1 min-w-0 px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
       </div>
 
       <!-- Reason (optional) -->
-      <div *ngIf="reason" class="flex items-center gap-4">
-        <label class="text-sm font-bold text-[var(--color-text)] min-w-[120px] shrink-0">{{ 'returnRequest.reason' | translate }}</label>
+      <div *ngIf="reason" class="flex items-center gap-4 min-w-0">
+        <label class="text-sm font-bold text-[var(--color-text)] min-w-[150px] shrink-0">{{ 'returnRequest.reason' | translate }}</label>
         <input type="text" [ngModel]="reason" readonly
-          class="flex-1 px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
+          class="flex-1 min-w-0 px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed focus:outline-none">
       </div>
 
       <!-- Purpose Notes -->
-      <div *ngIf="requestPurposeNotes" class="md:col-span-2 flex items-start gap-4">
-        <span class="text-sm font-bold text-[var(--color-text)] min-w-[120px] shrink-0 pt-2.5" id="rr-review-lbl-purpose-notes">
+      <div *ngIf="requestPurposeNotes" class="md:col-span-2 flex items-start gap-4 min-w-0">
+        <span class="text-sm font-bold text-[var(--color-text)] min-w-[150px] shrink-0 pt-2.5" id="rr-review-lbl-purpose-notes">
           {{ 'returnRequest.requestPurposeNotes' | translate }}
         </span>
-        <div class="flex-1 min-h-[5rem] px-4 py-2.5 border border-[var(--color-border)] rounded text-sm bg-[var(--color-background)] cursor-default"
+        <div class="flex-1 min-w-0 min-h-[5rem] px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm bg-[var(--color-background)] cursor-default"
              aria-labelledby="rr-review-lbl-purpose-notes">
           <span class="text-[var(--color-text)] whitespace-pre-wrap">{{ requestPurposeNotes }}</span>
         </div>
@@ -108,14 +108,17 @@
   <!-- Attachments Section -->
   <div class="bg-[var(--color-background-muted)] rounded-lg p-4">
     <h2 class="text-base font-bold text-[var(--color-brand)] mb-3">{{ 'returnRequest.attachments' | translate }}</h2>
-    <div class="space-y-2 max-w-xs">
-      <div *ngFor="let file of selectedFiles"
-        class="flex items-center gap-2 px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)]">
-        <span class="text-sm text-[var(--color-text-muted)] flex-1 truncate">{{ file.name }}</span>
-      </div>
-      <div *ngIf="selectedFiles.length === 0"
-        class="px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed">
-        {{ 'returnRequest.noFilesAttached' | translate }}
+    <div class="flex items-start gap-4 min-w-0">
+      <div class="min-w-[150px] shrink-0" aria-hidden="true"></div>
+      <div class="flex-1 min-w-0 space-y-2">
+        <div *ngFor="let file of selectedFiles"
+          class="flex items-center gap-2 px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)]">
+          <span class="text-sm text-[var(--color-text-muted)] flex-1 truncate">{{ file.name }}</span>
+        </div>
+        <div *ngIf="selectedFiles.length === 0"
+          class="px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed">
+          {{ 'returnRequest.noFilesAttached' | translate }}
+        </div>
       </div>
     </div>
   </div>

@@ -3,7 +3,6 @@
         "title": "إضافة أصول الأسلحة إلى {{name}}",
         "titlePrefix": "إضافة أصول الأسلحة",
         "titleTo": "إلى",
-        "subtitle": "إضافة أصول أسلحة فردية مع أرقام تسلسلية وتتبع RFID",
         "backToInventory": "العودة إلى المخزون",
         "weaponAssets": "أصول الأسلحة",
         "addAsset": "إضافة أصل",
@@ -48,9 +47,9 @@
         "supplier": "المورد",
         "manufacturer": "الشركة المصنعة",
         "primaryPurpose": "الغرض الأساسي",
-        "selectSupplier": "اختر المورد (اختياري)",
-        "selectManufacturer": "اختر الشركة المصنعة (اختياري)",
-        "selectPrimaryPurpose": "اختر الغرض الأساسي (اختياري)",
+        "selectSupplier": "اختر المورد",
+        "selectManufacturer": "اختر الشركة المصنعة",
+        "selectPrimaryPurpose": "اختر الغرض الأساسي",
         "assignment": {
             "section": "التعيين (اختياري)",
             "assignType": "نوع التعيين",
@@ -79,7 +78,6 @@
             "bulk": "إدخال جماعي"
         },
         "bulk": {
-            "setup": "إعداد الإدخال الجماعي",
             "quantity": "الكمية",
             "quantityHint": "الحد الأقصى {{max}} لكل عملية إرسال.",
             "fillIdentifiers": "ملء أرقام RFID/التسلسلية",
