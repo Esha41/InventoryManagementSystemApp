@@ -1,28 +1,29 @@
 <div class="page-wrapper min-h-screen bg-[var(--color-background-muted)]">
-    <!-- Header -->
+    <!-- Header: icon back beside title -->
     <div class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
         <div class="page-container py-4">
-            <div class="flex items-center space-x-4">
-                <button (click)="onBack()"
-                    class="flex items-center space-x-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
+            <div class="flex items-start gap-3 min-w-0">
+                <button
+                    type="button"
+                    (click)="onBack()"
+                    class="detail-header-back-btn detail-header-back-btn--icon-only shrink-0 mt-1"
+                    [attr.aria-label]="'addWeaponAsset.bulk.backToSetup' | translate">
                     <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
-                    <span class="font-medium">{{ 'addWeaponAsset.bulk.backToSetup' | translate }}</span>
                 </button>
+                <div class="min-w-0">
+                    <h1 class="text-3xl font-bold text-[var(--color-text)] mb-2">
+                        {{ 'addWeaponAsset.bulk.entryTitle' | translate }}
+                    </h1>
+                    <p class="text-sm text-[var(--color-text-muted)]">
+                        {{ 'addWeaponAsset.bulk.entrySubtitle' | translate: { quantity: bulkData?.quantity || 0 } }}
+                    </p>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Main Content -->
-    <div class="page-container">
-        <!-- Page Title -->
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-[var(--color-text)] mb-2">
-                {{ 'addWeaponAsset.bulk.entryTitle' | translate }}
-            </h1>
-            <p class="text-sm text-[var(--color-text-muted)]">
-                {{ 'addWeaponAsset.bulk.entrySubtitle' | translate: { quantity: bulkData?.quantity || 0 } }}
-            </p>
-        </div>
+    <div class="page-container pt-6">
 
         <!-- Loading State -->
         <app-loading-state *ngIf="loading" size="lg" [fullPage]="true">

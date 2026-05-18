@@ -3,7 +3,6 @@
         "title": "Add Weapon Assets to {{name}}",
         "titlePrefix": "Add Weapon Assets",
         "titleTo": "to",
-        "subtitle": "Add individual weapon assets with serial numbers and RFID tracking",
         "backToInventory": "Back to Inventory",
         "weaponAssets": "Weapon Assets",
         "addAsset": "Add Asset",
@@ -48,9 +47,9 @@
         "supplier": "Supplier",
         "manufacturer": "Manufacturer",
         "primaryPurpose": "Primary purpose",
-        "selectSupplier": "Select supplier (optional)",
-        "selectManufacturer": "Select manufacturer (optional)",
-        "selectPrimaryPurpose": "Select primary purpose (optional)",
+        "selectSupplier": "Select supplier",
+        "selectManufacturer": "Select manufacturer",
+        "selectPrimaryPurpose": "Select primary purpose",
         "assignment": {
             "section": "Assignment (optional)",
             "assignType": "Assignment type",
@@ -79,7 +78,6 @@
             "bulk": "Bulk Entry"
         },
         "bulk": {
-            "setup": "Bulk Entry Setup",
             "quantity": "Quantity",
             "quantityHint": "Maximum {{max}} per submission.",
             "fillIdentifiers": "Fill RFID/Serial Numbers",

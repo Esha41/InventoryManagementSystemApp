@@ -170,7 +170,7 @@
     "savedSuccess": "Auto-reject settings saved successfully.",
     "saveFailed": "Failed to save auto-reject settings.",
     "sectionWorkflowTriggers": "Per-workflow countdown anchors",
-    "sectionWorkflowTriggersIntro": "Threshold days, reminders, and scan schedule above apply to every order workflow. Here you can configure each workflow's countdown anchor — select which step or role, when reached, starts the countdown (or leave disabled to use the global trigger role).",
+    "sectionWorkflowTriggersIntro": "Threshold days, reminders, and the scan schedule above apply to every order workflow. Here you set each workflow's countdown anchor — the step or role whose approval starts the timer. Choose Not configured when this workflow has no anchor yet. Choose Monitoring disabled to turn off order auto-reject for this workflow only.",
     "workflowTriggersRefresh": "Refresh list",
     "workflowTriggersEmpty": "No workflows returned.",
     "workflowTriggersColName": "Workflow",
