@@ -1,5 +1,16 @@
 /* Allowance List component styles */
 
+/* Table card + horizontal scroll container: constrain to shell width (sidebar expanded) — avoids page-level horizontal jitter */
+.allowance-table-card {
+  min-width: 0;
+}
+
+.allowance-table-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Ensure filter dropdowns have enough width to display placeholders */
 :host ::ng-deep .flex.flex-col.sm\\:flex-row.gap-3 app-dropdown {
   min-width: 180px;

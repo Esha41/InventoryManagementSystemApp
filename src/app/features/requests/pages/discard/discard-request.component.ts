@@ -26,7 +26,7 @@ import { BackendUserService } from '@services/backend-user.service';
 import { AuthenticatedUser } from '@models/auth.model';
 import { BackendUserDto } from '@models/backend-user.model';
 import { getLocalizedName, getCurrentLang, Localizable } from '@utils/localization.utils';
-import { getFileSizeFromFile, removeFile, validateFile, MAX_FILE_SIZE_MB, showFileValidationErrors } from '@utils/file.utils';
+import { getFileSizeFromFile, removeFile, validateFile, showFileValidationErrors } from '@utils/file.utils';
 import { ConfirmationDialogComponent, ConfirmationType } from '@components/confirmation-dialog/confirmation-dialog.component';
 import { VirtualPagedListLoader } from '@components/virtual-paged-list-loader/virtual-paged-list.loader';
 import { ErrorHandler } from '@utils/error-handler.utils';
@@ -676,7 +676,6 @@ export class DiscardRequestComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   getFileSize = getFileSizeFromFile;
-  MAX_FILE_SIZE_MB = MAX_FILE_SIZE_MB;
 
   hasError(fieldName: string): boolean {
     return this.isSubmitted && !!this.errors[fieldName];

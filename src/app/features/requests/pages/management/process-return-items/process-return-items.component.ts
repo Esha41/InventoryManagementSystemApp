@@ -13,7 +13,7 @@ import { RequestManagementDepotDto, RequestManagementRequestItemDto } from '@mod
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
-import { validateFile, showFileValidationErrors, getFileSizeFromFile, MAX_FILE_SIZE_MB } from '@utils/file.utils';
+import { validateFile, showFileValidationErrors, getFileSizeFromFile } from '@utils/file.utils';
 import { LoadingStateComponent, ErrorStateComponent, TableClampTooltipDirective } from '@components/index';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
@@ -102,8 +102,6 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
   attachmentFiles: File[] = [];
   /** Tracking lines when this return was already processed (audit). */
   trackingLines: ReturnTrackingLineDto[] = [];
-
-  MAX_FILE_SIZE_MB = MAX_FILE_SIZE_MB;
 
   readonly readyForIssueDropdownOptions: DropdownOption<boolean>[] = [
     { value: true, label: 'processReturnItems.readyForIssueYes' },

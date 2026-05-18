@@ -16,23 +16,22 @@ import {
   LucideAngularModule,
   Loader2,
   AlertCircle,
-  Package,
-  CircleCheck
+  CircleCheck,
+  ChevronRight,
+  ChevronDown,
+  Search
 } from 'lucide-angular';
 import { Cartridge } from '@models/cartridge.model';
 import { WeaponDto } from '@models/weapon.model';
 import { WeaponAssociation } from '@models/request-item.model';
 import { ButtonComponent } from '@components/button/button.component';
 import {
-  DropdownComponent,
-  DropdownOption
-} from '@components/dropdown/dropdown.component';
-import {
   resolveCatalogItemCaliberId,
   isCatalogItemExplicitlyDeleted
 } from '@utils/catalog-caliber.utils';
 
-const EMPTY_WEAPON_OPTIONS: DropdownOption<number>[] = [];
+export type WeaponAssociationPanel = 'compatible' | 'all' | 'other';
+
 const EMPTY_WEAPON_IDS: number[] = [];
 
 function sameWeaponIdSelection(a: readonly number[], b: readonly number[]): boolean {
@@ -51,8 +50,7 @@ function sameWeaponIdSelection(a: readonly number[], b: readonly number[]): bool
     FormsModule,
     TranslateModule,
     LucideAngularModule,
-    ButtonComponent,
-    DropdownComponent
+    ButtonComponent
   ],
   templateUrl: './weapon-association.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -62,8 +60,10 @@ export class WeaponAssociationComponent implements OnChanges {
 
   readonly Loader2 = Loader2;
   readonly AlertCircle = AlertCircle;
-  readonly Package = Package;
   readonly CircleCheck = CircleCheck;
+  readonly ChevronRight = ChevronRight;
+  readonly ChevronDown = ChevronDown;
+  readonly Search = Search;
 
   @Input() ammunitionItems: Cartridge[] = [];
   @Input() allWeapons: WeaponDto[] = [];
@@ -89,20 +89,15 @@ export class WeaponAssociationComponent implements OnChanges {
   @Output() previous = new EventEmitter<void>();
 
   otherNameInput: Map<number, string> = new Map();
-  /**
-   * Explicit per-ammo section toggles. Unset entries fall back to
-   * "is there an existing association of that type?" so re-entering the step
-   * pre-expands the sections that already have data.
-   */
-  private readonly catalogSectionEnabled = new Map<number, boolean>();
-  private readonly customSectionEnabled = new Map<number, boolean>();
-  /** Per ammunition line: when true, catalog dropdown lists all assignable weapons. */
-  private readonly viewAllWeaponsByAmmoId = new Map<number, boolean>();
 
-  /** Stable option lists per ammunition line (avoid new array refs each CD). */
-  private readonly weaponOptionsByAmmoId = new Map<number, DropdownOption<number>[]>();
+  private readonly expandedAmmoIds = new Set<number>();
+  private readonly activePanelByAmmoId = new Map<number, WeaponAssociationPanel>();
+  /** Per ammunition line: when true, catalog lists all assignable weapons. */
+  private readonly viewAllWeaponsByAmmoId = new Map<number, boolean>();
   /** Local multi-select model per line (stable refs; synced from parent associations). */
   private readonly catalogWeaponIdsByAmmoId = new Map<number, number[]>();
+  /** Per ammunition line: filters the catalog weapon list. */
+  private readonly weaponSearchByAmmoId = new Map<number, string>();
 
   ngOnChanges(changes: SimpleChanges): void {
     if (
@@ -110,11 +105,21 @@ export class WeaponAssociationComponent implements OnChanges {
       changes['allWeapons'] ||
       changes['weaponsByAmmunitionCaliberId']
     ) {
-      this.rebuildWeaponOptions();
+      this.pruneStaleAmmoState();
     }
     if (changes['associations']) {
+      const assocChange = changes['associations'];
       this.syncCatalogSelectionsFromAssociations();
       this.syncOtherNamesFromAssociations();
+
+      if (assocChange.firstChange) {
+        this.expandCollapsedRowsThatAlreadyHaveAssociations();
+      } else {
+        const prev = assocChange.previousValue as Map<number, WeaponAssociation[]> | undefined;
+        if (prev instanceof Map) {
+          this.expandCollapsedRowsWhereAssociationJustAppeared(prev);
+        }
+      }
     }
   }
 
@@ -122,8 +127,8 @@ export class WeaponAssociationComponent implements OnChanges {
     return ammo.id;
   }
 
-  weaponOptionsFor(ammoItemId: number): DropdownOption<number>[] {
-    return this.weaponOptionsByAmmoId.get(ammoItemId) ?? EMPTY_WEAPON_OPTIONS;
+  trackByWeaponId(_index: number, weapon: WeaponDto): number {
+    return weapon.id;
   }
 
   catalogWeaponIdsFor(ammoItemId: number): number[] {
@@ -134,63 +139,131 @@ export class WeaponAssociationComponent implements OnChanges {
     return this.associations.get(ammoItemId) ?? [];
   }
 
-  catalogAssociationCount(ammoItemId: number): number {
-    return this.associationsForAmmo(ammoItemId).filter(a => a.type === 'catalog').length;
+  isAmmoExpanded(ammoItemId: number): boolean {
+    return this.expandedAmmoIds.has(ammoItemId);
   }
 
+  toggleAmmoExpanded(ammo: Cartridge, event?: Event): void {
+    if (event) {
+      const target = event.target as HTMLElement;
+      if (target.closest('button, input, app-button, label')) {
+        return;
+      }
+    }
 
-  isCatalogSectionEnabled(ammoItemId: number): boolean {
-    const explicit = this.catalogSectionEnabled.get(ammoItemId);
-    if (explicit !== undefined) return explicit;
-    return this.associationsForAmmo(ammoItemId).some(a => a.type === 'catalog');
-  }
-
-  isCustomSectionEnabled(ammoItemId: number): boolean {
-    const explicit = this.customSectionEnabled.get(ammoItemId);
-    if (explicit !== undefined) return explicit;
-    return this.associationsForAmmo(ammoItemId).some(a => a.type === 'other');
-  }
-
-  toggleCatalogSection(ammoItemId: number): void {
-    const next = !this.isCatalogSectionEnabled(ammoItemId);
-    this.catalogSectionEnabled.set(ammoItemId, next);
-
-    if (!next) {
-      this.catalogWeaponIdsByAmmoId.delete(ammoItemId);
-      const ammo = this.ammunitionItems.find(a => a.id === ammoItemId);
-      this.associateCatalogWeapons.emit({
-        ammoItemId,
-        weaponIds: [],
-        caliberId: ammo ? this.resolveAssociationCaliberId(ammo, []) : null
-      });
+    if (this.expandedAmmoIds.has(ammo.id)) {
+      this.expandedAmmoIds.delete(ammo.id);
+      this.activePanelByAmmoId.delete(ammo.id);
+      this.weaponSearchByAmmoId.delete(ammo.id);
+    } else {
+      this.expandedAmmoIds.add(ammo.id);
+      this.selectDefaultPanel(ammo);
     }
     this.cdr.markForCheck();
   }
 
-  toggleCustomSection(ammoItemId: number): void {
-    const next = !this.isCustomSectionEnabled(ammoItemId);
-    this.customSectionEnabled.set(ammoItemId, next);
+  /** First visible option: Compatible when applicable, otherwise View all weapons. */
+  private selectDefaultPanel(ammo: Cartridge): void {
+    const panel: WeaponAssociationPanel = this.hasCaliberFilterEffect(ammo)
+      ? 'compatible'
+      : 'all';
+    this.activePanelByAmmoId.set(ammo.id, panel);
+    this.setWeaponCatalogScope(ammo.id, panel);
+  }
 
-    if (!next) {
-      this.otherNameInput.set(ammoItemId, '');
-      const ammo = this.ammunitionItems.find(a => a.id === ammoItemId);
-      const cal = ammo ? this.effectiveAmmoCaliberId(ammo) : null;
-      this.associateOtherWeapon.emit({
-        ammoItemId,
-        otherName: '',
-        caliberId: cal != null && Number.isFinite(Number(cal)) ? Number(cal) : null
-      });
+  activePanelFor(ammoItemId: number): WeaponAssociationPanel | null {
+    return this.activePanelByAmmoId.get(ammoItemId) ?? null;
+  }
+
+  isActivePanel(ammoItemId: number, panel: WeaponAssociationPanel): boolean {
+    return this.activePanelFor(ammoItemId) === panel;
+  }
+
+  setActivePanel(ammo: Cartridge, panel: WeaponAssociationPanel, event?: Event): void {
+    event?.stopPropagation();
+    this.activePanelByAmmoId.set(ammo.id, panel);
+    this.weaponSearchByAmmoId.delete(ammo.id);
+
+    if (panel === 'compatible') {
+      this.setWeaponCatalogScope(ammo.id, 'compatible');
+    } else if (panel === 'all') {
+      this.setWeaponCatalogScope(ammo.id, 'all');
+    }
+
+    this.cdr.markForCheck();
+  }
+
+  catalogWeaponsForActiveScope(ammo: Cartridge): WeaponDto[] {
+    const panel = this.activePanelFor(ammo.id);
+    if (panel === 'other' || panel == null) {
+      return [];
+    }
+    if (panel === 'all' || !this.hasCaliberFilterEffect(ammo)) {
+      return this.getAllAssignableWeapons();
+    }
+    return this.getCompatibleWeapons(this.effectiveAmmoCaliberId(ammo));
+  }
+
+  catalogWeaponsScopeCount(ammo: Cartridge): number {
+    return this.catalogWeaponsForActiveScope(ammo).length;
+  }
+
+  filteredCatalogWeaponsForActiveScope(ammo: Cartridge): WeaponDto[] {
+    const weapons = this.catalogWeaponsForActiveScope(ammo);
+    const q = (this.weaponSearchByAmmoId.get(ammo.id) ?? '').trim().toLowerCase();
+    if (!q) return weapons;
+
+    return weapons.filter(w => {
+      const label = this.weaponDisplayLabel(w).toLowerCase();
+      const name = (w.name ?? '').toLowerCase();
+      const model = (w.model ?? '').toLowerCase();
+      return label.includes(q) || name.includes(q) || model.includes(q);
+    });
+  }
+
+  weaponSearchFor(ammoItemId: number): string {
+    return this.weaponSearchByAmmoId.get(ammoItemId) ?? '';
+  }
+
+  onWeaponSearchChange(ammoItemId: number, term: string): void {
+    if (!term.trim()) {
+      this.weaponSearchByAmmoId.delete(ammoItemId);
+    } else {
+      this.weaponSearchByAmmoId.set(ammoItemId, term);
     }
     this.cdr.markForCheck();
   }
 
-  onCatalogDropdownChange(
-    ammo: Cartridge,
-    value: number | number[] | null | undefined
-  ): void {
-    const ids = Array.isArray(value) ? value : value != null ? [Number(value)] : [];
-    const uniq = [...new Set(ids.filter(id => Number.isFinite(id) && id > 0))].sort((a, b) => a - b);
+  isWeaponSelected(ammoItemId: number, weaponId: number): boolean {
+    return this.catalogWeaponIdsFor(ammoItemId).includes(weaponId);
+  }
 
+  toggleWeaponInList(ammo: Cartridge, weaponId: number, event: Event): void {
+    event.stopPropagation();
+    const current = [...this.catalogWeaponIdsFor(ammo.id)];
+    const idx = current.indexOf(weaponId);
+    if (idx >= 0) {
+      current.splice(idx, 1);
+    } else {
+      current.push(weaponId);
+    }
+    this.applyCatalogSelection(ammo, current);
+  }
+
+  catalogSelectionCount(ammoItemId: number): number {
+    return this.catalogWeaponIdsFor(ammoItemId).length;
+  }
+
+  hasAssociationForAmmo(ammoItemId: number): boolean {
+    const list = this.associationsForAmmo(ammoItemId);
+    return list.some(
+      a =>
+        (a.type === 'catalog' && !!a.weaponItemId) ||
+        (a.type === 'other' && !!a.otherName?.trim())
+    );
+  }
+
+  private applyCatalogSelection(ammo: Cartridge, uniq: number[]): void {
     const prev = this.catalogWeaponIdsFor(ammo.id);
     if (sameWeaponIdSelection(prev, uniq)) return;
 
@@ -205,6 +278,7 @@ export class WeaponAssociationComponent implements OnChanges {
       weaponIds: uniq,
       caliberId: this.resolveAssociationCaliberId(ammo, uniq)
     });
+    this.cdr.markForCheck();
   }
 
   private resolveAssociationCaliberId(ammo: Cartridge, weaponIds: readonly number[]): number | null {
@@ -232,32 +306,20 @@ export class WeaponAssociationComponent implements OnChanges {
     return caliberId != null && Number.isFinite(Number(caliberId));
   }
 
-  isViewingAllWeapons(ammoItemId: number): boolean {
-    return this.viewAllWeaponsByAmmoId.get(ammoItemId) === true;
-  }
-
-  isViewingCompatibleWeapons(ammoItemId: number): boolean {
-    return !this.isViewingAllWeapons(ammoItemId);
+  hasCaliberFilterEffect(ammo: Cartridge): boolean {
+    if (!this.ammoHasCaliberForFilter(ammo)) return false;
+    const compatible = this.getCompatibleWeapons(this.effectiveAmmoCaliberId(ammo));
+    return compatible.length > 0 && compatible.length < this.getAllAssignableWeapons().length;
   }
 
   setWeaponCatalogScope(ammoItemId: number, scope: 'compatible' | 'all'): void {
     const viewingAll = scope === 'all';
-    if (viewingAll === this.isViewingAllWeapons(ammoItemId)) return;
-
     if (viewingAll) {
       this.viewAllWeaponsByAmmoId.set(ammoItemId, true);
     } else {
       this.viewAllWeaponsByAmmoId.delete(ammoItemId);
     }
-    this.rebuildWeaponOptionsForAmmo(ammoItemId);
     this.cdr.markForCheck();
-  }
-
-  shouldShowCompatibleOnlyEmptyHint(ammo: Cartridge): boolean {
-    if (!this.ammoHasCaliberForFilter(ammo) || this.isViewingAllWeapons(ammo.id)) {
-      return false;
-    }
-    return this.getCompatibleWeapons(this.effectiveAmmoCaliberId(ammo)).length === 0;
   }
 
   getCompatibleWeapons(ammoCaliberId: number | null | undefined): WeaponDto[] {
@@ -291,7 +353,8 @@ export class WeaponAssociationComponent implements OnChanges {
     return !!(this.otherNameInput.get(ammo.id) ?? '').trim();
   }
 
-  onOtherWeaponConfirm(ammo: Cartridge): void {
+  onOtherWeaponConfirm(ammo: Cartridge, event?: Event): void {
+    event?.stopPropagation();
     const name = (this.otherNameInput.get(ammo.id) ?? '').trim();
     if (!name) return;
 
@@ -309,19 +372,10 @@ export class WeaponAssociationComponent implements OnChanges {
 
   onOtherWeaponEnter(ammo: Cartridge, event: Event): void {
     event.preventDefault();
+    event.stopPropagation();
     if (this.canConfirmOtherWeapon(ammo)) {
       this.onOtherWeaponConfirm(ammo);
     }
-  }
-
-  hasValidAssociation(ammoItemId: number): boolean {
-    const list = this.associationsForAmmo(ammoItemId);
-    if (!list.length) return false;
-    return list.every(
-      a =>
-        (a.type === 'catalog' && !!a.weaponItemId) ||
-        (a.type === 'other' && !!a.otherName?.trim())
-    );
   }
 
   firstOtherName(ammoItemId: number): string | null {
@@ -329,44 +383,70 @@ export class WeaponAssociationComponent implements OnChanges {
     return o?.otherName?.trim() ?? null;
   }
 
-  private rebuildWeaponOptions(): void {
-    const nextIds = new Set(this.ammunitionItems.map(a => a.id));
-    for (const id of this.weaponOptionsByAmmoId.keys()) {
-      if (!nextIds.has(id)) {
-        this.weaponOptionsByAmmoId.delete(id);
-        this.catalogWeaponIdsByAmmoId.delete(id);
-        this.viewAllWeaponsByAmmoId.delete(id);
-        this.catalogSectionEnabled.delete(id);
-        this.customSectionEnabled.delete(id);
-        this.otherNameInput.delete(id);
+  weaponDisplayLabel(w: WeaponDto): string {
+    const base = w.name ?? '';
+    return w.model ? `${base} — ${w.model}` : base;
+  }
+
+  private expandCollapsedRowsThatAlreadyHaveAssociations(): void {
+    let changed = false;
+    for (const ammo of this.ammunitionItems) {
+      if (this.hasAssociationForAmmo(ammo.id) && !this.expandedAmmoIds.has(ammo.id)) {
+        this.expandedAmmoIds.add(ammo.id);
+        this.selectDefaultPanel(ammo);
+        changed = true;
       }
     }
+    if (changed) {
+      this.cdr.markForCheck();
+    }
+  }
 
+
+  private expandCollapsedRowsWhereAssociationJustAppeared(
+    previousAssociations: Map<number, WeaponAssociation[]>
+  ): void {
+    let changed = false;
     for (const ammo of this.ammunitionItems) {
-      this.rebuildWeaponOptionsForAmmo(ammo.id);
+      if (this.expandedAmmoIds.has(ammo.id)) continue;
+
+      const prevHad = this.hasAssociationForAmmoInMap(previousAssociations, ammo.id);
+      const currHad = this.hasAssociationForAmmo(ammo.id);
+      if (!prevHad && currHad) {
+        this.expandedAmmoIds.add(ammo.id);
+        this.selectDefaultPanel(ammo);
+        changed = true;
+      }
+    }
+    if (changed) {
+      this.cdr.markForCheck();
     }
   }
 
-  private rebuildWeaponOptionsForAmmo(ammoItemId: number): void {
-    const ammo = this.ammunitionItems.find(a => a.id === ammoItemId);
-    if (!ammo) return;
-
-    const options = this.weaponsForAmmo(ammo).map(w => ({
-      label: this.weaponOptionLabel(w),
-      value: w.id
-    }));
-    this.weaponOptionsByAmmoId.set(ammoItemId, options);
+  private hasAssociationForAmmoInMap(
+    map: Map<number, WeaponAssociation[]>,
+    ammoItemId: number
+  ): boolean {
+    const list = map.get(ammoItemId) ?? [];
+    return list.some(
+      a =>
+        (a.type === 'catalog' && !!a.weaponItemId) ||
+        (a.type === 'other' && !!a.otherName?.trim())
+    );
   }
 
-  private weaponsForAmmo(ammo: Cartridge): WeaponDto[] {
-    const caliberId = this.effectiveAmmoCaliberId(ammo);
-    if (caliberId == null || !Number.isFinite(Number(caliberId))) {
-      return this.getCompatibleWeapons(null);
+  private pruneStaleAmmoState(): void {
+    const nextIds = new Set(this.ammunitionItems.map(a => a.id));
+    for (const id of [...this.catalogWeaponIdsByAmmoId.keys()]) {
+      if (!nextIds.has(id)) {
+        this.catalogWeaponIdsByAmmoId.delete(id);
+        this.viewAllWeaponsByAmmoId.delete(id);
+        this.activePanelByAmmoId.delete(id);
+        this.expandedAmmoIds.delete(id);
+        this.otherNameInput.delete(id);
+        this.weaponSearchByAmmoId.delete(id);
+      }
     }
-    if (this.isViewingAllWeapons(ammo.id)) {
-      return this.getAllAssignableWeapons();
-    }
-    return this.getCompatibleWeapons(caliberId);
   }
 
   private getAllAssignableWeapons(): WeaponDto[] {
@@ -398,10 +478,5 @@ export class WeaponAssociationComponent implements OnChanges {
       if (!name) continue;
       this.otherNameInput.set(ammo.id, name);
     }
-  }
-
-  private weaponOptionLabel(w: WeaponDto): string {
-    const base = w.name ?? '';
-    return w.model ? `${base} — ${w.model}` : base;
   }
 }

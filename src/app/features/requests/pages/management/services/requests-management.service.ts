@@ -39,7 +39,8 @@ export class RequestsManagementService {
     pageSize: number,
     searchQuery: string,
     statusFilter: string,
-    priorityFilter: string
+    priorityFilter: string,
+    sortState: { column: string | null; direction: 'asc' | 'desc' }
   ): Observable<PaginatedList<Request>> {
     const filters: FilterData[] = [];
 
@@ -94,7 +95,37 @@ export class RequestsManagementService {
       filter: filters.length > 0 ? (filters.length === 1 ? filters[0] : { logic: 'and', filters }) : undefined
     };
 
+    this.applySortToPagedRequest(request, sortState);
+
     return this.loadRequestsPaginated(request);
+  }
+
+  /**
+   * Mirrors dashboard list sorting (`DashboardDataService.getDashboardRequests`):
+   * default Priority desc (+ CreationDate on backend composite sort); mapped fields use Dynamic LINQ.
+   */
+  private applySortToPagedRequest(
+    pagedRequest: PagedRequest,
+    sortState: { column: string | null; direction: 'asc' | 'desc' }
+  ): void {
+    const columnMap: Record<string, string> = {
+      orderNumber: 'RequestNo',
+      usageDate: 'CreationDate',
+      priority: 'Priority',
+      requestType: 'RequestType',
+      status: 'Status'
+    };
+
+    const sortColumn = sortState.column ?? 'priority';
+    const sortDir = sortState.column ? sortState.direction : 'desc';
+    const backendColumn = columnMap[sortColumn];
+    if (!backendColumn) return;
+
+    if (!pagedRequest.filter) {
+      pagedRequest.filter = {};
+    }
+    pagedRequest.filter.sortField = backendColumn;
+    pagedRequest.filter.sortDirection = sortDir === 'asc' ? 1 : 2;
   }
 
   /**

@@ -16,7 +16,7 @@
       <span class="print-info-label">{{ 'requestsManagement.orderReport.labels.status' | translate
         }}:</span>
       <span class="status-badge inline-flex items-center px-2.5 py-1 rounded-md border text-xs font-semibold w-fit"
-        [ngClass]="getOrderSummaryStatusClass(orderSummary.status)">
+        [ngClass]="getOrderSummaryStatusBadgeClass()">
         {{ orderSummary.status | translate }}
       </span>
     </div>

@@ -1,6 +1,6 @@
 {
   "supplyRequestDetail": {
-    "title": "طلب توريد",
+    "title": "تعديل الطلب",
     "requestedOn": "تم الطلب في",
     "requestInformation": "معلومات الطلب",
     "orderNo": "رقم الطلب",
@@ -12,7 +12,7 @@
     "usagePurpose": "غرض الاستخدام",
     "usageLocation": "موقع الاستخدام",
     "usageDate": "تاريخ الاستخدام",
-    "orderItems": "مواد الطلب",
+    "orderItems": "المواد المطلوبة",
     "addItem": "إضافة مادة",
     "approvedQty": "الكمية المعتمدة",
     "selectedForDischarge": "محدد للصرف",

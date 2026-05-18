@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
@@ -12,7 +13,7 @@ import { Cartridge } from '@models/cartridge.model';
 @Component({
   selector: 'app-cartridge-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, ButtonComponent, DropdownComponent],
+  imports: [CommonModule, FormsModule, TranslateModule, ButtonComponent, DropdownComponent, RouterLink],
   templateUrl: './cartridge-list.component.html',
   styleUrls: ['./cartridge-list.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -62,8 +63,8 @@ export class CartridgeListComponent implements OnChanges {
   @Input() appliedSearchTerm = '';
   /** Server catalog: true while paginating or refreshing results (list shows with overlay). */
   @Input() catalogPageLoading = false;
+  @Input() showPreviousButton = true;
 
-  @Output() cartridgeClick = new EventEmitter<Cartridge>();
   @Output() allowanceError = new EventEmitter<string>();
   @Output() itemTypeValidationError = new EventEmitter<string>();
   @Output() filterChange = new EventEmitter<void>();
@@ -104,7 +105,8 @@ export class CartridgeListComponent implements OnChanges {
   constructor(
     private config: ConfigService,
     private itemTypeValidationService: ItemTypeValidationService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private readonly router: Router
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -141,8 +143,26 @@ export class CartridgeListComponent implements OnChanges {
     this.applyCatalogSearch.emit(this.draftSearchTerm.trim());
   }
 
-  onCartridgeClick(cartridge: Cartridge): void {
-    this.cartridgeClick.emit(cartridge);
+  /**
+   * Query params for full-page asset details; `returnTo` restores the wizard when the user goes back.
+   */
+  assetCatalogDetailQueryParams(cartridge: Cartridge): { tab: string; returnTo: string } {
+    return {
+      tab: this.resolveCatalogItemTab(cartridge),
+      returnTo: this.router.url
+    };
+  }
+
+  private resolveCatalogItemTab(cartridge: Cartridge): string {
+    const fromCart = (cartridge.itemType || '').toLowerCase();
+    if (fromCart === 'ammunition' || fromCart === 'weapon' || fromCart === 'explosive') {
+      return fromCart;
+    }
+    const t = (this.selectedItemType || 'Ammunition').toLowerCase();
+    if (t === 'ammunition' || t === 'weapon' || t === 'explosive') {
+      return t;
+    }
+    return 'ammunition';
   }
 
   beginSelection(cartridge: Cartridge, event?: Event): void {

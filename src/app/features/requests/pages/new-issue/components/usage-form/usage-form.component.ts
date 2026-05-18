@@ -3,22 +3,16 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ButtonComponent } from '@components/button/button.component';
-import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
 import { Cartridge } from '@models/cartridge.model';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
-import { getFileSizeFromFile, removeFile, validateFile, MAX_FILE_SIZE_MB, showFileValidationErrors } from '@utils/file.utils';
+import { getFileSizeFromFile, removeFile, validateFile, showFileValidationErrors } from '@utils/file.utils';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { formatDateForInput, formatDateShort } from '@core/utils/format.utils';
-import type { ReserveDetailItem } from '@requests/pages/new-issue/new-issue-request.state';
-
-// Export MAX_FILE_SIZE_MB for template use
-export const MAX_FILE_SIZE_MB_EXPORT = MAX_FILE_SIZE_MB;
-
 @Component({
   selector: 'app-usage-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, ButtonComponent, DropdownComponent, TableClampTooltipDirective],
+  imports: [CommonModule, FormsModule, TranslateModule, ButtonComponent, DropdownComponent],
   templateUrl: './usage-form.component.html',
   styleUrls: ['./usage-form.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -97,7 +91,6 @@ export class UsageFormComponent {
   get isArabic(): boolean {
     return this.currentLang === 'ar';
   }
-  @Input() fromReserve: string = 'Yes';
   @Input() usePurpose: string = '';
   @Input() selectedUsePurposeId: number | null = null;
   @Input() requestPurposeNotes: string = '';
@@ -109,13 +102,7 @@ export class UsageFormComponent {
   @Input() usageTimeFrom: string = '';
   @Input() usageDateTo: string = '';
   @Input() usageTimeTo: string = '';
-  @Input() totalReserve: number = 0;
-  @Input() availableReserve: number = 0;
-  @Input() orderedQuantity: number = 0;
-  @Input() usedQuantity: number = 0;
-  @Input() reserveDetailsByItem: ReserveDetailItem[] = [];
   @Input() selectedCartridges: Cartridge[] = [];
-  @Input() requesterComments: string = '';
   @Input() selectedFiles: File[] = [];
   @Output() removeCartridge = new EventEmitter<number>();
   onRemoveCartridge(id: number): void {
@@ -133,7 +120,6 @@ export class UsageFormComponent {
   @Output() usageDateToChange = new EventEmitter<string>();
   @Output() usageTimeToChange = new EventEmitter<string>();
   @Output() requestPurposeNotesChange = new EventEmitter<string>();
-  @Output() requesterCommentsChange = new EventEmitter<string>();
   @Output() previous = new EventEmitter<void>();
   @Output() next = new EventEmitter<void>();
 
@@ -145,7 +131,6 @@ export class UsageFormComponent {
     usageDateTo: null,
     usageTimeTo: null,
     requestPurposeNotes: null,
-    requesterComments: null,
     selectedFiles: null
   };
 
@@ -284,12 +269,6 @@ export class UsageFormComponent {
     }
   }
 
-  onRequesterCommentsChange(value: string): void {
-    this.requesterCommentsChange.emit(value);
-
-    this.clearError('requesterComments');
-  }
-
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
@@ -333,7 +312,6 @@ export class UsageFormComponent {
   }
 
   getFileSize = getFileSizeFromFile;
-  MAX_FILE_SIZE_MB = MAX_FILE_SIZE_MB_EXPORT;
 
   onPrevious(): void {
     this.previous.emit();
@@ -344,10 +322,6 @@ export class UsageFormComponent {
     if (this.validateForm()) {
       this.next.emit();
     }
-  }
-
-  isItemSelected(itemId: number): boolean {
-    return this.selectedCartridges.some(cartridge => cartridge.id === itemId);
   }
 
   hasError(field: keyof UsageFormErrors): boolean {
@@ -449,6 +423,5 @@ type UsageFormErrors = {
   usageTimeFrom: string | null;
   usageDateTo: string | null;
   usageTimeTo: string | null;
-  requesterComments: string | null;
   selectedFiles: string | null;
 };

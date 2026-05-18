@@ -106,7 +106,13 @@
     "scheduledReports": "التقارير المجدولة",
     "announcements": "الإعلانات",
     "help": "المساعدة",
-    "helpCenterAdmin": "مركز المساعدة (إداري)"
+    "helpCenterAdmin": "مركز المساعدة (إداري)",
+    "settingsConfiguration": "الإعداداتة",
+    "requesterQtyNotifications": "إشعارات تغيير الكمية للمقدّم"
+  },
+  "settingsLayout": {
+    "collapseNav": "طي قائمة الإعدادات",
+    "expandNav": "توسيع قائمة الإعدادات"
   },
   "footer": {
     "copyright": "حقوق النشر © برزان القابضة {{year}}"

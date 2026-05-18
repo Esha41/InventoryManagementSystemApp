@@ -8,13 +8,15 @@ import {
   ChangeDetectorRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
+import { getCurrentLang, getLocalizedName } from '@core/utils/localization.utils';
 import { LucideAngularModule, Package } from 'lucide-angular';
 import { SupplyService, WorkflowSupplySummaryDto } from '@requests/services/supply.service';
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
+import { groupAmmoSupplyLines, type AmmoSupplyLineGroup } from '../../../utils/ammo-supply-line-groups.util';
 
 @Component({
   selector: 'app-workflow-supply-summary',
@@ -35,13 +37,17 @@ export class WorkflowSupplySummaryComponent implements OnInit, OnChanges {
   loading = true;
   error: string | null = null;
   summary: WorkflowSupplySummaryDto | null = null;
+  /** Ammunition / explosives lines grouped by `itemId` (set when summary loads). */
+  ammoGroups: AmmoSupplyLineGroup[] = [];
 
   constructor(
     private supplyService: SupplyService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private translate: TranslateService
   ) {}
 
   ngOnInit(): void {
+    this.translate.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
     this.loadSummary();
   }
 
@@ -58,6 +64,7 @@ export class WorkflowSupplySummaryComponent implements OnInit, OnChanges {
   private loadSummary(): void {
     this.loading = true;
     this.error = null;
+    this.ammoGroups = [];
     this.cdr.markForCheck();
 
     this.supplyService.getWorkflowSupplySummary(this.orderId)
@@ -65,6 +72,7 @@ export class WorkflowSupplySummaryComponent implements OnInit, OnChanges {
       .subscribe({
         next: (data) => {
           this.summary = data;
+          this.ammoGroups = groupAmmoSupplyLines(data.lines ?? []);
           this.loading = false;
           this.error = null;
           this.cdr.markForCheck();
@@ -73,6 +81,7 @@ export class WorkflowSupplySummaryComponent implements OnInit, OnChanges {
           this.error = ErrorHandler.extractErrorMessage(err, 'workflowApprovalDetail.workflowSupplySummary.loadError');
           this.loading = false;
           this.summary = null;
+          this.ammoGroups = [];
           this.cdr.markForCheck();
         }
       });
@@ -126,8 +135,19 @@ export class WorkflowSupplySummaryComponent implements OnInit, OnChanges {
       : 'workflowApprovalDetail.workflowSupplySummary.colShouldBeSupplied';
   }
 
-  depotDisplay(line: { depotName?: string | null; depotCode?: string | null }): string {
-    const name = (line.depotName || '').trim();
+  depotDisplay(line: {
+    depotName?: string | null;
+    depotNameEn?: string | null;
+    depotNameAr?: string | null;
+    depotCode?: string | null;
+  }): string {
+    const name = getLocalizedName(
+      {
+        nameEn: line.depotNameEn ?? line.depotName ?? undefined,
+        nameAr: line.depotNameAr ?? undefined
+      },
+      getCurrentLang(this.translate)
+    ).trim();
     const code = (line.depotCode || '').trim();
     if (name && code) {
       return `${name} (${code})`;

@@ -16,7 +16,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil, combineLatest } from 'rxjs';
 import { LucideAngularModule, ArrowLeft, ArrowRight, X } from 'lucide-angular';
@@ -53,6 +53,7 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
   private readonly route = inject(ActivatedRoute, { optional: true });
   private readonly router = inject(Router, { optional: true });
   private readonly translationService = inject(TranslationService, { optional: true });
+  private readonly translate = inject(TranslateService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly sanitizer = inject(DomSanitizer);
 
@@ -70,8 +71,14 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
   imageUrl = signal<SafeUrl | string | null>(null);
   showFullImage = signal<boolean>(false);
 
-  // Computed signals - automatically update when dependencies change
-  readonly isRTL = computed(() => this.translationService?.isRTL() ?? false);
+  /**
+   * RTL for layout/icons. Must be a signal updated from language events — a `computed()` that only
+   * read `TranslationService.isRTL()` had no signal dependencies, so it never refreshed after navigation.
+   */
+  private readonly rtlDirection = signal(false);
+
+  /** Reactive RTL for templates / consumers (read-only view of `rtlDirection`). */
+  readonly isRTL = this.rtlDirection.asReadonly();
 
   readonly isWeapon = computed(() => {
     const type = this._assetType();
@@ -117,7 +124,7 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
 
   /** Back navigation chevron: points toward reading start (LTR=left, RTL=right). */
   get backIcon(): typeof ArrowLeft {
-    return this.isRTL() ? ArrowRight : ArrowLeft;
+    return this.rtlDirection() ? ArrowRight : ArrowLeft;
   }
 
   // Cleanup
@@ -127,6 +134,17 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
   private imageLoadedFor: { assetId: number; assetType: string } | null = null;
   private requestId: number | null = null; // For back navigation to workflow approval
   private returnToUrl: string | null = null; // For back navigation (e.g. item assignment)
+
+  private syncRtlDirection(): void {
+    if (this.translationService) {
+      this.rtlDirection.set(this.translationService.isRTL());
+      return;
+    }
+    const fromLang = this.translate.currentLang === 'ar';
+    const fromDoc =
+      typeof document !== 'undefined' && document.documentElement.getAttribute('dir') === 'rtl';
+    this.rtlDirection.set(fromLang || fromDoc);
+  }
 
   constructor() {
     // Effect to handle asset type detection from asset data
@@ -206,6 +224,12 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
   @Output() close = new EventEmitter<void>();
 
   ngOnInit(): void {
+    this.syncRtlDirection();
+    this.translate.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.syncRtlDirection();
+      this.cdr.markForCheck();
+    });
+
     // If used as a page component, load data from route params
     if (this._isPage() && this.route?.snapshot.params['id']) {
       // Combine params and queryParams to get all route information at once

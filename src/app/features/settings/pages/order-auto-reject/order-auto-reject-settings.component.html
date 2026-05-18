@@ -24,35 +24,6 @@
 
           <section class="space-y-4">
             <h4 class="text-lg font-semibold text-[var(--color-text)] border-b border-[var(--color-border)] pb-2">
-              {{ 'orderAutoRejectSettings.sectionWhenStarts' | translate }}
-            </h4>
-            <div>
-              <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-                {{ 'orderAutoRejectSettings.triggerRole' | translate }}
-              </span>
-              <app-dropdown
-                class="w-full"
-                formControlName="triggerRoleId"
-                [options]="roles"
-                [multiple]="false"
-                [required]="true"
-                optionValue="id"
-                optionLabel="name"
-                [placeholderSelectable]="false"
-                placeholder="{{
-                  isLoadingRoles
-                    ? ('common.loading' | translate)
-                    : ('orderAutoRejectSettings.triggerRolePlaceholder' | translate)
-                }}"
-              ></app-dropdown>
-              <p class="mt-1 text-xs text-[var(--color-text-muted)]">
-                {{ 'orderAutoRejectSettings.triggerRoleHint' | translate }}
-              </p>
-            </div>
-          </section>
-
-          <section class="space-y-4">
-            <h4 class="text-lg font-semibold text-[var(--color-text)] border-b border-[var(--color-border)] pb-2">
               {{ 'orderAutoRejectSettings.sectionWhenActs' | translate }}
             </h4>
             <div>

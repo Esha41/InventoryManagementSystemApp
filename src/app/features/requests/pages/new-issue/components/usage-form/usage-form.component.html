@@ -21,7 +21,7 @@
               <span *ngIf="!isArabic">{{ cartridge.nameEn || cartridge.name }}</span>
             </h3>
             <p class="text-xs text-[var(--color-text-muted)]">
-              {{ 'newIssueRequest.productId' | translate }}: {{ cartridge.itemNo || cartridge.productId }}
+              {{ 'newIssueRequest.itemNo' | translate }}: {{ cartridge.itemNo || cartridge.productId }}
             </p>
           </div>
           <button type="button" (click)="onRemoveCartridge(cartridge.id)"
@@ -51,7 +51,7 @@
         <thead class="bg-[var(--color-background-muted)] text-[var(--color-text)]">
           <tr>
             <th class="px-4 py-3 text-start font-semibold">{{ 'newIssueRequest.name' | translate }}</th>
-            <th class="px-4 py-3 text-start font-semibold">{{ 'newIssueRequest.productId' | translate }}</th>
+            <th class="px-4 py-3 text-start font-semibold">{{ 'newIssueRequest.itemNo' | translate }}</th>
             <th class="px-4 py-3 text-start font-semibold">{{ 'newIssueRequest.nsn' | translate }}</th>
             <th class="px-4 py-3 text-center font-semibold">{{ 'newIssueRequest.quantity' | translate }}</th>
             <th class="px-4 py-3 text-center font-semibold">{{ 'common.actions' | translate }}</th>
@@ -199,15 +199,8 @@
               </div>
             </div>
 
-            <!-- Helper Text -->
-            <p class="text-xs text-[var(--color-text-muted)]">
-              {{ 'newIssueRequest.attachmentsHint' | translate }}
-            </p>
             <p *ngIf="hasError('selectedFiles')" class="text-xs text-red-600">
               {{ formErrors.selectedFiles | translate }}
-            </p>
-            <p class="text-xs text-[var(--color-text-muted)] font-medium">
-              {{ 'common.maximumFileSize' | translate: {size: MAX_FILE_SIZE_MB} }}
             </p>
           </div>
         </div>
@@ -227,7 +220,9 @@
               'border-red-500': hasError('usageDateFrom')
             }">
             <div class="absolute inset-0 flex items-center px-3 py-2 pointer-events-none gap-2">
-              <span class="text-sm text-start flex-1 min-w-0" [class.text-[var(--color-text-muted)]]="!usageDateFromDisplay">{{ usageDateFromDisplay || ('newIssueRequest.selectDatePlaceholder' | translate) }}</span>
+              <span class="text-sm text-start flex-1 min-w-0 truncate" [class.text-[var(--color-text-muted)]]="!usageDateFromDisplay">
+                {{ usageDateFromDisplay || ('newIssueRequest.dateFormat' | translate) }}
+              </span>
               <svg class="w-5 h-5 text-[var(--color-text-muted)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
               </svg>
@@ -241,7 +236,6 @@
           <p *ngIf="hasError('usageDateFrom')" class="mt-1 text-xs text-red-600">
             {{ formErrors.usageDateFrom | translate }}
           </p>
-          <p class="mt-1 text-xs text-[var(--color-text-muted)]">{{ 'newIssueRequest.dateFormat' | translate }}</p>
         </div>
 
         <!-- Usage Date To - Display in DD/MM/YYYY (app format), picker opens on click -->
@@ -256,7 +250,9 @@
               'border-red-500': hasError('usageDateTo')
             }">
             <div class="absolute inset-0 flex items-center px-3 py-2 pointer-events-none gap-2">
-              <span class="text-sm text-start flex-1 min-w-0" [class.text-[var(--color-text-muted)]]="!usageDateToDisplay">{{ usageDateToDisplay || ('newIssueRequest.selectDatePlaceholder' | translate) }}</span>
+              <span class="text-sm text-start flex-1 min-w-0 truncate" [class.text-[var(--color-text-muted)]]="!usageDateToDisplay">
+                {{ usageDateToDisplay || ('newIssueRequest.dateFormat' | translate) }}
+              </span>
               <svg class="w-5 h-5 text-[var(--color-text-muted)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
               </svg>
@@ -269,7 +265,6 @@
           <p *ngIf="hasError('usageDateTo')" class="mt-1 text-xs text-red-600">
             {{ formErrors.usageDateTo | translate }}
           </p>
-          <p class="mt-1 text-xs text-[var(--color-text-muted)]">{{ 'newIssueRequest.dateFormat' | translate }}</p>
         </div>
 
         <!-- Usage Time From -->
@@ -282,8 +277,6 @@
           </app-dropdown>
           <p *ngIf="hasError('usageTimeFrom')" class="mt-1 text-xs text-red-600">
             {{ formErrors.usageTimeFrom | translate }}
-          </p>
-          <p class="mt-1 text-xs text-[var(--color-text-muted)]">{{ 'newIssueRequest.militaryTimeFormat' | translate }}
           </p>
         </div>
 
@@ -298,74 +291,9 @@
           <p *ngIf="hasError('usageTimeTo')" class="mt-1 text-xs text-red-600">
             {{ formErrors.usageTimeTo | translate }}
           </p>
-          <p class="mt-1 text-xs text-[var(--color-text-muted)]">{{ 'newIssueRequest.militaryTimeFormat' | translate }}
-          </p>
         </div>
 
-        <!-- Comments -->
-        <div>
-          <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="usage-form-requestercomments-12">{{ 'newIssueRequest.comments' |
-            translate }}</label>
-          <textarea id="usage-form-requestercomments-12" name="requesterComments" [ngModel]="requesterComments"
-            (ngModelChange)="onRequesterCommentsChange($event)" rows="4"
-            placeholder="{{ 'newIssueRequest.commentsPlaceholder' | translate }}"
-            class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 transition-all resize-none"
-            [ngClass]="{
-              'focus:ring-[var(--color-brand)] focus:border-transparent': !hasError('requesterComments'),
-              'border-red-500 focus:ring-red-500 focus:border-red-500': hasError('requesterComments')
-            }"></textarea>
-          <p *ngIf="hasError('requesterComments')" class="mt-1 text-xs text-red-600">
-            {{ formErrors.requesterComments | translate }}
-          </p>
-        </div>
       </div>
-    </div>
-  </div>
-
-  <!-- Reserve Details Section - Only show if from allowance and there are selected items -->
-  <div *ngIf="fromReserve === 'Yes' && selectedCartridges.length > 0" class="mb-8">
-    <div class="flex items-center justify-between mb-6">
-      <h2 class="text-lg font-bold text-[var(--color-text)]">{{ 'newIssueRequest.reserveDetails' | translate }}</h2>
-      <span class="text-sm text-[var(--color-text-muted)]">
-        <span *ngIf="selectedCartridges.length > 0">
-          {{ 'newIssueRequest.showingForSelectedItems' | translate }}: {{ selectedCartridges.length }}
-        </span>
-        <span *ngIf="selectedCartridges.length === 0">
-          {{ 'newIssueRequest.showingAllAvailableItems' | translate }}
-        </span>
-      </span>
-    </div>
-
-    <!-- Per-Item Details Table -->
-    <div *ngIf="reserveDetailsByItem.length > 0" class="overflow-x-auto border border-[var(--color-border)] rounded-lg">
-      <table class="min-w-full text-sm">
-        <thead class="bg-[var(--color-background-muted)] text-[var(--color-text)]">
-          <tr>
-            <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.itemName' | translate }}</th>
-            <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.itemNo' | translate }}</th>
-            <th class="px-4 py-2 text-end font-semibold">{{ 'newIssueRequest.totalReserve' | translate }}</th>
-            <th class="px-4 py-2 text-end font-semibold">{{ 'newIssueRequest.availableReserve' | translate }}</th>
-            <th class="px-4 py-2 text-end font-semibold">{{ 'newIssueRequest.orderedQuantity' | translate }}</th>
-            <th class="px-4 py-2 text-end font-semibold">{{ 'newIssueRequest.usedQuantity' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let item of reserveDetailsByItem" class="border-t border-[var(--color-border)] transition-colors"
-            [ngClass]="{'bg-[var(--color-brand)]/10 border-s-4 border-s-[var(--color-brand)]': isItemSelected(item.itemId)}">
-            <td class="px-4 py-2 text-[var(--color-text)] min-w-0">
-              <div class="flex items-center gap-2 min-w-0">
-                <span *ngIf="isItemSelected(item.itemId)" class="w-2 h-2 shrink-0 rounded-full bg-[var(--color-brand)]"></span>
-                <span class="min-w-0" [appTableClampTooltip]="item.itemName">{{ item.itemName }}</span>
-              </div>
-            </td>
-            <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ item.itemNo }}</td>
-            <td class="px-4 py-2 text-end text-[var(--color-text)]">{{ item.totalReserve | number }}</td>
-            <td class="px-4 py-2 text-end text-[var(--color-text)]">{{ item.availableReserve | number }}</td>
-            <td class="px-4 py-2 text-end text-[var(--color-text)]">{{ item.orderedQuantity | number }}</td>
-            <td class="px-4 py-2 text-end text-[var(--color-text)]">{{ item.usedQuantity | number }}</td>
-          </tr>
-        </tbody>
-      </table>
     </div>
   </div>
 

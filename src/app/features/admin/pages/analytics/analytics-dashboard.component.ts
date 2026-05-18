@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { combineLatest, catchError, of } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, LayoutDashboard, TrendingUp, RefreshCw } from 'lucide-angular';
+import { LucideAngularModule, LayoutDashboard, TrendingUp } from 'lucide-angular';
 import { AdminAnalyticsService, InventoryMetrics, RequestMetrics } from '@admin/services/admin-analytics.service';
 import { LoggingService } from '@services/logging.service';
 import { InventoryOverviewCardComponent } from './components/kpi-cards/inventory-overview-card/inventory-overview-card.component';
@@ -43,12 +43,10 @@ import { createEcharts } from '@core/echarts.factory';
 export class AnalyticsDashboardComponent implements OnInit {
     // Icons
     readonly TrendingUp = TrendingUp;
-    readonly RefreshCw = RefreshCw;
     readonly LayoutDashboard = LayoutDashboard;
 
     // Loading states - using Signals
     isLoading = signal(true);
-    isRefreshing = signal(false);
 
     // Convert Observables to Signals using toSignal() with error handling
     private inventoryMetrics$ = this.adminAnalyticsService.getInventoryMetrics().pipe(
@@ -97,7 +95,6 @@ export class AnalyticsDashboardComponent implements OnInit {
             // Check if we have data (not initial null values)
             if (metrics && (metrics.inventory !== null || metrics.requests !== null)) {
                 this.isLoading.set(false);
-                this.isRefreshing.set(false);
             }
         }, { allowSignalWrites: true });
     }
@@ -107,14 +104,5 @@ export class AnalyticsDashboardComponent implements OnInit {
         this.adminAnalyticsService.startAutoRefresh();
         
         // Metrics are automatically loaded via toSignal() - no manual subscription needed!
-    }
-
-    /**
-     * Manually refresh all metrics
-     */
-    onRefresh(): void {
-        this.isRefreshing.set(true);
-        this.adminAnalyticsService.refresh();
-        // Loading state will be updated automatically by the effect
     }
 }

@@ -503,7 +503,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   /** Badge colours aligned with `getStatusMetadata` / dashboard card styling. */
   getHeaderStatusClass(): string {
     if (!this.requestDetail) {
-      return getRequestStatusBadgeClass('Pending');
+      return getRequestStatusBadgeClass('New');
     }
     const badgeKind = getStatusMetadata(this.requestDetail.rawStatus ?? this.requestDetail.status).badgeClass;
     return getRequestStatusBadgeClass(badgeKind);

@@ -1,357 +1,119 @@
-<div class="page-container max-w-5xl mx-auto px-4 sm:px-6">
-  <div class="space-y-6">
+<div class="page-wrapper">
+  <div class="page-container space-y-6">
+
     <!-- Header -->
     <div class="mb-6">
-      <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">{{ 'returnRequest.title' | translate }}</h1>
+      <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">
+        {{ 'returnRequest.title' | translate }}
+      </h1>
     </div>
 
-    <!-- Item Type Selection Buttons -->
-    <div data-onboarding="return-tabs"
-      class="bg-[var(--color-background)] rounded-lg p-2 shadow-sm border border-[var(--color-border)]">
-      <nav class="flex gap-1 overflow-x-auto scrollbar-hide px-1 py-1" aria-label="Item Type Tabs">
-        <button (click)="onItemTypeChange('Ammunition')" [ngClass]="{
-            'bg-[var(--color-brand)] text-white shadow-lg scale-105 active-tab': selectedItemType === 'Ammunition',
-            'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': selectedItemType !== 'Ammunition'
-          }"
-          class="flex items-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 flex-shrink-0 whitespace-nowrap relative overflow-hidden group">
-          <span class="relative z-10">{{ 'warehouseInventory.tabs.ammunition' | translate }}</span>
-          <div *ngIf="selectedItemType === 'Ammunition'"
-            class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer">
-          </div>
-        </button>
-        <button (click)="onItemTypeChange('Explosive')" [ngClass]="{
-            'bg-[var(--color-brand)] text-white shadow-lg scale-105 active-tab': selectedItemType === 'Explosive',
-            'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': selectedItemType !== 'Explosive'
-          }"
-          class="flex items-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 flex-shrink-0 whitespace-nowrap relative overflow-hidden group">
-          <span class="relative z-10">{{ 'warehouseInventory.tabs.explosive' | translate }}</span>
-          <div *ngIf="selectedItemType === 'Explosive'"
-            class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer">
-          </div>
-        </button>
-        <button (click)="onItemTypeChange('Weapon')" [ngClass]="{
-            'bg-[var(--color-brand)] text-white shadow-lg scale-105 active-tab': selectedItemType === 'Weapon',
-            'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]': selectedItemType !== 'Weapon'
-          }"
-          class="flex items-center gap-2 px-4 sm:px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200 ease-in-out transform hover:scale-102 flex-shrink-0 whitespace-nowrap relative overflow-hidden group">
-          <span class="relative z-10">{{ 'warehouseInventory.tabs.weapon' | translate }}</span>
-          <div *ngIf="selectedItemType === 'Weapon'"
-            class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer">
-          </div>
-        </button>
-      </nav>
-    </div>
+    <!-- Stepper -->
+    <app-stepper
+      [steps]="facade.stepperSteps"
+      [currentStep]="facade.stepperCurrentStep"
+      [animateWhenAmmunitionSelected]="false"
+      (stepChange)="facade.onStepperStepChange($event)">
+    </app-stepper>
 
-    <div class="bg-[var(--color-background-muted)] rounded-xl p-4 sm:p-8">
-      <form #returnForm="ngForm" (ngSubmit)="onSendRequest(returnForm)">
-        <div class="space-y-6 lg:max-w-4xl">
+    <!-- Prevent Enter in nested inputs (e.g. catalog search) from submitting the wizard and firing validation -->
+    <form (ngSubmit)="$event.preventDefault()">
 
-          <!-- Reason -->
-          <div class="flex flex-col lg:flex-row lg:items-start lg:gap-8 gap-2">
-            <span class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
-              {{ 'returnRequest.reason' | translate }}
-            </span>
-            <div class="flex-1">
-              <input type="text" [(ngModel)]="reason" name="reason"
-                [placeholder]="'returnRequest.enterReason' | translate"
-                class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] transition-all" />
-            </div>
-          </div>
+      <!-- Step 0: same catalog UX as new-issue (step-selection + cartridge list) -->
+      <app-step-selection *ngIf="facade.currentStep === 0"
+        [cartridgeState]="facade.cartridgeState"
+        [filterState]="facade.filterState"
+        [filterOptions]="facade.filterOptions"
+        [showPreviousButton]="false"
+        [fromReserve]="'No'"
+        [canProceed]="facade.canProceedFromSelection"
+        [selectedCartridges]="facade.selectedCartridges"
+        [displayedItemTypeOptions]="facade.displayedItemTypeOptions"
+        [serverSideCatalog]="true"
+        [catalogPagination]="facade.cartridgeState.catalogPagination"
+        [appliedSearchTerm]="facade.filterState.searchTerm"
+        (next)="facade.onNext()"
+        (previous)="facade.onPrevious()"
+        (retryLoad)="facade.retryLoadCartridges()"
+        (filterChange)="facade.onFilterSidebarChange()"
+        (applyCatalogSearch)="facade.applyCatalogSearch($event)"
+        (catalogPageNext)="facade.onCatalogPageNext()"
+        (catalogPagePrev)="facade.onCatalogPagePrev()"
+        (itemTypeChange)="facade.onStepSelectionItemTypeChange($event)"
+        (clearFilters)="facade.onClearFilters()"
+        (addSelection)="facade.onCartridgeAdded($event)"
+        (removeSelection)="facade.removeItem($event)">
+      </app-step-selection>
 
-          <!-- Priority -->
-          <div class="flex flex-col lg:flex-row lg:items-start lg:gap-8 gap-2">
-            <span class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
-              {{ 'returnRequest.priority' | translate }} <span class="text-[var(--color-error)]">*</span>
-            </span>
-            <div class="flex-1">
-              <app-dropdown class="w-full" [(ngModel)]="priority" name="priority" (ngModelChange)="onPriorityChange()"
-                [options]="priorityOptions" optionLabel="labelKey" optionValue="value" [translateLabels]="true"
-                [error]="hasError('priority')" placeholder="{{ 'returnRequest.priority' | translate }}">
-              </app-dropdown>
-              <p *ngIf="hasError('priority')" class="mt-1.5 text-xs text-[var(--color-error)]">
-                {{ getError('priority') }}
-              </p>
-            </div>
-          </div>
+      <!-- Step 1: Purpose, Notes & Attachments -->
+      <app-return-details-step *ngIf="facade.currentStep === 1"
+        [requestPurposeId]="facade.detailsState.requestPurposeId"
+        [requestPurposeNotes]="facade.detailsState.requestPurposeNotes"
+        [reason]="facade.detailsState.reason"
+        [priority]="facade.detailsState.priority"
+        [selectedFiles]="facade.detailsState.selectedFiles"
+        [selectedCartridges]="facade.selectedCartridges"
+        [requestPurposes]="facade.lookupState.requestPurposes"
+        [priorityOptions]="facade.priorityOptions"
+        [isLoadingRequestPurposes]="facade.lookupState.isLoadingRequestPurposes"
+        [isLoading]="facade.submissionState.isLoading"
+        [hasAttemptedSubmit]="facade.submissionState.hasAttemptedSubmit"
+        [hasError]="facade.hasError.bind(facade)"
+        [getError]="facade.getError.bind(facade)"
+        [requestPurposeOptionLabel]="facade.requestPurposeOptionLabel"
+        [getFileSize]="facade.getFileSize"
+        (requestPurposeIdChange)="facade.detailsState.requestPurposeId = $event; facade.onRequestPurposeChange()"
+        (requestPurposeNotesChange)="facade.detailsState.requestPurposeNotes = $event; facade.onRequestPurposeNotesChange()"
+        (reasonChange)="facade.detailsState.reason = $event"
+        (priorityChange)="facade.detailsState.priority = $event"
+        (filesSelected)="onFilesSelected($event)"
+        (fileRemoved)="onFileRemoved($event)"
+        (removeItem)="facade.removeItem($event)"
+        (previous)="facade.onPrevious()"
+        (next)="facade.onNext()">
+      </app-return-details-step>
 
-          <!-- Department -->
-          <div class="flex flex-col lg:flex-row lg:items-start lg:gap-8 gap-2">
-            <span class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
-              {{ 'returnRequest.department' | translate }} <span class="text-[var(--color-error)]">*</span>
-            </span>
-            <div class="flex-1">
-              <ng-container *ngIf="isDepartmentLocked; else departmentSelect">
-                <input type="text" [value]="lockedDepartmentName || ('returnRequest.selectDepartment' | translate)"
-                  class="w-full px-4 py-2.5 bg-[var(--color-background-active)] rounded-lg border border-dashed border-[var(--color-border)] text-sm text-[var(--color-text)] cursor-not-allowed"
-                  readonly />
-              </ng-container>
-              <ng-template #departmentSelect>
-                <app-dropdown class="w-full" [(ngModel)]="departmentId" name="departmentId"
-                  (ngModelChange)="onDepartmentChange()" [disabled]="isLoadingDepartments"
-                  [error]="hasError('departmentId')" [options]="departments" optionValue="id"
-                  [optionLabelFn]="departmentOptionLabel"
-                  [placeholder]="isLoadingDepartments ? ('common.loading' | translate) : ('returnRequest.selectDepartment' | translate)">
-                </app-dropdown>
-              </ng-template>
-              <p *ngIf="hasError('departmentId')" class="mt-1.5 text-xs text-[var(--color-error)]">
-                {{ getError('departmentId') }}
-              </p>
-            </div>
-          </div>
+      <!-- Step 2: Review & Submit -->
+      <app-return-review-step *ngIf="facade.currentStep === 2"
+        [selectedItemType]="facade.selectionState.selectedItemType"
+        [requesterName]="facade.currentRequesterName"
+        [requesterDepartment]="facade.currentRequesterDepartmentDisplay"
+        [reason]="facade.detailsState.reason"
+        [priority]="facade.detailsState.priority"
+        [requestPurposeName]="getRequestPurposeNameForReview()"
+        [requestPurposeNotes]="facade.detailsState.requestPurposeNotes"
+        [selectedFiles]="facade.detailsState.selectedFiles"
+        [selectedCartridges]="facade.selectedCartridges"
+        [getPriorityLabel]="facade.getPriorityLabel.bind(facade)"
+        [isLoading]="facade.submissionState.isLoading"
+        (previous)="facade.onPrevious()"
+        (submit)="facade.onSubmit()">
+      </app-return-review-step>
 
-          <!-- Requester -->
-          <div class="flex flex-col lg:flex-row lg:items-start lg:gap-8 gap-2">
-            <span class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
-              {{ 'returnRequest.requester' | translate }}
-            </span>
-            <div class="flex-1">
-              <ng-container *ngIf="isRequesterLocked; else requesterSelect">
-                <input type="text" [value]="lockedRequesterName || currentUserDetails?.userName || ''"
-                  class="w-full px-4 py-2.5 bg-[var(--color-background-active)] rounded-lg border border-dashed border-[var(--color-border)] text-sm text-[var(--color-text)] cursor-not-allowed"
-                  readonly />
-              </ng-container>
-              <ng-template #requesterSelect>
-                <app-dropdown class="w-full" [(ngModel)]="requesterId" name="requesterId"
-                  [disabled]="isLoadingRequesters" [options]="requesters" optionValue="id"
-                  [optionLabelFn]="requesterOptionLabel"
-                  [placeholder]="isLoadingRequesters ? ('common.loading' | translate) : ('returnRequest.selectRequester' | translate)">
-                </app-dropdown>
-              </ng-template>
-            </div>
-          </div>
+      <!-- Step 3: Success — same layout/behaviour as new issue `app-order-success` -->
+      <app-order-success *ngIf="facade.currentStep === 3"
+        [titleTranslateKey]="'returnRequest.success.orderSentSuccessfully'"
+        [orderNumberLabelKey]="'returnRequest.success.requestNumber'"
+        [trackButtonTranslateKey]="'returnRequest.success.trackRequest'"
+        [orderNumber]="facade.successState.returnNumber"
+        [createdOrderId]="facade.successState.createdReturnId"
+        (trackOrder)="facade.onTrackReturn()">
+      </app-order-success>
 
-          <!-- Purpose -->
-          <div class="flex flex-col lg:flex-row lg:items-start lg:gap-8 gap-2">
-            <span class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
-              {{ 'returnRequest.requestPurpose' | translate }} <span class="text-[var(--color-error)]">*</span>
-            </span>
-            <div class="flex-1">
-              <app-dropdown class="w-full" [(ngModel)]="requestPurposeId" name="requestPurposeId"
-                (ngModelChange)="onRequestPurposeChange()" [disabled]="isLoadingRequestPurposes"
-                [error]="hasError('requestPurposeId')" [options]="requestPurposes" optionValue="id"
-                [optionLabelFn]="requestPurposeOptionLabel"
-                [placeholder]="isLoadingRequestPurposes ? ('common.loading' | translate) : ('returnRequest.selectRequestPurpose' | translate)">
-              </app-dropdown>
-              <p *ngIf="hasError('requestPurposeId')" class="mt-1.5 text-xs text-[var(--color-error)]">
-                {{ getError('requestPurposeId') }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Request Purpose Notes (required when purpose selected) -->
-          <div *ngIf="requestPurposeId" class="flex flex-col lg:flex-row lg:items-start lg:gap-8 gap-2">
-            <span class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
-              {{ 'returnRequest.requestPurposeNotes' | translate }} <span class="text-[var(--color-error)]">*</span>
-            </span>
-            <div class="flex-1">
-              <textarea [(ngModel)]="requestPurposeNotes" name="requestPurposeNotes" rows="3"
-                (ngModelChange)="onRequestPurposeNotesChange()"
-                [placeholder]="'returnRequest.requestPurposeNotesPlaceholder' | translate"
-                class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] resize-none transition-all"></textarea>
-              <p *ngIf="hasError('requestPurposeNotes')" class="mt-1.5 text-xs text-[var(--color-error)]">
-                {{ getError('requestPurposeNotes') }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Notes -->
-          <div class="flex flex-col lg:flex-row lg:items-start lg:gap-8 gap-2">
-            <span class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
-              {{ 'returnRequest.notes' | translate }}
-            </span>
-            <div class="flex-1">
-              <textarea [(ngModel)]="notes" name="notes" rows="3" [placeholder]="'returnRequest.enterNotes' | translate"
-                class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] resize-none transition-all"></textarea>
-            </div>
-          </div>
-
-          <!-- Attachments -->
-          <div class="flex flex-col lg:flex-row lg:items-start lg:gap-8 gap-2">
-            <span class="text-sm font-medium text-[var(--color-text-muted)] lg:w-40 lg:shrink-0 lg:pt-2.5">
-              {{ 'common.attachments' | translate }} <span class="text-[var(--color-error)]">*</span>
-            </span>
-            <div class="flex-1">
-              <div class="space-y-3">
-                <div class="flex flex-wrap items-center gap-3">
-                  <input type="file" #fileInput (change)="onFilesSelected($event)" multiple
-                    accept=".pdf,.docx" class="hidden">
-                  <button type="button" (click)="fileInput.click()"
-                    class="px-4 py-2 rounded-lg text-sm font-medium bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand)]/90 cursor-pointer transition-all">
-                    {{ 'common.chooseFiles' | translate }}
-                  </button>
-                  <span class="text-sm text-[var(--color-text-muted)] truncate max-w-xs">
-                    <span *ngIf="selectedFiles.length === 0">{{ 'common.noFileChosen' | translate }}</span>
-                    <span *ngIf="selectedFiles.length > 0">{{ selectedFiles.length }} {{ selectedFiles.length === 1 ?
-                      ('common.file' | translate) : ('common.files' | translate) }}</span>
-                  </span>
-                </div>
-
-                <!-- Selected Files List -->
-                <div *ngIf="selectedFiles.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <div *ngFor="let file of selectedFiles; let i = index"
-                    class="flex items-center justify-between p-2 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)]">
-                    <div class="flex-1 min-w-0">
-                      <p class="text-sm font-medium text-[var(--color-text)] truncate">{{ file.name }}</p>
-                      <p class="text-xs text-[var(--color-text-muted)]">{{ getFileSize(file) }}</p>
-                    </div>
-                    <button type="button" (click)="removeFile(i)" [disabled]="isLoading"
-                      class="ms-3 p-1 text-[var(--color-error)] hover:opacity-80 transition-colors">
-                      <lucide-angular [img]="X" class="h-5 w-5"></lucide-angular>
-                    </button>
-                  </div>
-                </div>
-
-                <div class="space-y-1">
-                  <p *ngIf="!hasError('selectedFiles')" class="text-xs text-[var(--color-text-muted)]">
-                    {{ 'returnRequest.errors.filesRequired' | translate }}
-                  </p>
-                  <p *ngIf="hasError('selectedFiles')" class="text-xs font-medium text-[var(--color-error)]">
-                    {{ getError('selectedFiles') }}
-                  </p>
-                  <p class="text-xs text-[var(--color-text-muted)] font-medium">
-                    {{ 'common.maximumFileSize' | translate: {size: MAX_FILE_SIZE_MB} }}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Return Items Section -->
-          <div class="border-t border-[var(--color-border)] pt-8">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-              <span class="text-base font-bold text-[var(--color-text)]">
-                {{ 'returnRequest.returnItems' | translate }} <span class="text-[var(--color-error)]">*</span>
-              </span>
-              <button type="button" (click)="addReturnItem()"
-                class="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-[var(--color-brand)]/10 text-[var(--color-brand)] hover:bg-[var(--color-brand)]/20 rounded-lg transition-all">
-                <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
-                {{ 'returnRequest.addItem' | translate }}
-              </button>
-            </div>
-
-            <div *ngIf="hasError('returnItems')"
-              class="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg text-xs font-medium text-[var(--color-error)]">
-              {{ getError('returnItems') }}
-            </div>
-
-            <div class="space-y-4">
-              <div *ngFor="let item of returnItems; let i = index"
-                class="bg-[var(--color-background)] rounded-xl p-4 sm:p-6 border-2 border-[var(--color-border)] hover:border-[var(--color-brand)]/30 transition-all">
-                <div class="flex items-center justify-between mb-6">
-                  <div class="flex items-center gap-3">
-                    <span
-                      class="flex items-center justify-center w-6 h-6 rounded-full bg-[var(--color-brand)] text-white text-xs font-bold">
-                      {{ i + 1 }}
-                    </span>
-                    <h4 class="text-sm font-bold text-[var(--color-text)] tracking-wider">
-                      {{ 'returnRequest.item' | translate }}
-                    </h4>
-                  </div>
-                  <button *ngIf="returnItems.length > 1" type="button" (click)="removeReturnItem(i)"
-                    class="p-2 text-[var(--color-error)] hover:bg-red-50 rounded-lg transition-colors">
-                    <lucide-angular [img]="X" class="h-5 w-5"></lucide-angular>
-                  </button>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <!-- Item Selection -->
-                  <div class="sm:col-span-2 lg:col-span-1">
-                    <span class="block text-xs font-bold text-[var(--color-text-muted)] mb-2">
-                      {{ 'returnRequest.item' | translate }} <span class="text-[var(--color-error)]">*</span>
-                    </span>
-                    <div class="relative" #itemDropdown>
-                      <button type="button" (click)="toggleItemDropdown(i); $event.stopPropagation()"
-                        [disabled]="itemCatalog.loading"
-                        class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] disabled:bg-[var(--color-background-active)] flex items-center justify-between transition-all hover:border-[var(--color-brand)]"
-                        [class.border-[var(--color-error)]]="hasError('returnItem_' + i + '_itemId')"
-                        [class.opacity-60]="itemCatalog.loading">
-                        <span class="truncate pr-4">
-                          {{ getSelectedItemLabel(i) || (itemCatalog.loading ? ('common.loading' | translate) :
-                          ('returnRequest.selectItem' | translate)) }}
-                        </span>
-                        <lucide-angular [img]="ChevronDown" class="h-4 w-4 shrink-0 transition-transform"
-                          [class.rotate-180]="itemDropdownOpen[i]"></lucide-angular>
-                      </button>
-
-                      <div *ngIf="itemDropdownOpen[i]"
-                        class="absolute z-50 mt-2 w-full bg-[var(--color-background)] rounded-xl shadow-2xl border border-[var(--color-border)] overflow-hidden">
-                        <div class="p-3 bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
-                          <input type="text" [(ngModel)]="itemCatalog.searchTerm"
-                            [ngModelOptions]="{ standalone: true }"
-                            [placeholder]="'lookupManagement.searchPlaceholder' | translate"
-                            class="w-full px-3 py-2 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none"
-                            (click)="$event.stopPropagation()"
-                            (keydown.escape)="closeItemDropdown(i)"
-                            (ngModelChange)="itemCatalog.onRemoteSearch($event)" />
-                        </div>
-                        <div class="max-h-60 overflow-y-auto" (scroll)="itemCatalog.onScrollNearEnd($event)">
-                          <button *ngFor="let itemOption of itemCatalog.items" type="button"
-                            (click)="onItemSelect(i, itemOption)"
-                            class="w-full text-start px-4 py-3 text-sm hover:bg-[var(--color-brand)]/5 transition-colors border-b border-[var(--color-border)] last:border-0"
-                            [ngClass]="{'bg-[var(--color-brand)]/10': isOptionSelected(itemOption, returnItems[i].itemId)}">
-                            <span class="block font-semibold text-[var(--color-text)]">{{ getItemOptionLabel(itemOption)
-                              }}</span>
-                            <span class="block text-xs text-[var(--color-text-muted)] mt-0.5">{{ itemOption.itemNo
-                              }}</span>
-                          </button>
-                          <div *ngIf="itemCatalog.loadingMore"
-                            class="px-4 py-3 text-xs text-center text-[var(--color-text-muted)] border-t border-[var(--color-border)]">
-                            {{ 'common.loading' | translate }}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <p *ngIf="hasError('returnItem_' + i + '_itemId')"
-                      class="mt-1.5 text-xs text-[var(--color-error)] font-medium">
-                      {{ getError('returnItem_' + i + '_itemId') }}
-                    </p>
-                  </div>
-
-                  <!-- Quantity -->
-                  <div>
-                    <label class="block text-xs font-bold text-[var(--color-text-muted)] mb-2" for="return-request-fld-11-11">
-                      {{ 'returnRequest.quantity' | translate }} <span class="text-[var(--color-error)]">*</span>
-                    </label>
-                    <input id="return-request-fld-11-11" type="number" [(ngModel)]="item.quantity" [name]="'quantity_' + i"
-                      (ngModelChange)="onQuantityChange(i)" (keydown)="onQuantityKeydown($event)" min="1"
-                      [placeholder]="'returnRequest.enterQuantity' | translate"
-                      [class.border-[var(--color-error)]]="hasError('returnItem_' + i + '_quantity')"
-                      class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
-                    <p *ngIf="hasError('returnItem_' + i + '_quantity')"
-                      class="mt-1.5 text-xs text-[var(--color-error)] font-medium">
-                      {{ getError('returnItem_' + i + '_quantity') }}
-                    </p>
-                  </div>
-
-                  <!-- Item Notes -->
-                  <div>
-                    <label class="block text-xs font-bold text-[var(--color-text-muted)] mb-2" for="return-request-fld-12-12">
-                      {{ 'returnRequest.itemNotes' | translate }}
-                    </label>
-                    <input id="return-request-fld-12-12" type="text" [(ngModel)]="item.notes" [name]="'notes_' + i"
-                      [placeholder]="'returnRequest.itemNotesPlaceholder' | translate"
-                      class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm focus:ring-2 focus:ring-[var(--color-brand)] outline-none" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Submit Action -->
-          <div class="flex flex-col items-center pt-8 border-t border-[var(--color-border)]">
-            <app-button type="submit" variant="primary" size="md" class="w-full sm:w-auto sm:px-8"
-              [disabled]="isLoading">
-              <div class="flex items-center gap-2">
-                {{ isLoading ? ('common.loading' | translate) : ('returnRequest.sendRequest' | translate) }}
-              </div>
-            </app-button>
-          </div>
-        </div>
-      </form>
-    </div>
+    </form>
   </div>
-</div>
 
-<app-confirmation-dialog [isOpen]="showConfirmDialog" [title]="confirmDialogTitle" [message]="confirmDialogMessage"
-  [type]="confirmDialogType" [confirmText]="confirmDialogConfirmText" [cancelText]="confirmDialogCancelText"
-  [closeOnBackdrop]="true" (confirmed)="onConfirmSubmit()" (cancelled)="onCancelConfirm()"></app-confirmation-dialog>
+  <!-- Confirmation Dialog -->
+  <app-confirmation-dialog
+    [isOpen]="facade.confirmDialogConfig.show"
+    [title]="facade.confirmDialogConfig.title"
+    [message]="facade.confirmDialogConfig.message"
+    [type]="facade.confirmDialogConfig.type"
+    [confirmText]="facade.confirmDialogConfig.confirmText"
+    [cancelText]="facade.confirmDialogConfig.cancelText"
+    [closeOnBackdrop]="true"
+    (confirmed)="facade.onConfirmSubmit()"
+    (cancelled)="facade.onCancelConfirm()">
+  </app-confirmation-dialog>
+
+</div>

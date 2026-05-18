@@ -1,22 +1,18 @@
 <div class="page-wrapper">
-  <!-- Header: back (start) · title (end / top-right in LTR) -->
+  <!-- Header: icon back beside title -->
   <div class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
     <div class="page-container py-4">
-      <div class="flex flex-col items-start">
+      <div class="flex items-start gap-3 min-w-0">
         <button
           type="button"
           (click)="onCancel()"
-          class="detail-header-back-btn"
+          class="detail-header-back-btn detail-header-back-btn--icon-only shrink-0 mt-1"
           [attr.aria-label]="'addInventory.backToInventory' | translate">
           <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
-          <span class="font-medium">{{ 'addInventory.backToInventory' | translate }}</span>
         </button>
-        <div class="text-left sm:text-left sm:max-w-2xl min-w-0 mt-8">
-          <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)] mb-2 break-words">
-            {{ 'addInventory.add' | translate }} {{ (activeTab === 'ammunition' ? ('warehouseInventory.tabs.ammunition' | translate) : ('warehouseInventory.tabs.explosive' | translate)) }} {{ 'addInventory.to' | translate }} {{ warehouseName }}
-          </h1>
-         
-        </div>
+        <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)] break-words min-w-0">
+          {{ 'addInventory.add' | translate }} {{ (activeTab === 'ammunition' ? ('warehouseInventory.tabs.ammunition' | translate) : ('warehouseInventory.tabs.explosive' | translate)) }} {{ 'addInventory.to' | translate }} {{ warehouseName }}
+        </h1>
       </div>
     </div>
   </div>
@@ -257,13 +253,7 @@
                 </div>
               </div>
 
-              <p class="text-xs text-[var(--color-text-muted)]">
-                {{ 'common.attachmentsHintOptional' | translate }}
-              </p>
-              <p class="text-xs text-[var(--color-text-muted)] font-medium">
-                {{ 'common.maximumFileSize' | translate: { size: 30 } }}
-              </p>
-            </div>
+              </div>
           </div>
         </div>
       </div>

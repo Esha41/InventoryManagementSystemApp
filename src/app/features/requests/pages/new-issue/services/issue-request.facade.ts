@@ -20,6 +20,7 @@ import { UserContextService } from '@services/user-context.service';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { getWeaponTypeOptions } from '@utils/weapon.utils';
 import { getExplosiveTypeOptions } from '@utils/explosive.utils';
+import { scrollShellContentToTop } from '@utils/scroll-shell-content-to-top.util';
 import { DropdownOption } from '@components/dropdown/dropdown.component';
 import { ONBOARDING_TOUR } from '@core/tokens/onboarding-tour.token';
 import { IOnboardingTourProvider } from '@core/interfaces/onboarding-tour-provider.interface';
@@ -65,6 +66,7 @@ import {
   computeOrderedQuantity,
   computeUsedQuantity,
   resolveCurrentRequesterName,
+  resolveRequesterDepartmentDisplay,
   syncRequesterNameFromUserDetails as syncRequesterNameUtil,
   hasWeaponInSelection,
   getDisplayedItemTypeOptions,
@@ -218,6 +220,14 @@ export class IssueRequestFacade {
       this.userContextState.currentUserDetails,
       this.userContextState.fallbackRequesterName,
       this.reviewFormData.requesterName,
+      lang
+    );
+  }
+
+  get currentRequesterDepartmentDisplay(): string {
+    const lang = this.translate.currentLang || this.translate.defaultLang || 'en';
+    return resolveRequesterDepartmentDisplay(
+      this.userContextState.currentUserDetails,
       lang
     );
   }
@@ -396,6 +406,7 @@ export class IssueRequestFacade {
       this.onLoadWeaponAssociationStep();
     }
     this.cdr.markForCheck();
+    scrollShellContentToTop();
   }
 
   onConfirmAllowanceSelection(): void {
@@ -406,6 +417,7 @@ export class IssueRequestFacade {
     this.currentStep = 1;
     this.updateQueryParams(1);
     this.cdr.markForCheck();
+    scrollShellContentToTop();
     this.loadCartridges();
   }
 
@@ -428,6 +440,7 @@ export class IssueRequestFacade {
       }
       this.updateQueryParams(this.currentStep);
       this.cdr.markForCheck();
+      scrollShellContentToTop();
       return;
     }
 
@@ -437,6 +450,7 @@ export class IssueRequestFacade {
       this.currentStep = 3;
       this.updateQueryParams(3);
       this.cdr.markForCheck();
+      scrollShellContentToTop();
       return;
     }
 
@@ -450,6 +464,7 @@ export class IssueRequestFacade {
       this.currentStep++;
       this.updateQueryParams(this.currentStep);
       this.cdr.markForCheck();
+      scrollShellContentToTop();
     }
   }
 
@@ -461,6 +476,7 @@ export class IssueRequestFacade {
     }
     this.updateQueryParams(this.currentStep);
     this.cdr.markForCheck();
+    scrollShellContentToTop();
   }
 
   onLoadWeaponAssociationStep(): void {
@@ -652,6 +668,7 @@ export class IssueRequestFacade {
       this.currentStep = 4;
       this.updateQueryParams(4);
       this.cdr.markForCheck();
+      scrollShellContentToTop();
       return;
     }
 
@@ -675,18 +692,21 @@ export class IssueRequestFacade {
         this.currentStep = 5;
         this.updateQueryParams(5);
         this.cdr.markForCheck();
+        scrollShellContentToTop();
       },
       onValidationFailure: (message) => {
         this.orderSubmissionState.orderSubmitError = message;
         this.currentStep = 4;
         this.updateQueryParams(4);
         this.cdr.markForCheck();
+        scrollShellContentToTop();
       },
       onTransportError: (message) => {
         this.orderSubmissionState.orderSubmitError = message;
         this.currentStep = 4;
         this.updateQueryParams(4);
         this.cdr.markForCheck();
+        scrollShellContentToTop();
       }
     });
   }
@@ -766,6 +786,7 @@ export class IssueRequestFacade {
       }
       if (params.step === 4) this.syncRequesterNameFromUserDetails();
       this.cdr.markForCheck();
+      scrollShellContentToTop();
     });
   }
 
@@ -849,5 +870,6 @@ export class IssueRequestFacade {
     this.pendingSelections = null;
     this.weaponAssociationState = createInitialWeaponAssociationState();
     this.syncRequesterNameFromUserDetails();
+    scrollShellContentToTop();
   }
 }

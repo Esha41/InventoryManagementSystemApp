@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, FileDown, Printer, ArrowRight, ArrowLeft } from 'lucide-angular';
+import { LucideAngularModule, FileDown, Printer, ArrowLeft, ArrowRight } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { OrderDto } from '@models/order.model';
@@ -55,8 +55,8 @@ export class OrderReportComponent implements OnInit, OnDestroy {
 
   readonly FileDown = FileDown;
   readonly Printer = Printer;
-  readonly ArrowRight = ArrowRight;
   readonly ArrowLeft = ArrowLeft;
+  readonly ArrowRight = ArrowRight;
 
   private destroy$ = new Subject<void>();
   private searchDebounce$ = new Subject<void>();
@@ -240,11 +240,22 @@ export class OrderReportComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // user-action API already returns full order details; use the cached entry
-    this.mapOrderToReport(request);
-    this.generateQrCode();
-    this.detailsLoading = false;
-    this.cdr.markForCheck();
+    this.orderReportService
+      .loadRequestDetailForReport(request)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (fullRequest) => {
+          const index = this.orders.findIndex(r => r.id === id);
+          if (index >= 0) {
+            this.orders[index] = fullRequest;
+            this.filteredOrders = [...this.orders];
+          }
+          this.mapOrderToReport(fullRequest);
+          this.generateQrCode();
+          this.detailsLoading = false;
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   private mapOrderToReport(order: OrderDto): void {

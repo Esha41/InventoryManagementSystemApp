@@ -14,6 +14,7 @@
       "otherOption": "Other (not in catalog)",
       "selectWeapon": "Select a weapon...",
       "selectWeapons": "Select weapons...",
+      "searchWeapons": "Search weapons...",
       "weaponsLinked": "{{count}} weapon(s) linked",
       "weaponName": "Weapon name",
       "weaponNamePlaceholder": "Enter weapon name",
@@ -27,7 +28,8 @@
       "viewAllWeapons": "View all weapons",
       "viewCompatibleOnly": "View compatible only",
       "compatibleWeapons": "Compatible",
-      "weaponListScope": "Weapon list scope"
+      "weaponListScope": "Weapon list scope",
+      "selectOptionHint": "Choose Compatible, View all weapons, or Other to associate a weapon with this ammunition line."
     },
     "selectOrderSource": "Select Order Source",
     "selectOrderSourceDescription": "Choose whether you want to order from your department's allowance or from all available ammunition",
@@ -179,6 +181,7 @@
     "submit": "Submit",
     "clearFilters": "Clear Filters",
     "name": "Name",
+    "department": "Department",
     "comments": "Comments",
     "yes": "Yes",
     "no": "No",

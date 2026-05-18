@@ -42,8 +42,6 @@
       <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
         {{ 'newIssueRequest.attachments' | translate }}
         <span *ngIf="canCancelRequest() && !canApproveOrRejectForWorkflow()" class="text-[var(--color-error)]">*</span>
-        <span *ngIf="!(canCancelRequest() && !canApproveOrRejectForWorkflow())" class="text-[var(--color-text-muted)] font-normal">({{
-          'common.optional' | translate }})</span>
       </span>
       <div class="space-y-3">
         <!-- File Input -->
@@ -81,16 +79,9 @@
           </div>
         </div>
 
-        <!-- Helper Text -->
-        <p class="text-xs text-[var(--color-text-muted)]">
-          {{ 'newIssueRequest.attachmentsHint' | translate }}
-        </p>
         <p *ngIf="showCancelAttachmentsValidation && canCancelRequest() && approvalFiles.length === 0"
           class="text-xs text-[var(--color-error)] font-medium">
           {{ 'workflowApprovalDetail.errors.cancelAttachmentsRequired' | translate }}
-        </p>
-        <p class="text-xs text-[var(--color-text-muted)] font-medium">
-          {{ 'common.maximumFileSize' | translate: {size: MAX_FILE_SIZE_MB} }}
         </p>
       </div>
     </div>
@@ -98,8 +89,7 @@
     <!-- Comments Textarea -->
     <div>
       <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="workflow-approval-actions-fld-4-4">
-        {{ 'workflowApprovalDetail.comments' | translate }} <span class="text-[var(--color-text-muted)] font-normal">({{
-          'common.optional' | translate }})</span>
+        {{ 'workflowApprovalDetail.comments' | translate }}
       </label>
       <textarea id="workflow-approval-actions-fld-4-4" [(ngModel)]="comments" [disabled]="processing || isProcessingAction" rows="4"
         [placeholder]="'workflowApprovalDetail.enterComments' | translate"

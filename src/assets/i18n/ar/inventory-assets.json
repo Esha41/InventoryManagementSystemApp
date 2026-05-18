@@ -210,7 +210,7 @@
     },
     "placeholders": {
       "name": "أدخل اسم الماده",
-      "itemNo": "أدخل رقم مادة",
+      "itemNo": "أدخل رقم المادة",
       "partNo": "Enter part number",
       "nsn": "أدخل NSN",
       "price": "أدخل السعر",
@@ -296,8 +296,7 @@
       "moreColumnFilters": "فلاتر إضافية",
       "hideColumnFilters": "إخفاء الفلاتر الإضافية",
       "applyColumnFilters": "تطبيق الفلاتر الإضافية",
-      "clearColumnFilters": "مسح الفلاتر الإضافية",
-      "columnFiltersHint": "فلاتر إضافية حسب الحقول. تُدمج مع مربع البحث والقوائم (يجب أن تتحقق كل الشروط). اضغط Enter أو تطبيق للبحث."
+      "clearColumnFilters": "مسح الفلاتر الإضافية"
     },
     "sort": {
       "nameAsc": "الاسم (أ-ي)",
@@ -329,6 +328,7 @@
       "status": "الحالة",
       "price": "السعر",
       "minimumQuantity": "الحد الأدنى للكمية",
+      "criticalQuantity": "الكمية الحرجة",
       "actions": "الإجراءات"
     },
     "actions": {
@@ -337,7 +337,7 @@
       "permanentDelete": "حذف نهائي"
     },
     "noItems": "لم يتم العثور على أي مواد",
-    "noItemsDescription": "حاول تعديل الفلاتر أو إضافة مودة جديدة",
+    "noItemsDescription": "حاول تعديل الفلاتر أو إضافة مادة جديدة",
     "noAmmunitionItems": "لم يتم العثور على مواد ذخيرة",
     "noWeaponItems": "لم يتم العثور على مواد أسلحة",
     "noExplosiveItems": "لم يتم العثور على مواد متفجرات",

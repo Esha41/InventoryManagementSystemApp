@@ -61,6 +61,11 @@
       <app-workflow-request-information [requestDetail]="requestDetail" [orderFiles]="orderFiles" [destroy$]="destroy$">
       </app-workflow-request-information>
 
+      <!-- Request Items -->
+      <app-workflow-request-items [requestDetail]="requestDetail" (reviewClick)="openWeaponReviewItemsModal()"
+        (historyClick)="openItemTracking($event)">
+      </app-workflow-request-items>
+
       <ng-container *ngIf="showWorkflowSupplySummarySection()">
         <div class="pt-3 sm:pt-5">
           <app-workflow-supply-summary [orderId]="requestId" [destroy$]="destroy$"
@@ -69,14 +74,11 @@
         </div>
       </ng-container>
 
-      <!-- Request Items -->
-      <app-workflow-request-items [requestDetail]="requestDetail" (reviewClick)="openWeaponReviewItemsModal()"
-        (historyClick)="openItemTracking($event)">
-      </app-workflow-request-items>
-
-      <!-- Approval Workflow Timeline -->
-      <app-workflow-approval-timeline [requestDetail]="requestDetail" [destroy$]="destroy$">
-      </app-workflow-approval-timeline>
+      <div [class.pt-3]="showWorkflowSupplySummarySection()" [class.sm:pt-5]="showWorkflowSupplySummarySection()">
+        <!-- Approval Workflow Timeline -->
+        <app-workflow-approval-timeline [requestDetail]="requestDetail" [destroy$]="destroy$">
+        </app-workflow-approval-timeline>
+      </div>
     </div>
 
     <!-- Sidebar: gap-6 between cards (flex gap works reliably with Angular host elements) -->

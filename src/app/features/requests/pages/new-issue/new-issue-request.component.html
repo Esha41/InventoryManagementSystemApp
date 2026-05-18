@@ -71,7 +71,6 @@
 
     <!-- Step 3: Usage -->
     <app-usage-form *ngIf="facade.currentStep === 3"
-      [fromReserve]="facade.fromReserve"
       [usePurpose]="facade.usageFormData.usePurpose"
       [selectedUsePurposeId]="facade.requestPurposeState.selectedRequestPurposeId"
       [usePurposeOptions]="facade.displayedUsePurposeOptions"
@@ -83,13 +82,7 @@
       [usageDateTo]="facade.usageFormData.usageDateTo"
       [usageTimeTo]="facade.usageFormData.usageTimeTo"
       [requestPurposeNotes]="facade.usageFormData.requestPurposeNotes"
-      [requesterComments]="facade.reviewFormData.requesterComments"
       [selectedFiles]="facade.usageFormFiles"
-      [totalReserve]="facade.selectedTotalReserve"
-      [availableReserve]="facade.selectedAvailableReserve"
-      [orderedQuantity]="facade.selectedOrderedQuantity"
-      [usedQuantity]="facade.selectedUsedQuantity"
-      [reserveDetailsByItem]="facade.selectedItemsReserveDetails"
       [selectedCartridges]="facade.selectedCartridges"
       (removeCartridge)="facade.onRemoveSelectedCartridge($event)"
       (usePurposeChange)="facade.usageFormData.usePurpose = $event"
@@ -102,7 +95,6 @@
       (usageDateToChange)="facade.usageFormData.usageDateTo = $event"
       (usageTimeToChange)="facade.usageFormData.usageTimeTo = $event"
       (requestPurposeNotesChange)="facade.usageFormData.requestPurposeNotes = $event"
-      (requesterCommentsChange)="facade.reviewFormData.requesterComments = $event"
       (filesChange)="facade.usageFormFiles = $event"
       (previous)="facade.onPrevious()"
       (next)="facade.onNext()">
@@ -111,7 +103,7 @@
     <!-- Step 4: Review -->
     <app-review-form *ngIf="facade.currentStep === 4"
       [requesterName]="facade.currentRequesterName"
-      [requesterComments]="facade.reviewFormData.requesterComments"
+      [requesterDepartment]="facade.currentRequesterDepartmentDisplay"
       [fromReserve]="facade.fromReserve"
       [usePurpose]="facade.usageFormData.usePurpose"
       [requestPurposeNotes]="facade.usageFormData.requestPurposeNotes"

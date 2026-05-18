@@ -61,8 +61,6 @@ export interface CatalogPaginationState {
 export interface CartridgeState {
   allCartridges: Cartridge[];
   filteredCartridges: Cartridge[];
-  selectedCartridgeForView: Cartridge | null;
-  showCartridgeDetails: boolean;
   loadingCartridges: boolean;
   /** True while fetching another page (full catalog only); list stays visible with overlay. */
   catalogPageLoading: boolean;
@@ -130,7 +128,6 @@ export interface OrderSubmissionState {
 
 export interface ReviewFormData {
   requesterName: string;
-  requesterComments: string;
   orderType: string;
   orderDocument: string;
 }
@@ -198,8 +195,6 @@ export function createInitialCartridgeState(): CartridgeState {
   return {
     allCartridges: [],
     filteredCartridges: [],
-    selectedCartridgeForView: null,
-    showCartridgeDetails: false,
     loadingCartridges: false,
     catalogPageLoading: false,
     cartridgeError: null,
@@ -267,7 +262,6 @@ export function createInitialOrderSubmissionState(): OrderSubmissionState {
 export function createInitialReviewFormData(): ReviewFormData {
   return {
     requesterName: '',
-    requesterComments: '',
     orderType: 'New Issue Request',
     orderDocument: ''
   };

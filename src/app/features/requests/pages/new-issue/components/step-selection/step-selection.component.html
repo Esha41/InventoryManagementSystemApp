@@ -10,19 +10,9 @@
     messageClass="text-sm text-[var(--color-error)]" (action)="retryLoad.emit()">
 </app-error-state>
 
-<!-- Cartridge Details View -->
-<app-asset-details
-    *ngIf="!cartridgeState.loadingCartridges && !cartridgeState.cartridgeError && cartridgeState.showCartridgeDetails && cartridgeState.selectedCartridgeForView"
-    [assetId]="cartridgeState.selectedCartridgeForView.id"
-    [assetType]="getAssetType(cartridgeState.selectedCartridgeForView)"
-    [isPage]="false"
-    [showInlineHeader]="true"
-    (close)="onCloseCartridgeDetails()">
-</app-asset-details>
-
 <!-- Cartridge List View -->
 <app-cartridge-list
-    *ngIf="(!cartridgeState.loadingCartridges || cartridgeState.catalogPageLoading) && !cartridgeState.cartridgeError && !cartridgeState.showCartridgeDetails"
+    *ngIf="(!cartridgeState.loadingCartridges || cartridgeState.catalogPageLoading) && !cartridgeState.cartridgeError"
     [cartridges]="cartridgeState.filteredCartridges" [itemTypeOptions]="displayedItemTypeOptions"
     [ammunitionTypeOptions]="filterOptions.ammunitionTypeOptions" [bulletDiameters]="filterOptions.bulletDiameters"
     [linkedOptions]="filterOptions.linkedOptions" [natureOptions]="filterOptions.natureOptions"
@@ -38,7 +28,8 @@
     [serverSideCatalog]="serverSideCatalog" [catalogPagination]="catalogPagination"
     [appliedSearchTerm]="appliedSearchTerm"
     [catalogPageLoading]="serverSideCatalog && cartridgeState.catalogPageLoading"
-    (cartridgeClick)="onCartridgeClick($event)" (allowanceError)="onAllowanceError($event)"
+    [showPreviousButton]="showPreviousButton"
+    (allowanceError)="onAllowanceError($event)"
     (itemTypeValidationError)="onAllowanceError($event)" (addSelection)="addSelection.emit($event)"
     (filterChange)="filterChange.emit()" (clearFilters)="clearFilters.emit()" (next)="next.emit()"
     (previous)="previous.emit()" (searchChange)="onSearchChange($event)" (itemTypeChange)="onItemTypeChange($event)"

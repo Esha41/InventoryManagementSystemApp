@@ -180,7 +180,7 @@ export class IssueRequestSubmissionService {
       usageLocation: ctx.usageFormData.usageLocation,
       numberOfOfficers: ctx.usageFormData.numberOfOfficers,
       numberOfOtherRanks: ctx.usageFormData.numberOfOtherRanks,
-      requesterComments: ctx.reviewFormData.requesterComments,
+      requesterComments: '',
       fromReserve: ctx.fromReserve,
       departmentId: getDepartmentIdForRequestUtil(ctx.currentUserDepartmentId, ctx.defaultDepartmentId),
       defaultRequestPurposeId: ctx.defaultRequestPurposeId,

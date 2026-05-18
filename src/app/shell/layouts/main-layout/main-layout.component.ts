@@ -1,7 +1,7 @@
 
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, Router, NavigationEnd, ActivatedRouteSnapshot } from '@angular/router';
-import { Component, OnInit, OnDestroy, AfterViewInit, Optional, Inject, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, Optional, Inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { SidebarComponent } from '@shared/layouts/sidebar/sidebar.component';
@@ -17,6 +17,7 @@ import { TermsAcceptanceFacade } from '@features/help/facades/terms-acceptance.f
 import { TermsAcceptanceModalComponent } from '@features/help/components/terms-acceptance-modal/terms-acceptance-modal.component';
 import { SwitchRoleModalComponent } from '@auth/components/switch-role-modal/switch-role-modal.component';
 import { ShellRouteData } from '@core/routing/shell-route-data';
+import { scrollShellContentToTop } from '@utils/scroll-shell-content-to-top.util';
 
 @Component({
   selector: 'app-main-layout',
@@ -37,8 +38,6 @@ import { ShellRouteData } from '@core/routing/shell-route-data';
   styleUrls: ['./main-layout.component.css']
 })
 export class MainLayoutComponent implements OnInit, OnDestroy, AfterViewInit {
-  @ViewChild('mainScroll', { read: ElementRef }) mainScroll?: ElementRef<HTMLElement>;
-
   isSidebarCollapsed = false;
   mobileSidebarOpen = false;
   shouldCollapseSidebar = false;
@@ -58,23 +57,8 @@ export class MainLayoutComponent implements OnInit, OnDestroy, AfterViewInit {
       )
       .subscribe(() => {
         this.checkRoute();
-        this.scrollShellContentToTop();
+        scrollShellContentToTop();
       });
-  }
-
-  /** Page scroll lives on `<main>` (not `window`); reset after each navigation. */
-  private scrollShellContentToTop(): void {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const host = this.mainScroll?.nativeElement;
-        if (host) {
-          host.scrollTop = 0;
-        }
-        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-        document.documentElement.scrollTop = 0;
-        document.body.scrollTop = 0;
-      });
-    });
   }
 
   private checkRoute(): void {

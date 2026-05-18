@@ -3,9 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Observable, Subject, takeUntil, forkJoin, of } from 'rxjs';
+import { Subject, takeUntil, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { LucideAngularModule, Plus, Edit2, Trash2, Search, X } from 'lucide-angular';
+import { LucideAngularModule, Plus, Edit2, Trash2, Search, X, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-angular';
 import { ApiService } from '@services/api.service';
 import { LookupService, DepartmentDto } from '@services/lookup.service';
 import { LookupItem } from '@models/lookup.model';
@@ -22,10 +22,14 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
 import { TranslationService } from '@services/translation.service';
 import { ToastService } from '@services/toast.service';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
-import { MultiPhaseItemCatalogLoader, ItemCatalogPhase } from '@components/multi-phase-item-catalog-loader/multi-phase-item-catalog.loader';
-import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
-import { AllowanceItemDto, AllowanceItemType, AllowanceTableRow } from '@models/allowance.model';
-import { PagedRequest, PaginatedList } from '@models/api-response.model';
+import {
+  PaginationComponent,
+  RowsPerPageComponent,
+  LoadingStateComponent,
+  ErrorStateComponent,
+  TableClampTooltipDirective
+} from '@components/index';
+import { AllowanceItemDto, AllowanceTableRow } from '@models/allowance.model';
 import { TranslationMap } from '@models/common.types';
 import { processAllowanceData } from '@utils/allowance.mapper';
 import { filterAllowances } from '@utils/allowance.utils';
@@ -36,6 +40,9 @@ import { UserContextService } from '@services/user-context.service';
 import { ItemType } from '@core/models/inventory.model';
 import { trackById } from '@utils/trackby.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
+
+/** Sortable allowance quantity columns (desktop headers + optional mobile toolbar). */
+type QuantitySortColumn = 'total' | 'used' | 'reserved' | 'remaining';
 
 @Component({
   selector: 'app-allowance-list',
@@ -53,7 +60,8 @@ import { ErrorHandler } from '@utils/error-handler.utils';
     PaginationComponent,
     HasPermissionDirective,
     LoadingStateComponent,
-    ErrorStateComponent
+    ErrorStateComponent,
+    TableClampTooltipDirective
   ],
   templateUrl: './allowance-list.component.html',
   styleUrls: ['./allowance-list.component.css'],
@@ -67,8 +75,22 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   readonly Trash2 = Trash2;
   readonly Search = Search;
   readonly X = X;
+  readonly ArrowUp = ArrowUp;
+  readonly ArrowDown = ArrowDown;
+  readonly ArrowUpDown = ArrowUpDown;
 
   readonly trackById = trackById;
+
+  readonly quantitySortColumnDefs = [
+    { key: 'total' as QuantitySortColumn, labelKey: 'allowance.table.totalQuantity' },
+    { key: 'used' as QuantitySortColumn, labelKey: 'allowance.table.usedQuantity' },
+    { key: 'reserved' as QuantitySortColumn, labelKey: 'allowance.table.reservedQuantity' },
+    { key: 'remaining' as QuantitySortColumn, labelKey: 'allowance.table.remainingQuantity' }
+  ];
+
+  /** Active quantity sort (applied after sidebar filters); `null` keeps API/order from filter only. */
+  quantitySortColumn: QuantitySortColumn | null = null;
+  quantitySortDirection: 'asc' | 'desc' = 'desc';
 
   allowances: AllowanceTableRow[] = []; // Individual item rows
   allAllowances: AllowanceTableRow[] = []; // All allowances for pagination
@@ -82,7 +104,6 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   selectedDepartment: number | string | null = null;
   isAdminUser = false;
   userDepartmentId: number | null = null;
-  readonly itemCatalog: MultiPhaseItemCatalogLoader<AllowanceItemType, ItemType | null>;
   allItems: (AmmunitionReadDto | WeaponDto | ExplosiveDto)[] = []; // Full catalog snapshot from mapper (dropdown uses filteredItems — items with allowances only)
   ammunitionItems: AmmunitionReadDto[] = []; // Ammunition items
   weaponItems: WeaponDto[] = []; // Weapon items
@@ -101,7 +122,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   // Dropdown label functions
   readonly departmentOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null) =>
     getLocalizedName(this.unwrapOption(option), getCurrentLang(this.translateService));
-  readonly itemOptionLabel = (option: DropdownOption<AllowanceItemType> | AllowanceItemType | null) => {
+  readonly itemOptionLabel = (option: DropdownOption<AmmunitionReadDto | WeaponDto | ExplosiveDto> | AmmunitionReadDto | WeaponDto | ExplosiveDto | null) => {
     const item = this.unwrapOption(option);
     if (!item) return '';
     const localizedName = getLocalizedName(item, getCurrentLang(this.translateService));
@@ -123,8 +144,6 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
-  private static readonly ITEM_FILTER_PAGE_SIZE = 20;
-
   constructor(
     private apiService: ApiService,
     private lookupService: LookupService,
@@ -140,19 +159,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     private userContextService: UserContextService,
     private cdr: ChangeDetectorRef
   ) {
-    this.itemCatalog = new MultiPhaseItemCatalogLoader<AllowanceItemType, ItemType | null>({
-      destroy$: this.destroy$,
-      pageSize: AllowanceListComponent.ITEM_FILTER_PAGE_SIZE,
-      getSelectedItem: () => this.selectedItem,
-      isAllTypesMode: () => this.selectedItemType === null,
-      getItemType: () => this.selectedItemType,
-      getSingleTypePaginated: (req) => this.getSingleTypePaginated(req),
-      getAllTypesPaginated: (phase, req) => this.getAllTypesPaginatedForPhase(phase, req),
-      fetchItemByIdForLabel: (id, type) => this.fetchAllowanceItemForDropdownLabel(id, type),
-      sameItemId: (a, b) => this.sameItemId(a, b),
-      getItemNumericId: (row) => Number(row.id),
-      markForCheck: () => this.cdr.markForCheck()
-    });
+    // Initialize user context
     this.initializeUserContext();
   }
 
@@ -253,13 +260,16 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     // and returns all departments' data if user has permission, or only their department if not
     forkJoin({
       allowances: this.apiService.get<AllowanceItemDto[]>(API_ENDPOINTS.ALLOWANCE.BASE),
-      departments: this.lookupService.getDepartments()
+      departments: this.lookupService.getDepartments(),
+      ammunitionItems: this.ammunitionService.getAll<AmmunitionReadDto>().pipe(catchError(() => of([]))),
+      weaponItems: this.weaponService.getAll<WeaponDto>().pipe(catchError(() => of([]))),
+      explosiveItems: this.explosiveService.getAll<ExplosiveDto>().pipe(catchError(() => of([])))
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: ({ allowances, departments }) => {
+        next: ({ allowances, departments, ammunitionItems, weaponItems, explosiveItems }) => {
           if (allowances && Array.isArray(allowances)) {
-            this.processAllowanceData(allowances, departments, [], [], []);
+            this.processAllowanceData(allowances, departments, ammunitionItems || [], weaponItems || [], explosiveItems || []);
           } else {
             this.error = this.translateService.instant('allowance.errors.failedToLoad');
             this.loading = false;
@@ -294,13 +304,8 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
       this.filteredDepartments = processed.departments;
     }
 
-    // Item catalog for the filter dropdown is loaded on demand via Paginated APIs.
-
-    this.itemCatalog.resetAfterParentDataLoad();
     // Store allowances first so item dropdown keys match current dataset
     this.allAllowances = processed.allAllowances;
-    this.filteredAllowances = [...this.allAllowances];
-
     // Store items separately by type (still used for lookup labels); dropdown shows allowance-linked subset only
     this.ammunitionItems = ammunitionItems || [];
     this.weaponItems = weaponItems || [];
@@ -309,8 +314,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
 
     this.updateFilteredItems();
 
-    this.validateCurrentPage();
-    this.updatePagination();
+    this.applyFilters();
     this.updatePageInUrl();
     this.loading = false;
     this.cdr.markForCheck();
@@ -326,58 +330,17 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
 
 
   onDepartmentChange(): void {
-    this.selectedItem = null;
-    this.itemCatalog.clearSelectedDetail();
-    this.itemCatalog.resetOnUserFilterChange();
+    this.selectedItem = null; // Clear item selection when department changes
+    this.updateFilteredItems();
     this.currentPage = 1;
     this.applyFilters();
   }
 
   onItemTypeChange(): void {
-    this.selectedItem = null;
-    this.itemCatalog.clearSelectedDetail();
-    this.itemCatalog.resetOnUserFilterChange();
+    this.selectedItem = null; // Clear item selection when item type changes
+    this.updateFilteredItems();
     this.currentPage = 1;
     this.applyFilters();
-  }
-
-  private getSingleTypePaginated(req: PagedRequest): Observable<PaginatedList<AllowanceItemType>> {
-    if (this.selectedItemType === ItemType.Weapon) {
-      return this.weaponService.getAllPaginated(req) as Observable<PaginatedList<AllowanceItemType>>;
-    }
-    if (this.selectedItemType === ItemType.Explosive) {
-      return this.explosiveService.getAllPaginated(req) as Observable<PaginatedList<AllowanceItemType>>;
-    }
-    return this.ammunitionService.getAllPaginated(req) as Observable<PaginatedList<AllowanceItemType>>;
-  }
-
-  private getAllTypesPaginatedForPhase(
-    phase: ItemCatalogPhase,
-    req: PagedRequest
-  ): Observable<PaginatedList<AllowanceItemType>> {
-    if (phase === 'ammunition') {
-      return this.ammunitionService.getAllPaginated(req) as Observable<PaginatedList<AllowanceItemType>>;
-    }
-    if (phase === 'weapon') {
-      return this.weaponService.getAllPaginated(req) as Observable<PaginatedList<AllowanceItemType>>;
-    }
-    return this.explosiveService.getAllPaginated(req) as Observable<PaginatedList<AllowanceItemType>>;
-  }
-
-  private fetchAllowanceItemForDropdownLabel(id: number, itemType: ItemType | null): Observable<AllowanceItemType> {
-    switch (itemType) {
-      case ItemType.Weapon:
-        return this.weaponService.getById(id) as Observable<AllowanceItemType>;
-      case ItemType.Explosive:
-        return this.explosiveService.getById(id) as Observable<AllowanceItemType>;
-      case ItemType.Ammunition:
-        return this.ammunitionService.getById(id) as Observable<AllowanceItemType>;
-      default:
-        return this.ammunitionService.getById(id).pipe(
-          catchError(() => this.weaponService.getById(id)),
-          catchError(() => this.explosiveService.getById(id))
-        ) as Observable<AllowanceItemType>;
-    }
   }
 
   private rebuildAllowanceItemLookupKeys(): void {
@@ -429,12 +392,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     }
   }
 
-  private sameItemId(a: number, b: number | string): boolean {
-    return a === b || String(a) === String(b) || Number(a) === Number(b);
-  }
-
   onItemChange(): void {
-    this.itemCatalog.onPrimarySelectionChange(this.selectedItem);
     this.currentPage = 1;
     this.applyFilters();
   }
@@ -447,25 +405,21 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
 
     this.selectedDepartment = null;
     this.currentPage = 1;
-    this.itemCatalog.resetAfterParentDataLoad();
+    this.updateFilteredItems();
     this.applyFilters();
   }
 
   clearItemFilter(): void {
     this.selectedItem = null;
-    this.itemCatalog.clearSelectedDetail();
     this.currentPage = 1;
-    this.itemCatalog.resetAfterParentDataLoad();
     this.applyFilters();
-    this.cdr.markForCheck();
   }
 
   clearItemTypeFilter(): void {
     this.selectedItemType = null;
     this.selectedItem = null; // Clear item selection when clearing type filter
-    this.itemCatalog.clearSelectedDetail();
     this.currentPage = 1;
-    this.itemCatalog.resetOnUserFilterChange();
+    this.updateFilteredItems();
     this.applyFilters();
   }
 
@@ -473,20 +427,80 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     this.selectedDepartment = null;
     this.selectedItem = null;
     this.selectedItemType = null;
-    this.itemCatalog.clearSelectedDetail();
     this.currentPage = 1;
-    this.itemCatalog.resetOnUserFilterChange();
+    this.updateFilteredItems();
     this.applyFilters();
   }
 
   applyFilters(): void {
-    this.filteredAllowances = filterAllowances(
+    const filtered = filterAllowances(
       this.allAllowances,
       this.selectedDepartment,
       this.selectedItem,
       this.selectedItemType
     );
+    this.filteredAllowances = this.sortAllowancesByActiveQuantity(filtered);
     this.updatePagination();
+    this.cdr.markForCheck();
+  }
+
+  onQuantitySort(column: QuantitySortColumn): void {
+    if (this.quantitySortColumn === column) {
+      this.quantitySortDirection = this.quantitySortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.quantitySortColumn = column;
+      this.quantitySortDirection = 'desc';
+    }
+    this.applyFilters();
+  }
+
+  qtyAriaSort(column: QuantitySortColumn): 'none' | 'ascending' | 'descending' {
+    if (this.quantitySortColumn !== column) return 'none';
+    return this.quantitySortDirection === 'asc' ? 'ascending' : 'descending';
+  }
+
+  qtySortButtonAriaLabel(column: QuantitySortColumn): string {
+    const def = this.quantitySortColumnDefs.find((d) => d.key === column);
+    const columnLabel = def ? this.translateService.instant(def.labelKey) : String(column);
+    if (this.quantitySortColumn !== column) {
+      return this.translateService.instant('allowance.table.sortColumnAriaInactive', { column: columnLabel });
+    }
+    const directionLabel =
+      this.quantitySortDirection === 'asc'
+        ? this.translateService.instant('allowance.table.sortAscending')
+        : this.translateService.instant('allowance.table.sortDescending');
+    return this.translateService.instant('allowance.table.sortColumnAriaSorted', {
+      column: columnLabel,
+      direction: directionLabel
+    });
+  }
+
+  getQtyNumericValue(row: AllowanceTableRow, column: QuantitySortColumn): number {
+    switch (column) {
+      case 'total':
+        return Number(row.quantity) || 0;
+      case 'used':
+        return Number(row.usedQuantityFromAllowance) || 0;
+      case 'reserved':
+        return Number(row.reservedQuantityByOrdersOnProcessing) || 0;
+      case 'remaining':
+        return Number(row.remainingQuantityFromAllowance) || 0;
+      default:
+        return 0;
+    }
+  }
+
+  private sortAllowancesByActiveQuantity(rows: AllowanceTableRow[]): AllowanceTableRow[] {
+    if (!this.quantitySortColumn) return rows;
+    const col = this.quantitySortColumn;
+    const dir = this.quantitySortDirection === 'asc' ? 1 : -1;
+    return [...rows].sort((a, b) => {
+      const va = this.getQtyNumericValue(a, col);
+      const vb = this.getQtyNumericValue(b, col);
+      const diff = va - vb;
+      if (diff !== 0) return diff * dir;
+      return a.id - b.id;
+    });
   }
 
   updatePagination(): void {
@@ -536,6 +550,27 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
 
   formatDate(year: number): string {
     return `${year}`;
+  }
+
+  /** Primary line — clamped like asset/name columns elsewhere; full string in tooltip. */
+  getAllowanceItemTitle(row: AllowanceTableRow): string {
+    if (row.itemName?.trim()) return row.itemName.trim();
+    if (row.itemNo?.trim()) return row.itemNo.trim();
+    return `${this.translateService.instant('allowance.item')} ${row.itemId}`;
+  }
+
+  /** Secondary meta line — omit redundant itemNo if it is already used as title. */
+  getAllowanceItemSubline(row: AllowanceTableRow): string {
+    const bits: string[] = [];
+    const titleNorm = row.itemName?.trim() || row.itemNo?.trim() || '';
+    const no = row.itemNo?.trim();
+    if (no && no !== titleNorm) {
+      bits.push(`${this.translateService.instant('allowance.itemNo')}: ${no}`);
+    }
+    if (row.batchNo?.trim()) {
+      bits.push(`${this.translateService.instant('allowance.batchNo')}: ${row.batchNo.trim()}`);
+    }
+    return bits.join(', ');
   }
 
 

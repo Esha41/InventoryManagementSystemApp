@@ -85,6 +85,12 @@ export const API_ENDPOINTS = {
     REMOVE: (notifierId: number) => `/WorkflowStepNotifiers/${notifierId}`,
   },
 
+  WORKFLOW_STEP_REQUESTER_QTY_NOTIFICATIONS: {
+    BASE: '/WorkflowStepRequesterQtyNotifications',
+    BY_WORKFLOW: (workflowId: number) =>
+      `/WorkflowStepRequesterQtyNotifications/workflow/${workflowId}`,
+  },
+
   // workflow approval
   WORKFLOW_APPROVAL: {
     BASE: '/WorkflowApproval',

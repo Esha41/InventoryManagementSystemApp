@@ -10,7 +10,7 @@ import { WorkflowApprovalActionsService } from '../../services/workflow-approval
 import { WorkflowApprovalDataService, WorkflowApprovalStepOption } from '../../services/workflow-approval-data.service';
 import { WorkflowApprovalStateService } from '../../services/workflow-approval-state.service';
 import { WorkflowApprovalPermissionsService } from '../../services/workflow-approval-permissions.service';
-import { validateFile, showFileValidationErrors, getFileSizeFromFile, MAX_FILE_SIZE_MB } from '@utils/file.utils';
+import { validateFile, showFileValidationErrors, getFileSizeFromFile } from '@utils/file.utils';
 import { ToastService } from '@services/toast.service';
 import { takeUntil } from 'rxjs/operators';
 import { ErrorHandler } from '@utils/error-handler.utils';
@@ -93,7 +93,6 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
 
   // File size utility
   getFileSize = getFileSizeFromFile;
-  MAX_FILE_SIZE_MB = MAX_FILE_SIZE_MB;
 
   // State from service
   isPickupDateAlreadySet$ = this.stateService.isPickupDateAlreadySet$;

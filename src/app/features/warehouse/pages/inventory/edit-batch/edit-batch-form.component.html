@@ -113,13 +113,7 @@
               </div>
             </div>
 
-            <p class="text-sm text-[var(--color-text-muted)]">
-              {{ 'common.attachmentsHintOptional' | translate }}
-            </p>
-            <p class="text-sm text-[var(--color-text-muted)]">
-              {{ 'common.maximumFileSize' | translate: { size: 30 } }}
-            </p>
-          </div>
+            </div>
 
           <div *ngIf="existingFiles?.length" class="mt-3 space-y-2">
             <div *ngFor="let f of existingFiles"
