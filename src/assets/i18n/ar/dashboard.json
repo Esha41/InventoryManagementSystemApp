@@ -11,6 +11,7 @@
     "completed": "مكتمل",
     "orderId": "رقم الطلب",
     "orderNumber": "رقم الطلب",
+    "requestNo": "رقم الطلب",
     "returnNumber": "رقم الإرجاع",
     "discardNumber": "رقم الإتلاف",
     "requestDate": "تاريخ الطلب",

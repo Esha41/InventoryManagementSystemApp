@@ -11,6 +11,7 @@
     "completed": "Completed",
     "orderId": "Order Number",
     "orderNumber": "Order Number",
+    "requestNo": "Request No",
     "returnNumber": "Return Number",
     "discardNumber": "Discard Number",
     "requestDate": "Request Date",

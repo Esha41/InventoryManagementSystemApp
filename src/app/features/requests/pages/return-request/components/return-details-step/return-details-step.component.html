@@ -143,10 +143,60 @@
             class="w-full px-3 py-2 border border-[var(--color-border)] rounded text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent transition-all resize-none"></textarea>
         </div>
 
-        <!-- Attachments -->
+        <!-- Per-purpose attachment slots -->
+        <div *ngIf="hasAttachmentRequirementSlots" class="space-y-4">
+          <div *ngFor="let requirement of attachmentRequirements; trackBy: trackRequirementById">
+            <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
+              {{ getRequirementLabel(requirement) }}
+              <span *ngIf="requirement.isRequired" class="text-red-500">*</span>
+            </span>
+            <div class="space-y-3">
+              <div class="flex flex-wrap items-center gap-3">
+                <input type="file" #slotFileInput (change)="onRequirementFileSelected($event, requirement)"
+                  [multiple]="requirement.maxCount > 1"
+                  accept=".pdf,.docx" class="hidden">
+                <button type="button" (click)="slotFileInput.click()"
+                  class="px-4 py-2 rounded-lg text-sm font-medium bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand)]/90 cursor-pointer transition-all">
+                  {{ (requirement.maxCount === 1 ? 'common.chooseFile' : 'common.chooseFiles') | translate }}
+                </button>
+                <span class="text-sm text-[var(--color-text-muted)] truncate max-w-xs">
+                  <span *ngIf="getFilesForRequirement(requirement.id).length === 0">{{ 'common.noFileChosen' | translate }}</span>
+                  <span *ngIf="getFilesForRequirement(requirement.id).length > 0">
+                    {{ getFilesForRequirement(requirement.id).length }}
+                    {{ getFilesForRequirement(requirement.id).length === 1 ? ('common.file' | translate) : ('common.files' | translate) }}
+                  </span>
+                </span>
+              </div>
+
+              <div *ngIf="getFilesForRequirement(requirement.id).length > 0" class="space-y-2">
+                <div *ngFor="let file of getFilesForRequirement(requirement.id); let i = index"
+                  class="flex items-center justify-between p-2 bg-[var(--color-background-muted)] rounded border border-[var(--color-border)]">
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-[var(--color-text)] truncate">{{ file.name }}</p>
+                    <p class="text-xs text-[var(--color-text-muted)]">{{ getFileSize(file) }}</p>
+                  </div>
+                  <button type="button" (click)="removeRequirementFile(requirement.id, i)"
+                    class="ms-3 p-1 text-red-600 hover:text-red-700 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p *ngIf="hasAttemptedSubmit && hasError('attachmentRequirements')" class="text-xs text-red-600">{{ getError('attachmentRequirements') }}</p>
+        </div>
+
+        <!-- Flat attachments (required when no slots; optional other files when slots exist) -->
         <div>
           <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
-            {{ 'returnRequest.attachments' | translate }} <span class="text-red-500">*</span>
+            <ng-container *ngIf="!hasAttachmentRequirementSlots">
+              {{ 'newIssueRequest.attachments' | translate }} <span class="text-red-500">*</span>
+            </ng-container>
+            <ng-container *ngIf="hasAttachmentRequirementSlots">
+              {{ 'newIssueRequest.otherFiles' | translate }}
+            </ng-container>
           </span>
           <div class="space-y-3">
             <div class="flex flex-wrap items-center gap-3">
