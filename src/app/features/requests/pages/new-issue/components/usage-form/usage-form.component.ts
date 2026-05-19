@@ -135,7 +135,6 @@ export class UsageFormComponent {
   @Output() usageDateToChange = new EventEmitter<string>();
   @Output() usageTimeToChange = new EventEmitter<string>();
   @Output() requestPurposeNotesChange = new EventEmitter<string>();
-  @Output() requesterCommentsChange = new EventEmitter<string>();
   @Output() previous = new EventEmitter<void>();
   @Output() next = new EventEmitter<void>();
 
@@ -147,7 +146,6 @@ export class UsageFormComponent {
     usageDateTo: null,
     usageTimeTo: null,
     requestPurposeNotes: null,
-    requesterComments: null,
     selectedFiles: null,
     attachmentRequirements: null
   };
@@ -305,12 +303,6 @@ export class UsageFormComponent {
         this.clearError('usageTimeTo');
       }
     }
-  }
-
-  onRequesterCommentsChange(value: string): void {
-    this.requesterCommentsChange.emit(value);
-
-    this.clearError('requesterComments');
   }
 
   onFileSelected(event: Event): void {
@@ -546,7 +538,6 @@ type UsageFormErrors = {
   usageTimeFrom: string | null;
   usageDateTo: string | null;
   usageTimeTo: string | null;
-  requesterComments: string | null;
   selectedFiles: string | null;
   attachmentRequirements: string | null;
 };

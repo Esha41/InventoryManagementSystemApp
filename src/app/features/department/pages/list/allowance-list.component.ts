@@ -5,7 +5,7 @@ import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { LucideAngularModule, Plus, Edit2, Trash2, Search, X } from 'lucide-angular';
+import { LucideAngularModule, Plus, Edit2, Trash2, Search, X, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-angular';
 import { ApiService } from '@services/api.service';
 import { LookupService, DepartmentDto } from '@services/lookup.service';
 import { LookupItem } from '@models/lookup.model';
@@ -22,7 +22,13 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
 import { TranslationService } from '@services/translation.service';
 import { ToastService } from '@services/toast.service';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
-import { PaginationComponent, RowsPerPageComponent, LoadingStateComponent, ErrorStateComponent } from '@components/index';
+import {
+  PaginationComponent,
+  RowsPerPageComponent,
+  LoadingStateComponent,
+  ErrorStateComponent,
+  TableClampTooltipDirective
+} from '@components/index';
 import { AllowanceItemDto, AllowanceTableRow } from '@models/allowance.model';
 import { TranslationMap } from '@models/common.types';
 import { processAllowanceData } from '@utils/allowance.mapper';
@@ -34,6 +40,9 @@ import { UserContextService } from '@services/user-context.service';
 import { ItemType } from '@core/models/inventory.model';
 import { trackById } from '@utils/trackby.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
+
+/** Sortable allowance quantity columns (desktop headers + optional mobile toolbar). */
+type QuantitySortColumn = 'total' | 'used' | 'reserved' | 'remaining';
 
 @Component({
   selector: 'app-allowance-list',
@@ -51,7 +60,8 @@ import { ErrorHandler } from '@utils/error-handler.utils';
     PaginationComponent,
     HasPermissionDirective,
     LoadingStateComponent,
-    ErrorStateComponent
+    ErrorStateComponent,
+    TableClampTooltipDirective
   ],
   templateUrl: './allowance-list.component.html',
   styleUrls: ['./allowance-list.component.css'],
@@ -65,8 +75,22 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   readonly Trash2 = Trash2;
   readonly Search = Search;
   readonly X = X;
+  readonly ArrowUp = ArrowUp;
+  readonly ArrowDown = ArrowDown;
+  readonly ArrowUpDown = ArrowUpDown;
 
   readonly trackById = trackById;
+
+  readonly quantitySortColumnDefs = [
+    { key: 'total' as QuantitySortColumn, labelKey: 'allowance.table.totalQuantity' },
+    { key: 'used' as QuantitySortColumn, labelKey: 'allowance.table.usedQuantity' },
+    { key: 'reserved' as QuantitySortColumn, labelKey: 'allowance.table.reservedQuantity' },
+    { key: 'remaining' as QuantitySortColumn, labelKey: 'allowance.table.remainingQuantity' }
+  ];
+
+  /** Active quantity sort (applied after sidebar filters); `null` keeps API/order from filter only. */
+  quantitySortColumn: QuantitySortColumn | null = null;
+  quantitySortDirection: 'asc' | 'desc' = 'desc';
 
   allowances: AllowanceTableRow[] = []; // Individual item rows
   allAllowances: AllowanceTableRow[] = []; // All allowances for pagination
@@ -282,8 +306,6 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
 
     // Store allowances first so item dropdown keys match current dataset
     this.allAllowances = processed.allAllowances;
-    this.filteredAllowances = [...this.allAllowances];
-
     // Store items separately by type (still used for lookup labels); dropdown shows allowance-linked subset only
     this.ammunitionItems = ammunitionItems || [];
     this.weaponItems = weaponItems || [];
@@ -292,8 +314,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
 
     this.updateFilteredItems();
 
-    this.validateCurrentPage();
-    this.updatePagination();
+    this.applyFilters();
     this.updatePageInUrl();
     this.loading = false;
     this.cdr.markForCheck();
@@ -412,13 +433,74 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   }
 
   applyFilters(): void {
-    this.filteredAllowances = filterAllowances(
+    const filtered = filterAllowances(
       this.allAllowances,
       this.selectedDepartment,
       this.selectedItem,
       this.selectedItemType
     );
+    this.filteredAllowances = this.sortAllowancesByActiveQuantity(filtered);
     this.updatePagination();
+    this.cdr.markForCheck();
+  }
+
+  onQuantitySort(column: QuantitySortColumn): void {
+    if (this.quantitySortColumn === column) {
+      this.quantitySortDirection = this.quantitySortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.quantitySortColumn = column;
+      this.quantitySortDirection = 'desc';
+    }
+    this.applyFilters();
+  }
+
+  qtyAriaSort(column: QuantitySortColumn): 'none' | 'ascending' | 'descending' {
+    if (this.quantitySortColumn !== column) return 'none';
+    return this.quantitySortDirection === 'asc' ? 'ascending' : 'descending';
+  }
+
+  qtySortButtonAriaLabel(column: QuantitySortColumn): string {
+    const def = this.quantitySortColumnDefs.find((d) => d.key === column);
+    const columnLabel = def ? this.translateService.instant(def.labelKey) : String(column);
+    if (this.quantitySortColumn !== column) {
+      return this.translateService.instant('allowance.table.sortColumnAriaInactive', { column: columnLabel });
+    }
+    const directionLabel =
+      this.quantitySortDirection === 'asc'
+        ? this.translateService.instant('allowance.table.sortAscending')
+        : this.translateService.instant('allowance.table.sortDescending');
+    return this.translateService.instant('allowance.table.sortColumnAriaSorted', {
+      column: columnLabel,
+      direction: directionLabel
+    });
+  }
+
+  getQtyNumericValue(row: AllowanceTableRow, column: QuantitySortColumn): number {
+    switch (column) {
+      case 'total':
+        return Number(row.quantity) || 0;
+      case 'used':
+        return Number(row.usedQuantityFromAllowance) || 0;
+      case 'reserved':
+        return Number(row.reservedQuantityByOrdersOnProcessing) || 0;
+      case 'remaining':
+        return Number(row.remainingQuantityFromAllowance) || 0;
+      default:
+        return 0;
+    }
+  }
+
+  private sortAllowancesByActiveQuantity(rows: AllowanceTableRow[]): AllowanceTableRow[] {
+    if (!this.quantitySortColumn) return rows;
+    const col = this.quantitySortColumn;
+    const dir = this.quantitySortDirection === 'asc' ? 1 : -1;
+    return [...rows].sort((a, b) => {
+      const va = this.getQtyNumericValue(a, col);
+      const vb = this.getQtyNumericValue(b, col);
+      const diff = va - vb;
+      if (diff !== 0) return diff * dir;
+      return a.id - b.id;
+    });
   }
 
   updatePagination(): void {
@@ -468,6 +550,27 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
 
   formatDate(year: number): string {
     return `${year}`;
+  }
+
+  /** Primary line — clamped like asset/name columns elsewhere; full string in tooltip. */
+  getAllowanceItemTitle(row: AllowanceTableRow): string {
+    if (row.itemName?.trim()) return row.itemName.trim();
+    if (row.itemNo?.trim()) return row.itemNo.trim();
+    return `${this.translateService.instant('allowance.item')} ${row.itemId}`;
+  }
+
+  /** Secondary meta line — omit redundant itemNo if it is already used as title. */
+  getAllowanceItemSubline(row: AllowanceTableRow): string {
+    const bits: string[] = [];
+    const titleNorm = row.itemName?.trim() || row.itemNo?.trim() || '';
+    const no = row.itemNo?.trim();
+    if (no && no !== titleNorm) {
+      bits.push(`${this.translateService.instant('allowance.itemNo')}: ${no}`);
+    }
+    if (row.batchNo?.trim()) {
+      bits.push(`${this.translateService.instant('allowance.batchNo')}: ${row.batchNo.trim()}`);
+    }
+    return bits.join(', ');
   }
 
 

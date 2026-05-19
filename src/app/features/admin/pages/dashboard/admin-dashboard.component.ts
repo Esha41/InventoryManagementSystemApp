@@ -6,7 +6,7 @@ import { RouterLink } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, LayoutDashboard, Users, RefreshCw, Badge, Settings, Mail, Upload, GitBranch, Timer } from 'lucide-angular';
+import { LucideAngularModule, LayoutDashboard, Users, Badge, Settings, Mail, Upload, GitBranch, Timer } from 'lucide-angular';
 import { AdminAnalyticsService, UserActivityMetrics } from '@admin/services/admin-analytics.service';
 import { UserActivityCardComponent } from './components/kpi-cards/user-activity-card/user-activity-card.component';
 import { AdminDelegationsComponent } from './admin-delegations/admin-delegations.component';
@@ -40,7 +40,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
     // Icons
     readonly Users = Users;
-    readonly RefreshCw = RefreshCw;
     readonly LayoutDashboard = LayoutDashboard;
     readonly Badge = Badge;
     readonly Settings = Settings;
@@ -54,7 +53,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
     // Loading states
     isLoading = true;
-    isRefreshing = false;
 
     constructor(
         private adminAnalyticsService: AdminAnalyticsService,
@@ -72,13 +70,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
                 next: (metrics) => {
                     this.userActivityMetrics = metrics;
                     this.isLoading = false;
-                    this.isRefreshing = false;
                     this.cdr.markForCheck();
                 },
                 error: (error) => {
                     console.error('Error loading dashboard metrics:', error);
                     this.isLoading = false;
-                    this.isRefreshing = false;
                     this.cdr.markForCheck();
                 }
             });
@@ -89,16 +85,5 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         this.destroy$.next();
         this.destroy$.complete();
     }
-
-    /**
-     * Manually refresh metrics
-     */
-    onRefresh(): void {
-        this.isRefreshing = true;
-        this.cdr.markForCheck(); // Update UI immediately to show loading state
-        this.adminAnalyticsService.refresh();
-        // The subscription will automatically pick up the new data via refresh$ subject
-    }
-
 
 }

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { OrderSummary } from '@models/order-report.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
-import { getApprovalStatusBadgeClass } from '@utils/status-class.utils';
+import { getOrderSummaryStatusBadgeNgClass } from '@utils/status-class.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 import { getPriorityKey } from '@utils/priority.utils';
@@ -26,32 +26,11 @@ export class OrderInfoSectionComponent {
 
   constructor(private translate: TranslateService) {}
 
-  getOrderSummaryStatusClass(statusKey: string): string {
-    if (!statusKey) {
-      return 'text-[var(--color-text-muted)] bg-[var(--color-background-muted)] border-[var(--color-border)]';
-    }
-
-    const key = statusKey.toLowerCase();
-    if (key.includes('autorejected') || key.includes('auto-rejected') || key.includes('auto rejected')) {
-      return getApprovalStatusBadgeClass('AutoRejected');
-    }
-    if (key.includes('approved') || key.includes('completed')) {
-      return getApprovalStatusBadgeClass('Approved');
-    }
-    if (key.includes('cancelled')) {
-      return getApprovalStatusBadgeClass('Cancelled');
-    }
-    if (key.includes('rejected')) {
-      return getApprovalStatusBadgeClass('Rejected');
-    }
-    if (key.includes('returned')) {
-      return getApprovalStatusBadgeClass('ReturnedForReview');
-    }
-    if (key.includes('underprocess') || key.includes('pending') || key.includes('new')) {
-      return getApprovalStatusBadgeClass('Pending');
-    }
-
-    return 'text-[var(--color-text-muted)] bg-[var(--color-background-muted)] border-[var(--color-border)]';
+  /**
+   * Status pill in report body matches sidebar / system badges (avoid substring heuristics on i18n keys).
+   */
+  getOrderSummaryStatusBadgeClass(): string {
+    return getOrderSummaryStatusBadgeNgClass(this.orderSummary?.requestStatusCode, this.orderSummary?.status);
   }
 
   /** Maps human label or enum text to Normal | Urgent | VeryUrgent for translation keys */

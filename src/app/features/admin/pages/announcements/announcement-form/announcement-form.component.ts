@@ -122,7 +122,7 @@ export class AnnouncementFormComponent implements OnInit, OnDestroy {
                 this.toastService.error(message);
                 this.loading.set(false);
                 this.cdr.markForCheck();
-                this.router.navigate(['/admin/announcements']);
+                this.router.navigate(['/settings/announcements']);
             }
         });
     }
@@ -164,7 +164,7 @@ export class AnnouncementFormComponent implements OnInit, OnDestroy {
                     : this.translationService.getTranslation('announcements.createSuccess');
                 this.toastService.success(message);
                 this.cdr.markForCheck();
-                this.router.navigate(['/admin/announcements']);
+                this.router.navigate(['/settings/announcements']);
             },
             error: (error) => {
                 const message = ErrorHandler.extractErrorMessage(error, 'Failed to save announcement');
@@ -176,7 +176,7 @@ export class AnnouncementFormComponent implements OnInit, OnDestroy {
     }
 
     cancel(): void {
-        this.router.navigate(['/admin/announcements']);
+        this.router.navigate(['/settings/announcements']);
     }
 
     getPriorityColorClass(priority: Priority): string {

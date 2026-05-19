@@ -18,6 +18,8 @@ import { ExplosiveService } from '@assets/services/explosive.service';
 import { CartridgeDataService } from '@assets/services/cartridge-data.service';
 import { ToastService } from '@services/toast.service';
 import { ApiService } from '@services/api.service';
+import { BackendAuthService } from '@services/backend-auth.service';
+import { UserContextService } from '@services/user-context.service';
 import { ONBOARDING_TOUR } from '@core/tokens/onboarding-tour.token';
 import { IOnboardingTourProvider } from '@core/interfaces/onboarding-tour-provider.interface';
 import { IssueRequestFilterService } from '@requests/pages/new-issue/services/issue-request-filter.service';
@@ -38,6 +40,7 @@ import {
   createInitialFilterOptions,
   createInitialCartridgeState,
   createInitialCatalogPagination,
+  createInitialUserContextState,
   ExtendedFilterState,
   ExtendedFilterOptions,
   CartridgeState
@@ -53,6 +56,14 @@ import {
   mergeReturnSelectionsIntoFilteredView,
   returnSelectedItemToCartridge
 } from '@requests/utils/return-catalog-to-cartridge.util';
+import {
+  applyAuthenticatedUserContext,
+  applyUserContext,
+  getDepartmentIdForRequest,
+  resolveCurrentRequesterName,
+  resolveRequesterDepartmentDisplay,
+  syncRequesterNameFromUserDetails
+} from '@requests/utils/issue-request.utils';
 
 import {
   ReturnItemType,
@@ -74,6 +85,7 @@ import {
 } from '@requests/pages/new-issue/new-issue-request.state';
 
 const CATALOG_FILTER_DEBOUNCE_MS = 350;
+const DEFAULT_DEPARTMENT_ID = 1;
 
 @Injectable()
 export class ReturnRequestFacade {
@@ -94,6 +106,7 @@ export class ReturnRequestFacade {
   // ---- Feature state -------------------------------------------------------
   selectionState = createInitialSelectionState();
   detailsState = createInitialDetailsState();
+  userContextState = createInitialUserContextState();
   lookupState = createInitialLookupState();
   submissionState = createInitialSubmissionState();
   successState = createInitialSuccessState();
@@ -130,8 +143,26 @@ export class ReturnRequestFacade {
     private readonly apiService: ApiService,
     private readonly translate: TranslateService,
     private readonly router: Router,
+    private readonly backendAuthService: BackendAuthService,
+    private readonly userContextService: UserContextService,
     @Optional() @Inject(ONBOARDING_TOUR) private readonly onboardingTourService: IOnboardingTourProvider | null
   ) {}
+
+  get currentRequesterName(): string {
+    return resolveCurrentRequesterName(
+      this.userContextState.currentUserDetails,
+      this.userContextState.fallbackRequesterName,
+      '',
+      getCurrentLang(this.translate)
+    );
+  }
+
+  get currentRequesterDepartmentDisplay(): string {
+    return resolveRequesterDepartmentDisplay(
+      this.userContextState.currentUserDetails,
+      getCurrentLang(this.translate)
+    );
+  }
 
   // ---- Lifecycle -----------------------------------------------------------
 
@@ -139,6 +170,12 @@ export class ReturnRequestFacade {
     this.filterState.selectedItemType = this.selectionState.selectedItemType;
     this.filterOptions.weaponTypeOptions = getWeaponTypeOptions();
     this.filterOptions.explosiveTypeOptions = getExplosiveTypeOptions();
+    this.initializeUserContext();
+
+    this.translate.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.syncRequesterNameFromUserDetails();
+      this.cdr.markForCheck();
+    });
 
     this.filterApply$
       .pipe(debounceTime(CATALOG_FILTER_DEBOUNCE_MS), takeUntil(this.destroy$))
@@ -197,6 +234,9 @@ export class ReturnRequestFacade {
       }
       this.steps[this.currentStep].completed = true;
       this.currentStep++;
+      if (this.currentStep === 2) {
+        this.syncRequesterNameFromUserDetails();
+      }
       this.cdr.markForCheck();
       scrollShellContentToTop();
     }
@@ -483,10 +523,13 @@ export class ReturnRequestFacade {
     const dto: CreateReturnDto = {
       reason: this.detailsState.reason || undefined,
       priority: Number(this.detailsState.priority),
-      notes: this.detailsState.notes || undefined,
+      notes: undefined,
       requestPurposeNotes: this.detailsState.requestPurposeNotes || undefined,
-      departmentId: 0,
-      requesterId: undefined,
+      departmentId: getDepartmentIdForRequest(
+        this.userContextState.currentUserDepartmentId,
+        DEFAULT_DEPARTMENT_ID
+      ),
+      requesterId: this.userContextState.currentUserDetails?.id || undefined,
       requestPurposeId: Number(this.detailsState.requestPurposeId!),
       returnItems: this.selectionState.selectedItems.map((item) => ({
         itemId: item.itemId,
@@ -729,6 +772,32 @@ export class ReturnRequestFacade {
           this.cdr.markForCheck();
         }
       });
+  }
+
+  private initializeUserContext(): void {
+    this.backendAuthService.currentUser$.pipe(takeUntil(this.destroy$)).subscribe(user => {
+      const context = applyAuthenticatedUserContext(user, this.userContextState);
+      if (context) {
+        applyUserContext(context, this.userContextState);
+        if (!this.userContextState.currentUserDetails) {
+          this.syncRequesterNameFromUserDetails();
+        }
+      }
+      this.cdr.markForCheck();
+    });
+
+    this.userContextService.getCurrentUserDetails().pipe(takeUntil(this.destroy$)).subscribe(details => {
+      this.userContextState.currentUserDetails = details;
+      this.syncRequesterNameFromUserDetails();
+      this.cdr.markForCheck();
+    });
+  }
+
+  private syncRequesterNameFromUserDetails(): void {
+    this.userContextState.fallbackRequesterName = syncRequesterNameFromUserDetails(
+      this.userContextState.currentUserDetails,
+      getCurrentLang(this.translate)
+    );
   }
 
 }

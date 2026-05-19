@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, filter } from 'rxjs';
-import { LucideAngularModule, House, Boxes, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Badge, FileText, Plus, TrendingUp, Settings, Warehouse, ClipboardList, Package, Building2, GitBranch, Mail, Upload, BarChart3, Database, Calendar, Megaphone, BookMarked, Clock } from 'lucide-angular';
+import { LucideAngularModule, House, Boxes, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Badge, FileText, Plus, TrendingUp, Settings, Warehouse, ClipboardList, Package, Building2, BarChart3 } from 'lucide-angular';
 import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { TranslationService } from '@services/translation.service';
@@ -37,9 +37,6 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   readonly ChevronUp = ChevronUp;
   readonly Package = Package;
   readonly Building2 = Building2;
-  readonly GitBranch = GitBranch;
-  readonly Database = Database;
-  readonly Calendar = Calendar;
   expandedMenus: Set<string> = new Set();
 
   private destroy$ = new Subject<void>();
@@ -265,71 +262,29 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       permissions: [PERMISSIONS.ADMIN.SYSTEM_USERS.PAGE]
     },
     {
-      label: 'nav.lookupTables',
-      icon: Database,
-      route: '/admin/lookup-tables',
-      permissions: [PERMISSIONS.ADMIN.LOOKUP_TABLES.PAGE]
-    },
-    {
-      label: 'nav.adminRoles',
-      icon: Badge,
-      route: '/admin/roles',
-      permissions: [PERMISSIONS.ADMIN.ROLES.PAGE]
-    },
-    {
-      label: 'nav.rolePermissions',
+      label: 'nav.settingsConfiguration',
       icon: Settings,
-      route: '/admin/role-permissions',
-      permissions: [PERMISSIONS.ADMIN.ROLES.PAGE]
+      route: '/settings',
+      permissions: [
+        PERMISSIONS.SETTINGS.LDAP.PAGE_NAV,
+        PERMISSIONS.SETTINGS.EMAIL.PAGE,
+        PERMISSIONS.SETTINGS.EMAIL.VIEW,
+        PERMISSIONS.SETTINGS.STOCK_NOTIFICATIONS.PAGE,
+        PERMISSIONS.SETTINGS.ORDER_AUTO_REJECT.PAGE,
+        PERMISSIONS.SETTINGS.REQUESTER_QTY_NOTIFICATIONS.PAGE,
+        PERMISSIONS.ADMIN.LOOKUP_TABLES.PAGE,
+        PERMISSIONS.ADMIN.ROLES.PAGE,
+        PERMISSIONS.ADMIN.ROLES.EDIT,
+        PERMISSIONS.ADMIN.ROLES.VIEW,
+        PERMISSIONS.ADMIN.IMPORT_EXPORT.PAGE,
+        PERMISSIONS.ADMIN.HELP_CENTER.PAGE,
+        PERMISSIONS.ADMIN.HELP_CENTER.VIEW,
+        PERMISSIONS.ADMIN.ANNOUNCEMENTS.PAGE,
+        PERMISSIONS.ADMIN.ANNOUNCEMENTS.VIEW,
+        PERMISSIONS.WORKFLOW.PAGE,
+        PERMISSIONS.WORKFLOW.VIEW,
+      ],
     },
-    {
-      label: 'nav.ldapSettings',
-      icon: Settings,
-      route: '/settings/ldap-settings',
-      permissions: [PERMISSIONS.SETTINGS.LDAP.PAGE_NAV]
-    },
-    {
-      label: 'nav.emailSettings',
-      icon: Mail,
-      route: '/settings/email-settings',
-      permissions: [PERMISSIONS.SETTINGS.EMAIL.PAGE]
-    },
-    {
-      label: 'nav.adminImportExport',
-      icon: Upload,
-      route: '/admin/import-export',
-      permissions: [PERMISSIONS.ADMIN.IMPORT_DATA.CAN_IMPORT]
-    },
-    {
-      label: 'nav.workflow',
-      icon: GitBranch,
-      route: '/workflow',
-      permissions: [PERMISSIONS.WORKFLOW.PAGE]
-    },
-    {
-      label: 'nav.stockNotificationSettings',
-      icon: Mail,
-      route: '/settings/stock-notification-settings',
-      permissions: [PERMISSIONS.SETTINGS.STOCK_NOTIFICATIONS.PAGE]
-    },
-    {
-      label: 'nav.orderAutoRejectSettings',
-      icon: Clock,
-      route: '/settings/order-auto-reject-settings',
-      permissions: [PERMISSIONS.SETTINGS.ORDER_AUTO_REJECT.PAGE]
-    },
-    {
-      label: 'nav.helpCenterAdmin',
-      icon: BookMarked,
-      route: '/admin/help-center',
-      permissions: [PERMISSIONS.ADMIN.HELP_CENTER.PAGE, PERMISSIONS.ADMIN.HELP_CENTER.VIEW]
-    },
-    {
-      label: 'nav.announcements',
-      icon: Megaphone,
-      route: '/admin/announcements',
-      permissions: [PERMISSIONS.ADMIN.ANNOUNCEMENTS.PAGE, PERMISSIONS.ADMIN.ANNOUNCEMENTS.VIEW]
-    }
   ];
 
   menuItems: MenuItem[] = [];

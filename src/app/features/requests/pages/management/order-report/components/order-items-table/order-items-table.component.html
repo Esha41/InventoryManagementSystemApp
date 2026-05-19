@@ -12,6 +12,7 @@
         <th class="print-table-header">{{ 'requestsManagement.orderReport.table.itemName' | translate }}
         </th>
         <th class="print-table-header">{{ 'requestsManagement.orderReport.table.itemNo' | translate }}</th>
+        <th class="print-table-header">{{ 'requestsManagement.orderReport.table.associatedWeapons' | translate }}</th>
         <th class="print-table-header print-table-header-right">{{
           'requestsManagement.orderReport.table.quantity' | translate }}</th>
       </tr>
@@ -21,17 +22,28 @@
         <td class="print-table-cell">{{ i + 1 }}</td>
         <td class="print-table-cell">{{ item.name }}</td>
         <td class="print-table-cell">{{ item.caliber }}</td>
+        <td class="print-table-cell">
+          <div *ngIf="item.weaponAssociations?.length; else noAssociations" class="order-report-weapon-associations">
+            <app-weapon-association-list
+              [associations]="item.weaponAssociations"
+              [compact]="true"
+              [linkable]="false" />
+          </div>
+          <ng-template #noAssociations>
+            <span class="order-report-weapon-associations-empty">—</span>
+          </ng-template>
+        </td>
         <td class="print-table-cell print-table-cell-right">{{ item.quantity | number }}</td>
       </tr>
       <tr *ngIf="items.length === 0">
-        <td colspan="4" class="print-table-cell print-table-empty">
+        <td colspan="5" class="print-table-cell print-table-empty">
           {{ 'requestsManagement.orderReport.labels.noItemsFound' | translate }}
         </td>
       </tr>
     </tbody>
     <tfoot *ngIf="items.length > 0">
       <tr class="print-table-footer">
-        <td colspan="3" class="print-table-footer-cell">{{
+        <td colspan="4" class="print-table-footer-cell">{{
           'requestsManagement.orderReport.labels.totalQuantity' | translate }}</td>
         <td class="print-table-footer-cell print-table-cell-right">{{ totalQuantity | number }}
         </td>

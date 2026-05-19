@@ -4,6 +4,9 @@
       <h2 class="text-lg font-bold text-[var(--color-text)] sm:text-xl">
         {{ 'newIssueRequest.weaponAssociation.title' | translate }}
       </h2>
+      <p class="mt-1 text-sm text-[var(--color-text-muted)]">
+        {{ 'newIssueRequest.weaponAssociation.subtitle' | translate }}
+      </p>
     </div>
     <p
       *ngIf="ammunitionItems.length > 0 && !loadingWeapons && !weaponLoadError"
@@ -43,162 +46,253 @@
   </div>
 
   <div
-    *ngIf="!loadingWeapons && !weaponLoadError"
-    class="divide-y divide-[var(--color-border)]/70"
+    *ngIf="!loadingWeapons && !weaponLoadError && ammunitionItems.length === 0"
+    class="rounded-lg border border-[var(--color-border)] bg-[var(--color-background-muted)]/40 px-4 py-10 text-center text-sm text-[var(--color-text-muted)]"
   >
-    <article
-      *ngFor="let ammo of ammunitionItems; trackBy: trackByAmmoId"
-      class="py-5 first:pt-0 last:pb-0"
-    >
-      <div class="flex flex-col gap-4">
-        <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-          <div class="min-w-0 space-y-1">
-            <h3 class="text-base font-semibold leading-snug text-[var(--color-text)] break-words">
-              {{ ammo.nameEn || ammo.name }}
-            </h3>
-            <p class="text-sm text-[var(--color-text-muted)]">
-              <span *ngIf="ammo.caliber">{{ ammo.caliber }}</span>
-              <span *ngIf="ammo.caliber" class="px-1.5" aria-hidden="true">·</span>
-              <span class="tabular-nums">
-                {{ 'newIssueRequest.quantity' | translate }} {{ ammo.quantity }}
-              </span>
-            </p>
-          </div>
+    {{ 'common.noResultsFound' | translate }}
+  </div>
 
-          <div
-            *ngIf="firstOtherName(ammo.id)"
-            class="flex shrink-0 flex-col items-start gap-1 text-sm font-medium text-emerald-700 dark:text-emerald-400 sm:items-end"
-          >
-            <p class="inline-flex items-center gap-1.5">
-              <lucide-angular [img]="CircleCheck" class="h-4 w-4 shrink-0" />
-              {{ firstOtherName(ammo.id) }}
-              <span class="font-normal text-[var(--color-text-muted)]">
-                ({{ 'newIssueRequest.weaponAssociation.custom' | translate }})
-              </span>
-            </p>
-          </div>
-        </div>
-
-        <div class="space-y-3">
-          <div
-            class="flex flex-wrap gap-2"
-            role="group"
-            [attr.aria-label]="'newIssueRequest.weaponAssociation.title' | translate"
-          >
-            <button
-              type="button"
-              [attr.aria-pressed]="isCatalogSectionEnabled(ammo.id)"
-              (click)="toggleCatalogSection(ammo.id)"
-              class="rounded-lg px-4 py-2 text-sm font-semibold transition-colors"
-              [ngClass]="
-                isCatalogSectionEnabled(ammo.id)
-                  ? 'bg-[var(--color-brand)] text-white shadow-sm'
-                  : 'bg-[var(--color-background-muted)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-muted)]/80 hover:text-[var(--color-text)]'
-              "
+  <div
+    *ngIf="!loadingWeapons && !weaponLoadError && ammunitionItems.length > 0"
+    class="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] shadow-sm"
+  >
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse">
+        <thead>
+          <tr class="border-b-2 border-[var(--color-border)] bg-[var(--color-background-muted)]">
+            <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text)]">
+              {{ 'newIssueRequest.itemName' | translate }}
+            </th>
+            <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text)]">
+              {{ 'newIssueRequest.caliber' | translate }}
+            </th>
+            <th class="px-4 py-3 text-center text-sm font-semibold text-[var(--color-text)]">
+              {{ 'newIssueRequest.quantity' | translate }}
+            </th>
+            <th class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text)]">
+              {{ 'newIssueRequest.weaponAssociation.weapon' | translate }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let ammo of ammunitionItems; trackBy: trackByAmmoId">
+            <tr
+              class="cursor-pointer border-b border-[var(--color-border)] transition-colors hover:bg-[var(--color-background-hover)]"
+              [class.bg-[var(--color-background-active)]]="isAmmoExpanded(ammo.id)"
+              (click)="toggleAmmoExpanded(ammo, $event)"
             >
-              {{ 'newIssueRequest.weaponAssociation.catalogOption' | translate }}
-            </button>
-            <button
-              type="button"
-              [attr.aria-pressed]="isCustomSectionEnabled(ammo.id)"
-              (click)="toggleCustomSection(ammo.id)"
-              class="rounded-lg px-4 py-2 text-sm font-semibold transition-colors"
-              [ngClass]="
-                isCustomSectionEnabled(ammo.id)
-                  ? 'bg-[var(--color-brand)] text-white shadow-sm'
-                  : 'bg-[var(--color-background-muted)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-muted)]/80 hover:text-[var(--color-text)]'
-              "
-            >
-              {{ 'newIssueRequest.weaponAssociation.otherOption' | translate }}
-            </button>
-          </div>
-
-          <div *ngIf="isCatalogSectionEnabled(ammo.id)">
-            <app-dropdown
-              [multiple]="true"
-              [multiTriggerBadges]="true"
-              [formFieldAligned]="true"
-              [options]="weaponOptionsFor(ammo.id)"
-              [ngModel]="catalogWeaponIdsFor(ammo.id)"
-              (ngModelChange)="onCatalogDropdownChange(ammo, $event)"
-              [placeholder]="'newIssueRequest.weaponAssociation.selectWeapons' | translate"
-              [showSearch]="true"
-              [noDataText]="'common.noResultsFound' | translate"
-            >
-              <div
-                *ngIf="hasCaliberFilterEffect(ammo)"
-                appDropdownPanelFooter
-                class="space-y-2 bg-[var(--color-background-muted)]/30 p-2.5"
-              >
-                <div
-                  class="grid grid-cols-2 gap-1.5"
-                  role="radiogroup"
-                  [attr.aria-label]="'newIssueRequest.weaponAssociation.weaponListScope' | translate"
-                >
+              <td class="min-w-[10rem] px-4 py-3 font-medium text-[var(--color-text)]">
+                <div class="flex items-center gap-2">
                   <button
                     type="button"
-                    role="radio"
-                    [attr.aria-checked]="isViewingCompatibleWeapons(ammo.id)"
-                    class="rounded-md px-2.5 py-2 text-xs font-semibold transition-colors"
-                    [ngClass]="
-                      isViewingCompatibleWeapons(ammo.id)
-                        ? 'bg-[var(--color-brand)] text-white shadow-sm'
-                        : 'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
-                    "
-                    (click)="setWeaponCatalogScope(ammo.id, 'compatible')"
+                    class="shrink-0 rounded p-0.5 hover:bg-[var(--color-background-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand)]"
+                    (click)="toggleAmmoExpanded(ammo, $event); $event.stopPropagation()"
+                    [attr.aria-expanded]="isAmmoExpanded(ammo.id)"
+                    [attr.aria-label]="'newIssueRequest.weaponAssociation.title' | translate"
                   >
-                    {{ 'newIssueRequest.weaponAssociation.compatibleWeapons' | translate }}
+                    <lucide-angular
+                      [img]="isAmmoExpanded(ammo.id) ? ChevronDown : ChevronRight"
+                      class="h-4 w-4 text-[var(--color-text-muted)]"
+                    />
                   </button>
-                  <button
-                    type="button"
-                    role="radio"
-                    [attr.aria-checked]="isViewingAllWeapons(ammo.id)"
-                    class="rounded-md px-2.5 py-2 text-xs font-semibold transition-colors"
-                    [ngClass]="
-                      isViewingAllWeapons(ammo.id)
-                        ? 'bg-[var(--color-brand)] text-white shadow-sm'
-                        : 'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:text-[var(--color-text)]'
-                    "
-                    (click)="setWeaponCatalogScope(ammo.id, 'all')"
-                  >
-                    {{ 'newIssueRequest.weaponAssociation.viewAllWeapons' | translate }}
-                  </button>
+                  <span class="min-w-0 break-words">{{ ammo.nameEn || ammo.name }}</span>
                 </div>
-              </div>
-            </app-dropdown>
-          </div>
+              </td>
+              <td class="px-4 py-3 text-[var(--color-text)]">
+                {{ ammo.caliber || '—' }}
+              </td>
+              <td class="px-4 py-3 text-center tabular-nums text-[var(--color-text)]">
+                {{ ammo.quantity }}
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <span
+                    *ngIf="catalogSelectionCount(ammo.id) > 0"
+                    class="inline-flex items-center gap-1 rounded-full bg-[var(--color-brand)]/10 px-2 py-0.5 text-xs font-medium text-[var(--color-brand)]"
+                  >
+                    <lucide-angular [img]="CircleCheck" class="h-3 w-3" />
+                    {{
+                      'newIssueRequest.weaponAssociation.weaponsLinked'
+                        | translate: { count: catalogSelectionCount(ammo.id) }
+                    }}
+                  </span>
+                  <span
+                    *ngIf="firstOtherName(ammo.id)"
+                    class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-400"
+                  >
+                    {{ firstOtherName(ammo.id) }}
+                    <span class="font-normal opacity-80">
+                      ({{ 'newIssueRequest.weaponAssociation.custom' | translate }})
+                    </span>
+                  </span>
+                  <span
+                    *ngIf="!hasAssociationForAmmo(ammo.id)"
+                    class="text-xs text-[var(--color-text-muted)]"
+                  >
+                    —
+                  </span>
+                </div>
+              </td>
+            </tr>
 
-          <div *ngIf="isCustomSectionEnabled(ammo.id)" class="space-y-2">
-            <label
-              class="block text-sm font-medium text-[var(--color-text)]"
-              [attr.for]="'weapon-other-' + ammo.id"
-            >
-              {{ 'newIssueRequest.weaponAssociation.weaponName' | translate }}
-            </label>
-            <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <input
-                type="text"
-                [id]="'weapon-other-' + ammo.id"
-                [ngModel]="otherNameInput.get(ammo.id) ?? ''"
-                (ngModelChange)="onOtherNameChange(ammo.id, $event)"
-                (keydown.enter)="onOtherWeaponEnter(ammo, $event)"
-                maxlength="255"
-                [placeholder]="'newIssueRequest.weaponAssociation.weaponNamePlaceholder' | translate"
-                class="min-h-10 w-full flex-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm text-[var(--color-text)] outline-none transition-[border-color,box-shadow] placeholder:text-[var(--color-text-muted)] focus:border-[rgba(var(--app-dropdown-accent-color-rgb),0.6)] focus:shadow-[0_0_0_3px_rgba(var(--app-dropdown-accent-color-rgb),0.12)] disabled:cursor-not-allowed disabled:opacity-60"
-              />
-              <app-button
-                variant="primary"
-                class="w-full shrink-0 sm:w-auto"
-                [disabled]="!canConfirmOtherWeapon(ammo)"
-                (clicked)="onOtherWeaponConfirm(ammo)"
-              >
-                {{ 'newIssueRequest.weaponAssociation.confirm' | translate }}
-              </app-button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </article>
+            <tr *ngIf="isAmmoExpanded(ammo.id)" class="border-b border-[var(--color-border)]">
+              <td colspan="4" class="bg-[var(--color-background-muted)] p-0">
+                <div class="p-4 sm:p-6">
+                  <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+                    <div
+                      class="flex flex-col gap-2 lg:col-span-4"
+                      role="group"
+                      [attr.aria-label]="'newIssueRequest.weaponAssociation.weaponListScope' | translate"
+                      (click)="$event.stopPropagation()"
+                    >
+                      <button
+                        *ngIf="hasCaliberFilterEffect(ammo)"
+                        type="button"
+                        class="w-full rounded-lg px-3.5 py-2.5 text-start text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand)]"
+                        [ngClass]="
+                          isActivePanel(ammo.id, 'compatible')
+                            ? 'bg-[var(--color-brand)] text-white shadow-sm'
+                            : 'bg-[var(--color-background-muted)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]'
+                        "
+                        [attr.aria-pressed]="isActivePanel(ammo.id, 'compatible')"
+                        (click)="setActivePanel(ammo, 'compatible', $event)"
+                      >
+                        {{ 'newIssueRequest.weaponAssociation.compatibleWeapons' | translate }}
+                      </button>
+                      <button
+                        type="button"
+                        class="w-full rounded-lg px-3.5 py-2.5 text-start text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand)]"
+                        [ngClass]="
+                          isActivePanel(ammo.id, 'all')
+                            ? 'bg-[var(--color-brand)] text-white shadow-sm'
+                            : 'bg-[var(--color-background-muted)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]'
+                        "
+                        [attr.aria-pressed]="isActivePanel(ammo.id, 'all')"
+                        (click)="setActivePanel(ammo, 'all', $event)"
+                      >
+                        {{ 'newIssueRequest.weaponAssociation.viewAllWeapons' | translate }}
+                      </button>
+                      <button
+                        type="button"
+                        class="w-full rounded-lg px-3.5 py-2.5 text-start text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand)]"
+                        [ngClass]="
+                          isActivePanel(ammo.id, 'other')
+                            ? 'bg-[var(--color-brand)] text-white shadow-sm'
+                            : 'bg-[var(--color-background-muted)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)]'
+                        "
+                        [attr.aria-pressed]="isActivePanel(ammo.id, 'other')"
+                        (click)="setActivePanel(ammo, 'other', $event)"
+                      >
+                        {{ 'newIssueRequest.weaponAssociation.otherOption' | translate }}
+                      </button>
+                    </div>
+
+                    <div class="lg:col-span-8" (click)="$event.stopPropagation()">
+                      <ng-container *ngIf="activePanelFor(ammo.id) !== 'other'">
+                        <p class="mb-2 text-sm font-medium text-[var(--color-text)]">
+                          {{ 'newIssueRequest.weaponAssociation.selectWeapons' | translate }}
+                        </p>
+
+                        <div
+                          *ngIf="catalogWeaponsScopeCount(ammo) === 0"
+                          class="rounded-lg border border-dashed border-[var(--color-border)] bg-[var(--color-background)] px-4 py-6 text-center text-sm text-[var(--color-text-muted)]"
+                        >
+                          <p>{{ 'newIssueRequest.weaponAssociation.noCompatibleWeapons' | translate }}</p>
+                          <p class="mt-1 text-xs">
+                            {{ 'newIssueRequest.weaponAssociation.noCompatibleWeaponsHint' | translate }}
+                          </p>
+                        </div>
+
+                        <div *ngIf="catalogWeaponsScopeCount(ammo) > 0" class="space-y-2">
+                          <div class="relative flex min-w-0 items-center" (click)="$event.stopPropagation()">
+                            <span
+                              class="pointer-events-none absolute inset-y-0 start-0 z-[1] flex w-11 shrink-0 items-center justify-center text-[var(--color-text-muted)]"
+                              aria-hidden="true"
+                            >
+                              <lucide-angular [img]="Search" class="h-4 w-4" />
+                            </span>
+                            <input
+                              type="search"
+                              [ngModel]="weaponSearchFor(ammo.id)"
+                              (ngModelChange)="onWeaponSearchChange(ammo.id, $event)"
+                              [placeholder]="'newIssueRequest.weaponAssociation.searchWeapons' | translate"
+                              class="box-border min-h-10 w-full min-w-0 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] py-2 pe-3 ps-11 text-sm text-[var(--color-text)] outline-none transition-[border-color,box-shadow] placeholder:text-[var(--color-text-muted)] focus:border-[rgba(var(--app-dropdown-accent-color-rgb),0.6)] focus:shadow-[0_0_0_3px_rgba(var(--app-dropdown-accent-color-rgb),0.12)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand)]"
+                            />
+                          </div>
+
+                          <div
+                            *ngIf="filteredCatalogWeaponsForActiveScope(ammo).length === 0"
+                            class="rounded-lg border border-dashed border-[var(--color-border)] bg-[var(--color-background)] px-4 py-6 text-center text-sm text-[var(--color-text-muted)]"
+                          >
+                            {{ 'common.noResultsFound' | translate }}
+                          </div>
+
+                          <ul
+                            *ngIf="filteredCatalogWeaponsForActiveScope(ammo).length > 0"
+                            class="max-h-64 overflow-y-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] divide-y divide-[var(--color-border)]"
+                          >
+                          <li
+                            *ngFor="let weapon of filteredCatalogWeaponsForActiveScope(ammo); trackBy: trackByWeaponId"
+                          >
+                            <label
+                              class="flex cursor-pointer items-center gap-3 px-3 py-2.5 text-sm transition-colors hover:bg-[var(--color-background-hover)]"
+                              [class.bg-[var(--color-brand)]/5]="isWeaponSelected(ammo.id, weapon.id)"
+                              (click)="$event.stopPropagation()"
+                            >
+                              <input
+                                type="checkbox"
+                                class="h-4 w-4 shrink-0 accent-[var(--color-brand)]"
+                                [checked]="isWeaponSelected(ammo.id, weapon.id)"
+                                (change)="toggleWeaponInList(ammo, weapon.id, $event)"
+                              />
+                              <span class="min-w-0 break-words text-[var(--color-text)]">
+                                {{ weaponDisplayLabel(weapon) }}
+                              </span>
+                            </label>
+                          </li>
+                          </ul>
+                        </div>
+                      </ng-container>
+
+                      <ng-container *ngIf="activePanelFor(ammo.id) === 'other'">
+                        <div class="space-y-2">
+                          <label
+                            class="block text-sm font-medium text-[var(--color-text)]"
+                            [attr.for]="'weapon-other-' + ammo.id"
+                          >
+                            {{ 'newIssueRequest.weaponAssociation.weaponName' | translate }}
+                          </label>
+                          <div class="flex flex-row items-center gap-2">
+                            <input
+                              type="text"
+                              [id]="'weapon-other-' + ammo.id"
+                              [ngModel]="otherNameInput.get(ammo.id) ?? ''"
+                              (ngModelChange)="onOtherNameChange(ammo.id, $event)"
+                              (keydown.enter)="onOtherWeaponEnter(ammo, $event)"
+                              maxlength="255"
+                              [placeholder]="'newIssueRequest.weaponAssociation.weaponNamePlaceholder' | translate"
+                              class="min-h-10 w-full min-w-0 flex-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm text-[var(--color-text)] outline-none transition-[border-color,box-shadow] placeholder:text-[var(--color-text-muted)] focus:border-[rgba(var(--app-dropdown-accent-color-rgb),0.6)] focus:shadow-[0_0_0_3px_rgba(var(--app-dropdown-accent-color-rgb),0.12)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand)]"
+                            />
+                            <app-button
+                              variant="primary"
+                              class="shrink-0"
+                              [disabled]="!canConfirmOtherWeapon(ammo)"
+                              (clicked)="onOtherWeaponConfirm(ammo, $event)"
+                            >
+                              {{ 'newIssueRequest.weaponAssociation.confirm' | translate }}
+                            </app-button>
+                          </div>
+                        </div>
+                      </ng-container>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <footer class="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">

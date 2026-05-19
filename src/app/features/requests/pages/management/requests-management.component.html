@@ -4,8 +4,8 @@
 <div class="page-wrapper min-h-0 pb-0">
 
   <!-- ── Header (aligned with dashboard) ─────────────────────────── -->
-  <div class="border-b border-[var(--color-border)] bg-transparent mb-6">
-    <div class="page-container py-5 md:py-6">
+  <div class="border-b border-[var(--color-border)] bg-transparent mb-4">
+    <div class="page-container py-4 md:py-5">
       <div class="flex flex-col xl:flex-row xl:items-center gap-4 xl:gap-6">
         <div class="min-w-0 flex-shrink-0">
           <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)] tracking-tight leading-tight">
@@ -36,7 +36,7 @@
     </div>
   </div>
 
-  <div class="page-container space-y-6 pb-6">
+  <div class="page-container space-y-4 pb-6">
 
   <!-- ── Mobile Cards (< md, same breakpoint as dashboard list) ───── -->
   <div class="md:hidden space-y-3">
@@ -176,30 +176,31 @@
 
   <!-- ── Desktop Table (>= md, styled like dashboard list view) ───── -->
   <div class="hidden md:block bg-[var(--color-background)] rounded-xl border border-[var(--color-border)]
-              shadow-sm overflow-hidden mb-6">
+              shadow-sm overflow-hidden mb-5">
     <div class="overflow-x-auto">
       <table class="w-full min-w-[900px]">
         <thead>
           <tr class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
-            <th class="px-5 py-3 text-start text-[11px] font-semibold text-[var(--color-text-muted)]
-                       uppercase tracking-wider">
-              {{ 'dashboard.requestNo' | translate }}
-            </th>
-            <th class="px-5 py-3 text-start text-[11px] font-semibold text-[var(--color-text-muted)]
-                       uppercase tracking-wider">
-              {{ 'requestsManagement.requestDate' | translate }}
-            </th>
-            <th class="px-5 py-3 text-start text-[11px] font-semibold text-[var(--color-text-muted)]
-                       uppercase tracking-wider">
-              {{ 'requestsManagement.priority' | translate }}
-            </th>
-            <th class="px-5 py-3 text-start text-[11px] font-semibold text-[var(--color-text-muted)]
-                       uppercase tracking-wider">
-              {{ 'requestsManagement.requestType' | translate }}
-            </th>
-            <th class="px-5 py-3 text-start text-[11px] font-semibold text-[var(--color-text-muted)]
-                       uppercase tracking-wider">
-              {{ 'requestsManagement.status' | translate }}
+            <th *ngFor="let col of requestListSortColumns"
+              class="px-5 py-3 text-start text-[11px] font-semibold text-[var(--color-text-muted)]
+                     uppercase tracking-wider cursor-pointer select-none
+                     hover:bg-[var(--color-background-hover)] transition-colors"
+              (click)="sortByColumn(col.key)">
+              <div class="flex items-center gap-1.5">
+                {{ col.translationKey | translate }}
+                <lucide-angular
+                  *ngIf="sortState.column !== col.key" [img]="ArrowUpDown"
+                  class="w-3.5 h-3.5 text-[var(--color-text-muted)]/50">
+                </lucide-angular>
+                <lucide-angular
+                  *ngIf="sortState.column === col.key && sortState.direction === 'asc'" [img]="ArrowUp"
+                  class="w-3.5 h-3.5 text-[var(--color-brand)]">
+                </lucide-angular>
+                <lucide-angular
+                  *ngIf="sortState.column === col.key && sortState.direction === 'desc'" [img]="ArrowDown"
+                  class="w-3.5 h-3.5 text-[var(--color-brand)]">
+                </lucide-angular>
+              </div>
             </th>
             <th class="px-5 py-3 text-end text-[11px] font-semibold text-[var(--color-text-muted)]
                        uppercase tracking-wider w-16">

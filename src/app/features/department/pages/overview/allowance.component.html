@@ -2,20 +2,16 @@
   <div class="page-container flex justify-center">
     <div class="w-full max-w-4xl">
       <div class="space-y-6">
-        <!-- Header with Back Button -->
-        <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-4">
-            <button (click)="onBack()"
-              class="flex items-center space-x-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
-              <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
-              <span class="font-medium">{{ 'allowance.backToList' | translate }}</span>
-            </button>
-          </div>
-        </div>
-
-        <div>
+        <div class="flex flex-col gap-4">
+          <button
+            type="button"
+            (click)="onBack()"
+            class="detail-header-back-btn self-start"
+            [attr.aria-label]="'allowance.backToList' | translate">
+            <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
+            <span class="font-medium">{{ 'allowance.backToList' | translate }}</span>
+          </button>
           <h1 class="text-3xl font-bold text-[var(--color-text)]">{{ 'allowance.addAllowance' | translate }}</h1>
-          <p class="text-sm text-[var(--color-text-muted)] mt-2">{{ 'allowance.addSubtitle' | translate }}</p>
         </div>
 
         <div class="bg-[var(--color-background-muted)] rounded-xl p-8 border-2 border-[var(--color-border)]">

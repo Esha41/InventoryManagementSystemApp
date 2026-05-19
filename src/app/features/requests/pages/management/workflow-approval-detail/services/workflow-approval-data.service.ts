@@ -13,7 +13,7 @@ import { LookupService, LookupItem } from '@services/lookup.service';
 import { AssetSupplyService } from '@requests/services/asset-supply.service';
 import { BaseRequestDto } from '@models/workflow-approval.model';
 import { RequestItemDto } from '@models/request-item.model';
-import { RequestTypeEnum } from '@utils/request-mapper.utils';
+import { resolveRequestDetailEndpoint } from '@utils/request-detail-endpoint.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
@@ -59,42 +59,8 @@ export class WorkflowApprovalDataService {
    */
   loadRequestItems(baseRequest: BaseRequestDto, requestId: number, destroy$: Subject<void>): Promise<void> {
     return new Promise((resolve) => {
-      let endpoint = '';
-
-      const requestTypeValue = baseRequest.requestType;
-
-      if (typeof requestTypeValue === 'number') {
-        switch (requestTypeValue) {
-          case RequestTypeEnum.Order:
-            endpoint = API_ENDPOINTS.ORDERS.BY_ID(requestId);
-            break;
-          case RequestTypeEnum.Return:
-            endpoint = API_ENDPOINTS.RETURNS.BY_ID(requestId);
-            break;
-          case RequestTypeEnum.Discard:
-            endpoint = API_ENDPOINTS.DISCARDS.BY_ID(requestId);
-            break;
-          default:
-            resolve();
-            return;
-        }
-      } else if (typeof requestTypeValue === 'string') {
-        const requestTypeLower = requestTypeValue.toLowerCase();
-        switch (requestTypeLower) {
-          case 'order':
-            endpoint = API_ENDPOINTS.ORDERS.BY_ID(requestId);
-            break;
-          case 'return':
-            endpoint = API_ENDPOINTS.RETURNS.BY_ID(requestId);
-            break;
-          case 'discard':
-            endpoint = API_ENDPOINTS.DISCARDS.BY_ID(requestId);
-            break;
-          default:
-            resolve();
-            return;
-        }
-      } else {
+      const endpoint = resolveRequestDetailEndpoint(baseRequest.requestType, requestId);
+      if (!endpoint) {
         resolve();
         return;
       }

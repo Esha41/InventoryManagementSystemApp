@@ -28,7 +28,7 @@
     "systemAutoRejectedBy": "النظام",
     "systemAutoRejectedRole": "نظام الرفض التلقائي",
     "noApprovalWorkflowData": "لا توجد بيانات سير عمل الموافقة متاحة",
-    "requestItems": "مواد الطلب",
+    "requestItems":  "المواد المطلوبة",
     "items": "مواد",
     "review": "مراجعة التوريد",
     "reviewItems": "مراجعة المواد",
@@ -45,7 +45,7 @@
     "quantityMinError": "يجب أن تكون الكمية على الأقل {{min}}.",
     "quantityMaxError": "لا يمكن أن تتجاوز الكمية {{max}} (يمكنك التقليل فقط).",
     "notesPlaceholder": "أضف أي ملاحظات (اختياري)",
-    "itemName": "اسم الماده",
+    "itemName": "اسم المادة",
     "itemCode": "رقم المادة",
     "nsn": "NSN",
     "quantity": "الكمية",
@@ -64,7 +64,7 @@
     "supplyDate": "تاريخ الصرف",
     "supplyDetails": "تفاصيل الصرف",
     "workflowSupplySummary": {
-      "title": "ملخص التوريد وتاريخ الاستلام",
+      "title": "ملخص",
       "provisionalBanner": "يعكس هذا المعلومات الحالية للتوريد وتاريخ الاستلام وقد يتغير حتى اكتمال الطلب بالكامل.",
       "loadError": "تعذر تحميل ملخص التوريد.",
       "loading": "جاري تحميل ملخص التوريد...",
@@ -76,7 +76,6 @@
       "receiverRank": "الرتبة",
       "receiverMilitaryId": "الرقم العسكري",
       "supplyNotes": "ملاحظات التوريد",
-      "linesTitle": "بنود التوريد",
       "colItemName": "المادة",
       "colItemNo": "رقم المادة",
       "colRequested": "المطلوب",
@@ -229,7 +228,7 @@
     "selectDeliveryDate": "اختر تاريخ التسليم",
     "setDeliveryDate": "تحديد تاريخ التسليم",
     "valueSet": "تم التحديد",
-    "update": "تحديث",
+    "update": "تعديل",
     "processReturnItems": "مراجعة وإكمال الطلب",
     "goToProcessReturnItems": "مراجعة وإكمال الطلب"
     ,"approvedThroughDelegation": "تمت الموافقة بالإنـابـة"

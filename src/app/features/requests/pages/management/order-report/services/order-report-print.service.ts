@@ -579,6 +579,68 @@ export class OrderReportPrintService {
       tr {
         page-break-inside: avoid;
       }
+
+      .order-report-weapon-associations,
+      .order-report-weapon-associations-empty {
+        color: #000 !important;
+        font-size: 9pt !important;
+        word-break: break-word !important;
+      }
+
+      .order-report-weapon-associations ul {
+        list-style: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .order-report-weapon-associations li {
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        margin: 0 0 4px 0 !important;
+        padding: 0 !important;
+        color: #000 !important;
+        line-height: 1.35 !important;
+      }
+
+      .order-report-weapon-associations li > span[aria-hidden="true"] {
+        display: flex !important;
+        align-items: center !important;
+        align-self: stretch !important;
+        min-height: 1.35em !important;
+        flex-shrink: 0 !important;
+        margin: 0 !important;
+        width: auto !important;
+        height: auto !important;
+        background: none !important;
+      }
+
+      .order-report-weapon-associations li > span[aria-hidden="true"] > span {
+        display: block !important;
+        width: 6px !important;
+        height: 6px !important;
+        border-radius: 50% !important;
+        background: #333 !important;
+        flex-shrink: 0 !important;
+      }
+
+      .order-report-weapon-associations span {
+        color: #000 !important;
+        background: none !important;
+        border: none !important;
+        font-size: 9pt !important;
+      }
+
+      .order-report-weapon-associations .inline-flex {
+        display: inline-flex !important;
+        border: 1px solid #666 !important;
+        background: #f5f5f5 !important;
+        color: #000 !important;
+        font-size: 7pt !important;
+        padding: 1px 6px !important;
+        border-radius: 4px !important;
+        text-transform: uppercase !important;
+      }
     `;
   }
 }

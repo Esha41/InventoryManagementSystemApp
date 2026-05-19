@@ -9,8 +9,6 @@ export interface RoleRefDto {
 }
 
 export interface OrderAutoRejectSettingsDto {
-  triggerRoleId: string | null;
-  triggerRoleName: string | null;
   thresholdDays: number;
   scanCron: string;
   isEnabled: boolean;
@@ -20,7 +18,6 @@ export interface OrderAutoRejectSettingsDto {
 }
 
 export interface UpdateOrderAutoRejectSettingsDto {
-  triggerRoleId: string;
   thresholdDays: number;
   scanCron: string;
   isEnabled: boolean;

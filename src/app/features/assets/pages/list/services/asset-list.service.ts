@@ -274,13 +274,13 @@ export class AssetListService {
       const fieldMap: Record<string, string> = {
         name: 'Name',
         itemNo: 'ItemNo',
-        partNo: 'PartNo',
         nsn: 'Nsn',
         weaponType: 'Type.NameEn',
         primaryPurpose: 'BaseItemPrimaryPurposes.Min(PrimaryPurpos.NameEn)',
         caliber: 'LookupCaliber.NameEn',
         price: 'Price',
-        minimumQuantity: 'MinimumQuantity'
+        minimumQuantity: 'MinimumQuantity',
+        criticalQuantity: 'CriticalQuantity'
       };
 
       sortField = fieldMap[sortState.column] || sortState.column;
@@ -407,13 +407,13 @@ export class AssetListService {
       const fieldMap: Record<string, string> = {
         name: 'Name',
         itemNo: 'ItemNo',
-        partNo: 'PartNo',
         nsn: 'Nsn',
         caseType: 'CaseType.NameEn',
         primaryPurpose: 'BaseItemPrimaryPurposes.Min(PrimaryPurpos.NameEn)',
         caliber: 'LookupCaliber.NameEn',
         price: 'Price',
-        minimumQuantity: 'MinimumQuantity'
+        minimumQuantity: 'MinimumQuantity',
+        criticalQuantity: 'CriticalQuantity'
       };
 
       sortField = fieldMap[sortState.column] || sortState.column;
@@ -559,7 +559,6 @@ export class AssetListService {
       const fieldMap: Record<string, string> = {
         name: 'Name',
         itemNo: 'ItemNo',
-        partNo: 'PartNo',
         nsn: 'Nsn',
         armNumber: 'ArmNumber',
         primaryPurpose: 'BaseItemPrimaryPurposes.Min(PrimaryPurpos.NameEn)',
@@ -567,7 +566,8 @@ export class AssetListService {
         unNumber: 'UNNumber',
         compatibility: 'Compatibility.NameEn',
         price: 'Price',
-        minimumQuantity: 'MinimumQuantity'
+        minimumQuantity: 'MinimumQuantity',
+        criticalQuantity: 'CriticalQuantity'
       };
 
       sortField = fieldMap[sortState.column] || sortState.column;

@@ -64,7 +64,7 @@
     "supplyDate": "Supply Date",
     "supplyDetails": "Supply Details",
     "workflowSupplySummary": {
-      "title": "Supply & pickup summary",
+      "title": "Summary",
       "provisionalBanner": "This reflects the current supply and pickup information and may change until the order is fully completed.",
       "loadError": "Could not load supply summary.",
       "loading": "Loading supply summary...",
@@ -76,7 +76,6 @@
       "receiverRank": "Rank",
       "receiverMilitaryId": "Military ID",
       "supplyNotes": "Supply notes",
-      "linesTitle": "Supplied lines",
       "colItemName": "Item",
       "colItemNo": "Item No",
       "colRequested": "Requested",

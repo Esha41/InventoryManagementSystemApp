@@ -41,7 +41,6 @@ export interface ReturnDetailsState {
   priority: number;
   requestPurposeId: number | null;
   requestPurposeNotes: string;
-  notes: string;
   selectedFiles: File[];
   /** Per-purpose attachment slots (+ optional parallel otherFiles unused; legacy bucket is `selectedFiles`). */
   attachmentUploads: AttachmentUploadsState;
@@ -94,7 +93,6 @@ export function createInitialDetailsState(): ReturnDetailsState {
     priority: 1,
     requestPurposeId: null,
     requestPurposeNotes: '',
-    notes: '',
     selectedFiles: [],
     attachmentUploads: createInitialAttachmentUploadsState()
   };

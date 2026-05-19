@@ -1,28 +1,24 @@
-<div class="min-h-screen bg-[var(--color-background-muted)] pb-12">
-  <!-- Modern Header - height aligned with sidebar top section (h-14 md:h-16) -->
-  <div class="bg-[var(--color-background)] border-b border-[var(--color-border)] shadow-custom-sm mb-4 sm:mb-6 md:mb-8 min-h-[3.5rem] md:min-h-16 flex items-start">
-    <div class="w-full mx-auto px-4 md:px-6 lg:px-8 py-2 md:py-3">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-        <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-          <button (click)="goBack()"
-            class="group self-start sm:self-auto inline-flex items-center gap-2 px-3 sm:px-4 py-2 text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-background-hover)] rounded-lg transition-all duration-200">
-            <lucide-angular [img]="backIcon" class="h-4 w-4 group-hover:-translate-x-0.5 transition-transform"
-              [class.group-hover:translate-x-0.5]="isRTL"></lucide-angular>
-            <span class="hidden sm:inline">{{ 'common.back' | translate }}</span>
-          </button>
-          <div class="hidden sm:block h-8 w-px bg-[var(--color-border)]"></div>
-          <div>
-            <h1 class="text-xl sm:text-2xl font-bold text-[var(--color-text)]">
-              {{ 'requestsManagement.orderReport.title' | translate }}
-            </h1>
-          </div>
-        </div>
+<div class="page-wrapper min-h-0">
+  <!-- Header — same stripe treatment as requests management / dashboard lists -->
+  <div class="border-b border-[var(--color-border)] bg-transparent mb-4">
+    <div class="page-container py-4 md:py-5">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center min-w-0">
+        <button
+          type="button"
+          (click)="goBack()"
+          [attr.aria-label]="'common.back' | translate"
+          class="shrink-0 p-2.5 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors border border-[var(--color-border)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-2">
+          <lucide-angular [img]="backIcon" class="h-5 w-5 text-[var(--color-text)]"></lucide-angular>
+        </button>
+        <div class="hidden sm:block h-8 w-px bg-[var(--color-border)] shrink-0"></div>
+        <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)] tracking-tight leading-tight min-w-0">
+          {{ 'requestsManagement.orderReport.title' | translate }}
+        </h1>
       </div>
     </div>
   </div>
 
-  <!-- Main Content -->
-  <div class="w-full mx-auto px-4 md:px-6 lg:px-8">
+  <div class="page-container space-y-4 md:space-y-6 pb-8">
     <div class="grid gap-4 md:gap-6 lg:gap-8 transition-all duration-300 ease-in-out lg:grid-cols-[minmax(380px,420px)_1fr] xl:grid-cols-[minmax(420px,480px)_1fr]">
       <!-- Orders List Sidebar -->
       <app-order-list
@@ -37,7 +33,6 @@
         [totalPages]="ordersTotalPages"
         [rowsPerPage]="ordersRowsPerPage"
         (orderSelected)="selectOrder($event)"
-        (refreshRequested)="loadOrders()"
         (searchChanged)="onSearchChange($event)"
         (pageChange)="onOrdersPageChange($event)"
         (rowsPerPageChange)="onOrdersRowsPerPageChange($event)">
@@ -61,17 +56,17 @@
           *ngIf="!detailsLoading && !errorMessage && orderSummary && orderSummary.orderId && orderSummary.orderId.trim() !== ''; else selectOrderPlaceholder">
           <!-- Action Bar (Screen Only) -->
           <div
-            class="screen-only bg-blue-600 rounded-xl sm:rounded-2xl shadow-custom-xl border-2 border-[var(--color-primary-dark)] p-4 sm:p-6 text-white">
+            class="screen-only rounded-xl sm:rounded-2xl shadow-custom-xl border-2 border-[var(--color-brand-dark)] bg-[var(--color-brand)] p-4 sm:p-6 text-[var(--color-text-inverse)]">
             <div class="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div class="min-w-0 flex-1">
                 <h2 class="text-lg sm:text-xl lg:text-2xl font-bold mb-1 sm:mb-1.5 truncate">{{ orderSummary.orderId }}</h2>
-                <p class="text-xs sm:text-sm text-white/80 line-clamp-2 sm:line-clamp-none">
+                <p class="text-xs sm:text-sm opacity-80 line-clamp-2 sm:line-clamp-none">
                   {{ resolveUsagePurpose() }}
                 </p>
               </div>
               <div class="flex-shrink-0">
                 <button type="button" (click)="printReport()"
-                  class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg sm:rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-white transition-all hover:bg-white/20 hover:scale-105 active:scale-95">
+                  class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-lg sm:rounded-xl bg-[var(--color-text-inverse)]/12 backdrop-blur-sm border border-[var(--color-text-inverse)]/25 px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-[var(--color-text-inverse)] transition-all hover:bg-[var(--color-text-inverse)]/20 hover:scale-105 active:scale-95">
                   <lucide-angular [img]="Printer" class="h-4 w-4"></lucide-angular>
                   <span class="hidden sm:inline">{{ 'requestsManagement.orderReport.print' | translate }}</span>
                   <span class="sm:hidden">{{ 'common.print' | translate }}</span>

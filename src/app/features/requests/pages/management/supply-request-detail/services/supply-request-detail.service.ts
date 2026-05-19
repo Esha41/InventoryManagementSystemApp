@@ -16,7 +16,7 @@ import { API_ENDPOINTS } from '@constants/app.constants';
 import { BaseRequestDto, WorkflowApprovalStep } from '@models/workflow-approval.model';
 import { SupplyRequestDetail, OrderItem } from '@models/supply-request.model';
 import { mapOrderToRequestDetail, applySuggestionToItems, capOrderItemDischargeToApprovedQuantity } from '../../utils/supply-request.mapper';
-import { mapLotDetailsToLotItems } from '@utils/lot.utils';
+import { SupplyRequestDraftLotService } from './supply-request-draft-lot.service';
 import { mapApprovalHistory, mapRequestStatus } from '@utils/request-mapper.utils';
 import { ConfigService } from '@services/config.service';
 import { ToastService } from '@services/toast.service';
@@ -47,7 +47,8 @@ export class SupplyRequestDetailService {
     private config: ConfigService,
     private toastService: ToastService,
     private translate: TranslateService,
-    private router: Router
+    private router: Router,
+    private draftLotService: SupplyRequestDraftLotService
   ) { }
 
   /**
@@ -199,16 +200,18 @@ export class SupplyRequestDetailService {
           !!existingSupply && !!existingSupply.supplyDetails && existingSupply.supplyDetails.length > 0;
 
         if (hasEmptySuggestions && hasExistingSupply && existingSupply) {
-          return this.loadLotsForExistingSelections(
-            requestDetail,
-            existingSupply.supplyDetails,
-            existingSupply.id
-          ).pipe(map(() => ({ suggestion, existingSupply })));
+          return this.draftLotService
+            .loadLotsForExistingSelections(
+              requestDetail,
+              existingSupply.supplyDetails,
+              existingSupply.id
+            )
+            .pipe(map(() => ({ suggestion, existingSupply })));
         }
 
         this.applySuggestions(requestDetail, suggestion);
         if (existingSupply?.supplyDetails?.length) {
-          const { notFoundCount } = this.restoreExistingSelections(
+          const { notFoundCount } = this.draftLotService.restoreSelectionsOnRequestDetail(
             requestDetail,
             existingSupply.supplyDetails
           );
@@ -228,146 +231,6 @@ export class SupplyRequestDetailService {
   applySuggestions(requestDetail: SupplyRequestDetail, suggestion: OrderSupplySuggestionDto): void {
     const currentLang = getCurrentLang(this.translate);
     applySuggestionToItems(requestDetail, suggestion, currentLang);
-  }
-
-  /**
-   * Restore existing selections from draft supply
-   */
-  restoreExistingSelections(
-    requestDetail: SupplyRequestDetail,
-    supplyDetails: CreateSupplyDetailDto[]
-  ): { restoredCount: number; notFoundCount: number } {
-    if (!requestDetail || !supplyDetails || supplyDetails.length === 0) {
-      return { restoredCount: 0, notFoundCount: 0 };
-    }
-
-    const selectionsByItemAndLot = new Map<string, number>();
-    supplyDetails.forEach(detail => {
-      if (detail.itemId && detail.lot != null && detail.lot !== '' && detail.quantity > 0) {
-        const key = `${detail.itemId}_${detail.lot}`;
-        selectionsByItemAndLot.set(key, detail.quantity);
-      }
-    });
-
-    let restoredCount = 0;
-    let notFoundCount = 0;
-
-    requestDetail.items.forEach(item => {
-      if (!item.availableLots || item.availableLots.length === 0) {
-        return;
-      }
-
-      item.availableLots.forEach(lot => {
-        const key = `${item.itemId}_${lot.lotNumber}`;
-        const existingQuantity = selectionsByItemAndLot.get(key);
-        if (existingQuantity !== undefined) {
-          lot.selectedQuantity = existingQuantity;
-          restoredCount++;
-        }
-      });
-
-      item.totalSelectedForDischarge = item.availableLots.reduce(
-        (sum, lot) => sum + lot.selectedQuantity,
-        0
-      );
-      capOrderItemDischargeToApprovedQuantity(item);
-    });
-
-    selectionsByItemAndLot.forEach((quantity, key) => {
-      const firstSep = key.indexOf('_');
-      if (firstSep < 0) return;
-      const itemId = key.slice(0, firstSep);
-      const lotNumber = key.slice(firstSep + 1);
-      const item = requestDetail.items.find(i => i.itemId.toString() === itemId);
-      if (item) {
-        const lot = item.availableLots?.find(l => String(l.lotNumber) === lotNumber);
-        if (!lot) {
-          notFoundCount++;
-        }
-      }
-    });
-
-    return { restoredCount, notFoundCount };
-  }
-
-  /**
-   * Load lots for items with existing selections but no suggestions
-   * @param requestDetail Request detail
-   * @param supplyDetails Existing supply details
-   * @param excludeSupplyId Optional supply ID to exclude from availability calculations (when replacing supply)
-   */
-  loadLotsForExistingSelections(
-    requestDetail: SupplyRequestDetail,
-    supplyDetails: CreateSupplyDetailDto[],
-    excludeSupplyId?: number
-  ): Observable<void> {
-    if (!requestDetail || !supplyDetails || supplyDetails.length === 0) {
-      return of(undefined);
-    }
-
-    const detailsByItem = new Map<number, CreateSupplyDetailDto[]>();
-    supplyDetails.forEach(detail => {
-      if (detail.itemId) {
-        if (!detailsByItem.has(detail.itemId)) {
-          detailsByItem.set(detail.itemId, []);
-        }
-        detailsByItem.get(detail.itemId)!.push(detail);
-      }
-    });
-
-    const loadPromises: Observable<{ item: OrderItem; lots: LotDetailDto[]; details: CreateSupplyDetailDto[] }>[] = [];
-
-    detailsByItem.forEach((details, itemId) => {
-      const item = requestDetail.items.find(i => i.itemId === itemId);
-      if (item) {
-        loadPromises.push(
-          this.inventoryService.getAvailableLotsForQuantity(itemId, item.approvedQuantity, undefined, excludeSupplyId).pipe(
-            map((lots) => ({ item, lots, details }))
-          )
-        );
-      }
-    });
-
-    if (loadPromises.length === 0) {
-      return of(undefined);
-    }
-
-    return forkJoin(loadPromises).pipe(
-      tap((results) => {
-        results.forEach(({ item, lots, details }) => {
-          if (!item || !lots || lots.length === 0) {
-            return;
-          }
-
-          item.availableLots = mapLotDetailsToLotItems(lots);
-
-          const selectionsByLot = new Map<string, number>();
-          details.forEach((detail) => {
-            if (detail.lot != null && detail.lot !== '' && detail.quantity > 0) {
-              selectionsByLot.set(String(detail.lot), detail.quantity);
-            }
-          });
-
-          item.availableLots.forEach((lot) => {
-            const selectedQty = selectionsByLot.get(String(lot.lotNumber));
-            if (selectedQty !== undefined) {
-              lot.selectedQuantity = selectedQty;
-            }
-          });
-
-          item.totalSelectedForDischarge = item.availableLots.reduce(
-            (sum: number, lot) => sum + lot.selectedQuantity,
-            0
-          );
-          capOrderItemDischargeToApprovedQuantity(item);
-        });
-      }),
-      map(() => undefined),
-      catchError((error) => {
-        this.config.logError('Failed to load lots for existing selections', error);
-        return of(undefined);
-      })
-    );
   }
 
   /**

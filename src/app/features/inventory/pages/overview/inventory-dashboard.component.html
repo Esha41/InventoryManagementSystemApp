@@ -3,20 +3,13 @@
   <!-- ── Header ────────────────────────────────────────────────────────────── -->
   <div class="bg-gradient-to-r from-[var(--color-brand)]/10 via-[var(--color-brand)]/5 to-transparent border-b border-[var(--color-border)] mb-6 md:mb-8">
     <div class="page-container py-5 md:py-6">
-      <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+      <div class="flex flex-col lg:flex-row items-start lg:items-center gap-4">
 
-        <!-- Title + refresh -->
         <div class="min-w-0 flex-1">
           <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">
             {{ 'inventoryDashboard.title' | translate }}
           </h1>
         </div>
-
-        <button type="button" (click)="onRefresh()"
-          class="flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text-muted)] hover:text-[var(--color-brand)] hover:border-[var(--color-brand)] transition-colors text-sm font-medium shrink-0 self-start sm:self-center">
-          <lucide-angular [img]="RefreshCw" class="w-4 h-4" [class.animate-spin]="isLoading"></lucide-angular>
-          <span class="hidden sm:inline">{{ 'common.refresh' | translate }}</span>
-        </button>
 
       </div>
 
@@ -91,11 +84,11 @@
         (ordersAwaitingClick)="onOrdersAwaitingClick()">
       </app-inventory-dashboard-weapon-pipeline>
 
-      <!-- ── Item Summary: same app-card + inner bordered table shell as asset list ── -->
-      <app-card [shadow]="true" class="mb-6 md:mb-8 w-full min-w-0 block">
+      <!-- ── Item Summary: card padding off + compact px-4 insets ── -->
+      <app-card [shadow]="true" [padding]="false" class="mb-6 md:mb-8 w-full min-w-0 block">
 
         <!-- Section header -->
-        <div class="pb-4 border-b border-[var(--color-border)] flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 min-w-0">
+        <div class="px-4 pt-4 pb-3 border-b border-[var(--color-border)] flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 min-w-0">
           <div class="min-w-0">
             <h2 class="text-base sm:text-lg font-semibold text-[var(--color-text)]">
               {{ 'inventoryDashboard.itemSummary.title' | translate }}
@@ -126,8 +119,8 @@
         </div>
 
         <!-- ── Filters ───────────────────────────────────────────────────── -->
-        <div *ngIf="depots.length > 0 || itemSummaries.length > 0" class="-mx-4 sm:-mx-6 px-4 sm:px-6 py-3 border-b border-[var(--color-border)] bg-[var(--color-background-muted)]/50">
-          <div class="flex flex-col lg:flex-row flex-wrap gap-3 lg:items-end">
+        <div *ngIf="depots.length > 0 || itemSummaries.length > 0" class="border-b border-[var(--color-border)] bg-[var(--color-background-muted)]/50 px-4 py-2">
+          <div class="flex flex-col lg:flex-row flex-wrap gap-2.5 lg:items-end">
 
             <!-- Depot multi-select (Apply/Cancel/Clear at top of panel) -->
             <div *ngIf="depots.length > 0" class="w-full min-w-[200px] lg:max-w-xs lg:flex-none">
@@ -229,13 +222,13 @@
               </div>
             </ng-container>
           </div>
-          <p *ngIf="showTableTotalsHint" class="text-xs text-[var(--color-text-muted)] mt-2">
+          <p *ngIf="showTableTotalsHint" class="text-xs text-[var(--color-text-muted)] mt-1.5">
             {{ 'inventoryDashboard.itemSummary.totalsHint' | translate }}
           </p>
         </div>
 
         <!-- ── Tabs ──────────────────────────────────────────────────────── -->
-        <div *ngIf="showItemTypeTabs" class="-mx-4 sm:-mx-6 px-4 sm:px-6 border-b border-[var(--color-border)] min-w-0">
+        <div *ngIf="showItemTypeTabs" class="border-b border-[var(--color-border)] px-4 min-w-0">
           <nav class="flex gap-1 overflow-x-auto overflow-y-hidden -mb-px pb-px" aria-label="Item type tabs">
             <button *ngFor="let tab of [
               { id: 'ammunition', label: 'inventoryDashboard.tabs.ammunition', count: itemTypeCountMetrics.tabCounts.ammunition },
@@ -245,8 +238,8 @@
             type="button"
             (click)="setActiveTab($any(tab.id))"
             [class]="activeTab === tab.id
-              ? 'whitespace-nowrap border-b-2 border-[var(--color-brand)] text-[var(--color-brand)] px-3 py-3 text-sm font-semibold transition-colors'
-              : 'whitespace-nowrap border-b-2 border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:border-[var(--color-border)] px-3 py-3 text-sm font-medium transition-colors'">
+              ? 'whitespace-nowrap border-b-2 border-[var(--color-brand)] text-[var(--color-brand)] px-3 py-2.5 text-sm font-semibold transition-colors'
+              : 'whitespace-nowrap border-b-2 border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:border-[var(--color-border)] px-3 py-2.5 text-sm font-medium transition-colors'">
               {{ tab.label | translate }}
               <span class="ms-1.5 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-xs font-medium"
                 [class]="activeTab === tab.id
@@ -258,14 +251,15 @@
           </nav>
         </div>
 
+        <div class="min-w-0 px-4 pb-4 pt-3">
         <!-- Empty state (no data from API) -->
-        <div *ngIf="itemSummaries.length === 0" class="flex flex-col items-center justify-center py-16 text-center px-4 mt-4 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)]">
+        <div *ngIf="itemSummaries.length === 0" class="flex flex-col items-center justify-center py-16 text-center px-4 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)]">
           <lucide-angular [img]="Package" class="w-12 h-12 text-[var(--color-text-muted)] mb-3"></lucide-angular>
           <p class="text-[var(--color-text-muted)]">{{ 'inventoryDashboard.itemSummary.empty' | translate }}</p>
         </div>
 
         <!-- No rows match filters -->
-        <div *ngIf="itemSummaries.length > 0 && filteredItemCount === 0" class="flex flex-col items-center justify-center py-12 text-center px-4 mt-4 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)]">
+        <div *ngIf="itemSummaries.length > 0 && filteredItemCount === 0" class="flex flex-col items-center justify-center py-12 text-center px-4 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)]">
           <p class="text-[var(--color-text-muted)]">{{ 'inventoryDashboard.itemSummary.noFilterMatch' | translate }}</p>
           <button type="button" (click)="clearTableFilters()"
             class="mt-4 flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors w-full sm:w-auto justify-center">
@@ -276,7 +270,7 @@
 
         <!-- Table + totals (tfoot) + pagination share one bordered shell so widths align -->
         <div *ngIf="itemSummaries.length > 0 && filteredItemCount > 0"
-          class="flex w-full min-w-0 max-w-full flex-col mt-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] overflow-hidden transition-opacity"
+          class="flex w-full min-w-0 max-w-full flex-col rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] overflow-hidden transition-opacity"
           [class.opacity-60]="isItemTableLoading">
           <app-inventory-item-summary-table class="block min-w-0 w-full"
             [activeTab]="activeTab"
@@ -332,6 +326,7 @@
               </span>
             </div>
           </div>
+        </div>
         </div>
 
       </app-card>

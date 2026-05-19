@@ -68,6 +68,7 @@ import {
   computeOrderedQuantity,
   computeUsedQuantity,
   resolveCurrentRequesterName,
+  resolveRequesterDepartmentDisplay,
   syncRequesterNameFromUserDetails as syncRequesterNameUtil,
   hasWeaponInSelection,
   getDisplayedItemTypeOptions,
@@ -241,6 +242,13 @@ export class IssueRequestFacade {
     const purpose = this.requestPurposeState.requestPurposesSource.find(p => p.id === id);
     const reqs = purpose?.attachmentRequirements ?? [];
     return [...reqs].sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+  }
+  get currentRequesterDepartmentDisplay(): string {
+    const lang = this.translate.currentLang || this.translate.defaultLang || 'en';
+    return resolveRequesterDepartmentDisplay(
+      this.userContextState.currentUserDetails,
+      lang
+    );
   }
 
   get selectedItemsReserveDetails(): ReserveDetailItem[] {

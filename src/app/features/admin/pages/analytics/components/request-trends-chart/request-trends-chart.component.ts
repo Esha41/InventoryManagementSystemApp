@@ -90,10 +90,10 @@ export class RequestTrendsChartComponent implements OnInit, OnDestroy {
         const tooltipBg = isDarkMode ? 'rgba(26, 29, 36, 0.95)' : 'rgba(255, 255, 255, 0.9)';
         const backgroundColor = isDarkMode ? '#1A1D24' : '#FFFFFF';
 
+        // Discard series omitted while discard request flow is disabled in the app.
         forkJoin({
             orders: this.translate.get('adminDashboard.charts.orders'),
-            returns: this.translate.get('adminDashboard.charts.returns'),
-            discards: this.translate.get('adminDashboard.charts.discards')
+            returns: this.translate.get('adminDashboard.charts.returns')
         }).subscribe(translations => {
             this.chartOptions = {
                 backgroundColor: backgroundColor,
@@ -115,7 +115,7 @@ export class RequestTrendsChartComponent implements OnInit, OnDestroy {
                     shadowColor: isDarkMode ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.1)'
                 },
                 legend: {
-                    data: [translations.orders, translations.returns, translations.discards],
+                    data: [translations.orders, translations.returns],
                     bottom: 0,
                     icon: 'circle',
                     textStyle: {
@@ -212,35 +212,6 @@ export class RequestTrendsChartComponent implements OnInit, OnDestroy {
                                 colorStops: [
                                     { offset: 0, color: 'rgba(16, 185, 129, 0.2)' },
                                     { offset: 1, color: 'rgba(16, 185, 129, 0.01)' }
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        name: translations.discards,
-                        type: 'line',
-                        smooth: true,
-                        data: data.discards,
-                        symbolSize: 8,
-                        lineStyle: {
-                            width: 4,
-                            color: '#f59e0b'
-                        },
-                        itemStyle: {
-                            color: '#f59e0b',
-                            borderWidth: 2,
-                            borderColor: '#fff'
-                        },
-                        areaStyle: {
-                            color: {
-                                type: 'linear',
-                                x: 0,
-                                x2: 0,
-                                y: 0,
-                                y2: 1,
-                                colorStops: [
-                                    { offset: 0, color: 'rgba(245, 158, 11, 0.2)' },
-                                    { offset: 1, color: 'rgba(245, 158, 11, 0.01)' }
                                 ]
                             }
                         }

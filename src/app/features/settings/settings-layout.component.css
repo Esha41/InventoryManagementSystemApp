@@ -1,0 +1,24 @@
+/* Reserve space when inner nav stacks on mobile */
+.settings-layout nav a {
+  text-decoration: none;
+}
+
+.settings-inner-aside {
+  /* Collapsed rail shares width with primary sidebar collapsed column (w-20) for visual consistency */
+  min-width: 0;
+}
+
+.settings-inner-header {
+  width: 100%;
+}
+
+.settings-inner-collapse-trigger:focus-visible {
+  outline: 2px solid var(--color-ring, var(--color-border));
+  outline-offset: 2px;
+}
+
+.settings-inner-nav-link:focus-visible {
+  outline: 2px solid var(--color-ring, var(--color-border));
+  outline-offset: 2px;
+}
+

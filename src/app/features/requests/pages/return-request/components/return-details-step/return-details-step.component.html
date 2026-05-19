@@ -19,7 +19,7 @@
               <span *ngIf="!isArabic">{{ cartridge.nameEn || cartridge.name }}</span>
             </h3>
             <p class="text-xs text-[var(--color-text-muted)]">
-              {{ 'newIssueRequest.productId' | translate }}: {{ cartridge.itemNo || cartridge.productId }}
+              {{ 'newIssueRequest.itemNo' | translate }}: {{ cartridge.itemNo || cartridge.productId }}
             </p>
           </div>
           <button type="button" (click)="onRemoveCartridge(cartridge.id)"
@@ -48,7 +48,7 @@
         <thead class="bg-[var(--color-background-muted)] text-[var(--color-text)]">
           <tr>
             <th class="px-4 py-3 text-start font-semibold">{{ 'newIssueRequest.name' | translate }}</th>
-            <th class="px-4 py-3 text-start font-semibold">{{ 'newIssueRequest.productId' | translate }}</th>
+            <th class="px-4 py-3 text-start font-semibold">{{ 'newIssueRequest.itemNo' | translate }}</th>
             <th class="px-4 py-3 text-start font-semibold">{{ 'newIssueRequest.nsn' | translate }}</th>
             <th class="px-4 py-3 text-center font-semibold">{{ 'newIssueRequest.quantity' | translate }}</th>
             <th class="px-4 py-3 text-center font-semibold">{{ 'common.actions' | translate }}</th>

@@ -2,7 +2,6 @@
   "allowance": {
     "title": "Allowance",
     "addAllowance": "Add Allowance",
-    "addSubtitle": "Create a new allowance request for a department",
     "export": "Export Report",
     "selectFields": "Select Fields",
     "selectFieldsToHide": "Select Fields to Hide",
@@ -48,7 +47,12 @@
       "usedQuantity": "Used Quantity",
       "reservedQuantity": "Hold Quantity",
       "remainingQuantity": "Remaining Quantity",
-      "actions": "Actions"
+      "actions": "Actions",
+      "sortQuantitiesHint": "Sort quantities:",
+      "sortAscending": "Ascending",
+      "sortDescending": "Descending",
+      "sortColumnAriaInactive": "{{ column }} — not sorted; tap for descending sort",
+      "sortColumnAriaSorted": "{{ column }} — sorted {{ direction }}"
     },
     "edit": "Edit",
     "delete": "Delete",

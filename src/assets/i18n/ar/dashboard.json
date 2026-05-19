@@ -42,15 +42,15 @@
     "numberOfOtherRanks": "عدد الرتب الأخرى",
     "requestPurpose": "غرض الطلب",
     "depot": "المستودع",
-    "itemName": "اسم الماده",
+    "itemName": "اسم المادة",
     "itemNo": "رقم المادة",
     "associatedWeapons": "الأسلحة المرتبطة",
     "associatedWeaponOther": "أخرى",
     "nsn": "NSN",
     "priorityLabels": {
       "normal": "عادية",
-      "urgent": "مستعجل",
-      "veryUrgent": "مستعجل جداً"
+      "urgent": "عاجل",
+      "veryUrgent": "عاجل جداً"
     },
     "statusLabels": {
       "new": "جديد",
@@ -136,14 +136,14 @@
     "itemSummary": {
       "title": "ملخص جميع المواد",
       "items": "مواد",
-      "empty": "لا توجد مواد مخزون",
+      "empty": "لا توجد مواد",
       "noFilterMatch": "لا توجد مواد تطابق عوامل التصفية",
-      "clickHint": "انقر على صف لعرض التفاصيل (دفعات للذخيرة والمتفجرات، أصول للأسلحة)",
+      "clickHint": "انقر على صف لعرض التفاصيل (Lots للذخيرة والمتفجرات، أصول للأسلحة)",
       "filteredHint": "من أصل {{total}} في نطاق المستودع الحالي",
       "totalsHint": "إجماليات الجدول تعكس القائمة المصفاة أعلاه.",
       "totalsRow": "الإجماليات",
       "cols": {
-        "itemName": "اسم الماده",
+        "itemName": "اسم المادة",
         "itemNo": "رقم المادة",
         "type": "النوع",
         "caliber": "العيار",
@@ -184,7 +184,7 @@
       }
     },
     "lotDetail": {
-      "title": "تفاصيل الدفعات",
+      "title": "تفاصيل",
       "lots": "Lots",
       "totalsRow": "إجمالي الدفعات",
       "empty": "لا توجد دفعات لهذه المادة",
@@ -224,7 +224,7 @@
     },
     "expiringLots": {
       "title": "Lots قريبة من الانتهاء",
-      "itemName": "اسم الماده",
+      "itemName": "اسم المادة",
       "itemNo": "رقم المادة",
       "lot": "lot",
       "batchNo": "Batch No",
@@ -239,7 +239,7 @@
     },
     "lowStock": {
       "title": "المخزون المنخفض",
-      "itemName": "اسم الماده",
+      "itemName": "اسم المادة",
       "itemNo": "رقم المادة",
       "nsn": "NSN",
       "minimumQuantity": "مخزون منخفض",
@@ -254,7 +254,7 @@
     },
     "criticalStock": {
       "title": "المخزون الحرج",
-      "itemName": "اسم الماده",
+      "itemName": "اسم المادة",
       "itemNo": "رقم المادة",
       "nsn": "NSN",
       "criticalQuantity": "الكمية الحرجة",
@@ -291,7 +291,7 @@
   },
   "inventorySummary": {
     "title": "ملخص المخزون",
-    "itemName": "اسم الماده",
+    "itemName": "اسم المادة",
     "itemNo": "رقم المادة",
     "type": "النوع",
     "nsn": "NSN",

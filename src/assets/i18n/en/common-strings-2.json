@@ -106,11 +106,11 @@
   },
   "workflow": {
     "autoRejectSectionTitle": "Order auto-reject anchor",
-    "autoRejectSectionHint": "Define which workflow step or role, when reached, starts the countdown toward auto-reject (threshold and reminders still come from organization settings). Disabled workflows fall back to the global trigger role if configured.",
+    "autoRejectSectionHint": "Define which workflow step or role, when reached, starts the countdown toward auto-reject (threshold and reminders still come from organization settings). Not configured means no anchor for that workflow. Monitoring disabled turns off auto-reject for that workflow.",
     "autoRejectModalTitle": "Configure auto-reject triggers for {{name}}",
     "autoRejectTriggersSaved": "Auto-reject triggers saved successfully.",
     "autoRejectTriggerMode": "Trigger mode",
-    "autoRejectModeNone": "Not configured (use global trigger role)",
+    "autoRejectModeNone": "Not configured",
     "autoRejectModeRole": "When these roles are reached",
     "autoRejectModeStep": "When these steps are reached",
     "autoRejectModeRoleLabel": "Role-based",
