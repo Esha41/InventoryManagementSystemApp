@@ -204,7 +204,8 @@ export const PERMISSIONS = {
     },
     SUPPLY: {
       PAGE: 'supply.page',
-      VIEW: 'supply.view'
+      VIEW: 'supply.view',
+      EDIT: 'Permissions.Supply.Edit'
     },
     NEW_REQUEST: {
       PAGE: 'newrequest.page',

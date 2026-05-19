@@ -65,7 +65,7 @@
     "usagePurpose": "غرض الاستخدام",
     "usageLocation": "موقع الاستخدام",
     "usageDate": "تاريخ الاستخدام",
-    "orderItems":  "المواد المطلوبة",
+    "orderItems": "Lot Items",
     "addItem": "إضافة مادة",
     "editItemQuantity": "تعديل كمية المادة",
     "removeItem": "إزالة المادة",

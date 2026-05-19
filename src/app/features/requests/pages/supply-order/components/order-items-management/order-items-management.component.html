@@ -1,6 +1,10 @@
-<div class="bg-[var(--color-background)] rounded-lg shadow-custom-sm p-6 border-2 border-[var(--color-border)]">
-  <div class="flex items-center justify-between mb-4 pb-2 border-b border-[var(--color-border)]">
-    <h2 class="text-lg font-semibold text-[var(--color-text)]">
+<div
+  [ngClass]="embedded
+    ? 'bg-transparent'
+    : 'bg-[var(--color-background)] rounded-lg shadow-custom-sm p-6 border-2 border-[var(--color-border)]'">
+  <div class="flex items-center mb-4"
+    [ngClass]="embedded ? 'justify-end' : 'justify-between pb-2 border-b border-[var(--color-border)]'">
+    <h2 *ngIf="!embedded" class="text-lg font-semibold text-[var(--color-text)]">
       {{ 'supplyOrder.orderItemsManagement' | translate }}
     </h2>
     <button *appHasPermission="PERMISSIONS.REQUESTS.ORDER.CREATE_CLAIM" (click)="onAddItemClick()"
@@ -47,5 +51,3 @@
     </table>
   </div>
 </div>
-
-

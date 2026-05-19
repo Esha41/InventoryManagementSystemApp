@@ -95,6 +95,47 @@ export class InventorySummaryDataService {
         );
     }
 
+    /**
+     * All summary rows for the active warehouse tab (every server page), for Excel export.
+     */
+    loadAllWarehouseSummaryItems(
+        tab: 'ammunition' | 'weapon' | 'explosive',
+        depotIds?: number[]
+    ): Observable<ItemInventorySummaryDto[]> {
+        if (tab === 'weapon') {
+            return this.loadAllWeaponCatalogSummaries(depotIds);
+        }
+
+        const itemType = tab === 'ammunition' ? ItemType.Ammunition : ItemType.Explosive;
+        const pageSize = defaultPageSize;
+        const maxPages = 5000;
+        const query = !depotIds?.length
+            ? { itemType }
+            : depotIds.length === 1
+                ? { depotId: depotIds[0], itemType }
+                : { depotIds, itemType };
+
+        const fetchPage = (page: number) =>
+            this.inventoryService.getAllItemsSummaryPaginated({ page, pageSize }, query).pipe(
+                map(res => ({ res, requestedPage: page }))
+            );
+
+        return fetchPage(1).pipe(
+            expand(({ res, requestedPage }) => {
+                const totalPages = res.totalPages ?? 0;
+                if (requestedPage >= totalPages || totalPages === 0 || requestedPage >= maxPages) {
+                    return EMPTY;
+                }
+                return fetchPage(requestedPage + 1);
+            }),
+            reduce<
+                { res: PaginatedList<ItemInventorySummaryDto>; requestedPage: number },
+                ItemInventorySummaryDto[]
+            >((acc, { res }) => acc.concat(res.items ?? []), []),
+            catchError(() => of([] as ItemInventorySummaryDto[]))
+        );
+    }
+
     private buildWeaponCatalogQuery(depotIds: number[] | undefined):
         | { itemType: ItemType.Weapon }
         | { depotId: number; itemType: ItemType.Weapon }
@@ -146,6 +187,8 @@ export class InventorySummaryDataService {
             itemType: normalizeItemType(row.itemType),
             nsn: row.nsn ?? '',
             partNo: row.partNo ?? '',
+            caliberId: row.caliberId ?? undefined,
+            caliber: row.caliber ?? undefined,
             totalQuantity: row.totalAssets,
             usedQuantity: 0,
             reservedQuantityByOrdersOnProcessing: 0,

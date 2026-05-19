@@ -37,6 +37,8 @@ export class OrderItemsManagementComponent {
   @Input() orderItems: OrderRequestItemDto[] = [];
   @Input() canIncreaseQuantity: boolean = false;
   @Input() canDecreaseQuantity: boolean = false;
+  /** When true, omits outer card chrome (used inside supply-request-detail collapsible). */
+  @Input() embedded = false;
   @Output() addItemClick = new EventEmitter<void>();
   @Output() editItemClick = new EventEmitter<OrderRequestItemDto>();
   @Output() removeItemClick = new EventEmitter<OrderRequestItemDto>();

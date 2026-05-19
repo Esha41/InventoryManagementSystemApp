@@ -11,7 +11,6 @@ import { AddLotModalComponent } from './components/add-lot-modal/add-lot-modal.c
 import { AddOrderItemModalComponent } from './components/add-order-item-modal/add-order-item-modal.component';
 import { EditOrderItemModalComponent } from './components/edit-order-item-modal/edit-order-item-modal.component';
 import { SupplyOrderHeaderComponent } from './components/supply-order-header/supply-order-header.component';
-import { SupplyOrderInfoComponent } from './components/supply-order-info/supply-order-info.component';
 import { OrderItemsManagementComponent } from './components/order-items-management/order-items-management.component';
 import { SupplyItemsListComponent } from './components/supply-items-list/supply-items-list.component';
 import { OrderDto, OrderRequestItemDto } from '@models/order.model';
@@ -46,7 +45,6 @@ import { ErrorHandler } from '@utils/error-handler.utils';
     AddOrderItemModalComponent,
     EditOrderItemModalComponent,
     SupplyOrderHeaderComponent,
-    SupplyOrderInfoComponent,
     OrderItemsManagementComponent,
     SupplyItemsListComponent
   ],

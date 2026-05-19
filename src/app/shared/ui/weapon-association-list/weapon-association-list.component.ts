@@ -19,6 +19,8 @@ import { Subject, takeUntil } from 'rxjs';
 export class WeaponAssociationListComponent implements OnInit, OnDestroy {
   @Input() associations: RequestManagementRequestItemWeaponAssociationDto[] | null | undefined;
   @Input() compact = false;
+  /** Horizontal row with wrap (e.g. workflow approval table); default stacks vertically */
+  @Input() inline = false;
   @Input() linkable = false;
   @Input() customLabelKey = 'newIssueRequest.weaponAssociation.custom';
   @Output() catalogAssociationClick = new EventEmitter<RequestManagementRequestItemWeaponAssociationDto>();

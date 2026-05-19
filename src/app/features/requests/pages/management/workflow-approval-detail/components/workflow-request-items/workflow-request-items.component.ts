@@ -62,7 +62,7 @@ export class WorkflowRequestItemsComponent {
     return this.requestDetail?.requestType === 'Order';
   }
 
-  /** Colspan for the full-width “associated weapons” row under a line item. */
+  /** Colspan for the full-width “associated weapons” row under a line item (weapons shown inline via weapon-association-list). */
   get requestItemsTableColspan(): number {
     return this.showViewHistory ? 4 : 3;
   }

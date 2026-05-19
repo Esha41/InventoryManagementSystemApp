@@ -67,9 +67,17 @@ export class NotificationDetailService {
 
     switch (entityType) {
       case 'order':
-        return this.loadOrderDetail(numericId);
+        return of({
+          type: null,
+          detail: null,
+          error: null
+        });
       case 'return':
-        return this.loadReturnDetail(numericId);
+        return of({
+          type: null,
+          detail: null,
+          error: null
+        });
       case 'discard':
         return this.loadDiscardDetail(numericId);
       case 'request':
@@ -83,42 +91,6 @@ export class NotificationDetailService {
           error: this.translateService.instant('notifications.details.unknown')
         });
     }
-  }
-
-  /**
-   * Load order detail
-   */
-  private loadOrderDetail(id: number): Observable<NotificationDetailResult> {
-    return this.orderService.getOrderById(id).pipe(
-      map(detail => ({
-        type: 'order' as NotificationDetailType,
-        detail: detail as NotificationRequestDetail,
-        error: null
-      })),
-      catchError(error => of({
-        type: null,
-        detail: null,
-        error: handleDetailError(error, this.translateService)
-      }))
-    );
-  }
-
-  /**
-   * Load return detail
-   */
-  private loadReturnDetail(id: number): Observable<NotificationDetailResult> {
-    return this.returnService.getReturnById(id).pipe(
-      map(detail => ({
-        type: 'return' as NotificationDetailType,
-        detail: detail as NotificationRequestDetail,
-        error: null
-      })),
-      catchError(error => of({
-        type: null,
-        detail: null,
-        error: handleDetailError(error, this.translateService)
-      }))
-    );
   }
 
   /**
@@ -144,16 +116,26 @@ export class NotificationDetailService {
    */
   private loadRequestDetail(id: number): Observable<NotificationDetailResult> {
     return this.orderService.getOrderById(id).pipe(
-      map(detail => ({
-        type: determineDetailType(detail),
-        detail: detail as NotificationRequestDetail,
-        error: null
-      })),
+      map(detail => {
+        const type = determineDetailType(detail);
+        if (type === 'order' || type === 'return') {
+          return {
+            type: null,
+            detail: null,
+            error: null
+          };
+        }
+        return {
+          type,
+          detail: detail as NotificationRequestDetail,
+          error: null
+        };
+      }),
       catchError(() => {
         return this.returnService.getReturnById(id).pipe(
-          map(detail => ({
-            type: determineDetailType(detail),
-            detail: detail as NotificationRequestDetail,
+          map(() => ({
+            type: null,
+            detail: null,
             error: null
           })),
           catchError(() => {

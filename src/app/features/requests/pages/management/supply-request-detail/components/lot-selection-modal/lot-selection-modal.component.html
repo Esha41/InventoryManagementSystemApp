@@ -88,7 +88,7 @@
         <div class="flex items-start justify-between mb-3">
           <div class="flex-1 pe-8">
             <div class="flex items-center gap-2 mb-1">
-              <span class="font-semibold text-[var(--color-text)]">LOT-{{ lot.lotNumber }}</span>
+              <span class="font-semibold text-[var(--color-text)]">{{ 'supplyRequestDetail.lotPrefix' | translate }}-{{ lot.lotNumber }}</span>
               <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border"
                 [ngClass]="getLotConditionClass(lot.condition)">
                 {{ lot.condition }}

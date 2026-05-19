@@ -195,6 +195,7 @@
       "usageDateRequired": "تاريخ الاستخدام مطلوب.",
       "usageDateFromMustBeTodayOrFuture": "يجب أن يكون تاريخ الاستخدام من اليوم أو تاريخاً مستقبلاً.",
       "usageDateToMustBeTodayOrFuture": "يجب أن يكون تاريخ الاستخدام إلى اليوم أو تاريخاً مستقبلاً.",
+      "usageDateToMustBeOnOrAfterFrom": "يجب أن يكون تاريخ الاستخدام إلى أكبر من أو يساوي تاريخ الاستخدام من.",
       "usageTimeRequired": "وقت الاستخدام مطلوب.",
       "invalidMilitaryTime": "تنسيق الوقت العسكري غير صحيح. يرجى استخدام تنسيق HHMM (مثال: 1430).",
       "orderPriorityRequired": "أولوية الطلب مطلوبة.",

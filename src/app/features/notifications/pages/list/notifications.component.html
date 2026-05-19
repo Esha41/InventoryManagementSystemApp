@@ -1,71 +1,68 @@
 <div class="page-wrapper">
-  <div class="page-container space-y-6">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-      <div class="space-y-2">
+  <div class="page-container space-y-8">
+    <!-- Page header -->
+    <header class="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+      <div class="space-y-1.5">
         <div class="flex items-center gap-3">
-          <lucide-angular [img]="Bell" class="h-6 w-6 sm:h-8 sm:w-8 text-[var(--color-brand)]"></lucide-angular>
-          <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">
-            {{ 'notifications.title' | translate }}
-          </h1>
+          <span
+            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--color-brand-soft)] text-[var(--color-brand)] sm:h-12 sm:w-12">
+            <lucide-angular [img]="Bell" class="h-5 w-5 sm:h-6 sm:w-6"></lucide-angular>
+          </span>
+          <div>
+            <h1 class="text-2xl font-semibold tracking-tight text-[var(--color-text)] sm:text-3xl">
+              {{ 'notifications.title' | translate }}
+            </h1>
+            <p class="mt-1 text-sm text-[var(--color-text-muted)] md:text-base" *ngIf="unreadCount$ | async as unreadCount">
+              {{ 'notifications.subtitle' | translate:{ count: unreadCount } }}
+            </p>
+          </div>
         </div>
-
-        <p class="text-[var(--color-text-muted)] text-sm md:text-base" *ngIf="unreadCount$ | async as unreadCount">
-          {{ 'notifications.subtitle' | translate:{ count: unreadCount } }}
-        </p>
       </div>
 
-      <div class="flex flex-wrap items-center gap-3">
-        <app-button variant="primary" size="sm" class="action-button w-full sm:w-auto" (click)="markAllAsRead()"
+      <div class="flex flex-wrap gap-3">
+        <app-button variant="primary" size="sm" class="w-full sm:w-auto" (click)="markAllAsRead()"
           [disabled]="markingAll || (unreadCount$ | async) === 0">
-          <span class="action-button__content">
-            <div class="action-button__spinner" [class.spinner]="markingAll"></div>
+          <span class="inline-flex items-center gap-2">
+            <div *ngIf="markingAll" [class]="spinnerSm"></div>
             <span>{{ markingAll ? ('common.pleaseWait' | translate) : ('notifications.markAllAsRead' | translate)
               }}</span>
           </span>
         </app-button>
       </div>
-    </div>
+    </header>
 
-    <div class="grid gap-6 lg:grid-cols-[380px_1fr] items-start">
-      <!-- List -->
-      <div
-        class="flex h-full min-h-[480px] flex-col rounded-2xl border-2 border-[var(--color-border)] bg-[var(--color-background)] shadow-custom-sm">
-        <div class="border-b-2 border-[var(--color-border)] p-4 space-y-4">
-          <label class="search-field">
-            <lucide-angular [img]="Search" class="search-field__icon"></lucide-angular>
-            <input type="search" class="search-field__input" [placeholder]="'common.search' | translate"
-              [formControl]="searchControl" />
+    <!-- Content grid -->
+    <div class="grid items-start gap-6 lg:grid-cols-[minmax(280px,380px)_minmax(0,1fr)] xl:gap-8">
+      <!-- List column -->
+      <section [attr.aria-label]="'notifications.title' | translate" [class]="shell + ' flex min-h-[min(520px,75vh)] flex-col'">
+        <div [class]="toolbar + ' space-y-4'">
+          <label [class]="searchField">
+            <lucide-angular [img]="Search" class="h-4 w-4 shrink-0 text-[var(--color-text-muted)]"></lucide-angular>
+            <input type="search"
+              class="min-w-0 flex-1 border-0 bg-transparent p-0 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none"
+              [placeholder]="'common.search' | translate" [formControl]="searchControl" />
           </label>
 
-          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-            <button type="button" class="filter-pill" [class.filter-pill--active]="isFilterActive('all')"
-              (click)="setFilter('all')">
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-center" role="group"
+            [attr.aria-label]="'notifications.filters.all' | translate">
+            <button type="button" [class]="filterChipClass(isFilterActive('all'))" (click)="setFilter('all')">
               {{ 'notifications.filters.all' | translate }}
             </button>
-            <button type="button" class="filter-pill flex-1 sm:flex-initial"
-              [class.filter-pill--active]="isFilterActive('unread')" (click)="setFilter('unread')">
+            <button type="button" [class]="filterChipClass(isFilterActive('unread'))" (click)="setFilter('unread')">
               {{ 'notifications.filters.unread' | translate }}
             </button>
           </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto">
-          <div *ngIf="loading$ | async" class="flex flex-col gap-4 p-4">
-            <div class="animate-pulse rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4">
+        <div class="flex flex-1 flex-col overflow-y-auto">
+          <div *ngIf="loading$ | async" class="flex flex-col gap-3 p-4">
+            <div *ngFor="let _ of skeletonPlaceholders"
+              class="animate-pulse rounded-xl border border-[var(--color-border)] bg-[var(--color-background-soft)]/40 p-4">
               <div class="flex items-center gap-3">
-                <div class="h-10 w-10 rounded-full bg-[var(--color-border)]/70"></div>
-                <div class="flex-1 space-y-3">
-                  <div class="h-4 w-3/4 rounded bg-[var(--color-border)]/70"></div>
-                  <div class="h-3 w-1/2 rounded bg-[var(--color-border)]/50"></div>
-                </div>
-              </div>
-            </div>
-            <div class="animate-pulse rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4">
-              <div class="flex items-center gap-3">
-                <div class="h-10 w-10 rounded-full bg-[var(--color-border)]/70"></div>
-                <div class="flex-1 space-y-3">
-                  <div class="h-4 w-2/3 rounded bg-[var(--color-border)]/70"></div>
-                  <div class="h-3 w-1/3 rounded bg-[var(--color-border)]/50"></div>
+                <div class="h-10 w-10 rounded-full bg-[var(--color-border)]/60"></div>
+                <div class="flex-1 space-y-2.5">
+                  <div class="h-3.5 w-3/4 rounded-md bg-[var(--color-border)]/60"></div>
+                  <div class="h-3 w-1/2 rounded-md bg-[var(--color-border)]/45"></div>
                 </div>
               </div>
             </div>
@@ -74,46 +71,45 @@
           <ng-container *ngIf="(loading$ | async) === false">
             <ng-container *ngIf="filteredNotifications$ | async as notifications">
               <div *ngIf="notifications.length === 0"
-                class="flex h-full flex-col items-center justify-center gap-3 px-6 py-16 text-center text-sm text-[var(--color-text-muted)]">
-                <lucide-angular [img]="Info" class="h-8 w-8 text-[var(--color-border-strong)]"></lucide-angular>
-                <p class="max-w-xs text-balance">{{ 'notifications.empty' | translate }}</p>
+                class="flex flex-1 flex-col items-center justify-center gap-3 px-6 py-16 text-center">
+                <span class="rounded-full bg-[var(--color-background-soft)] p-4">
+                  <lucide-angular [img]="Info" class="h-8 w-8 text-[var(--color-text-muted)]"></lucide-angular>
+                </span>
+                <p class="max-w-xs text-sm text-[var(--color-text-muted)] text-balance">{{ 'notifications.empty' | translate }}</p>
               </div>
 
-              <ul *ngIf="notifications.length > 0" class="flex flex-col divide-y divide-[var(--color-border)]">
-                <li *ngFor="let notification of notifications; trackBy: trackByNotification"
-                  (click)="selectNotification(notification)" class="notification-item"
-                  [class.notification-item--active]="selectedNotification?.id === notification.id">
-                  <div class="flex items-start gap-3">
+              <ul *ngIf="notifications.length > 0" class="flex list-none flex-col gap-2 p-3 sm:p-4" role="list">
+                <li *ngFor="let notification of notifications; trackBy: trackByNotification" role="button" tabindex="0"
+                  [attr.aria-current]="selectedNotification?.id === notification.id ? 'true' : null"
+                  [class]="notificationListItemClass(notification)" (click)="selectNotification(notification)"
+                  (keydown.enter)="selectNotification(notification)"
+                  (keydown.space)="$event.preventDefault(); selectNotification(notification)">
+                  <div class="flex gap-3">
                     <div
-                      class="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-background-soft)]">
-                      <lucide-angular [img]="notification.isRead ? MailOpen : Mail" class="h-5 w-5"
+                      class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-background)] shadow-sm">
+                      <lucide-angular [img]="notification.isRead ? MailOpen : Mail" class="h-[18px] w-[18px]"
                         [class.text-[var(--color-text-muted)]]="notification.isRead"
                         [class.text-[var(--color-brand)]]="!notification.isRead"></lucide-angular>
                     </div>
 
-                    <div class="min-w-0 flex-1 space-y-1">
-                      <div class="flex items-center justify-between gap-2">
-                        <h3 class="truncate text-sm font-semibold text-[var(--color-text)]">
+                    <div class="min-w-0 flex-1 space-y-2">
+                      <div class="flex items-start justify-between gap-2">
+                        <h3 class="line-clamp-2 text-sm font-semibold leading-snug text-[var(--color-text)]">
                           {{ translateNotificationTitle(notification.title) }}
                         </h3>
-                        <span class="text-xs text-[var(--color-text-muted)]">
+                        <time class="shrink-0 whitespace-nowrap text-[11px] tabular-nums text-[var(--color-text-muted)]"
+                          [attr.datetime]="notification.createdAt">
                           {{ notification.createdAt | appDateTime }}
-                        </span>
+                        </time>
                       </div>
 
-                      <p class="notification-item__message">
-                        {{ translateNotificationMessage(notification.message) }}
+                      <p class="line-clamp-2 text-sm leading-snug text-[var(--color-text)]">
+                        <app-notification-rich-message [parts]="getNotificationMessageParts(notification, false)" />
                       </p>
 
-                      <div class="flex items-center gap-2">
-                        <span class="badge" [class.badge--success]="notification.isRead"
-                          [class.badge--warning]="!notification.isRead">
-                          {{ getStatusLabel(notification) }}
-                        </span>
-
-                        <span *ngIf="notification.type" class="badge badge--muted">
-                          {{ translateEntityType(notification.type) }}
-                        </span>
+                      <div class="flex items-center gap-2 pt-0.5">
+                        <span [class]="statusPillClass(notification.isRead)">{{
+                          getStatusLabel(notification) }}</span>
                       </div>
                     </div>
                   </div>
@@ -122,286 +118,150 @@
             </ng-container>
           </ng-container>
         </div>
-      </div>
+      </section>
 
-      <!-- Detail -->
-      <div class="rounded-2xl border-2 border-[var(--color-border)] bg-[var(--color-background)] shadow-custom-sm self-start">
+      <!-- Detail column -->
+      <section [attr.aria-label]="'notifications.detailTitle' | translate" [class]="shell + ' lg:sticky lg:top-6'">
         <ng-container *ngIf="selectedNotification as notification; else noSelection">
-          <div class="flex flex-col gap-6 p-6">
-            <div class="flex flex-col gap-4 pb-6">
-              <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div class="space-y-2">
-                  <div class="flex items-center gap-3">
-                    <lucide-angular [img]="notification.isRead ? MailOpen : Mail"
-                      class="h-6 w-6 text-[var(--color-brand)]"></lucide-angular>
-                    <h2 class="text-2xl font-semibold text-[var(--color-text)] break-words">
+          <div class="flex flex-col gap-8 p-6 sm:p-8">
+            <!-- Hero -->
+            <div class="border-b border-[var(--color-border)] pb-6">
+              <div class="flex gap-4">
+                <span
+                  class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--color-brand-soft)] text-[var(--color-brand)]">
+                  <lucide-angular [img]="notification.isRead ? MailOpen : Mail" class="h-5 w-5"></lucide-angular>
+                </span>
+                <div class="min-w-0 flex-1 space-y-3">
+                  <div class="flex flex-wrap items-start justify-between gap-3">
+                    <h2 class="text-lg font-semibold leading-snug text-[var(--color-text)] sm:text-xl">
                       {{ translateNotificationTitle(notification.title) }}
                     </h2>
+                    <span [ngClass]="[statusPillClass(notification.isRead), 'shrink-0']">{{
+                      getStatusLabel(notification) }}</span>
                   </div>
-                  <p class="text-sm text-[var(--color-text-muted)] break-words">
-                    {{ translateNotificationMessage(notification.message) }}
-                  </p>
-                </div>
-
-                <div class="flex items-center gap-2">
-                  <span class="badge" [class.badge--success]="notification.isRead"
-                    [class.badge--warning]="!notification.isRead">
-                    {{ getStatusLabel(notification) }}
-                  </span>
+                  <div *ngIf="notification.message?.trim()" class="text-sm leading-relaxed text-[var(--color-text)]">
+                    <app-notification-rich-message [parts]="getNotificationMessageParts(notification)"
+                      (linkClick)="openWorkflowFromNotification(notification, $event)" />
+                  </div>
                 </div>
               </div>
 
-              <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                <div class="info-pill">
-                  <div class="info-pill__icon">
+              <div class="mt-6 flex flex-wrap gap-3">
+                <div [class]="metaTile">
+                  <span
+                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-brand-soft)] text-[var(--color-brand)]">
                     <lucide-angular [img]="Calendar" class="h-4 w-4"></lucide-angular>
-                  </div>
-                  <div>
-                    <p class="info-pill__label">{{ 'notifications.updateDate' | translate }}</p>
-                    <p class="info-pill__value">{{ notification.createdAt | appDate }}</p>
+                  </span>
+                  <div class="min-w-0">
+                    <p class="text-[0.65rem] font-semibold uppercase tracking-[0.06em] text-[var(--color-text-muted)]">
+                      {{ 'notifications.updateDate' | translate }}</p>
+                    <p class="text-sm font-semibold tabular-nums text-[var(--color-text)]">{{ notification.createdAt | appDate }}</p>
                   </div>
                 </div>
-                <div class="info-pill">
-                  <div class="info-pill__icon">
+                <div [class]="metaTile">
+                  <span
+                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-brand-soft)] text-[var(--color-brand)]">
                     <lucide-angular [img]="Clock" class="h-4 w-4"></lucide-angular>
-                  </div>
-                  <div>
-                    <p class="info-pill__label">{{ 'notifications.time' | translate }}</p>
-                    <p class="info-pill__value">{{ formatTimeForDisplay(notification.createdAt) }}</p>
-                  </div>
-                </div>
-                <div class="info-pill" *ngIf="notification.type">
-                  <div class="info-pill__icon">
-                    <lucide-angular [img]="Info" class="h-4 w-4"></lucide-angular>
-                  </div>
-                  <div>
-                    <p class="info-pill__label">{{ 'notifications.notificationType' | translate }}</p>
-                    <p class="info-pill__value">{{ translateEntityType(notification.type) }}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="detail-section" *ngIf="detailLoading">
-                <div class="detail-loader">
-                  <div class="detail-loader__spinner spinner"></div>
-                  <span>{{ 'common.loadingWithDots' | translate }}</span>
-                </div>
-              </div>
-
-              <div class="detail-section"
-                *ngIf="!detailLoading && !detailError && detailType === 'order' && orderDetail">
-                <h3 class="detail-section__title">{{ 'notifications.details.orderTitle' | translate }}</h3>
-                <div class="detail-grid">
-                  <div class="detail-field">
-                    <span class="detail-field__label">{{ 'notifications.details.requestId' | translate }}</span>
-                    <span class="detail-field__value">{{ orderDetail.requestNo || orderDetail.orderNo || ('#' +
-                      orderDetail.id) }}</span>
-                  </div>
-                  <div class="detail-field" *ngIf="orderDetail.usageDateFrom">
-                    <span class="detail-field__label">{{ 'notifications.details.usageDate' | translate }}</span>
-                    <span class="detail-field__value">
-                      {{ orderDetail.usageDateFrom | appDateTime:orderDetail.usageTimeFrom }}
-                      <span *ngIf="orderDetail.usageDateTo"> - {{ orderDetail.usageDateTo |
-                        appDateTime:orderDetail.usageTimeTo }}</span>
-                    </span>
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">{{ 'notifications.details.department' | translate }}</span>
-                    <span class="detail-field__value">{{ getLocalizedDepartmentName(
-                      orderDetail.department?.nameEn || orderDetail.departmentNameEn,
-                      orderDetail.department?.nameAr || orderDetail.departmentNameAr
-                      ) }}</span>
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">{{ 'notifications.details.requester' | translate }}</span>
-                    <span class="detail-field__value">{{ getLocalizedRequesterName(
-                      orderDetail.requester?.fullNameEN || orderDetail.requesterNameEn || orderDetail.requesterName,
-                      orderDetail.requester?.fullNameAR || orderDetail.requesterNameAr,
-                      orderDetail.requester?.userName,
-                      orderDetail.requesterName
-                      ) }}</span>
-                  </div>
-                  <div class="detail-field" *ngIf="orderDetail.priority">
-                    <span class="detail-field__label">{{ 'notifications.details.priority' | translate }}</span>
-                    <span class="detail-field__value">{{ getPriorityLabelTranslation(orderDetail.priority) | translate
-                      }}</span>
-                  </div>
-                  <div class="detail-field" *ngIf="orderDetail.status">
-                    <span class="detail-field__label">{{ 'notifications.details.status' | translate }}</span>
-                    <span class="detail-field__value">{{ getStatusLabelTranslation(orderDetail.status) | translate
-                      }}</span>
-                  </div>
-                </div>
-                <div class="detail-field" *ngIf="orderDetail.requestPurposeNameEn || orderDetail.requestPurposeNameAr">
-                  <span class="detail-field__label">{{ 'notifications.details.purpose' | translate }}</span>
-                  <span class="detail-field__value">{{ getLocalizedPurposeName(orderDetail.requestPurposeNameEn,
-                    orderDetail.requestPurposeNameAr) }}</span>
-                </div>
-                <div class="detail-field" *ngIf="orderDetail.notes">
-                  <span class="detail-field__label">{{ 'notifications.details.notes' | translate }}</span>
-                  <span class="detail-field__value">{{ orderDetail.notes }}</span>
-                </div>
-                <div class="detail-items">
-                  <div class="detail-items__header">{{ 'notifications.details.items' | translate }}</div>
-                  <div *ngIf="!orderDetail.requestItems?.length" class="detail-items__empty">
-                    {{ 'notifications.details.noItems' | translate }}
-                  </div>
-                  <div *ngFor="let item of orderDetail.requestItems" class="detail-item">
-                    <div class="detail-item__title">{{ item.itemName || item.itemNo || ('#' + item.itemId) }}</div>
-                    <div class="detail-item__meta">
-                      {{ 'notifications.details.quantity' | translate }}: {{ item.quantity }}
-                      <span *ngIf="item.notes">• {{ item.notes }}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="detail-section"
-                *ngIf="!detailLoading && !detailError && detailType === 'return' && returnDetail">
-                <h3 class="detail-section__title">{{ 'notifications.details.returnTitle' | translate }}</h3>
-                <div class="detail-grid">
-                  <div class="detail-field">
-                    <span class="detail-field__label">{{ 'notifications.details.requestId' | translate }}</span>
-                    <span class="detail-field__value">{{ returnDetail.requestNo || ('#' + returnDetail.id) }}</span>
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">{{ 'notifications.details.department' | translate }}</span>
-                    <span class="detail-field__value">{{ getLocalizedDepartmentName(returnDetail.department?.nameEn,
-                      returnDetail.department?.nameAr)
-                      }}</span>
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">{{ 'notifications.details.requester' | translate }}</span>
-                    <span class="detail-field__value">{{ getLocalizedRequesterName(
-                      returnDetail.requester?.fullNameEN,
-                      returnDetail.requester?.fullNameAR,
-                      returnDetail.requester?.userName
-                      ) }}</span>
-                  </div>
-                  <div class="detail-field" *ngIf="returnDetail.priority">
-                    <span class="detail-field__label">{{ 'notifications.details.priority' | translate }}</span>
-                    <span class="detail-field__value">{{ getPriorityLabelTranslation(returnDetail.priority) | translate
-                      }}</span>
-                  </div>
-                  <div class="detail-field" *ngIf="returnDetail.status">
-                    <span class="detail-field__label">{{ 'notifications.details.status' | translate }}</span>
-                    <span class="detail-field__value">{{ getStatusLabelTranslation(returnDetail.status) | translate
-                      }}</span>
-                  </div>
-                </div>
-                <div class="detail-field" *ngIf="returnDetail.requestPurpose">
-                  <span class="detail-field__label">{{ 'notifications.details.purpose' | translate }}</span>
-                  <span class="detail-field__value">{{ getLocalizedPurposeName(returnDetail.requestPurpose?.nameEn,
-                    returnDetail.requestPurpose?.nameAr)
-                    }}</span>
-                </div>
-                <div class="detail-field" *ngIf="returnDetail.reason">
-                  <span class="detail-field__label">{{ 'notifications.details.reason' | translate }}</span>
-                  <span class="detail-field__value">{{ returnDetail.reason }}</span>
-                </div>
-                <div class="detail-field" *ngIf="returnDetail.notes">
-                  <span class="detail-field__label">{{ 'notifications.details.notes' | translate }}</span>
-                  <span class="detail-field__value">{{ returnDetail.notes }}</span>
-                </div>
-                <div class="detail-items">
-                  <div class="detail-items__header">{{ 'notifications.details.items' | translate }}</div>
-                  <div *ngIf="!returnDetail.requestItems?.length" class="detail-items__empty">
-                    {{ 'notifications.details.noItems' | translate }}
-                  </div>
-                  <div *ngFor="let item of returnDetail.requestItems" class="detail-item">
-                    <div class="detail-item__title">{{ item.itemName || item.itemNo || ('#' + item.itemId) }}</div>
-                    <div class="detail-item__meta">
-                      {{ 'notifications.details.quantity' | translate }}: {{ item.quantity }}
-                      <span *ngIf="item.notes">• {{ item.notes }}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="detail-section"
-                *ngIf="!detailLoading && !detailError && detailType === 'discard' && discardDetail">
-                <h3 class="detail-section__title">{{ 'notifications.details.discardTitle' | translate }}</h3>
-                <div class="detail-grid">
-                  <div class="detail-field">
-                    <span class="detail-field__label">{{ 'notifications.details.requestId' | translate }}</span>
-                    <span class="detail-field__value">{{ discardDetail.requestNo || ('#' + discardDetail.id) }}</span>
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">{{ 'notifications.details.department' | translate }}</span>
-                    <span class="detail-field__value">{{ getLocalizedDepartmentName(discardDetail.department?.nameEn,
-                      discardDetail.department?.nameAr)
-                      }}</span>
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">{{ 'notifications.details.requester' | translate }}</span>
-                    <span class="detail-field__value">{{ getLocalizedRequesterName(
-                      discardDetail.requester?.fullNameEN,
-                      discardDetail.requester?.fullNameAR,
-                      discardDetail.requester?.userName
-                      )
-                      }}</span>
-                  </div>
-                  <div class="detail-field" *ngIf="discardDetail.priority">
-                    <span class="detail-field__label">{{ 'notifications.details.priority' | translate }}</span>
-                    <span class="detail-field__value">{{ getPriorityLabelTranslation(discardDetail.priority) | translate
-                      }}</span>
-                  </div>
-                  <div class="detail-field" *ngIf="discardDetail.status">
-                    <span class="detail-field__label">{{ 'notifications.details.status' | translate }}</span>
-                    <span class="detail-field__value">{{ getStatusLabelTranslation(discardDetail.status) | translate
-                      }}</span>
-                  </div>
-                </div>
-                <div class="detail-field" *ngIf="discardDetail.requestPurpose">
-                  <span class="detail-field__label">{{ 'notifications.details.purpose' | translate }}</span>
-                  <span class="detail-field__value">{{ getLocalizedPurposeName(discardDetail.requestPurpose?.nameEn,
-                    discardDetail.requestPurpose?.nameAr)
-                    }}</span>
-                </div>
-                <div class="detail-field" *ngIf="discardDetail.reason">
-                  <span class="detail-field__label">{{ 'notifications.details.reason' | translate }}</span>
-                  <span class="detail-field__value">{{ discardDetail.reason }}</span>
-                </div>
-                <div class="detail-field" *ngIf="discardDetail.notes">
-                  <span class="detail-field__label">{{ 'notifications.details.notes' | translate }}</span>
-                  <span class="detail-field__value">{{ discardDetail.notes }}</span>
-                </div>
-                <div class="detail-items">
-                  <div class="detail-items__header">{{ 'notifications.details.items' | translate }}</div>
-                  <div *ngIf="!discardDetail.requestItems?.length" class="detail-items__empty">
-                    {{ 'notifications.details.noItems' | translate }}
-                  </div>
-                  <div *ngFor="let item of discardDetail.requestItems" class="detail-item">
-                    <div class="detail-item__title">{{ item.itemName || item.itemNo || ('#' + item.itemId) }}</div>
-                    <div class="detail-item__meta">
-                      {{ 'notifications.details.quantity' | translate }}: {{ item.quantity }}
-                      <span *ngIf="item.notes">• {{ item.notes }}</span>
-                    </div>
+                  </span>
+                  <div class="min-w-0">
+                    <p class="text-[0.65rem] font-semibold uppercase tracking-[0.06em] text-[var(--color-text-muted)]">
+                      {{ 'notifications.time' | translate }}</p>
+                    <p class="text-sm font-semibold tabular-nums text-[var(--color-text)]">{{
+                      formatTimeForDisplay(notification.createdAt) }}</p>
                   </div>
                 </div>
               </div>
             </div>
 
+            <!-- Async detail -->
+            <div *ngIf="detailLoading" [class]="detailCard">
+              <div class="flex items-center gap-3 text-sm text-[var(--color-text-muted)]">
+                <div [class]="spinnerMd"></div>
+                <span>{{ 'common.loadingWithDots' | translate }}</span>
+              </div>
+            </div>
+
+            <!-- Discard detail -->
+            <div *ngIf="!detailLoading && !detailError && detailType === 'discard' && discardDetail" [class]="detailCard">
+              <h3 class="mb-4 text-base font-semibold text-[var(--color-text)]">{{
+                'notifications.details.discardTitle' | translate }}</h3>
+              <div class="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+                <div class="flex flex-col gap-1">
+                  <span [class]="detailFieldLabel">{{ 'notifications.details.requestId' | translate }}</span>
+                  <span [class]="detailFieldValue">{{ discardDetail.requestNo || ('#' + discardDetail.id) }}</span>
+                </div>
+                <div class="flex flex-col gap-1">
+                  <span [class]="detailFieldLabel">{{ 'notifications.details.department' | translate }}</span>
+                  <span [class]="detailFieldValue">{{ getLocalizedDepartmentName(discardDetail.department?.nameEn,
+                    discardDetail.department?.nameAr) }}</span>
+                </div>
+                <div class="flex flex-col gap-1">
+                  <span [class]="detailFieldLabel">{{ 'notifications.details.requester' | translate }}</span>
+                  <span [class]="detailFieldValue">{{ getLocalizedRequesterName(
+                    discardDetail.requester?.fullNameEN,
+                    discardDetail.requester?.fullNameAR,
+                    discardDetail.requester?.userName
+                    ) }}</span>
+                </div>
+                <div class="flex flex-col gap-1" *ngIf="discardDetail.priority">
+                  <span [class]="detailFieldLabel">{{ 'notifications.details.priority' | translate }}</span>
+                  <span [class]="detailFieldValue">{{ getPriorityLabelTranslation(discardDetail.priority) | translate }}</span>
+                </div>
+                <div class="flex flex-col gap-1" *ngIf="discardDetail.status">
+                  <span [class]="detailFieldLabel">{{ 'notifications.details.status' | translate }}</span>
+                  <span [class]="detailFieldValue">{{ getStatusLabelTranslation(discardDetail.status) | translate }}</span>
+                </div>
+              </div>
+              <div class="mt-4 flex flex-col gap-1" *ngIf="discardDetail.requestPurpose">
+                <span [class]="detailFieldLabel">{{ 'notifications.details.purpose' | translate }}</span>
+                <span [class]="detailFieldValue">{{ getLocalizedPurposeName(discardDetail.requestPurpose?.nameEn,
+                  discardDetail.requestPurpose?.nameAr) }}</span>
+              </div>
+              <div class="mt-4 flex flex-col gap-1" *ngIf="discardDetail.reason">
+                <span [class]="detailFieldLabel">{{ 'notifications.details.reason' | translate }}</span>
+                <span [class]="detailFieldValue">{{ discardDetail.reason }}</span>
+              </div>
+              <div class="mt-4 flex flex-col gap-1" *ngIf="discardDetail.notes">
+                <span [class]="detailFieldLabel">{{ 'notifications.details.notes' | translate }}</span>
+                <span [class]="detailFieldValue">{{ discardDetail.notes }}</span>
+              </div>
+              <div class="mt-6 flex flex-col gap-3 border-t border-[var(--color-border)] pt-5">
+                <div [class]="detailFieldLabel">{{ 'notifications.details.items' | translate }}</div>
+                <div *ngIf="!discardDetail.requestItems?.length" class="text-sm text-[var(--color-text-muted)]">
+                  {{ 'notifications.details.noItems' | translate }}
+                </div>
+                <div *ngFor="let item of discardDetail.requestItems" [class]="itemCard">
+                  <div class="text-sm font-semibold text-[var(--color-text)]">{{ item.itemName || item.itemNo || ('#' +
+                    item.itemId) }}</div>
+                  <div class="mt-1 flex flex-wrap gap-2 text-xs text-[var(--color-text-muted)]">
+                    {{ 'notifications.details.quantity' | translate }}: {{ item.quantity }}
+                    <span *ngIf="item.notes">• {{ item.notes }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Metadata -->
             <ng-container *ngIf="getDisplayMetadata(notification) as metadata">
               <div class="space-y-4" *ngIf="metadata.length > 0">
-                <h3 class="text-lg font-semibold text-[var(--color-text)]">
+                <h3 class="text-base font-semibold text-[var(--color-text)]">
                   {{ 'notifications.additionalInfo' | translate }}
                 </h3>
-
                 <div class="grid gap-3 sm:grid-cols-2">
                   <div *ngFor="let item of metadata; trackBy: trackMetadata"
-                    class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4">
-                    <p class="text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)]">
+                    class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background-soft)]/40 p-4 shadow-sm">
+                    <p class="text-[0.65rem] font-semibold uppercase tracking-[0.06em] text-[var(--color-text-muted)]">
                       {{ formatMetadataKey(item.key) }}
                     </p>
-                    <pre class="mt-2 whitespace-pre-wrap text-sm text-[var(--color-text)]">{{ item.value }}</pre>
+                    <pre class="mt-2 whitespace-pre-wrap font-sans text-sm leading-relaxed text-[var(--color-text)]">{{ item.value }}</pre>
                   </div>
                 </div>
               </div>
             </ng-container>
 
+            <!-- Actions -->
             <div *ngIf="hasNotificationActions(notification)"
-              class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 border-t border-[var(--color-border)] pt-4">
+              class="flex flex-col gap-3 border-t border-[var(--color-border)] pt-6 sm:flex-row sm:flex-wrap sm:items-center">
               <app-button *ngIf="canConfirmPickup(notification)" variant="primary" (click)="confirmPickup(notification)"
                 [disabled]="isPending(notification)">
                 <span class="flex items-center gap-2">
@@ -409,7 +269,6 @@
                   <span>{{ 'notifications.confirmPickupTime' | translate }}</span>
                 </span>
               </app-button>
-
               <app-button *ngIf="canProposeNewTime(notification)" variant="outline"
                 (click)="openProposeModal(notification)">
                 <span class="flex items-center gap-2">
@@ -423,30 +282,28 @@
 
         <ng-template #noSelection>
           <div
-            class="flex h-full flex-col items-center justify-center gap-4 p-10 text-center text-[var(--color-text-muted)]">
-            <lucide-angular [img]="MailOpen" class="h-12 w-12 text-[var(--color-border-strong)]"></lucide-angular>
-            <div>
-              <p class="text-lg font-semibold text-[var(--color-text)]">
-                {{ 'notifications.detailTitle' | translate }}
-              </p>
-              <p class="mt-1 text-sm">{{ 'notifications.selectPrompt' | translate }}</p>
+            class="flex min-h-[280px] flex-col items-center justify-center gap-4 px-8 py-16 text-center text-[var(--color-text-muted)] sm:min-h-[360px]">
+            <span class="rounded-full bg-[var(--color-background-soft)] p-5">
+              <lucide-angular [img]="MailOpen" class="h-10 w-10 text-[var(--color-text-muted)]"></lucide-angular>
+            </span>
+            <div class="max-w-sm space-y-1">
+              <p class="text-lg font-semibold text-[var(--color-text)]">{{ 'notifications.detailTitle' | translate }}</p>
+              <p class="text-sm leading-relaxed">{{ 'notifications.selectPrompt' | translate }}</p>
             </div>
           </div>
         </ng-template>
-      </div>
+      </section>
     </div>
   </div>
 
-  <!-- Propose New Time Modal -->
   <app-modal [isOpen]="isProposeModalOpen" [title]="'notifications.proposeNewTime' | translate" size="sm"
     (closed)="closeProposeModal()">
-    <form [formGroup]="proposeForm" class="space-y-4">
+    <form [formGroup]="proposeForm" class="space-y-5">
       <div class="space-y-2">
         <label class="text-sm font-medium text-[var(--color-text)]" for="list-pickupdate-1">
           {{ 'notifications.pickupDate' | translate }}
         </label>
-        <input id="list-pickupdate-1" type="date" formControlName="pickupDate"
-          class="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-soft)]" />
+        <input id="list-pickupdate-1" type="date" formControlName="pickupDate" [class]="modalInput" />
         <p class="text-xs text-red-500"
           *ngIf="proposeForm.get('pickupDate')?.invalid && proposeForm.get('pickupDate')?.touched">
           {{ 'validation.required' | translate }}
@@ -458,8 +315,7 @@
           {{ 'notifications.pickupTime' | translate }}
         </label>
         <input id="list-pickuptime-2" type="text" formControlName="pickupTime" (input)="formatMilitaryTime($event)" maxlength="4"
-          pattern="[0-9]{4}" [placeholder]="'newIssueRequest.selectTimePlaceholder' | translate"
-          class="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm focus:border-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-soft)]" />
+          pattern="[0-9]{4}" [placeholder]="'newIssueRequest.selectTimePlaceholder' | translate" [class]="modalInput" />
         <p class="text-xs text-red-500"
           *ngIf="proposeForm.get('pickupTime')?.invalid && proposeForm.get('pickupTime')?.touched">
           {{ 'validation.required' | translate }}
@@ -467,16 +323,17 @@
         <p class="text-xs text-[var(--color-text-muted)]">{{ 'newIssueRequest.militaryTimeFormat' | translate }}</p>
       </div>
 
-      <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4">
+      <div class="flex flex-col-reverse justify-end gap-3 border-t border-[var(--color-border)] pt-5 sm:flex-row">
         <app-button variant="ghost" type="button" (click)="closeProposeModal()">
           {{ 'common.cancel' | translate }}
         </app-button>
         <app-button variant="primary" type="button" (click)="submitProposedTime()" [disabled]="isSubmittingProposal">
           <span class="flex items-center gap-2">
-            <div class="h-4 w-4" [class.spinner]="isSubmittingProposal"></div>
+            <div *ngIf="isSubmittingProposal" [class]="spinnerSm"></div>
             <span>{{ isSubmittingProposal ? ('common.pleaseWait' | translate) : ('common.submit' | translate) }}</span>
           </span>
         </app-button>
       </div>
     </form>
   </app-modal>
+</div>
