@@ -22,10 +22,34 @@ export class ReturnService {
   ) { }
 
   /**
-   * Create a new return request (always multipart/form-data to match the API).
+   * Create a new return request (multipart/form-data). Mirrored from `OrderService.createOrder` file fields.
    */
-  createReturn(dto: CreateReturnDto, files?: File[]): Observable<number> {
+  createReturn(
+    dto: CreateReturnDto,
+    options?: {
+      attachmentUploads?: Map<number, File[]>;
+      otherFiles?: File[];
+    }
+  ): Observable<number>;
+
+  /** @deprecated Prefer `createReturn(dto, { otherFiles: files })` */
+  createReturn(dto: CreateReturnDto, files?: File[]): Observable<number>;
+
+  createReturn(
+    dto: CreateReturnDto,
+    filesOrOptions?: File[] | {
+      attachmentUploads?: Map<number, File[]>;
+      otherFiles?: File[];
+    }
+  ): Observable<number> {
     this.configService.log('Creating return request', dto);
+
+    const opts = Array.isArray(filesOrOptions)
+      ? { otherFiles: filesOrOptions }
+      : filesOrOptions;
+
+    const attachmentUploads = opts?.attachmentUploads;
+    const otherFilesArg = opts?.otherFiles;
 
     const formData = new FormData();
 
@@ -47,9 +71,24 @@ export class ReturnService {
       });
     }
 
-    if (files && files.length > 0) {
-      files.forEach(file => {
-        formData.append('files', file);
+    if (attachmentUploads && attachmentUploads.size > 0) {
+      let groupIndex = 0;
+      attachmentUploads.forEach((files, requirementId) => {
+        const effective = (files ?? []).filter(f => f instanceof File && f.size > 0);
+        if (effective.length === 0) {
+          return;
+        }
+        formData.append(`AttachmentUploads[${groupIndex}].AttachmentRequirementId`, String(requirementId));
+        effective.forEach(f => formData.append(`AttachmentUploads[${groupIndex}].Files`, f));
+        groupIndex++;
+      });
+    }
+
+    if (otherFilesArg && otherFilesArg.length > 0) {
+      otherFilesArg.forEach(file => {
+        if (file instanceof File && file.size > 0) {
+          formData.append('OtherFiles', file);
+        }
       });
     }
 

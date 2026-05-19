@@ -78,6 +78,12 @@ import {
   createInitialSuccessState
 } from '../return-request.state';
 
+import {
+  createInitialAttachmentUploadsState,
+  type AttachmentRequirementDto,
+  type AttachmentUploadsState
+} from '@requests/pages/new-issue/new-issue-request.state';
+
 const CATALOG_FILTER_DEBOUNCE_MS = 350;
 const DEFAULT_DEPARTMENT_ID = 1;
 
@@ -116,6 +122,15 @@ export class ReturnRequestFacade {
     { value: 2, labelKey: 'common.priorityLevels.Urgent' },
     { value: 3, labelKey: 'common.priorityLevels.VeryUrgent' }
   ];
+
+  /** Attachment slots for the currently selected request purpose (ordered). */
+  get selectedAttachmentRequirements(): AttachmentRequirementDto[] {
+    const id = this.detailsState.requestPurposeId;
+    if (id == null) return [];
+    const purpose = this.lookupState.requestPurposes.find((p) => p.id === id);
+    const reqs = purpose?.attachmentRequirements ?? [];
+    return [...reqs].sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+  }
 
   constructor(
     private readonly returnService: ReturnService,
@@ -243,7 +258,7 @@ export class ReturnRequestFacade {
         return (
           !!this.detailsState.requestPurposeId &&
           !!this.detailsState.requestPurposeNotes.trim() &&
-          this.detailsState.selectedFiles.length > 0
+          this.attachmentsSatisfied()
         );
       default:
         return true;
@@ -360,11 +375,21 @@ export class ReturnRequestFacade {
   // ---- Step 1: details -----------------------------------------------------
 
   onRequestPurposeChange(): void {
+    this.detailsState.attachmentUploads = createInitialAttachmentUploadsState();
+    this.detailsState.selectedFiles = [];
     this.clearError('requestPurposeId');
+    this.clearError('attachmentRequirements');
+    this.clearError('selectedFiles');
     if (!this.detailsState.requestPurposeId) {
       this.detailsState.requestPurposeNotes = '';
       this.clearError('requestPurposeNotes');
     }
+  }
+
+  onAttachmentUploadsChange(state: AttachmentUploadsState): void {
+    this.detailsState.attachmentUploads = state;
+    this.clearError('attachmentRequirements');
+    this.cdr.markForCheck();
   }
 
   onRequestPurposeNotesChange(): void {
@@ -400,16 +425,54 @@ export class ReturnRequestFacade {
 
   readonly getFileSize = getFileSizeFromFile;
 
+  private attachmentsSatisfied(): boolean {
+    if (this.selectedAttachmentRequirements.length === 0) {
+      return this.detailsState.selectedFiles.some((f) => f instanceof File && f.size > 0);
+    }
+    for (const req of this.selectedAttachmentRequirements) {
+      const files = (this.detailsState.attachmentUploads.filesByRequirementId.get(req.id) ?? []).filter(
+        (f) => f instanceof File && f.size > 0
+      );
+      if (req.isRequired && files.length < req.minCount) return false;
+      if (files.length > req.maxCount) return false;
+    }
+    return true;
+  }
+
   /** Purpose / notes / files only — used by details Next and final submit. */
   private setDetailsStepValidationErrors(): void {
+    delete this.submissionState.errors['selectedFiles'];
+    delete this.submissionState.errors['attachmentRequirements'];
+
     if (!this.detailsState.requestPurposeId) {
-      this.submissionState.errors['requestPurposeId'] = this.translate.instant('returnRequest.errors.requestPurposeRequired');
+      this.submissionState.errors['requestPurposeId'] = this.translate.instant(
+        'returnRequest.errors.requestPurposeRequired'
+      );
     }
     if (this.detailsState.requestPurposeId && !this.detailsState.requestPurposeNotes.trim()) {
-      this.submissionState.errors['requestPurposeNotes'] = this.translate.instant('returnRequest.errors.requestPurposeNotesRequired');
+      this.submissionState.errors['requestPurposeNotes'] = this.translate.instant(
+        'returnRequest.errors.requestPurposeNotesRequired'
+      );
     }
-    if (this.detailsState.selectedFiles.length === 0) {
-      this.submissionState.errors['selectedFiles'] = this.translate.instant('returnRequest.errors.filesRequired');
+
+    if (this.selectedAttachmentRequirements.length > 0) {
+      let invalid = false;
+      for (const req of this.selectedAttachmentRequirements) {
+        const files = (this.detailsState.attachmentUploads.filesByRequirementId.get(req.id) ?? []).filter(
+          (f) => f instanceof File && f.size > 0
+        );
+        if (req.isRequired && files.length < req.minCount) invalid = true;
+        if (files.length > req.maxCount) invalid = true;
+      }
+      if (invalid) {
+        this.submissionState.errors['attachmentRequirements'] = this.translate.instant(
+          'newIssueRequest.validation.attachmentRequirementsInvalid'
+        );
+      }
+    } else if (!this.detailsState.selectedFiles.some((f) => f instanceof File && f.size > 0)) {
+      this.submissionState.errors['selectedFiles'] = this.translate.instant(
+        'newIssueRequest.validation.attachmentsRequired'
+      );
     }
   }
 
@@ -478,9 +541,29 @@ export class ReturnRequestFacade {
     this.submissionState.isLoading = true;
     this.cdr.markForCheck();
 
-    const files = this.detailsState.selectedFiles.length > 0 ? this.detailsState.selectedFiles : undefined;
+    const slotMap = this.detailsState.attachmentUploads.filesByRequirementId;
+    const nonEmptySlots = new Map<number, File[]>();
+    slotMap.forEach((files, requirementId) => {
+      const effective = (files ?? []).filter((f) => f instanceof File && f.size > 0);
+      if (effective.length > 0) {
+        nonEmptySlots.set(requirementId, effective);
+      }
+    });
+
+    const otherFilesMerged = [...(this.detailsState.attachmentUploads.otherFiles ?? []), ...this.detailsState.selectedFiles].filter(
+      (f) => f instanceof File && f.size > 0
+    );
+
+    const createOpts: { attachmentUploads?: Map<number, File[]>; otherFiles?: File[] } | undefined =
+      nonEmptySlots.size > 0 || otherFilesMerged.length > 0
+        ? {
+            ...(nonEmptySlots.size > 0 ? { attachmentUploads: nonEmptySlots } : {}),
+            ...(otherFilesMerged.length > 0 ? { otherFiles: otherFilesMerged } : {})
+          }
+        : undefined;
+
     this.returnService
-      .createReturn(dto, files)
+      .createReturn(dto, createOpts)
       .pipe(
         takeUntil(this.destroy$),
         switchMap((response: unknown) => {

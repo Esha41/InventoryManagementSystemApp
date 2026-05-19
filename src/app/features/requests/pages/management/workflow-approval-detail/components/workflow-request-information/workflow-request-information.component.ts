@@ -28,6 +28,9 @@ export class WorkflowRequestInformationComponent {
   readonly User = User;
   readonly Download = Download;
 
+  /** Request types that show the order/return/discard file list in this card. */
+  private static readonly attachmentRequestTypes = new Set(['Order', 'Return', 'Discard']);
+
   @Input() requestDetail: RequestDetail | null = null;
   @Input() orderFiles: FileUploadDto[] = [];
   @Input() destroy$!: Subject<void>;
@@ -36,6 +39,60 @@ export class WorkflowRequestInformationComponent {
     private translateService: TranslateService,
     private supplyServiceHelper: WorkflowApprovalSupplyService
   ) { }
+
+  showsRequestAttachmentsSection(): boolean {
+    const t = this.requestDetail?.requestType;
+    if (!t || !WorkflowRequestInformationComponent.attachmentRequestTypes.has(t)) return false;
+    return (this.orderFiles?.length ?? 0) > 0;
+  }
+
+  hasAttachmentRequirementSlots(): boolean {
+    return (this.orderFiles ?? []).some(f => this.slotId(f) != null);
+  }
+
+  /** Grouped slot-bound files, sorted by requirement id. */
+  attachmentRequirementGroups(): { requirementId: number; label: string; files: FileUploadDto[] }[] {
+    const map = new Map<number, FileUploadDto[]>();
+    for (const f of this.orderFiles ?? []) {
+      const id = this.slotId(f);
+      if (id == null) continue;
+      const list = map.get(id) ?? [];
+      list.push(f);
+      map.set(id, list);
+    }
+    const ids = [...map.keys()].sort((a, b) => a - b);
+    return ids.map(requirementId => {
+      const files = map.get(requirementId) ?? [];
+      const first = files[0];
+      const en = this.slotNameEn(first);
+      const ar = this.slotNameAr(first);
+      const label =
+        (en || ar) ? this.getLocalizedValue(en || undefined, ar || undefined) : `#${requirementId}`;
+      return { requirementId, label, files };
+    });
+  }
+
+  otherAttachments(): FileUploadDto[] {
+    return (this.orderFiles ?? []).filter(f => this.slotId(f) == null);
+  }
+
+  private slotId(f: FileUploadDto): number | null {
+    const ext = f as FileUploadDto & { AttachmentRequirementId?: number | null };
+    const raw = f.attachmentRequirementId ?? ext.AttachmentRequirementId;
+    if (raw === null || raw === undefined) return null;
+    const n = Number(raw);
+    return Number.isNaN(n) ? null : n;
+  }
+
+  private slotNameEn(f: FileUploadDto): string | undefined {
+    const ext = f as FileUploadDto & { AttachmentRequirementNameEn?: string | null };
+    return f.attachmentRequirementNameEn ?? ext.AttachmentRequirementNameEn ?? undefined;
+  }
+
+  private slotNameAr(f: FileUploadDto): string | undefined {
+    const ext = f as FileUploadDto & { AttachmentRequirementNameAr?: string | null };
+    return f.attachmentRequirementNameAr ?? ext.AttachmentRequirementNameAr ?? undefined;
+  }
 
   /**
    * Get localized value

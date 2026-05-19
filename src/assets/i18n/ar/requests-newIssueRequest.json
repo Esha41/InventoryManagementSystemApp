@@ -173,6 +173,7 @@
     "orderDocument": "المرفقات",
     "attachments": "المرفقات",
     "attachmentsHint": "حدد ملفاً واحداً أو أكثر للمرفق. مطلوب ملف واحد على الأقل.",
+    "otherFiles": "مرفقات أخرى",
     "noFilesAttached": "لا توجد ملفات مرفقة",
     "view": "عرض",
     "reserveDetails": "تفاصيل الاحتياطي",
@@ -199,6 +200,7 @@
       "orderPriorityRequired": "أولوية الطلب مطلوبة.",
       "commentsRequired": "التعليقات مطلوبة.",
       "attachmentsRequired": "مطلوب ملف مرفق واحد على الأقل.",
+      "attachmentRequirementsInvalid": "هذا الحقل مطلوب.",
       "required": "هذا الحقل مطلوب.",
       "correctErrors": "يرجى تصحيح الحقول المحددة قبل المتابعة.",
       "errors": {

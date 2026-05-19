@@ -46,16 +46,16 @@
         class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] flex flex-col gap-3">
 
         <!-- Header: English Name -->
-        <div class="flex items-start justify-between">
-          <h3 class="font-bold text-[var(--color-text)] text-sm">{{ item.nameEn }}</h3>
+        <div class="flex items-start justify-between gap-2">
+          <h3 class="font-bold text-[var(--color-text)] text-sm break-words flex-1 min-w-0 text-start">{{ item.nameEn }}</h3>
 
-          <div *ngIf="canEdit() || canDelete()" class="flex items-center gap-1">
-            <button *ngIf="canEdit()" (click)="onEditLookup(item)"
+          <div *ngIf="canEdit() || canDelete()" class="flex items-center gap-1 flex-shrink-0">
+            <button type="button" *ngIf="canEdit()" (click)="onEditLookup(item)"
               class="p-1.5 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors"
               [title]="'lookupManagement.edit' | translate">
               <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
             </button>
-            <button *ngIf="canDelete()" (click)="onDeleteLookup(item)"
+            <button type="button" *ngIf="canDelete()" (click)="onDeleteLookup(item)"
               class="p-1.5 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
               [title]="'lookupManagement.delete' | translate">
               <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
@@ -65,6 +65,76 @@
 
         <!-- Arabic Name -->
         <div class="text-sm font-medium text-[var(--color-text)]" dir="rtl">{{ item.nameAr }}</div>
+
+        <button *ngIf="selectedTable.requestPurposeType"
+          type="button"
+          (click)="togglePurposeExpanded(item.id)"
+          class="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-[var(--color-border-muted)] hover:bg-[var(--color-background-muted)]/40 text-start rtl:text-right transition-colors">
+          <span class="inline-flex items-center gap-2 text-xs font-medium text-[var(--color-text)] min-w-0">
+            <lucide-angular [img]="isPurposeExpanded(item.id) ? ChevronDown : ChevronRight" class="h-4 w-4 flex-shrink-0 text-[var(--color-text-muted)]"></lucide-angular>
+            <span class="truncate">{{ 'lookupManagement.attachmentSlots' | translate }}</span>
+            <span class="tabular-nums text-[var(--color-text-muted)] flex-shrink-0">({{ getAttachmentSlotCount(item) }})</span>
+          </span>
+        </button>
+
+        <div *ngIf="selectedTable.requestPurposeType && isPurposeExpanded(item.id)"
+          class="rounded-lg border border-[var(--color-border-muted)] bg-[var(--color-background-muted)]/20 p-3 space-y-3">
+          <div class="flex flex-wrap justify-between gap-2 items-center">
+            <span class="text-[10px] font-semibold uppercase text-[var(--color-text-muted)]">{{ 'lookupManagement.requestPurposeAttachmentsTitle' | translate }}</span>
+            <button type="button" *ngIf="canEdit()"
+              [disabled]="isPurposeAttachmentBusy(item.id)"
+              (click)="openNestedAddAttachmentSlot(item, $event)"
+              class="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-medium rounded-md bg-[var(--color-brand)] text-white disabled:opacity-50">
+              <lucide-angular [img]="Plus" class="h-3 w-3"></lucide-angular>
+              {{ 'lookupManagement.nestedAddAttachment' | translate }}
+            </button>
+          </div>
+          <div *ngIf="isPurposeAttachmentBusy(item.id)" class="text-[11px] text-[var(--color-text-muted)]">{{ 'lookupManagement.savingAttachments' | translate }}</div>
+          <div class="rounded-md border border-[var(--color-border)] overflow-x-auto bg-[var(--color-background)]">
+            <table class="w-full min-w-[560px] text-[11px]">
+              <thead>
+                <tr class="border-b border-[var(--color-border)] text-[var(--color-text-muted)]">
+                  <th class="py-2 px-2 font-semibold text-center">#</th>
+                  <th class="py-2 px-2 font-semibold text-center">{{ 'lookupManagement.nameEn' | translate }}</th>
+                  <th class="py-2 px-2 font-semibold text-center">{{ 'lookupManagement.nameAr' | translate }}</th>
+                  <th class="py-2 px-2 font-semibold text-center">{{ 'lookupFormModal.attachmentRequired' | translate }}</th>
+                  <th class="py-2 px-2 font-semibold text-center">{{ 'lookupFormModal.minCount' | translate }}</th>
+                  <th class="py-2 px-2 font-semibold text-center">{{ 'lookupFormModal.maxCount' | translate }}</th>
+                  <th *ngIf="canEdit() || canDelete()" class="py-2 px-2 font-semibold text-center">{{ 'lookupManagement.actions' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of sortedPurposeAttachments(item); let ai = index" class="border-b border-[var(--color-border-muted)] last:border-0">
+                  <td class="py-2 px-2 text-center tabular-nums">{{ ai + 1 }}</td>
+                  <td class="py-2 px-2 text-center">{{ row.nameEn }}</td>
+                  <td class="py-2 px-2 text-center" dir="rtl">{{ row.nameAr }}</td>
+                  <td class="py-2 px-2 text-center">{{ (row.isRequired ? 'common.yes' : 'common.no') | translate }}</td>
+                  <td class="py-2 px-2 text-center">{{ row.minCount }}</td>
+                  <td class="py-2 px-2 text-center">{{ row.maxCount }}</td>
+                  <td *ngIf="canEdit() || canDelete()" class="py-2 px-2 align-middle">
+                    <div class="flex justify-center gap-1">
+                      <button type="button" *ngIf="canEdit()"
+                        [disabled]="isPurposeAttachmentBusy(item.id)"
+                        (click)="openNestedEditAttachmentSlot(item, row, $event)"
+                        class="p-1 rounded text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 disabled:opacity-50">
+                        <lucide-angular [img]="Edit" class="h-3.5 w-3.5"></lucide-angular>
+                      </button>
+                      <button type="button" *ngIf="canDelete()"
+                        [disabled]="isPurposeAttachmentBusy(item.id)"
+                        (click)="requestNestedAttachmentDelete(item, row, $event)"
+                        class="p-1 rounded text-[var(--color-error)] hover:bg-[var(--color-error)]/10 disabled:opacity-50">
+                        <lucide-angular [img]="Trash2" class="h-3.5 w-3.5"></lucide-angular>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="sortedPurposeAttachments(item).length === 0">
+                  <td [attr.colspan]="canEdit() || canDelete() ? 7 : 6" class="py-6 text-center text-[var(--color-text-muted)]">{{ 'lookupManagement.noAttachmentSlotsYet' | translate }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
 
         <!-- Details Grid -->
         <div *ngIf="selectedTable.hasCode || selectedTable.name === 'ItemType' || selectedTable.name === 'Unit' || selectedTable.name === 'Caliber' || selectedTable.name === 'Employee'"
@@ -118,9 +188,15 @@
       <table class="w-full">
         <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
           <tr>
-            <th
+            <!-- Default: centered like all other lookup tables -->
+            <th *ngIf="!selectedTable.requestPurposeType"
               class="px-6 py-3 text-center align-middle text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider whitespace-nowrap">
               {{ 'lookupManagement.nameEn' | translate }}<span *ngIf="selectedTable.name === 'Employee'" class="text-[var(--color-error)]" aria-hidden="true">&nbsp;*</span>
+            </th>
+            <!-- Request purpose: align name column start with expand chevron -->
+            <th *ngIf="selectedTable.requestPurposeType"
+              class="px-6 py-3 text-start align-middle text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider whitespace-nowrap">
+              {{ 'lookupManagement.nameEn' | translate }}
             </th>
             <th
               class="px-6 py-3 text-center align-middle text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
@@ -154,6 +230,10 @@
               class="px-6 py-3 text-center align-middle text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
               {{ 'lookupManagement.itemType' | translate }}
             </th>
+            <th *ngIf="selectedTable.requestPurposeType"
+              class="px-6 py-3 text-center align-middle text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider whitespace-nowrap">
+              {{ 'lookupManagement.attachmentSlots' | translate }}
+            </th>
             <th *ngIf="canEdit() || canDelete()"
               class="px-6 py-3 text-center align-middle text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
               {{ 'lookupManagement.actions' | translate }}
@@ -161,10 +241,21 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-[var(--color-border)]">
-          <tr *ngFor="let item of paginatedLookupItems"
-            class="hover:bg-[var(--color-background-muted)] transition-colors">
-            <td class="px-6 py-4 text-center align-middle">
+          <ng-container *ngFor="let item of paginatedLookupItems">
+          <tr
+            class="hover:bg-[var(--color-background-muted)] transition-colors"
+            [class.cursor-pointer]="isRequestPurposeTable()"
+            [class.rp-row-expanded]="selectedTable.requestPurposeType && isPurposeExpanded(item.id)"
+            (click)="onPurposeMasterRowActivate(item, $event)">
+            <td *ngIf="!selectedTable.requestPurposeType" class="px-6 py-4 text-center align-middle">
               <span class="font-medium text-[var(--color-text)]">{{ item.nameEn }}</span>
+            </td>
+            <td *ngIf="selectedTable.requestPurposeType" class="px-6 py-4 align-middle text-start">
+              <div class="flex items-center gap-2 flex-wrap justify-start min-w-0">
+                <lucide-angular [img]="isPurposeExpanded(item.id) ? ChevronDown : ChevronRight"
+                  class="h-4 w-4 flex-shrink-0 text-[var(--color-text-muted)]"></lucide-angular>
+                <span class="font-medium text-[var(--color-text)] break-words text-start">{{ item.nameEn }}</span>
+              </div>
             </td>
             <td class="px-6 py-4 text-center align-middle">
               <span class="font-medium text-[var(--color-text)]" dir="rtl">{{ item.nameAr }}</span>
@@ -201,14 +292,17 @@
                 {{ getItemTypeName(item) }}
               </span>
             </td>
+            <td *ngIf="selectedTable.requestPurposeType" class="px-6 py-4 text-center align-middle">
+              <span class="text-sm tabular-nums text-[var(--color-text-muted)]">{{ getAttachmentSlotCount(item) }}</span>
+            </td>
             <td *ngIf="canEdit() || canDelete()" class="px-6 py-4 text-center align-middle">
               <div class="inline-flex items-center gap-2">
-                <button *ngIf="canEdit()" (click)="onEditLookup(item)"
+                <button type="button" *ngIf="canEdit()" (click)="onEditLookup(item); $event.stopPropagation()"
                   class="p-2 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg transition-colors"
                   [title]="'lookupManagement.edit' | translate">
                   <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
                 </button>
-                <button *ngIf="canDelete()" (click)="onDeleteLookup(item)"
+                <button type="button" *ngIf="canDelete()" (click)="onDeleteLookup(item); $event.stopPropagation()"
                   class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors"
                   [title]="'lookupManagement.delete' | translate">
                   <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
@@ -216,6 +310,73 @@
               </div>
             </td>
           </tr>
+          <tr *ngIf="selectedTable.requestPurposeType && isPurposeExpanded(item.id)" class="bg-[var(--color-background-muted)]/40 border-b border-[var(--color-border)]">
+            <td [attr.colspan]="getDesktopLookupColSpan()" class="p-0">
+              <div class="px-6 py-5 border-t border-[var(--color-border-muted)] space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <h4 class="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+                    {{ 'lookupManagement.requestPurposeAttachmentsTitle' | translate }}
+                  </h4>
+                  <button type="button" *ngIf="canEdit()"
+                    [disabled]="isPurposeAttachmentBusy(item.id)"
+                    (click)="openNestedAddAttachmentSlot(item, $event)"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-[var(--color-brand)] text-white hover:opacity-90 disabled:opacity-50">
+                    <lucide-angular [img]="Plus" class="h-3.5 w-3.5"></lucide-angular>
+                    {{ 'lookupManagement.nestedAddAttachment' | translate }}
+                  </button>
+                </div>
+                <div *ngIf="isPurposeAttachmentBusy(item.id)" class="text-xs text-[var(--color-text-muted)]">{{ 'lookupManagement.savingAttachments' | translate }}</div>
+                <div class="rounded-lg border border-[var(--color-border)] overflow-x-auto bg-[var(--color-background)]">
+                  <table class="w-full text-sm">
+                    <thead>
+                      <tr class="border-b border-[var(--color-border)] bg-[var(--color-background-muted)] text-xs text-[var(--color-text-muted)]">
+                        <th class="text-center px-3 py-2 font-semibold">{{ 'lookupManagement.orderShort' | translate }}</th>
+                        <th class="text-center px-3 py-2 font-semibold">{{ 'lookupManagement.nameEn' | translate }}</th>
+                        <th class="text-center px-3 py-2 font-semibold">{{ 'lookupManagement.nameAr' | translate }}</th>
+                        <th class="text-center px-3 py-2 font-semibold whitespace-nowrap">{{ 'lookupFormModal.attachmentRequired' | translate }}</th>
+                        <th class="text-center px-3 py-2 font-semibold whitespace-nowrap">{{ 'lookupFormModal.minCount' | translate }}</th>
+                        <th class="text-center px-3 py-2 font-semibold whitespace-nowrap">{{ 'lookupFormModal.maxCount' | translate }}</th>
+                        <th *ngIf="canEdit() || canDelete()" class="text-center px-3 py-2 font-semibold">{{ 'lookupManagement.actions' | translate }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let row of sortedPurposeAttachments(item); let ai = index" class="border-b border-[var(--color-border-muted)] last:border-0">
+                        <td class="px-3 py-2 text-center align-middle tabular-nums">{{ ai + 1 }}</td>
+                        <td class="px-3 py-2 text-center align-middle">{{ row.nameEn }}</td>
+                        <td class="px-3 py-2 text-center align-middle" dir="rtl">{{ row.nameAr }}</td>
+                        <td class="px-3 py-2 text-center align-middle">{{ (row.isRequired ? 'common.yes' : 'common.no') | translate }}</td>
+                        <td class="px-3 py-2 text-center align-middle">{{ row.minCount }}</td>
+                        <td class="px-3 py-2 text-center align-middle">{{ row.maxCount }}</td>
+                        <td *ngIf="canEdit() || canDelete()" class="px-3 py-2 align-middle">
+                          <div class="flex items-center justify-center gap-1">
+                            <button type="button" *ngIf="canEdit()"
+                              [disabled]="isPurposeAttachmentBusy(item.id)"
+                              (click)="openNestedEditAttachmentSlot(item, row, $event)"
+                              class="p-1.5 text-[var(--color-accent)] hover:bg-[var(--color-accent)]/10 rounded-lg disabled:opacity-50"
+                              [title]="'lookupManagement.edit' | translate">
+                              <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
+                            </button>
+                            <button type="button" *ngIf="canDelete()"
+                              [disabled]="isPurposeAttachmentBusy(item.id)"
+                              (click)="requestNestedAttachmentDelete(item, row, $event)"
+                              class="p-1.5 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg disabled:opacity-50"
+                              [title]="'lookupManagement.delete' | translate">
+                              <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr *ngIf="sortedPurposeAttachments(item).length === 0">
+                        <td [attr.colspan]="canEdit() || canDelete() ? 7 : 6"
+                          class="px-4 py-6 text-center text-sm text-[var(--color-text-muted)]">{{ 'lookupManagement.noAttachmentSlotsYet' | translate }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </td>
+          </tr>
+          </ng-container>
         </tbody>
       </table>
 
@@ -263,6 +424,62 @@
   [externalLoading]="lookupModalLoading"
   (closed)="showLookupModal = false; lookupModalLoading = false"
   (saved)="onLookupSaved($event)" />
+
+<app-modal
+  [isOpen]="showAttachmentSlotModal"
+  [title]="nestedAttachmentModalTitle()"
+  size="md"
+  (closed)="closeAttachmentSlotModal()">
+  <form [formGroup]="attachmentSlotForm" (ngSubmit)="onAttachmentSlotModalSave()" id="attachment-slot-modal-form" class="space-y-4">
+    <div>
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-1" for="att-slot-name-en">{{ 'lookupFormModal.attachmentNameEn' | translate }} <span class="text-[var(--color-error)]">*</span></label>
+      <input id="att-slot-name-en" type="text" formControlName="nameEn" class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg"
+        [class.border-[var(--color-error)]]="attachmentSlotForm.get('nameEn')?.invalid && attachmentSlotForm.get('nameEn')?.touched" />
+      <p *ngIf="attachmentSlotForm.get('nameEn')?.touched && attachmentSlotForm.get('nameEn')?.errors?.['required']"
+        class="mt-1 text-xs text-[var(--color-error)]">{{ 'lookupManagement.attachmentModalFieldRequired' | translate }}</p>
+      <p *ngIf="attachmentSlotForm.get('nameEn')?.touched && attachmentSlotForm.get('nameEn')?.errors?.['maxlength']"
+        class="mt-1 text-xs text-[var(--color-error)]">{{ 'lookupManagement.attachmentModalMaxLength' | translate: { length: attachmentSlotForm.get('nameEn')?.errors?.['maxlength']?.requiredLength } }}</p>
+    </div>
+    <div>
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-1" for="att-slot-name-ar">{{ 'lookupFormModal.attachmentNameAr' | translate }} <span class="text-[var(--color-error)]">*</span></label>
+      <input id="att-slot-name-ar" type="text" formControlName="nameAr" dir="rtl" class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg"
+        [class.border-[var(--color-error)]]="attachmentSlotForm.get('nameAr')?.invalid && attachmentSlotForm.get('nameAr')?.touched" />
+      <p *ngIf="attachmentSlotForm.get('nameAr')?.touched && attachmentSlotForm.get('nameAr')?.errors?.['required']"
+        class="mt-1 text-xs text-[var(--color-error)]">{{ 'lookupManagement.attachmentModalFieldRequired' | translate }}</p>
+      <p *ngIf="attachmentSlotForm.get('nameAr')?.touched && attachmentSlotForm.get('nameAr')?.errors?.['maxlength']"
+        class="mt-1 text-xs text-[var(--color-error)]">{{ 'lookupManagement.attachmentModalMaxLength' | translate: { length: attachmentSlotForm.get('nameAr')?.errors?.['maxlength']?.requiredLength } }}</p>
+    </div>
+    <label class="flex items-center gap-2 cursor-pointer select-none">
+      <input type="checkbox" formControlName="isRequired" class="rounded border-[var(--color-border)]" />
+      <span>{{ 'lookupFormModal.attachmentRequired' | translate }}</span>
+    </label>
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1" for="att-slot-min">{{ 'lookupFormModal.minCount' | translate }}</label>
+        <input id="att-slot-min" type="number" formControlName="minCount" min="0" class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1" for="att-slot-max">{{ 'lookupFormModal.maxCount' | translate }}</label>
+        <input id="att-slot-max" type="number" formControlName="maxCount" min="1" class="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg" />
+      </div>
+    </div>
+  </form>
+
+  <div modal-footer class="flex items-center justify-end gap-3 w-full flex-shrink-0">
+    <app-button variant="outline" type="button" (clicked)="closeAttachmentSlotModal()">{{ 'common.cancel' | translate }}</app-button>
+    <app-button variant="primary" type="submit" [formId]="'attachment-slot-modal-form'">{{ (attachmentSlotModalEditingId != null ? 'common.update' : 'common.add') | translate }}</app-button>
+  </div>
+</app-modal>
+
+<app-confirm-dialog
+  [isOpen]="showAttachmentSlotDeleteConfirm"
+  [title]="'lookupManagement.deleteAttachmentSlotTitle' | translate"
+  [message]="nestedAttachmentConfirmMessage()"
+  [confirmText]="'common.delete' | translate"
+  [cancelText]="'common.cancel' | translate"
+  confirmVariant="danger"
+  (confirmed)="confirmNestedAttachmentDelete()"
+  (cancelled)="cancelNestedAttachmentDelete()" />
 
 <!-- Employee Form Modal (for Employee lookup table) -->
 <app-employee-form-modal

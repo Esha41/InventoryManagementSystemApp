@@ -99,6 +99,7 @@
     "noFilesAttached": "No files attached",
     "attachments": "Attachments",
     "attachmentsHint": "Select one or more files to attach.",
+    "otherFiles": "Other Attachments",
     "view": "View",
     "priority": "Priority",
     "usageDetails": "Usage Details",
@@ -198,6 +199,7 @@
       "orderPriorityRequired": "Order priority is required.",
       "commentsRequired": "Comments are required.",
       "attachmentsRequired": "At least one file attachment is required.",
+      "attachmentRequirementsInvalid": "This field is required.",
       "required": "This field is required.",
       "correctErrors": "Please fix the highlighted fields before continuing.",
       "errors": {

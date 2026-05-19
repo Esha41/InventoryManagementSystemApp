@@ -181,19 +181,6 @@ export class StatusCardComponent implements OnInit, OnDestroy {
     return lower === '7' || lower === 'autorejected' || lower === 'auto rejected' || lower === 'auto-rejected';
   }
 
-  getNumberLabelKey(): string {
-    // Check if this card is for returns
-    if (this.returnRequestId) {
-      return 'dashboard.returnNumber';
-    }
-    // Check if this card is for discards
-    if (this.discardRequestId) {
-      return 'dashboard.discardNumber';
-    }
-    // Default to order number
-    return 'dashboard.orderNumber';
-  }
-
   isOrderCard(): boolean {
     return !!this.orderRequestId && !this.returnRequestId && !this.discardRequestId;
   }

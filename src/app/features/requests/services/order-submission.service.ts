@@ -26,7 +26,12 @@ export interface OrderSubmissionData {
   defaultRequestPurposeId: number;
   defaultRequestTypeId: number;
   orderType: string;
-  files?: File[];
+  /**
+   * Files grouped per AttachmentRequirementId (the new slotted upload model).
+   * Keep alongside otherFiles for the entity-only "extras" bucket.
+   */
+  attachmentUploads?: Map<number, File[]>;
+  otherFiles?: File[];
   weaponAssociations?: Map<number, WeaponAssociation[]>;
 }
 
@@ -206,8 +211,12 @@ export class OrderSubmissionService {
    * Submits an order
    * Uses RxJS operators to chain observables properly (no nested subscribes)
    */
-  submitOrder(payload: CreateOrderDto, files?: File[]): Observable<OrderSubmissionResult> {
-    return this.orderService.createOrder(payload, files).pipe(
+  submitOrder(
+    payload: CreateOrderDto,
+    attachmentUploads?: Map<number, File[]>,
+    otherFiles?: File[]
+  ): Observable<OrderSubmissionResult> {
+    return this.orderService.createOrder(payload, attachmentUploads, otherFiles).pipe(
       switchMap((response: APIOperationResponse<number>) => {
         if (!response?.succeeded) {
           const errorMessage = ErrorHandler.resolveOrderSubmissionError(

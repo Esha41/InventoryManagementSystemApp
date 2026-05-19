@@ -2,6 +2,14 @@ import { ConfirmationType } from '@components/confirmation-dialog/confirmation-d
 import { AmmunitionReadDto } from '@models/ammunition.model';
 import { WeaponDto } from '@models/weapon.model';
 import { ExplosiveDto } from '@models/explosive.model';
+import {
+  AttachmentRequirementDto,
+  AttachmentUploadsState,
+  createInitialAttachmentUploadsState
+} from '../new-issue/new-issue-request.state';
+
+export type { AttachmentRequirementDto, AttachmentUploadsState };
+export { createInitialAttachmentUploadsState };
 
 export type ReturnItemType = 'Ammunition' | 'Weapon' | 'Explosive';
 export type CatalogListItem = AmmunitionReadDto | WeaponDto | ExplosiveDto;
@@ -20,6 +28,7 @@ export interface RequestPurpose {
   id: number;
   nameAr: string;
   nameEn: string;
+  attachmentRequirements?: AttachmentRequirementDto[];
 }
 
 export interface ReturnSelectionState {
@@ -33,6 +42,8 @@ export interface ReturnDetailsState {
   requestPurposeId: number | null;
   requestPurposeNotes: string;
   selectedFiles: File[];
+  /** Per-purpose attachment slots (+ optional parallel otherFiles unused; legacy bucket is `selectedFiles`). */
+  attachmentUploads: AttachmentUploadsState;
 }
 
 export interface ReturnLookupState {
@@ -82,7 +93,8 @@ export function createInitialDetailsState(): ReturnDetailsState {
     priority: 1,
     requestPurposeId: null,
     requestPurposeNotes: '',
-    selectedFiles: []
+    selectedFiles: [],
+    attachmentUploads: createInitialAttachmentUploadsState()
   };
 }
 

@@ -1,19 +1,59 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
+import {
+  AbstractControl,
+  FormArray,
+  FormBuilder,
+  FormGroup,
+  ValidationErrors,
+  Validators,
+  ReactiveFormsModule
+} from '@angular/forms';
 import { ModalComponent } from '@components/modal/modal.component';
 import { ButtonComponent } from '@components/button/button.component';
 import { Subject, takeUntil } from 'rxjs';
-import { LookupItem, CreateUpdateLookupDto, LookupTableConfig } from '@models/lookup.model';
+import {
+  AttachmentRequirementLookupDraft,
+  CreateUpdateLookupDto,
+  LookupItem,
+  LookupTableConfig
+} from '@models/lookup.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
-import type { LookupModalFormGroup } from './lookup-form-modal.models';
+import type {
+  AttachmentRequirementRowFormGroup,
+  LookupModalFormGroup
+} from './lookup-form-modal.models';
 
 const ITEM_TYPE_NAME_TO_VALUE: Record<string, number> = {
   Ammunition: 1,
   Weapon: 2,
   Explosive: 3
 };
+
+function coerceInt(v: unknown): number | null {
+  if (v === '' || v === undefined || v === null) return null;
+  const n = typeof v === 'number' ? v : parseInt(String(v), 10);
+  return Number.isFinite(n) ? n : null;
+}
+
+function attachmentRowValidator(control: AbstractControl): ValidationErrors | null {
+  const g = control as FormGroup;
+  const en = String(g.get('nameEn')?.value ?? '').trim();
+  const ar = String(g.get('nameAr')?.value ?? '').trim();
+  if (!en && !ar) return null;
+
+  const min = coerceInt(g.get('minCount')?.value);
+  const max = coerceInt(g.get('maxCount')?.value);
+
+  if (!en || !ar) return { incompleteNames: true };
+
+  if (min === null || min < 0) return { minInvalid: true };
+  if (max === null || max < 1) return { maxInvalid: true };
+  if (max < min) return { rangeInvalid: true };
+
+  return null;
+}
 
 function normalizeLookupItemType(item: LookupItem): number | null {
   const raw = (item as LookupItem & { itemType?: number | string }).itemType;
@@ -48,7 +88,7 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
   @Input() lookupItem?: LookupItem;
   @Input() tableConfig?: LookupTableConfig;
   @Input() mode: 'create' | 'edit' = 'create';
-  @Input() externalLoading: boolean = false; // Allow parent to control loading state
+  @Input() externalLoading = false;
 
   @Output() closed = new EventEmitter<void>();
   @Output() saved = new EventEmitter<CreateUpdateLookupDto>();
@@ -59,7 +99,6 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
 
   private readonly destroy$ = new Subject<void>();
 
-  // Item type options for ItemType & Unit (Ammunition, Weapon, Explosive)
   itemTypeOptions: DropdownOption<number>[] = [
     { value: 1, label: '' },
     { value: 2, label: '' },
@@ -72,28 +111,33 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
   ];
 
   constructor(private fb: FormBuilder, private translateService: TranslateService) {
-    // Subscribe to translation changes (including initial load)
     this.translateService.onTranslationChange.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.updateItemTypeTranslations();
       this.updateCaliberItemTypeTranslations();
     });
 
-    // Subscribe to language changes
     this.translateService.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.updateItemTypeTranslations();
       this.updateCaliberItemTypeTranslations();
     });
   }
 
+  get isRequestPurpose(): boolean {
+    return !!this.tableConfig?.requestPurposeType;
+  }
+
+  get attachmentRows(): FormArray<AttachmentRequirementRowFormGroup> {
+    return this.lookupForm?.get('attachmentRequirements') as FormArray<AttachmentRequirementRowFormGroup>;
+  }
+
   ngOnInit(): void {
     this.initializeForm();
 
-    // Use stream to get translations (updates automatically when translations load or language changes)
     this.translateService.stream([
       'lookupFormModal.selectItemType',
       'lookupFormModal.ammunition',
       'lookupFormModal.weapon',
-      'lookupFormModal.explosive',
+      'lookupFormModal.explosive'
     ]).pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.updateItemTypeTranslations();
       this.updateCaliberItemTypeTranslations();
@@ -106,42 +150,53 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // Reinitialize form when tableConfig changes
     if (changes['tableConfig'] && this.tableConfig) {
       this.initializeForm();
     }
 
-    // When modal opens, reset loading state and populate/reset form
     if (changes['isOpen'] && this.isOpen) {
-      this.isLoading = false; // Reset loading state when modal opens
+      this.isLoading = false;
       this.errorMessage = '';
 
       if (this.mode === 'create') {
-        this.lookupForm?.reset();
+        this.lookupForm.patchValue({
+          nameEn: '',
+          nameAr: '',
+          code: '',
+          itemType: null
+        });
+        this.clearAttachmentRequirements();
       } else if (this.mode === 'edit' && this.lookupItem && this.lookupForm) {
-        // Repopulate form when modal opens in edit mode
         this.populateForm();
       }
     }
 
-    // When mode changes to create, reset form
     if (changes['mode'] && this.mode === 'create' && this.isOpen) {
-      this.lookupForm?.reset();
+      this.lookupForm.patchValue({
+        nameEn: '',
+        nameAr: '',
+        code: '',
+        itemType: null
+      });
+      this.clearAttachmentRequirements();
       this.errorMessage = '';
-      this.isLoading = false; // Reset loading state
+      this.isLoading = false;
     }
 
-    // When lookupItem is provided, populate form
     if (changes['lookupItem']) {
       if (this.lookupItem && this.lookupForm) {
         this.populateForm();
       } else if (!this.lookupItem && this.mode === 'create' && this.lookupForm) {
-        // If no lookupItem and in create mode, ensure form is reset
-        this.lookupForm.reset();
+        this.lookupForm.patchValue({
+          nameEn: '',
+          nameAr: '',
+          code: '',
+          itemType: null
+        });
+        this.clearAttachmentRequirements();
       }
     }
 
-    // Reset loading state when external loading changes to false
     if (changes['externalLoading'] && !this.externalLoading) {
       this.isLoading = false;
     }
@@ -167,7 +222,8 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
       code: this.fb.nonNullable.control('', { validators: codeValidators }),
       itemType: this.fb.control<number | null>(null, {
         validators: needsItemType ? [Validators.required] : []
-      })
+      }),
+      attachmentRequirements: this.fb.array<AttachmentRequirementRowFormGroup>([])
     });
 
     if (this.lookupItem) {
@@ -176,19 +232,63 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private populateForm(): void {
-    if (this.lookupItem && this.lookupForm) {
-      const needsItemType =
-        this.tableConfig?.name === 'ItemType' ||
-        this.tableConfig?.name === 'Unit' ||
-        this.tableConfig?.name === 'Caliber';
-
-      this.lookupForm.patchValue({
-        nameEn: this.lookupItem.nameEn || '',
-        nameAr: this.lookupItem.nameAr || '',
-        code: this.lookupItem.code || '',
-        ...(needsItemType ? { itemType: normalizeLookupItemType(this.lookupItem) } : { itemType: null })
-      });
+    if (!this.lookupItem || !this.lookupForm) {
+      return;
     }
+
+    const needsItemType =
+      this.tableConfig?.name === 'ItemType' ||
+      this.tableConfig?.name === 'Unit' ||
+      this.tableConfig?.name === 'Caliber';
+
+    this.lookupForm.patchValue({
+      nameEn: this.lookupItem.nameEn || '',
+      nameAr: this.lookupItem.nameAr || '',
+      code: this.lookupItem.code || '',
+      ...(needsItemType ? { itemType: normalizeLookupItemType(this.lookupItem) } : { itemType: null })
+    });
+
+    this.clearAttachmentRequirements();
+    const slots = this.lookupItem.attachmentRequirements ?? [];
+    for (const slot of slots) {
+      this.attachmentRows.push(this.createAttachmentRow(slot));
+    }
+  }
+
+  private clearAttachmentRequirements(): void {
+    if (!this.lookupForm || !this.attachmentRows) {
+      return;
+    }
+    while (this.attachmentRows.length > 0) {
+      this.attachmentRows.removeAt(0);
+    }
+  }
+
+  private createAttachmentRow(initial?: AttachmentRequirementLookupDraft): AttachmentRequirementRowFormGroup {
+    let persistedId: number | null = null;
+    if (initial?.id != null) {
+      const n = Number(initial.id);
+      if (Number.isFinite(n) && n > 0) persistedId = n;
+    }
+    return this.fb.group(
+      {
+        id: this.fb.control<number | null>(persistedId),
+        nameEn: this.fb.nonNullable.control(initial?.nameEn ?? '', [Validators.maxLength(500)]),
+        nameAr: this.fb.nonNullable.control(initial?.nameAr ?? '', [Validators.maxLength(500)]),
+        isRequired: this.fb.nonNullable.control(initial?.isRequired ?? false),
+        minCount: this.fb.nonNullable.control(initial?.minCount ?? 1),
+        maxCount: this.fb.nonNullable.control(initial?.maxCount ?? 1)
+      },
+      { validators: [attachmentRowValidator] }
+    );
+  }
+
+  addAttachmentSlot(): void {
+    this.attachmentRows.push(this.createAttachmentRow());
+  }
+
+  removeAttachmentSlot(index: number): void {
+    this.attachmentRows.removeAt(index);
   }
 
   get title(): string {
@@ -229,19 +329,67 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
       }
     }
 
+    if (this.isRequestPurpose) {
+      let order = 0;
+      const drafts: AttachmentRequirementLookupDraft[] = [];
+      for (const row of this.attachmentRows.controls) {
+        const en = String(row.get('nameEn')?.value ?? '').trim();
+        const ar = String(row.get('nameAr')?.value ?? '').trim();
+        if (!en && !ar) {
+          continue;
+        }
+        if (row.invalid) {
+          row.markAllAsTouched();
+          this.isLoading = false;
+          return;
+        }
+        const min = coerceInt(row.get('minCount')?.value) ?? 0;
+        const max = coerceInt(row.get('maxCount')?.value) ?? 1;
+        const rid = row.get('id')?.value;
+        drafts.push({
+          id: rid != null && rid > 0 ? rid : null,
+          nameEn: en,
+          nameAr: ar,
+          isRequired: !!row.get('isRequired')?.value,
+          minCount: min,
+          maxCount: max,
+          displayOrder: order++
+        });
+      }
+      dto.attachmentRequirements = drafts;
+    }
+
     this.saved.emit(dto);
   }
 
   close(): void {
-    this.lookupForm.reset();
+    this.clearAttachmentRequirements();
+    this.lookupForm.reset(
+      {
+        nameEn: '',
+        nameAr: '',
+        code: '',
+        itemType: null,
+        attachmentRequirements: []
+      },
+      { emitEvent: false }
+    );
     this.errorMessage = '';
-    this.isLoading = false; // Reset loading state when closing
+    this.isLoading = false;
     this.closed.emit();
   }
 
   private markFormGroupTouched(): void {
     Object.keys(this.lookupForm.controls).forEach(key => {
-      this.lookupForm.get(key)?.markAsTouched();
+      const ctrl = this.lookupForm.get(key);
+      if (!ctrl) {
+        return;
+      }
+      if (key === 'attachmentRequirements' && ctrl instanceof FormArray) {
+        ctrl.controls.forEach(row => row.markAllAsTouched());
+      } else {
+        ctrl.markAsTouched();
+      }
     });
   }
 
@@ -256,6 +404,30 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
       }
     }
     return '';
+  }
+
+  attachmentRowMessageKey(control: AbstractControl): string | null {
+    const g = control as FormGroup;
+    if (!g.errors || !(g.touched || g.dirty)) {
+      return null;
+    }
+    if (g.errors['incompleteNames']) return 'lookupFormModal.attachmentRowIncomplete';
+    if (g.errors['minInvalid'] || g.errors['maxInvalid'] || g.errors['rangeInvalid']) {
+      return 'lookupFormModal.attachmentCountsInvalid';
+    }
+    return null;
+  }
+
+  getRowFieldMaxLengthError(ctrl: AbstractControl | null): string {
+    const field = ctrl;
+    if (field?.errors && field.touched && field.errors['maxlength']) {
+      return `Maximum length is ${field.errors['maxlength'].requiredLength} characters`;
+    }
+    return '';
+  }
+
+  trackByRowIndex(index: number): number {
+    return index;
   }
 
   private updateItemTypeTranslations(): void {
@@ -273,4 +445,3 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
     ];
   }
 }
-

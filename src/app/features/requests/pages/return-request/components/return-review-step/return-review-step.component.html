@@ -105,19 +105,58 @@
     </div>
   </div>
 
-  <!-- Attachments Section -->
+  <!-- Attachments: slot groups + other / legacy (shared grid aligns labels with file lists) -->
   <div class="bg-[var(--color-background-muted)] rounded-lg p-4">
-    <h2 class="text-base font-bold text-[var(--color-brand)] mb-3">{{ 'returnRequest.attachments' | translate }}</h2>
-    <div class="flex items-start gap-4 min-w-0">
-      <div class="min-w-[150px] shrink-0" aria-hidden="true"></div>
-      <div class="flex-1 min-w-0 space-y-2">
-        <div *ngFor="let file of selectedFiles"
-          class="flex items-center gap-2 px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)]">
-          <span class="text-sm text-[var(--color-text-muted)] flex-1 truncate">{{ file.name }}</span>
+    <h2 class="text-lg font-bold text-[var(--color-brand)] mb-4">{{ 'newIssueRequest.attachments' | translate }}</h2>
+
+    <div class="space-y-5">
+      <ng-container *ngIf="hasAttachmentRequirementSlots">
+        <div *ngFor="let requirement of attachmentRequirements; trackBy: trackRequirementById"
+          class="grid grid-cols-1 sm:grid-cols-[180px_minmax(0,26rem)] gap-x-5 gap-y-3 items-start">
+          <span class="text-sm font-bold text-[var(--color-text)] pt-2.5 min-w-0">
+            {{ getRequirementLabel(requirement) }}
+          </span>
+          <div class="min-w-0 space-y-2">
+            <div *ngIf="getFilesForRequirement(requirement.id).length > 0" class="space-y-2">
+              <div *ngFor="let file of getFilesForRequirement(requirement.id)"
+                class="flex items-center gap-2 px-5 py-3 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)]">
+                <span class="text-base text-[var(--color-text-muted)] flex-1 truncate">{{ file.name }}</span>
+                <button type="button" (click)="viewFile(file)"
+                  class="text-[var(--color-brand)] hover:text-[var(--color-brand-dark)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 rounded p-1 flex-shrink-0"
+                  [title]="'newIssueRequest.view' | translate">
+                  <lucide-angular [img]="Eye" class="h-5 w-5"></lucide-angular>
+                </button>
+              </div>
+            </div>
+            <div *ngIf="getFilesForRequirement(requirement.id).length === 0"
+              class="px-5 py-3 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed">
+              {{ 'newIssueRequest.noFilesAttached' | translate }}
+            </div>
+          </div>
         </div>
-        <div *ngIf="selectedFiles.length === 0"
-          class="px-4 py-2.5 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed">
-          {{ 'returnRequest.noFilesAttached' | translate }}
+      </ng-container>
+
+      <div class="grid grid-cols-1 sm:grid-cols-[180px_minmax(0,26rem)] gap-x-5 gap-y-3 items-start">
+        <span class="text-sm font-bold text-[var(--color-text)] pt-2.5 min-w-0">
+          <ng-container *ngIf="hasAttachmentRequirementSlots">{{ 'newIssueRequest.otherFiles' | translate }}</ng-container>
+          <ng-container *ngIf="!hasAttachmentRequirementSlots">{{ 'newIssueRequest.attachments' | translate }}</ng-container>
+        </span>
+        <div class="min-w-0 space-y-2">
+          <div *ngIf="reviewBucketFiles.length > 0" class="space-y-2">
+            <div *ngFor="let file of reviewBucketFiles"
+              class="flex items-center gap-2 px-5 py-3 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)]">
+              <span class="text-base text-[var(--color-text-muted)] flex-1 truncate">{{ file.name }}</span>
+              <button type="button" (click)="viewFile(file)"
+                class="text-[var(--color-brand)] hover:text-[var(--color-brand-dark)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 rounded p-1 flex-shrink-0"
+                [title]="'newIssueRequest.view' | translate">
+                <lucide-angular [img]="Eye" class="h-5 w-5"></lucide-angular>
+              </button>
+            </div>
+          </div>
+          <div *ngIf="reviewBucketFiles.length === 0"
+            class="px-5 py-3 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text-muted)] bg-[var(--color-background)] cursor-not-allowed">
+            {{ 'newIssueRequest.noFilesAttached' | translate }}
+          </div>
         </div>
       </div>
     </div>

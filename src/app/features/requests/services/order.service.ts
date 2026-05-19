@@ -16,7 +16,11 @@ export class OrderService {
     private config: ConfigService
   ) { }
 
-  createOrder(payload: CreateOrderDto, files?: File[]): Observable<APIOperationResponse<number>> {
+  createOrder(
+    payload: CreateOrderDto,
+    attachmentUploads?: Map<number, File[]>,
+    otherFiles?: File[]
+  ): Observable<APIOperationResponse<number>> {
     this.config.log('Creating order', payload);
 
     // Always send as FormData (multipart/form-data) to match backend expectations
@@ -69,10 +73,27 @@ export class OrderService {
       });
     }
 
-    // Append files if provided
-    if (files && files.length > 0) {
-      files.forEach(file => {
-        formData.append('files', file);
+    // Append per-AttachmentRequirement upload groups using indexed multipart names
+    // that bind to AttachmentUploadGroupDto on the backend.
+    if (attachmentUploads && attachmentUploads.size > 0) {
+      let groupIndex = 0;
+      attachmentUploads.forEach((files, requirementId) => {
+        const effective = (files ?? []).filter(f => f instanceof File && f.size > 0);
+        if (effective.length === 0) {
+          return;
+        }
+        formData.append(`AttachmentUploads[${groupIndex}].AttachmentRequirementId`, String(requirementId));
+        effective.forEach(f => formData.append(`AttachmentUploads[${groupIndex}].Files`, f));
+        groupIndex++;
+      });
+    }
+
+    // Append optional entity-only "other" files
+    if (otherFiles && otherFiles.length > 0) {
+      otherFiles.forEach(file => {
+        if (file instanceof File && file.size > 0) {
+          formData.append('OtherFiles', file);
+        }
       });
     }
 

@@ -45,6 +45,7 @@ import {
   OrderSubmissionState,
   ReviewFormData,
   ConfirmDialogConfig,
+  AttachmentUploadsState,
   createInitialFilterState,
   createInitialFilterOptions,
   createInitialCartridgeState,
@@ -54,9 +55,10 @@ import {
   createInitialRequestPurposeState,
   createInitialOrderSubmissionState,
   createInitialReviewFormData,
-  createInitialConfirmDialogConfig
+  createInitialConfirmDialogConfig,
+  createInitialAttachmentUploadsState
 } from '../new-issue-request.state';
-import type { ReserveDetailItem } from '../new-issue-request.state';
+import type { ReserveDetailItem, AttachmentRequirementDto } from '../new-issue-request.state';
 
 import {
   mapSelectedEntriesToCartridges,
@@ -127,7 +129,13 @@ export class IssueRequestFacade {
   cartridgeState: CartridgeState = createInitialCartridgeState();
   weaponAssociationState: WeaponAssociationState = createInitialWeaponAssociationState();
   usageFormData: UsageFormData = createInitialUsageFormData();
+  /**
+   * Legacy flat "other files" array kept for backward compatibility with
+   * existing usage-form bindings. Routed into the new OtherFiles backend
+   * bucket. New per-AttachmentRequirement uploads live on `attachmentUploads`.
+   */
   usageFormFiles: File[] = [];
+  attachmentUploads: AttachmentUploadsState = createInitialAttachmentUploadsState();
   reserveDetailsState: ReserveDetailsState = createInitialReserveDetailsState();
   userContextState: UserContextState = createInitialUserContextState();
   requestPurposeState: RequestPurposeState = createInitialRequestPurposeState();
@@ -224,6 +232,17 @@ export class IssueRequestFacade {
     );
   }
 
+  /**
+   * Resolves the AttachmentRequirement list for the currently selected RequestPurpose.
+   * Returns an empty array when no purpose is selected or the purpose declares none.
+   */
+  get selectedAttachmentRequirements(): AttachmentRequirementDto[] {
+    const id = this.requestPurposeState.selectedRequestPurposeId;
+    if (id == null) return [];
+    const purpose = this.requestPurposeState.requestPurposesSource.find(p => p.id === id);
+    const reqs = purpose?.attachmentRequirements ?? [];
+    return [...reqs].sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+  }
   get currentRequesterDepartmentDisplay(): string {
     const lang = this.translate.currentLang || this.translate.defaultLang || 'en';
     return resolveRequesterDepartmentDisplay(
@@ -724,6 +743,12 @@ export class IssueRequestFacade {
   // ---- Private helpers ----------------------------------------------------
 
   private buildSubmissionContext() {
+    // Prefer the new slotted state when present. Always include any
+    // unstructured legacy files via the otherFiles bucket too.
+    const slotMap = this.attachmentUploads?.filesByRequirementId;
+    const slotOthers = this.attachmentUploads?.otherFiles ?? [];
+    const otherFiles = [...slotOthers, ...(this.usageFormFiles ?? [])];
+
     return {
       cartridgeState: this.cartridgeState,
       requestPurposeState: this.requestPurposeState,
@@ -734,7 +759,8 @@ export class IssueRequestFacade {
       defaultDepartmentId: this.DEFAULT_DEPARTMENT_ID,
       defaultRequestPurposeId: this.DEFAULT_REQUEST_PURPOSE_ID,
       defaultRequestTypeId: this.DEFAULT_REQUEST_TYPE_ID,
-      files: this.usageFormFiles,
+      attachmentUploads: slotMap && slotMap.size > 0 ? slotMap : undefined,
+      otherFiles: otherFiles.length > 0 ? otherFiles : undefined,
       orderSubmissionState: this.orderSubmissionState,
       weaponAssociations: this.weaponAssociationState.associations
     };
@@ -860,6 +886,7 @@ export class IssueRequestFacade {
     this.fromReserve = 'Yes';
     this.usageFormData = createInitialUsageFormData();
     this.usageFormFiles = [];
+    this.attachmentUploads = createInitialAttachmentUploadsState();
     this.requestPurposeState.selectedRequestPurposeId = null;
     this.updateUsePurposeFromSelection(null);
     this.reserveDetailsState = createInitialReserveDetailsState();

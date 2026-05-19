@@ -85,11 +85,16 @@
         : 'hover:border-[var(--color-brand)]/35'">
 
       <div class="p-4 space-y-3">
-        <!-- Row 1: Order ID + Priority badge -->
+        <!-- Row 1: Request No + Priority badge -->
         <div class="flex items-center justify-between gap-2">
-          <span class="font-semibold text-[var(--color-text)] text-sm">
-            {{ request.orderId }}
-          </span>
+          <div class="min-w-0">
+            <span class="block text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+              {{ 'dashboard.requestNo' | translate }}
+            </span>
+            <span class="font-semibold text-[var(--color-text)] text-sm truncate block">
+              {{ request.orderId }}
+            </span>
+          </div>
           <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide
                        {{ getPriorityClass(request.priority) }}">
             {{ getPriorityText(request.priority) | translate }}

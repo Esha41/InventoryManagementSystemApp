@@ -70,6 +70,105 @@
       </p>
     </div>
 
+    <!-- Request purpose: attachment requirements -->
+    <div *ngIf="isRequestPurpose" class="rounded-xl border border-[var(--color-border)] p-4 space-y-3">
+      <div>
+        <h3 class="text-sm font-semibold text-[var(--color-text)]">
+          {{ 'lookupFormModal.attachmentSlots' | translate }}
+        </h3>
+        <p class="text-xs text-[var(--color-text-muted)] mt-1">
+          {{ 'lookupFormModal.attachmentSlotsHint' | translate }}
+        </p>
+      </div>
+
+      <div formArrayName="attachmentRequirements" class="space-y-4">
+        <div
+          *ngFor="let row of attachmentRows.controls; let i = index; trackBy: trackByRowIndex"
+          [formGroupName]="i"
+          class="rounded-lg border border-[var(--color-border-muted)] p-3 space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-medium text-[var(--color-text-muted)]"># {{ i + 1 }}</span>
+            <button
+              type="button"
+              (click)="removeAttachmentSlot(i)"
+              class="text-xs font-medium text-[var(--color-error)] hover:underline">
+              {{ 'lookupFormModal.removeAttachmentSlot' | translate }}
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1" [attr.for]="'att-name-en-' + i">
+                {{ 'lookupFormModal.attachmentNameEn' | translate }}
+              </label>
+              <input
+                [id]="'att-name-en-' + i"
+                type="text"
+                formControlName="nameEn"
+                class="w-full px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)]"
+                [class.border-[var(--color-error)]]="row.get('nameEn')?.invalid && row.get('nameEn')?.touched" />
+              <p *ngIf="getRowFieldMaxLengthError(row.get('nameEn'))" class="mt-1 text-xs text-[var(--color-error)]">
+                {{ getRowFieldMaxLengthError(row.get('nameEn')) }}
+              </p>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-[var(--color-text-muted)] mb-1" [attr.for]="'att-name-ar-' + i">
+                {{ 'lookupFormModal.attachmentNameAr' | translate }}
+              </label>
+              <input
+                [id]="'att-name-ar-' + i"
+                type="text"
+                formControlName="nameAr"
+                dir="rtl"
+                class="w-full px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg focus:outline-none focus:border-[var(--color-brand)]"
+                [class.border-[var(--color-error)]]="row.get('nameAr')?.invalid && row.get('nameAr')?.touched" />
+              <p *ngIf="getRowFieldMaxLengthError(row.get('nameAr'))" class="mt-1 text-xs text-[var(--color-error)]">
+                {{ getRowFieldMaxLengthError(row.get('nameAr')) }}
+              </p>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-4">
+            <label class="inline-flex items-center gap-2 text-sm text-[var(--color-text)] cursor-pointer select-none">
+              <input type="checkbox" formControlName="isRequired" class="rounded border-[var(--color-border)]" />
+              {{ 'lookupFormModal.attachmentRequired' | translate }}
+            </label>
+            <div class="flex flex-wrap items-center gap-3">
+              <div class="flex items-center gap-2">
+                <label class="text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap" [attr.for]="'att-min-' + i">{{ 'lookupFormModal.minCount' | translate }}</label>
+                <input
+                  [id]="'att-min-' + i"
+                  type="number"
+                  formControlName="minCount"
+                  min="0"
+                  class="w-20 px-2 py-1.5 text-sm border border-[var(--color-border)] rounded-lg" />
+              </div>
+              <div class="flex items-center gap-2">
+                <label class="text-xs font-medium text-[var(--color-text-muted)] whitespace-nowrap" [attr.for]="'att-max-' + i">{{ 'lookupFormModal.maxCount' | translate }}</label>
+                <input
+                  [id]="'att-max-' + i"
+                  type="number"
+                  formControlName="maxCount"
+                  min="1"
+                  class="w-20 px-2 py-1.5 text-sm border border-[var(--color-border)] rounded-lg" />
+              </div>
+            </div>
+          </div>
+
+          <p *ngIf="attachmentRowMessageKey(row)" class="text-xs text-[var(--color-error)]">
+            {{ attachmentRowMessageKey(row)! | translate }}
+          </p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        (click)="addAttachmentSlot()"
+        class="w-full py-2 text-sm font-medium rounded-lg border-2 border-dashed border-[var(--color-border)] text-[var(--color-brand)] hover:bg-[var(--color-background-muted)] transition-colors">
+        {{ 'lookupFormModal.addAttachmentSlot' | translate }}
+      </button>
+    </div>
+
     <!-- Error Message -->
     <div *ngIf="errorMessage"
       class="bg-[var(--color-error)]/10 border border-[var(--color-error)] text-[var(--color-error)] px-4 py-3 rounded-lg">

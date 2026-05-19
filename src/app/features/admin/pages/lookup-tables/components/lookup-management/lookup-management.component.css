@@ -1,1 +1,5 @@
 /* Lookup Management Component Styles */
+
+.rp-row-expanded {
+  background-color: var(--color-background-muted);
+}

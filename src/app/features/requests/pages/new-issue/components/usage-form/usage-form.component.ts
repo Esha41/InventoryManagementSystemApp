@@ -9,6 +9,11 @@ import { getFileSizeFromFile, removeFile, validateFile, showFileValidationErrors
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { formatDateForInput, formatDateShort } from '@core/utils/format.utils';
+import {
+  AttachmentRequirementDto,
+  AttachmentUploadsState,
+  createInitialAttachmentUploadsState
+} from '../../new-issue-request.state';
 @Component({
   selector: 'app-usage-form',
   standalone: true,
@@ -103,13 +108,23 @@ export class UsageFormComponent {
   @Input() usageDateTo: string = '';
   @Input() usageTimeTo: string = '';
   @Input() selectedCartridges: Cartridge[] = [];
+  @Input() requesterComments: string = '';
+  /**
+   * Legacy flat file list still used as the "Other files" picker on screen.
+   * The component routes this into the new `otherFiles` bucket on the
+   * facade via `filesChange`. New per-requirement slot uploads live on
+   * `attachmentUploads`.
+   */
   @Input() selectedFiles: File[] = [];
+  @Input() attachmentRequirements: AttachmentRequirementDto[] = [];
+  @Input() attachmentUploads: AttachmentUploadsState = createInitialAttachmentUploadsState();
   @Output() removeCartridge = new EventEmitter<number>();
   onRemoveCartridge(id: number): void {
     this.removeCartridge.emit(id);
   }
 
   @Output() filesChange = new EventEmitter<File[]>();
+  @Output() attachmentUploadsChange = new EventEmitter<AttachmentUploadsState>();
   @Output() usePurposeChange = new EventEmitter<string>();
   @Output() selectedUsePurposeIdChange = new EventEmitter<number | null>();
   @Output() usageLocationChange = new EventEmitter<string>();
@@ -131,10 +146,31 @@ export class UsageFormComponent {
     usageDateTo: null,
     usageTimeTo: null,
     requestPurposeNotes: null,
-    selectedFiles: null
+    selectedFiles: null,
+    attachmentRequirements: null
   };
 
   formErrors: UsageFormErrors = { ...this.defaultErrors };
+
+  /** Files chosen per AttachmentRequirementId, mirrored from `attachmentUploads`. */
+  getFilesForRequirement(requirementId: number): File[] {
+    return this.attachmentUploads?.filesByRequirementId?.get(requirementId) ?? [];
+  }
+
+  /** True when the chosen purpose declares at least one attachment-requirement slot. */
+  get hasAttachmentRequirementSlots(): boolean {
+    return (this.attachmentRequirements?.length ?? 0) > 0;
+  }
+
+  /** Localized label resolution for a requirement (Ar/En fallback). */
+  getRequirementLabel(req: AttachmentRequirementDto): string {
+    if (this.isArabic) {
+      return req.nameAr || req.nameEn || '';
+    }
+    return req.nameEn || req.nameAr || '';
+  }
+
+  trackRequirementById = (_: number, req: AttachmentRequirementDto): number => req.id;
   hasAttemptedSubmit = false;
 
   // Generate military time options (every 15 minutes: 0000, 0015, 0030, ... 2345)
@@ -311,6 +347,69 @@ export class UsageFormComponent {
     }
   }
 
+  /** File picker handler bound to a specific AttachmentRequirement slot. */
+  onRequirementFileSelected(event: Event, requirement: AttachmentRequirementDto): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) {
+      return;
+    }
+
+    const incoming = Array.from(input.files);
+    const invalid: string[] = [];
+    const valid: File[] = [];
+
+    incoming.forEach(file => {
+      const v = validateFile(file);
+      if (!v.isValid) {
+        invalid.push(v.errorMessage);
+      } else {
+        valid.push(file);
+      }
+    });
+
+    if (invalid.length > 0) {
+      showFileValidationErrors(this.translateService, this.toastService, invalid, 'newIssueRequest');
+    }
+
+    if (valid.length > 0) {
+      const max = requirement.maxCount;
+      let capped: File[];
+      if (max === 1) {
+        capped = [valid[0]];
+      } else {
+        const current = this.getFilesForRequirement(requirement.id);
+        const merged = [...current, ...valid];
+        capped = max > 0 ? merged.slice(0, max) : merged;
+      }
+      this.commitRequirementFiles(requirement.id, capped);
+      this.clearError('attachmentRequirements');
+    }
+
+    input.value = '';
+  }
+
+  removeRequirementFile(requirementId: number, index: number): void {
+    const current = this.getFilesForRequirement(requirementId);
+    if (index < 0 || index >= current.length) return;
+    const next = [...current.slice(0, index), ...current.slice(index + 1)];
+    this.commitRequirementFiles(requirementId, next);
+  }
+
+  private commitRequirementFiles(requirementId: number, files: File[]): void {
+    const nextMap = new Map(this.attachmentUploads?.filesByRequirementId ?? new Map<number, File[]>());
+    if (files.length === 0) {
+      nextMap.delete(requirementId);
+    } else {
+      nextMap.set(requirementId, files);
+    }
+    const next: AttachmentUploadsState = {
+      filesByRequirementId: nextMap,
+      otherFiles: this.attachmentUploads?.otherFiles ?? []
+    };
+    this.attachmentUploads = next;
+    this.attachmentUploadsChange.emit(next);
+  }
+
   getFileSize = getFileSizeFromFile;
 
   onPrevious(): void {
@@ -383,7 +482,23 @@ export class UsageFormComponent {
       isValid = false;
     }
 
-    if (!this.selectedFiles || this.selectedFiles.length === 0) {
+    if (this.hasAttachmentRequirementSlots) {
+      // When the purpose declares slots, the legacy flat picker becomes the
+      // optional "Other files" bucket; per-slot validation drives the gate.
+      const slotErrors: string[] = [];
+      for (const req of this.attachmentRequirements) {
+        const files = this.getFilesForRequirement(req.id).filter(f => f instanceof File && f.size > 0);
+        if (req.isRequired && files.length < req.minCount) {
+          slotErrors.push(this.getRequirementLabel(req));
+        } else if (files.length > req.maxCount) {
+          slotErrors.push(this.getRequirementLabel(req));
+        }
+      }
+      if (slotErrors.length > 0) {
+        this.formErrors.attachmentRequirements = 'newIssueRequest.validation.attachmentRequirementsInvalid';
+        isValid = false;
+      }
+    } else if (!this.selectedFiles || this.selectedFiles.length === 0) {
       this.formErrors.selectedFiles = 'newIssueRequest.validation.attachmentsRequired';
       isValid = false;
     }
@@ -424,4 +539,5 @@ type UsageFormErrors = {
   usageDateTo: string | null;
   usageTimeTo: string | null;
   selectedFiles: string | null;
+  attachmentRequirements: string | null;
 };
