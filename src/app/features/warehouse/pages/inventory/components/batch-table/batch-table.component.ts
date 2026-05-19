@@ -8,7 +8,7 @@ import {
     SimpleChanges
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Edit2, Eye, ChevronDown, ChevronRight, Trash2, ArrowUp, ArrowDown, ArrowUpDown, Download, Upload } from 'lucide-angular';
 import { BatchSummaryDto, BatchAssetItemCountDto } from '@models/batch.model';
 import { AssetDto } from '@models/asset.model';
@@ -17,6 +17,7 @@ import { PaginationComponent } from '@components/pagination/pagination.component
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { defaultPageSize } from '@constants/app.constants';
+import { getCurrentLang, getLocalizedName } from '@utils/localization.utils';
 
 export type BatchTableSortColumn = 'batchNumber' | 'quantity';
 
@@ -24,6 +25,7 @@ export type BatchTableSortColumn = 'batchNumber' | 'quantity';
 export interface BatchAssetGroupRow {
     itemId: number;
     itemName: string;
+    itemNameAr?: string | null;
     /** Item / catalog number from API counts or assets in group. */
     itemNo: string;
     /** NSN from API counts or first asset in group. */
@@ -102,6 +104,8 @@ export class BatchTableComponent implements OnChanges {
 
     groupedExpandedBatchAssets: BatchAssetGroupRow[] = [];
 
+    constructor(private readonly translateService: TranslateService) {}
+
     ngOnChanges(changes: SimpleChanges): void {
         if (
             changes['expandedBatchAssets'] ||
@@ -118,6 +122,7 @@ export class BatchTableComponent implements OnChanges {
             this.groupedExpandedBatchAssets = counts.map((c) => ({
                 itemId: c.itemId,
                 itemName: c.itemName,
+                itemNameAr: c.itemNameAr ?? this.expandedBatchAssets.find((a) => a.itemId === c.itemId)?.item?.nameAr ?? null,
                 itemNo: (c.itemNo ?? '').trim(),
                 nsn: (c.nsn ?? '').trim(),
                 count: c.count,
@@ -151,6 +156,7 @@ export class BatchTableComponent implements OnChanges {
             return {
                 itemId: g.itemId,
                 itemName: g.itemName,
+                itemNameAr: g.assets.map((a) => (a.item?.nameAr ?? '').trim()).find((s) => s.length > 0) ?? null,
                 itemNo,
                 nsn,
                 count: g.assets.length,
@@ -165,6 +171,17 @@ export class BatchTableComponent implements OnChanges {
 
     groupNsnLabel(group: BatchAssetGroupRow): string {
         return group.nsn || '—';
+    }
+
+    groupItemNameLabel(group: BatchAssetGroupRow): string {
+        return getLocalizedName(
+            {
+                name: group.itemName,
+                nameEn: group.itemName,
+                nameAr: group.itemNameAr
+            },
+            getCurrentLang(this.translateService)
+        ) || group.itemName || '—';
     }
 
     isAssetDetailExpanded(group: BatchAssetGroupRow): boolean {

@@ -84,6 +84,7 @@
     "criticalQuantity": "الكمية الحرجة",
     "criticalQuantityPlaceholder": "أدخل الكمية الحرجة (اختياري)",
     "enterAmmunitionName": "أدخل اسم الماده",
+    "enterNameAr": "أدخل الاسم بالعربية",
     "enterWeaponName": "أدخل اسم السلاح",
     "enterExplosiveName": "أدخل اسم المتفجر",
     "enterItemNumber": "أدخل رقم المادة الفريد (مثل: AMM-001)",
@@ -125,6 +126,7 @@
       "totalWeightMustBePositive": "يجب أن يكون الوزن الإجمالي أكبر من 0"
     },
     "name": "الاسم",
+    "nameAr": "الاسم بالعربية",
     "itemNo": "رقم المادة",
     "partNo": "Part No",
     "armNumber": "Arm Number",

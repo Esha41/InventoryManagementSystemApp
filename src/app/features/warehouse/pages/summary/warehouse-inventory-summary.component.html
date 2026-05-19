@@ -179,7 +179,7 @@
                     <div class="p-4" (click)="toggleRow(item.itemId, item.itemType)">
                         <div class="flex justify-between items-start gap-4">
                             <div>
-                                <h3 class="font-bold text-[var(--color-text)] text-base mb-1">{{ item.itemName }}</h3>
+                                <h3 class="font-bold text-[var(--color-text)] text-base mb-1">{{ itemDisplayName(item) }}</h3>
                                 <div class="flex flex-wrap gap-2 text-xs">
                                     <span
                                         class="inline-flex px-2 py-0.5 rounded bg-gray-100 text-gray-700 border border-gray-200 font-mono">
@@ -472,7 +472,7 @@
                                 </td>
                                 <td
                                     class="inventory-table__cell-text inventory-table__cell-text--wide px-6 py-4 text-sm font-medium text-[var(--color-text)] align-top min-w-0">
-                                    <span [appTableClampTooltip]="item.itemName">{{ item.itemName }}</span>
+                                    <span [appTableClampTooltip]="itemDisplayName(item)">{{ itemDisplayName(item) }}</span>
                                 </td>
                                 <td class="inventory-table__cell-text px-6 py-4 text-sm text-[var(--color-text)] align-top">
                                     {{ item.itemNo }}

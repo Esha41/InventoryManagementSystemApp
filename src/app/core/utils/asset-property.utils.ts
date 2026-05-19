@@ -9,6 +9,7 @@ import { getLookupDisplayName } from './asset-list.utils';
 import { getExplosiveTypeName } from './explosive.utils';
 import { ItemType, BaseItemDto } from '../models/inventory.model';
 import { formatDateShort } from './format.utils';
+import { getCurrentLang, getLocalizedName, Localizable } from './localization.utils';
 
 export type AssetUnion = Asset | AmmunitionReadDto | WeaponDto | ExplosiveDto | null;
 type LegacyExplosiveLike = {
@@ -348,7 +349,9 @@ export class AssetPropertyAccessor {
 
   // Common property
   getAssetName(asset: AssetUnion): string {
-    return asset && 'name' in asset ? asset.name : '-';
+    const source = assetCore(asset) ?? asset;
+    const name = getLocalizedName(source as Localizable, getCurrentLang(this.translateService));
+    return name || '-';
   }
 
   // Common properties (shared across all asset types)

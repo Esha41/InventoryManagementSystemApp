@@ -38,7 +38,7 @@
         <tbody class="divide-y divide-[var(--color-border)]">
           <tr *ngFor="let item of requestItems" class="hover:bg-[var(--color-background-hover)]">
             <td class="px-4 py-3 text-sm text-[var(--color-text)] font-medium min-w-0">
-              <span [appTableClampTooltip]="item.itemName">{{ item.itemName }}</span>
+              <span [appTableClampTooltip]="lineItemDisplayName(item)">{{ lineItemDisplayName(item) }}</span>
             </td>
             <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">{{ item.itemNo || '-' }}</td>
             <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">{{ getItemNSN(item) }}</td>
@@ -150,7 +150,7 @@
   (closed)="closeEditItemModal()">
   <div *ngIf="selectedItemForEdit" class="mb-4 p-4 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
     <p class="text-sm font-semibold text-[var(--color-text)] mb-1">{{ 'workflowApprovalDetail.item' | translate }}:</p>
-    <p class="text-base text-[var(--color-text)]">{{ selectedItemForEdit.itemName }}</p>
+    <p class="text-base text-[var(--color-text)]">{{ lineItemDisplayName(selectedItemForEdit) }}</p>
     <p class="text-xs text-[var(--color-text-muted)] mt-1">
       {{ 'workflowApprovalDetail.itemCode' | translate }}: {{ getItemProductId(selectedItemForEdit) }}
     </p>
@@ -209,7 +209,7 @@
   (closed)="closeRemoveItemModal()">
   <div class="py-4">
     <p class="text-sm text-[var(--color-text)] mb-4">
-      {{ 'workflowApprovalDetail.removeItemConfirm' | translate }} "{{ selectedItemForRemove?.itemName }}"?
+      {{ 'workflowApprovalDetail.removeItemConfirm' | translate }} "{{ lineItemDisplayName(selectedItemForRemove) }}"?
     </p>
   </div>
   <div modal-footer class="flex gap-3">

@@ -40,6 +40,7 @@ export function mapAmmunitionToAsset(
   return {
     id: dto.id?.toString() || '-',
     name: dto.name || 'Unknown',
+    nameAr: dto.nameAr,
     itemNo: dto.itemNo || '-',
     partNo: dto.partNo || '-',
     batchNo: dto.batchNo || '-',
@@ -76,6 +77,7 @@ export function mapWeaponToAsset(dto: WeaponDto, currentLang: string): Asset {
   return {
     id: dto.id?.toString() || '-',
     name: dto.name || 'Unknown',
+    nameAr: dto.nameAr,
     itemNo: dto.itemNo || '-',
     partNo: dto.partNo || '-',
     batchNo: dto.batchNo || '-',
@@ -113,6 +115,7 @@ export function mapExplosiveToAsset(dto: ExplosiveDto, currentLang: string): Ass
   return {
     id: dto.id?.toString() || '-',
     name: dto.name || 'Unknown',
+    nameAr: dto.nameAr,
     itemNo: dto.itemNo || '-',
     partNo: dto.partNo || '-',
     batchNo: dto.batchNo || '-',

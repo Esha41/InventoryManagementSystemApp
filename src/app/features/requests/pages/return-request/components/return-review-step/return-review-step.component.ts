@@ -1,7 +1,8 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Subject, takeUntil } from 'rxjs';
 import { ButtonComponent } from '@components/button/button.component';
 import { Cartridge } from '@models/cartridge.model';
 import {
@@ -12,6 +13,8 @@ import {
 } from '../../return-request.state';
 import { LucideAngularModule, Eye } from 'lucide-angular';
 import { viewFile as viewFileUtil } from '@utils/file.utils';
+import { getCurrentLang } from '@utils/localization.utils';
+import { localizedCartridgeDisplayName } from '@requests/utils/cartridge-display.util';
 
 @Component({
   selector: 'app-return-review-step',
@@ -20,8 +23,26 @@ import { viewFile as viewFileUtil } from '@utils/file.utils';
   templateUrl: './return-review-step.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ReturnReviewStepComponent {
-  constructor(private readonly translate: TranslateService) {}
+export class ReturnReviewStepComponent implements OnInit, OnDestroy {
+  private readonly destroy$ = new Subject<void>();
+
+  constructor(
+    private readonly translate: TranslateService,
+    private readonly cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
+    this.translate.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  cartridgeLabel(cartridge: Cartridge): string {
+    return localizedCartridgeDisplayName(cartridge, getCurrentLang(this.translate));
+  }
 
   readonly Eye = Eye;
 

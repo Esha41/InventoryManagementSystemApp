@@ -115,7 +115,7 @@
           </td>
 
           <td class="px-3 py-2.5 align-middle min-w-0">
-            <span class="text-sm font-medium text-[var(--color-text)]" [appTableClampTooltip]="item.itemName">{{ item.itemName }}</span>
+            <span class="text-sm font-medium text-[var(--color-text)]" [appTableClampTooltip]="itemSummaryDisplayName(item)">{{ itemSummaryDisplayName(item) }}</span>
           </td>
           <td dir="ltr" class="px-3 py-2.5 align-middle text-sm text-[var(--color-text-muted)] whitespace-nowrap tabular-nums" [class.text-right]="isRTL" [class.text-left]="!isRTL">{{ item.itemNo || '—' }}</td>
           <td class="px-3 py-2.5 align-middle whitespace-nowrap">
@@ -166,7 +166,7 @@
                 <div class="w-full -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-border)]"
                   [attr.dir]="tableDir">
                   <p class="min-w-0 flex-1 text-xs font-semibold text-[var(--color-brand)] uppercase tracking-wider text-start leading-snug">
-                    {{ 'inventoryDashboard.lotDetail.title' | translate }} — {{ item.itemName }}
+                    {{ 'inventoryDashboard.lotDetail.title' | translate }} — {{ itemSummaryDisplayName(item) }}
                     <span class="ms-2 text-[var(--color-text-muted)] font-normal normal-case">
                       ({{ lotDetails.length }} {{ 'inventoryDashboard.lotDetail.lots' | translate }})
                     </span>
@@ -311,7 +311,7 @@
                 <div class="w-full -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-border)]"
                   [attr.dir]="tableDir">
                   <p class="min-w-0 flex-1 text-xs font-semibold text-[var(--color-brand)] uppercase tracking-wider text-start leading-snug">
-                    {{ 'inventoryDashboard.assetDetail.title' | translate }} — {{ item.itemName }}
+                    {{ 'inventoryDashboard.assetDetail.title' | translate }} — {{ itemSummaryDisplayName(item) }}
                     <span class="ms-2 text-[var(--color-text-muted)] font-normal normal-case">
                       ({{ assetTotalItemCount || assetDetails.length }} {{ 'inventoryDashboard.assetDetail.assets' | translate }})
                     </span>

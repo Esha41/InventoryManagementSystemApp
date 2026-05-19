@@ -95,6 +95,8 @@ export interface RequestItem {
   id: number; // RequestItem ID (the ID of the request item record)
   itemId?: number; // Item/Ammunition ID (the actual item ID for navigation)
   itemName: string;
+  /** Arabic catalog name when provided by Request Management API. */
+  itemNameAr?: string | null;
   itemNo?: string;
   quantity: number;
   unit?: string;

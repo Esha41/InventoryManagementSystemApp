@@ -7,6 +7,7 @@ export function createAssetEditForm(fb: FormBuilder): FormGroup {
   return fb.group({
     id: [0 as number],
     name: ['', Validators.required],
+    nameAr: [''],
     itemNo: ['', Validators.required],
     partNo: [''],
 

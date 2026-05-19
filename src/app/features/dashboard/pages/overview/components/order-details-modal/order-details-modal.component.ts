@@ -16,11 +16,16 @@ import {
   formatOrderUsageDateFrom,
   formatOrderUsageDateTo
 } from '@dashboard/utils/dashboard-order.utils';
+import { getCurrentLang } from '@utils/localization.utils';
+import { localizedRequestLineItemName } from '@dashboard/utils/localized-request-line-item-name.util';
+import type { RequestManagementRequestItemDto } from '@models/request-management-base.model';
+import { hasWeaponAssociations as itemHasWeaponAssociations } from '@utils/weapon-association-label.utils';
+import { WeaponAssociationListComponent } from '@components/weapon-association-list/weapon-association-list.component';
 
 @Component({
   selector: 'app-order-details-modal',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, TranslateModule],
+  imports: [CommonModule, LucideAngularModule, TranslateModule, WeaponAssociationListComponent],
   templateUrl: './order-details-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -81,6 +86,14 @@ export class OrderDetailsModalComponent implements OnInit, OnDestroy {
 
   hasOrderItems(items?: OrderRequestItemDto[] | null): boolean {
     return !!items && items.length > 0;
+  }
+
+  hasWeaponAssociations(item: OrderRequestItemDto | null | undefined): boolean {
+    return itemHasWeaponAssociations(item);
+  }
+
+  requestLineItemDisplayName(item: RequestManagementRequestItemDto | null | undefined): string {
+    return localizedRequestLineItemName(item, getCurrentLang(this.translate));
   }
 }
 

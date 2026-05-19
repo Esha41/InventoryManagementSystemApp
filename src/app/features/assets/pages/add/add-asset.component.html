@@ -372,6 +372,14 @@
 
             <!-- RIGHT COLUMN - Dropdowns -->
             <div class="space-y-6 min-w-0">
+              <!-- Name Arabic -->
+              <div>
+                <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-name-ar">{{ 'addAsset.nameAr' | translate }}</label>
+                <input id="add-name-ar" type="text" [(ngModel)]="assetForm.nameAr" name="nameAr" dir="rtl"
+                  [class]="getInputClass(false, false, false)"
+                  [placeholder]="'addAsset.enterNameAr' | translate" maxlength="200" />
+              </div>
+
               <!-- ============ WEAPON SPECIFIC FIELDS ============ -->
               <ng-container *ngIf="activeTab === 'weapon'">
                 <!-- Caliber category — same row as Name (left column) -->

@@ -1,5 +1,6 @@
 import { ItemType, normalizeItemType } from '@models/inventory.model';
 import type { RequestManagementRequestItemWeaponAssociationDto } from '@models/request-management-base.model';
+import { getLocalizedName } from '@utils/localization.utils';
 
 export interface WeaponAssociationLabelItem {
   itemType?: number | string;
@@ -24,19 +25,29 @@ export interface WeaponAssociationDisplay {
 }
 
 export function getWeaponAssociationDisplay(
-  association: RequestManagementRequestItemWeaponAssociationDto | null | undefined
+  association: RequestManagementRequestItemWeaponAssociationDto | null | undefined,
+  lang?: string
 ): WeaponAssociationDisplay {
   const customName = association?.associatedWeaponOtherName?.trim();
   if (customName) {
     return { title: customName, isCustom: true };
   }
 
-  if (association?.associatedWeaponName) {
-    return { title: association.associatedWeaponName, isCustom: false };
-  }
-
-  if (association?.associatedWeaponItemId) {
-    return { title: `Weapon #${association.associatedWeaponItemId}`, isCustom: false };
+  const weaponItemId = association?.associatedWeaponItemId;
+  if (weaponItemId != null && weaponItemId > 0 && association) {
+    const en = (association.associatedWeaponName ?? '').trim();
+    const row = association as { associatedWeaponNameAR?: string | null };
+    const ar = (association.associatedWeaponNameAr ?? row.associatedWeaponNameAR ?? '').trim();
+    if (lang) {
+      const title =
+        getLocalizedName({ nameEn: en || undefined, nameAr: ar || undefined }, lang)?.trim() || en || ar;
+      if (title) {
+        return { title, isCustom: false };
+      }
+    } else if (en) {
+      return { title: en, isCustom: false };
+    }
+    return { title: `Weapon #${weaponItemId}`, isCustom: false };
   }
 
   return { title: '—', isCustom: false };
@@ -44,9 +55,10 @@ export function getWeaponAssociationDisplay(
 
 export function getWeaponAssociationLabel(
   association: RequestManagementRequestItemWeaponAssociationDto | null | undefined,
-  customSuffix = 'Custom'
+  customSuffix = 'Custom',
+  lang?: string
 ): string {
-  const display = getWeaponAssociationDisplay(association);
+  const display = getWeaponAssociationDisplay(association, lang);
   if (display.isCustom) {
     return `${display.title} (${customSuffix})`;
   }

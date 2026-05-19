@@ -4,7 +4,9 @@ import {
   Output,
   EventEmitter,
   ChangeDetectionStrategy,
-  ChangeDetectorRef
+  ChangeDetectorRef,
+  OnInit,
+  OnDestroy
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -18,6 +20,7 @@ import {
 import { LookupItem } from '@models/lookup.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { isAmmunitionType, isWeaponType, isExplosiveType } from '@utils/item-type.utils';
+import { Subject, takeUntil } from 'rxjs';
 
 export type AssignmentFormData = Omit<CreateUpdateItemDepartmentAssignmentDto, 'departmentId'> & {
   departmentId: number | null;
@@ -30,7 +33,7 @@ export type AssignmentFormData = Omit<CreateUpdateItemDepartmentAssignmentDto, '
   templateUrl: './assignment-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AssignmentModalComponent {
+export class AssignmentModalComponent implements OnInit, OnDestroy {
   readonly X = X;
 
   @Input() isOpen = false;
@@ -54,10 +57,21 @@ export class AssignmentModalComponent {
   @Output() weaponsChange = new EventEmitter<number[]>();
   @Output() explosivesChange = new EventEmitter<number[]>();
 
+  private readonly destroy$ = new Subject<void>();
+
   constructor(
     public translateService: TranslateService,
     private cdr: ChangeDetectorRef
   ) {}
+
+  ngOnInit(): void {
+    this.translateService.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   get availableAmmunition(): BaseItemWithType[] {
     return (this.availableItems || []).filter((i) => isAmmunitionType(i.itemType));
@@ -84,6 +98,26 @@ export class AssignmentModalComponent {
         ? (option as DropdownOption<LookupItem | null | undefined>).value
         : option;
     return this.getLocalizedName(item ?? undefined);
+  };
+
+  getItemOptionLabel = (
+    option: BaseItemWithType | DropdownOption<BaseItemWithType | null | undefined> | null | undefined
+  ): string => {
+    if (!option) return '';
+    const item =
+      option && 'value' in option
+        ? (option as DropdownOption<BaseItemWithType | null | undefined>).value
+        : option;
+    if (!item) return '';
+
+    const lang = getCurrentLang(this.translateService);
+    const name =
+      getLocalizedName({ name: item.name, nameAr: item.nameAr ?? undefined }, lang)?.trim() ||
+      item.name ||
+      item.displayLabel ||
+      '';
+    const itemNo = (item.itemNo ?? '').trim();
+    return itemNo ? `${name} (${itemNo})` : name;
   };
 
   private getEmptyAssignment(): AssignmentFormData {

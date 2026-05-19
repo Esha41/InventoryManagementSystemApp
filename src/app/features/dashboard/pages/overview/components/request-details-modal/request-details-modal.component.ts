@@ -23,6 +23,7 @@ import {
 import { RequestType } from '@utils/request-type-mapper.utils';
 import { hasWeaponAssociations as itemHasWeaponAssociations } from '@utils/weapon-association-label.utils';
 import { WeaponAssociationListComponent } from '@components/weapon-association-list/weapon-association-list.component';
+import { localizedRequestLineItemName } from '@dashboard/utils/localized-request-line-item-name.util';
 
 /**
  * Unified Request DTO type
@@ -296,6 +297,10 @@ export class RequestDetailsModalComponent implements OnInit, OnDestroy {
 
   hasWeaponAssociations(item: UnifiedRequestItemDto): boolean {
     return itemHasWeaponAssociations(item);
+  }
+
+  requestLineItemDisplayName(item: UnifiedRequestItemDto | null | undefined): string {
+    return localizedRequestLineItemName(item, getCurrentLang(this.translate));
   }
 
   /**

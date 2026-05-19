@@ -17,6 +17,8 @@ export type CatalogListItem = AmmunitionReadDto | WeaponDto | ExplosiveDto;
 export interface ReturnSelectedItem {
   itemId: number;
   name: string;
+  nameAr?: string | null;
+  nameEn?: string | null;
   itemNo: string;
   quantity: number;
   notes: string;

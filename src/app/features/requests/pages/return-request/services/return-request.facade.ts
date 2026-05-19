@@ -334,18 +334,22 @@ export class ReturnRequestFacade {
     const { cartridge, quantity } = event;
     const itemId = cartridge.id;
     const name = cartridge.name || String(cartridge.itemNo || '');
+    const nameAr = cartridge.nameAr ?? null;
+    const nameEn = cartridge.nameEn ?? null;
     const itemNo = String(cartridge.itemNo || '');
     const itemType = cartridge.itemType || this.filterState.selectedItemType;
     const existing = this.selectionState.selectedItems.find((x) => x.itemId === itemId);
     if (existing) {
       existing.quantity = quantity;
       existing.name = name;
+      existing.nameAr = nameAr;
+      existing.nameEn = nameEn;
       existing.itemNo = itemNo;
       existing.itemType = itemType;
     } else {
       this.selectionState.selectedItems = [
         ...this.selectionState.selectedItems,
-        { itemId, name, itemNo, quantity, notes: '', itemType }
+        { itemId, name, nameAr, nameEn, itemNo, quantity, notes: '', itemType }
       ];
     }
     this.refreshMergedList();

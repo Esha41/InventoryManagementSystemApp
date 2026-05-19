@@ -1,4 +1,4 @@
-﻿<div class="space-y-4">
+<div class="space-y-4">
 
   <!-- Requester Details -->
   <div class="bg-[var(--color-background-muted)] rounded-lg p-4">
@@ -40,8 +40,7 @@
         <tbody>
           <tr *ngFor="let cartridge of selectedCartridges" class="border-t border-[var(--color-border)]">
             <td class="px-4 py-2 text-[var(--color-text)]">
-              <span *ngIf="isArabic">{{ cartridge.nameAr || cartridge.nameEn || cartridge.name }}</span>
-              <span *ngIf="!isArabic">{{ cartridge.nameEn || cartridge.name }}</span>
+              {{ cartridgeLabel(cartridge) }}
             </td>
             <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.itemNo || cartridge.productId }}</td>
             <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.ncn || '-' }}</td>

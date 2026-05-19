@@ -14,6 +14,8 @@ export interface ExpiringLotDto {
   inventoryDetailId: number;
   itemId: number;
   itemName: string;
+  /** Arabic catalog name when API provides it */
+  itemNameAr?: string | null;
   itemNo?: string;
   lot: string;
   batchNo?: string;
@@ -40,6 +42,8 @@ export interface ExpiringLotDto {
 export interface LowStockItemDto {
   itemId: number;
   itemName: string;
+  /** Arabic catalog name when API provides it */
+  itemNameAr?: string | null;
   itemNo?: string;
   nsn?: string;
   minimumQuantity?: number;
@@ -52,6 +56,8 @@ export interface LowStockItemDto {
 export interface CriticalStockItemDto {
   itemId: number;
   itemName: string;
+  /** Arabic catalog name when API provides it */
+  itemNameAr?: string | null;
   itemNo?: string;
   nsn?: string;
   criticalQuantity?: number;

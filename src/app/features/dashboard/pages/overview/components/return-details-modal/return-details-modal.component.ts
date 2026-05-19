@@ -7,11 +7,15 @@ import { ReturnDto } from '@models/return.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { formatTimeToMilitary } from '@utils/format.utils';
 import { Subject, takeUntil } from 'rxjs';
+import type { RequestManagementRequestItemDto } from '@models/request-management-base.model';
+import { localizedRequestLineItemName } from '@dashboard/utils/localized-request-line-item-name.util';
+import { hasWeaponAssociations as itemHasWeaponAssociations } from '@utils/weapon-association-label.utils';
+import { WeaponAssociationListComponent } from '@components/weapon-association-list/weapon-association-list.component';
 
 @Component({
   selector: 'app-return-details-modal',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, TranslateModule],
+  imports: [CommonModule, LucideAngularModule, TranslateModule, WeaponAssociationListComponent],
   templateUrl: './return-details-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -186,6 +190,14 @@ export class ReturnDetailsModalComponent implements OnInit, OnDestroy {
 
   hasItems(items?: any[] | null): boolean {
     return !!items && items.length > 0;
+  }
+
+  hasWeaponAssociations(item: RequestManagementRequestItemDto | null | undefined): boolean {
+    return itemHasWeaponAssociations(item);
+  }
+
+  requestLineItemDisplayName(item: RequestManagementRequestItemDto | null | undefined): string {
+    return localizedRequestLineItemName(item, getCurrentLang(this.translate));
   }
 
   navigateToApproval(returnRequestId: number): void {

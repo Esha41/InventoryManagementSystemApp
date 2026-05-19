@@ -21,7 +21,7 @@ import {
   ChevronUp
 } from 'lucide-angular';
 import { ItemInventorySummaryDto, ItemType, normalizeItemType } from '@models/inventory.model';
-import { ActiveTab } from './inventory-dashboard.helpers';
+import { ActiveTab, localizedItemSummaryDisplayName } from './inventory-dashboard.helpers';
 import { AssetDto } from '@models/asset.model';
 import { LotDetailDto } from '@inventory/services/inventory.service';
 import { PaginationComponent } from '@components/pagination/pagination.component';
@@ -280,5 +280,9 @@ export class InventoryItemSummaryTableComponent implements OnInit, OnDestroy {
     return this.isWeaponItem(item)
       ? this.translate.instant('inventoryDashboard.assetDetail.title')
       : this.translate.instant('inventoryDashboard.lotDetail.title');
+  }
+
+  itemSummaryDisplayName(item: ItemInventorySummaryDto): string {
+    return localizedItemSummaryDisplayName(item, getCurrentLang(this.translate));
   }
 }

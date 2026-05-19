@@ -12,6 +12,7 @@ import { WeaponService } from '@assets/services/weapon.service';
 import { WeaponDto } from '@models/weapon.model';
 import { CreateRequestItemDto } from '@models/request-item.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { localizedRequestLineItemName } from '@dashboard/utils/localized-request-line-item-name.util';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
@@ -78,6 +79,10 @@ export class WeaponReviewItemsModalComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.translate.onLangChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.cdr.markForCheck());
+
     if (this.isOpen) {
       this.resetStates();
     }
@@ -103,6 +108,10 @@ export class WeaponReviewItemsModalComponent implements OnInit, OnDestroy {
 
   get requestItems() {
     return this.requestDetail?.requestItems || [];
+  }
+
+  lineItemDisplayName(item: RequestItem | null | undefined): string {
+    return localizedRequestLineItemName(item, getCurrentLang(this.translate));
   }
 
   get orderId(): number | null {

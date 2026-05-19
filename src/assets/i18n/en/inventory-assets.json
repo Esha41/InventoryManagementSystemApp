@@ -82,6 +82,7 @@
     "criticalQuantity": "Critical Stock",
     "criticalQuantityPlaceholder": "Enter Critical Stock threshold (optional)",
     "enterAmmunitionName": "Enter ammunition name",
+    "enterNameAr": "Enter arabic name",
     "enterWeaponName": "Enter weapon name",
     "enterExplosiveName": "Enter explosive name",
     "enterItemNumber": "Enter unique item number (e.g., AMM-001)",
@@ -126,6 +127,7 @@
       "ammunitionTypeRequired": "Select Caliber Category"
     },
     "name": "Name",
+    "nameAr": "Name Arabic",
     "itemNo": "Item No",
     "partNo": "Part No",
     "armNumber": "Arm Number",

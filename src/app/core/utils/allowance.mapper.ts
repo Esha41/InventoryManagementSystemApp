@@ -94,6 +94,25 @@ export function processAllowanceData(
     };
   };
 
+  /** Prefer full catalog row (bilingual), then API itemName/itemNameAr, then English fallbacks. */
+  const resolveLocalizedItemLabel = (
+    dto: AllowanceItemDto,
+    itemData: AllowanceItemType | undefined,
+    displayFields: AllowanceDisplayItem
+  ): string => {
+    const fromCatalog = itemData ? (getLocalizedName(itemData, currentLang) || '').trim() : '';
+    if (fromCatalog) return fromCatalog;
+    const fromApiPair = getLocalizedName(
+      {
+        name: dto.itemName ?? undefined,
+        nameAr: dto.itemNameAr ?? (dto as { itemNameAR?: string | null }).itemNameAR ?? undefined
+      },
+      currentLang
+    ).trim();
+    if (fromApiPair) return fromApiPair;
+    return dto.itemName?.trim() || displayFields.name?.trim() || '';
+  };
+
   const groupedItems = new Map<string, AllowanceItemDetailDto[]>();
 
   items.forEach(item => {
@@ -106,9 +125,14 @@ export function processAllowanceData(
 
     // Get item name and number from itemData or fallback to DTO
     const displayFields = getDisplayFields(itemData);
-    const itemName = item.itemName || (itemData ? getLocalizedName(itemData, currentLang) || displayFields.name || '' : '');
+    const itemName = resolveLocalizedItemLabel(item, itemData, displayFields);
     const itemNo = item.itemNo || displayFields.itemNo || '';
     const batchNo = displayFields.batchNo || '';
+    const itemNameAr =
+      item.itemNameAr ??
+      (item as { itemNameAR?: string | null }).itemNameAR ??
+      (itemData as { nameAr?: string | null } | undefined)?.nameAr ??
+      null;
 
     groupedItems.get(key)!.push({
       id: item.id,
@@ -117,6 +141,7 @@ export function processAllowanceData(
       quantity: item.quantity,
       itemType: item.itemType,
       itemName: itemName,
+      itemNameAr: itemNameAr,
       itemNo: itemNo,
       batchNo: batchNo,
       usedQuantityFromAllowance: item.usedQuantityFromAllowance || 0,
@@ -131,9 +156,14 @@ export function processAllowanceData(
 
     // Use itemName from DTO first (supports all item types), fallback to item lookup
     const displayFields = getDisplayFields(itemData);
-    const itemName = item.itemName || (itemData ? getLocalizedName(itemData, currentLang) || displayFields.name || '' : '');
+    const itemName = resolveLocalizedItemLabel(item, itemData, displayFields);
     const itemNo = item.itemNo || displayFields.itemNo || '';
     const batchNo = displayFields.batchNo || '';
+    const itemNameAr =
+      item.itemNameAr ??
+      (item as { itemNameAR?: string | null }).itemNameAR ??
+      (itemData as { nameAr?: string | null } | undefined)?.nameAr ??
+      null;
 
     // Prefer API itemType; fall back to catalog maps only if value is missing/invalid
     let inferredItemType: ItemType = item.itemType;
@@ -158,6 +188,7 @@ export function processAllowanceData(
       year: item.year,
       itemId: item.itemId,
       itemName: itemName,
+      itemNameAr: itemNameAr,
       itemNo: itemNo,
       batchNo: batchNo,
       itemType: inferredItemType,

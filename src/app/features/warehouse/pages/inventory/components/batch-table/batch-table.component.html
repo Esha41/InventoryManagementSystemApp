@@ -106,7 +106,7 @@
                                         <td class="px-3 py-2 align-middle max-w-[min(32rem,90vw)]">
                                             <div class="inline-flex items-center gap-2 text-start text-sm font-medium text-[var(--color-brand)]">
                                                 <lucide-angular [img]="isAssetDetailExpanded(group) ? ChevronDown : ChevronRight" class="h-4 w-4 shrink-0 text-[var(--color-text-muted)] rtl:rotate-180"></lucide-angular>
-                                                <span class="break-words">{{ group.itemName }}</span>
+                                                <span class="break-words">{{ groupItemNameLabel(group) }}</span>
                                             </div>
                                         </td>
                                         <td class="px-3 py-2 align-middle text-sm text-[var(--color-text)] break-all max-w-[12rem]">

@@ -288,6 +288,10 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
         }
       });
 
+    this.translateService.onLangChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.cdr.markForCheck());
+
     this.loadAssets();
   }
 
@@ -710,7 +714,11 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
   }
 
   itemName(asset: AssetDto): string {
-    return asset.item?.name?.trim() || '—';
+    const item = asset.item;
+    if (!item) return '—';
+    const lang = getCurrentLang(this.translateService);
+    const label = getLocalizedName(item, lang)?.trim();
+    return label || item.name?.trim() || '—';
   }
 
   custodianName(asset: AssetDto): string {

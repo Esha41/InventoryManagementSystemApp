@@ -7,6 +7,7 @@ import {
   isCatalogWeaponAssociation,
   type WeaponAssociationDisplay
 } from '@utils/weapon-association-label.utils';
+import { getCurrentLang } from '@utils/localization.utils';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -46,7 +47,7 @@ export class WeaponAssociationListComponent implements OnInit, OnDestroy {
   getAssociationDisplay(
     association: RequestManagementRequestItemWeaponAssociationDto
   ): WeaponAssociationDisplay {
-    return getWeaponAssociationDisplay(association);
+    return getWeaponAssociationDisplay(association, getCurrentLang(this.translate));
   }
 
   isCatalogAssociation(

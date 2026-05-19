@@ -41,7 +41,7 @@
           required
           (ngModelChange)="onItemSelectChange($event)"
           [options]="availableItems"
-          optionLabel="displayLabel"
+          [optionLabelFn]="getItemOptionLabel"
           optionValue="id"
           [placeholder]="'itemDepartmentAssignment.selectItem' | translate">
         </app-dropdown>
@@ -56,7 +56,7 @@
             name="selectedAmmunitionIds"
             (ngModelChange)="onAmmunitionChange($event)"
             [options]="availableAmmunition"
-            optionLabel="displayLabel"
+            [optionLabelFn]="getItemOptionLabel"
             optionValue="id"
             [multiple]="true"
             [disabled]="!currentAssignment.departmentId || availableAmmunition.length === 0"
@@ -71,7 +71,7 @@
             name="selectedExplosiveIds"
             (ngModelChange)="onExplosivesChange($event)"
             [options]="availableExplosives"
-            optionLabel="displayLabel"
+            [optionLabelFn]="getItemOptionLabel"
             optionValue="id"
             [multiple]="true"
             [disabled]="!currentAssignment.departmentId || availableExplosives.length === 0"
@@ -86,7 +86,7 @@
             name="selectedWeaponIds"
             (ngModelChange)="onWeaponsChange($event)"
             [options]="availableWeapons"
-            optionLabel="displayLabel"
+            [optionLabelFn]="getItemOptionLabel"
             optionValue="id"
             [multiple]="true"
             [disabled]="!currentAssignment.departmentId || availableWeapons.length === 0"

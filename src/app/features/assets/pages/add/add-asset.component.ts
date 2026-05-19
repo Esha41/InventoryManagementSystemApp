@@ -29,6 +29,7 @@ import { ItemType } from '@models/inventory.model';
 
 interface AssetForm {
   name: string;
+  nameAr: string;
   itemNo: string;
   partNo: string;
   // Shared
@@ -160,6 +161,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
   private getInitialForm(): AssetForm {
     return {
       name: '',
+      nameAr: '',
       itemNo: '',
       partNo: '',
       armNumber: '',
@@ -372,6 +374,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
       itemNo: this.assetForm.itemNo.trim()
     };
 
+    if (this.assetForm.nameAr?.trim()) dto.nameAr = this.assetForm.nameAr.trim();
     if (this.assetForm.partNo?.trim()) dto.partNo = this.assetForm.partNo.trim();
     if (this.assetForm.armNumber?.trim()) dto.armNumber = this.assetForm.armNumber.trim();
     if (this.assetForm.caliberId) dto.caliberId = parseInt(this.assetForm.caliberId, 10);
@@ -429,6 +432,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
       itemNo: this.assetForm.itemNo.trim()
     };
 
+    if (this.assetForm.nameAr?.trim()) dto.nameAr = this.assetForm.nameAr.trim();
     if (this.assetForm.partNo?.trim()) dto.partNo = this.assetForm.partNo.trim();
     if (this.assetForm.nsn?.trim()) dto.nsn = this.assetForm.nsn.trim();
     if (this.assetForm.distribution?.trim()) dto.distribution = this.assetForm.distribution.trim();
@@ -476,6 +480,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
       itemNo: this.assetForm.itemNo.trim()
     };
 
+    if (this.assetForm.nameAr?.trim()) dto.nameAr = this.assetForm.nameAr.trim();
     if (this.assetForm.partNo?.trim()) dto.partNo = this.assetForm.partNo.trim();
     if (this.assetForm.nsn?.trim()) dto.nsn = this.assetForm.nsn.trim();
     if (this.assetForm.price) dto.price = parseFloat(this.assetForm.price);
