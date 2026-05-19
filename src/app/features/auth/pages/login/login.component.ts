@@ -21,6 +21,7 @@ import { environment } from '@environments/environment';
 import { LoginRequest, LoginResponse } from '@models/auth.model';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { getDefaultLandingUrl } from '@utils/default-landing-route.utils';
+import { TermsAcceptanceFacade } from '@features/help/facades/terms-acceptance.facade';
 
 import { TakeOverDialogComponent } from '../../components/take-over-dialog/take-over-dialog.component';
 import { CaptchaService } from '../../services/captcha.service';
@@ -83,7 +84,8 @@ export class LoginComponent implements OnInit {
     private readonly configService: ConfigService,
     private readonly cdr: ChangeDetectorRef,
     private readonly storageService: StorageService,
-    public readonly captchaService: CaptchaService
+    public readonly captchaService: CaptchaService,
+    private readonly termsAcceptance: TermsAcceptanceFacade
   ) {
     this.loginForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
@@ -293,7 +295,13 @@ export class LoginComponent implements OnInit {
       return;
     }
 
-    setTimeout(() => void this.router.navigateByUrl(getDefaultLandingUrl(this.backendAuth)), 400);
+    setTimeout(() => {
+      void this.router.navigateByUrl(getDefaultLandingUrl(this.backendAuth)).then(navigated => {
+        if (navigated) {
+          this.termsAcceptance.beginPostLoginFlow();
+        }
+      });
+    }, 400);
   }
 
   private onPrimaryLoginError(
@@ -386,7 +394,13 @@ export class LoginComponent implements OnInit {
     resetFailedAttempts(this.storageService);
     this.captchaService.reset();
     this.loginForm.get('captcha')?.setValue('');
-    setTimeout(() => void this.router.navigateByUrl(getDefaultLandingUrl(this.backendAuth)), 400);
+    setTimeout(() => {
+      void this.router.navigateByUrl(getDefaultLandingUrl(this.backendAuth)).then(navigated => {
+        if (navigated) {
+          this.termsAcceptance.beginPostLoginFlow();
+        }
+      });
+    }, 400);
   }
 
   private onTakeOverError(error: unknown, username: string): void {

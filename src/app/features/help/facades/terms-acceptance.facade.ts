@@ -27,9 +27,19 @@ export class TermsAcceptanceFacade {
   readonly pendingTerms = signal<HelpCenterTermsDto | null>(null);
   readonly accepting = signal(false);
 
-  beginPostLoginFlow(): void {
+  /**
+   * When {@link environment.enableSecurityAcknowledgmentOnLogin} is off, the terms API is not used;
+   * still run onboarding once the shell is ready (deep link, refresh, new tab).
+   * When it is on, terms + onboarding are handled only after a successful login (see {@link beginPostLoginFlow}).
+   */
+  beginShellReadyFlow(): void {
     if (!this.isSecurityAcknowledgmentOnLoginEnabled) {
       this.onboarding?.checkAndStartTour();
+    }
+  }
+
+  beginPostLoginFlow(): void {
+    if (!this.isSecurityAcknowledgmentOnLoginEnabled) {
       return;
     }
 

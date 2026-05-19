@@ -81,7 +81,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => this.termsAcceptance.beginPostLoginFlow(), 500);
+    setTimeout(() => this.termsAcceptance.beginShellReadyFlow(), 500);
   }
 
   ngOnDestroy(): void {

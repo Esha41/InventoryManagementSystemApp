@@ -11,6 +11,7 @@ import { getDefaultLandingUrl } from '@core/utils/default-landing-route.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { RoleSelectionPanelComponent } from '@auth/components/role-selection-panel/role-selection-panel.component';
 import { ToastService } from '@services/toast.service';
+import { TermsAcceptanceFacade } from '@features/help/facades/terms-acceptance.facade';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 
 @Component({
@@ -33,7 +34,8 @@ export class SelectRoleComponent implements OnInit {
     private switchRoleModal: SwitchRoleModalService,
     private translate: TranslateService,
     private toastService: ToastService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private termsAcceptance: TermsAcceptanceFacade
   ) {
     this.translate.onLangChange.pipe(takeUntilDestroyed()).subscribe(() => this.cdr.markForCheck());
   }
@@ -82,6 +84,7 @@ export class SelectRoleComponent implements OnInit {
         void this.router.navigateByUrl(getDefaultLandingUrl(this.backendAuth)).then(navigated => {
           if (navigated) {
             this.toastService.success(message, title);
+            this.termsAcceptance.beginPostLoginFlow();
           }
         });
       },
