@@ -71,7 +71,6 @@ export interface AssetItemCatalogSummaryDto {
   itemType: ItemType;
   caliberId?: number | null;
   caliber?: string | null;
-  caliberUnitName?: string | null;
   totalAssets: number;
 }
 

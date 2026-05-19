@@ -189,7 +189,6 @@ export class InventorySummaryDataService {
             partNo: row.partNo ?? '',
             caliberId: row.caliberId ?? undefined,
             caliber: row.caliber ?? undefined,
-            caliberUnitName: row.caliberUnitName ?? undefined,
             totalQuantity: row.totalAssets,
             usedQuantity: 0,
             reservedQuantityByOrdersOnProcessing: 0,
