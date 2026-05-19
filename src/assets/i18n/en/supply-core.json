@@ -65,7 +65,7 @@
     "usagePurpose": "Usage Purpose",
     "usageLocation": "Usage Location",
     "usageDate": "Usage Date",
-    "orderItems": "Order Items",
+    "orderItems": "Lot Items",
     "addItem": "Add Item",
     "editItemQuantity": "Edit Item Quantity",
     "removeItem": "Remove Item",

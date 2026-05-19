@@ -194,6 +194,7 @@
       "usageDateRequired": "Usage date is required.",
       "usageDateFromMustBeTodayOrFuture": "Usage date from must be today or a future date.",
       "usageDateToMustBeTodayOrFuture": "Usage date to must be today or a future date.",
+      "usageDateToMustBeOnOrAfterFrom": "Usage date to must be greater than or equal to usage date from.",
       "usageTimeRequired": "Usage time is required.",
       "invalidMilitaryTime": "Invalid military time format. Please use HHMM format (e.g., 1430).",
       "orderPriorityRequired": "Order priority is required.",

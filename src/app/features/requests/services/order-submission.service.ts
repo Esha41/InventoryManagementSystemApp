@@ -7,6 +7,10 @@ import { APIOperationResponse } from '@models/api-response.model';
 import { CreateOrderDto, OrderDto } from '@models/order.model';
 import type { WeaponAssociation } from '@models/request-item.model';
 import { formatDateForInput } from '@core/utils/format.utils';
+import {
+  USAGE_DATE_TO_ON_OR_AFTER_FROM_KEY,
+  validateUsageDateTimeRange
+} from '@core/utils/usage-datetime.utils';
 
 export interface OrderSubmissionData {
   selectedEntries: Array<{ id: number; quantity: number; itemType?: string }>;
@@ -135,6 +139,19 @@ export class OrderSubmissionService {
       return {
         isValid: false,
         error: 'Usage time to is required.'
+      };
+    }
+
+    const usageDateRange = validateUsageDateTimeRange(
+      data.usageDateFrom,
+      data.usageTimeFrom,
+      data.usageDateTo,
+      data.usageTimeTo
+    );
+    if (usageDateRange === 'invalid') {
+      return {
+        isValid: false,
+        error: USAGE_DATE_TO_ON_OR_AFTER_FROM_KEY
       };
     }
 

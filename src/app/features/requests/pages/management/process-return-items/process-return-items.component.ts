@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, ArrowLeft, ArrowRight, Package, Trash2, Paperclip, ChevronDown, ChevronRight } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ArrowRight, X, ChevronDown, ChevronRight } from 'lucide-angular';
 import { AssetStatus, ASSET_STATUS_FORM_OPTIONS_ORDER, getAssetStatusLabel as assetStatusLabelKey } from '@models/asset.model';
 import { ReturnService, ProcessReturnItemsDto } from '@requests/services/return.service';
 import { FileUploadService, FileUploadDto } from '@services/file-upload.service';
@@ -73,9 +73,7 @@ interface WeaponLine {
 export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
   readonly ArrowLeft = ArrowLeft;
   readonly ArrowRight = ArrowRight;
-  readonly Package = Package;
-  readonly Trash2 = Trash2;
-  readonly Paperclip = Paperclip;
+  readonly X = X;
   readonly ChevronDown = ChevronDown;
   readonly ChevronRight = ChevronRight;
 

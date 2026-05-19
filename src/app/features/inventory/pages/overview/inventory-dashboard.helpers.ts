@@ -8,8 +8,8 @@ export type ActiveTab = 'ammunition' | 'weapon' | 'explosive';
 export interface ItemSummaryFilterState {
   selectedItemFilterIds: number[];
   searchText: string;
-  /** Selected catalog caliber display string; null = no filter */
-  caliberSelection: string | null;
+  /** Selected caliber lookup id; null = no filter (same as asset list). */
+  caliberFilterId: number | null;
   activeTab: ActiveTab;
 }
 
@@ -38,10 +38,8 @@ export function filterItemSummaries(
         (i.partNo || '').toLowerCase().includes(q)
     );
   }
-  const sel = (f.caliberSelection ?? '').trim();
-  if (sel) {
-    const norm = sel.toLowerCase();
-    list = list.filter(i => (i.caliber || '').trim().toLowerCase() === norm);
+  if (f.caliberFilterId != null) {
+    list = list.filter(i => i.caliberId === f.caliberFilterId);
   }
   return list;
 }
@@ -172,12 +170,12 @@ export function filterItemSummariesByActiveTab(
 /** Search, caliber, or item pick — excludes tab scope. */
 export function hasSecondaryItemTableFilters(
   itemSearchText: string,
-  caliberFilter: string | null | undefined,
+  caliberFilterId: number | null | undefined,
   selectedItemFilterIds: number[]
 ): boolean {
   return (
     !!itemSearchText.trim() ||
-    !!(caliberFilter ?? '').trim() ||
+    caliberFilterId != null ||
     selectedItemFilterIds.length > 0
   );
 }

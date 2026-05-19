@@ -69,6 +69,9 @@ export interface AssetItemCatalogSummaryDto {
   nsn: string;
   partNo: string;
   itemType: ItemType;
+  caliberId?: number | null;
+  caliber?: string | null;
+  caliberUnitName?: string | null;
   totalAssets: number;
 }
 
@@ -209,6 +212,8 @@ export interface ItemInventorySummaryDto {
   itemType: number;
   nsn: string;
   partNo: string;
+  /** Lookup id for ammunition / weapon caliber (asset-list style filter). */
+  caliberId?: number | null;
   /** Catalog field (ammunition / weapon); may be empty */
   caliber?: string | null;
   caliberUnitName?: string | null;

@@ -10,7 +10,6 @@ import {
   ArrowRight,
   ChevronDown,
   ChevronUp,
-  Plus,
   CheckCircle,
   AlertTriangle
 } from 'lucide-angular';
@@ -28,32 +27,22 @@ import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 
 import { SupplyRequestDetail, OrderItem } from '@models/supply-request.model';
-import { OrderDto } from '@models/order.model';
+import { OrderDto, OrderRequestItemDto } from '@models/order.model';
 import { CreateRequestItemDto } from '@models/request-item.model';
 
 import { LotSelectionModalComponent } from './components/lot-selection-modal/lot-selection-modal.component';
 import { DischargeSummaryCardComponent } from './components/discharge-summary-card/discharge-summary-card.component';
 import { ItemManagementModalsComponent } from './components/item-management-modals/item-management-modals.component';
-import { HasPermissionDirective } from '@core/directives/has-permission.directive';
-
-import { formatNumber as formatNumberUtil, formatDate as formatDateUtil, formatTimeToMilitary as formatTimeToMilitaryUtil } from '@utils/format.utils';
-import { getApprovalStatusBadgeClass } from '@utils/status-class.utils';
+import { OrderItemsManagementComponent } from '@requests/pages/supply-order/components/order-items-management/order-items-management.component';
+import { formatNumber as formatNumberUtil } from '@utils/format.utils';
 import {
-  getLotConditionClass,
   getItemTypeIcon as getItemTypeIconUtil,
   getItemProductId as getItemProductIdUtil
 } from '../utils/ui-helpers.utils';
-import { LoadingStateComponent, ModalComponent, ButtonComponent, TableClampTooltipDirective } from '@components/index';
+import { LoadingStateComponent, ModalComponent, ButtonComponent } from '@components/index';
 import { TranslationService } from '@services/translation.service';
-import { getCurrentLang } from '@utils/localization.utils';
-import { getPriorityKey, getPriorityText } from '@utils/priority.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { trackByKey } from '@utils/trackby.utils';
-import {
-  resolveDepartmentNameDisplay,
-  resolveRequesterNameDisplay,
-  resolveUsagePurposeDisplay
-} from './utils/supply-request-order-fields.util';
 import { filterPartiallyFulfilledOrderItems } from './utils/supply-request-partial-fulfillment.util';
 import { applyTempLotSelectionsToOrderItem } from './utils/supply-request-apply-lot-selections.util';
 
@@ -65,14 +54,13 @@ import { applyTempLotSelectionsToOrderItem } from './utils/supply-request-apply-
     FormsModule,
     TranslateModule,
     LucideAngularModule,
-    HasPermissionDirective,
     LotSelectionModalComponent,
     DischargeSummaryCardComponent,
     ItemManagementModalsComponent,
+    OrderItemsManagementComponent,
     LoadingStateComponent,
     ModalComponent,
-    ButtonComponent,
-    TableClampTooltipDirective
+    ButtonComponent
   ],
   templateUrl: './supply-request-detail.component.html',
   styleUrls: ['./supply-request-detail.component.css'],
@@ -87,7 +75,6 @@ export class SupplyRequestDetailComponent implements OnInit {
   readonly ArrowRight = ArrowRight;
   readonly ChevronDown = ChevronDown;
   readonly ChevronUp = ChevronUp;
-  readonly Plus = Plus;
   readonly CheckCircle = CheckCircle;
   readonly AlertTriangle = AlertTriangle;
   readonly Math = Math;
@@ -107,8 +94,8 @@ export class SupplyRequestDetailComponent implements OnInit {
   orderData: OrderDto | null = null;
   currentSupplyId: number | undefined = undefined;
 
-  isRequestInfoExpanded: boolean = true;
-  isOrderItemsExpanded: boolean = true;
+  isOrderItemsManagementExpanded = true;
+  isOrderItemsDischargeExpanded = true;
 
   loading = true;
   loadingSuggestion = false;
@@ -571,51 +558,46 @@ export class SupplyRequestDetailComponent implements OnInit {
       });
   }
 
-  getApprovalStatusClass(status: string): string {
-    return getApprovalStatusBadgeClass(status);
-  }
-
-  getLotConditionClass(condition: string): string {
-    return getLotConditionClass(condition);
-  }
-
   getItemTypeIcon(type: string): any {
     return getItemTypeIconUtil(type);
-  }
-
-  formatDate(date: Date | string | undefined): string {
-    return formatDateUtil(date);
   }
 
   formatNumber(num: number): string {
     return formatNumberUtil(num);
   }
 
-  formatTimeToMilitary(time: string | Date | null | undefined): string {
-    return formatTimeToMilitaryUtil(time);
-  }
-
   getItemProductId(item: OrderItem): string {
     return getItemProductIdUtil(item, this.orderData);
   }
 
-  resolveUsagePurpose(): string {
-    return resolveUsagePurposeDisplay(this.orderData, getCurrentLang(this.translate));
+  /** Rows for the management table (maps approved qty → order line quantity). */
+  get orderItemsForManagement(): OrderRequestItemDto[] {
+    const items = this.requestDetail?.items ?? [];
+    return items.map((item) => {
+      const orderLine = this.orderData?.requestItems?.find((ri) => ri.id === item.requestItemId);
+      return {
+        id: item.requestItemId,
+        itemId: item.itemId,
+        quantity: item.approvedQuantity,
+        requestId: this.orderId,
+        itemName: item.itemName,
+        itemNo: orderLine?.itemNo,
+        notes: orderLine?.notes
+      } as OrderRequestItemDto;
+    });
   }
 
-  resolveDepartmentName(): string {
-    return resolveDepartmentNameDisplay(this.orderData, getCurrentLang(this.translate));
+  onManagementEditItem(row: OrderRequestItemDto): void {
+    const item = this.requestDetail?.items.find((i) => i.requestItemId === row.id);
+    if (item) {
+      this.openEditItemModal(item);
+    }
   }
 
-  resolveRequesterName(): string {
-    return resolveRequesterNameDisplay(this.orderData, getCurrentLang(this.translate));
-  }
-
-  getPriorityTranslationKey(priority?: number | string | null): string {
-    return `common.priorityLevels.${getPriorityKey(priority)}`;
-  }
-
-  mapOrderPriorityToString(priority?: number | string | null): string {
-    return getPriorityKey(priority);
+  onManagementRemoveItem(row: OrderRequestItemDto): void {
+    const item = this.requestDetail?.items.find((i) => i.requestItemId === row.id);
+    if (item) {
+      this.openRemoveItemModal(item);
+    }
   }
 }

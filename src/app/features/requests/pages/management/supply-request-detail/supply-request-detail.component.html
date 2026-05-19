@@ -6,182 +6,63 @@
   <!-- Content -->
   <div *ngIf="!loading && requestDetail">
     <!-- Header with Back Button -->
-    <div class="mb-6 flex items-center justify-between">
-      <div class="flex items-center gap-4">
-        <button (click)="goBack()"
-          class="p-2 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors border border-[var(--color-border)]">
-          <lucide-angular [img]="backIcon" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
-        </button>
-        <div>
-          <h1 class="text-2xl font-bold text-[var(--color-text)]">
-            {{ 'supplyRequestDetail.title' | translate }} {{ requestDetail.issueNo }}
-          </h1>
-          <p class="text-sm text-[var(--color-text-muted)] mt-1">
-            {{ 'supplyRequestDetail.requestedOn' | translate }}: {{ requestDetail.requestDate }}
-          </p>
-        </div>
-      </div>
-      <div class="px-4 py-2 rounded-lg border font-medium text-sm"
-        [ngClass]="getApprovalStatusClass(requestDetail.status)">
-        {{ ('common.statuses.' + requestDetail.status) | translate }}
+    <div class="mb-6 flex items-center gap-4">
+      <button (click)="goBack()"
+        class="p-2 hover:bg-[var(--color-background-hover)] rounded-lg transition-colors border border-[var(--color-border)]">
+        <lucide-angular [img]="backIcon" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+      </button>
+      <div>
+        <h1 class="text-2xl font-bold text-[var(--color-text)]">
+          {{ 'supplyRequestDetail.title' | translate }} {{ requestDetail.issueNo }}
+        </h1>
       </div>
     </div>
 
     <!-- Main Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Left Column - Request Info, Order Items & Approval Workflow -->
+      <!-- Left Column - Order Items -->
       <div class="lg:col-span-2 space-y-6">
-        <!-- Request Information -->
+        <!-- Order Items Management (add / edit / remove) -->
         <div class="bg-[var(--color-background)] rounded-lg shadow-sm border border-[var(--color-border)]">
-          <button (click)="isRequestInfoExpanded = !isRequestInfoExpanded"
+          <button type="button" (click)="isOrderItemsManagementExpanded = !isOrderItemsManagementExpanded"
             class="w-full flex items-center justify-between p-6 hover:bg-[var(--color-background-hover)] transition-colors">
             <h2 class="text-lg font-semibold text-[var(--color-text)]">
-              {{ 'supplyRequestDetail.requestInformation' | translate }}
+              {{ 'supplyRequestDetail.orderItemsManagement' | translate }}
             </h2>
-            <lucide-angular [img]="isRequestInfoExpanded ? ChevronUp : ChevronDown"
+            <lucide-angular [img]="isOrderItemsManagementExpanded ? ChevronUp : ChevronDown"
               class="h-5 w-5 text-[var(--color-text-muted)]">
             </lucide-angular>
           </button>
 
-          <div *ngIf="isRequestInfoExpanded" class="px-6 pb-6">
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
-                  {{ 'supplyRequestDetail.orderNo' | translate }}
-                </span>
-                <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ requestDetail.issueNo }}</p>
-              </div>
-
-              <div>
-                <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
-                  {{ 'supplyRequestDetail.requestType' | translate }}
-                </span>
-                <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ requestDetail.requestType }}</p>
-              </div>
-
-              <div>
-                <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
-                  {{ 'supplyRequestDetail.requesterName' | translate }}
-                </span>
-                <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ resolveRequesterName() }}</p>
-              </div>
-
-              <div>
-                <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
-                  {{ 'supplyRequestDetail.departmentName' | translate }}
-                </span>
-                <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ resolveDepartmentName() }}</p>
-              </div>
-
-              <div>
-                <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
-                  {{ 'supplyRequestDetail.priority' | translate }}
-                </span>
-                <p class="text-sm mt-1 font-semibold" [ngClass]="{
-                'text-red-600': mapOrderPriorityToString(requestDetail.priority) === 'Critical' || mapOrderPriorityToString(requestDetail.priority) === 'VeryUrgent',
-                'text-orange-600': mapOrderPriorityToString(requestDetail.priority) === 'Urgent',
-                'text-green-600': mapOrderPriorityToString(requestDetail.priority) === 'Normal'
-              }">{{ getPriorityTranslationKey(requestDetail.priority) | translate }}</p>
-              </div>
-
-              <!-- Reason / Usage Purpose removed here to avoid duplication with workflow-approval and other views -->
-
-              <div *ngIf="orderData?.requestPurposeNotes" class="col-span-2">
-                <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
-                  {{ 'common.requestPurposeNotes' | translate }}
-                </span>
-                <div class="mt-1 p-3 bg-[var(--color-background-muted)] rounded-lg border border-[var(--color-border)]">
-                  <p class="text-sm text-[var(--color-text)] font-medium">{{ orderData?.requestPurposeNotes }}</p>
-                </div>
-              </div>
-
-              <div *ngIf="orderData?.usageLocation">
-                <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
-                  {{ 'supplyRequestDetail.usageLocation' | translate }}
-                </span>
-                <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ orderData?.usageLocation }}</p>
-              </div>
-
-              <div *ngIf="orderData?.usageDateFrom">
-                <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
-                  {{ 'supplyRequestDetail.usageDate' | translate }}
-                </span>
-                <p class="text-sm text-[var(--color-text)] mt-1 font-medium">
-                  {{ formatDate(orderData?.usageDateFrom) }}
-                  <span *ngIf="orderData?.usageTimeFrom" class="ms-2">{{ formatTimeToMilitary(orderData?.usageTimeFrom)
-                    }}</span>
-                  <span *ngIf="orderData?.usageDateTo"> - {{ formatDate(orderData?.usageDateTo) }}</span>
-                  <span *ngIf="orderData?.usageTimeTo" class="ms-2">{{ formatTimeToMilitary(orderData?.usageTimeTo)
-                    }}</span>
-                </p>
-              </div>
-            </div>
+          <div *ngIf="isOrderItemsManagementExpanded" class="px-6 pb-6">
+            <app-order-items-management
+              [embedded]="true"
+              [orderItems]="orderItemsForManagement"
+              [canIncreaseQuantity]="canIncreaseQuantity"
+              [canDecreaseQuantity]="canDecreaseQuantity"
+              (addItemClick)="openAddItemModal()"
+              (editItemClick)="onManagementEditItem($event)"
+              (removeItemClick)="onManagementRemoveItem($event)">
+            </app-order-items-management>
           </div>
         </div>
 
-        <!-- Order Items -->
+        <!-- Order Items — lot selection / discharge -->
         <div class="bg-[var(--color-background)] rounded-lg shadow-sm border border-[var(--color-border)]">
-          <button (click)="isOrderItemsExpanded = !isOrderItemsExpanded"
+          <button type="button" (click)="isOrderItemsDischargeExpanded = !isOrderItemsDischargeExpanded"
             class="w-full flex items-center justify-between p-6 hover:bg-[var(--color-background-hover)] transition-colors">
             <h2 class="text-lg font-semibold text-[var(--color-text)]">
               {{ 'supplyRequestDetail.orderItems' | translate }}
             </h2>
-            <lucide-angular [img]="isOrderItemsExpanded ? ChevronUp : ChevronDown"
+            <lucide-angular [img]="isOrderItemsDischargeExpanded ? ChevronUp : ChevronDown"
               class="h-5 w-5 text-[var(--color-text-muted)]">
             </lucide-angular>
           </button>
 
-          <div *ngIf="isOrderItemsExpanded" class="px-6 pb-6">
-            <!-- Add Item Button -->
-            <div class="mb-4 flex justify-end">
-              <button *appHasPermission="PERMISSIONS.REQUESTS.ORDER.CREATE_CLAIM" (click)="openAddItemModal()"
-                class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] transition-colors">
-                <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
-                {{ 'supplyRequestDetail.addItem' | translate }}
-              </button>
-            </div>
-
-            <!-- Item Management Table -->
-            <div class="mb-6 overflow-x-auto border border-[var(--color-border)] rounded-lg">
-              <table class="min-w-full text-sm">
-                <thead class="bg-[var(--color-background-muted)] text-[var(--color-text)]">
-                  <tr>
-                    <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.name' | translate }}</th>
-                    <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.itemNo' | translate }}</th>
-                    <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.quantity' | translate }}</th>
-                    <th class="px-4 py-2 text-start font-semibold">{{ 'common.actions' | translate }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let item of requestDetail.items; trackBy: trackByRequestItemId" class="border-t border-[var(--color-border)]">
-                    <td class="px-4 py-2 text-[var(--color-text)] min-w-0">
-                      <span [appTableClampTooltip]="item.itemName">{{ item.itemName }}</span>
-                    </td>
-                    <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ getItemProductId(item) }}</td>
-                    <td class="px-4 py-2 text-[var(--color-text)]">{{ formatNumber(item.approvedQuantity) }}</td>
-                    <td class="px-4 py-2">
-                      <ng-container *ngIf="canIncreaseQuantity || canDecreaseQuantity">
-                      <button *appHasPermission="PERMISSIONS.REQUESTS.ORDER.EDIT" type="button"
-                        (click)="openEditItemModal(item); $event.stopPropagation()"
-                        class="text-sm text-[var(--color-info)] hover:opacity-80 me-3">
-                        {{ 'common.edit' | translate }}
-                      </button>
-                    </ng-container>
-                      <button *appHasPermission="PERMISSIONS.REQUESTS.ORDER.DELETE" type="button"
-                        (click)="openRemoveItemModal(item); $event.stopPropagation()"
-                        class="text-sm text-[var(--color-error)] hover:opacity-80">
-                        {{ 'common.remove' | translate }}
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <!-- Existing Item Cards (for lot selection) -->
+          <div *ngIf="isOrderItemsDischargeExpanded" class="px-6 pb-6">
             <div class="space-y-3">
               <div *ngFor="let item of requestDetail.items; trackBy: trackByRequestItemId"
-                class="border border-[var(--color-border)] rounded-lg p-4 hover:border-[var(--color-brand)] hover:shadow-md transition-all cursor-pointer"
+                class="border border-[var(--color-border)] rounded-lg p-4 hover:border-[var(--color-brand)] hover:shadow-md transition-all cursor-pointer block"
                 (click)="openLotModal(item)">
 
                 <div class="flex items-start gap-4">
@@ -256,7 +137,6 @@
             </div>
           </div>
         </div>
-
 
       </div>
 

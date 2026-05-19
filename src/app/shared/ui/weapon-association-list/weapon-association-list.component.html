@@ -1,13 +1,20 @@
 <ul
-  class="space-y-1.5"
+  role="list"
   [class.text-xs]="compact"
   [class.text-sm]="!compact"
-  role="list">
+  [class.space-y-1.5]="!inline"
+  [class.flex]="inline"
+  [class.flex-wrap]="inline"
+  [class.items-baseline]="inline"
+  [class.gap-x-4]="inline"
+  [class.gap-y-2]="inline">
   <li
     *ngFor="let association of associations ?? []"
-    class="flex gap-2 text-[var(--color-text)]"
+    class="flex gap-2 text-[var(--color-text)] min-w-0"
+    [class.max-w-full]="inline"
     role="listitem">
     <span
+      *ngIf="!inline"
       class="flex h-[1lh] shrink-0 items-center"
       aria-hidden="true">
       <span class="h-1.5 w-1.5 rounded-full bg-[var(--color-brand)]"></span>

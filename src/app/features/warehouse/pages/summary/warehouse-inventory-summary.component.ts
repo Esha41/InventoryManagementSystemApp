@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, ChevronDown, ChevronRight, ChevronLeft, Package, AlertCircle, Search, Download, History, ArrowRight, User, Building } from 'lucide-angular';
+import { LucideAngularModule, ChevronDown, ChevronRight, ChevronLeft, Package, AlertCircle, Search, Download, Upload, History, ArrowRight, User, Building } from 'lucide-angular';
 import { InventoryService, LotDetailDto } from '@inventory/services/inventory.service';
 import { AssetService } from '@assets/services/asset.service';
 import { AssetHistoryService, AssetHistoryDto } from '@assets/services/asset-history.service';
@@ -73,6 +73,8 @@ export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
 
     // UI state
     loading = true;
+    /** True while accumulating all pages for Excel export. */
+    isExporting = false;
     error: string | null = null;
     activeTab: 'ammunition' | 'weapon' | 'explosive' = 'ammunition';
     searchTerm = '';
@@ -88,6 +90,7 @@ export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
     readonly Package = Package;
     readonly AlertCircle = AlertCircle;
     readonly Search = Search;
+    readonly Upload = Upload;
     readonly Download = Download;
     readonly History = History;
     readonly ArrowRight = ArrowRight;
@@ -503,10 +506,82 @@ export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * Export inventory summary to Excel
+     * Export inventory summary to Excel (all rows for the tab, not the current page).
      */
     exportToExcel(): void {
-        const columns: ExcelColumn[] = [
+        if (this.loading || this.isExporting || this.serverTotalCount === 0) {
+            return;
+        }
+
+        this.isExporting = true;
+        this.cdr.markForCheck();
+
+        this.dataService
+            .loadAllWarehouseSummaryItems(this.activeTab, undefined)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: items => {
+                    const rows = this.filterItemsBySearch(items);
+                    this.isExporting = false;
+                    this.cdr.markForCheck();
+
+                    if (rows.length === 0) {
+                        const msgKey = this.searchTerm.trim()
+                            ? 'inventorySummary.noResults'
+                            : 'inventorySummary.noItems';
+                        this.toastService.error(
+                            this.translateService.instant(msgKey),
+                            this.translateService.instant('common.error')
+                        );
+                        return;
+                    }
+
+                    const fileName = `Inventory_Summary_${this.activeTab.charAt(0).toUpperCase() + this.activeTab.slice(1)}`;
+                    this.excelService.exportToExcel({
+                        fileName,
+                        sheetName: 'Summary',
+                        columns: this.buildExportColumns(),
+                        data: rows,
+                        includeTimestamp: true
+                    });
+
+                    this.translateService
+                        .get(['common.exportSuccess', 'toast.success'])
+                        .pipe(takeUntil(this.destroy$))
+                        .subscribe(translations => {
+                            this.toastService.success(
+                                translations['common.exportSuccess'],
+                                translations['toast.success']
+                            );
+                        });
+                },
+                error: () => {
+                    this.isExporting = false;
+                    this.cdr.markForCheck();
+                    this.toastService.error(
+                        this.translateService.instant('common.error'),
+                        this.translateService.instant('common.error')
+                    );
+                }
+            });
+    }
+
+    private filterItemsBySearch(items: ItemInventorySummaryDto[]): ItemInventorySummaryDto[] {
+        if (!this.searchTerm.trim()) {
+            return items;
+        }
+        const search = this.searchTerm.toLowerCase();
+        return items.filter(
+            item =>
+                item.itemName?.toLowerCase().includes(search) ||
+                item.itemNo?.toLowerCase().includes(search) ||
+                item.nsn?.toLowerCase().includes(search) ||
+                item.partNo?.toLowerCase().includes(search)
+        );
+    }
+
+    private buildExportColumns(): ExcelColumn[] {
+        return [
             {
                 header: this.translateService.instant('inventorySummary.itemName'),
                 key: 'itemName',
@@ -555,19 +630,5 @@ export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
                 width: 12
             }
         ];
-
-        const fileName = `Inventory_Summary_${this.activeTab.charAt(0).toUpperCase() + this.activeTab.slice(1)}`;
-
-        this.excelService.exportToExcel({
-            fileName: fileName,
-            sheetName: 'Summary',
-            columns: columns,
-            data: this.displayRows,
-            includeTimestamp: true
-        });
-
-        this.translateService.get(['common.exportSuccess', 'toast.success']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
-            this.toastService.success(translations['common.exportSuccess'], translations['toast.success']);
-        });
     }
 }

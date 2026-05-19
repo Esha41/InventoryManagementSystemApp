@@ -24,7 +24,7 @@ import {
 } from '../../new-issue-request.state';
 import { LucideAngularModule, Eye } from 'lucide-angular';
 import { getFileSizeFromFile, viewFile as viewFileUtil } from '@utils/file.utils';
-import { formatDateTimeExtended } from '@utils/format.utils';
+import { formatUsageDateAndTime } from '@core/utils/usage-datetime.utils';
 
 @Component({
   selector: 'app-review-form',
@@ -126,11 +126,11 @@ export class ReviewFormComponent {
   }
 
   getFormattedUsageDateFrom(): string {
-    return formatDateTimeExtended(this.usageDateFrom, this.usageTimeFrom);
+    return formatUsageDateAndTime(this.usageDateFrom, this.usageTimeFrom);
   }
 
   getFormattedUsageDateTo(): string {
-    return formatDateTimeExtended(this.usageDateTo, this.usageTimeTo);
+    return formatUsageDateAndTime(this.usageDateTo, this.usageTimeTo);
   }
 
   getFileSize = getFileSizeFromFile;

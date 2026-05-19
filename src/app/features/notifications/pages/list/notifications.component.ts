@@ -11,18 +11,15 @@ import {
   Clock,
   Calendar,
   Search,
-  Info,
-  ArrowRight,
-  ArrowLeft
+  Info
 } from 'lucide-angular';
+import { Router } from '@angular/router';
 import { combineLatest, Observable, Subject } from 'rxjs';
 import { debounceTime, finalize, map, shareReplay, startWith, takeUntil, tap } from 'rxjs/operators';
 import { Notification } from '@notifications/models/notification.model';
 import { NotificationService } from '@notifications/services/notification.service';
 import { ButtonComponent } from '@components/button/button.component';
 import { ModalComponent } from '@components/modal/modal.component';
-import { OrderDto } from '@models/order.model';
-import { ReturnDto } from '@models/return.model';
 import { DiscardDto } from '@models/discard.model';
 import {
   NotificationFilter,
@@ -39,12 +36,17 @@ import {
   getStatusLabelTranslation,
   asNotificationMetadata
 } from '@notifications/utils/notification.utils';
+import {
+  splitTranslatedNotificationMessage,
+  getWorkflowApprovalNavigation,
+  NotificationMessagePart
+} from '@notifications/utils/notification-workflow-navigation.utils';
 import { formatTimeToMilitary } from '@utils/format.utils';
 import { NotificationDetailService } from '@notifications/services/notification-detail.service';
-import { TranslationService } from '@services/translation.service';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
+import { NotificationRichMessageComponent } from '@notifications/components/notification-rich-message/notification-rich-message.component';
 
 @Component({
   selector: 'app-notifications',
@@ -57,10 +59,10 @@ import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
     ButtonComponent,
     ModalComponent,
     AppDatePipe,
-    AppDateTimePipe
+    AppDateTimePipe,
+    NotificationRichMessageComponent
   ],
   templateUrl: './notifications.component.html',
-  styleUrls: ['./notifications.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NotificationsComponent implements OnInit, OnDestroy {
@@ -72,8 +74,34 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   readonly Calendar = Calendar;
   readonly Search = Search;
   readonly Info = Info;
-  readonly ArrowRight = ArrowRight;
-  readonly ArrowLeft = ArrowLeft;
+
+  /** Shared layout tokens — keeps template readable */
+  readonly shell =
+    'overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-background)] shadow-sm';
+  readonly toolbar =
+    'border-b border-[var(--color-border)] bg-[var(--color-background-soft)]/40 px-4 py-4 sm:px-5';
+  readonly searchField =
+    'flex items-center gap-2.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 shadow-sm transition-[box-shadow,border-color] focus-within:border-[var(--color-brand)] focus-within:ring-2 focus-within:ring-[var(--color-brand-soft)]';
+  readonly metaTile =
+    'flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] px-4 py-3 shadow-sm';
+  readonly detailCard =
+    'rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-5 shadow-sm';
+  readonly detailFieldLabel =
+    'text-[0.65rem] font-semibold uppercase tracking-[0.06em] text-[var(--color-text-muted)]';
+  readonly detailFieldValue = 'break-words text-sm font-medium text-[var(--color-text)]';
+  readonly itemCard =
+    'rounded-lg border border-[var(--color-border)] bg-[var(--color-background-soft)] px-3 py-2.5';
+
+  readonly skeletonPlaceholders = [0, 1];
+
+  readonly modalInput =
+    'w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-sm shadow-sm transition-[border-color,box-shadow] focus:border-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-soft)]';
+
+  readonly spinnerSm =
+    'h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-transparent border-t-[var(--color-brand)] border-r-[var(--color-brand)]';
+
+  readonly spinnerMd =
+    'h-5 w-5 shrink-0 animate-spin rounded-full border-2 border-transparent border-t-[var(--color-brand)] border-r-[var(--color-brand)]';
 
   readonly notifications$: Observable<Notification[]> = this.notificationService.notifications$;
   readonly unreadCount$ = this.notificationService.unreadCount$;
@@ -96,8 +124,6 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   detailLoading = false;
   detailError: string | null = null;
   detailType: NotificationDetailType = null;
-  orderDetail: OrderDto | null = null;
-  returnDetail: ReturnDto | null = null;
   discardDetail: DiscardDto | null = null;
 
   // Constants from separate file
@@ -105,12 +131,29 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   private readonly rescheduleActionKeys = NOTIFICATION_ACTION_KEYS.reschedule;
   private readonly hiddenMetadataKeys = NOTIFICATION_ACTION_KEYS.hidden;
 
-  get isRTL(): boolean {
-    return this.translationService.isRTL();
+  filterChipClass(active: boolean): string {
+    const base =
+      'inline-flex flex-1 items-center justify-center rounded-lg border px-4 py-2 text-sm font-medium transition-[color,background-color,border-color] duration-150 sm:flex-initial';
+    return active
+      ? `${base} border-[var(--color-brand)] bg-[var(--color-brand-soft)] text-[var(--color-brand)]`
+      : `${base} border-transparent text-[var(--color-text-muted)] hover:bg-[var(--color-background-soft)] hover:text-[var(--color-text)]`;
   }
 
-  get arrowIcon() {
-    return this.isRTL ? ArrowLeft : ArrowRight;
+  notificationListItemClass(notification: Notification): string {
+    const base =
+      'cursor-pointer rounded-xl border px-4 py-3.5 outline-none transition-[border-color,box-shadow,background-color] duration-150 focus-visible:ring-2 focus-visible:ring-[var(--color-brand-soft)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-background)]';
+    const selected = this.selectedNotification?.id === notification.id;
+    return selected
+      ? `${base} border-[var(--color-brand)] bg-[var(--color-brand-soft)] shadow-md`
+      : `${base} border-transparent hover:border-[var(--color-border)] hover:bg-[var(--color-background-soft)]`;
+  }
+
+  statusPillClass(isRead: boolean): string {
+    const base =
+      'inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide';
+    return isRead
+      ? `${base} bg-emerald-500/10 text-emerald-800 ring-1 ring-emerald-600/10`
+      : `${base} bg-amber-500/10 text-amber-900 ring-1 ring-amber-600/15`;
   }
 
   constructor(
@@ -118,7 +161,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     private readonly fb: FormBuilder,
     private readonly translateService: TranslateService,
     private readonly detailService: NotificationDetailService,
-    private readonly translationService: TranslationService,
+    private readonly router: Router,
     private readonly cdr: ChangeDetectorRef
   ) {
     this.proposeForm = this.fb.group({
@@ -425,14 +468,8 @@ export class NotificationsComponent implements OnInit, OnDestroy {
           this.detailError = result.error;
           this.detailType = result.type;
 
-          if (result.detail) {
-            if (result.type === 'order') {
-              this.orderDetail = result.detail as OrderDto;
-            } else if (result.type === 'return') {
-              this.returnDetail = result.detail as ReturnDto;
-            } else if (result.type === 'discard') {
-              this.discardDetail = result.detail as DiscardDto;
-            }
+          if (result.detail && result.type === 'discard') {
+            this.discardDetail = result.detail as DiscardDto;
           }
           this.cdr.markForCheck();
         },
@@ -448,8 +485,6 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     this.detailError = null;
     this.detailLoading = false;
     this.detailType = null;
-    this.orderDetail = null;
-    this.returnDetail = null;
     this.discardDetail = null;
   }
 
@@ -597,21 +632,15 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     const messageTrimmed = message.trim();
     const messageLower = messageTrimmed.toLowerCase();
 
-    // Extract request number (handles patterns like ORD-2025-000003-MP, RET-2025-000001, etc.)
-    const requestNoMatch = messageTrimmed.match(/(ORD|RET|DIS)-[\d\-A-Z]+/i);
+    // Extract request number (backend: ORD / RTN / DISC per RequestNoGeneratorService; RET/DIS for legacy)
+    const requestNoMatch = messageTrimmed.match(/(ORD|RTN|DISC|RET|DIS)-[\d\-A-Z]+/i);
     const requestNo = requestNoMatch ? requestNoMatch[0] : '';
-
-    // Check for "from allowance" pattern
-    const fromAllowance = messageLower.includes('from allowance')
-      ? this.translateService.instant('notifications.messages.orderCreatedFromAllowance')
-      : '';
 
     // Map common message patterns to translation keys
     // Handle "Order request {RequestNo} has been created" pattern
     if (messageLower.includes('order request') && messageLower.includes('has been created')) {
       return this.translateService.instant('notifications.messages.orderCreated', {
-        requestNo: requestNo,
-        fromAllowance: fromAllowance
+        requestNo: requestNo
       });
     }
     // Handle "Return request {RequestNo} has been created" pattern
@@ -696,31 +725,21 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     return messageTrimmed;
   }
 
-  /**
-   * Translate notification entity type
-   */
-  translateEntityType(type: string | null | undefined): string {
-    if (!type) {
-      return '';
+
+  getNotificationMessageParts(notification: Notification, enableLinks = true): NotificationMessagePart[] {
+    const text = this.translateNotificationMessage(notification.message);
+    const canLink = enableLinks && getWorkflowApprovalNavigation(notification) !== null;
+    return splitTranslatedNotificationMessage(text, canLink);
+  }
+
+  openWorkflowFromNotification(notification: Notification, event?: Event): void {
+    event?.stopPropagation();
+    event?.preventDefault();
+    const nav = getWorkflowApprovalNavigation(notification);
+    if (!nav) {
+      return;
     }
-
-    const typeKey = `notifications.entityTypes.${type}`;
-    const translated = this.translateService.instant(typeKey);
-
-    // If translation key doesn't exist, it returns the key itself, so check if it's different
-    if (translated !== typeKey) {
-      return translated;
-    }
-
-    // Fallback: try with lowercase
-    const typeKeyLower = `notifications.entityTypes.${type.toLowerCase()}`;
-    const translatedLower = this.translateService.instant(typeKeyLower);
-    if (translatedLower !== typeKeyLower) {
-      return translatedLower;
-    }
-
-    // If still no match, return original
-    return type;
+    void this.router.navigate(nav.path);
   }
 
   private translateWorkflowRequestActionMessage(

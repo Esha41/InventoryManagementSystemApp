@@ -199,7 +199,7 @@
               <div class="w-full min-w-[200px] lg:max-w-xs lg:flex-none">
                 <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventoryDashboard.itemSummary.filters.caliber' | translate }}</span>
                 <app-dropdown class="block w-full min-h-[42px]"
-                  [(ngModel)]="caliberFilter"
+                  [(ngModel)]="caliberFilterId"
                   (ngModelChange)="onCaliberFilterChange()"
                   [options]="caliberDropdownOptions"
                   optionLabel="label"

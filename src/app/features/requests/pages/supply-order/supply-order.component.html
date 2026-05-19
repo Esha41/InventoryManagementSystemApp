@@ -12,9 +12,6 @@
 
       <!-- Main Content -->
       <div class="flex flex-col gap-3 pb-8">
-        <!-- Request Information -->
-        <app-supply-order-info [orderData]="orderData"></app-supply-order-info>
-
         <!-- Order Items Management Table -->
         <app-order-items-management [orderItems]="orderItems" [canIncreaseQuantity]="canIncreaseQuantity"
           [canDecreaseQuantity]="canDecreaseQuantity" (addItemClick)="openAddOrderItemModal()"

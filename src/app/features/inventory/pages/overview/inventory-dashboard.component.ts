@@ -61,7 +61,6 @@ import {
   paginatePage,
   sortItemSummaries as sortItemSummariesHelper,
   sortLotDetails as sortLotDetailsHelper,
-  distinctCalibersFromItems,
   isPlaceholderCaliberLabel,
   sumItemSummariesExcludingWeapon,
   sumItemSummariesField,
@@ -126,11 +125,11 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   activeTab: ActiveTab = 'ammunition';
 
   itemSearchText = '';
-  caliberFilter: string | null = null;
+  caliberFilterId: number | null = null;
   selectedItemFilterIds: number[] = [];
 
-  /** Caliber display labels from lookup API (merged into filter dropdown with {@link distinctCalibers}). */
-  caliberFilterCatalogLabels: string[] = [];
+  /** Caliber lookups for filter dropdown (optionValue = id, like asset list). */
+  caliberFilterLookupItems: LookupItem[] = [];
 
   inventoryMonitoring: InventoryDashboardSummaryDto = emptyInventoryMonitoring();
 
@@ -273,6 +272,18 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     serverNonWeaponTotalCount: number;
   }> {
     const ids = this.selectedDepotIds.length > 0 ? this.selectedDepotIds : undefined;
+    if (hasSecondaryItemTableFilters(
+      this.itemSearchText,
+      this.caliberFilterId,
+      this.selectedItemFilterIds
+    )) {
+      return this.inventorySummaryData.loadAllWarehouseSummaryItems(this.activeTab, ids).pipe(
+        map(items => ({
+          itemSummaries: items,
+          serverNonWeaponTotalCount: items.length
+        }))
+      );
+    }
     if (this.activeTab === 'weapon') {
       return this.inventorySummaryData.loadDashboardWeaponPage(
         ids,
@@ -350,7 +361,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
         activeTab: this.activeTab,
         filters: {
           searchText: this.itemSearchText,
-          caliberText: (this.caliberFilter ?? '').trim() || undefined,
+          caliberText: this.getCaliberFilterExportLabel(),
           selectedItemCount: this.selectedItemFilterIds.length
         },
         totals: {
@@ -438,15 +449,15 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     }));
   }
 
-  get caliberDropdownOptions(): DropdownOption<string>[] {
-    const labels = new Set<string>();
-    for (const c of this.distinctCalibers) {
-      if (c && !isPlaceholderCaliberLabel(c)) labels.add(c);
-    }
-    for (const c of this.caliberFilterCatalogLabels) {
-      if (c && !isPlaceholderCaliberLabel(c)) labels.add(c);
-    }
-    return [...labels].sort((a, b) => a.localeCompare(b)).map(c => ({ label: c, value: c }));
+  get caliberDropdownOptions(): DropdownOption<number>[] {
+    return this.caliberFilterLookupItems
+      .filter(it => it != null && !it.isDeleted && it.id != null)
+      .map(it => ({
+        label: getLookupDropdownLabel(it, this.translate).trim(),
+        value: it.id!
+      }))
+      .filter(opt => opt.label && !isPlaceholderCaliberLabel(opt.label))
+      .sort((a, b) => a.label.localeCompare(b.label));
   }
 
   get itemTypeCountMetrics() {
@@ -466,7 +477,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   setActiveTab(tab: ActiveTab): void {
     this.activeTab = tab;
     this.selectedItemFilterIds = [];
-    this.caliberFilter = null;
+    this.caliberFilterId = null;
     this.itemCurrentPage = 1;
     this.expandedItemId = null;
     this.lotDetails = [];
@@ -493,7 +504,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
         this.activeTab === 'weapon') &&
       !hasSecondaryItemTableFilters(
         this.itemSearchText,
-        this.caliberFilter,
+        this.caliberFilterId,
         this.selectedItemFilterIds
       )
     );
@@ -502,7 +513,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   /** Populate caliber filter labels from Caliber lookup (ammunition + weapon); explosives omit. */
   private loadCaliberFilterLookups(): void {
     if (this.activeTab === 'explosive') {
-      this.caliberFilterCatalogLabels = [];
+      this.caliberFilterLookupItems = [];
       this.cdr.markForCheck();
       return;
     }
@@ -515,21 +526,17 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$)
       )
       .subscribe(items => {
-        this.caliberFilterCatalogLabels = this.mapCalibersToFilterLabels(items).sort((a, b) =>
-          a.localeCompare(b)
-        );
+        this.caliberFilterLookupItems = items ?? [];
         this.cdr.markForCheck();
       });
   }
 
-  private mapCalibersToFilterLabels(items: LookupItem[]): string[] {
-    const out: string[] = [];
-    for (const it of items ?? []) {
-      if (it == null || it.isDeleted) continue;
-      const lab = getLookupDropdownLabel(it, this.translate).trim();
-      if (lab && !isPlaceholderCaliberLabel(lab)) out.push(lab);
-    }
-    return out;
+  private getCaliberFilterExportLabel(): string | undefined {
+    if (this.caliberFilterId == null) return undefined;
+    const item = this.caliberFilterLookupItems.find(c => c.id === this.caliberFilterId);
+    if (!item) return undefined;
+    const lab = getLookupDropdownLabel(item, this.translate).trim();
+    return lab || undefined;
   }
 
   get tabFilteredSummaries(): ItemInventorySummaryDto[] {
@@ -538,34 +545,28 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
 
   onItemSearchInput(): void {
     this.itemCurrentPage = 1;
-    if (this.useInventoryServerPaging) {
-      this.fetchItemSummariesPageOnly();
-    }
+    this.fetchItemSummariesPageOnly();
     this.syncExpandedWeaponAssetsAfterClientTableFilterChange();
     this.cdr.markForCheck();
   }
 
   onCaliberFilterChange(): void {
     this.itemCurrentPage = 1;
-    if (this.useInventoryServerPaging) {
-      this.fetchItemSummariesPageOnly();
-    }
+    this.fetchItemSummariesPageOnly();
     this.syncExpandedWeaponAssetsAfterClientTableFilterChange();
     this.cdr.markForCheck();
   }
 
   onItemPickFilterChange(): void {
     this.itemCurrentPage = 1;
-    if (this.useInventoryServerPaging) {
-      this.fetchItemSummariesPageOnly();
-    }
+    this.fetchItemSummariesPageOnly();
     this.syncExpandedWeaponAssetsAfterClientTableFilterChange();
     this.cdr.markForCheck();
   }
 
   clearTableFilters(): void {
     this.itemSearchText = '';
-    this.caliberFilter = null;
+    this.caliberFilterId = null;
     this.selectedItemFilterIds = [];
     this.itemCurrentPage = 1;
     this.expandedItemId = null;
@@ -584,19 +585,15 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     return filterItemSummaries(this.itemSummaries, {
       selectedItemFilterIds: this.selectedItemFilterIds,
       searchText: this.itemSearchText,
-      caliberSelection: this.caliberFilter,
+      caliberFilterId: this.caliberFilterId,
       activeTab: this.activeTab
     });
-  }
-
-  get distinctCalibers(): string[] {
-    return distinctCalibersFromItems(this.tabFilteredSummaries);
   }
 
   get hasSecondaryTableFilters(): boolean {
     return hasSecondaryItemTableFilters(
       this.itemSearchText,
-      this.caliberFilter,
+      this.caliberFilterId,
       this.selectedItemFilterIds
     );
   }

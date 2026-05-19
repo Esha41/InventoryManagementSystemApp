@@ -2,8 +2,9 @@
   "processReturnItems": {
     "title": "مراجعة وإكمال الطلب",
     "requestNo": "رقم الطلب",
-    "ammoExplosiveSection": "المواد",
-    "weaponSection": "المواد",
+    "itemsSection": "المواد",
+    "ammoExplosiveSection": "ذخيرة ومتفجرات",
+    "weaponSection": "أسلحة",
     "weaponSectionHint": "الجدول الرئيسي يعرض كل بند سلاح. انقر الصف للتوسيع وإدخال الأرقام التسلسلية والبوليصة لكل وحدة مستلمة (يمكن تعديل البوليصة في القسم الموسّع).",
     "weaponExpandSetReceived": "عيّن الكمية المستلمة أعلاه لإنشاء صفوف لإدخال التسلسل ورقم البوليصة.",
     "weaponUnitDetails": "الأرقام التسلسلية حسب الوحدات المستلمة",

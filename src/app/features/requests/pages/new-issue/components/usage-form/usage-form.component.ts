@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -14,6 +14,12 @@ import {
   AttachmentUploadsState,
   createInitialAttachmentUploadsState
 } from '../../new-issue-request.state';
+import {
+  USAGE_DATE_TO_ON_OR_AFTER_FROM_KEY,
+  validateUsageDateTimeRange
+} from '@core/utils/usage-datetime.utils';
+import type { UsageDateRangeOverrides, UsageFormErrors } from './usage-form.types';
+
 @Component({
   selector: 'app-usage-form',
   standalone: true,
@@ -26,7 +32,8 @@ export class UsageFormComponent {
   constructor(
     public translateService: TranslateService,
     private toastService: ToastService,
-    private translationService: TranslationService
+    private translationService: TranslationService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   get isRTL(): boolean {
@@ -259,6 +266,9 @@ export class UsageFormComponent {
         this.clearError('usageDateFrom');
       }
     }
+
+    this.applyUsageDateRangeValidation({ usageDateFrom: value });
+    this.cdr.markForCheck();
   }
 
   onUsageTimeFromChange(value: string): void {
@@ -273,22 +283,30 @@ export class UsageFormComponent {
         this.clearError('usageTimeFrom');
       }
     }
+
+    this.applyUsageDateRangeValidation({ usageTimeFrom: value || '' });
+    this.cdr.markForCheck();
   }
 
   onUsageDateToChange(value: string): void {
     this.usageDateToChange.emit(value);
 
-    this.clearError('usageDateTo');
+    if (!this.isUsageDateRangeError(this.formErrors.usageDateTo)) {
+      this.clearError('usageDateTo');
+    }
 
     if (this.hasAttemptedSubmit) {
       if (!value || value.trim().length === 0) {
         this.formErrors.usageDateTo = 'newIssueRequest.validation.usageDateRequired';
       } else if (!this.isDateOnOrAfterToday(value)) {
         this.formErrors.usageDateTo = 'newIssueRequest.validation.usageDateToMustBeTodayOrFuture';
-      } else {
+      } else if (!this.isUsageDateRangeError(this.formErrors.usageDateTo)) {
         this.clearError('usageDateTo');
       }
     }
+
+    this.applyUsageDateRangeValidation({ usageDateTo: value });
+    this.cdr.markForCheck();
   }
 
   onUsageTimeToChange(value: string): void {
@@ -303,6 +321,9 @@ export class UsageFormComponent {
         this.clearError('usageTimeTo');
       }
     }
+
+    this.applyUsageDateRangeValidation({ usageTimeTo: value || '' });
+    this.cdr.markForCheck();
   }
 
   onFileSelected(event: Event): void {
@@ -420,11 +441,19 @@ export class UsageFormComponent {
     this.hasAttemptedSubmit = true;
     if (this.validateForm()) {
       this.next.emit();
+    } else {
+      this.cdr.markForCheck();
     }
   }
 
   hasError(field: keyof UsageFormErrors): boolean {
-    return this.hasAttemptedSubmit && !!this.formErrors[field];
+    if (!this.formErrors[field]) {
+      return false;
+    }
+    if (field === 'usageDateTo' && this.isUsageDateRangeError(this.formErrors.usageDateTo)) {
+      return true;
+    }
+    return this.hasAttemptedSubmit;
   }
 
   hasAnyError(): boolean {
@@ -482,6 +511,10 @@ export class UsageFormComponent {
       isValid = false;
     }
 
+    if (!this.validateUsageDateRange()) {
+      isValid = false;
+    }
+
     if (this.hasAttachmentRequirementSlots) {
       // When the purpose declares slots, the legacy flat picker becomes the
       // optional "Other files" bucket; per-slot validation drives the gate.
@@ -510,6 +543,34 @@ export class UsageFormComponent {
    * Checks if a date string is today or in the future (date part only, local timezone).
    * Uses YYYY-MM-DD directly when present to avoid timezone shift from new Date() parsing.
    */
+  private applyUsageDateRangeValidation(overrides: UsageDateRangeOverrides = {}): void {
+    this.validateUsageDateRange(overrides);
+  }
+
+  private validateUsageDateRange(overrides: UsageDateRangeOverrides = {}): boolean {
+    const result = validateUsageDateTimeRange(
+      overrides.usageDateFrom ?? this.usageDateFrom,
+      overrides.usageTimeFrom ?? this.usageTimeFrom,
+      overrides.usageDateTo ?? this.usageDateTo,
+      overrides.usageTimeTo ?? this.usageTimeTo
+    );
+
+    if (result === 'invalid') {
+      this.formErrors.usageDateTo = USAGE_DATE_TO_ON_OR_AFTER_FROM_KEY;
+      return false;
+    }
+
+    if (this.isUsageDateRangeError(this.formErrors.usageDateTo)) {
+      this.clearError('usageDateTo');
+    }
+
+    return true;
+  }
+
+  private isUsageDateRangeError(error: string | null): boolean {
+    return error === USAGE_DATE_TO_ON_OR_AFTER_FROM_KEY;
+  }
+
   private isDateOnOrAfterToday(dateStr: string): boolean {
     if (!dateStr?.trim()) return false;
     // Date input returns YYYY-MM-DD - use directly to avoid timezone shift (new Date("YYYY-MM-DD") = UTC midnight)
@@ -529,15 +590,3 @@ export class UsageFormComponent {
     return match?.label ?? '';
   }
 }
-
-type UsageFormErrors = {
-  usePurpose: string | null;
-  requestPurposeNotes: string | null;
-  usageLocation: string | null;
-  usageDateFrom: string | null;
-  usageTimeFrom: string | null;
-  usageDateTo: string | null;
-  usageTimeTo: string | null;
-  selectedFiles: string | null;
-  attachmentRequirements: string | null;
-};
