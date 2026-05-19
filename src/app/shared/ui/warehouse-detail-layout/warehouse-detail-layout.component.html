@@ -33,15 +33,15 @@
   <!-- Content with Tabs -->
   <div *ngIf="!loading && !error && hasData">
     <!-- Tabs -->
-    <div class="border-b border-[var(--color-border)] mb-8">
-      <nav class="flex gap-8">
+    <div class="border-b border-[var(--color-border)]" [ngClass]="tabSectionMarginClass">
+      <nav class="flex gap-12">
         <button (click)="setActiveTab('overview')" [ngClass]="{
             'border-[var(--color-brand)]': activeTab === 'overview',
             'text-[var(--color-text)]': activeTab === 'overview',
             'border-transparent': activeTab !== 'overview',
             'text-[var(--color-text-muted)]': activeTab !== 'overview'
           }" class="py-3 px-1 border-b-2 font-normal text-base transition-colors hover:text-[var(--color-text)]">
-          {{ 'warehouseInventory.overview' | translate }}
+          {{ overviewTabLabelKey | translate }}
         </button>
         <button (click)="setActiveTab('stock')" [ngClass]="{
             'border-[var(--color-brand)]': activeTab === 'stock',
@@ -49,7 +49,7 @@
             'border-transparent': activeTab !== 'stock',
             'text-[var(--color-text-muted)]': activeTab !== 'stock'
           }" class="py-3 px-1 border-b-2 font-normal text-base transition-colors hover:text-[var(--color-text)]">
-          {{ 'warehouseInventory.stock' | translate }}
+          {{ stockTabLabelKey | translate }}
         </button>
       </nav>
     </div>

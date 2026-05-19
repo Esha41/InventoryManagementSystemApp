@@ -56,6 +56,8 @@ export class InventoryTableComponent {
   @Output() editItem = new EventEmitter<InventoryDetailDto>();
   @Output() deleteItem = new EventEmitter<InventoryDetailDto>();
   @Output() viewItem = new EventEmitter<InventoryDetailDto>();
+  /** Navigate to full-page catalog asset details (/assets/asset-list/:id), same as workflow approval item links. */
+  @Output() openItemMaster = new EventEmitter<InventoryDetailDto>();
   @Output() filterByInvoice = new EventEmitter<string>();
   @Output() sortChange = new EventEmitter<WarehouseInventoryTableSortColumn>();
 

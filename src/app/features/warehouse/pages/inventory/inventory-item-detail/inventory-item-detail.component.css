@@ -17,3 +17,7 @@ p, span, div {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.current-lot-row {
+  background-color: color-mix(in srgb, var(--color-brand) 8%, transparent);
+}
+

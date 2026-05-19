@@ -190,7 +190,13 @@ import { defaultPageSize } from '@constants/app.constants';
           class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] flex flex-col gap-3 hover:shadow-md transition-all">
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0 flex-1">
-              <h4 class="font-bold text-[var(--color-text)] text-sm md:text-base mb-1 break-words min-w-0">{{ getItemName(item) }}</h4>
+              <button
+                type="button"
+                class="font-bold text-[var(--color-brand)] text-sm md:text-base mb-1 break-words min-w-0 text-start hover:underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]"
+                [attr.aria-label]="('warehouseInventory.viewCatalogItemDetails' | translate) + ': ' + getItemName(item)"
+                (click)="openItemMaster.emit(item)">
+                {{ getItemName(item) }}
+              </button>
               <span class="inline-flex px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-600 border border-gray-200 gap-1">
                 <span class="font-semibold">{{ 'warehouseInventory.lot' | translate }}:</span>
                 {{ item.lot }}
@@ -300,6 +306,7 @@ import { defaultPageSize } from '@constants/app.constants';
           (editItem)="editItem.emit($event)"
           (deleteItem)="deleteItem.emit($event)"
           (viewItem)="viewItem.emit($event)"
+          (openItemMaster)="openItemMaster.emit($event)"
           (filterByInvoice)="filterByInvoice.emit($event)"
           (sortChange)="inventorySortChange.emit($event)">
         </app-inventory-table>
@@ -367,6 +374,7 @@ export class WarehouseInventoryTableComponent {
   @Output() editItem = new EventEmitter<InventoryDetailDto>();
   @Output() deleteItem = new EventEmitter<InventoryDetailDto>();
   @Output() viewItem = new EventEmitter<InventoryDetailDto>();
+  @Output() openItemMaster = new EventEmitter<InventoryDetailDto>();
   @Output() filterByInvoice = new EventEmitter<string>();
   @Output() inventorySortChange = new EventEmitter<WarehouseInventoryTableSortColumn>();
 

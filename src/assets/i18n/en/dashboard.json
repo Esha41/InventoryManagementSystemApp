@@ -297,6 +297,7 @@
     "nsn": "NSN",
     "partNo": "Part No",
     "totalQty": "Total Qty",
+    "itemRollup": "Item summary",
     "usedQty": "Used Qty",
     "reservedQty": "Hold Quantity",
     "remainingQty": "Remaining Qty",

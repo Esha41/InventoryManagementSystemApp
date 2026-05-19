@@ -8,7 +8,6 @@ import { InventoryService, LotDetailDto } from '@inventory/services/inventory.se
 import { WarehouseInventoryFormatterService } from '../services/warehouse-inventory-formatter.service';
 import { LookupService } from '@services/lookup.service';
 import { InventoryDetailDto, ItemType } from '@models/inventory.model';
-import { AssetDetailsComponent } from '@assets/components/asset-details/asset-details.component';
 import { WarehouseDetailLayoutComponent } from '@components/warehouse-detail-layout/warehouse-detail-layout.component';
 import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
@@ -25,7 +24,7 @@ type TabType = 'overview' | 'stock';
 @Component({
   selector: 'app-inventory-item-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule, TranslateModule, AssetDetailsComponent, WarehouseDetailLayoutComponent, TableClampTooltipDirective],
+  imports: [CommonModule, RouterModule, LucideAngularModule, TranslateModule, WarehouseDetailLayoutComponent, TableClampTooltipDirective],
   templateUrl: './inventory-item-detail.component.html',
   styleUrls: ['./inventory-item-detail.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -73,15 +72,6 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Also check query params for tab (asset type) as fallback
-    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(queryParams => {
-      const tabParam = queryParams['tab'];
-      if (tabParam && (tabParam === 'ammunition' || tabParam === 'weapon' || tabParam === 'explosive')) {
-        // Store tab for potential use if item.itemType is not available
-        this.activeTab = queryParams['tab'] === 'ammunition' ? 'overview' : this.activeTab;
-        this.cdr.markForCheck();
-      }
-    });
   }
 
   ngOnDestroy(): void {
@@ -101,6 +91,15 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
 
   get deliveryReceiptFiles(): FileUploadDto[] {
     return (this.inventoryDetail?.files ?? []) as FileUploadDto[];
+  }
+
+  /** Show invoice card when any parent-inventory invoice field is present */
+  get invoiceSectionVisible(): boolean {
+    const d = this.inventoryDetail;
+    if (!d) return false;
+    const inv = (d.invoiceNumber ?? '').toString().trim();
+    const contract = (d.contractNumber ?? '').toString().trim();
+    return !!(inv || contract || !!d.invoiceDate || !!d.recievedDate);
   }
 
   openDeliveryReceiptFile(fileId: number): void {
@@ -175,8 +174,9 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
                   error: () => { /* no-op: keep base detail */ }
                 });
             }
-            // Load lots if stock tab is active
-            if (this.activeTab === 'stock') {
+            const detailTab = this.route.snapshot.queryParams['detailTab'];
+            if (detailTab === 'stock') {
+              this.activeTab = 'stock';
               this.loadLots();
             }
           }
@@ -227,12 +227,12 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
   }
 
   onBack(): void {
-    // Preserve tab query parameter when navigating back
-    const tabParam = this.route.snapshot.queryParams['tab'];
-    const queryParams = tabParam ? { tab: tabParam } : {};
-    
+    const qp = this.route.snapshot.queryParams;
+    const queryParams: Record<string, string | number> = {};
+    if (qp['tab']) queryParams['tab'] = qp['tab'];
+    if (qp['page'] != null && qp['page'] !== '') queryParams['page'] = qp['page'];
     this.router.navigate(['/warehouse', this.warehouseId, 'inventory'], {
-      queryParams
+      queryParams: Object.keys(queryParams).length ? queryParams : {}
     });
   }
 
@@ -284,6 +284,12 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
     return getLocalizedName(this.inventoryDetail?.country, getCurrentLang(this.translateService)) || '-';
   }
 
+  /** Primary purpose for the current depot inventory record (overview tab). */
+  getPrimaryPurposeLine(): string {
+    if (!this.inventoryDetail) return '-';
+    return this.warehouseInventoryFormatter.getPrimaryPurposeName(this.inventoryDetail);
+  }
+
   /**
    * Format date for display (delegates to shared dd/MM/yyyy helper)
    */
@@ -322,16 +328,17 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Get stock status class
+   * Get stock status class (aligned with utilization bands, not translated labels)
    */
   getStockStatusClass(): string {
-    const status = this.getStockStatus();
-    switch (status) {
-      case 'New': return 'bg-[var(--color-success)]/20 text-[var(--color-success)] border-2 border-[var(--color-success)]/30';
-      case 'Good': return 'bg-[var(--color-info)]/20 text-[var(--color-info)] border-2 border-[var(--color-info)]/30';
-      case 'Used': return 'bg-[var(--color-background-active)] text-[var(--color-text)] border-2 border-[var(--color-border)]';
-      default: return 'bg-[var(--color-background-active)] text-[var(--color-text)] border-2 border-[var(--color-border)]';
+    const utilization = this.getUtilizationPercentage();
+    if (utilization === 0) {
+      return 'bg-[var(--color-success)]/20 text-[var(--color-success)] border-2 border-[var(--color-success)]/30';
     }
+    if (utilization < 50) {
+      return 'bg-[var(--color-info)]/20 text-[var(--color-info)] border-2 border-[var(--color-info)]/30';
+    }
+    return 'bg-[var(--color-background-active)] text-[var(--color-text)] border-2 border-[var(--color-border)]';
   }
 
   /**
@@ -412,34 +419,6 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
       }
     }
     return '-';
-  }
-
-  /**
-   * Get asset type from inventory detail item type or query param
-   */
-  getAssetType(): 'ammunition' | 'weapon' | 'explosive' | undefined {
-    // First try to get from item.itemType
-    if (this.inventoryDetail?.item?.itemType) {
-      const itemType = this.inventoryDetail.item.itemType;
-      if (itemType === ItemType.Ammunition) return 'ammunition';
-      if (itemType === ItemType.Weapon) return 'weapon';
-      if (itemType === ItemType.Explosive) return 'explosive';
-    }
-    
-    // Fallback to query param if item is not populated
-    const tabParam = this.route?.snapshot.queryParams['tab'];
-    if (tabParam && (tabParam === 'ammunition' || tabParam === 'weapon' || tabParam === 'explosive')) {
-      return tabParam as 'ammunition' | 'weapon' | 'explosive';
-    }
-    
-    return undefined;
-  }
-
-  /**
-   * Get item ID for asset details
-   */
-  getItemIdForAssetDetails(): number | undefined {
-    return this.inventoryDetail?.itemId;
   }
 
   /**

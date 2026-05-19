@@ -121,14 +121,34 @@ export class WarehouseInventoryFacadeService {
 
   onBackToWarehouses(): void { this.router.navigate(['/warehouse']); }
 
-  onViewItem(detail: InventoryDetailDto): void {
-    const tab = this.store.activeTab();
-    if (this.filterService.isStaticItem(detail) && detail.item) {
-      this.router.navigate(['/assets/asset-list', detail.item.id], { queryParams: { tab } });
+  /**
+   * Open master catalog details (same full-page view as workflow approval item links).
+   * Back button uses {@link AssetDetailsComponent} `returnTo` query param.
+   */
+  onOpenItemMasterDetails(detail: InventoryDetailDto): void {
+    const masterId = detail.itemId ?? detail.item?.id;
+    if (!masterId) {
+      this.toastService.warning(
+        this.translateService.instant('warehouseInventory.itemMasterUnavailable') ||
+          'Catalog item is unavailable for this row.'
+      );
       return;
     }
-    this.router.navigate(['/warehouse', this.store.depoId(), 'inventory', detail.id],
-      { queryParams: { tab }, queryParamsHandling: 'merge' });
+    const tab = this.resolveAssetTabForCatalogDetails(detail);
+    const returnTo = this.router.url;
+    this.router.navigate(['/assets/asset-list', masterId], {
+      queryParams: { tab, returnTo }
+    });
+  }
+
+  onViewItem(detail: InventoryDetailDto): void {
+    const tab = this.store.activeTab();
+    const queryParams: Record<string, string | number> = { tab };
+    const page = this.store.currentPage();
+    if (page > 1) {
+      queryParams['page'] = page;
+    }
+    this.router.navigate(['/warehouse', this.store.depoId(), 'inventory', detail.id], { queryParams });
   }
 
   onAddInventory(): void {
@@ -609,6 +629,18 @@ export class WarehouseInventoryFacadeService {
           this.store.resetExpandedBatchAssetState();
         }
       });
+  }
+
+  /** Maps warehouse row + tab to asset-details `tab` query (same contract as workflow approval). */
+  private resolveAssetTabForCatalogDetails(detail: InventoryDetailDto): 'ammunition' | 'weapon' | 'explosive' {
+    const fromItem = this.filterService.normalizeItemType(detail.item?.itemType);
+    if (fromItem === 1) return 'ammunition';
+    if (fromItem === 2) return 'weapon';
+    if (fromItem === 3) return 'explosive';
+    const wt = this.store.activeTab();
+    if (wt === 'batch') return 'weapon';
+    if (wt === 'explosive') return 'explosive';
+    return 'ammunition';
   }
 
   private getLang(): string {

@@ -31,11 +31,16 @@ export class WarehouseDetailLayoutComponent {
   readonly ArrowRight = ArrowRight;
 
   @Input() title = '';
+  /** Optional i18n keys for tab labels (defaults preserve overview/stock for other screens). */
+  @Input() overviewTabLabelKey = 'warehouseInventory.overview';
+  @Input() stockTabLabelKey = 'warehouseInventory.stock';
   @Input() loading = false;
   @Input() error: string | null = null;
   @Input() hasData = false;
   @Input() showViewOnMap = true;
   @Input() activeTab: WarehouseDetailTab = 'overview';
+  /** Bottom margin under the tab nav (Tailwind class passed to [ngClass], default mb-8). */
+  @Input() tabSectionMarginClass = 'mb-8';
 
   @Output() back = new EventEmitter<void>();
   @Output() mapView = new EventEmitter<void>();
