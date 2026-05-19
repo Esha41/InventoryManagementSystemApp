@@ -159,19 +159,50 @@ export class AdminRolesComponent implements OnInit, OnDestroy {
           }
         },
         error: (error: unknown) => {
-          const errorMsg = (error instanceof Error ? error.message : String(error)) || '';
-          this.translateService.get(['toast.error', 'toast.failedToDeleteRole']).pipe(takeUntil(this.destroy$)).subscribe((translations: TranslationMap) => {
-            let message = translations['toast.failedToDeleteRole'] || 'Failed to delete role';
-            if (roleName && message.includes('{roleName}')) {
-              message = message.replace('{roleName}', roleName);
-            }
-            if (errorMsg && !message.includes(errorMsg)) {
-              message += `: ${errorMsg}`;
-            }
-            this.errorMessage = message;
-            this.toastService.error(message, translations['toast.error']);
-            this.cdr.markForCheck();
-          });
+          const errObj = error as { userMessage?: string; message?: string };
+          const serverMsg = (errObj?.userMessage || (error instanceof Error ? error.message : String(error)) || '').trim();
+
+          this.translateService
+            .get(['toast.error', 'toast.failedToDeleteRole', 'toast.roleDeleteInUse'])
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((translations: TranslationMap) => {
+              const failedTemplate = translations['toast.failedToDeleteRole'] || 'Failed to delete role "{roleName}"';
+              const withRoleName =
+                roleName && failedTemplate.includes('{roleName}')
+                  ? failedTemplate.replace('{roleName}', roleName)
+                  : (roleName ? `${failedTemplate} "${roleName}"`.trim() : failedTemplate);
+
+              const inUseLocalized =
+                translations['toast.roleDeleteInUse'] ||
+                'This role cannot be deleted because it is currently in use.';
+
+              const backendInUseEnglish = 'This role cannot be deleted because it is currently in use.';
+              const looksLikeTechnical =
+                serverMsg.includes('Microsoft.') ||
+                serverMsg.includes('SqlException') ||
+                serverMsg.includes('DbUpdateException') ||
+                serverMsg.includes('at Microsoft.') ||
+                serverMsg.includes('REFERENCE constraint');
+
+              const isInUseFromApi =
+                !looksLikeTechnical &&
+                (serverMsg === backendInUseEnglish || serverMsg.includes('currently in use'));
+
+              let message: string;
+              if (isInUseFromApi) {
+                message = inUseLocalized;
+              } else if (looksLikeTechnical) {
+                message = withRoleName;
+              } else if (serverMsg && serverMsg !== 'Failed to delete role') {
+                message = serverMsg;
+              } else {
+                message = withRoleName;
+              }
+
+              this.errorMessage = message;
+              this.toastService.error(message, translations['toast.error']);
+              this.cdr.markForCheck();
+            });
         }
       });
     }
