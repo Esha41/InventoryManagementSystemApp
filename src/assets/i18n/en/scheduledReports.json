@@ -37,6 +37,8 @@
       "recipients": "Recipients",
       "emailConfig": "Email Configuration"
     },
+    "recipientsOptional": "optional",
+    "recipientsOptionalHint": "Add users to always receive this report here, or leave empty when delivery targets are resolved automatically by the scheduled job (such as pending-approver reports).",
     "scheduleName": "Schedule Name",
     "scheduleNamePlaceholder": "Enter a name for this schedule",
     "report": "Report",

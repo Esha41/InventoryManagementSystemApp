@@ -140,6 +140,7 @@
     "failedToCreateRole": "Failed to create role",
     "failedToUpdateRole": "Failed to update role",
     "failedToDeleteRole": "Failed to delete role \"{roleName}\"",
+    "roleDeleteInUse": "This role cannot be deleted because it is currently in use.",
     "failedToLoadRoles": "Failed to load roles",
     "failedToLoadPermissions": "Failed to load permissions",
     "exportingOrderToPdf": "Exporting order to PDF...",

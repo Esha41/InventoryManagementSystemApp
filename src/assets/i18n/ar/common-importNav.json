@@ -148,6 +148,7 @@
     "failedToCreateRole": "فشل إنشاء الدور",
     "failedToUpdateRole": "فشل تحديث الدور",
     "failedToDeleteRole": "فشل حذف الدور \"{roleName}\"",
+    "roleDeleteInUse": "تعذر حذف هذا الدور لأنه قيد الاستخدام حاليًا.",
     "failedToLoadRoles": "فشل تحميل الأدوار",
     "failedToLoadPermissions": "فشل تحميل الصلاحيات",
     "exportingOrderToPdf": "جاري تصدير الطلب إلى PDF...",
