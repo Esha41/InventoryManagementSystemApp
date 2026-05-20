@@ -3,6 +3,7 @@
  * Component-specific utilities for order report functionality
  */
 
+import { RequestStatus } from '@models/backend-enums';
 import { OrderDto } from '@models/order.model';
 import { OrderSummary, OrderReportItem, OrderReportApprovalStep, WorkflowDetail } from '@models/order-report.model';
 import { WorkflowApprovalStep } from '@models/workflow-approval.model';
@@ -15,13 +16,13 @@ import { TranslateService } from '@ngx-translate/core';
 /**
  * Map OrderDto to OrderSummary for report display
  */
-export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | string | null, translateService?: TranslateService): OrderSummary {
+export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | null, translateService?: TranslateService): OrderSummary {
   // Use requestNo/orderNo if available, otherwise fallback to #${id}
   const requestNo = order.requestNo?.trim() || '';
   const orderNo = order.orderNo?.trim() || '';
   const orderId = requestNo || orderNo || (order.id ? `#${order.id}` : 'N/A');
 
-  const statusSource: number | string | null | undefined =
+  const statusSource: number | null | undefined =
     baseRequestStatus !== undefined && baseRequestStatus !== null ? baseRequestStatus : order.status;
   const statusMeta = getStatusMetadata(statusSource);
   const statusValue = statusMeta.id;
@@ -71,33 +72,17 @@ export function mapOrderToSummary(order: OrderDto, baseRequestStatus?: number | 
     usagePurpose = order.usagePurpose;
   }
 
-  // Map request type to string
-  let requestType = 'Order'; // Default
-  if (order.requestType !== undefined && order.requestType !== null) {
-    if (typeof order.requestType === 'number') {
-      switch (order.requestType) {
-        case 1:
-          requestType = 'Order';
-          break;
-        case 2:
-          requestType = 'Return';
-          break;
-        case 3:
-          requestType = 'Discard';
-          break;
-        default:
-          requestType = 'Order';
-      }
-    } else if (typeof order.requestType === 'string') {
-      const typeLower = order.requestType.toLowerCase().trim();
-      if (typeLower === 'return' || typeLower === '2') {
-        requestType = 'Return';
-      } else if (typeLower === 'discard' || typeLower === '3') {
-        requestType = 'Discard';
-      } else {
-        requestType = 'Order';
-      }
-    }
+  let requestType = 'Order';
+  switch (order.requestType) {
+    case 2:
+      requestType = 'Return';
+      break;
+    case 3:
+      requestType = 'Discard';
+      break;
+    case 1:
+    default:
+      requestType = 'Order';
   }
 
   // Return raw dates for pipe formatting
@@ -161,28 +146,8 @@ export function mapOrderItems(order: OrderDto): OrderReportItem[] {
  * Map order status to item status
  * Handles both number and string status values
  */
-export function mapItemStatus(orderStatus: number | string): string {
-  // Convert to number if it's a string
-  let statusNum: number;
-  if (typeof orderStatus === 'string') {
-    const statusLower = orderStatus.toLowerCase().trim();
-    if (statusLower === 'new' || statusLower === 'pending' || statusLower === '1') {
-      statusNum = 1;
-    } else if (statusLower === 'underprocess' || statusLower === 'under process' || statusLower === 'inprogress' || statusLower === 'in progress' || statusLower === '2') {
-      statusNum = 2;
-    } else if (statusLower === 'approved' || statusLower === 'completed' || statusLower === 'confirmed' || statusLower === '3') {
-      statusNum = 3;
-    } else if (statusLower === 'rejected' || statusLower === 'declined' || statusLower === '4') {
-      statusNum = 4;
-    } else {
-      const parsed = parseInt(orderStatus, 10);
-      statusNum = isNaN(parsed) ? 0 : parsed;
-    }
-  } else {
-    statusNum = orderStatus;
-  }
-
-  switch (statusNum) {
+export function mapItemStatus(orderStatus: number): string {
+  switch (orderStatus) {
     case 1: return 'Allocated';
     case 2: return 'Rejected';
     default: return 'Pending allocation';
@@ -192,26 +157,23 @@ export function mapItemStatus(orderStatus: number | string): string {
 /**
  * Map approval status from API response
  */
-export function mapApprovalStatus(status: number | string | unknown): 'pending' | 'approved' | 'rejected' | 'in-progress' | 'returned' | 'returnedforreview' {
-  if (!status) return 'pending';
-
-  const statusStr = String(status).toLowerCase();
-  if (statusStr.includes('approved') || statusStr === '1' || statusStr === 'true') {
-    return 'approved';
-  }
-  if (statusStr.includes('rejected') || statusStr === '2' || statusStr === 'false') {
-    return 'rejected';
-  }
-  if (statusStr.includes('returned') || statusStr.includes('return')) {
-    if (statusStr.includes('review')) {
+export function mapApprovalStatus(status: number | null | undefined): 'pending' | 'approved' | 'rejected' | 'in-progress' | 'returned' | 'returnedforreview' {
+  if (status == null) return 'pending';
+  switch (status) {
+    case RequestStatus.Approved:
+      return 'approved';
+    case RequestStatus.Rejected:
+    case RequestStatus.AutoRejected:
+      return 'rejected';
+    case RequestStatus.ReturnedForReview:
       return 'returnedforreview';
-    }
-    return 'returned';
+    case RequestStatus.Cancelled:
+      return 'returned';
+    case RequestStatus.UnderProcess:
+      return 'in-progress';
+    default:
+      return 'pending';
   }
-  if (statusStr.includes('progress') || statusStr.includes('processing')) {
-    return 'in-progress';
-  }
-  return 'pending';
 }
 
 /**
@@ -297,25 +259,7 @@ export function generateApprovalWorkflowFallback(
     }
   ];
 
-  // Normalize order.status to number for comparison
-  let orderStatusNum: number;
-  if (typeof order.status === 'string') {
-    const statusLower = order.status.toLowerCase().trim();
-    if (statusLower === 'new' || statusLower === 'pending' || statusLower === '1') {
-      orderStatusNum = 1;
-    } else if (statusLower === 'underprocess' || statusLower === 'under process' || statusLower === 'inprogress' || statusLower === 'in progress' || statusLower === '2') {
-      orderStatusNum = 2;
-    } else if (statusLower === 'approved' || statusLower === 'completed' || statusLower === 'confirmed' || statusLower === '3') {
-      orderStatusNum = 3;
-    } else if (statusLower === 'rejected' || statusLower === 'declined' || statusLower === '4') {
-      orderStatusNum = 4;
-    } else {
-      const parsed = parseInt(order.status, 10);
-      orderStatusNum = isNaN(parsed) ? 0 : parsed;
-    }
-  } else {
-    orderStatusNum = order.status;
-  }
+  const orderStatusNum = order.status;
 
   if (orderStatusNum === 1) {
     steps.push({
@@ -353,25 +297,7 @@ export function generateApprovalWorkflowFallback(
  * Generate fallback workflow details
  */
 export function generateWorkflowDetailsFallback(order: OrderDto): WorkflowDetail[] {
-  // Normalize order.status to number for comparison
-  let orderStatusNum: number;
-  if (typeof order.status === 'string') {
-    const statusLower = order.status.toLowerCase().trim();
-    if (statusLower === 'new' || statusLower === 'pending' || statusLower === '1') {
-      orderStatusNum = 1;
-    } else if (statusLower === 'underprocess' || statusLower === 'under process' || statusLower === 'inprogress' || statusLower === 'in progress' || statusLower === '2') {
-      orderStatusNum = 2;
-    } else if (statusLower === 'approved' || statusLower === 'completed' || statusLower === 'confirmed' || statusLower === '3') {
-      orderStatusNum = 3;
-    } else if (statusLower === 'rejected' || statusLower === 'declined' || statusLower === '4') {
-      orderStatusNum = 4;
-    } else {
-      const parsed = parseInt(order.status, 10);
-      orderStatusNum = isNaN(parsed) ? 0 : parsed;
-    }
-  } else {
-    orderStatusNum = order.status;
-  }
+  const orderStatusNum = order.status;
 
   return [
     {

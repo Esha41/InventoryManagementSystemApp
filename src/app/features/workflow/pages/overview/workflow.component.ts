@@ -145,7 +145,7 @@ export class WorkflowComponent implements OnInit, OnDestroy {
     this.validateCurrentPage();
   }
 
-  getWorkflowType(id: number | string): string {
+  getWorkflowType(id: number): string {
     if (id === null || id === undefined) {
       return 'Unknown';
     }

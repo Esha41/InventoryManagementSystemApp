@@ -6,7 +6,7 @@ import { BaseItemDto, ItemType } from './inventory.model';
 
 /** Base item with itemType and displayLabel for dropdown display (backend may return itemType as number or string) */
 export interface BaseItemWithType extends Omit<BaseItemDto, 'itemType'> {
-  itemType: ItemType | number | string;
+  itemType: ItemType;
   displayLabel: string;
 }
 
@@ -15,7 +15,7 @@ export interface ItemDepartmentAssignmentDto {
   itemId: number;
   itemName?: string;
   itemNo?: string;
-  itemType: number | string; // Backend may return as string ("Ammunition") or number (1)
+  itemType: number;
   departmentId: number;
   departmentCode?: string;
   departmentNameAr?: string;

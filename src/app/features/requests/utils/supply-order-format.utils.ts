@@ -19,7 +19,7 @@ import { getPriorityKey } from '@utils/priority.utils';
  * Handles both number and string priority values
  * Returns translation key (e.g., 'common.priorityLevels.Normal')
  */
-export function getPriorityTranslationKey(priority?: number | string | null): string {
+export function getPriorityTranslationKey(priority?: number | null): string {
   if (priority === null || priority === undefined) {
     return 'common.priorityLevels.Urgent';
   }

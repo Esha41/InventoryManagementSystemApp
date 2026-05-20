@@ -17,7 +17,7 @@ export interface RequestPurposeApiDto {
   nameEn?: string | null;
   nameAr?: string | null;
   requestType?: number;
-  /** Raw API value before toLookupItem (number or JsonStringEnumConverter string). */
+  /** Raw API numeric enum before toLookupItem. */
   allowanceContext?: unknown;
   code?: string;
   isDeleted?: boolean;

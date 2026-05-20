@@ -118,7 +118,7 @@ export interface RequestDetail {
   /** Normalized badge label (historical); prefer {@link rawStatus} for dashboard-aligned i18n. */
   status: RequestStatus;
   /** Backend request status as returned by API (numeric enum or string) — matches dashboard translation keys. */
-  rawStatus?: number | string;
+  rawStatus?: number;
   requestDate: string;
   reason?: string;
   notes?: string;
@@ -171,10 +171,10 @@ export interface RequestDetail {
 export interface BaseRequestDto {
   id: number;
   requestNo: string;
-  requestType: number | string; // Can be number (1, 2, 3) or string ('Order', 'Return', 'Discard')
+  requestType: number;
   reason?: string;
-  priority: number | string; // Can be number (1, 2, 3) or string ('High', 'Medium', 'Low')
-  status: number | string; // Can be number (1, 2, 3, 4) or string ('New', 'UnderProcess', 'Approved', 'Rejected')
+  priority: number;
+  status: number;
   notes?: string;
   departmentId: number;
   requesterId?: string;

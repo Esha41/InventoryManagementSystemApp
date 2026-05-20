@@ -27,7 +27,7 @@ export class StatusCardComponent implements OnInit, OnDestroy {
   @Input() title: string = '';
   @Input() status: StatusType = 'new-issue';
   /** Raw backend request status (number/string) for accurate label translation. */
-  @Input() requestStatus: number | string | null | undefined;
+  @Input() requestStatus: number | null | undefined;
   @Input() orders: OrderItem[] = [];
   @Input() orderRequestId: number | null = null;
   @Input() returnRequestId: number | null = null;
@@ -171,6 +171,10 @@ export class StatusCardComponent implements OnInit, OnDestroy {
       default:
         return 'dashboard.statusLabels.new';
     }
+  }
+
+  getStatusTextClass(): string {
+    return 'text-[var(--color-text-muted)]';
   }
 
   private isAutoRejected(): boolean {

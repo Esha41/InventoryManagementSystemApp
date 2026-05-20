@@ -164,32 +164,12 @@ export function resolveDepotName(order: OrderDto | null): string {
  * Get translation key for order priority
  * Handles both number and string priority values
  */
-export function getOrderPriorityKey(priority?: number | string | null): string {
+export function getOrderPriorityKey(priority?: number | null): string {
   if (priority === null || priority === undefined) {
     return 'dashboard.priorityLabels.urgent';
   }
 
-  // Normalize to number
-  let priorityNum: number;
-  if (typeof priority === 'string') {
-    const priorityLower = priority.toLowerCase().trim().replace(/\s+/g, '');
-    if (priorityLower === 'normal' || priorityLower === '1') {
-      priorityNum = 1;
-    } else if (priorityLower === 'urgent' || priorityLower === '2') {
-      priorityNum = 2;
-    } else if (priorityLower === 'veryurgent' || priorityLower === '3') {
-      priorityNum = 3;
-    } else if (priorityLower === 'critical' || priorityLower === '4') {
-      priorityNum = 4;
-    } else {
-      const parsed = parseInt(priority, 10);
-      priorityNum = isNaN(parsed) ? 2 : parsed;
-    }
-  } else {
-    priorityNum = priority;
-  }
-
-  switch (priorityNum) {
+  switch (priority) {
     case 1:
       return 'dashboard.priorityLabels.normal';
     case 2:
@@ -205,7 +185,7 @@ export function getOrderPriorityKey(priority?: number | string | null): string {
  * Get translation key for order status
  * Handles both number and string status values
  */
-export function getOrderStatusKey(status?: number | string | null): string {
+export function getOrderStatusKey(status?: number | null): string {
   return getRequestStatusTranslationKey(status);
 }
 

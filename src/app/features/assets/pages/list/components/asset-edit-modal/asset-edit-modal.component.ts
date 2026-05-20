@@ -18,7 +18,7 @@ import { createInitialImageState } from '@utils/asset-list.state';
 import { getExplosiveTypeOptions } from '@utils/explosive.utils';
 
 /**
- * API uses JsonStringEnumConverter (e.g. "Small"); edit dropdowns use '1' | '2' | '3'.
+ * API returns numeric caliber category; edit dropdowns use '1' | '2' | '3' for binding.
  */
 function parseSmallMediumLargeEnum(value: unknown): number | null {
   if (value == null || value === '') return null;

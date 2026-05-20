@@ -52,36 +52,11 @@ function _formatRequestDate(date: string | Date | undefined | null): string {
  * RequestPriority enum: Normal = 1, Urgent = 2, VeryUrgent = 3
  * Handles both number and string priority values for robustness
  */
-function mapPriority(priority: number | string | null | undefined): 'Normal' | 'Urgent' | 'VeryUrgent' | 'Very Urgent' | 'Critical' {
-  // Handle null/undefined
+function mapPriority(priority: number | null | undefined): 'Normal' | 'Urgent' | 'VeryUrgent' | 'Very Urgent' | 'Critical' {
   if (priority === null || priority === undefined) {
     return 'Urgent';
   }
-
-  // Convert to number if it's a string
-  let priorityNum: number;
-  if (typeof priority === 'string') {
-    const lowerPriority = priority.toLowerCase().trim().replace(/\s+/g, '');
-    if (lowerPriority === 'normal' || lowerPriority === '1') {
-      priorityNum = 1;
-    } else if (lowerPriority === 'urgent' || lowerPriority === '2') {
-      priorityNum = 2;
-    } else if (lowerPriority === 'veryurgent' || lowerPriority === '3') {
-      priorityNum = 3;
-    } else if (lowerPriority === 'critical' || lowerPriority === '4') {
-      priorityNum = 4;
-    } else {
-      // Try to parse as number
-      priorityNum = parseInt(priority, 10);
-      if (isNaN(priorityNum)) {
-        return 'Urgent'; // Default to 'Urgent' if can't parse
-      }
-    }
-  } else {
-    priorityNum = priority;
-  }
-
-  switch (priorityNum) {
+  switch (priority) {
     case 1: return 'Normal';
     case 2: return 'Urgent';
     case 3: return 'Very Urgent';
@@ -95,39 +70,16 @@ function mapPriority(priority: number | string | null | undefined): 'Normal' | '
  * RequestType enum: 1=Order, 2=Return, 3=Discard
  * Handles both number and string request types for robustness
  */
-function mapRequestType(type: number | string | null | undefined): 'Order' | 'Return' | 'Discard' {
-  // Handle null/undefined
+function mapRequestType(type: number | null | undefined): 'Order' | 'Return' | 'Discard' {
   if (type === null || type === undefined) {
     return 'Order';
   }
-
-  // Convert to number if it's a string
-  let typeNum: number;
-  if (typeof type === 'string') {
-    // Try to parse string request type values
-    const lowerType = type.toLowerCase().trim();
-    if (lowerType === 'order') {
-      typeNum = 1;
-    } else if (lowerType === 'return') {
-      typeNum = 2;
-    } else if (lowerType === 'discard') {
-      typeNum = 3;
-    } else {
-      // Try to parse as number
-      typeNum = parseInt(type, 10);
-      if (isNaN(typeNum)) {
-        return 'Order'; // Default to 'Order' if can't parse
-      }
-    }
-  } else {
-    typeNum = type;
-  }
-
-  switch (typeNum) {
-    case 1: return 'Order';
+  switch (type) {
     case 2: return 'Return';
     case 3: return 'Discard';
-    default: return 'Order';
+    case 1:
+    default:
+      return 'Order';
   }
 }
 
@@ -137,42 +89,12 @@ function mapRequestType(type: number | string | null | undefined): 'Order' | 'Re
  * Handles both number and string status values for robustness
  */
 function mapStatus(
-  status: number | string | null | undefined
+  status: number | null | undefined
 ): 'New' | 'Pending' | 'Confirmed' | 'Rejected' | 'AutoRejected' | 'Returned' | 'ReturnedForReview' {
-  // Handle null/undefined
   if (status === null || status === undefined) {
     return 'New';
   }
-
-  // Convert to number if it's a string
-  let statusNum: number;
-  if (typeof status === 'string') {
-    // Try to parse string status values
-    const lowerStatus = status.toLowerCase().trim();
-    if (lowerStatus === 'new') {
-      statusNum = 1;
-    } else if (lowerStatus === 'pending' || lowerStatus === 'underprocess' || lowerStatus === 'under process' || lowerStatus === 'inprogress' || lowerStatus === 'in progress') {
-      statusNum = 2;
-    } else if (lowerStatus === 'approved' || lowerStatus === 'completed' || lowerStatus === 'confirmed') {
-      statusNum = 3;
-    } else if (lowerStatus === 'rejected' || lowerStatus === 'declined') {
-      statusNum = 4;
-    } else if (lowerStatus === 'autorejected' || lowerStatus === 'auto rejected' || lowerStatus === 'auto-rejected') {
-      statusNum = 7;
-    } else if (lowerStatus === 'returned' || lowerStatus === 'returnedforreview') {
-      statusNum = 6;
-    } else {
-      // Try to parse as number
-      statusNum = parseInt(status, 10);
-      if (isNaN(statusNum)) {
-        return 'New'; // Default to 'New' if can't parse
-      }
-    }
-  } else {
-    statusNum = status;
-  }
-
-  switch (statusNum) {
+  switch (status) {
     case 1: return 'New';
     case 2: return 'Pending';
     case 3: return 'Confirmed';

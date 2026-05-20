@@ -65,7 +65,7 @@
                                     (change)="toggleScope(scope, $event)"
                                     class="h-4 w-4 rounded border-2 border-[var(--color-border)] text-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand)]/20 cursor-pointer" />
                                 <span class="text-sm text-[var(--color-text)]">
-                                    {{ 'DELEGATION.SCOPE_' + scope.toUpperCase() | translate }}
+                                    {{ 'DELEGATION.SCOPE_' + scopeI18nSuffix(scope) | translate }}
                                 </span>
                             </label>
                         </div>

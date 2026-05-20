@@ -7,6 +7,8 @@ import { Subject, takeUntil } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { MonitoringService } from '@services/monitoring.service';
 import { DraftSupplyListItemDto } from '@models/inventory-dashboard-monitoring.model';
+import { SupplySubmissionStatus } from '@models/backend-enums';
+import { getSupplySubmissionStatusTranslationKey } from '@utils/enum-label.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { TranslationService } from '@services/translation.service';
 import { PaginationComponent } from '@components/pagination/pagination.component';
@@ -116,5 +118,9 @@ export class DraftSuppliesComponent implements OnInit, OnDestroy {
     this.rowsPerPage = rows;
     this.currentPage = 1;
     this.cdr.markForCheck();
+  }
+
+  submissionStatusKey(status: SupplySubmissionStatus): string {
+    return getSupplySubmissionStatusTranslationKey(status);
   }
 }

@@ -195,19 +195,9 @@ export class AnnouncementsComponent implements OnInit, OnDestroy {
         return new Date(date).toLocaleDateString();
     }
 
-    getDeliveryTypeText(deliveryType: AnnouncementDeliveryType | number | string | undefined | null): string {
-        let dt: number;
-        if (deliveryType === null || deliveryType === undefined) {
-            dt = AnnouncementDeliveryType.Banner;
-        } else if (typeof deliveryType === 'string') {
-            const s = deliveryType.toLowerCase();
-            if (s === 'banner' || s === '1') dt = AnnouncementDeliveryType.Banner;
-            else if (s === 'notification' || s === '2') dt = AnnouncementDeliveryType.Notification;
-            else if (s === 'both' || s === '3') dt = AnnouncementDeliveryType.Both;
-            else dt = parseInt(deliveryType, 10) || AnnouncementDeliveryType.Banner;
-        } else {
-            dt = deliveryType;
-        }
+    getDeliveryTypeText(deliveryType: AnnouncementDeliveryType | number | undefined | null): string {
+        const dt =
+            deliveryType == null ? AnnouncementDeliveryType.Banner : Number(deliveryType);
 
         switch (dt) {
             case AnnouncementDeliveryType.Banner:

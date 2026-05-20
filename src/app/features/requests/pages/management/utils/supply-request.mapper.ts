@@ -13,7 +13,7 @@ import { mapRequestType } from '@utils/request-mapper.utils';
 /**
  * Map request type to supply request type (only Order or Return, no Discard)
  */
-function mapToSupplyRequestType(type: number | string): 'Order' | 'Return' {
+function mapToSupplyRequestType(type: number): 'Order' | 'Return' {
   const mapped = mapRequestType(type);
   // Supply requests only support Order and Return, default to Order for Discard
   return mapped === 'Discard' ? 'Order' : mapped;
@@ -40,48 +40,8 @@ export function mapOrderToRequestDetail(order: OrderDto): SupplyRequestDetail {
     5: 'Cancelled'
   };
 
-  // Normalize priority to number for map lookup
-  // Backend enum: 1=Normal, 2=Urgent, 3=VeryUrgent, 4=Critical
-  let priorityNum: number;
-  if (typeof order.priority === 'string') {
-    const priorityLower = order.priority.toLowerCase().trim().replace(/\s+/g, '');
-    if (priorityLower === 'normal' || priorityLower === '1') {
-      priorityNum = 1;
-    } else if (priorityLower === 'urgent' || priorityLower === '2') {
-      priorityNum = 2;
-    } else if (priorityLower === 'veryurgent' || priorityLower === 'veryurgent' || priorityLower === '3') {
-      priorityNum = 3;
-    } else if (priorityLower === 'critical' || priorityLower === '4') {
-      priorityNum = 4;
-    } else {
-      const parsed = parseInt(order.priority, 10);
-      priorityNum = isNaN(parsed) ? 2 : parsed; // Default to Urgent (2)
-    }
-  } else {
-    priorityNum = order.priority;
-  }
-
-  // Normalize status to number for map lookup
-  let statusNum: number;
-  if (typeof order.status === 'string') {
-    const statusLower = order.status.toLowerCase().trim();
-    if (statusLower === 'new' || statusLower === 'pending' || statusLower === '1') {
-      statusNum = 1;
-    } else if (statusLower === 'underprocess' || statusLower === 'under process' || statusLower === 'inprogress' || statusLower === 'in progress' || statusLower === '2') {
-      statusNum = 2;
-    } else if (statusLower === 'approved' || statusLower === 'completed' || statusLower === 'confirmed' || statusLower === '3') {
-      statusNum = 3;
-    } else if (statusLower === 'rejected' || statusLower === 'declined' || statusLower === '4') {
-      statusNum = 4;
-    } else if (statusLower === 'cancelled' || statusLower === '5') {
-      statusNum = 5;
-    } else {
-      const parsed = parseInt(order.status, 10);
-      statusNum = isNaN(parsed) ? 1 : parsed;
-    }
-  } else {
-    statusNum = order.status;
-  }
+  const priorityNum = order.priority;
+  const statusNum = order.status;
 
   const items: OrderItem[] = (order.requestItems || []).map(item => ({
     requestItemId: item.id,
@@ -109,10 +69,7 @@ export function mapOrderToRequestDetail(order: OrderDto): SupplyRequestDetail {
   };
 }
 
-/**
- * Get item type name from numeric ID or enum string (Request Management serializes `ItemType` either way).
- */
-function getItemTypeName(itemType?: number | string): string {
+function getItemTypeName(itemType?: number): string {
   const typeMap: Record<number, string> = {
     1: 'Ammunition',
     2: 'Weapon',
@@ -122,21 +79,7 @@ function getItemTypeName(itemType?: number | string): string {
   if (itemType === undefined || itemType === null) {
     return 'Other';
   }
-  if (typeof itemType === 'number') {
-    return typeMap[itemType] || 'Other';
-  }
-  const key = itemType.trim();
-  const byName: Record<string, number> = {
-    Ammunition: 1,
-    Weapon: 2,
-    Explosive: 3,
-    Accessory: 4
-  };
-  const numeric = byName[key] ?? parseInt(key, 10);
-  if (!Number.isNaN(numeric) && typeMap[numeric]) {
-    return typeMap[numeric];
-  }
-  return 'Other';
+  return typeMap[itemType] || 'Other';
 }
 
 /**

@@ -1,4 +1,5 @@
 import { Notification, NotificationMetadata, NotificationRequestDetail, NotificationDetailType } from '@notifications/models/notification.model';
+import { RequestPriority, RequestStatus } from '@models/backend-enums';
 
 /**
  * Normalize unknown hub/backend metadata to a string-keyed object, or null if not an object.
@@ -147,88 +148,41 @@ export function determineDetailType(detail: NotificationRequestDetail): Notifica
   }
 }
 
-/**
- * Get priority label translation key
- * Handles both number and string priority values
- * Priority mapping: 1 = Normal, 2 = Urgent, 3 = VeryUrgent
- */
-export function getPriorityLabelTranslation(priority?: number | string | null): string {
-  if (priority === null || priority === undefined) {
+/** i18n key under `dashboard.priorityLabels.*` */
+export function getPriorityLabelTranslation(priority?: number | null): string {
+  if (priority == null) {
     return 'dashboard.priorityLabels.urgent';
   }
-
-  // Normalize to number
-  let priorityNum: number;
-  if (typeof priority === 'string') {
-    const priorityLower = priority.toLowerCase().trim().replace(/\s+/g, '');
-    if (priorityLower === 'normal' || priorityLower === '1') {
-      priorityNum = 1;
-    } else if (priorityLower === 'urgent' || priorityLower === '2') {
-      priorityNum = 2;
-    } else if (priorityLower === 'veryurgent' || priorityLower === '3') {
-      priorityNum = 3;
-    } else if (priorityLower === 'critical' || priorityLower === '4') {
-      priorityNum = 4;
-    } else {
-      const parsed = parseInt(priority, 10);
-      priorityNum = isNaN(parsed) ? 2 : parsed;
-    }
-  } else {
-    priorityNum = priority;
-  }
-
-  switch (priorityNum) {
-    case 1:
+  switch (priority) {
+    case RequestPriority.Normal:
       return 'dashboard.priorityLabels.normal';
-    case 2:
+    case RequestPriority.Urgent:
       return 'dashboard.priorityLabels.urgent';
-    case 3:
+    case RequestPriority.VeryUrgent:
       return 'dashboard.priorityLabels.veryUrgent';
     default:
       return 'dashboard.priorityLabels.urgent';
   }
 }
 
-/**
- * Get status label translation key
- * Handles both number and string status values
- */
-export function getStatusLabelTranslation(status?: number | string | null): string {
-  if (status === null || status === undefined) {
+/** i18n key under `dashboard.statusLabels.*` */
+export function getStatusLabelTranslation(status?: number | null): string {
+  if (status == null) {
     return 'dashboard.statusLabels.new';
   }
-
-  // Normalize to number
-  let statusNum: number;
-  if (typeof status === 'string') {
-    const statusLower = status.toLowerCase().trim();
-    if (statusLower === 'new' || statusLower === 'pending' || statusLower === '1') {
-      statusNum = 1;
-    } else if (statusLower === 'underprocess' || statusLower === 'under process' || statusLower === 'inprogress' || statusLower === 'in progress' || statusLower === '2') {
-      statusNum = 2;
-    } else if (statusLower === 'approved' || statusLower === 'completed' || statusLower === 'confirmed' || statusLower === '3') {
-      statusNum = 3;
-    } else if (statusLower === 'rejected' || statusLower === 'declined' || statusLower === '4') {
-      statusNum = 4;
-    } else if (statusLower === 'cancelled' || statusLower === '5') {
-      statusNum = 5;
-    } else {
-      const parsed = parseInt(status, 10);
-      statusNum = isNaN(parsed) ? 1 : parsed;
-    }
-  } else {
-    statusNum = status;
-  }
-
-  switch (statusNum) {
-    case 2:
+  switch (status) {
+    case RequestStatus.UnderProcess:
       return 'dashboard.statusLabels.underProcess';
-    case 3:
+    case RequestStatus.Approved:
       return 'requestsManagement.orderReport.workflowStatus.completed';
-    case 4:
+    case RequestStatus.Rejected:
       return 'dashboard.statusLabels.rejected';
-    case 5:
+    case RequestStatus.Cancelled:
       return 'dashboard.statusLabels.cancelled';
+    case RequestStatus.ReturnedForReview:
+      return 'dashboard.statusLabels.returnedForReview';
+    case RequestStatus.AutoRejected:
+      return 'dashboard.statusLabels.autoRejected';
     default:
       return 'dashboard.statusLabels.new';
   }

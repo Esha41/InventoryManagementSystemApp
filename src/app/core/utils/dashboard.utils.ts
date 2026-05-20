@@ -28,7 +28,7 @@ export interface RequestItemBase {
  */
 export interface DisplayableRequest {
   id: number;
-  status: number | string;
+  status: number;
   departmentId?: number;
   requestNo?: string;
   requesterName?: string;

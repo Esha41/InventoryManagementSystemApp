@@ -4,12 +4,9 @@
 
 import { PERMISSIONS } from '@constants/permissions.constants';
 
-/** Mirrors backend RequestPurposeAllowanceContext. */
-export enum RequestPurposeAllowanceContext {
-  FromAllowance = 1,
-  OutsideAllowance = 2,
-  Both = 3
-}
+import { RequestPurposeAllowanceContext } from '@models/backend-enums';
+
+export { RequestPurposeAllowanceContext };
 
 export interface LookupItem {
   id?: number;

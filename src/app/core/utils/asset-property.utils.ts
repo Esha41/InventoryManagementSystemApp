@@ -7,7 +7,7 @@ import { LookupItem } from '../models/lookup.model';
 import { TranslateService } from '@ngx-translate/core';
 import { getLookupDisplayName } from './asset-list.utils';
 import { getExplosiveTypeName } from './explosive.utils';
-import { ItemType, BaseItemDto } from '../models/inventory.model';
+import { ItemType, BaseItemDto, normalizeItemType } from '../models/inventory.model';
 import { formatDateShort } from './format.utils';
 import { getCurrentLang, getLocalizedName, Localizable } from './localization.utils';
 
@@ -22,19 +22,10 @@ type LegacyExplosiveLike = {
   notes?: string;
 };
 
-/** Map API itemType (number or JsonStringEnumConverter name) to ItemType */
+/** Map API itemType to {@link ItemType}. */
 export function normalizeCatalogItemType(raw: unknown): ItemType | null {
-  if (raw == null) return null;
-  if (typeof raw === 'number' && raw >= 1 && raw <= 3 && Number.isInteger(raw)) {
-    return raw as ItemType;
-  }
-  if (typeof raw === 'string') {
-    const t = raw.trim().toLowerCase();
-    if (t === '1' || t === 'ammunition') return ItemType.Ammunition;
-    if (t === '2' || t === 'weapon') return ItemType.Weapon;
-    if (t === '3' || t === 'explosive') return ItemType.Explosive;
-  }
-  return null;
+  const n = normalizeItemType(raw);
+  return n === 0 ? null : (n as ItemType);
 }
 
 function asLegacyExplosiveLike(asset: AssetUnion): LegacyExplosiveLike | null {
@@ -178,23 +169,10 @@ export class AssetPropertyAccessor {
     return this._activeTab;
   }
 
-  /** Maps AmmunitionType / WeaponCaliberCategory (1–3 or enum name) to translated label */
-  private caliberCategoryEnumLabel(value: number | string | null | undefined): string {
-    if (value == null || value === '') return '-';
-    let n: number;
-    if (typeof value === 'string') {
-      const v = value.trim();
-      const lower = v.toLowerCase();
-      if (lower === 'small' || v === '1') n = 1;
-      else if (lower === 'medium' || v === '2') n = 2;
-      else if (lower === 'large' || v === '3') n = 3;
-      else {
-        n = parseInt(v, 10);
-        if (Number.isNaN(n)) return '-';
-      }
-    } else {
-      n = value;
-    }
+  /** Maps AmmunitionType / WeaponCaliberCategory (1–3) to translated label */
+  private caliberCategoryEnumLabel(value: number | null | undefined): string {
+    if (value == null) return '-';
+    const n = value;
     const key =
       n === 1
         ? 'newIssueRequest.ammunitionTypeSmall'
