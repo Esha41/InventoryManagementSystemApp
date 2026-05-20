@@ -297,6 +297,7 @@
     "nsn": "NSN",
     "partNo": "Part No",
     "totalQty": "إجمالي الكمية",
+    "itemRollup": "ملخص الصنف",
     "usedQty": "الكمية المصروفة سابقا",
     "reservedQty": "الكمية المحجوزة",
     "remainingQty": "الكمية المتبقية",

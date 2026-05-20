@@ -1,317 +1,163 @@
 <app-warehouse-detail-layout
   [title]="getItemName()"
+  [showTabs]="false"
+  [tabSectionMarginClass]="'mb-6'"
   [loading]="loading"
   [error]="error"
   [hasData]="!!inventoryDetail"
   [showViewOnMap]="true"
-  [activeTab]="activeTab"
   (back)="onBack()"
-  (mapView)="onMapView()"
-  (tabChange)="setActiveTab($event)">
-  <!-- Overview Tab -->
-  <div *ngIf="activeTab === 'overview'">
-      <!-- Use Asset Details Component -->
-      <app-asset-details *ngIf="getItemIdForAssetDetails() && getAssetType()" [assetId]="getItemIdForAssetDetails()!"
-        [assetType]="getAssetType()!" [isPage]="false" [showBackButton]="false" (close)="onBack()">
-      </app-asset-details>
-    </div>
+  (mapView)="onMapView()">
 
-    <!-- Stock Tab -->
-    <div *ngIf="activeTab === 'stock'">
-      <!-- Item Summary Table -->
-      <div
-        class="bg-[var(--color-background)] rounded-lg overflow-hidden shadow-custom-sm border-2 border-[var(--color-border)] mb-6">
-        <table class="min-w-full">
-          <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
-            <tr>
-              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] tracking-wide">
-                {{ 'inventorySummary.itemName' | translate }}
-              </th>
-              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] tracking-wide">
-                {{ 'inventorySummary.itemNo' | translate }}
-              </th>
-              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] tracking-wide">
-                {{ 'inventorySummary.type' | translate }}
-              </th>
-              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] tracking-wide">
-                {{ 'inventorySummary.nsn' | translate }}
-              </th>
-              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] tracking-wide">
-                {{ 'inventorySummary.partNo' | translate }}
-              </th>
-              <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] tracking-wide">
-                {{ 'inventorySummary.totalQty' | translate }}
-              </th>
-              <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] tracking-wide">
-                {{ 'inventorySummary.usedQty' | translate }}
-              </th>
-              <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] tracking-wide">
-                {{ 'inventorySummary.reservedQty' | translate }}
-              </th>
-              <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] tracking-wide">
-                {{ 'inventorySummary.remainingQty' | translate }}
-              </th>
-              <th class="px-6 py-3 text-center text-xs font-medium text-[var(--color-text)] tracking-wide">
-                {{ 'inventorySummary.totalLots' | translate }}
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-[var(--color-background)] divide-y divide-[var(--color-border)]">
-            <tr class="hover:bg-[var(--color-background-hover)]">
-              <td class="px-6 py-4 text-sm font-medium text-[var(--color-text)] min-w-0">
-                <span [appTableClampTooltip]="getItemName()">{{ getItemName() }}</span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
-                {{ getItemNo() }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
-                <span
-                  class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[var(--color-info)]/20 text-[var(--color-info)]">
-                  {{ getItemTypeDisplay() }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
-                {{ (inventoryDetail?.item)?.nsn || '-' }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
-                {{ (inventoryDetail?.item)?.partNo || '-' }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
-                {{ formatNumber(getTotalQuantity()) }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
-                {{ formatNumber(getTotalUsedQuantity()) }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
-                {{ formatNumber(getTotalReservedQuantity()) }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-success)] text-end">
-                {{ formatNumber(getTotalRemainingQuantity()) }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-center">
-                <span
-                  class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[var(--color-background-active)] text-[var(--color-text)]">
-                  {{ lots.length }}
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Delivery Receipt Section -->
-      <div
-        class="bg-[var(--color-background)] rounded-lg overflow-hidden shadow-custom-sm border-2 border-[var(--color-border)] mb-6">
-        <div class="px-6 py-4 bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
-          <h3 class="text-sm font-semibold text-[var(--color-text)] tracking-wider">
-            {{ 'addInventory.deliveryReceiptInformation' | translate }}
-          </h3>
+  <div *ngIf="inventoryDetail" class="space-y-6">
+    <!-- Quantity utilization — one card per metric -->
+    <div class="space-y-3">
+      <h2 class="text-base font-semibold text-[var(--color-text)]">{{ 'warehouseInventory.quantityUtilization' | translate }}</h2>
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4 shadow-sm">
+          <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.lot' | translate }}</p>
+          <p class="text-lg font-semibold text-[var(--color-text)] tabular-nums">{{ inventoryDetail.lot }}</p>
         </div>
-        <div class="p-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <span class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
-                {{ 'addInventory.deliveryReceipt' | translate }}
-              </span>
-              <p class="text-sm font-medium text-[var(--color-text)]">
-                {{ inventoryDetail?.deliveryReceipt || '-' }}
-              </p>
-            </div>
-
-            <div>
-              <span class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
-                {{ 'common.attachments' | translate }}
-              </span>
-
-              <div *ngIf="deliveryReceiptFiles?.length; else noDeliveryReceiptFiles" class="space-y-2">
-                <div *ngFor="let f of deliveryReceiptFiles"
-                  class="flex items-center gap-2 px-3 py-2 bg-[var(--color-background-active)] rounded-lg border border-[var(--color-border)]">
-                  <button type="button" (click)="openDeliveryReceiptFile(f.id)"
-                    class="flex-1 min-w-0 text-left text-sm text-[var(--color-brand)] truncate hover:underline">
-                    {{ f.originalName || f.fileName }}
-                  </button>
-                </div>
-              </div>
-
-              <ng-template #noDeliveryReceiptFiles>
-                <p class="text-sm text-[var(--color-text-muted)]">-</p>
-              </ng-template>
-            </div>
-          </div>
+        <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4 shadow-sm">
+          <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.originalQty' | translate }}</p>
+          <p class="text-lg font-semibold text-[var(--color-text)] tabular-nums">{{ formatNumber(inventoryDetail.originalQuantity) }}</p>
         </div>
-      </div>
-
-      <!-- Invoice Information Section -->
-      <div
-        *ngIf="inventoryDetail?.invoiceNumber || inventoryDetail?.invoiceDate || inventoryDetail?.recievedDate || inventoryDetail?.contractNumber || inventoryDetail?.notes"
-        class="bg-[var(--color-background)] rounded-lg overflow-hidden shadow-custom-sm border-2 border-[var(--color-border)] mb-6">
-        <div class="px-6 py-4 bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
-          <h3 class="text-sm font-semibold text-[var(--color-text)] tracking-wider">
-            {{ 'editInventoryDetail.invoiceInformation' | translate }}
-          </h3>
+        <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4 shadow-sm">
+          <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.usedQty' | translate }}</p>
+          <p class="text-lg font-semibold text-[var(--color-text)] tabular-nums">{{ formatNumber(inventoryDetail.usedQuantity) }}</p>
         </div>
-        <div class="p-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Invoice Number -->
-            <div *ngIf="inventoryDetail?.invoiceNumber">
-              <span class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
-                {{ 'editInventoryDetail.invoiceNumber' | translate }}
-              </span>
-              <p class="text-sm font-medium text-[var(--color-text)]">
-                {{ inventoryDetail?.invoiceNumber }}
-              </p>
-            </div>
-
-            <!-- Invoice Date -->
-            <div *ngIf="inventoryDetail?.invoiceDate">
-              <span class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
-                {{ 'editInventoryDetail.invoiceDate' | translate }}
-              </span>
-              <p class="text-sm font-medium text-[var(--color-text)]">
-                {{ formatDate(inventoryDetail?.invoiceDate) }}
-              </p>
-            </div>
-
-            <!-- Received Date -->
-            <div *ngIf="inventoryDetail?.recievedDate">
-              <span class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
-                {{ 'editInventoryDetail.receivedDate' | translate }}
-              </span>
-              <p class="text-sm font-medium text-[var(--color-text)]">
-                {{ formatDate(inventoryDetail?.recievedDate) }}
-              </p>
-            </div>
-
-
-            <!-- Contract Number -->
-            <div>
-              <span class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
-                {{ 'editInventoryDetail.contractNumber' | translate }}
-              </span>
-              <p class="text-sm font-medium text-[var(--color-text)]">
-                {{ inventoryDetail?.contractNumber || '-' }}
-              </p>
-            </div>
-
-            <!-- Notes -->
-            <div *ngIf="inventoryDetail?.notes" class="md:col-span-2">
-              <span class="block text-xs font-medium text-[var(--color-text-muted)] tracking-wide mb-2">
-                {{ 'editInventoryDetail.notes' | translate }}
-              </span>
-              <p class="text-sm text-[var(--color-text)] whitespace-pre-wrap">
-                {{ inventoryDetail?.notes }}
-              </p>
-            </div>
-          </div>
+        <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4 shadow-sm">
+          <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.reservedQty' | translate }}</p>
+          <p class="text-lg font-semibold text-[var(--color-text)] tabular-nums">{{ formatNumber(inventoryDetail.reservedQuantityByOrdersOnProcessing) }}</p>
         </div>
-      </div>
-
-      <!-- Lot Details Section -->
-      <div
-        class="bg-[var(--color-background)] rounded-lg overflow-hidden shadow-custom-sm border-2 border-[var(--color-border)]">
-        <div class="px-6 py-4 bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
-          <h3 class="text-sm font-semibold text-[var(--color-text)] tracking-wider">
-            {{ 'inventorySummary.lotDetails' | translate }}
-          </h3>
+        <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4 shadow-sm">
+          <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.remainingQty' | translate }}</p>
+          <p class="text-lg font-semibold text-[var(--color-success)] tabular-nums">{{ formatNumber(inventoryDetail.remainingQuantity) }}</p>
         </div>
-
-        <!-- Loading State -->
-        <div *ngIf="loadingLots" class="flex items-center justify-center py-12">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-brand)]"></div>
-          <span class="ms-3 text-sm text-[var(--color-text-muted)]">{{ 'common.loading' | translate }}</span>
-        </div>
-
-        <!-- Lot Details Table -->
-        <div *ngIf="!loadingLots">
-          <div *ngIf="lots.length === 0" class="text-center py-12">
-            <p class="text-sm text-[var(--color-text-muted)]">{{ 'inventorySummary.noLots' | translate }}</p>
-          </div>
-
-          <div *ngIf="lots.length > 0" class="overflow-x-auto">
-            <table class="min-w-full">
-              <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
-                <tr>
-                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] tracking-wide">
-                    {{ 'inventorySummary.lotNumber' | translate }}
-                  </th>
-                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] tracking-wide">
-                    {{ 'inventorySummary.depot' | translate }}
-                  </th>
-                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] tracking-wide">
-                    {{ 'inventorySummary.supplier' | translate }}
-                  </th>
-                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] tracking-wide">
-                    {{ 'inventorySummary.manufacturer' | translate }}
-                  </th>
-                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] tracking-wide">
-                    {{ 'inventorySummary.country' | translate }}
-                  </th>
-                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] tracking-wide">
-                    {{ 'inventorySummary.primaryPurpose' | translate }}
-                  </th>
-                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] tracking-wide">
-                    {{ 'inventorySummary.batchNo' | translate }}
-                  </th>
-                  <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text)] tracking-wide">
-                    {{ 'inventorySummary.expiryDate' | translate }}
-                  </th>
-                  <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] tracking-wide">
-                    {{ 'inventorySummary.originalQty' | translate }}
-                  </th>
-                  <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] tracking-wide">
-                    {{ 'inventorySummary.usedQty' | translate }}
-                  </th>
-                  <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] tracking-wide">
-                    {{ 'inventorySummary.reservedQty' | translate }}
-                  </th>
-                  <th class="px-6 py-3 text-end text-xs font-medium text-[var(--color-text)] tracking-wide">
-                    {{ 'inventorySummary.remainingQty' | translate }}
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="bg-[var(--color-background)] divide-y divide-[var(--color-border)]">
-                <tr *ngFor="let lot of lots; trackBy: trackByInventoryDetailId" class="hover:bg-[var(--color-background-hover)]">
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-brand)]">
-                    {{ lot.lot }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
-                    {{ getDepotName(lot) }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
-                    {{ getSupplierNameForLot(lot) }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
-                    {{ getManufacturerNameForLot(lot) }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
-                    {{ getCountryNameForLot(lot) }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
-                    {{ getPrimaryPurposeForLot(lot) }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
-                    {{ lot.batchNo || '-' }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
-                    {{ formatDate(lot.expiryDate) }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
-                    {{ formatNumber(lot.originalQuantity) }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
-                    {{ formatNumber(lot.usedQuantity) }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
-                    {{ formatNumber(lot.reservedQuantityByOrdersOnProcessing) }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
-                    {{ formatNumber(lot.remainingQuantity) }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <div *ngIf="inventoryDetail.currentQuantity !== inventoryDetail.remainingQuantity"
+          class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4 shadow-sm">
+          <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.currentQty' | translate }}</p>
+          <p class="text-lg font-semibold text-[var(--color-text)] tabular-nums">{{ formatNumber(inventoryDetail.currentQuantity) }}</p>
         </div>
       </div>
     </div>
+
+    <!-- Depot inventory record attributes -->
+    <div
+      class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] overflow-hidden shadow-sm">
+      <div class="px-5 py-4 bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
+        <h2 class="text-sm font-semibold text-[var(--color-text)]">{{ 'warehouseInventory.inventoryEntryDetails' | translate }}</h2>
+      </div>
+      <div class="p-5 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Row 1: Item No, Type, Policy No / Batch No (ammo & explosives) -->
+        <div>
+          <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.itemNo' | translate }}</span>
+          <p class="text-sm font-medium text-[var(--color-text)]">{{ getItemNo() }}</p>
+        </div>
+        <div>
+          <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventorySummary.type' | translate }}</span>
+          <p class="text-sm font-medium text-[var(--color-text)]">
+            <span
+              class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[var(--color-info)]/20 text-[var(--color-info)]">
+              {{ getItemTypeDisplay() }}
+            </span>
+          </p>
+        </div>
+        <div>
+          <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ getBatchNoLabelTranslationKey() | translate }}</span>
+          <p class="text-sm font-medium text-[var(--color-text)]">{{ inventoryDetail.batchNo || '-' }}</p>
+        </div>
+        <!-- Row 2: Supplier, Manufacturer, Country -->
+        <div>
+          <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.supplier' | translate }}</span>
+          <p class="text-sm font-medium text-[var(--color-text)]">{{ getSupplierName() }}</p>
+        </div>
+        <div>
+          <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.manufacturer' | translate }}</span>
+          <p class="text-sm font-medium text-[var(--color-text)]">{{ getManufacturerName() }}</p>
+        </div>
+        <div>
+          <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.country' | translate }}</span>
+          <p class="text-sm font-medium text-[var(--color-text)]">{{ getCountryName() }}</p>
+        </div>
+        <!-- Row 3: Primary Purpose, Expiry Date, Ready for Issue -->
+        <div>
+          <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.primaryPurpose' | translate }}</span>
+          <p class="text-sm font-medium text-[var(--color-text)]">{{ getPrimaryPurposeLine() }}</p>
+        </div>
+        <div>
+          <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.expiryDate' | translate }}</span>
+          <p class="text-sm font-medium text-[var(--color-text)]">{{ formatDate(inventoryDetail.expiryDate) }}</p>
+        </div>
+        <div>
+          <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.readyForIssue' | translate }}</span>
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+            [ngClass]="inventoryDetail.readyForIssue ? 'bg-[var(--color-success)]/20 text-[var(--color-success)]' : 'bg-[var(--color-error)]/20 text-[var(--color-error)]'">
+            {{ inventoryDetail.readyForIssue ? ('common.yes' | translate) : ('common.no' | translate) }}
+          </span>
+        </div>
+        <!-- Notes -->
+        <div *ngIf="inventoryDetail.notes" class="md:col-span-3">
+          <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'editInventoryDetail.notes' | translate }}</span>
+          <p class="text-sm text-[var(--color-text)] whitespace-pre-wrap">{{ inventoryDetail.notes }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delivery receipt -->
+    <div
+      class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] overflow-hidden shadow-sm">
+      <div class="px-5 py-4 bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
+        <h2 class="text-sm font-semibold text-[var(--color-text)]">{{ 'addInventory.deliveryReceiptInformation' | translate }}</h2>
+      </div>
+      <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'addInventory.deliveryReceipt' | translate }}</span>
+          <p class="text-sm font-medium text-[var(--color-text)]">{{ inventoryDetail.deliveryReceipt || '-' }}</p>
+        </div>
+        <div>
+          <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'common.attachments' | translate }}</span>
+          <div *ngIf="deliveryReceiptFiles?.length; else noDrFiles" class="space-y-2">
+            <div *ngFor="let f of deliveryReceiptFiles"
+              class="flex items-center gap-2 px-3 py-2 bg-[var(--color-background-active)] rounded-lg border border-[var(--color-border)]">
+              <button type="button" (click)="openDeliveryReceiptFile(f.id)"
+                class="flex-1 min-w-0 text-start text-sm text-[var(--color-brand)] truncate hover:underline">
+                {{ f.originalName || f.fileName }}
+              </button>
+            </div>
+          </div>
+          <ng-template #noDrFiles>
+            <p class="text-sm text-[var(--color-text-muted)]">-</p>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Invoice (parent inventory – show when any field exists) -->
+    <div
+      *ngIf="invoiceSectionVisible"
+      class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] overflow-hidden shadow-sm">
+      <div class="px-5 py-4 bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
+        <h2 class="text-sm font-semibold text-[var(--color-text)]">{{ 'editInventoryDetail.invoiceInformation' | translate }}</h2>
+      </div>
+      <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'editInventoryDetail.invoiceNumber' | translate }}</span>
+          <p class="text-sm font-medium text-[var(--color-text)]">{{ inventoryDetail?.invoiceNumber || '-' }}</p>
+        </div>
+        <div>
+          <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'editInventoryDetail.invoiceDate' | translate }}</span>
+          <p class="text-sm font-medium text-[var(--color-text)]">{{ inventoryDetail?.invoiceDate ? formatDate(inventoryDetail.invoiceDate) : '-' }}</p>
+        </div>
+        <div>
+          <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'editInventoryDetail.receivedDate' | translate }}</span>
+          <p class="text-sm font-medium text-[var(--color-text)]">{{ inventoryDetail?.recievedDate ? formatDate(inventoryDetail.recievedDate) : '-' }}</p>
+        </div>
+        <div>
+          <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'editInventoryDetail.contractNumber' | translate }}</span>
+          <p class="text-sm font-medium text-[var(--color-text)]">{{ inventoryDetail?.contractNumber || '-' }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </app-warehouse-detail-layout>
