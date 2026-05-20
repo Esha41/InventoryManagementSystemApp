@@ -1,5 +1,4 @@
 import { ItemInventorySummaryDto, ItemType, normalizeItemType } from '@models/inventory.model';
-import { InventoryHeadlineMetricsDto } from '@models/inventory-dashboard-monitoring.model';
 import { LotDetailDto } from '@inventory/services/inventory.service';
 import { AssetDto } from '@models/asset.model';
 import { getLocalizedName } from '@utils/localization.utils';
@@ -117,46 +116,6 @@ export function sumLotDetailsMetrics(lots: LotDetailDto[]): {
     }),
     { original: 0, used: 0, reserved: 0, remaining: 0 }
   );
-}
-
-/** Tab badge counts when the table uses server paging (headline metrics stay authoritative). */
-export function itemTypeTabAndStatCountsFromHeadline(h: InventoryHeadlineMetricsDto): {
-  tabCounts: { ammunition: number; weapon: number; explosive: number };
-  byType: { ammo: number; weapon: number; explosive: number };
-} {
-  return {
-    tabCounts: {
-      ammunition: h.ammunitionItemCount,
-      weapon: h.weaponItemGroupsCount,
-      explosive: h.explosiveItemCount
-    },
-    byType: {
-      ammo: h.ammunitionItemCount,
-      weapon: h.weaponItemGroupsCount,
-      explosive: h.explosiveItemCount
-    }
-  };
-}
-
-export function itemTypeTabAndStatCounts(
-  itemSummaries: ItemInventorySummaryDto[]
-): {
-  tabCounts: { ammunition: number; weapon: number; explosive: number };
-  byType: { ammo: number; weapon: number; explosive: number };
-} {
-  let ammunition = 0;
-  let weapon = 0;
-  let explosive = 0;
-  for (const i of itemSummaries) {
-    const ty = normalizeItemType(i.itemType);
-    if (ty === ItemType.Ammunition) ammunition++;
-    else if (ty === ItemType.Weapon) weapon++;
-    else if (ty === ItemType.Explosive) explosive++;
-  }
-  return {
-    tabCounts: { ammunition, weapon, explosive },
-    byType: { ammo: ammunition, weapon, explosive: explosive }
-  };
 }
 
 export function filterItemSummariesByActiveTab(

@@ -166,7 +166,7 @@ export class InventoryItemSummaryTableComponent implements OnInit, OnDestroy {
   }
 
   get mainTableColumnCount(): number {
-    return this.showLotQuantityColumns ? 9 : 5;
+    return this.showLotQuantityColumns ? 8 : 4;
   }
 
   showLotMetricForRow(item: ItemInventorySummaryDto): boolean {
@@ -180,30 +180,6 @@ export class InventoryItemSummaryTableComponent implements OnInit, OnDestroy {
   isExpandedEmpty(item: ItemInventorySummaryDto): boolean {
     if (this.isWeaponItem(item)) return !this.isAssetsLoading && this.assetDetails.length === 0;
     return !this.isLotsLoading && this.lotDetails.length === 0;
-  }
-
-  getItemTypeLabelKey(type: number): string {
-    switch (type) {
-      case ItemType.Ammunition: return 'inventoryDashboard.itemType.ammunition';
-      case ItemType.Weapon:     return 'inventoryDashboard.itemType.weapon';
-      case ItemType.Explosive:  return 'inventoryDashboard.itemType.explosive';
-      default:                  return 'common.unknown';
-    }
-  }
-
-  getItemTypeBadgeClass(type: number): string {
-    const base =
-      'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border';
-    switch (type) {
-      case ItemType.Ammunition:
-        return `${base} border-[color-mix(in_srgb,var(--color-info)_35%,var(--color-border))] bg-[color-mix(in_srgb,var(--color-info)_14%,var(--color-background))] text-[var(--color-info)]`;
-      case ItemType.Weapon:
-        return `${base} border-[color-mix(in_srgb,var(--color-error)_35%,var(--color-border))] bg-[color-mix(in_srgb,var(--color-error)_14%,var(--color-background))] text-[var(--color-error)]`;
-      case ItemType.Explosive:
-        return `${base} border-[color-mix(in_srgb,var(--color-warning)_35%,var(--color-border))] bg-[color-mix(in_srgb,var(--color-warning)_14%,var(--color-background))] text-[var(--color-warning)]`;
-      default:
-        return `${base} border-[var(--color-border)] bg-[var(--color-background-soft)] text-[var(--color-text-muted)]`;
-    }
   }
 
   getLotStatusBadgeClass(kind: 'empty' | 'expired' | 'ready' | 'notReady'): string {

@@ -55,7 +55,6 @@ import {
   filterItemSummariesByActiveTab,
   formatItemPickLabel,
   hasSecondaryItemTableFilters,
-  itemTypeTabAndStatCountsFromHeadline,
   localizedItemSummaryDisplayName,
   nextTableSort,
   pageCountForLength,
@@ -140,7 +139,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   /** Total non-weapon rows for active Ammunition/Explosive tab (server paged). */
   serverNonWeaponTotalCount = 0;
   isItemTableLoading = false;
-  private _itemTypeCountMetrics = itemTypeTabAndStatCountsFromHeadline(emptyInventoryHeadlineMetrics());
   itemSortColumn: string | null = null;
   itemSortDirection: 'asc' | 'desc' = 'asc';
   itemCurrentPage = 1;
@@ -255,7 +253,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     this.headlineMetrics = result.headlineMetrics ?? emptyInventoryHeadlineMetrics();
     this.itemSummaries = result.itemSummaries;
     this.serverNonWeaponTotalCount = result.serverNonWeaponTotalCount;
-    this._itemTypeCountMetrics = itemTypeTabAndStatCountsFromHeadline(this.headlineMetrics);
     this.inventoryMonitoring = result.inventoryMonitoring ?? emptyInventoryMonitoring();
     this.loadCaliberFilterLookups();
     this.expandedItemId = null;
@@ -460,10 +457,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
       }))
       .filter(opt => opt.label && !isPlaceholderCaliberLabel(opt.label))
       .sort((a, b) => a.label.localeCompare(b.label));
-  }
-
-  get itemTypeCountMetrics() {
-    return this._itemTypeCountMetrics;
   }
 
   /** Stat cards "by type" — from headline API (excludes accessory in UI breakdown). */
