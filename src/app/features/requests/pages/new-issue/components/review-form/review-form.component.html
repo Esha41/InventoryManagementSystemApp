@@ -114,7 +114,7 @@
             <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.itemNo' | translate }}</th>
             <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.nsn' | translate }}</th>
             <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.quantity' | translate }}</th>
-            <th class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.weaponAssociation.weapon' | translate }}</th>
+            <th *ngIf="showAssociatedWeaponColumn" class="px-4 py-2 text-start font-semibold">{{ 'newIssueRequest.weaponAssociation.weapon' | translate }}</th>
           </tr>
         </thead>
         <tbody>
@@ -126,11 +126,8 @@
             <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.itemNo || cartridge.productId }}</td>
             <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ cartridge.ncn || '-' }}</td>
             <td class="px-4 py-2 text-[var(--color-text)]">{{ cartridge.quantity || 0 }}</td>
-            <td class="px-4 py-2 text-[var(--color-text-muted)]">
-              <ng-container *ngIf="cartridge.itemType === 'Ammunition'">
-                {{ getWeaponLabel(cartridge) }}
-              </ng-container>
-              <ng-container *ngIf="cartridge.itemType !== 'Ammunition'">—</ng-container>
+            <td *ngIf="showAssociatedWeaponColumn" class="px-4 py-2 text-[var(--color-text-muted)]">
+              {{ getWeaponLabel(cartridge) }}
             </td>
           </tr>
         </tbody>

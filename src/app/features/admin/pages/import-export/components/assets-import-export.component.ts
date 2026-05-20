@@ -435,8 +435,14 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
   private buildExportColumns(): ExcelColumn[] {
     const columns: ExcelColumn[] = [
       {
-        header: this.translateService.instant('assetList.table.name'),
+        header: this.translateService.instant('addAsset.nameEnglish'),
         key: 'name',
+        width: 30,
+        format: (value: string) => value || '-'
+      },
+      {
+        header: this.translateService.instant('addAsset.nameArabic'),
+        key: 'nameAr',
         width: 30,
         format: (value: string) => value || '-'
       },
