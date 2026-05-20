@@ -368,7 +368,7 @@
               <th class="px-3 py-3 text-start text-xs font-semibold uppercase tracking-wider text-[var(--color-text)]" scope="col">
                 {{ 'weaponAssetMaster.col.creationDate' | translate }}
               </th>
-              <th class="px-3 py-3 text-end text-xs font-semibold uppercase tracking-wider text-[var(--color-text)] w-px whitespace-nowrap" scope="col">
+              <th class="ps-3 pe-8 sm:pe-10 py-3 text-end text-xs font-semibold uppercase tracking-wider text-[var(--color-text)] w-px whitespace-nowrap" scope="col">
                 {{ 'assetList.table.actions' | translate }}
               </th>
             </tr>
@@ -427,7 +427,7 @@
                   <ng-container *ngIf="asset.creationDate; else noCreatedDate">{{ asset.creationDate | appDate: 'military' }}</ng-container>
                   <ng-template #noCreatedDate>—</ng-template>
                 </td>
-                <td class="px-3 py-3 align-top text-end whitespace-nowrap" (click)="$event.stopPropagation()">
+                <td class="ps-3 pe-8 sm:pe-10 py-3 align-top text-end whitespace-nowrap" (click)="$event.stopPropagation()">
                   <button
                     *ngIf="asset.itemId"
                     type="button"
