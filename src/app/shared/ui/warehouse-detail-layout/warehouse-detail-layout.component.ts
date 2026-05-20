@@ -38,6 +38,8 @@ export class WarehouseDetailLayoutComponent {
   @Input() error: string | null = null;
   @Input() hasData = false;
   @Input() showViewOnMap = true;
+  /** When false, tabs are hidden and only projected content is shown (single-page detail). */
+  @Input() showTabs = true;
   @Input() activeTab: WarehouseDetailTab = 'overview';
   /** Bottom margin under the tab nav (Tailwind class passed to [ngClass], default mb-8). */
   @Input() tabSectionMarginClass = 'mb-8';

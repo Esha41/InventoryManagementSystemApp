@@ -1,72 +1,43 @@
 <app-warehouse-detail-layout
   [title]="getItemName()"
-  [overviewTabLabelKey]="'warehouseInventory.detailTabThisInventory'"
-  [stockTabLabelKey]="'warehouseInventory.detailTabAllLots'"
+  [showTabs]="false"
   [tabSectionMarginClass]="'mb-6'"
   [loading]="loading"
   [error]="error"
   [hasData]="!!inventoryDetail"
   [showViewOnMap]="true"
-  [activeTab]="activeTab"
   (back)="onBack()"
-  (mapView)="onMapView()"
-  (tabChange)="setActiveTab($event)">
+  (mapView)="onMapView()">
 
-  <!-- Tab 1: Depot inventory record -->
-  <div *ngIf="activeTab === 'overview' && inventoryDetail" class="space-y-6">
-    <!-- Metric strip -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4 shadow-sm">
-        <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.lot' | translate }}</p>
-        <p class="text-lg font-semibold text-[var(--color-text)] tabular-nums">{{ inventoryDetail.lot }}</p>
-      </div>
-      <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4 shadow-sm">
-        <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.originalQty' | translate }}</p>
-        <p class="text-lg font-semibold text-[var(--color-text)] tabular-nums">{{ formatNumber(inventoryDetail.originalQuantity) }}</p>
-      </div>
-      <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4 shadow-sm">
-        <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.remainingQty' | translate }}</p>
-        <p class="text-lg font-semibold text-[var(--color-success)] tabular-nums">{{ formatNumber(inventoryDetail.remainingQuantity) }}</p>
-      </div>
-      <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4 shadow-sm">
-        <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.expiryDate' | translate }}</p>
-        <p class="text-lg font-semibold text-[var(--color-text)]">{{ formatDate(inventoryDetail.expiryDate) }}</p>
-      </div>
-    </div>
-
-    <!-- Utilization -->
-    <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-5 shadow-sm">
-      <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-        <h2 class="text-base font-semibold text-[var(--color-text)]">{{ 'warehouseInventory.quantityUtilization' | translate }}</h2>
-        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border-2" [ngClass]="getStockStatusClass()">
-          {{ getStockStatus() }}
-        </span>
-      </div>
-      <div class="h-3 rounded-full bg-[var(--color-background-muted)] overflow-hidden border border-[var(--color-border)]">
-        <div
-          class="h-full rounded-full transition-all duration-500 bg-[var(--color-brand)]"
-          [style.width.%]="getUtilizationPercentage()">
+  <div *ngIf="inventoryDetail" class="space-y-6">
+    <!-- Quantity utilization — one card per metric -->
+    <div class="space-y-3">
+      <h2 class="text-base font-semibold text-[var(--color-text)]">{{ 'warehouseInventory.quantityUtilization' | translate }}</h2>
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4 shadow-sm">
+          <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.lot' | translate }}</p>
+          <p class="text-lg font-semibold text-[var(--color-text)] tabular-nums">{{ inventoryDetail.lot }}</p>
         </div>
-      </div>
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4 text-sm">
-        <div>
-          <span class="text-[var(--color-text-muted)] block text-xs mb-0.5">{{ 'warehouseInventory.usedQty' | translate }}</span>
-          <span class="font-medium text-[var(--color-text)] tabular-nums">{{ formatNumber(inventoryDetail.usedQuantity) }}</span>
+        <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4 shadow-sm">
+          <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.originalQty' | translate }}</p>
+          <p class="text-lg font-semibold text-[var(--color-text)] tabular-nums">{{ formatNumber(inventoryDetail.originalQuantity) }}</p>
         </div>
-        <div>
-          <span class="text-[var(--color-text-muted)] block text-xs mb-0.5">{{ 'warehouseInventory.currentQty' | translate }}</span>
-          <span class="font-medium text-[var(--color-text)] tabular-nums">{{ formatNumber(inventoryDetail.currentQuantity) }}</span>
+        <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4 shadow-sm">
+          <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.usedQty' | translate }}</p>
+          <p class="text-lg font-semibold text-[var(--color-text)] tabular-nums">{{ formatNumber(inventoryDetail.usedQuantity) }}</p>
         </div>
-        <div>
-          <span class="text-[var(--color-text-muted)] block text-xs mb-0.5">{{ 'warehouseInventory.reservedQty' | translate }}</span>
-          <span class="font-medium text-[var(--color-text)] tabular-nums">{{ formatNumber(inventoryDetail.reservedQuantityByOrdersOnProcessing) }}</span>
+        <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4 shadow-sm">
+          <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.reservedQty' | translate }}</p>
+          <p class="text-lg font-semibold text-[var(--color-text)] tabular-nums">{{ formatNumber(inventoryDetail.reservedQuantityByOrdersOnProcessing) }}</p>
         </div>
-        <div>
-          <span class="text-[var(--color-text-muted)] block text-xs mb-0.5">{{ 'warehouseInventory.readyForIssue' | translate }}</span>
-          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-            [ngClass]="inventoryDetail.readyForIssue ? 'bg-[var(--color-success)]/20 text-[var(--color-success)]' : 'bg-[var(--color-error)]/20 text-[var(--color-error)]'">
-            {{ inventoryDetail.readyForIssue ? ('common.yes' | translate) : ('common.no' | translate) }}
-          </span>
+        <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4 shadow-sm">
+          <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.remainingQty' | translate }}</p>
+          <p class="text-lg font-semibold text-[var(--color-success)] tabular-nums">{{ formatNumber(inventoryDetail.remainingQuantity) }}</p>
+        </div>
+        <div *ngIf="inventoryDetail.currentQuantity !== inventoryDetail.remainingQuantity"
+          class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4 shadow-sm">
+          <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.currentQty' | translate }}</p>
+          <p class="text-lg font-semibold text-[var(--color-text)] tabular-nums">{{ formatNumber(inventoryDetail.currentQuantity) }}</p>
         </div>
       </div>
     </div>
@@ -78,6 +49,7 @@
         <h2 class="text-sm font-semibold text-[var(--color-text)]">{{ 'warehouseInventory.inventoryEntryDetails' | translate }}</h2>
       </div>
       <div class="p-5 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Row 1: Item No, Type, Policy No -->
         <div>
           <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.itemNo' | translate }}</span>
           <p class="text-sm font-medium text-[var(--color-text)]">{{ getItemNo() }}</p>
@@ -92,12 +64,13 @@
           </p>
         </div>
         <div>
-          <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.supplier' | translate }}</span>
-          <p class="text-sm font-medium text-[var(--color-text)]">{{ getSupplierName() }}</p>
-        </div>
-        <div *ngIf="showPolicyNoField()" class="md:col-span-3">
           <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.batchNo' | translate }}</span>
           <p class="text-sm font-medium text-[var(--color-text)]">{{ inventoryDetail.batchNo || '-' }}</p>
+        </div>
+        <!-- Row 2: Supplier, Manufacturer, Country -->
+        <div>
+          <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.supplier' | translate }}</span>
+          <p class="text-sm font-medium text-[var(--color-text)]">{{ getSupplierName() }}</p>
         </div>
         <div>
           <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.manufacturer' | translate }}</span>
@@ -107,10 +80,23 @@
           <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.country' | translate }}</span>
           <p class="text-sm font-medium text-[var(--color-text)]">{{ getCountryName() }}</p>
         </div>
+        <!-- Row 3: Primary Purpose, Expiry Date, Ready for Issue -->
         <div>
           <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.primaryPurpose' | translate }}</span>
           <p class="text-sm font-medium text-[var(--color-text)]">{{ getPrimaryPurposeLine() }}</p>
         </div>
+        <div>
+          <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.expiryDate' | translate }}</span>
+          <p class="text-sm font-medium text-[var(--color-text)]">{{ formatDate(inventoryDetail.expiryDate) }}</p>
+        </div>
+        <div>
+          <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.readyForIssue' | translate }}</span>
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+            [ngClass]="inventoryDetail.readyForIssue ? 'bg-[var(--color-success)]/20 text-[var(--color-success)]' : 'bg-[var(--color-error)]/20 text-[var(--color-error)]'">
+            {{ inventoryDetail.readyForIssue ? ('common.yes' | translate) : ('common.no' | translate) }}
+          </span>
+        </div>
+        <!-- Notes -->
         <div *ngIf="inventoryDetail.notes" class="md:col-span-3">
           <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'editInventoryDetail.notes' | translate }}</span>
           <p class="text-sm text-[var(--color-text)] whitespace-pre-wrap">{{ inventoryDetail.notes }}</p>
@@ -171,106 +157,6 @@
           <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'editInventoryDetail.contractNumber' | translate }}</span>
           <p class="text-sm font-medium text-[var(--color-text)]">{{ inventoryDetail?.contractNumber || '-' }}</p>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tab 2: All lots for this catalog item -->
-  <div *ngIf="activeTab === 'stock'">
-    <div
-      class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] overflow-hidden shadow-sm mb-6">
-      <div class="px-5 py-4 bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
-        <h3 class="text-sm font-semibold text-[var(--color-text)]">{{ 'inventorySummary.itemRollup' | translate }}</h3>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="min-w-full">
-          <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
-            <tr>
-              <th class="px-4 py-3 text-start text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.itemName' | translate }}</th>
-              <th class="px-4 py-3 text-start text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.itemNo' | translate }}</th>
-              <th class="px-4 py-3 text-start text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.type' | translate }}</th>
-              <th class="px-4 py-3 text-start text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.nsn' | translate }}</th>
-              <th class="px-4 py-3 text-end text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.totalQty' | translate }}</th>
-              <th class="px-4 py-3 text-end text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.remainingQty' | translate }}</th>
-              <th class="px-4 py-3 text-center text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.totalLots' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="hover:bg-[var(--color-background-hover)] border-b border-[var(--color-border)]">
-              <td class="px-4 py-3 text-sm">
-                <span [appTableClampTooltip]="getItemName()">{{ getItemName() }}</span>
-              </td>
-              <td class="px-4 py-3 text-sm whitespace-nowrap">{{ getItemNo() }}</td>
-              <td class="px-4 py-3 text-sm whitespace-nowrap">
-                <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--color-info)]/20 text-[var(--color-info)]">
-                  {{ getItemTypeDisplay() }}
-                </span>
-              </td>
-              <td class="px-4 py-3 text-sm whitespace-nowrap">{{ (inventoryDetail?.item)?.nsn || '-' }}</td>
-              <td class="px-4 py-3 text-sm text-end tabular-nums">{{ formatNumber(getTotalQuantity()) }}</td>
-              <td class="px-4 py-3 text-sm text-end tabular-nums font-medium text-[var(--color-success)]">{{ formatNumber(getTotalRemainingQuantity()) }}</td>
-              <td class="px-4 py-3 text-sm text-center">
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--color-background-active)] text-[var(--color-text)]">
-                  {{ lots.length }}
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] overflow-hidden shadow-sm">
-      <div class="px-5 py-4 bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
-        <h3 class="text-sm font-semibold text-[var(--color-text)]">{{ 'inventorySummary.lotDetails' | translate }}</h3>
-      </div>
-
-      <div *ngIf="loadingLots" class="flex items-center justify-center py-12 gap-3">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-brand)]"></div>
-        <span class="text-sm text-[var(--color-text-muted)]">{{ 'common.loading' | translate }}</span>
-      </div>
-
-      <div *ngIf="!loadingLots && lots.length === 0" class="text-center py-12 text-sm text-[var(--color-text-muted)]">
-        {{ 'inventorySummary.noLots' | translate }}
-      </div>
-
-      <div *ngIf="!loadingLots && lots.length > 0" class="overflow-x-auto">
-        <table class="min-w-full">
-          <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
-            <tr>
-              <th class="px-4 py-3 text-start text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.lotNumber' | translate }}</th>
-              <th class="px-4 py-3 text-start text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.depot' | translate }}</th>
-              <th class="px-4 py-3 text-start text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.supplier' | translate }}</th>
-              <th class="px-4 py-3 text-start text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.manufacturer' | translate }}</th>
-              <th class="px-4 py-3 text-start text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.country' | translate }}</th>
-              <th class="px-4 py-3 text-start text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.primaryPurpose' | translate }}</th>
-              <th *ngIf="showPolicyNoField()" class="px-4 py-3 text-start text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.batchNo' | translate }}</th>
-              <th class="px-4 py-3 text-start text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.expiryDate' | translate }}</th>
-              <th class="px-4 py-3 text-end text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.originalQty' | translate }}</th>
-              <th class="px-4 py-3 text-end text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.usedQty' | translate }}</th>
-              <th class="px-4 py-3 text-end text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.reservedQty' | translate }}</th>
-              <th class="px-4 py-3 text-end text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.remainingQty' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-[var(--color-border)]">
-            <tr *ngFor="let lot of lots; trackBy: trackByInventoryDetailId"
-              [class.current-lot-row]="lot.inventoryDetailId === inventoryDetail?.id"
-              class="hover:bg-[var(--color-background-hover)] transition-colors">
-              <td class="px-4 py-3 text-sm font-medium text-[var(--color-brand)] whitespace-nowrap">{{ lot.lot }}</td>
-              <td class="px-4 py-3 text-sm whitespace-nowrap">{{ getDepotName(lot) }}</td>
-              <td class="px-4 py-3 text-sm whitespace-nowrap">{{ getSupplierNameForLot(lot) }}</td>
-              <td class="px-4 py-3 text-sm whitespace-nowrap">{{ getManufacturerNameForLot(lot) }}</td>
-              <td class="px-4 py-3 text-sm whitespace-nowrap">{{ getCountryNameForLot(lot) }}</td>
-              <td class="px-4 py-3 text-sm min-w-[8rem]">{{ getPrimaryPurposeForLot(lot) }}</td>
-              <td *ngIf="showPolicyNoField()" class="px-4 py-3 text-sm whitespace-nowrap">{{ lot.batchNo || '-' }}</td>
-              <td class="px-4 py-3 text-sm whitespace-nowrap">{{ formatDate(lot.expiryDate) }}</td>
-              <td class="px-4 py-3 text-sm text-end tabular-nums">{{ formatNumber(lot.originalQuantity) }}</td>
-              <td class="px-4 py-3 text-sm text-end tabular-nums">{{ formatNumber(lot.usedQuantity) }}</td>
-              <td class="px-4 py-3 text-sm text-end tabular-nums">{{ formatNumber(lot.reservedQuantityByOrdersOnProcessing) }}</td>
-              <td class="px-4 py-3 text-sm text-end tabular-nums font-medium">{{ formatNumber(lot.remainingQuantity) }}</td>
-            </tr>
-          </tbody>
-        </table>
       </div>
     </div>
   </div>

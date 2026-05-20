@@ -30,10 +30,10 @@
     containerClass="mb-8" [actionText]="'warehouseInventory.backToInventory' | translate" (action)="onBack()">
   </app-error-state>
 
-  <!-- Content with Tabs -->
+  <!-- Content (optional tabs + projected body) -->
   <div *ngIf="!loading && !error && hasData">
     <!-- Tabs -->
-    <div class="border-b border-[var(--color-border)]" [ngClass]="tabSectionMarginClass">
+    <div *ngIf="showTabs" class="border-b border-[var(--color-border)]" [ngClass]="tabSectionMarginClass">
       <nav class="flex gap-12">
         <button (click)="setActiveTab('overview')" [ngClass]="{
             'border-[var(--color-brand)]': activeTab === 'overview',
@@ -54,7 +54,9 @@
       </nav>
     </div>
 
-    <!-- Tab Content (projected from parent) -->
-    <ng-content></ng-content>
+    <!-- Body (projected); when tabs hidden, apply tabSectionMarginClass for spacing below header -->
+    <div [ngClass]="!showTabs ? tabSectionMarginClass : null">
+      <ng-content></ng-content>
+    </div>
   </div>
 </div>
