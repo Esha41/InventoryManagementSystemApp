@@ -422,6 +422,14 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Policy No. (batch line) is omitted for ammunition and explosive inventory on this page only.
+   */
+  showPolicyNoField(): boolean {
+    if (!this.inventoryDetail) return true;
+    return !this.isAmmunitionOrExplosiveItemType();
+  }
+
+  /**
    * Get item type display name
    */
   getItemTypeDisplay(): string {
@@ -429,38 +437,42 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
       return this.translateService.instant('warehouseInventory.tabs.explosive');
     }
 
-    // Backend may provide either numeric enum values or strings (e.g. "ammunition").
-    // Cast to `unknown` so TypeScript allows runtime narrowing.
-    const rawItemType = this.inventoryDetail.item.itemType as unknown;
-    
-    // Handle string values from backend
-    if (typeof rawItemType === 'string') {
-      const lowerType = rawItemType.toLowerCase();
-      if (lowerType === 'ammunition') {
-        return this.translateService.instant('warehouseInventory.tabs.ammunition');
-      }
-      if (lowerType === 'weapon') {
-        return this.translateService.instant('warehouseInventory.tabs.weapon');
-      }
-      if (lowerType === 'explosive') {
-        return this.translateService.instant('warehouseInventory.tabs.explosive');
-      }
-    }
-    
-    // Handle numeric/enum values
-    const numericValue = typeof rawItemType === 'number' ? rawItemType : Number(rawItemType);
-    if (numericValue === ItemType.Ammunition || numericValue === 1) {
+    const kind = this.normalizeItemTypeKind(this.inventoryDetail.item.itemType as unknown);
+    if (kind === 'ammunition') {
       return this.translateService.instant('warehouseInventory.tabs.ammunition');
     }
-    if (numericValue === ItemType.Weapon || numericValue === 2) {
+    if (kind === 'weapon') {
       return this.translateService.instant('warehouseInventory.tabs.weapon');
     }
-    if (numericValue === ItemType.Explosive || numericValue === 3) {
+    if (kind === 'explosive') {
       return this.translateService.instant('warehouseInventory.tabs.explosive');
     }
-    
-    // Default fallback
     return this.translateService.instant('warehouseInventory.tabs.explosive');
+  }
+
+  /** Hide Policy No. only for ammunition and explosive catalog lines. */
+  private isAmmunitionOrExplosiveItemType(): boolean {
+    const raw = this.inventoryDetail?.item?.itemType as unknown;
+    const kind = this.normalizeItemTypeKind(raw);
+    return kind === 'ammunition' || kind === 'explosive';
+  }
+
+  private normalizeItemTypeKind(raw: unknown): 'ammunition' | 'weapon' | 'explosive' | null {
+    if (raw === null || raw === undefined) {
+      return 'explosive';
+    }
+    if (typeof raw === 'string') {
+      const lowerType = raw.toLowerCase();
+      if (lowerType === 'ammunition') return 'ammunition';
+      if (lowerType === 'weapon') return 'weapon';
+      if (lowerType === 'explosive') return 'explosive';
+      return null;
+    }
+    const numericValue = typeof raw === 'number' ? raw : Number(raw);
+    if (numericValue === ItemType.Ammunition || numericValue === 1) return 'ammunition';
+    if (numericValue === ItemType.Weapon || numericValue === 2) return 'weapon';
+    if (numericValue === ItemType.Explosive || numericValue === 3) return 'explosive';
+    return null;
   }
 
   /**

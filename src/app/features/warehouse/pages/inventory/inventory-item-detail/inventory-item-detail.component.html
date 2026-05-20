@@ -77,14 +77,10 @@
       <div class="px-5 py-4 bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
         <h2 class="text-sm font-semibold text-[var(--color-text)]">{{ 'warehouseInventory.inventoryEntryDetails' | translate }}</h2>
       </div>
-      <div class="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="p-5 grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
           <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.itemNo' | translate }}</span>
           <p class="text-sm font-medium text-[var(--color-text)]">{{ getItemNo() }}</p>
-        </div>
-        <div>
-          <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.batchNo' | translate }}</span>
-          <p class="text-sm font-medium text-[var(--color-text)]">{{ inventoryDetail.batchNo || '-' }}</p>
         </div>
         <div>
           <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'inventorySummary.type' | translate }}</span>
@@ -99,6 +95,10 @@
           <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.supplier' | translate }}</span>
           <p class="text-sm font-medium text-[var(--color-text)]">{{ getSupplierName() }}</p>
         </div>
+        <div *ngIf="showPolicyNoField()" class="md:col-span-3">
+          <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.batchNo' | translate }}</span>
+          <p class="text-sm font-medium text-[var(--color-text)]">{{ inventoryDetail.batchNo || '-' }}</p>
+        </div>
         <div>
           <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.manufacturer' | translate }}</span>
           <p class="text-sm font-medium text-[var(--color-text)]">{{ getManufacturerName() }}</p>
@@ -107,11 +107,11 @@
           <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.country' | translate }}</span>
           <p class="text-sm font-medium text-[var(--color-text)]">{{ getCountryName() }}</p>
         </div>
-        <div class="md:col-span-2 lg:col-span-3">
+        <div>
           <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.primaryPurpose' | translate }}</span>
           <p class="text-sm font-medium text-[var(--color-text)]">{{ getPrimaryPurposeLine() }}</p>
         </div>
-        <div *ngIf="inventoryDetail.notes" class="md:col-span-2 lg:col-span-3">
+        <div *ngIf="inventoryDetail.notes" class="md:col-span-3">
           <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'editInventoryDetail.notes' | translate }}</span>
           <p class="text-sm text-[var(--color-text)] whitespace-pre-wrap">{{ inventoryDetail.notes }}</p>
         </div>
@@ -244,7 +244,7 @@
               <th class="px-4 py-3 text-start text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.manufacturer' | translate }}</th>
               <th class="px-4 py-3 text-start text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.country' | translate }}</th>
               <th class="px-4 py-3 text-start text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.primaryPurpose' | translate }}</th>
-              <th class="px-4 py-3 text-start text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.batchNo' | translate }}</th>
+              <th *ngIf="showPolicyNoField()" class="px-4 py-3 text-start text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.batchNo' | translate }}</th>
               <th class="px-4 py-3 text-start text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.expiryDate' | translate }}</th>
               <th class="px-4 py-3 text-end text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.originalQty' | translate }}</th>
               <th class="px-4 py-3 text-end text-xs font-medium text-[var(--color-text)]">{{ 'inventorySummary.usedQty' | translate }}</th>
@@ -262,7 +262,7 @@
               <td class="px-4 py-3 text-sm whitespace-nowrap">{{ getManufacturerNameForLot(lot) }}</td>
               <td class="px-4 py-3 text-sm whitespace-nowrap">{{ getCountryNameForLot(lot) }}</td>
               <td class="px-4 py-3 text-sm min-w-[8rem]">{{ getPrimaryPurposeForLot(lot) }}</td>
-              <td class="px-4 py-3 text-sm whitespace-nowrap">{{ lot.batchNo || '-' }}</td>
+              <td *ngIf="showPolicyNoField()" class="px-4 py-3 text-sm whitespace-nowrap">{{ lot.batchNo || '-' }}</td>
               <td class="px-4 py-3 text-sm whitespace-nowrap">{{ formatDate(lot.expiryDate) }}</td>
               <td class="px-4 py-3 text-sm text-end tabular-nums">{{ formatNumber(lot.originalQuantity) }}</td>
               <td class="px-4 py-3 text-sm text-end tabular-nums">{{ formatNumber(lot.usedQuantity) }}</td>
