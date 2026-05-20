@@ -215,22 +215,30 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
     return num.toLocaleString();
   }
 
-  getItemTypeDisplay(): string {
-    if (!this.inventoryDetail?.item?.itemType) {
-      return this.translateService.instant('warehouseInventory.tabs.explosive');
+  getBatchNoLabelTranslationKey(): string {
+    const kind = this.getNormalizedItemKind();
+    if (kind === 'ammunition' || kind === 'explosive') {
+      return 'warehouseInventory.batchNoLabelAmmoExplosive';
     }
+    return 'warehouseInventory.batchNo';
+  }
 
-    const kind = this.normalizeItemTypeKind(this.inventoryDetail.item.itemType as unknown);
+  getItemTypeDisplay(): string {
+    const kind = this.getNormalizedItemKind();
     if (kind === 'ammunition') {
       return this.translateService.instant('warehouseInventory.tabs.ammunition');
     }
     if (kind === 'weapon') {
       return this.translateService.instant('warehouseInventory.tabs.weapon');
     }
-    if (kind === 'explosive') {
-      return this.translateService.instant('warehouseInventory.tabs.explosive');
-    }
     return this.translateService.instant('warehouseInventory.tabs.explosive');
+  }
+
+  private getNormalizedItemKind(): 'ammunition' | 'weapon' | 'explosive' {
+    if (!this.inventoryDetail?.item?.itemType) {
+      return 'explosive';
+    }
+    return this.normalizeItemTypeKind(this.inventoryDetail.item.itemType as unknown) ?? 'explosive';
   }
 
   private normalizeItemTypeKind(raw: unknown): 'ammunition' | 'weapon' | 'explosive' | null {

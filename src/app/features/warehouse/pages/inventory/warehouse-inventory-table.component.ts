@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Eye, Edit, Trash2, Download, Upload } from 'lucide-angular';
 import { CardComponent } from '@components/card/card.component';
@@ -25,6 +26,7 @@ import { defaultPageSize } from '@constants/app.constants';
   standalone: true,
   imports: [
     CommonModule,
+    RouterModule,
     TranslateModule,
     LucideAngularModule,
     CardComponent,
@@ -190,13 +192,23 @@ import { defaultPageSize } from '@constants/app.constants';
           class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] flex flex-col gap-3 hover:shadow-md transition-all">
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0 flex-1">
-              <button
-                type="button"
-                class="font-bold text-[var(--color-brand)] text-sm md:text-base mb-1 break-words min-w-0 text-start hover:underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]"
-                [attr.aria-label]="('warehouseInventory.viewCatalogItemDetails' | translate) + ': ' + getItemName(item)"
-                (click)="openItemMaster.emit(item)">
+              <a
+                *ngIf="getItemMasterRouterLink(item) as lm; else masterNameBtn"
+                [routerLink]="lm.commands"
+                [queryParams]="lm.queryParams"
+                class="font-bold text-[var(--color-brand)] text-sm md:text-base mb-1 break-words min-w-0 inline-block hover:underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]"
+                [attr.aria-label]="('warehouseInventory.viewCatalogItemDetails' | translate) + ': ' + getItemName(item)">
                 {{ getItemName(item) }}
-              </button>
+              </a>
+              <ng-template #masterNameBtn>
+                <button
+                  type="button"
+                  class="font-bold text-[var(--color-brand)] text-sm md:text-base mb-1 break-words min-w-0 text-start hover:underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]"
+                  [attr.aria-label]="('warehouseInventory.viewCatalogItemDetails' | translate) + ': ' + getItemName(item)"
+                  (click)="openItemMaster.emit(item)">
+                  {{ getItemName(item) }}
+                </button>
+              </ng-template>
               <span class="inline-flex px-2 py-0.5 rounded text-[10px] bg-gray-100 text-gray-600 border border-gray-200 gap-1">
                 <span class="font-semibold">{{ 'warehouseInventory.lot' | translate }}:</span>
                 {{ item.lot }}
@@ -301,6 +313,7 @@ import { defaultPageSize } from '@constants/app.constants';
           [getPrimaryPurposeName]="getPrimaryPurposeName"
           [formatNumber]="formatNumber"
           [formatDate]="formatDate"
+          [getItemMasterRouterLink]="getItemMasterRouterLink"
           [sortColumn]="inventorySortColumn"
           [sortDirection]="inventorySortDirection"
           (editItem)="editItem.emit($event)"
@@ -351,6 +364,11 @@ export class WarehouseInventoryTableComponent {
   @Input() getPrimaryPurposeName: (detail: InventoryDetailDto) => string = () => '';
   @Input() formatNumber: (value: number) => string = () => '';
   @Input() formatDate: (date?: Date | string) => string = () => '';
+  @Input() getItemMasterRouterLink: (detail: InventoryDetailDto) => {
+    commands: readonly (string | number)[];
+    queryParams: Record<string, string>;
+  } | null = () => null;
+
   @Input() getAssetItemName: (asset: AssetDto) => string = () => '';
   @Input() getAssetStatusLabel: (asset: AssetDto) => string = () => '';
   @Input() getAssetDepartmentLabel: (asset: AssetDto) => string = () => '';

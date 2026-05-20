@@ -53,6 +53,8 @@
     "supplier": "المورد",
     "manufacturer": "الشركة المصنعة",
     "primaryPurpose": "الغرض الأساسي",
+    "batchNo": "رقم البوليصة",
+    "batchNoLabelAmmoExplosive": "رقم الدفعة",
     "lot": "Lot",
     "quantity": "الكمية",
     "currentQty": "الكمية الحالية",

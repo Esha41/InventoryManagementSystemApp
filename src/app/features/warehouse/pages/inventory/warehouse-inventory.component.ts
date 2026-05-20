@@ -99,6 +99,8 @@ export class WarehouseInventoryComponent implements OnInit {
   readonly isStaticItem = (d: InventoryDetailDto) => this.filterService.isStaticItem(d);
   readonly isItemExpired = (i: InventoryDetailDto) => this.viewModel.isItemExpired(i);
 
+  readonly getItemMasterRouterLink = (d: InventoryDetailDto) => this.orchestrator.getItemMasterRouterLink(d);
+
   getDeleteAssetMessage(): string {
     return this.formatterService.getDeleteAssetMessage(this.store.selectedAsset());
   }

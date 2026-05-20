@@ -126,19 +126,34 @@ export class WarehouseInventoryFacadeService {
    * Back button uses {@link AssetDetailsComponent} `returnTo` query param.
    */
   onOpenItemMasterDetails(detail: InventoryDetailDto): void {
-    const masterId = detail.itemId ?? detail.item?.id;
-    if (!masterId) {
+    const link = this.getItemMasterRouterLink(detail);
+    if (!link) {
       this.toastService.warning(
         this.translateService.instant('warehouseInventory.itemMasterUnavailable') ||
           'Catalog item is unavailable for this row.'
       );
       return;
     }
+    this.router.navigate([...link.commands], { queryParams: link.queryParams });
+  }
+
+  /**
+   * Build the same catalog URL as {@link onOpenItemMasterDetails} for use with `<a routerLink>`
+   * (supports open in new tab via ctrl/middle-click).
+   */
+  getItemMasterRouterLink(detail: InventoryDetailDto): {
+    commands: readonly (string | number)[];
+    queryParams: Record<string, string>;
+  } | null {
+    const masterId = detail.itemId ?? detail.item?.id;
+    if (!masterId) {
+      return null;
+    }
     const tab = this.resolveAssetTabForCatalogDetails(detail);
-    const returnTo = this.router.url;
-    this.router.navigate(['/assets/asset-list', masterId], {
-      queryParams: { tab, returnTo }
-    });
+    return {
+      commands: ['/assets/asset-list', masterId] as const,
+      queryParams: { tab, returnTo: this.router.url }
+    };
   }
 
   onViewItem(detail: InventoryDetailDto): void {

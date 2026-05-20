@@ -56,6 +56,7 @@
     "lot": "Lot",
     "quantity": "Quantity",
     "batchNo": "Policy No.",
+    "batchNoLabelAmmoExplosive": "Batch No",
     "originalQty": "Original Qty",
     "usedQty": "Used Qty",
     "remainingQty": "Remaining Qty",

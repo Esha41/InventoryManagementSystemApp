@@ -49,7 +49,7 @@
         <h2 class="text-sm font-semibold text-[var(--color-text)]">{{ 'warehouseInventory.inventoryEntryDetails' | translate }}</h2>
       </div>
       <div class="p-5 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Row 1: Item No, Type, Policy No -->
+        <!-- Row 1: Item No, Type, Policy No / Batch No (ammo & explosives) -->
         <div>
           <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.itemNo' | translate }}</span>
           <p class="text-sm font-medium text-[var(--color-text)]">{{ getItemNo() }}</p>
@@ -64,7 +64,7 @@
           </p>
         </div>
         <div>
-          <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.batchNo' | translate }}</span>
+          <span class="block text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ getBatchNoLabelTranslationKey() | translate }}</span>
           <p class="text-sm font-medium text-[var(--color-text)]">{{ inventoryDetail.batchNo || '-' }}</p>
         </div>
         <!-- Row 2: Supplier, Manufacturer, Country -->
