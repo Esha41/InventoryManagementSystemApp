@@ -11,8 +11,7 @@ import { WorkflowApprovalStateService } from '../../services/workflow-approval-s
 import { WeaponService } from '@assets/services/weapon.service';
 import { WeaponDto } from '@models/weapon.model';
 import { CreateRequestItemDto } from '@models/request-item.model';
-import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
-import { localizedRequestLineItemName } from '@dashboard/utils/localized-request-line-item-name.util';
+import { getLocalizedName, getCurrentLang, localizedRequestLineItemName } from '@utils/localization.utils';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';

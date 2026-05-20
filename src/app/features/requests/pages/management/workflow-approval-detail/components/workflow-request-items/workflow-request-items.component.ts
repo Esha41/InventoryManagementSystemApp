@@ -11,8 +11,7 @@ import { WeaponAssociationListComponent } from '@components/weapon-association-l
 import { hasWeaponAssociations as itemHasWeaponAssociations } from '@utils/weapon-association-label.utils';
 import type { RequestManagementRequestItemWeaponAssociationDto } from '@models/request-management-base.model';
 import { ItemType } from '@models/inventory.model';
-import { getCurrentLang } from '@utils/localization.utils';
-import { localizedRequestLineItemName } from '@dashboard/utils/localized-request-line-item-name.util';
+import { getCurrentLang, localizedRequestLineItemName } from '@utils/localization.utils';
 
 @Component({
   selector: 'app-workflow-request-items',

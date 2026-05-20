@@ -13,8 +13,7 @@ import {
 } from '../../return-request.state';
 import { LucideAngularModule, Eye } from 'lucide-angular';
 import { viewFile as viewFileUtil } from '@utils/file.utils';
-import { getCurrentLang } from '@utils/localization.utils';
-import { localizedCartridgeDisplayName } from '@requests/utils/cartridge-display.util';
+import { getCurrentLang, localizedCartridgeDisplayName } from '@utils/localization.utils';
 
 @Component({
   selector: 'app-return-review-step',

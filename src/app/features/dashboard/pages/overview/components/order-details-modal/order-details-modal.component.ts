@@ -16,8 +16,7 @@ import {
   formatOrderUsageDateFrom,
   formatOrderUsageDateTo
 } from '@dashboard/utils/dashboard-order.utils';
-import { getCurrentLang } from '@utils/localization.utils';
-import { localizedRequestLineItemName } from '@dashboard/utils/localized-request-line-item-name.util';
+import { getCurrentLang, localizedRequestLineItemName } from '@utils/localization.utils';
 import type { RequestManagementRequestItemDto } from '@models/request-management-base.model';
 import { hasWeaponAssociations as itemHasWeaponAssociations } from '@utils/weapon-association-label.utils';
 import { WeaponAssociationListComponent } from '@components/weapon-association-list/weapon-association-list.component';

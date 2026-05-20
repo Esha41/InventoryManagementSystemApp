@@ -8,8 +8,7 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
 import { Cartridge } from '@models/cartridge.model';
 import { ToastService } from '@services/toast.service';
 import { validateFile, showFileValidationErrors } from '@utils/file.utils';
-import { getCurrentLang } from '@utils/localization.utils';
-import { localizedCartridgeDisplayName } from '@requests/utils/cartridge-display.util';
+import { getCurrentLang, localizedCartridgeDisplayName } from '@utils/localization.utils';
 import {
   AttachmentRequirementDto,
   AttachmentUploadsState,

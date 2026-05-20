@@ -7,7 +7,7 @@ import { OrderDto, OrderRequestItemDto } from '@models/order.model';
 import { ReturnDto, ReturnItemDto } from '@models/return.model';
 import { DiscardDto, DiscardItemDto } from '@models/discard.model';
 import { Subject, takeUntil } from 'rxjs';
-import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { getLocalizedName, getCurrentLang, localizedRequestLineItemName } from '@utils/localization.utils';
 import { formatTimeToMilitary } from '@utils/format.utils';
 import {
   formatCreationDate,
@@ -23,7 +23,6 @@ import {
 import { RequestType } from '@utils/request-type-mapper.utils';
 import { hasWeaponAssociations as itemHasWeaponAssociations } from '@utils/weapon-association-label.utils';
 import { WeaponAssociationListComponent } from '@components/weapon-association-list/weapon-association-list.component';
-import { localizedRequestLineItemName } from '@dashboard/utils/localized-request-line-item-name.util';
 
 /**
  * Unified Request DTO type

@@ -4,11 +4,10 @@ import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, X } from 'lucide-angular';
 import { ReturnDto } from '@models/return.model';
-import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { getLocalizedName, getCurrentLang, localizedRequestLineItemName } from '@utils/localization.utils';
 import { formatTimeToMilitary } from '@utils/format.utils';
 import { Subject, takeUntil } from 'rxjs';
 import type { RequestManagementRequestItemDto } from '@models/request-management-base.model';
-import { localizedRequestLineItemName } from '@dashboard/utils/localized-request-line-item-name.util';
 import { hasWeaponAssociations as itemHasWeaponAssociations } from '@utils/weapon-association-label.utils';
 import { WeaponAssociationListComponent } from '@components/weapon-association-list/weapon-association-list.component';
 
