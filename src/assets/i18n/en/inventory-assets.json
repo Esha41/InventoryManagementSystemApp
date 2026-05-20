@@ -127,6 +127,8 @@
       "ammunitionTypeRequired": "Select Caliber Category"
     },
     "name": "Name",
+    "nameEnglish": "Name (English)",
+    "nameArabic": "Name (Arabic)",
     "nameAr": "Name Arabic",
     "itemNo": "Item No",
     "partNo": "Part No",

@@ -92,7 +92,7 @@
             <div class="space-y-6 min-w-0">
               <!-- Name (Required) -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-name-1">{{ 'addAsset.name' | translate }}
+                <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-name-1">{{ (activeTab === 'ammunition' ? 'addAsset.nameEnglish' : 'addAsset.name') | translate }}
                   *</label>
                 <input id="add-name-1" type="text" [(ngModel)]="assetForm.name" name="name"
                   [class]="getInputClass(nameModel.invalid, nameModel.dirty, nameModel.touched)"
@@ -374,7 +374,7 @@
             <div class="space-y-6 min-w-0">
               <!-- Name Arabic -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-name-ar">{{ 'addAsset.nameAr' | translate }}</label>
+                <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-name-ar">{{ (activeTab === 'ammunition' ? 'addAsset.nameArabic' : 'addAsset.nameAr') | translate }}</label>
                 <input id="add-name-ar" type="text" [(ngModel)]="assetForm.nameAr" name="nameAr" dir="rtl"
                   [class]="getInputClass(false, false, false)"
                   [placeholder]="'addAsset.enterNameAr' | translate" maxlength="200" />

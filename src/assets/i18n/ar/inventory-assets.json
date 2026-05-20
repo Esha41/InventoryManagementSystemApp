@@ -126,6 +126,8 @@
       "totalWeightMustBePositive": "يجب أن يكون الوزن الإجمالي أكبر من 0"
     },
     "name": "الاسم",
+    "nameEnglish": "الاسم (بالإنجليزية)",
+    "nameArabic": "الاسم (بالعربية)",
     "nameAr": "الاسم بالعربية",
     "itemNo": "رقم المادة",
     "partNo": "Part No",
