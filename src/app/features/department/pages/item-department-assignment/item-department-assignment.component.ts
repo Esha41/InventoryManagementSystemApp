@@ -18,6 +18,7 @@ import {
   DepartmentAssignmentSummaryDto,
   BaseItemWithType
 } from '@models/item-department-assignment.model';
+import { ItemType } from '@models/backend-enums';
 import { LookupItem } from '@models/lookup.model';
 import { ToastService } from '@services/toast.service';
 import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialog.component';
@@ -379,22 +380,16 @@ export class ItemDepartmentAssignmentComponent implements OnInit, OnDestroy {
     }
   }
 
-  private isAmmunitionType(itemType: number | string | undefined): boolean {
-    if (itemType === undefined || itemType === null) return false;
-    if (typeof itemType === 'string') return itemType.trim().toLowerCase() === 'ammunition';
-    return itemType === 1;
+  private isAmmunitionType(itemType: number | undefined): boolean {
+    return itemType === ItemType.Ammunition;
   }
 
-  private isWeaponType(itemType: number | string | undefined): boolean {
-    if (itemType === undefined || itemType === null) return false;
-    if (typeof itemType === 'string') return itemType.trim().toLowerCase() === 'weapon';
-    return itemType === 2;
+  private isWeaponType(itemType: number | undefined): boolean {
+    return itemType === ItemType.Weapon;
   }
 
-  private isExplosiveType(itemType: number | string | undefined): boolean {
-    if (itemType === undefined || itemType === null) return false;
-    if (typeof itemType === 'string') return itemType.trim().toLowerCase() === 'explosive';
-    return itemType === 3;
+  private isExplosiveType(itemType: number | undefined): boolean {
+    return itemType === ItemType.Explosive;
   }
 
   onItemSelectChange(itemId: number): void {

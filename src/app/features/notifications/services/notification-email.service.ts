@@ -328,76 +328,37 @@ export class NotificationEmailService {
     return Boolean(details) && typeof details === 'object' && 'requestNo' in (details as object) && !('orderNo' in (details as object));
   }
 
-  private getPriorityLabel(priority: number | string): string {
-    let priorityNum: number;
-    if (typeof priority === 'string') {
-      const priorityLower = priority.toLowerCase().trim();
-      if (priorityLower === 'high' || priorityLower === '1') {
-        priorityNum = 1;
-      } else if (priorityLower === 'medium' || priorityLower === '2') {
-        priorityNum = 2;
-      } else if (priorityLower === 'low' || priorityLower === '3') {
-        priorityNum = 3;
-      } else if (priorityLower === 'critical' || priorityLower === '4') {
-        priorityNum = 4;
-      } else {
-        const parsed = parseInt(priority, 10);
-        priorityNum = isNaN(parsed) ? 1 : parsed;
-      }
-    } else {
-      priorityNum = priority;
-    }
-
-    switch (priorityNum) {
+  private getPriorityLabel(priority: number): string {
+    switch (priority) {
       case 1:
-        return 'High';
+        return 'Normal';
       case 2:
-        return 'Medium';
+        return 'Urgent';
       case 3:
-        return 'Low';
-      case 4:
-        return 'Critical';
+        return 'Very Urgent';
       default:
-        return `Priority ${priorityNum}`;
+        return `Priority ${priority}`;
     }
   }
 
-  private getStatusLabel(status: number | string): string {
-    let statusNum: number;
-    if (typeof status === 'string') {
-      const statusLower = status.toLowerCase().trim();
-      if (statusLower === 'new' || statusLower === 'pending' || statusLower === '0' || statusLower === '1') {
-        statusNum = 1;
-      } else if (statusLower === 'underprocess' || statusLower === 'under process' || statusLower === 'inprogress' || statusLower === 'in progress' || statusLower === '2') {
-        statusNum = 2;
-      } else if (statusLower === 'approved' || statusLower === 'completed' || statusLower === 'confirmed' || statusLower === '3') {
-        statusNum = 3;
-      } else if (statusLower === 'rejected' || statusLower === 'declined' || statusLower === '4') {
-        statusNum = 4;
-      } else if (statusLower === 'cancelled' || statusLower === '5') {
-        statusNum = 5;
-      } else {
-        const parsed = parseInt(status, 10);
-        statusNum = isNaN(parsed) ? 1 : parsed;
-      }
-    } else {
-      statusNum = status;
-    }
-
-    switch (statusNum) {
-      case 0:
+  private getStatusLabel(status: number): string {
+    switch (status) {
       case 1:
         return 'New';
       case 2:
-        return 'In Progress';
+        return 'Under Process';
       case 3:
         return 'Approved';
       case 4:
         return 'Rejected';
       case 5:
         return 'Cancelled';
+      case 6:
+        return 'Returned for Review';
+      case 7:
+        return 'Auto-Rejected';
       default:
-        return `Status ${statusNum}`;
+        return `Status ${status}`;
     }
   }
 

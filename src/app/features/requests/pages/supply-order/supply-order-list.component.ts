@@ -100,29 +100,7 @@ export class SupplyOrderListComponent implements OnInit, OnDestroy {
    * Get status translation key
    * Handles both number and string status values
    */
-  getStatusText(status: number | string): string {
-    // Normalize status to number
-    let statusNum: number;
-    if (typeof status === 'string') {
-      const statusLower = status.toLowerCase().trim();
-      if (statusLower === 'new' || statusLower === 'pending' || statusLower === '1') {
-        statusNum = 1;
-      } else if (statusLower === 'underprocess' || statusLower === 'under process' || statusLower === 'inprogress' || statusLower === 'in progress' || statusLower === '2') {
-        statusNum = 2;
-      } else if (statusLower === 'approved' || statusLower === 'completed' || statusLower === 'confirmed' || statusLower === '3') {
-        statusNum = 3;
-      } else if (statusLower === 'rejected' || statusLower === 'declined' || statusLower === '4') {
-        statusNum = 4;
-      } else if (statusLower === 'cancelled' || statusLower === '5') {
-        statusNum = 5;
-      } else {
-        const parsed = parseInt(status, 10);
-        statusNum = isNaN(parsed) ? 1 : parsed;
-      }
-    } else {
-      statusNum = status;
-    }
-
+  getStatusText(status: number): string {
     const statusMap: { [key: number]: string } = {
       1: 'dashboard.statusLabels.new',
       2: 'dashboard.statusLabels.underProcess',
@@ -130,36 +108,10 @@ export class SupplyOrderListComponent implements OnInit, OnDestroy {
       4: 'dashboard.statusLabels.rejected',
       5: 'dashboard.statusLabels.completed'
     };
-    return statusMap[statusNum] || 'dashboard.statusLabels.new';
+    return statusMap[status] || 'dashboard.statusLabels.new';
   }
 
-  /**
-   * Get status badge CSS classes
-   * Handles both number and string status values
-   */
-  getStatusClass(status: number | string): string {
-    // Normalize status to number
-    let statusNum: number;
-    if (typeof status === 'string') {
-      const statusLower = status.toLowerCase().trim();
-      if (statusLower === 'new' || statusLower === 'pending' || statusLower === '1') {
-        statusNum = 1;
-      } else if (statusLower === 'underprocess' || statusLower === 'under process' || statusLower === 'inprogress' || statusLower === 'in progress' || statusLower === '2') {
-        statusNum = 2;
-      } else if (statusLower === 'approved' || statusLower === 'completed' || statusLower === 'confirmed' || statusLower === '3') {
-        statusNum = 3;
-      } else if (statusLower === 'rejected' || statusLower === 'declined' || statusLower === '4') {
-        statusNum = 4;
-      } else if (statusLower === 'cancelled' || statusLower === '5') {
-        statusNum = 5;
-      } else {
-        const parsed = parseInt(status, 10);
-        statusNum = isNaN(parsed) ? 1 : parsed;
-      }
-    } else {
-      statusNum = status;
-    }
-
+  getStatusClass(status: number): string {
     const classMap: { [key: number]: string } = {
       1: 'bg-[var(--color-info)]/20 text-[var(--color-info)]',
       2: 'bg-[var(--color-warning)]/20 text-[var(--color-warning)]',
@@ -167,18 +119,18 @@ export class SupplyOrderListComponent implements OnInit, OnDestroy {
       4: 'bg-[var(--color-error)]/20 text-[var(--color-error)]',
       5: 'bg-[var(--color-background-muted)] text-[var(--color-text-muted)]'
     };
-    return classMap[statusNum] || 'bg-[var(--color-background-muted)] text-[var(--color-text-muted)]';
+    return classMap[status] || 'bg-[var(--color-background-muted)] text-[var(--color-text-muted)]';
   }
 
   /**
    * Get priority translation key
    * Handles both number and string priority values
    */
-  getPriorityText(priority: number | string): string {
+  getPriorityText(priority: number): string {
     return `common.priorityLevels.${getPriorityKey(priority)}`;
   }
 
-  getPriorityDisplayText(priority?: number | string | null): string {
+  getPriorityDisplayText(priority?: number | null): string {
     return getPriorityText(priority);
   }
 

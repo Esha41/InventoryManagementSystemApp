@@ -19,6 +19,7 @@ import { BackendUserService } from '@services/backend-user.service';
 import { ToastService } from '@services/toast.service';
 import { ConfigService } from '@services/config.service';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
+import { AutoRejectTriggerMode } from '@models/backend-enums';
 import { BackendWorkflowDto, WorkflowStepDto } from '@models/workflow.model';
 import { RoleDto } from '@models/backend-user.model';
 import { TranslationMap } from '@models/common.types';
@@ -138,16 +139,16 @@ export class OrderAutoRejectWorkflowTriggersModalComponent implements OnInit, On
       this.triggerStepIds = [];
       return;
     }
-    const modeRaw = String(wf.autoRejectTriggerMode ?? '').trim().toLowerCase();
-    if (modeRaw === 'role') {
+    const mode = wf.autoRejectTriggerMode ?? AutoRejectTriggerMode.None;
+    if (mode === AutoRejectTriggerMode.Role) {
       this.triggerMode = 'role';
       this.triggerRoleIds = [...(wf.autoRejectTriggerRoleIds ?? []).filter(Boolean)];
       this.triggerStepIds = [];
-    } else if (modeRaw === 'step') {
+    } else if (mode === AutoRejectTriggerMode.Step) {
       this.triggerMode = 'step';
       this.triggerStepIds = [...(wf.autoRejectTriggerStepIds ?? []).filter(id => id != null)];
       this.triggerRoleIds = [];
-    } else if (modeRaw === 'disabled') {
+    } else if (mode === AutoRejectTriggerMode.Disabled) {
       this.triggerMode = 'disabled';
       this.triggerRoleIds = [];
       this.triggerStepIds = [];
@@ -247,12 +248,12 @@ export class OrderAutoRejectWorkflowTriggersModalComponent implements OnInit, On
       .updateWorkflowAutoRejectTriggers(this.workflowId, {
         mode:
           this.triggerMode === 'none'
-            ? 'None'
+            ? AutoRejectTriggerMode.None
             : this.triggerMode === 'role'
-              ? 'Role'
+              ? AutoRejectTriggerMode.Role
               : this.triggerMode === 'step'
-                ? 'Step'
-                : 'Disabled',
+                ? AutoRejectTriggerMode.Step
+                : AutoRejectTriggerMode.Disabled,
         triggerRoleIds: rolePayload,
         triggerStepIds: stepPayload
       })

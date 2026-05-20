@@ -45,7 +45,7 @@ export interface RequestManagementRequestPurposeDto {
   id: number;
   nameAr: string;
   nameEn: string;
-  requestType: number | string;
+  requestType: number;
 }
 
 /** @see `ettadbackend/Project.Module.Logic/Dtos/DepotDto.cs` */
@@ -81,7 +81,7 @@ export interface RequestManagementRequestItemDto {
   itemNameAr?: string | null;
   itemNo?: string;
   nsn?: string;
-  itemType?: number | string;
+  itemType?: number;
   weaponAssociations?: RequestManagementRequestItemWeaponAssociationDto[];
 }
 
@@ -92,10 +92,10 @@ export interface RequestManagementRequestItemDto {
 export interface RequestManagementBaseRequestDto {
   id: number;
   requestNo: string;
-  requestType: number | string;
+  requestType: number;
   reason?: string | null;
-  priority: number | string;
-  status: number | string;
+  priority: number;
+  status: number;
   notes?: string;
   requestPurposeNotes: string;
   departmentId: number;

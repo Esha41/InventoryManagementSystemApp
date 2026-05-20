@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { UserDelegationService } from '@admin/services/user-delegation.service';
 import { UserDelegation } from '@models/user-delegation';
+import { getDelegationScopeI18nSuffix } from '@models/delegation-scope.enum';
 import { AddDelegationModalComponent } from './add-delegation-modal/add-delegation-modal.component';
 import { ConfirmationDialogComponent } from '@components/confirmation-dialog/confirmation-dialog.component';
 import { LucideAngularModule, Plus, Trash2, Calendar, User, AlertCircle, CheckCircle, XCircle, Ban } from 'lucide-angular';
@@ -32,6 +33,7 @@ export class DelegationListComponent implements OnInit {
     readonly CheckCircle = CheckCircle;
     readonly Ban = Ban;
     readonly XCircle = XCircle;
+    readonly scopeI18nSuffix = getDelegationScopeI18nSuffix;
 
     activeTab: 'my-delegations' | 'pending-requests' = 'my-delegations';
     delegations: UserDelegation[] = [];

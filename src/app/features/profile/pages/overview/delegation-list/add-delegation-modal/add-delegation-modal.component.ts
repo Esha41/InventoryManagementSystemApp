@@ -5,7 +5,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { UserDelegationService } from '@admin/services/user-delegation.service';
 import { BackendUserDto } from '@models/backend-user.model';
 import { CreateUserDelegation } from '@models/user-delegation';
-import { DelegationScope, getAvailableDelegationScopes } from '@models/delegation-scope.enum';
+import { DelegationScope, getAvailableDelegationScopes, getDelegationScopeI18nSuffix } from '@models/delegation-scope.enum';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { LucideAngularModule, X } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
@@ -36,6 +36,7 @@ export class AddDelegationModalComponent implements OnInit {
 
     // Delegation scopes
     availableScopes: DelegationScope[] = getAvailableDelegationScopes();
+    readonly scopeI18nSuffix = getDelegationScopeI18nSuffix;
 
     constructor(
         private fb: FormBuilder,
@@ -118,15 +119,15 @@ export class AddDelegationModalComponent implements OnInit {
      */
     toggleScope(scope: DelegationScope, event: Event): void {
         const checked = (event.target as HTMLInputElement).checked;
-        const currentScopes: string[] = this.form.value.delegationScopes || [];
-        
+        const currentScopes: DelegationScope[] = this.form.value.delegationScopes || [];
+
         if (checked) {
             this.form.patchValue({
                 delegationScopes: [...currentScopes, scope]
             });
         } else {
             this.form.patchValue({
-                delegationScopes: currentScopes.filter((s: string) => s !== scope)
+                delegationScopes: currentScopes.filter((s: DelegationScope) => s !== scope)
             });
         }
     }
@@ -135,7 +136,7 @@ export class AddDelegationModalComponent implements OnInit {
      * Check if a scope is currently selected
      */
     isScopeSelected(scope: DelegationScope): boolean {
-        const currentScopes: string[] = this.form.value.delegationScopes || [];
+        const currentScopes: DelegationScope[] = this.form.value.delegationScopes || [];
         return currentScopes.includes(scope);
     }
 

@@ -136,7 +136,7 @@
                             <div class="flex flex-wrap gap-1">
                                 <span *ngFor="let scope of element.delegationScopes"
                                     class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[var(--color-brand)]/10 text-[var(--color-brand)]">
-                                    {{ 'DELEGATION.SCOPE_' + scope.toUpperCase() | translate }}
+                                    {{ 'DELEGATION.SCOPE_' + scopeI18nSuffix(scope) | translate }}
                                 </span>
                             </div>
                         </td>
@@ -225,7 +225,7 @@
                             <div class="flex flex-wrap gap-1">
                                 <span *ngFor="let scope of element.delegationScopes"
                                     class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[var(--color-brand)]/10 text-[var(--color-brand)]">
-                                    {{ 'DELEGATION.SCOPE_' + scope.toUpperCase() | translate }}
+                                    {{ 'DELEGATION.SCOPE_' + scopeI18nSuffix(scope) | translate }}
                                 </span>
                             </div>
                         </td>

@@ -40,7 +40,7 @@ export class SupplyOrderInfoComponent {
    * Get priority translation key
    * Handles both number and string priority values
    */
-  getPriorityText(priority?: number | string | null): string {
+  getPriorityText(priority?: number | null): string {
     return getPriorityTranslationKey(priority);
   }
 

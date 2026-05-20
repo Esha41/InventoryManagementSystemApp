@@ -33,33 +33,16 @@ export interface BaseItemDto {
   primaryPurposes?: Array<{ id: number; nameAr: string; nameEn: string }>;
 }
 
-export enum ItemType {
-  Ammunition = 1,
-  Weapon = 2,
-  Explosive = 3
-}
+export { ItemType } from '@models/backend-enums';
 
-/**
- * API may return {@link ItemType} as a number or as a string (e.g. ASP.NET default "Weapon").
- */
-export function normalizeItemType(raw: unknown): number {
+import { ItemType } from '@models/backend-enums';
+
+/** Coerce API itemType to numeric {@link ItemType} (0 if invalid). */
+export function normalizeItemType(raw: unknown): ItemType | 0 {
   if (raw === null || raw === undefined) return 0;
-  if (typeof raw === 'number' && !Number.isNaN(raw)) return raw;
-  if (typeof raw === 'string') {
-    const t = raw.trim();
-    if (/^-?\d+$/.test(t)) return Number(t);
-    switch (t) {
-      case 'Ammunition':
-        return ItemType.Ammunition;
-      case 'Weapon':
-        return ItemType.Weapon;
-      case 'Explosive':
-        return ItemType.Explosive;
-      default:
-        return 0;
-    }
-  }
-  return 0;
+  const n = typeof raw === 'number' ? raw : Number(raw);
+  if (!Number.isInteger(n) || n < ItemType.Ammunition || n > ItemType.Accessory) return 0;
+  return n as ItemType;
 }
 
 /** Minimal row from POST /api/Asset/catalog-items/paged */

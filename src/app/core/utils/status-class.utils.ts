@@ -46,7 +46,7 @@ const ORDER_REPORT_STATUS_BADGE_UNKNOWN =
 /**
  * Order / request workflow badge classes from API numeric (or string) status — aligned with sidebar order list.
  */
-export function getOrderWorkflowStatusBadgeClassesFromApi(status: number | string): string {
+export function getOrderWorkflowStatusBadgeClassesFromApi(status: number): string {
   const label = mapOrderStatusFromApi(status);
   switch (label) {
     case 'Approved':

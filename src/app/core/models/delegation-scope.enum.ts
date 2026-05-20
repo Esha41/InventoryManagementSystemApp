@@ -1,18 +1,20 @@
-/**
- * Enum for delegation scopes.
- * Backend sends enum values as strings (JsonStringEnumConverter),
- * so we use string values here.
- */
-export enum DelegationScope {
-    None = 'None',
-    WorkflowApproval = 'WorkflowApproval'
-}
+import { DelegationScope } from '@models/backend-enums';
+
+export { DelegationScope } from '@models/backend-enums';
 
 /**
  * Get all available delegation scopes (excluding None)
  */
 export function getAvailableDelegationScopes(): DelegationScope[] {
-    return [
-        DelegationScope.WorkflowApproval
-    ];
+  return [DelegationScope.WorkflowApproval];
+}
+
+/** Translation key suffix: DELEGATION.SCOPE_{suffix} */
+export function getDelegationScopeI18nSuffix(scope: DelegationScope): string {
+  switch (scope) {
+    case DelegationScope.WorkflowApproval:
+      return 'WORKFLOWAPPROVAL';
+    default:
+      return 'NONE';
+  }
 }

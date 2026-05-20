@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { LucideAngularModule, ArrowLeft, ArrowRight, X, ChevronDown, ChevronRight } from 'lucide-angular';
+import { ItemType } from '@models/backend-enums';
 import { AssetStatus, ASSET_STATUS_FORM_OPTIONS_ORDER, getAssetStatusLabel as assetStatusLabelKey } from '@models/asset.model';
 import { ReturnService, ProcessReturnItemsDto } from '@requests/services/return.service';
 import { FileUploadService, FileUploadDto } from '@services/file-upload.service';
@@ -122,11 +123,11 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
   }
 
   get hasAmmoExplosiveItems(): boolean {
-    return this.requestItems.some(i => i.itemType === 1 || i.itemType === 3 || i.itemType === 'Ammunition' || i.itemType === 'Explosive');
+    return this.requestItems.some(i => i.itemType === ItemType.Ammunition || i.itemType === ItemType.Explosive);
   }
 
   get hasWeaponItems(): boolean {
-    return this.requestItems.some(i => i.itemType === 2 || i.itemType === 'Weapon');
+    return this.requestItems.some(i => i.itemType === ItemType.Weapon);
   }
 
   get canSubmit(): boolean {
@@ -274,8 +275,8 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
 
     for (const item of this.requestItems) {
       const type = item.itemType;
-      const isAmmoOrExplosive = type === 1 || type === 3 || type === 'Ammunition' || type === 'Explosive';
-      const isWeapon = type === 2 || type === 'Weapon';
+      const isAmmoOrExplosive = type === ItemType.Ammunition || type === ItemType.Explosive;
+      const isWeapon = type === ItemType.Weapon;
       const itemName = item.itemName ?? 'Unknown Item';
       const itemId = item.itemId || item.id;
       const requested = item.quantity != null ? Number(item.quantity) : null;

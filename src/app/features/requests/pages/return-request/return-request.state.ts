@@ -105,9 +105,9 @@ export function createInitialLookupState(): ReturnLookupState {
     requestPurposes: [],
     isLoadingRequestPurposes: false,
     ammunitionTypeOptions: [
-      { label: 'returnRequest.filters.small', value: 'Small' },
-      { label: 'returnRequest.filters.medium', value: 'Medium' },
-      { label: 'returnRequest.filters.large', value: 'Large' }
+      { label: 'returnRequest.filters.small', value: '1' },
+      { label: 'returnRequest.filters.medium', value: '2' },
+      { label: 'returnRequest.filters.large', value: '3' }
     ],
     linkedOptions: [
       { label: 'returnRequest.filters.linked', value: 'Linked' },

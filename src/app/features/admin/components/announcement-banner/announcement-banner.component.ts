@@ -196,7 +196,7 @@ export class AnnouncementBannerComponent implements OnInit, OnDestroy {
         });
     }
 
-    getBannerClass(priority: number | string | undefined | null): string {
+    getBannerClass(priority: number | undefined | null): string {
         const p = this.normalizePriority(priority);
         switch (p) {
             case 1:
@@ -257,26 +257,12 @@ export class AnnouncementBannerComponent implements OnInit, OnDestroy {
         this.rotationSub = undefined;
     }
 
-    private normalizeDeliveryType(dt: number | string | undefined | null): number {
-        if (dt === null || dt === undefined) return AnnouncementDeliveryType.Banner;
-        if (typeof dt === 'number') return dt;
-        const s = String(dt).toLowerCase();
-        if (s === 'banner' || s === '1') return AnnouncementDeliveryType.Banner;
-        if (s === 'notification' || s === '2') return AnnouncementDeliveryType.Notification;
-        if (s === 'both' || s === '3') return AnnouncementDeliveryType.Both;
-        const n = parseInt(String(dt), 10);
-        return isNaN(n) ? AnnouncementDeliveryType.Banner : n;
+    private normalizeDeliveryType(dt: number | undefined | null): number {
+        if (dt == null) return AnnouncementDeliveryType.Banner;
+        return dt;
     }
 
-    private normalizePriority(priority: number | string | undefined | null): number {
-        if (priority === null || priority === undefined) return 0;
-        if (typeof priority === 'number') return priority;
-        const s = String(priority).toLowerCase();
-        if (s === 'normal' || s === '1') return 1;
-        if (s === 'urgent' || s === '2') return 2;
-        if (s === 'veryurgent' || s === 'very urgent' || s === '3') return 3;
-        if (s === 'critical' || s === '4') return 4;
-        const n = parseInt(String(priority), 10);
-        return isNaN(n) ? 0 : n;
+    private normalizePriority(priority: number | undefined | null): number {
+        return priority ?? 0;
     }
 }

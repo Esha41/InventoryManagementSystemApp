@@ -13,7 +13,7 @@ export interface DashboardCard {
   title: string;
   status: CardStatus;
 
-  requestStatus?: number | string;
+  requestStatus?: number;
   orders: OrderItem[];
   permissions: string[];
   roles?: string[];

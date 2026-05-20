@@ -71,7 +71,7 @@ export const REQUEST_STATUS_APPROVED = RequestStatusEnum.Approved;
  * Check if a request status should be displayed on the dashboard
  * Uses centralized metadata for single source of truth
  */
-export function isDisplayableRequestStatus(status: number | string | null | undefined): boolean {
+export function isDisplayableRequestStatus(status: number | null | undefined): boolean {
   if (status === null || status === undefined) {
     return false;
   }
@@ -84,7 +84,7 @@ export function isDisplayableRequestStatus(status: number | string | null | unde
  * Map request status to dashboard card status
  * Uses centralized metadata for single source of truth
  */
-export function mapRequestStatusToCardStatus(status: number | string | null | undefined): CardStatus {
+export function mapRequestStatusToCardStatus(status: number | null | undefined): CardStatus {
   if (status === null || status === undefined) {
     return 'new';
   }
@@ -96,7 +96,7 @@ export function mapRequestStatusToCardStatus(status: number | string | null | un
  * Get translation key for request status
  * Uses centralized metadata for single source of truth
  */
-export function getRequestStatusTranslationKey(status?: number | string | null): string {
+export function getRequestStatusTranslationKey(status?: number | null): string {
   return getStatusMetadata(status).translationKey;
 }
 

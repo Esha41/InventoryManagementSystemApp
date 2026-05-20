@@ -62,7 +62,7 @@ export class DiscardDetailsModalComponent implements OnInit, OnDestroy {
    * Handles both number and string priority values
    * Backend RequestPriority enum: Normal = 1, Urgent = 2, VeryUrgent = 3, Critical = 4
    */
-  getPriorityKey(priority?: number | string | null): string {
+  getPriorityKey(priority?: number | null): string {
     if (priority === null || priority === undefined) {
       return 'dashboard.priorityLabels.urgent';
     }

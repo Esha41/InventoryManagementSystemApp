@@ -21,7 +21,7 @@ export interface ExplosiveDto extends CatalogBaseItemDto {
   /**
    * Not on inventory ExplosiveDto; optional on payloads / forms (e.g. type enum or UI-only).
    */
-  explosiveType?: number | string | null;
+  explosiveType?: number | null;
   netExplosiveQuantity?: number | null;
   netExplosiveQuantityUnitId?: number | null;
   netExplosiveQuantityUnit?: LookupDto | null;

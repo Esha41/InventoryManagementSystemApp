@@ -60,10 +60,9 @@
                   <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">{{
                     'dashboard.priority' | translate }}</p>
                   <p class="text-sm font-medium" [ngClass]="{
-                          'text-[var(--color-error)]': isOrder() && request.priority === 1,
+                          'text-[var(--color-text)]': !isOrder() || (isOrder() && request.priority === 1),
                           'text-[var(--color-warning)]': isOrder() && request.priority === 2,
-                          'text-[var(--color-success)]': isOrder() && request.priority === 3,
-                          'text-[var(--color-text)]': !isOrder()
+                          'text-[var(--color-error)]': isOrder() && (request.priority === 3 || request.priority === 4)
                         }">
                     {{ getPriorityKey() | translate }}
                   </p>

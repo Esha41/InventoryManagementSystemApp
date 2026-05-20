@@ -15,7 +15,7 @@ export interface WeaponAssociationGroupDto {
  */
 export interface WeaponDto extends CatalogBaseItemDto {
   /** Backend WeaponCaliberCategory: 1 = Small, 2 = Medium, 3 = Large (JSON may be string). */
-  caliberCategory?: number | string | null;
+  caliberCategory?: number | null;
   caliberId?: number | null;
   caliberUnitId?: number | null;
   yearOfManufacture?: number | null;
