@@ -301,7 +301,8 @@ function mapWeaponAssociationRows(
       associatedWeaponItemId: readField<number | null>(row, 'associatedWeaponItemId', 'AssociatedWeaponItemId') ?? null,
       associatedWeaponOtherName: readField<string | null>(row, 'associatedWeaponOtherName', 'AssociatedWeaponOtherName') ?? null,
       associatedWeaponCaliberId: readField<number | null>(row, 'associatedWeaponCaliberId', 'AssociatedWeaponCaliberId') ?? null,
-      associatedWeaponName: readField<string | null>(row, 'associatedWeaponName', 'AssociatedWeaponName') ?? null
+      associatedWeaponName: readField<string | null>(row, 'associatedWeaponName', 'AssociatedWeaponName') ?? null,
+      associatedWeaponNameAr: readField<string | null>(row, 'associatedWeaponNameAr', 'AssociatedWeaponNameAr') ?? null
     }));
 
   return mapped.length > 0 ? mapped : undefined;
@@ -322,10 +323,15 @@ export function mapRequestItems(items: unknown[]): RequestItem[] {
       const rawItemType = readField<unknown>(item, 'itemType', 'ItemType') ?? readField<unknown>(nestedItem ?? {}, 'itemType', 'ItemType');
       const normalizedItemType = normalizeItemType(rawItemType);
 
+      const rawItemNameAr = readField<unknown>(item, 'itemNameAr', 'ItemNameAr');
+      const itemNameAr =
+        rawItemNameAr != null && String(rawItemNameAr).trim() !== '' ? String(rawItemNameAr).trim() : undefined;
+
       return {
         id: Number(readField<unknown>(item, 'id', 'Id') ?? 0), // RequestItem ID
         itemId: Number(readField<unknown>(item, 'itemId', 'ItemId') ?? readField<unknown>(item, 'id', 'Id')) || undefined, // Item ID (prefer itemId, fallback to id)
         itemName: String(readField<unknown>(item, 'itemName', 'ItemName') ?? item['name'] ?? 'Unknown Item'),
+        itemNameAr,
         itemNo: String(readField<unknown>(item, 'itemNo', 'ItemNo') ?? item['itemCode'] ?? item['code'] ?? '-'),
         quantity: Number(readField<unknown>(item, 'quantity', 'Quantity') ?? item['requestedQuantity'] ?? 0),
         unit: String(readField<unknown>(item, 'unit', 'Unit') ?? item['unitName'] ?? '-'),

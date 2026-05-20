@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, ArrowRight } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
-import { MonitoringService, LowStockItemDto } from '@services/monitoring.service';
+import { MonitoringService, type LowStockItemDto } from '@services/monitoring.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { TranslationService } from '@services/translation.service';
 import { PaginationComponent } from '@components/pagination/pagination.component';
@@ -12,6 +12,7 @@ import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.co
 import { LoadingStateComponent, ErrorStateComponent, TableClampTooltipDirective } from '@components/index';
 import { defaultPageSize } from '@constants/app.constants';
 import { PagedListRequest } from '@models/pagination.model';
+import { getCurrentLang, getLocalizedName } from '@utils/localization.utils';
 
 @Component({
   selector: 'app-low-stock',
@@ -64,6 +65,17 @@ export class LowStockComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadLowStockItems();
+    this.translate.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
+  }
+
+  /** Item name for current UI language (Arabic when set and available, else English). */
+  lowStockItemDisplayName(item: LowStockItemDto): string {
+    const arRaw = item.itemNameAr ?? (item as { itemNameAR?: string | null }).itemNameAR;
+    const ar = (arRaw ?? '').trim();
+    const en = (item.itemName ?? '').trim();
+    const label =
+      getLocalizedName({ name: en, nameAr: ar || undefined }, getCurrentLang(this.translate))?.trim() || en;
+    return label || 'N/A';
   }
 
   ngOnDestroy(): void {

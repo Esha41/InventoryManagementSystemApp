@@ -71,7 +71,7 @@
             <tr *ngFor="let lot of expiringLots"
               class="hover:bg-[var(--color-background-hover)] transition-colors">
               <td class="px-6 py-4 text-sm font-medium text-[var(--color-text)] min-w-0">
-                <span [appTableClampTooltip]="lot.itemName || 'N/A'">{{ lot.itemName || 'N/A' }}</span>
+                <span [appTableClampTooltip]="expiringLotItemDisplayName(lot)">{{ expiringLotItemDisplayName(lot) }}</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
                 {{ lot.itemNo || 'N/A' }}

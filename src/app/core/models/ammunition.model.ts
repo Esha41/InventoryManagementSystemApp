@@ -13,6 +13,7 @@ export interface LookupDto {
 export interface CatalogBaseItemDto {
   id: number;
   name: string;
+  nameAr?: string | null;
   itemNo: string;
   itemType: ItemType;
   nsn?: string | null;
@@ -86,6 +87,7 @@ export type AmmunitionReadDto = AmmunitionDto & AmmunitionReadDtoExtras;
 
 export interface AmmunitionCreateDto {
   name: string;
+  nameAr?: string;
   itemNo: string;
   partNo?: string;
   armNumber?: string;
@@ -122,6 +124,7 @@ export interface AmmunitionCreateDto {
 
 export interface AmmunitionUpdateDto {
   name: string;
+  nameAr?: string;
   partNo: string;
   id: number;
   itemNo: string;

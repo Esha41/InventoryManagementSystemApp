@@ -398,10 +398,10 @@
                   <a
                     *ngIf="asset.itemId"
                     [routerLink]="['/assets/asset-list', asset.itemId]"
-                    [queryParams]="{ tab: 'weapon', returnTo: '/assets/weapon-asset-master' }"
+                    [queryParams]="catalogItemQueryParams"
                     class="font-medium text-[var(--color-brand)] hover:underline"
                     [appTableClampTooltip]="itemName(asset)"
-                    (click)="$event.stopPropagation()"
+                    (click)="onCatalogItemNavigate(); $event.stopPropagation()"
                   >
                     {{ itemName(asset) }}
                   </a>
@@ -698,7 +698,8 @@
         <a
           *ngIf="viewModalAsset.itemId"
           [routerLink]="['/assets/asset-list', viewModalAsset.itemId]"
-          [queryParams]="{ tab: 'weapon', returnTo: '/assets/weapon-asset-master' }"
+          [queryParams]="catalogItemQueryParams"
+          (click)="onCatalogItemNavigate()"
           class="flex-1 min-w-0 inline-flex items-center justify-center px-4 py-2 rounded-lg border border-[var(--color-border)] text-sm font-medium text-[var(--color-brand)] hover:bg-[var(--color-background-hover)] transition-colors text-center"
         >
           {{ 'weaponAssetMaster.viewModal.openCatalog' | translate }}

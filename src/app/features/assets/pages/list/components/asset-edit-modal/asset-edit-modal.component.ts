@@ -150,6 +150,9 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
         ? this.selectedAsset.originalData
         : this.selectedAsset;
       this.editForm.patchValue(source || {});
+      const srcAny = source as { nameAr?: string | null; nameAR?: string | null };
+      const nameArVal = (srcAny.nameAr ?? srcAny.nameAR ?? '').toString();
+      this.editForm.patchValue({ nameAr: nameArVal }, { emitEvent: false });
       if ((this.activeTab === 'ammunition' || this.activeTab === 'explosive' || this.activeTab === 'weapon') && source) {
         const catalog = source as AmmunitionReadDto | ExplosiveDto | WeaponDto;
         const fromList = catalog.primaryPurposes?.map(p => p.id).filter((id): id is number => id != null);
@@ -214,7 +217,13 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
       return;
     }
 
-    const formData = { ...this.editForm.value };
+    const formData = { ...this.editForm.value } as Record<string, unknown>;
+    const nameArTrimmed = typeof formData['nameAr'] === 'string' ? formData['nameAr'].trim() : '';
+    if (nameArTrimmed) {
+      formData['nameAr'] = nameArTrimmed;
+    } else {
+      delete formData['nameAr'];
+    }
 
     let dto: AmmunitionCreateDto | CreateUpdateWeaponDto | CreateUpdateExplosiveDto;
 

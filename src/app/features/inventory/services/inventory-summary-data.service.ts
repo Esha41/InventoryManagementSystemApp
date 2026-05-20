@@ -183,6 +183,7 @@ export class InventorySummaryDataService {
         return {
             itemId: row.itemId,
             itemName: row.itemName,
+            itemNameAr: row.itemNameAr,
             itemNo: row.itemNo,
             itemType: normalizeItemType(row.itemType),
             nsn: row.nsn ?? '',

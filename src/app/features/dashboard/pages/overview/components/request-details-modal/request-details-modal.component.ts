@@ -7,7 +7,7 @@ import { OrderDto, OrderRequestItemDto } from '@models/order.model';
 import { ReturnDto, ReturnItemDto } from '@models/return.model';
 import { DiscardDto, DiscardItemDto } from '@models/discard.model';
 import { Subject, takeUntil } from 'rxjs';
-import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { getLocalizedName, getCurrentLang, localizedRequestLineItemName } from '@utils/localization.utils';
 import { formatTimeToMilitary } from '@utils/format.utils';
 import {
   formatCreationDate,
@@ -296,6 +296,10 @@ export class RequestDetailsModalComponent implements OnInit, OnDestroy {
 
   hasWeaponAssociations(item: UnifiedRequestItemDto): boolean {
     return itemHasWeaponAssociations(item);
+  }
+
+  requestLineItemDisplayName(item: UnifiedRequestItemDto | null | undefined): string {
+    return localizedRequestLineItemName(item, getCurrentLang(this.translate));
   }
 
   /**

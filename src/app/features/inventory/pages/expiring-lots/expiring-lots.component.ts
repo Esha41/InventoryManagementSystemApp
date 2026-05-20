@@ -65,6 +65,17 @@ export class ExpiringLotsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadExpiringLots();
+    this.translate.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
+  }
+
+  /** Item name for current UI language (Arabic when set and available, else English). */
+  expiringLotItemDisplayName(lot: ExpiringLotDto): string {
+    const arRaw = lot.itemNameAr ?? (lot as { itemNameAR?: string | null }).itemNameAR;
+    const ar = (arRaw ?? '').trim();
+    const en = (lot.itemName ?? '').trim();
+    const label =
+      getLocalizedName({ name: en, nameAr: ar || undefined }, getCurrentLang(this.translate))?.trim() || en;
+    return label || 'N/A';
   }
 
   ngOnDestroy(): void {

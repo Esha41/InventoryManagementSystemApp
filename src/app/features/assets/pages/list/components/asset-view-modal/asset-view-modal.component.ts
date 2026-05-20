@@ -42,6 +42,12 @@ export class AssetViewModalComponent implements OnChanges {
 
   // Property accessors for template
   getAssetName = () => this.propertyAccessor.getAssetName(this.selectedAsset);
+  getAssetNameAr = () => {
+    const asset = this.selectedAsset as
+      | { nameAr?: string | null; nameAR?: string | null; originalData?: { nameAr?: string | null; nameAR?: string | null } }
+      | null;
+    return asset?.nameAr || asset?.nameAR || asset?.originalData?.nameAr || asset?.originalData?.nameAR || '-';
+  };
   getArmNumber = () => this.propertyAccessor.getArmNumber(this.selectedAsset);
   getCaseType = () => this.propertyAccessor.getCaseType(this.selectedAsset);
   getPropellant = () => this.propertyAccessor.getPropellant(this.selectedAsset);

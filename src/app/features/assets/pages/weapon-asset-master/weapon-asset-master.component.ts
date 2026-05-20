@@ -48,12 +48,18 @@ import { ButtonComponent } from '@components/button/button.component';
 import { DateUtils } from '@utils/date.utils';
 import { defaultPageSize } from '@constants/app.constants';
 import { WAM_FILTER_DATE_FIELD_WRAPPER_CLASS } from './weapon-asset-master.ui-classes';
+import {
+  readWeaponAssetMasterListState,
+  WamCustodyFilter,
+  WeaponAssetMasterListState,
+  writeWeaponAssetMasterListState
+} from './weapon-asset-master-list-state';
 
 /** Backend `AssetHistoryActionType.Created` */
 const HISTORY_ACTION_CREATED = 1;
 
 type SortColumn = 'serial' | 'name' | 'status';
-type CustodyFilter = 'all' | 'checkout' | 'checkin';
+type CustodyFilter = WamCustodyFilter;
 
 @Component({
   selector: 'app-weapon-asset-master',
@@ -207,6 +213,9 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
   readonly Calendar = Calendar;
   readonly trackById = trackById;
 
+  /** Query params when opening a catalog item; persists list state so Back restores filters. */
+  readonly catalogItemQueryParams = { tab: 'weapon', returnTo: '/assets/weapon-asset-master' };
+
   constructor(
     private assetService: AssetService,
     private assetHistoryService: AssetHistoryService,
@@ -218,6 +227,8 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.restoreListState();
+
     this.lookupService
       .getDepots()
       .pipe(takeUntil(this.destroy$))
@@ -288,6 +299,10 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
         }
       });
 
+    this.translateService.onLangChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.cdr.markForCheck());
+
     this.loadAssets();
   }
 
@@ -299,12 +314,18 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
   applySearch(): void {
     this.appliedSearchTerm = this.searchInput.trim();
     this.currentPage = 1;
+    this.persistListState();
     this.loadAssets();
   }
 
   clearSearch(): void {
     this.searchInput = '';
     this.applySearch();
+  }
+
+  /** Call before navigating to catalog so the latest filters are saved immediately. */
+  onCatalogItemNavigate(): void {
+    this.persistListState();
   }
 
   toggleMoreFilters(): void {
@@ -340,6 +361,7 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
     this.appliedFilterCustody = this.filterCustody;
     this.appliedDepotIds = [...this.selectedDepotIds];
     this.currentPage = 1;
+    this.persistListState();
     this.loadAssets();
     this.cdr.markForCheck();
   }
@@ -378,7 +400,91 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
     this.appliedFilterCustody = 'all';
     this.appliedDepotIds = [];
     this.currentPage = 1;
+    this.persistListState();
     this.loadAssets();
+  }
+
+  private restoreListState(): void {
+    const saved = readWeaponAssetMasterListState();
+    if (!saved) {
+      return;
+    }
+
+    this.searchInput = saved.searchInput ?? '';
+    this.appliedSearchTerm = saved.appliedSearchTerm ?? '';
+    this.currentPage = this.normalizePositiveInt(saved.currentPage, 1);
+    this.rowsPerPage = this.normalizePositiveInt(saved.rowsPerPage, defaultPageSize);
+
+    this.appliedFilterDateFrom = saved.appliedFilterDateFrom ?? '';
+    this.appliedFilterDateTo = saved.appliedFilterDateTo ?? '';
+    this.appliedPrimaryPurposeIds = [...(saved.appliedPrimaryPurposeIds ?? [])];
+    this.appliedFilterStatuses = [...(saved.appliedFilterStatuses ?? [])];
+    this.appliedSupplierIds = [...(saved.appliedSupplierIds ?? [])];
+    this.appliedManufacturerIds = [...(saved.appliedManufacturerIds ?? [])];
+    this.appliedEmployeeIds = [...(saved.appliedEmployeeIds ?? [])];
+    this.appliedFilterCustody = this.normalizeCustodyFilter(saved.appliedFilterCustody);
+    this.appliedDepotIds = [...(saved.appliedDepotIds ?? [])];
+
+    this.filterDateFrom = saved.filterDateFrom ?? this.appliedFilterDateFrom;
+    this.filterDateTo = saved.filterDateTo ?? this.appliedFilterDateTo;
+    this.filterPrimaryPurposeIds = [...(saved.filterPrimaryPurposeIds ?? this.appliedPrimaryPurposeIds)];
+    this.filterStatuses = [...(saved.filterStatuses ?? this.appliedFilterStatuses)];
+    this.filterSupplierIds = [...(saved.filterSupplierIds ?? this.appliedSupplierIds)];
+    this.filterManufacturerIds = [...(saved.filterManufacturerIds ?? this.appliedManufacturerIds)];
+    this.filterEmployeeIds = [...(saved.filterEmployeeIds ?? this.appliedEmployeeIds)];
+    this.filterCustody = this.normalizeCustodyFilter(saved.filterCustody ?? this.appliedFilterCustody);
+    this.selectedDepotIds = [...(saved.selectedDepotIds ?? this.appliedDepotIds)];
+
+    this.sortColumn = this.normalizeSortColumn(saved.sortColumn);
+    this.sortDirection = saved.sortDirection === 'desc' ? 'desc' : 'asc';
+    this.showMoreFilters = !!saved.showMoreFilters;
+  }
+
+  private persistListState(): void {
+    writeWeaponAssetMasterListState(this.snapshotListState());
+  }
+
+  private snapshotListState(): WeaponAssetMasterListState {
+    return {
+      searchInput: this.searchInput,
+      appliedSearchTerm: this.appliedSearchTerm,
+      currentPage: this.currentPage,
+      rowsPerPage: this.rowsPerPage,
+      appliedFilterDateFrom: this.appliedFilterDateFrom,
+      appliedFilterDateTo: this.appliedFilterDateTo,
+      appliedPrimaryPurposeIds: [...this.appliedPrimaryPurposeIds],
+      appliedFilterStatuses: [...this.appliedFilterStatuses],
+      appliedSupplierIds: [...this.appliedSupplierIds],
+      appliedManufacturerIds: [...this.appliedManufacturerIds],
+      appliedEmployeeIds: [...this.appliedEmployeeIds],
+      appliedFilterCustody: this.appliedFilterCustody,
+      appliedDepotIds: [...this.appliedDepotIds],
+      filterDateFrom: this.filterDateFrom,
+      filterDateTo: this.filterDateTo,
+      filterPrimaryPurposeIds: [...this.filterPrimaryPurposeIds],
+      filterStatuses: [...this.filterStatuses],
+      filterSupplierIds: [...this.filterSupplierIds],
+      filterManufacturerIds: [...this.filterManufacturerIds],
+      filterEmployeeIds: [...this.filterEmployeeIds],
+      filterCustody: this.filterCustody,
+      selectedDepotIds: [...this.selectedDepotIds],
+      sortColumn: this.sortColumn,
+      sortDirection: this.sortDirection,
+      showMoreFilters: this.showMoreFilters
+    };
+  }
+
+  private normalizePositiveInt(value: unknown, fallback: number): number {
+    const n = typeof value === 'number' ? value : parseInt(String(value ?? ''), 10);
+    return Number.isFinite(n) && n > 0 ? n : fallback;
+  }
+
+  private normalizeCustodyFilter(value: unknown): CustodyFilter {
+    return value === 'checkout' || value === 'checkin' ? value : 'all';
+  }
+
+  private normalizeSortColumn(value: unknown): SortColumn {
+    return value === 'name' || value === 'status' ? value : 'serial';
   }
 
   /** True when the list request is bounded by applied creation-from / creation-to filters. */
@@ -417,12 +523,14 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
 
   onPageChange(page: number): void {
     this.currentPage = page;
+    this.persistListState();
     this.loadAssets();
   }
 
   onRowsPerPageChange(rows: number): void {
     this.rowsPerPage = rows;
     this.currentPage = 1;
+    this.persistListState();
     this.loadAssets();
   }
 
@@ -523,6 +631,7 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
       this.sortDirection = 'asc';
     }
     this.currentPage = 1;
+    this.persistListState();
     this.loadAssets();
   }
 
@@ -710,7 +819,11 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
   }
 
   itemName(asset: AssetDto): string {
-    return asset.item?.name?.trim() || '—';
+    const item = asset.item;
+    if (!item) return '—';
+    const lang = getCurrentLang(this.translateService);
+    const label = getLocalizedName(item, lang)?.trim();
+    return label || item.name?.trim() || '—';
   }
 
   custodianName(asset: AssetDto): string {

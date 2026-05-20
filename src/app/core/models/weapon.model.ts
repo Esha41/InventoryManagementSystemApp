@@ -40,6 +40,7 @@ export interface WeaponDto extends CatalogBaseItemDto {
  */
 export interface CreateUpdateWeaponDto {
   name: string;
+  nameAr?: string;
   itemNo: string;
   partNo?: string;
   price?: number;

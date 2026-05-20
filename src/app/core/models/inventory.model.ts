@@ -11,6 +11,7 @@ import { FileUploadDto } from '@models/file-upload.model';
 export interface BaseItemDto {
   id: number;
   name: string;
+  nameAr?: string | null;
   itemNo: string;
   itemType: ItemType;
   batchNo: string;
@@ -65,6 +66,7 @@ export function normalizeItemType(raw: unknown): number {
 export interface AssetItemCatalogSummaryDto {
   itemId: number;
   itemName: string;
+  itemNameAr?: string | null;
   itemNo: string;
   nsn: string;
   partNo: string;
@@ -207,6 +209,7 @@ export interface UpdateInventoryDetailDto {
 export interface ItemInventorySummaryDto {
   itemId: number;
   itemName: string;
+  itemNameAr?: string | null;
   itemNo: string;
   itemType: number;
   nsn: string;

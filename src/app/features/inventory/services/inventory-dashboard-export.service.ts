@@ -5,6 +5,8 @@ import { ErrorHandler } from '@utils/error-handler.utils';
 import { ExcelColumn, ExcelService } from '@services/excel.service';
 import { ToastService } from '@services/toast.service';
 import { ItemInventorySummaryDto, ItemType } from '@models/inventory.model';
+import { localizedItemSummaryDisplayName } from '@inventory/pages/overview/inventory-dashboard.helpers';
+import { getCurrentLang } from '@utils/localization.utils';
 
 export interface InventoryDashboardExportContext {
   depotLabel: string;
@@ -157,8 +159,9 @@ export class InventoryDashboardExportService {
   }
 
   private mapItemRow(item: ItemInventorySummaryDto, depotLabel: string): Record<string, unknown> {
+    const lang = getCurrentLang(this.translate);
     return {
-      itemName: item.itemName || '-',
+      itemName: localizedItemSummaryDisplayName(item, lang),
       itemNo: item.itemNo || '-',
       itemTypeLabel: this.getItemTypeLabel(item.itemType),
       totalQuantity: item.totalQuantity ?? 0,

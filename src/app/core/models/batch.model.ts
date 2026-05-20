@@ -11,6 +11,7 @@ export interface BatchSummaryDto {
 export interface BatchAssetItemCountDto {
     itemId: number;
     itemName: string;
+    itemNameAr?: string | null;
     itemNo?: string | null;
     nsn?: string | null;
     count: number;

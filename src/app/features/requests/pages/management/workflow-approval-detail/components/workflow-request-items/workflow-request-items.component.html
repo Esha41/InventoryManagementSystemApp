@@ -62,10 +62,10 @@
               <button
                 type="button"
                 class="max-w-full font-medium text-start text-[var(--color-text)] underline-offset-2 transition-colors hover:text-[var(--color-brand)] hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 rounded-sm"
-                [appTableClampTooltip]="item.itemName"
-                [attr.aria-label]="('common.viewDetails' | translate) + ': ' + item.itemName"
+                [appTableClampTooltip]="lineItemDisplayName(item)"
+                [attr.aria-label]="('common.viewDetails' | translate) + ': ' + lineItemDisplayName(item)"
                 (click)="onItemNameClick($event, item)">
-                {{ item.itemName }}
+                {{ lineItemDisplayName(item) }}
               </button>
             </td>
             <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">{{ item.itemNo || '-' }}</td>

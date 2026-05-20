@@ -304,8 +304,8 @@
           [queryParams]="assetCatalogDetailQueryParams(cartridge)"
           class="text-[var(--color-text)] font-medium inline-block max-w-full break-words rounded-sm hover:text-[var(--color-brand)] hover:underline underline-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-background)]"
           [attr.title]="'newIssueRequest.viewDetails' | translate"
-          [attr.aria-label]="('newIssueRequest.viewDetails' | translate) + ' — ' + cartridge.name"
-          (click)="$event.stopPropagation()">{{ cartridge.name }}</a>
+          [attr.aria-label]="('newIssueRequest.viewDetails' | translate) + ' — ' + cartridgeDisplayName(cartridge)"
+          (click)="$event.stopPropagation()">{{ cartridgeDisplayName(cartridge) }}</a>
         <div class="mt-1 space-y-1">
           <p class="text-xs text-[var(--color-text-muted)]" *ngIf="cartridge.ncn">
             {{ 'newIssueRequest.nsn' | translate }}: {{ cartridge.ncn }}

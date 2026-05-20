@@ -10,13 +10,36 @@ function lookupLabel(lookup: { nameEn?: string | null; nameAr?: string | null } 
   return getLocalizedName(lookup, lang);
 }
 
+/** English / Arabic catalog names (same idea as `CartridgeMapperService`). */
+function extractCatalogBilingualNames(item: CatalogListItem): { nameAr: string | null; nameEn: string | null } {
+  const row = item as {
+    name?: string | null;
+    nameAr?: string | null;
+    nameAR?: string | null;
+    nameEn?: string | null;
+    nameEN?: string | null;
+  };
+  const nameAr = (row.nameAr || row.nameAR || '').trim() || null;
+  const nameEn = (row.nameEn || row.nameEN || row.name || '').trim() || null;
+  return { nameAr, nameEn };
+}
+
 /** Map a catalog row from return inventory APIs to the shared `Cartridge` list shape used by `CartridgeListComponent`. */
 export function catalogListItemToCartridge(item: CatalogListItem, itemType: string, translate: TranslateService): Cartridge {
   const lang = getCurrentLang(translate);
   const id = Number(item.id);
+  const { nameAr, nameEn } = extractCatalogBilingualNames(item);
+  const displayName =
+    getLocalizedName({ name: nameEn || undefined, nameAr: nameAr || undefined }, lang)?.trim() ||
+    (item.name ?? '').trim() ||
+    item.itemNo ||
+    '';
+
   const base: Cartridge = {
     id,
-    name: item.name || item.itemNo || '',
+    name: displayName,
+    nameAr: nameAr || undefined,
+    nameEn: nameEn || undefined,
     selected: false,
     added: false,
     itemNo: item.itemNo,
@@ -63,6 +86,8 @@ export function returnSelectedItemToCartridge(row: ReturnSelectedItem, itemType:
   return {
     id: row.itemId,
     name: row.name,
+    nameAr: row.nameAr ?? undefined,
+    nameEn: row.nameEn ?? undefined,
     itemNo: row.itemNo,
     selected: true,
     added: true,

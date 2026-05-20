@@ -56,6 +56,7 @@ import {
   formatItemPickLabel,
   hasSecondaryItemTableFilters,
   itemTypeTabAndStatCountsFromHeadline,
+  localizedItemSummaryDisplayName,
   nextTableSort,
   pageCountForLength,
   paginatePage,
@@ -443,8 +444,9 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     const rows = [...this.tabFilteredSummaries].sort((a, b) =>
       (a.itemName || '').localeCompare(b.itemName || '', undefined, { sensitivity: 'base' })
     );
+    const lang = getCurrentLang(this.translate);
     return rows.map(i => ({
-      label: formatItemPickLabel(i),
+      label: formatItemPickLabel(i, lang),
       value: i.itemId
     }));
   }
@@ -609,14 +611,16 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     if (this.filteredItemCount !== 1) return null;
     const i = this.filteredItemSummaries[0];
     if (!i) return null;
+    const lang = getCurrentLang(this.translate);
+    const displayName = localizedItemSummaryDisplayName(i, lang);
     const no = (i.itemNo || '').trim();
     if (no) {
       return this.translate.instant('inventoryDashboard.itemSummary.singleItemTotalsWithNo', {
-        name: i.itemName,
+        name: displayName,
         no
       });
     }
-    return this.translate.instant('inventoryDashboard.itemSummary.singleItemTotalsNameOnly', { name: i.itemName });
+    return this.translate.instant('inventoryDashboard.itemSummary.singleItemTotalsNameOnly', { name: displayName });
   }
 
   get sumTotalQtyFiltered(): number {

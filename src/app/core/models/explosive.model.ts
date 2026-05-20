@@ -42,6 +42,7 @@ export interface ExplosiveDto extends CatalogBaseItemDto {
  */
 export interface CreateUpdateExplosiveDto {
   name: string;
+  nameAr?: string;
   itemNo: string;
   partNo?: string;
   armNumber?: string;

@@ -99,3 +99,49 @@ export const localizedBilingualLabel = (
   return 'N/A';
 };
 
+/** Minimal fields for localized request line item name (workflow approval, dashboard modals, etc.). */
+export interface LocalizedRequestLineItemFields {
+  itemName?: string | null;
+  itemNameAr?: string | null;
+  itemNo?: string | null;
+}
+
+/**
+ * Localized catalog line label for Order / Return / Discard request items.
+ */
+export function localizedRequestLineItemName(
+  item: LocalizedRequestLineItemFields | null | undefined,
+  lang: string
+): string {
+  if (!item) {
+    return 'N/A';
+  }
+
+  const row = item as { itemNameAR?: string | null };
+  const ar = (item.itemNameAr ?? row.itemNameAR ?? '').trim();
+  const en = (item.itemName ?? '').trim();
+  const label = getLocalizedName({ nameEn: en || undefined, nameAr: ar || undefined }, lang)?.trim();
+
+  return label || en || (item.itemNo ?? '').trim() || 'N/A';
+}
+
+/** Issue / return catalog rows: Arabic when UI + `nameAr` allow, else English (`nameEn` / `name`). */
+export interface LocalizedCartridgeFields {
+  name?: string | null;
+  nameEn?: string | null;
+  nameAr?: string | null;
+}
+
+export function localizedCartridgeDisplayName(
+  cartridge: LocalizedCartridgeFields,
+  lang: string
+): string {
+  const en = (cartridge.nameEn ?? '').trim() || (cartridge.name ?? '').trim();
+  const ar = (cartridge.nameAr ?? '').trim();
+  return (
+    getLocalizedName({ name: en || undefined, nameAr: ar || undefined }, lang)?.trim() ||
+    cartridge.name ||
+    ''
+  );
+}
+

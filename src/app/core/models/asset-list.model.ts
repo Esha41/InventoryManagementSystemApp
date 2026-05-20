@@ -22,6 +22,7 @@ export type SortDirection = 'asc' | 'desc';
 export interface Asset {
   id: string;
   name: string;
+  nameAr?: string | null;
   itemNo: string;
   partNo: string;
   batchNo: string;

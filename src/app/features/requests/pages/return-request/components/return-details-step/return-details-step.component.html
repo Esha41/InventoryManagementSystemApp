@@ -15,8 +15,7 @@
         <div class="flex items-start justify-between gap-3 mb-3">
           <div class="flex-1 min-w-0">
             <h3 class="font-semibold text-[var(--color-text)] text-sm mb-1 break-words">
-              <span *ngIf="isArabic">{{ cartridge.nameAr || cartridge.nameEn || cartridge.name }}</span>
-              <span *ngIf="!isArabic">{{ cartridge.nameEn || cartridge.name }}</span>
+              {{ cartridgeLabel(cartridge) }}
             </h3>
             <p class="text-xs text-[var(--color-text-muted)]">
               {{ 'newIssueRequest.itemNo' | translate }}: {{ cartridge.itemNo || cartridge.productId }}
@@ -58,8 +57,7 @@
           <tr *ngFor="let cartridge of selectedCartridges"
             class="border-t border-[var(--color-border)] hover:bg-[var(--color-background-muted)] transition-colors">
             <td class="px-4 py-3 text-[var(--color-text)] font-medium">
-              <span *ngIf="isArabic">{{ cartridge.nameAr || cartridge.nameEn || cartridge.name }}</span>
-              <span *ngIf="!isArabic">{{ cartridge.nameEn || cartridge.name }}</span>
+              {{ cartridgeLabel(cartridge) }}
             </td>
             <td class="px-4 py-3 text-[var(--color-text-muted)]">{{ cartridge.itemNo || cartridge.productId }}</td>
             <td class="px-4 py-3 text-[var(--color-text-muted)]">{{ cartridge.ncn || '-' }}</td>

@@ -1,8 +1,21 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  ChangeDetectionStrategy,
+  OnChanges,
+  SimpleChanges,
+  ChangeDetectorRef,
+  OnInit,
+  OnDestroy
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Subject, takeUntil } from 'rxjs';
+import { getCurrentLang, localizedCartridgeDisplayName } from '@utils/localization.utils';
 import { ButtonComponent } from '@components/button/button.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { CatalogPaginationState } from '../../new-issue-request.state';
@@ -18,7 +31,7 @@ import { Cartridge } from '@models/cartridge.model';
   styleUrls: ['./cartridge-list.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CartridgeListComponent implements OnChanges {
+export class CartridgeListComponent implements OnChanges, OnInit, OnDestroy {
   @Input() cartridges: Cartridge[] = [];
 
   // Filter Options
@@ -102,12 +115,29 @@ export class CartridgeListComponent implements OnChanges {
   allowanceErrorMessage: string | null = null;
   itemTypeValidationErrorMessage: string | null = null;
 
+  private readonly destroy$ = new Subject<void>();
+
   constructor(
     private config: ConfigService,
     private itemTypeValidationService: ItemTypeValidationService,
     private cdr: ChangeDetectorRef,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly translate: TranslateService
   ) { }
+
+  ngOnInit(): void {
+    this.translate.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  /** Catalog row title: Arabic when UI is Arabic and `nameAr` exists, else English (`nameEn` / `name`). */
+  cartridgeDisplayName(cartridge: Cartridge): string {
+    return localizedCartridgeDisplayName(cartridge, getCurrentLang(this.translate));
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['appliedSearchTerm']) {

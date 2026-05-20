@@ -59,9 +59,9 @@ export class CartridgeMapperService {
     const natureLabelEn = natureOption?.nameEn ?? natureOption?.nameEN ?? null;
     const natureLabel = getLocalizedName(dto.natureOption, currentLang);
 
-    // Extract Arabic and English names from DTO
-    const nameAr = dto.nameAr || dto.nameAR || null;
-    const nameEn = dto.nameEn || dto.nameEN || null;
+    // Bilingual names: keep English from `name` when API omits `nameEn` (UI can re-localize without reload).
+    const nameAr = (dto.nameAr || dto.nameAR || '').trim() || null;
+    const nameEn = (dto.nameEn || dto.nameEN || dto.name || '').trim() || null;
 
     return {
       id: Number(dto.id) || 0,
@@ -109,8 +109,8 @@ export class CartridgeMapperService {
   }
 
   mapWeaponToCartridge(dto: WeaponCatalogDto, currentLang: string = 'en'): Cartridge {
-    const nameAr = dto.nameAr || dto.nameAR || null;
-    const nameEn = dto.nameEn || dto.nameEN || null;
+    const nameAr = (dto.nameAr || dto.nameAR || '').trim() || null;
+    const nameEn = (dto.nameEn || dto.nameEN || dto.name || '').trim() || null;
 
     // Build barrel length label with unit
     const barrelLengthLabel = this.buildMeasurementLabel(
@@ -170,8 +170,8 @@ export class CartridgeMapperService {
   }
 
   mapExplosiveToCartridge(dto: ExplosiveCatalogDto, currentLang: string = 'en'): Cartridge {
-    const nameAr = dto.nameAr || dto.nameAR || null;
-    const nameEn = dto.nameEn || dto.nameEN || null;
+    const nameAr = (dto.nameAr || dto.nameAR || '').trim() || null;
+    const nameEn = (dto.nameEn || dto.nameEN || dto.name || '').trim() || null;
 
     // Build total weight label with unit
     const totalWeightLabel = this.buildMeasurementLabel(

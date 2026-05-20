@@ -10,7 +10,7 @@ import { AssetHistoryService, AssetHistoryDto } from '@assets/services/asset-his
 import { ItemInventorySummaryDto } from '@models/inventory.model';
 import { AssetDto, AssetStatus, getAssetStatusLabel } from '@models/asset.model';
 import { PagedListRequest } from '@models/pagination.model';
-import { pageCountForLength } from '@inventory/pages/overview/inventory-dashboard.helpers';
+import { localizedItemSummaryDisplayName, pageCountForLength } from '@inventory/pages/overview/inventory-dashboard.helpers';
 import { CardComponent } from '@components/card/card.component';
 import { LoadingStateComponent, ErrorStateComponent, TableClampTooltipDirective } from '@components/index';
 import { PaginationComponent } from '@components/pagination/pagination.component';
@@ -119,14 +119,24 @@ export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
         return this.translationService?.isRTL() ?? false;
     }
 
+    /** Localized item label (Arabic `itemNameAr` when UI is Arabic, else English `itemName`). */
+    itemDisplayName(item: ItemInventorySummaryDto): string {
+        return localizedItemSummaryDisplayName(item, getCurrentLang(this.translateService));
+    }
+
     /** Rows to show: server page, optionally narrowed by search (current page only). */
     get displayRows(): ItemInventorySummaryDto[] {
         if (!this.searchTerm.trim()) {
             return this.pageItems;
         }
         const search = this.searchTerm.toLowerCase();
+        const lang = getCurrentLang(this.translateService);
         return this.pageItems.filter(item =>
+            localizedItemSummaryDisplayName(item, lang).toLowerCase().includes(search) ||
             item.itemName?.toLowerCase().includes(search) ||
+            (item.itemNameAr ?? (item as { itemNameAR?: string | null }).itemNameAR ?? '')
+                .toLowerCase()
+                .includes(search) ||
             item.itemNo?.toLowerCase().includes(search) ||
             item.nsn?.toLowerCase().includes(search) ||
             item.partNo?.toLowerCase().includes(search)
@@ -178,6 +188,7 @@ export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.loadPage();
+        this.translateService.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
     }
 
     ngOnDestroy(): void {
@@ -521,7 +532,11 @@ export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: items => {
-                    const rows = this.filterItemsBySearch(items);
+                    const lang = getCurrentLang(this.translateService);
+                    const rows = this.filterItemsBySearch(items).map(row => ({
+                        ...row,
+                        itemName: localizedItemSummaryDisplayName(row, lang)
+                    }));
                     this.isExporting = false;
                     this.cdr.markForCheck();
 
@@ -571,9 +586,14 @@ export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
             return items;
         }
         const search = this.searchTerm.toLowerCase();
+        const lang = getCurrentLang(this.translateService);
         return items.filter(
             item =>
+                localizedItemSummaryDisplayName(item, lang).toLowerCase().includes(search) ||
                 item.itemName?.toLowerCase().includes(search) ||
+                (item.itemNameAr ?? (item as { itemNameAR?: string | null }).itemNameAR ?? '')
+                    .toLowerCase()
+                    .includes(search) ||
                 item.itemNo?.toLowerCase().includes(search) ||
                 item.nsn?.toLowerCase().includes(search) ||
                 item.partNo?.toLowerCase().includes(search)

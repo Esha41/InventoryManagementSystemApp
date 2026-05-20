@@ -11,6 +11,7 @@ export interface AllowanceItemDto {
   id: number;
   itemId: number;
   itemName?: string | null;
+  itemNameAr?: string | null;
   itemNo?: string | null;
   departmentId: number;
   year: number;
@@ -28,6 +29,7 @@ export interface AllowanceItemDetailDto {
   quantity: number;
   itemType: ItemType;
   itemName: string;
+  itemNameAr?: string | null;
   itemNo: string;
   batchNo?: string | null;
   usedQuantityFromAllowance: number;
@@ -52,6 +54,7 @@ export interface AllowanceTableRow {
   year: number;
   itemId: number;
   itemName: string;
+  itemNameAr?: string | null;
   itemNo: string;
   batchNo: string;
   itemType: ItemType;
@@ -65,6 +68,7 @@ export interface AllowanceTableRow {
 export interface AllowanceItemReserveDetailsDto {
   itemId: number;
   itemName: string;
+  itemNameAr?: string | null;
   itemNo: string;
   batchNo?: string | null;
   originalQuantity: number;

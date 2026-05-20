@@ -2,6 +2,7 @@ import { ItemInventorySummaryDto, ItemType, normalizeItemType } from '@models/in
 import { InventoryHeadlineMetricsDto } from '@models/inventory-dashboard-monitoring.model';
 import { LotDetailDto } from '@inventory/services/inventory.service';
 import { AssetDto } from '@models/asset.model';
+import { getLocalizedName } from '@utils/localization.utils';
 
 export type ActiveTab = 'ammunition' | 'weapon' | 'explosive';
 
@@ -33,6 +34,8 @@ export function filterItemSummaries(
     list = list.filter(
       i =>
         (i.itemName || '').toLowerCase().includes(q) ||
+        (i.itemNameAr || '').toLowerCase().includes(q) ||
+        ((i as { itemNameAR?: string | null }).itemNameAR || '').toLowerCase().includes(q) ||
         (i.itemNo || '').toLowerCase().includes(q) ||
         (i.nsn || '').toLowerCase().includes(q) ||
         (i.partNo || '').toLowerCase().includes(q)
@@ -180,9 +183,21 @@ export function hasSecondaryItemTableFilters(
   );
 }
 
-export function formatItemPickLabel(i: ItemInventorySummaryDto): string {
+/** Bilingual item label for inventory dashboard rows (English in `itemName`, Arabic optional). */
+export function localizedItemSummaryDisplayName(
+  i: ItemInventorySummaryDto,
+  lang: string
+): string {
+  const arRaw = i.itemNameAr ?? (i as { itemNameAR?: string | null }).itemNameAR;
+  const ar = (arRaw ?? '').trim();
+  const en = (i.itemName ?? '').trim();
+  return getLocalizedName({ name: en, nameAr: ar || undefined }, lang)?.trim() || en || '—';
+}
+
+export function formatItemPickLabel(i: ItemInventorySummaryDto, lang: string): string {
+  const display = localizedItemSummaryDisplayName(i, lang);
   const no = (i.itemNo || '').trim();
-  return no ? `${i.itemName} (${no})` : (i.itemName || '—');
+  return no ? `${display} (${no})` : display;
 }
 
 export function sumItemSummariesExcludingWeapon(

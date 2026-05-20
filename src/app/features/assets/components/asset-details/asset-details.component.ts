@@ -453,6 +453,11 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
     return this.fields.assetName();
   }
 
+  getAssetNameAr(): string {
+    const asset = this._asset() as { nameAr?: string | null; nameAR?: string | null } | null;
+    return asset?.nameAr || asset?.nameAR || '-';
+  }
+
   getProductId(): string {
     return this.fields.productId();
   }

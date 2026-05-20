@@ -12,6 +12,7 @@ import { SupplyService, SupplyDto } from '@requests/services/supply.service';
 import { AssetSupplyService } from '@requests/services/asset-supply.service';
 import { LookupItem } from '@services/lookup.service';
 import { RequestDetail, BaseRequestDto, FileUploadDto, WorkflowStepTransition, RequestItem } from '@models/workflow-approval.model';
+import { getCurrentLang, localizedRequestLineItemName } from '@utils/localization.utils';
 import { mapToRequestDetail, getStatusMetadata } from '@utils/request-mapper.utils';
 import { getRequestStatusTranslationKey } from '@utils/status.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
@@ -578,7 +579,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
 
   openItemTracking(item: RequestItem): void {
     this.trackingItemId = item.itemId || item.id;
-    this.trackingItemName = item.itemName;
+    this.trackingItemName = localizedRequestLineItemName(item, getCurrentLang(this.translateService));
     this.isTrackingModalOpen = true;
     this.cdr.markForCheck();
   }

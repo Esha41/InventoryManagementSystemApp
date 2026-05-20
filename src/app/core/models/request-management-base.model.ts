@@ -67,6 +67,7 @@ export interface RequestManagementRequestItemWeaponAssociationDto {
   associatedWeaponOtherName?: string | null;
   associatedWeaponCaliberId?: number | null;
   associatedWeaponName?: string | null;
+  associatedWeaponNameAr?: string | null;
 }
 
 /** @see `ettadbackend/Ettad.RequestManagement.Service/Common/Dtos/RequestItemDto.cs` */
@@ -77,6 +78,7 @@ export interface RequestManagementRequestItemDto {
   requestId: number;
   notes?: string;
   itemName?: string;
+  itemNameAr?: string | null;
   itemNo?: string;
   nsn?: string;
   itemType?: number | string;

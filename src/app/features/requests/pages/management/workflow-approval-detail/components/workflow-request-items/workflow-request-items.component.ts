@@ -1,7 +1,8 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Package, History as HistoryIcon } from 'lucide-angular';
+import { Subject, takeUntil } from 'rxjs';
 import { RequestDetail, RequestItem } from '@models/workflow-approval.model';
 import { WorkflowApprovalStateService } from '../../services/workflow-approval-state.service';
 import { WorkflowApprovalNavigationService } from '../../services/workflow-approval-navigation.service';
@@ -10,6 +11,7 @@ import { WeaponAssociationListComponent } from '@components/weapon-association-l
 import { hasWeaponAssociations as itemHasWeaponAssociations } from '@utils/weapon-association-label.utils';
 import type { RequestManagementRequestItemWeaponAssociationDto } from '@models/request-management-base.model';
 import { ItemType } from '@models/inventory.model';
+import { getCurrentLang, localizedRequestLineItemName } from '@utils/localization.utils';
 
 @Component({
   selector: 'app-workflow-request-items',
@@ -25,7 +27,7 @@ import { ItemType } from '@models/inventory.model';
   styleUrls: ['./workflow-request-items.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class WorkflowRequestItemsComponent {
+export class WorkflowRequestItemsComponent implements OnInit, OnDestroy {
   readonly Package = Package;
   readonly HistoryIcon = HistoryIcon;
 
@@ -33,10 +35,29 @@ export class WorkflowRequestItemsComponent {
   @Output() reviewClick = new EventEmitter<void>();
   @Output() historyClick = new EventEmitter<RequestItem>();
 
+  private readonly destroy$ = new Subject<void>();
+
   constructor(
     private stateService: WorkflowApprovalStateService,
-    private navigationService: WorkflowApprovalNavigationService
+    private navigationService: WorkflowApprovalNavigationService,
+    private readonly translate: TranslateService,
+    private readonly cdr: ChangeDetectorRef
   ) { }
+
+  ngOnInit(): void {
+    this.translate.onLangChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.cdr.markForCheck());
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  lineItemDisplayName(item: RequestItem | null | undefined): string {
+    return localizedRequestLineItemName(item, getCurrentLang(this.translate));
+  }
 
   onHistoryClick(event: MouseEvent, item: RequestItem): void {
     event.stopPropagation();
