@@ -17,7 +17,8 @@ import {
   AttachmentRequirementLookupDraft,
   LookupItem,
   LookupTableConfig,
-  CreateUpdateLookupDto
+  CreateUpdateLookupDto,
+  RequestPurposeAllowanceContext
 } from '@models/lookup.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
@@ -421,7 +422,11 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
         error: (error) => {
           this.lookupModalLoading = false;
           this.isLoadingLookups = false;
-          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to save lookup item');
+          const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(
+            error,
+            'Failed to save lookup item',
+            this.translateService
+          );
           this.lookupErrorMessage = errorMessage;
           this.cdr.markForCheck();
 
@@ -463,6 +468,23 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
     return !!this.selectedTable?.requestPurposeType;
   }
 
+  isOrderRequestPurposeTable(): boolean {
+    return this.selectedTable?.requestPurposeType === 'order';
+  }
+
+  getAllowanceContextLabel(item: LookupItem): string {
+    switch (item.allowanceContext) {
+      case RequestPurposeAllowanceContext.FromAllowance:
+        return this.translateService.instant('lookupFormModal.fromAllowance');
+      case RequestPurposeAllowanceContext.OutsideAllowance:
+        return this.translateService.instant('lookupFormModal.outsideAllowance');
+      case RequestPurposeAllowanceContext.Both:
+        return this.translateService.instant('lookupFormModal.both');
+      default:
+        return '—';
+    }
+  }
+
   getDesktopLookupColSpan(): number {
     const t = this.selectedTable;
     if (!t) return 2;
@@ -472,6 +494,7 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
     if (t.name === 'ItemType' || t.name === 'Unit') n++;
     if (t.name === 'Caliber') n++;
     if (t.requestPurposeType) n++;
+    if (t.requestPurposeType === 'order') n++;
     if (this.canEdit() || this.canDelete()) n++;
     return n;
   }
@@ -519,7 +542,8 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
     const dto: CreateUpdateLookupDto = {
       nameEn: purpose.nameEn,
       nameAr: purpose.nameAr,
-      attachmentRequirements: normalized
+      attachmentRequirements: normalized,
+      ...(purpose.allowanceContext != null ? { allowanceContext: purpose.allowanceContext } : {})
     };
     this.lookupManagementService
       .updateLookupItem(this.selectedTable!, purpose.id, dto)

@@ -2,9 +2,8 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map, take } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
-import { ApiService } from '@services/api.service';
-import { API_ENDPOINTS } from '@constants/app.constants';
 import { OrderSubmissionService, OrderSubmissionData } from '@requests/services/order-submission.service';
+import { RequestPurposeService } from '@requests/services/request-purpose.service';
 import {
   CartridgeState,
   UsageFormData,
@@ -14,10 +13,12 @@ import {
   RequestPurposeDto
 } from '../new-issue-request.state';
 import type { WeaponAssociation } from '@models/request-item.model';
-import { getDepartmentIdForRequest as getDepartmentIdForRequestUtil } from '@requests/utils/issue-request.utils';
+import {
+  getDepartmentIdForRequest as getDepartmentIdForRequestUtil,
+  isPurposeAllowedForAllowance
+} from '@requests/utils/issue-request.utils';
 import { ToastService } from '@services/toast.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
-import { normalizeArrayResponse } from '@utils/index';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 export interface RunSubmissionContext {
   cartridgeState: CartridgeState;
@@ -52,7 +53,7 @@ export interface RunSubmissionCallbacks {
 @Injectable({ providedIn: 'root' })
 export class IssueRequestSubmissionService {
   constructor(
-    private apiService: ApiService,
+    private requestPurposeService: RequestPurposeService,
     private orderSubmissionService: OrderSubmissionService,
     private translate: TranslateService,
     private toastService: ToastService
@@ -60,10 +61,26 @@ export class IssueRequestSubmissionService {
 
   // ---- Data loading (merged from IssueRequestDataService) -----------------
 
-  loadRequestPurposes(): Observable<RequestPurposeDto[]> {
-    return this.apiService
-      .get<RequestPurposeDto[]>(API_ENDPOINTS.REQUEST_PURPOSES.FOR_ORDER)
-      .pipe(map(data => normalizeArrayResponse<RequestPurposeDto>(data)));
+  loadRequestPurposes(isFromAllowance: boolean): Observable<RequestPurposeDto[]> {
+    return this.requestPurposeService.getAllForOrder(isFromAllowance).pipe(
+      map(items =>
+        items.map(item => ({
+          id: item.id!,
+          nameEn: item.nameEn,
+          nameAr: item.nameAr,
+          allowanceContext: item.allowanceContext,
+          attachmentRequirements: (item.attachmentRequirements ?? []).map(slot => ({
+            id: slot.id ?? 0,
+            nameEn: slot.nameEn,
+            nameAr: slot.nameAr,
+            isRequired: slot.isRequired,
+            minCount: slot.minCount,
+            maxCount: slot.maxCount,
+            displayOrder: slot.displayOrder
+          }))
+        }))
+      )
+    );
   }
 
   rebuildRequestPurposeOptions(requestPurposeState: RequestPurposeState): Map<number, { usePurpose: string }> {
@@ -110,6 +127,17 @@ export class IssueRequestSubmissionService {
 
     if (missingAssociation) {
       return { isValid: false, error: 'newIssueRequest.validation.ammoMustHaveWeapon' };
+    }
+
+    const selectedId = ctx.requestPurposeState.selectedRequestPurposeId;
+    if (selectedId != null) {
+      const purpose = ctx.requestPurposeState.requestPurposesSource.find(p => p.id === selectedId);
+      if (purpose && !isPurposeAllowedForAllowance(purpose.allowanceContext, ctx.fromReserve)) {
+        return {
+          isValid: false,
+          error: 'newIssueRequest.validation.usePurposeNotAllowedForAllowance'
+        };
+      }
     }
 
     return this.orderSubmissionService.validateOrder(this.buildSubmissionDataFromContext(ctx));

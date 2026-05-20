@@ -17,6 +17,7 @@ export interface RequestPurposeDto {
   id: number;
   nameEn?: string | null;
   nameAr?: string | null;
+  allowanceContext?: number;
   attachmentRequirements?: AttachmentRequirementDto[];
 }
 

@@ -190,6 +190,7 @@
     "validation": {
       "ammoMustHaveWeapon": "يجب ربط جميع بنود الذخيرة بسلاح قبل التقديم.",
       "usePurposeRequired": "غرض الاستخدام مطلوب.",
+      "usePurposeNotAllowedForAllowance": "غرض الاستخدام المحدد غير صالح لنمط المخصص هذا.",
       "requestPurposeNotesRequired": "ملاحظات غرض الطلب مطلوبة.",
       "usageLocationRequired": "موقع الاستخدام مطلوب.",
       "usageDateRequired": "تاريخ الاستخدام مطلوب.",

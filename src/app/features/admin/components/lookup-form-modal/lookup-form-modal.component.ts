@@ -16,7 +16,8 @@ import {
   AttachmentRequirementLookupDraft,
   CreateUpdateLookupDto,
   LookupItem,
-  LookupTableConfig
+  LookupTableConfig,
+  RequestPurposeAllowanceContext
 } from '@models/lookup.model';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
@@ -89,6 +90,7 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
   @Input() tableConfig?: LookupTableConfig;
   @Input() mode: 'create' | 'edit' = 'create';
   @Input() externalLoading = false;
+  @Input() externalErrorMessage = '';
 
   @Output() closed = new EventEmitter<void>();
   @Output() saved = new EventEmitter<CreateUpdateLookupDto>();
@@ -110,20 +112,32 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
     { value: 2, label: '' }
   ];
 
+  allowanceContextOptions: DropdownOption<number>[] = [];
+
   constructor(private fb: FormBuilder, private translateService: TranslateService) {
     this.translateService.onTranslationChange.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.updateItemTypeTranslations();
       this.updateCaliberItemTypeTranslations();
+      this.updateAllowanceContextTranslations();
     });
 
     this.translateService.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.updateItemTypeTranslations();
       this.updateCaliberItemTypeTranslations();
+      this.updateAllowanceContextTranslations();
     });
   }
 
   get isRequestPurpose(): boolean {
     return !!this.tableConfig?.requestPurposeType;
+  }
+
+  get isOrderRequestPurpose(): boolean {
+    return this.tableConfig?.requestPurposeType === 'order';
+  }
+
+  get displayedErrorMessage(): string {
+    return this.externalErrorMessage?.trim() || this.errorMessage;
   }
 
   get attachmentRows(): FormArray<AttachmentRequirementRowFormGroup> {
@@ -141,7 +155,9 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
     ]).pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.updateItemTypeTranslations();
       this.updateCaliberItemTypeTranslations();
+      this.updateAllowanceContextTranslations();
     });
+    this.updateAllowanceContextTranslations();
   }
 
   ngOnDestroy(): void {
@@ -163,7 +179,8 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
           nameEn: '',
           nameAr: '',
           code: '',
-          itemType: null
+          itemType: null,
+          allowanceContext: null
         });
         this.clearAttachmentRequirements();
       } else if (this.mode === 'edit' && this.lookupItem && this.lookupForm) {
@@ -176,7 +193,8 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
         nameEn: '',
         nameAr: '',
         code: '',
-        itemType: null
+        itemType: null,
+        allowanceContext: null
       });
       this.clearAttachmentRequirements();
       this.errorMessage = '';
@@ -191,7 +209,8 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
           nameEn: '',
           nameAr: '',
           code: '',
-          itemType: null
+          itemType: null,
+          allowanceContext: null
         });
         this.clearAttachmentRequirements();
       }
@@ -212,6 +231,8 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
       ? [Validators.required, Validators.maxLength(50)]
       : [Validators.maxLength(50)];
 
+    const needsAllowanceContext = this.tableConfig?.requestPurposeType === 'order';
+
     this.lookupForm = this.fb.group({
       nameEn: this.fb.nonNullable.control('', {
         validators: [Validators.required, Validators.maxLength(100)]
@@ -222,6 +243,9 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
       code: this.fb.nonNullable.control('', { validators: codeValidators }),
       itemType: this.fb.control<number | null>(null, {
         validators: needsItemType ? [Validators.required] : []
+      }),
+      allowanceContext: this.fb.control<number | null>(null, {
+        validators: needsAllowanceContext ? [Validators.required] : []
       }),
       attachmentRequirements: this.fb.array<AttachmentRequirementRowFormGroup>([])
     });
@@ -245,7 +269,8 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
       nameEn: this.lookupItem.nameEn || '',
       nameAr: this.lookupItem.nameAr || '',
       code: this.lookupItem.code || '',
-      ...(needsItemType ? { itemType: normalizeLookupItemType(this.lookupItem) } : { itemType: null })
+      ...(needsItemType ? { itemType: normalizeLookupItemType(this.lookupItem) } : { itemType: null }),
+      allowanceContext: this.lookupItem.allowanceContext ?? null
     });
 
     this.clearAttachmentRequirements();
@@ -359,6 +384,13 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
       dto.attachmentRequirements = drafts;
     }
 
+    if (this.isOrderRequestPurpose) {
+      const ctx = v.allowanceContext;
+      if (ctx != null) {
+        dto.allowanceContext = ctx as RequestPurposeAllowanceContext;
+      }
+    }
+
     this.saved.emit(dto);
   }
 
@@ -370,6 +402,7 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
         nameAr: '',
         code: '',
         itemType: null,
+        allowanceContext: null,
         attachmentRequirements: []
       },
       { emitEvent: false }
@@ -442,6 +475,23 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
     this.caliberItemTypeOptions = [
       { value: 1, label: this.translateService.instant('lookupFormModal.ammunition') },
       { value: 2, label: this.translateService.instant('lookupFormModal.weapon') }
+    ];
+  }
+
+  private updateAllowanceContextTranslations(): void {
+    this.allowanceContextOptions = [
+      {
+        value: RequestPurposeAllowanceContext.FromAllowance,
+        label: this.translateService.instant('lookupFormModal.fromAllowance')
+      },
+      {
+        value: RequestPurposeAllowanceContext.OutsideAllowance,
+        label: this.translateService.instant('lookupFormModal.outsideAllowance')
+      },
+      {
+        value: RequestPurposeAllowanceContext.Both,
+        label: this.translateService.instant('lookupFormModal.both')
+      }
     ];
   }
 }

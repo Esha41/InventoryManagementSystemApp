@@ -12,6 +12,8 @@ export interface LookupModalFormControls {
   code: FormControl<string>;
   /** Present for ItemType / Unit / Caliber tables; unused tables keep `null` with no required validator */
   itemType: FormControl<number | null>;
+  /** Order request purposes only */
+  allowanceContext: FormControl<number | null>;
   /** Used when managing RequestPurpose; empty array otherwise */
   attachmentRequirements: FormArray<AttachmentRequirementRowFormGroup>;
 }

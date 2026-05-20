@@ -4,6 +4,13 @@
 
 import { PERMISSIONS } from '@constants/permissions.constants';
 
+/** Mirrors backend RequestPurposeAllowanceContext. */
+export enum RequestPurposeAllowanceContext {
+  FromAllowance = 1,
+  OutsideAllowance = 2,
+  Both = 3
+}
+
 export interface LookupItem {
   id?: number;
   nameAr: string;
@@ -22,6 +29,8 @@ export interface LookupItem {
   email?: string;
   /** RequestPurpose admin: persisted attachment slots (from GET all/by id). */
   attachmentRequirements?: AttachmentRequirementLookupDraft[];
+  /** Order request purposes: from allowance / outside allowance / both. */
+  allowanceContext?: RequestPurposeAllowanceContext;
 }
 
 // Backward compatibility aliases
@@ -51,6 +60,8 @@ export interface CreateUpdateLookupDto {
   itemType?: number;
   /** When managing RequestPurpose via lookup admin, persisted with create/update APIs. */
   attachmentRequirements?: AttachmentRequirementLookupDraft[];
+  /** Required for order request purposes in admin. */
+  allowanceContext?: RequestPurposeAllowanceContext;
 }
 
 export type RequestPurposeType = 'discard' | 'return' | 'order';

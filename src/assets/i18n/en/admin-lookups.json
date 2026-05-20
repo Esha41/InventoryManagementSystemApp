@@ -78,7 +78,14 @@
     "attachmentModalFieldRequired": "This field is required.",
     "attachmentModalMaxLength": "Must be at most {{length}} characters.",
     "toggleAttachmentsAria": "Show or hide attachment requirements for this purpose",
-    "toggleAttachmentsHint": "View attachment requirements"
+    "toggleAttachmentsHint": "View attachment requirements",
+    "allowanceContext": "Allowance context",
+    "errors": {
+      "requestPurposeDuplicateNameEn": "A request purpose with this English name already exists. Please use a different name or edit the existing one.",
+      "requestPurposeDuplicateNameAr": "A request purpose with this Arabic name already exists. Please use a different name or edit the existing one.",
+      "requestPurposeDuplicateName": "A request purpose with this name already exists. English and Arabic names must be unique.",
+      "requestPurposeSaveFailed": "Could not save the request purpose. Please try again or contact support."
+    }
   },
   "lookupFormModal": {
     "nameEn": "Name (English)",
@@ -101,6 +108,11 @@
     "attachmentRowIncomplete": "Provide both English and Arabic names for each slot, or clear unused rows.",
     "attachmentCountsInvalid": "Min count cannot be negative. Max must be at least 1 and not less than min.",
     "selectItemType": "Select item type",
+    "allowanceContext": "Allowance context",
+    "selectAllowanceContext": "Select allowance context",
+    "fromAllowance": "From allowance",
+    "outsideAllowance": "Outside allowance",
+    "both": "Both",
     "ammunition": "Ammunition",
     "weapon": "Weapon",
     "explosive": "Explosive",

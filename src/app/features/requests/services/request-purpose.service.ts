@@ -6,8 +6,10 @@ import {
   LookupItem,
   CreateUpdateLookupDto,
   AttachmentRequirementLookupDraft,
-  RequestPurposeType
+  RequestPurposeType,
+  RequestPurposeAllowanceContext
 } from '@models/lookup.model';
+import { normalizeRequestPurposeAllowanceContext } from '@utils/request-purpose-allowance.utils';
 
 /** Full request purpose row from API (GET list/detail). */
 export interface RequestPurposeApiDto {
@@ -15,6 +17,8 @@ export interface RequestPurposeApiDto {
   nameEn?: string | null;
   nameAr?: string | null;
   requestType?: number;
+  /** Raw API value before toLookupItem (number or JsonStringEnumConverter string). */
+  allowanceContext?: unknown;
   code?: string;
   isDeleted?: boolean;
   attachmentRequirements?: ApiAttachmentRequirement[] | null;
@@ -66,6 +70,14 @@ export class RequestPurposeService {
     );
   }
 
+  /** Order purposes filtered by allowance mode (new-issue flow). */
+  getAllForOrder(isFromAllowance: boolean): Observable<RequestPurposeItem[]> {
+    const endpoint = `${API_ENDPOINTS.REQUEST_PURPOSES.FOR_ORDER}?isFromAllowance=${isFromAllowance}`;
+    return this.apiService.get<RequestPurposeApiDto[]>(endpoint).pipe(
+      map(raw => (Array.isArray(raw) ? raw : []).map(item => this.toLookupItem(item)))
+    );
+  }
+
   create(type: RequestPurposeType, dto: CreateUpdateLookupDto): Observable<LookupItem> {
     const endpoint = this.getEndpoint(type);
     const body = this.toRequestPurposePayload(dto);
@@ -104,6 +116,9 @@ export class RequestPurposeService {
       nameEn: dto.nameEn,
       nameAr: dto.nameAr
     };
+    if (dto.allowanceContext != null) {
+      payload['allowanceContext'] = dto.allowanceContext;
+    }
     if (dto.attachmentRequirements != null && dto.attachmentRequirements.length > 0) {
       payload['attachmentRequirements'] = dto.attachmentRequirements.map(r => ({
         id: r.id != null && r.id > 0 ? r.id : null,
@@ -128,6 +143,7 @@ export class RequestPurposeService {
       code: item.code,
       isDeleted: item.isDeleted,
       requestType: item.requestType,
+      allowanceContext: normalizeRequestPurposeAllowanceContext(item.allowanceContext),
       attachmentRequirements: this.mapAttachmentRequirements(item.attachmentRequirements)
     };
   }
