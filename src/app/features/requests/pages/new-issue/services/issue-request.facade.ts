@@ -76,7 +76,8 @@ import {
   canProceedFromSelection,
   inferCartridgeItemType,
   applyUserContext as applyUserContextUtil,
-  applyAuthenticatedUserContext as applyAuthenticatedUserContextUtil
+  applyAuthenticatedUserContext as applyAuthenticatedUserContextUtil,
+  isPurposeAllowedForAllowance
 } from '@requests/utils/issue-request.utils';
 import { resolveCatalogItemCaliberId, isCatalogItemExplicitlyDeleted } from '@utils/catalog-caliber.utils';
 
@@ -354,6 +355,8 @@ export class IssueRequestFacade {
   onFromReserveChange(value: string): void {
     if (this.fromReserve === value) return;
     this.fromReserve = value;
+    this.clearRequestPurposeIfNotAllowedForAllowance();
+    this.loadRequestPurposes();
     this.updateQueryParams(this.currentStep);
     this.cdr.markForCheck();
     if (this.currentStep >= 1) this.loadCartridges();
@@ -845,10 +848,19 @@ export class IssueRequestFacade {
   private loadRequestPurposes(): void {
     this.requestPurposeState.loadingRequestPurposes = true;
     this.cdr.markForCheck();
-    this.submissionService.loadRequestPurposes().pipe(takeUntil(this.destroy$)).subscribe({
+    const isFromAllowance = this.fromReserve === 'Yes';
+    this.submissionService.loadRequestPurposes(isFromAllowance).pipe(takeUntil(this.destroy$)).subscribe({
       next: (purposes) => {
         this.requestPurposeState.requestPurposesSource = purposes;
         this.rebuildRequestPurposeOptions();
+        const selectedId = this.requestPurposeState.selectedRequestPurposeId;
+        if (selectedId != null) {
+          const stillValid = this.requestPurposeState.requestPurposeOptions.some(o => o.value === selectedId);
+          if (!stillValid) {
+            this.requestPurposeState.selectedRequestPurposeId = null;
+            this.usageFormData.usePurpose = '';
+          }
+        }
         this.requestPurposeState.loadingRequestPurposes = false;
         this.updateUsePurposeFromSelection(this.requestPurposeState.selectedRequestPurposeId);
         this.cdr.markForCheck();
@@ -869,6 +881,16 @@ export class IssueRequestFacade {
 
   private updateUsePurposeFromSelection(id: number | null): void {
     this.submissionService.updateUsePurposeFromSelection(id, this.requestPurposeOptionsMap, this.usageFormData);
+  }
+
+  private clearRequestPurposeIfNotAllowedForAllowance(): void {
+    const id = this.requestPurposeState.selectedRequestPurposeId;
+    if (id == null) return;
+    const purpose = this.requestPurposeState.requestPurposesSource.find(p => p.id === id);
+    if (purpose && !isPurposeAllowedForAllowance(purpose.allowanceContext, this.fromReserve)) {
+      this.requestPurposeState.selectedRequestPurposeId = null;
+      this.usageFormData.usePurpose = '';
+    }
   }
 
   private syncRequesterNameFromUserDetails(): void {

@@ -129,6 +129,11 @@ export class ErrorHandler {
       return translate.instant(message);
     }
 
+    if (message.startsWith('lookupManagement.errors.')) {
+      const t = translate.instant(message);
+      if (t && t !== message) return t;
+    }
+
     // Backend i18n keys (e.g. server.unauthorized) merged under root `server` in common.json
     if (message.startsWith('server.')) {
       const t = translate.instant(message);

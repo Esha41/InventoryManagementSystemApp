@@ -1,4 +1,5 @@
 import { Cartridge } from '@models/cartridge.model';
+import { RequestPurposeAllowanceContext } from '@models/lookup.model';
 import { ReserveDetailItem, UserContextState } from '@requests/pages/new-issue/new-issue-request.state';
 import { BackendUserDto } from '@models/backend-user.model';
 import { AuthenticatedUser } from '@models/auth.model';
@@ -254,6 +255,29 @@ export function getDisplayedItemTypeOptions(itemTypeOptions: string[], fromReser
     return itemTypeOptions.filter(t => t !== 'Weapon');
   }
   return itemTypeOptions;
+}
+
+/**
+ * Whether a request purpose allowance context matches the order's allowance mode.
+ */
+export function isPurposeAllowedForAllowance(
+  allowanceContext: number | undefined,
+  fromReserve: string
+): boolean {
+  if (allowanceContext == null) {
+    return true;
+  }
+  const isFromAllowance = fromReserve === 'Yes';
+  switch (allowanceContext) {
+    case RequestPurposeAllowanceContext.FromAllowance:
+      return isFromAllowance;
+    case RequestPurposeAllowanceContext.OutsideAllowance:
+      return !isFromAllowance;
+    case RequestPurposeAllowanceContext.Both:
+      return true;
+    default:
+      return true;
+  }
 }
 
 /**

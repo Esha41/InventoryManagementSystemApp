@@ -189,6 +189,7 @@
     "validation": {
       "ammoMustHaveWeapon": "All ammunition items must have an associated weapon before submitting.",
       "usePurposeRequired": "Usage purpose is required.",
+      "usePurposeNotAllowedForAllowance": "The selected use purpose is not valid for this allowance mode.",
       "requestPurposeNotesRequired": "Request purpose notes are required.",
       "usageLocationRequired": "Usage location is required.",
       "usageDateRequired": "Usage date is required.",
