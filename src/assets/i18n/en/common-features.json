@@ -80,13 +80,13 @@
     "total": "Total",
     "col": {
       "name": "Name",
-      "serial": "Serial no.",
+      "serial": "Serial No.",
       "custodian": "Custodian",
       "department": "Department",
       "supplier": "Supplier",
       "manufacturer": "Manufacturer",
-      "createdDepot": "Created depot",
-      "creationDate": "Created on",
+      "createdDepot": "Created Depot",
+      "creationDate": "Created On",
       "createdBy": "Created by",
       "notes": "Notes",
       "depot": "From depot"
