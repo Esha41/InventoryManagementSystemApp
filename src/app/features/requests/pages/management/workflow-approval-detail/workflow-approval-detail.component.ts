@@ -11,6 +11,7 @@ import { ToastService } from '@services/toast.service';
 import { SupplyService, SupplyDto } from '@requests/services/supply.service';
 import { AssetSupplyService } from '@requests/services/asset-supply.service';
 import { LookupItem } from '@services/lookup.service';
+import { RequestType } from '@models/backend-enums';
 import { RequestDetail, BaseRequestDto, FileUploadDto, WorkflowStepTransition, RequestItem } from '@models/workflow-approval.model';
 import { getCurrentLang, localizedRequestLineItemName } from '@utils/localization.utils';
 import { mapToRequestDetail, getStatusMetadata } from '@utils/request-mapper.utils';
@@ -498,7 +499,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   /** Same translation keys as dashboard request cards (`dashboard.statusLabels.*`, etc.). */
   getHeaderRequestStatusTranslationKey(): string {
     if (!this.requestDetail) return 'dashboard.statusLabels.new';
-    return getRequestStatusTranslationKey(this.requestDetail.rawStatus ?? this.requestDetail.status);
+    return getRequestStatusTranslationKey(this.requestDetail.rawStatus);
   }
 
   /** Badge colours aligned with `getStatusMetadata` / dashboard card styling. */
@@ -506,7 +507,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     if (!this.requestDetail) {
       return getRequestStatusBadgeClass('New');
     }
-    const badgeKind = getStatusMetadata(this.requestDetail.rawStatus ?? this.requestDetail.status).badgeClass;
+    const badgeKind = getStatusMetadata(this.requestDetail.rawStatus).badgeClass;
     return getRequestStatusBadgeClass(badgeKind);
   }
 
@@ -649,7 +650,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
           this.dataService.loadRequestItems(baseRequest, this.requestId, this.destroy$).then(() => {
             if (loadSeq !== this.detailLoadSeq) return;
             // Check if weapon order
-            if (baseRequest.requestItems && baseRequest.requestType === 'Order') {
+            if (baseRequest.requestItems && baseRequest.requestType === RequestType.Order) {
               this.isWeaponOrder = this.dataService.checkIfWeaponOrder(baseRequest.requestItems);
               this.orderSupplyDate = this.dataService.extractSupplyDate(baseRequest);
 

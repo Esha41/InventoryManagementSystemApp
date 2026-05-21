@@ -187,9 +187,9 @@ export function createInitialFilterOptions(): ExtendedFilterOptions {
   return {
     itemTypeOptions: ['Ammunition', 'Explosive', 'Weapon'],
     ammunitionTypeOptions: [
-      { label: 'newIssueRequest.ammunitionTypeSmall', value: 'Small' },
-      { label: 'newIssueRequest.ammunitionTypeMedium', value: 'Medium' },
-      { label: 'newIssueRequest.ammunitionTypeLarge', value: 'Large' }
+      { label: 'newIssueRequest.ammunitionTypeSmall', value: '1' },
+      { label: 'newIssueRequest.ammunitionTypeMedium', value: '2' },
+      { label: 'newIssueRequest.ammunitionTypeLarge', value: '3' }
     ],
     bulletDiameters: [],
     linkedOptions: [

@@ -37,7 +37,7 @@ export interface CatalogBaseItemDto {
 
 
 export interface AmmunitionDto extends CatalogBaseItemDto {
-  ammunitionType?: number | string | null;
+  ammunitionType?: number | null;
   bulletDiameter?: number | null;
   bulletDiameterUnitId?: number | null;
   armNumber?: string | null;

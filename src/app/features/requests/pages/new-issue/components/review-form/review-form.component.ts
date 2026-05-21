@@ -104,6 +104,10 @@ export class ReviewFormComponent {
     return [...fromState, ...legacy];
   }
 
+  get showAssociatedWeaponColumn(): boolean {
+    return this.selectedCartridges.some(c => c.itemType === 'Ammunition');
+  }
+
   getWeaponLabel(cartridge: Cartridge): string {
     const list = this.weaponAssociations.get(cartridge.id);
     if (!list?.length) return '—';

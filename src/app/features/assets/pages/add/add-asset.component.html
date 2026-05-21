@@ -92,7 +92,7 @@
             <div class="space-y-6 min-w-0">
               <!-- Name (Required) -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-name-1">{{ (activeTab === 'ammunition' ? 'addAsset.nameEnglish' : 'addAsset.name') | translate }}
+                <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-name-1">{{ 'addAsset.nameEnglish' | translate }}
                   *</label>
                 <input id="add-name-1" type="text" [(ngModel)]="assetForm.name" name="name"
                   [class]="getInputClass(nameModel.invalid, nameModel.dirty, nameModel.touched)"
@@ -366,6 +366,50 @@
                   </app-dropdown>
                 </div>
 
+                <!-- Hazard Division — paired with Primary Purpose (right column) -->
+                <div>
+                  <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.hazardDivision' | translate
+                    }}</span>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.hazardDivisionId" name="hazardDivisionId"
+                    [options]="hazardDivisions" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectHazardDivision' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Linked -->
+                <div>
+                  <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.linked' | translate
+                    }}</span>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.isLinked" name="isLinked"
+                    [options]="linkedOptions" optionLabel="label" optionValue="value" [translateLabels]="true"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectLinkedOption' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Nature -->
+                <div>
+                  <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.nature' | translate
+                    }}</span>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.natureOptionId" name="natureOptionId"
+                    [options]="natureOptions" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectNatureOption' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Classification -->
+                <div>
+                  <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.classification' | translate
+                    }}</span>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.classificationId" name="classificationId"
+                    [options]="classifications" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectClassification' | translate">
+                  </app-dropdown>
+                </div>
+
               </ng-container>
 
             </div>
@@ -374,7 +418,7 @@
             <div class="space-y-6 min-w-0">
               <!-- Name Arabic -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-name-ar">{{ (activeTab === 'ammunition' ? 'addAsset.nameArabic' : 'addAsset.nameAr') | translate }}</label>
+                <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-name-ar">{{ 'addAsset.nameArabic' | translate }}</label>
                 <input id="add-name-ar" type="text" [(ngModel)]="assetForm.nameAr" name="nameAr" dir="rtl"
                   [class]="getInputClass(false, false, false)"
                   [placeholder]="'addAsset.enterNameAr' | translate" maxlength="200" />
@@ -471,15 +515,6 @@
                     [placeholderValue]="null" [placeholder]="'addAsset.selectWeaponType' | translate">
                   </app-dropdown>
                 </div>
-
-                <!-- Notes -->
-                <div>
-                  <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-notes-36">{{ 'addAsset.notes' | translate
-                    }}</label>
-                  <textarea id="add-notes-36" [(ngModel)]="assetForm.notes" name="notes" rows="4"
-                    class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] resize-none"
-                    [placeholder]="'addAsset.enterNotes' | translate" maxlength="1000"></textarea>
-                </div>
               </ng-container>
 
               <!-- ============ EXPLOSIVE SPECIFIC FIELDS ============ -->
@@ -562,15 +597,6 @@
                     [placeholderSelectable]="false" [placeholderValue]="null"
                     [placeholder]="'addAsset.selectPrimaryPurpose' | translate">
                   </app-dropdown>
-                </div>
-
-                <!-- Notes -->
-                <div>
-                  <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-notes-45">{{ 'addAsset.notes' | translate
-                    }}</label>
-                  <textarea id="add-notes-45" [(ngModel)]="assetForm.notes" name="notes" rows="4"
-                    class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] resize-none"
-                    [placeholder]="'addAsset.enterNotes' | translate" maxlength="1000"></textarea>
                 </div>
               </ng-container>
 
@@ -679,7 +705,7 @@
                   </app-dropdown>
                 </div>
 
-                <!-- Primary Purpose -->
+                <!-- Primary Purpose — paired with Hazard Division (left column) -->
                 <div>
                   <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.primaryPurpose' | translate
                     }}</span>
@@ -691,73 +717,38 @@
                   </app-dropdown>
                 </div>
 
+                <!-- Projectile Color -->
+                <div>
+                  <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.projectileColor' |
+                    translate }}</span>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.projectileColorId" name="projectileColorId"
+                    [options]="projectileColors" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectProjectileColor' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Projectile Material -->
+                <div>
+                  <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.projectileMaterial' |
+                    translate }}</span>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.projectailMaterialId" name="projectailMaterialId"
+                    [options]="projectailMaterials" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectProjectileMaterial' | translate">
+                  </app-dropdown>
+                </div>
+
               </ng-container>
             </div>
 
-            <!-- Ammunition: aligned pairs (same row left | right) -->
-            <div *ngIf="activeTab === 'ammunition'"
-              class="col-span-full grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-6 items-start">
-              <div>
-                <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.hazardDivision' | translate
-                  }}</span>
-                <app-dropdown class="w-full" [(ngModel)]="assetForm.hazardDivisionId" name="hazardDivisionId"
-                  [options]="hazardDivisions" optionValue="id" [optionLabelFn]="lookupOptionLabel"
-                  [placeholderSelectable]="false" [placeholderValue]="null"
-                  [placeholder]="'addAsset.selectHazardDivision' | translate">
-                </app-dropdown>
-              </div>
-              <div>
-                <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.projectileColor' |
-                  translate }}</span>
-                <app-dropdown class="w-full" [(ngModel)]="assetForm.projectileColorId" name="projectileColorId"
-                  [options]="projectileColors" optionValue="id" [optionLabelFn]="lookupOptionLabel"
-                  [placeholderSelectable]="false" [placeholderValue]="null"
-                  [placeholder]="'addAsset.selectProjectileColor' | translate">
-                </app-dropdown>
-              </div>
-              <div>
-                <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.linked' | translate
-                  }}</span>
-                <app-dropdown class="w-full" [(ngModel)]="assetForm.isLinked" name="isLinked"
-                  [options]="linkedOptions" optionLabel="label" optionValue="value" [translateLabels]="true"
-                  [placeholderSelectable]="false" [placeholderValue]="null"
-                  [placeholder]="'addAsset.selectLinkedOption' | translate">
-                </app-dropdown>
-              </div>
-              <div>
-                <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.projectileMaterial' |
-                  translate }}</span>
-                <app-dropdown class="w-full" [(ngModel)]="assetForm.projectailMaterialId" name="projectailMaterialId"
-                  [options]="projectailMaterials" optionValue="id" [optionLabelFn]="lookupOptionLabel"
-                  [placeholderSelectable]="false" [placeholderValue]="null"
-                  [placeholder]="'addAsset.selectProjectileMaterial' | translate">
-                </app-dropdown>
-              </div>
-              <div>
-                <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.nature' | translate
-                  }}</span>
-                <app-dropdown class="w-full" [(ngModel)]="assetForm.natureOptionId" name="natureOptionId"
-                  [options]="natureOptions" optionValue="id" [optionLabelFn]="lookupOptionLabel"
-                  [placeholderSelectable]="false" [placeholderValue]="null"
-                  [placeholder]="'addAsset.selectNatureOption' | translate">
-                </app-dropdown>
-              </div>
-              <div>
-                <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.classification' | translate
-                  }}</span>
-                <app-dropdown class="w-full" [(ngModel)]="assetForm.classificationId" name="classificationId"
-                  [options]="classifications" optionValue="id" [optionLabelFn]="lookupOptionLabel"
-                  [placeholderSelectable]="false" [placeholderValue]="null"
-                  [placeholder]="'addAsset.selectClassification' | translate">
-                </app-dropdown>
-              </div>
-              <div class="lg:col-span-2">
-                <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-notes-63">{{ 'addAsset.notes' | translate
-                  }}</label>
-                <textarea id="add-notes-63" [(ngModel)]="assetForm.notes" name="notes" rows="4"
-                  class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] resize-none min-h-[100px]"
-                  [placeholder]="'addAsset.enterNotes' | translate" maxlength="1000"></textarea>
-              </div>
+            <!-- Notes full width -->
+            <div class="col-span-full">
+              <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-notes-63">{{ 'addAsset.notes' | translate
+                }}</label>
+              <textarea id="add-notes-63" [(ngModel)]="assetForm.notes" name="notes" rows="4"
+                class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] resize-none min-h-[100px]"
+                [placeholder]="'addAsset.enterNotes' | translate" maxlength="1000"></textarea>
             </div>
           </div>
 

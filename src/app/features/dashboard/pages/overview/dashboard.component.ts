@@ -178,8 +178,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   getRequestStatusTranslationKey(card: DashboardCard): string {
     // Prefer raw backend status to distinguish AutoRejected (7) from Rejected (4).
-    const raw = card.requestStatus ?? card.status;
-    return getRequestStatusTranslationKey(raw);
+    return getRequestStatusTranslationKey(card.requestStatus);
   }
 
   // Helper for handling view details click in table

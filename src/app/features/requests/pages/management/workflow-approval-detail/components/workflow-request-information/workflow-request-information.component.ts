@@ -3,11 +3,10 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 import { LucideAngularModule, FileText, Eye, User, Download } from 'lucide-angular';
-import { RequestDetail, FileUploadDto } from '@models/workflow-approval.model';
+import { RequestDetail, FileUploadDto, Priority } from '@models/workflow-approval.model';
 import { WorkflowApprovalSupplyService } from '../../services/workflow-approval-supply.service';
 import { getLocalizedValue as getLocalizedValueHelper } from '../../utils/workflow-approval-helpers';
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
-import { getPriorityKey } from '@utils/priority.utils';
 
 @Component({
   selector: 'app-workflow-request-information',
@@ -102,8 +101,12 @@ export class WorkflowRequestInformationComponent {
   }
 
   /** Stable key suffix for `common.priorityLevels.*` (Normal / Urgent / VeryUrgent). */
-  getPriorityI18nSuffix(priority?: string | number | null): string {
-    return getPriorityKey(priority);
+  getPriorityI18nSuffix(priority?: string | null): string {
+    if (!priority) return 'Normal';
+    const key = priority.toLowerCase().replace(/\s+/g, '');
+    if (key === 'veryurgent') return 'VeryUrgent';
+    if (key === 'urgent') return 'Urgent';
+    return 'Normal';
   }
 
   /**
@@ -112,31 +115,12 @@ export class WorkflowRequestInformationComponent {
    * the workflow approval page theme; the priority text label itself remains
    * the source of differentiation between levels.
    */
-  getPriorityTextColor(priority?: number | string | null): string {
+  getPriorityTextColor(priority?: Priority | null): string {
     return priority ? 'text-[var(--color-brand)]' : 'text-[var(--color-text-muted)]';
   }
 
-  private normalizePriorityToNumber(priority?: number | string | null): number | undefined {
-    if (priority === null || priority === undefined) return undefined;
-    if (typeof priority === 'number') return priority;
-
-    const raw = String(priority).trim();
-    if (!raw) return undefined;
-
-    const asNumber = Number(raw);
-    if (!Number.isNaN(asNumber)) return asNumber;
-
-    const key = raw.toLowerCase().replace(/\s+/g, '');
-    if (key === 'normal') return 1;
-    if (key === 'urgent') return 2;
-    if (key === 'veryurgent') return 3;
-    if (key === 'critical') return 4;
-    return undefined;
-  }
-
-  isVeryUrgentOrCritical(priority?: number | string | null): boolean {
-    const n = this.normalizePriorityToNumber(priority);
-    return n === 3 || n === 4;
+  isVeryUrgentOrCritical(priority?: Priority | null): boolean {
+    return priority === 'VeryUrgent' || priority === 'Critical';
   }
 
   /**

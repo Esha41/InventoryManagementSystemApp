@@ -304,15 +304,15 @@ export class OrderReportComponent implements OnInit, OnDestroy {
   }
 
 
-  getStatusLabel(status: number | string): string {
+  getStatusLabel(status: number): string {
     return mapOrderStatusFromApi(status);
   }
 
-  getPriorityLabel(priority: number | string): string {
+  getPriorityLabel(priority: number): string {
     return getPriorityText(priority);
   }
 
-  getPriorityColorClass(priority: number | string): string {
+  getPriorityColorClass(priority: number): string {
     return getPriorityClass(priority);
   }
 

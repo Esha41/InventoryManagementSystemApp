@@ -9,19 +9,9 @@ import { DepotDto } from './depot.model';
 import { FileUploadDto } from './file-upload.model';
 import { DepartmentDto, LookupItem } from './lookup.model';
 
-/**
- * Asset Status Enum
- */
-export enum AssetStatus {
-    ReadyToIssue = 1,
-    InMaintenance = 2,
-    UnserviceableRepairable = 3,
-    UnserviceableUnrepairable = 4,
-    AwaitingDisposal = 5,
-    Disposed = 6,
-    NotReadyToIssue = 7,
-    Assigned = 8
-}
+export { AssetStatus } from '@models/backend-enums';
+
+import { AssetStatus } from '@models/backend-enums';
 
 /** Status dropdown order: Ready, Not ready, then remainder (matches backend batch Excel labels). */
 export const ASSET_STATUS_FORM_OPTIONS_ORDER: readonly AssetStatus[] = [
@@ -189,31 +179,23 @@ export interface UpdateAssetDto {
 /**
  * Asset Status Label Helper
  */
-export function getAssetStatusLabel(status?: AssetStatus | string): string {
+export function getAssetStatusLabel(status?: AssetStatus): string {
     switch (status) {
         case AssetStatus.ReadyToIssue:
-        case 'ReadyToIssue':
             return 'assetStatus.readyToIssue';
         case AssetStatus.NotReadyToIssue:
-        case 'NotReadyToIssue':
             return 'assetStatus.notReadyToIssue';
         case AssetStatus.InMaintenance:
-        case 'InMaintenance':
             return 'assetStatus.inMaintenance';
         case AssetStatus.UnserviceableRepairable:
-        case 'UnserviceableRepairable':
             return 'assetStatus.unserviceableRepairable';
         case AssetStatus.UnserviceableUnrepairable:
-        case 'UnserviceableUnrepairable':
             return 'assetStatus.unserviceableUnrepairable';
         case AssetStatus.AwaitingDisposal:
-        case 'AwaitingDisposal':
             return 'assetStatus.awaitingDisposal';
         case AssetStatus.Disposed:
-        case 'Disposed':
             return 'assetStatus.disposed';
         case AssetStatus.Assigned:
-        case 'Assigned':
             return 'assetStatus.assigned';
         default:
             return 'assetStatus.unknown';
@@ -223,29 +205,21 @@ export function getAssetStatusLabel(status?: AssetStatus | string): string {
 /**
  * Asset Status Color Helper (for badges)
  */
-export function getAssetStatusColor(status?: AssetStatus | string): string {
+export function getAssetStatusColor(status?: AssetStatus): string {
     switch (status) {
         case AssetStatus.ReadyToIssue:
-        case 'ReadyToIssue':
-            return 'success';       // Green
+            return 'success';
         case AssetStatus.NotReadyToIssue:
-        case 'NotReadyToIssue':
             return 'warning';
         case AssetStatus.Assigned:
-        case 'Assigned':
             return 'info';
         case AssetStatus.InMaintenance:
-        case 'InMaintenance':
         case AssetStatus.UnserviceableRepairable:
-        case 'UnserviceableRepairable':
-            return 'warning';       // Orange
+            return 'warning';
         case AssetStatus.UnserviceableUnrepairable:
-        case 'UnserviceableUnrepairable':
         case AssetStatus.AwaitingDisposal:
-        case 'AwaitingDisposal':
         case AssetStatus.Disposed:
-        case 'Disposed':
-            return 'error';         // Red
+            return 'error';
         default:
             return 'default';
     }

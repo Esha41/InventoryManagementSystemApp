@@ -492,7 +492,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
    * Get priority label translation key
    * Wrapper method for template type safety
    */
-  getPriorityLabelTranslation(priority: number | string | null | undefined): string {
+  getPriorityLabelTranslation(priority: number | null | undefined): string {
     return getPriorityLabelTranslation(priority);
   }
 
@@ -500,7 +500,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
    * Get status label translation key
    * Wrapper method for template type safety
    */
-  getStatusLabelTranslation(status: number | string | null | undefined): string {
+  getStatusLabelTranslation(status: number | null | undefined): string {
     return getStatusLabelTranslation(status);
   }
 

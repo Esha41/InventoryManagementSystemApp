@@ -43,7 +43,7 @@ export class DepartmentAssignmentsTableComponent {
     return item?.partNo ?? '-';
   }
 
-  getItemTypeName(itemType: number | string | undefined): string {
+  getItemTypeName(itemType: number | undefined): string {
     return getItemTypeName(itemType);
   }
 

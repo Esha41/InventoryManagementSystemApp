@@ -9,17 +9,9 @@ export interface WorkflowTypeItem {
   id: number;
   name: string;
 }
-export enum WorkflowType {
-  NormalOrder = 1,
-  OrderFromAllowance = 2,
-  Return = 3,
-  Discard = 4,
-  NormalOrderForTrainingPurpose = 5,
-  NormalOrder_Weapon = 6,
-  OrderFromAllowance_Weapon = 7,
-  NormalOrderForTrainingPurpose_Weapon = 8,
-  Return_Weapon = 9
-}
+export { WorkflowType } from '@models/backend-enums';
+
+import { AutoRejectTriggerMode, WorkflowType } from '@models/backend-enums';
 export interface WorkflowDto {
   id: number;
   name: string;
@@ -28,7 +20,7 @@ export interface WorkflowDto {
   workflowType: number;
   workflowTypeName?: string;
   /** Summary fields when API returns full workflow rows (e.g. admin lists). */
-  autoRejectTriggerMode?: string | null;
+  autoRejectTriggerMode?: AutoRejectTriggerMode | null;
   autoRejectTriggerRoleIds?: string[];
   autoRejectTriggerStepIds?: number[];
   visitorType?: string;
@@ -45,13 +37,13 @@ export interface WorkflowDto {
 export interface BackendWorkflowDto {
   id: number;
   workflowName: string;
-  workflowType: number | string;
+  workflowType: number;
   workflowTypeName?: string;
   isActive: boolean;
   isDeleted?: boolean;
   isSpecialOrReserved?: boolean;
   /** null | empty | "role" | "step" — per-workflow auto-reject trigger (edit workflow only). */
-  autoRejectTriggerMode?: string | null;
+  autoRejectTriggerMode?: AutoRejectTriggerMode | null;
   autoRejectTriggerRoleIds?: string[];
   autoRejectTriggerStepIds?: number[];
   workflowSteps?: WorkflowStepDto[];
@@ -106,47 +98,17 @@ export const WORKFLOW_TYPE_NAMES: { [key in WorkflowType]: { en: string; ar: str
   [WorkflowType.Return_Weapon]: { en: 'Return (Weapon)', ar: 'إرجاع (سلاح)' }
 };
 
-/**
- * Normalize workflow type from API (number or JsonStringEnumConverter string) to numeric {@link WorkflowType}.
- */
-export function workflowTypeToNumber(workflowType: number | string): number {
-  if (typeof workflowType === 'number') {
-    return workflowType;
-  }
-  const stringValue = String(workflowType);
-  switch (stringValue) {
-    case 'NormalOrder':
-      return WorkflowType.NormalOrder;
-    case 'OrderFromAllowance':
-      return WorkflowType.OrderFromAllowance;
-    case 'Return':
-      return WorkflowType.Return;
-    case 'Discard':
-      return WorkflowType.Discard;
-    case 'NormalOrderForTrainingPurpose':
-      return WorkflowType.NormalOrderForTrainingPurpose;
-    case 'NormalOrder_Weapon':
-      return WorkflowType.NormalOrder_Weapon;
-    case 'OrderFromAllowance_Weapon':
-      return WorkflowType.OrderFromAllowance_Weapon;
-    case 'NormalOrderForTrainingPurpose_Weapon':
-      return WorkflowType.NormalOrderForTrainingPurpose_Weapon;
-    case 'Return_Weapon':
-      return WorkflowType.Return_Weapon;
-    default:
-      return 0;
-  }
+/** Coerce workflow type from API to numeric {@link WorkflowType}. */
+export function workflowTypeToNumber(workflowType: number): number {
+  return typeof workflowType === 'number' && !Number.isNaN(workflowType) ? workflowType : 0;
 }
 export interface BackendUpdateWorkflowDto extends BackendCreateWorkflowDto {
   id: number;
 }
 
-/** Matches Ettad.Data.Enums.AutoRejectTriggerMode — API uses JsonStringEnumConverter (PascalCase). */
-export type AutoRejectTriggerModeValue = 'None' | 'Role' | 'Step' | 'Disabled';
-
 /** PUT /api/Workflows/{id}/auto-reject-triggers */
 export interface UpdateWorkflowAutoRejectTriggersDto {
-  mode: AutoRejectTriggerModeValue;
+  mode: AutoRejectTriggerMode;
   triggerRoleIds?: string[];
   triggerStepIds?: number[];
 }
@@ -155,7 +117,7 @@ export interface UpdateWorkflowAutoRejectTriggersDto {
 export interface WorkflowAutoRejectTriggerDto {
   id?: number;
   workflowId?: number;
-  mode?: string | null;
+  mode?: AutoRejectTriggerMode | null;
   triggerRoleIds?: string[];
   triggerStepIds?: number[];
 }
@@ -225,17 +187,17 @@ export interface WorkflowApprovalStepDto {
   id: number;
   workflowStepId: number;
   targetRequestId: number;
-  requestType: number | string;
+  requestType: number;
   approverUserId?: string | null;
   approverRoleId?: string | null;
   isDelegation: boolean;
   approvedDate?: string | null;
-  status: number | string;
+  status: number;
   comments?: string | null;
   isCurrent: boolean;
   returnToStepId?: number | null;
-  oldRequestStatus?: number | string | null;
-  newRequestStatus?: number | string | null;
+  oldRequestStatus?: number | null;
+  newRequestStatus?: number | null;
   changedBy?: string | null;
   createdBy?: string | null;
   changedAt?: string | null;

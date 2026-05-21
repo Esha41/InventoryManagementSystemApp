@@ -9,113 +9,24 @@ import { OrderDto } from '@models/order.model';
 import { ReturnDto } from '@models/return.model';
 import { DiscardDto } from '@models/discard.model';
 
-/**
- * Request Type Enum (matches backend)
- */
-export enum RequestType {
-    Order = 1,
-    Return = 2,
-    Discard = 3
+import { RequestType } from '@models/backend-enums';
+
+export { RequestType } from '@models/backend-enums';
+
+function normalizeRequestType(requestType: number): number {
+    return requestType;
 }
 
-/**
- * Convert string enum to number
- * Handles backend returning enums as strings
- */
-function normalizeRequestType(requestType: number | string): number {
-    if (typeof requestType === 'number') {
-        return requestType;
-    }
-
-    // Map string to number
-    const typeMap: { [key: string]: number } = {
-        'Order': RequestType.Order,
-        'Return': RequestType.Return,
-        'Discard': RequestType.Discard
-    };
-
-    return typeMap[requestType] || 0;
+function normalizePriority(priority: number): number {
+    return priority;
 }
 
-/**
- * Convert string priority to number.
- * @see `ettadbackend/Project.Data/Enums/RequestPriority.cs` (Normal=1, Urgent=2, VeryUrgent=3)
- */
-function normalizePriority(priority: number | string): number {
-    if (typeof priority === 'number') {
-        return priority;
-    }
-
-    const key = String(priority).trim().toLowerCase().replace(/[\s\-_]+/g, '');
-
-    const priorityMap: { [key: string]: number } = {
-        normal: 1,
-        urgent: 2,
-        veryurgent: 3,
-        // legacy string labels
-        critical: 3,
-        high: 2,
-        medium: 2,
-        low: 1
-    };
-
-    return priorityMap[key] ?? 1;
+function normalizeStatus(status: number): number {
+    return status;
 }
 
-/**
- * Convert string status to number
- */
-function normalizeStatus(status: number | string): number {
-    if (typeof status === 'number') {
-        return status;
-    }
-
-    const raw = String(status).trim();
-    if (!raw) return 1;
-
-    // Normalize to a stable key (case-insensitive; ignore spaces/hyphens/underscores).
-    const key = raw.toLowerCase().replace(/[\s\-_]+/g, '');
-
-    // If it is numeric-like (e.g. "7"), accept it.
-    const numeric = parseInt(key, 10);
-    if (!Number.isNaN(numeric)) {
-        return numeric;
-    }
-
-    const statusMap: { [key: string]: number } = {
-        new: 1,
-        underprocess: 2,
-        approved: 3,
-        rejected: 4,
-        cancelled: 5,
-        returnedforreview: 6,
-        autorejected: 7
-    };
-
-    return statusMap[key] || 1; // Default to New
-}
-
-/**
- * Convert string item type to number
- * @see `ettadbackend/Project.Data/Enums/ItemType.cs`
- */
-function normalizeItemType(itemType: number | string | undefined): number | undefined {
-    if (itemType === undefined || itemType === null) {
-        return undefined;
-    }
-
-    if (typeof itemType === 'number') {
-        return itemType;
-    }
-
-    const itemTypeMap: { [key: string]: number } = {
-        'Ammunition': 1,
-        'Weapon': 2,
-        'Explosive': 3,
-        'Accessory': 4
-    };
-
-    return itemTypeMap[itemType];
+function normalizeItemType(itemType: number | undefined): number | undefined {
+    return itemType;
 }
 
 /**

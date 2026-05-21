@@ -1,6 +1,8 @@
-/** Matches API camelCase + string enum for AssetStatus */
+import { RequestStatus, SupplySubmissionStatus } from '@models/backend-enums';
+
+/** Matches API camelCase + numeric enum for AssetStatus */
 export interface WeaponAssetStatusCountDto {
-  status: string;
+  status: number;
   count: number;
 }
 
@@ -29,13 +31,9 @@ export interface InventoryHeadlineMetricsDto {
   expiringSoonCount: number;
   totalDistinctItems: number;
   totalRemainingQuantity: number;
-  /** Combined headline figure (non-weapon lots + weapon line count); use {@link lotCount} for ammo/explosive lot totals. */
   totalLots: number;
-  /** Total inventory lots (non-weapon); API `lotCount`. */
   lotCount: number;
-  /** Tracked weapon assets; API `weaponCount`. */
   weaponCount: number;
-  /** Weapon registry batches in scope; API `totalBatches`. */
   totalBatches: number;
   ammunitionItemCount: number;
   explosiveItemCount: number;
@@ -48,11 +46,11 @@ export interface DraftSupplyListItemDto {
   rowId: number;
   orderId: number;
   orderNumber?: string;
-  submissionStatus: string;
+  submissionStatus: SupplySubmissionStatus;
 }
 
 export interface OrderAwaitingFulfillmentListItemDto {
   orderId: number;
   orderNumber?: string;
-  status: string;
+  status: RequestStatus;
 }

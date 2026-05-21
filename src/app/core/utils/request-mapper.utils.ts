@@ -23,37 +23,17 @@ const readField = <T>(obj: LooseRecord, ...keys: string[]): T | undefined => {
   return undefined;
 };
 
-/**
- * Request Type enum values (matching backend)
- */
-export enum RequestTypeEnum {
-  Order = 1,
-  Return = 2,
-  Discard = 3
-}
+import {
+  RequestPriority as PriorityEnum,
+  RequestStatus as RequestStatusEnum,
+  RequestType as RequestTypeEnum
+} from '@models/backend-enums';
 
-/**
- * Priority enum values (matching backend)
- * Backend RequestPriority enum: Normal = 1, Urgent = 2, VeryUrgent = 3
- */
-export enum PriorityEnum {
-  Normal = 1,
-  Urgent = 2,
-  VeryUrgent = 3
-}
-
-/**
- * Request Status enum values (matching backend)
- */
-export enum RequestStatusEnum {
-  New = 1,
-  UnderProcess = 2,
-  Approved = 3,
-  Rejected = 4,
-  Cancelled = 5,
-  ReturnedForReview = 6,
-  AutoRejected = 7
-}
+export {
+  RequestType as RequestTypeEnum,
+  RequestPriority as PriorityEnum,
+  RequestStatus as RequestStatusEnum
+} from '@models/backend-enums';
 
 
 export interface StatusMetadata {
@@ -109,156 +89,60 @@ export const STATUS_METADATA: Record<RequestStatusEnum, StatusMetadata> = {
 };
 
 
-export function getStatusMetadata(status: number | string | null | undefined): StatusMetadata {
+export function getStatusMetadata(status: number | null | undefined): StatusMetadata {
   if (status === null || status === undefined) {
     return STATUS_METADATA[RequestStatusEnum.New];
   }
-
-  let statusNum: RequestStatusEnum;
-
-  if (typeof status === 'number') {
-    statusNum = status as RequestStatusEnum;
-  } else {
-    const lower = status.toLowerCase().trim();
-    if (lower === 'new' || lower === 'pending' || lower === '1') {
-      statusNum = RequestStatusEnum.New;
-    } else if (lower === 'underprocess' || lower === 'under process' || lower === 'inprogress' || lower === 'in progress' || lower === '2') {
-      statusNum = RequestStatusEnum.UnderProcess;
-    } else if (lower === 'approved' || lower === 'completed' || lower === 'confirmed' || lower === '3') {
-      statusNum = RequestStatusEnum.Approved;
-    } else if (lower === 'rejected' || lower === 'declined' || lower === '4') {
-      statusNum = RequestStatusEnum.Rejected;
-    } else if (lower === 'cancelled' || lower === '5') {
-      statusNum = RequestStatusEnum.Cancelled;
-    } else if (lower === 'returned' || lower === 'returnedforreview' || lower === '6') {
-      statusNum = RequestStatusEnum.ReturnedForReview;
-    } else if (lower === 'autorejected' || lower === 'auto rejected' || lower === 'auto-rejected' || lower === '7') {
-      statusNum = RequestStatusEnum.AutoRejected;
-    } else {
-      statusNum = RequestStatusEnum.New;
-    }
-  }
-
-  return STATUS_METADATA[statusNum] || STATUS_METADATA[RequestStatusEnum.New];
+  const statusNum = status as RequestStatusEnum;
+  return STATUS_METADATA[statusNum] ?? STATUS_METADATA[RequestStatusEnum.New];
 }
 
 /**
  * Map numeric or string request type to string
  */
-export function mapRequestType(type: number | string): RequestType {
-  // Handle numeric type
-  if (typeof type === 'number') {
-    switch (type) {
-      case RequestTypeEnum.Order:
-        return 'Order';
-      case RequestTypeEnum.Return:
-        return 'Return';
-      case RequestTypeEnum.Discard:
-        return 'Discard';
-      default:
-        return 'Order';
-    }
-  }
-
-  // Handle string type (case-insensitive)
-  if (typeof type === 'string') {
-    const typeLower = type.toLowerCase().trim();
-    if (typeLower === 'order' || typeLower === '1') {
-      return 'Order';
-    }
-    if (typeLower === 'return' || typeLower === '2') {
+export function mapRequestType(type: number): RequestType {
+  switch (type) {
+    case RequestTypeEnum.Return:
       return 'Return';
-    }
-    if (typeLower === 'discard' || typeLower === '3') {
+    case RequestTypeEnum.Discard:
       return 'Discard';
-    }
+    case RequestTypeEnum.Order:
+    default:
+      return 'Order';
   }
-
-  // Default fallback
-  return 'Order';
 }
 
 
-export function mapPriority(priority: number | string): Priority {
-  // Handle numeric type
-  if (typeof priority === 'number') {
-    switch (priority) {
-      case PriorityEnum.Normal:
-        return 'Normal';
-      case PriorityEnum.Urgent:
-        return 'Urgent';
-      case PriorityEnum.VeryUrgent:
-        return 'VeryUrgent';
-      default:
-        return 'Urgent';
-    }
-  }
-
-  // Handle string type (case-insensitive)
-  if (typeof priority === 'string') {
-    const priorityLower = priority.toLowerCase().trim().replace(/\s+/g, '');
-    if (priorityLower === 'normal' || priorityLower === '1') {
+export function mapPriority(priority: number): Priority {
+  switch (priority) {
+    case PriorityEnum.Normal:
       return 'Normal';
-    }
-    if (priorityLower === 'veryurgent' || priorityLower === '3') {
+    case PriorityEnum.VeryUrgent:
       return 'VeryUrgent';
-    }
-    if (priorityLower === 'urgent' || priorityLower === '2') {
+    case PriorityEnum.Urgent:
+    default:
       return 'Urgent';
-    }
   }
-
-  // Default fallback
-  return 'Urgent';
 }
 
 /**
  * Map numeric or string request status to string
  */
-export function mapRequestStatus(status: number | string): RequestStatus {
-  // Handle numeric type
-  if (typeof status === 'number') {
-    switch (status) {
-      case RequestStatusEnum.Approved:
-        return 'Approved';
-      case RequestStatusEnum.Rejected:
-        return 'Rejected';
-      case RequestStatusEnum.AutoRejected:
-        return 'AutoRejected';
-      case RequestStatusEnum.Cancelled:
-        return 'Cancelled';
-      case RequestStatusEnum.New:
-      case RequestStatusEnum.UnderProcess:
-      default:
-        return 'Pending';
-    }
-  }
-
-  // Handle string type (case-insensitive)
-  if (typeof status === 'string') {
-    const statusLower = status.toLowerCase().trim();
-    if (statusLower === 'approved' || statusLower === 'completed' || statusLower === 'confirmed' || statusLower === '3') {
+export function mapRequestStatus(status: number): RequestStatus {
+  switch (status) {
+    case RequestStatusEnum.Approved:
       return 'Approved';
-    }
-    if (statusLower === 'rejected' || statusLower === 'declined' || statusLower === '4') {
+    case RequestStatusEnum.Rejected:
       return 'Rejected';
-    }
-    if (statusLower === 'autorejected' || statusLower === 'auto rejected' || statusLower === 'auto-rejected' || statusLower === '7') {
+    case RequestStatusEnum.AutoRejected:
       return 'AutoRejected';
-    }
-    if (statusLower === 'cancelled' || statusLower === '5') {
+    case RequestStatusEnum.Cancelled:
       return 'Cancelled';
-    }
-    if (statusLower === 'new' || statusLower === '1') {
-      return 'Pending'; // New maps to Pending in RequestStatus type
-    }
-    if (statusLower === 'underprocess' || statusLower === 'under process' || statusLower === 'inprogress' || statusLower === 'in progress' || statusLower === 'pending' || statusLower === '2') {
+    case RequestStatusEnum.New:
+    case RequestStatusEnum.UnderProcess:
+    default:
       return 'Pending';
-    }
   }
-
-  // Default fallback
-  return 'Pending';
 }
 
 /**

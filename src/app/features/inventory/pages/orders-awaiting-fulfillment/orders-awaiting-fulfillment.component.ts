@@ -6,6 +6,8 @@ import { LucideAngularModule, ArrowLeft, ArrowRight } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
 import { MonitoringService } from '@services/monitoring.service';
 import { OrderAwaitingFulfillmentListItemDto } from '@models/inventory-dashboard-monitoring.model';
+import { RequestStatus } from '@models/backend-enums';
+import { getRequestStatusTranslationKey } from '@utils/enum-label.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { TranslationService } from '@services/translation.service';
 import { PaginationComponent } from '@components/pagination/pagination.component';
@@ -116,5 +118,9 @@ export class OrdersAwaitingFulfillmentComponent implements OnInit, OnDestroy {
     this.rowsPerPage = rows;
     this.currentPage = 1;
     this.cdr.markForCheck();
+  }
+
+  statusKey(status: RequestStatus): string {
+    return getRequestStatusTranslationKey(status);
   }
 }

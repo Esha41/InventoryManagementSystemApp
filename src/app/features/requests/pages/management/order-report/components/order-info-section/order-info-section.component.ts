@@ -6,7 +6,6 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { getOrderSummaryStatusBadgeNgClass } from '@utils/status-class.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
-import { getPriorityKey } from '@utils/priority.utils';
 import { formatDateShort, formatTimeToMilitary } from '@utils/format.utils';
 
 /**
@@ -33,13 +32,16 @@ export class OrderInfoSectionComponent {
     return getOrderSummaryStatusBadgeNgClass(this.orderSummary?.requestStatusCode, this.orderSummary?.status);
   }
 
-  /** Maps human label or enum text to Normal | Urgent | VeryUrgent for translation keys */
+  /** Maps display label to i18n suffix (Normal | Urgent | VeryUrgent). */
   getPriorityI18nSuffix(priority: string): string {
-    return getPriorityKey(priority);
+    const key = priority.toLowerCase().replace(/\s+/g, '');
+    if (key === 'veryurgent') return 'VeryUrgent';
+    if (key === 'urgent') return 'Urgent';
+    return 'Normal';
   }
 
   getPriorityColorClass(priority: string): string {
-    const key = getPriorityKey(priority).toLowerCase();
+    const key = this.getPriorityI18nSuffix(priority).toLowerCase();
     if (key === 'normal') {
       return 'priority-normal';
     } else if (key === 'urgent') {

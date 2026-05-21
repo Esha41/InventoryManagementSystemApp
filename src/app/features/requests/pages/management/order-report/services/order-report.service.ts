@@ -112,7 +112,7 @@ export class OrderReportService {
   /**
    * Map order to report data (summary and items)
    */
-  mapOrderToReport(order: OrderDto, baseRequestStatus?: number | string | null): {
+  mapOrderToReport(order: OrderDto, baseRequestStatus?: number | null): {
     summary: OrderSummary;
     items: OrderReportItem[];
   } {
@@ -153,8 +153,8 @@ export class OrderReportService {
     orders: OrderDto[], 
     searchTerm: string,
     getDepartmentName: (order: OrderDto) => string,
-    getStatusLabel: (status: number | string) => string,
-    getPriorityLabel: (priority: number | string) => string
+    getStatusLabel: (status: number) => string,
+    getPriorityLabel: (priority: number) => string
   ): OrderDto[] {
     if (!searchTerm || searchTerm.trim() === '') {
       return [...orders];

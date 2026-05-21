@@ -44,7 +44,7 @@ export interface OrderReportItem {
   caliber: string;
   quantity: number;
   status: string;
-  itemType?: number | string;
+  itemType?: number;
   weaponAssociations?: RequestManagementRequestItemWeaponAssociationDto[];
 }
 

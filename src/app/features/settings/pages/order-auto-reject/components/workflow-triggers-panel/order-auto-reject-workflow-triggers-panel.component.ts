@@ -5,6 +5,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { CardComponent } from '@components/card/card.component';
 import { WorkflowService } from '@workflow/services/workflow.service';
+import { AutoRejectTriggerMode } from '@models/backend-enums';
 import { WorkflowDto } from '@models/workflow.model';
 import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
@@ -74,10 +75,10 @@ export class OrderAutoRejectWorkflowTriggersPanelComponent implements OnInit, On
   }
 
   triggerMode(w: WorkflowDto): 'none' | 'role' | 'step' | 'disabled' {
-    const m = String(w.autoRejectTriggerMode ?? '').trim().toLowerCase();
-    if (m === 'role') return 'role';
-    if (m === 'step') return 'step';
-    if (m === 'disabled') return 'disabled';
+    const m = w.autoRejectTriggerMode ?? AutoRejectTriggerMode.None;
+    if (m === AutoRejectTriggerMode.Role) return 'role';
+    if (m === AutoRejectTriggerMode.Step) return 'step';
+    if (m === AutoRejectTriggerMode.Disabled) return 'disabled';
     return 'none';
   }
 

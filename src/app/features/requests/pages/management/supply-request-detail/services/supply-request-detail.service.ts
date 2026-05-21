@@ -436,25 +436,15 @@ export class SupplyRequestDetailService {
    * Item types: 1=Ammunition, 2=Weapon, 3=Explosive
    */
   getAllowedItemTypes(orderData: OrderDto | null, requestDetail: SupplyRequestDetail | null): number[] {
-    // Helper function to convert itemType (string or number) to numeric type
     const normalizeItemType = (itemType: number | string | undefined): number | null => {
-      if (!itemType) return null;
-
-      if (typeof itemType === 'number') {
-        return itemType;
-      }
-
-      // Convert string to number (case-insensitive)
-      const itemTypeMap: { [key: string]: number } = {
-        'Ammunition': 1,
-        'ammunition': 1,
-        'Weapon': 2,
-        'weapon': 2,
-        'Explosive': 3,
-        'explosive': 3
+      if (itemType == null) return null;
+      if (typeof itemType === 'number') return itemType;
+      const map: Record<string, number> = {
+        Ammunition: 1,
+        Weapon: 2,
+        Explosive: 3
       };
-
-      return itemTypeMap[itemType] || null;
+      return map[itemType] ?? null;
     };
 
     const existingTypes = new Set<number>();

@@ -49,11 +49,11 @@ export class WorkflowService {
   /**
    * Convert string enum value (from backend) to numeric ID
    */
-  private convertWorkflowTypeToId(workflowType: number | string): number {
+  private convertWorkflowTypeToId(workflowType: number): number {
     return workflowTypeToNumber(workflowType);
   }
 
-  getWorkflowTypeNameById(id: number | string, lang: 'en' | 'ar'): string {
+  getWorkflowTypeNameById(id: number, lang: 'en' | 'ar'): string {
     // Convert to numeric ID if string
     const numericId = this.convertWorkflowTypeToId(id);
     const workflow = WORKFLOW_TYPE_NAMES[numericId as WorkflowType];

@@ -9,18 +9,9 @@
   <div
     *ngFor="let order of orders"
     class="status-card-cq flex h-full max-h-full min-h-0 min-w-0 flex-col gap-[0.6rem] rounded-2xl border bg-[var(--color-background-muted)] px-[0.4rem] pb-[0.6rem] pt-[0.4rem] shadow-[var(--shadow-md)]"
-    [ngClass]="isVeryUrgent()
-      ? 'border-red-400 dark:border-red-600 ring-1 ring-red-300/60 dark:ring-red-700/40'
-      : 'border-[var(--color-border)]'"
+    [ngClass]="'border-[var(--color-border)]'"
     [class.action-required-highlight]="isMyTurn"
   >
-    <!-- Very Urgent alert strip -->
-    <div *ngIf="isVeryUrgent()"
-      class="flex items-center gap-1.5 rounded-t-xl bg-red-500 px-3 py-1 text-[0.65rem] font-bold uppercase tracking-widest text-white">
-      <span class="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-white"></span>
-      {{ 'dashboard.priorityLabels.veryUrgent' | translate }}
-    </div>
-
     <div
       class="status-card-header-narrow flex min-w-0 flex-wrap items-center gap-x-3 gap-y-[0.35rem] px-4 py-[0.6rem]"
     >
@@ -31,15 +22,10 @@
         <span *ngIf="isMyTurn" class="action-required-badge animate-action-glow shrink-0 whitespace-nowrap">
           {{ 'requestsManagement.actionRequired' | translate }}
         </span>
-        <!-- Priority badge (non-very-urgent) -->
-        <span *ngIf="priority && !isVeryUrgent()"
-          class="inline-flex items-center rounded-full px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wide shrink-0"
-          [ngClass]="getPriorityBadgeClass()">
-          {{ getPriorityTranslationKey() | translate }}
-        </span>
       </div>
       <span
-        class="status-card-badge-narrow ms-auto max-w-full flex-none whitespace-nowrap text-end text-[0.7rem] font-semibold uppercase tracking-[0.15em] text-[var(--color-text-muted)]"
+        class="status-card-badge-narrow ms-auto max-w-full flex-none whitespace-nowrap text-end text-[0.7rem] font-semibold uppercase tracking-[0.15em]"
+        [ngClass]="getStatusTextClass()"
       >
         {{ getStatusTranslationKey() | translate }}
       </span>

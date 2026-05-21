@@ -43,7 +43,7 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)]">
                 {{ row.orderNumber || row.orderId }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">{{ row.status }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">{{ statusKey(row.status) | translate }}</td>
             </tr>
           </tbody>
         </table>

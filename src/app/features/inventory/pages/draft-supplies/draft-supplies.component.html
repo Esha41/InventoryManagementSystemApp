@@ -51,7 +51,7 @@
               <td dir="ltr" class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)]" [class.text-right]="isRTL" [class.text-left]="!isRTL">
                 {{ row.orderNumber || row.orderId }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">{{ row.submissionStatus }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">{{ submissionStatusKey(row.submissionStatus) | translate }}</td>
             </tr>
           </tbody>
         </table>

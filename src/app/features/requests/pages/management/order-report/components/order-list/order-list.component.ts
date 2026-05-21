@@ -88,7 +88,7 @@ export class OrderListComponent implements OnChanges, OnInit {
   /**
    * i18n key for the status badge (dashboard labels + order-report "completed" for approved).
    */
-  getOrderListStatusTranslationKey(status: number | string): string {
+  getOrderListStatusTranslationKey(status: number): string {
     const label = mapOrderStatusFromApi(status);
     switch (label) {
       case 'Approved':
@@ -110,20 +110,20 @@ export class OrderListComponent implements OnChanges, OnInit {
     }
   }
 
-  getOrderListStatusClass(status: number | string): string {
+  getOrderListStatusClass(status: number): string {
     return getOrderWorkflowStatusBadgeClassesFromApi(status);
   }
 
-  getPriorityLabel(priority: number | string): string {
+  getPriorityLabel(priority: number): string {
     return getPriorityText(priority);
   }
 
   /** Suffix for `common.priorityLevels.<key>` — must be Normal | Urgent | VeryUrgent, not display text. */
-  getPriorityI18nSuffix(priority: number | string): string {
+  getPriorityI18nSuffix(priority: number): string {
     return getPriorityKey(priority);
   }
 
-  getPriorityColorClass(priority: number | string): string {
+  getPriorityColorClass(priority: number): string {
     return getPriorityClass(priority);
   }
 

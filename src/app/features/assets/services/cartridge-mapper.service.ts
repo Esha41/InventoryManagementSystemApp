@@ -27,8 +27,8 @@ type WeaponCatalogDto = WeaponDto & {
   overallLengthUnit?: LookupDto | null;
   weight?: number;
   weightUnit?: LookupDto | null;
-  weaponType?: string | number;
-  actionType?: string | number;
+  weaponType?: number;
+  actionType?: number;
   capacity?: number;
 };
 
@@ -145,8 +145,7 @@ export class CartridgeMapperService {
       added: false,
       itemType: 'Weapon', // Set item type for weapons
 
-      // Weapon specific - backend sends enum as string (JsonStringEnumConverter)
-      weaponType: dto.weaponType ? getWeaponTypeName(dto.weaponType) : undefined,
+      weaponType: dto.weaponType != null ? getWeaponTypeName(dto.weaponType) : undefined,
       caliber:
         dto.caliber != null
           ? typeof dto.caliber === 'object'
@@ -199,7 +198,7 @@ export class CartridgeMapperService {
       added: false,
       itemType: 'Explosive', // Set item type for explosives
 
-      // Explosive specific - backend sends enum as string (JsonStringEnumConverter)
+      // Explosive specific fields from catalog API
       explosiveType: dto.explosiveType ? getExplosiveTypeName(dto.explosiveType) : undefined,
       unNumber: dto.unNumber ?? undefined,
       netExplosiveQuantity: dto.netExplosiveQuantity ?? undefined,
