@@ -19,6 +19,9 @@ import { WeaponSupplyDisplayService } from '../../services/weapon-supply-display
 import { WeaponSupplySelectionService } from '../../services/weapon-supply-selection.service';
 import { LoadingStateComponent } from '@components/loading-state/loading-state.component';
 import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
+import { PaginationComponent } from '@components/pagination/pagination.component';
+import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
+import { defaultPageSize } from '@constants/app.constants';
 
 @Component({
   selector: 'app-weapon-supply-selection',
@@ -29,7 +32,9 @@ import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/tabl
     TranslateModule,
     LucideAngularModule,
     LoadingStateComponent,
-    TableClampTooltipDirective
+    TableClampTooltipDirective,
+    PaginationComponent,
+    RowsPerPageComponent
   ],
   providers: [WeaponSupplyLookupService, WeaponSupplyDisplayService],
   templateUrl: './weapon-supply-selection.component.html',
@@ -70,6 +75,9 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
   loadingBatches: boolean = false;
   savingSelection: boolean = false;
 
+  depotCurrentPage = 1;
+  depotRowsPerPage = defaultPageSize;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -94,6 +102,17 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
 
   get requestItems() {
     return this.orderData?.requestItems || [];
+  }
+
+  get paginatedDepotOptions() {
+    this.validateDepotCurrentPage();
+    const startIndex = (this.depotCurrentPage - 1) * this.depotRowsPerPage;
+    return this.depotDropdownOptions.slice(startIndex, startIndex + this.depotRowsPerPage);
+  }
+
+  get depotTotalPages(): number {
+    const total = this.depotDropdownOptions.length;
+    return total === 0 ? 0 : Math.ceil(total / this.depotRowsPerPage);
   }
 
   ngOnInit(): void {
@@ -131,6 +150,7 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
       next: ({ order, savedSelection }) => {
         this.orderData = order;
         this.loading = false;
+        this.depotCurrentPage = 1;
         if (savedSelection && savedSelection.length > 0) {
           this.selectedDepotIds = [...new Set(savedSelection.map(s => s.depotId))];
           this.depotsConfirmed = true;
@@ -152,6 +172,24 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
         this.goBack();
       }
     });
+  }
+
+  onDepotPageChange(page: number): void {
+    this.depotCurrentPage = page;
+    this.cdr.markForCheck();
+  }
+
+  onDepotRowsPerPageChange(rows: number): void {
+    this.depotRowsPerPage = rows;
+    this.depotCurrentPage = 1;
+    this.cdr.markForCheck();
+  }
+
+  private validateDepotCurrentPage(): void {
+    const maxPages = this.depotTotalPages;
+    if (maxPages > 0 && this.depotCurrentPage > maxPages) {
+      this.depotCurrentPage = maxPages;
+    }
   }
 
   toggleDepotSelection(depotId: number): void {
@@ -244,9 +282,11 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
     } else {
       this.selectedBatchIds.push(batchId);
       items.forEach(item => {
+        if (!this.isItemOnOrder(item.itemId)) return;
         const maxQty = this.getMaxQuantityForBatchItem(batchId, item);
-        const initialQty = maxQty >= 1 ? Math.min(item.quantity, maxQty) : 0;
-        this.itemQuantities.set(`${batchId}_${item.itemId}`, initialQty);
+        if (maxQty > 0) {
+          this.itemQuantities.set(`${batchId}_${item.itemId}`, Math.min(item.quantity, maxQty));
+        }
       });
     }
   }
@@ -341,6 +381,11 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
       .reduce((sum: number, ri: { quantity?: number }) => sum + (ri.quantity ?? 0), 0);
   }
 
+  /** Whether this item is part of the order request */
+  isItemOnOrder(itemId: number): boolean {
+    return this.getRequestedQuantityForItem(itemId) > 0;
+  }
+
   getItemQuantity(batchId: number, itemId: number): number | null {
     return this.itemQuantities.get(`${batchId}_${itemId}`) ?? null;
   }
@@ -352,10 +397,6 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
       .filter((bid) => bid !== batchId)
       .reduce((sum, bid) => sum + (this.itemQuantities.get(`${bid}_${item.itemId}`) ?? 0), 0);
     return Math.min(item.quantity, Math.max(0, requestedQty - otherBatchesTotal));
-  }
-
-  isItemQuantityMissing(batchId: number, itemId: number): boolean {
-    return this.selectedBatchIds.includes(batchId) && !this.itemQuantities.has(`${batchId}_${itemId}`);
   }
 
   /** True when the entered quantity exceeds the max allowed (requested - other batches, batch available) */
@@ -373,17 +414,8 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
 
       for (const item of items) {
         const qty = this.itemQuantities.get(`${batchId}_${item.itemId}`);
+        if (qty == null || qty === 0) continue;
 
-        if (qty == null) {
-          this.toastService.warning(
-            this.translate.instant('weaponSupplyReview.quantityRequired', {
-              batchNumber: batch?.batchNumber ?? batchId,
-              itemName: item.itemName ?? item.itemNo ?? item.itemId
-            }),
-            this.translate.instant('toast.warning')
-          );
-          return false;
-        }
         if (qty < 0) {
           this.toastService.warning(
             this.translate.instant('weaponSupplyReview.quantityMustBePositive'),
