@@ -19,7 +19,8 @@ export class OrderService {
   createOrder(
     payload: CreateOrderDto,
     attachmentUploads?: Map<number, File[]>,
-    otherFiles?: File[]
+    otherFiles?: File[],
+    weaponAssociationFiles?: File[]
   ): Observable<APIOperationResponse<number>> {
     this.config.log('Creating order', payload);
 
@@ -93,6 +94,16 @@ export class OrderService {
       otherFiles.forEach(file => {
         if (file instanceof File && file.size > 0) {
           formData.append('OtherFiles', file);
+        }
+      });
+    }
+
+    // Weapon Association Attachments — order-level files for the WEAPON_ASSOCIATION
+    // system slot; required by the backend when any line uses a non-catalog weapon.
+    if (weaponAssociationFiles && weaponAssociationFiles.length > 0) {
+      weaponAssociationFiles.forEach(file => {
+        if (file instanceof File && file.size > 0) {
+          formData.append('WeaponAssociationFiles', file);
         }
       });
     }

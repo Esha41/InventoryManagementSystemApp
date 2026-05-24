@@ -36,6 +36,11 @@ export interface RunSubmissionContext {
    */
   attachmentUploads: Map<number, File[]> | undefined;
   otherFiles: File[] | undefined;
+  /**
+   * Order-level files for the WEAPON_ASSOCIATION system slot. Required by the
+   * backend when any ammunition line uses a non-catalog ("other") weapon.
+   */
+  weaponAssociationFiles: File[] | undefined;
   orderSubmissionState: OrderSubmissionState;
   weaponAssociations: Map<number, WeaponAssociation[]>;
 }
@@ -129,6 +134,17 @@ export class IssueRequestSubmissionService {
       return { isValid: false, error: 'newIssueRequest.validation.ammoMustHaveWeapon' };
     }
 
+    // Defence-in-depth: mirror the backend conditional WEAPON_ASSOCIATION rule.
+    const requiresWeaponFiles = [...ctx.weaponAssociations.values()].some(list =>
+      list?.some(row => row.type === 'other' && !!row.otherName?.trim())
+    );
+    if (requiresWeaponFiles && (ctx.weaponAssociationFiles?.length ?? 0) === 0) {
+      return {
+        isValid: false,
+        error: 'newIssueRequest.validation.weaponAssociationAttachmentsRequired'
+      };
+    }
+
     const selectedId = ctx.requestPurposeState.selectedRequestPurposeId;
     if (selectedId != null) {
       const purpose = ctx.requestPurposeState.requestPurposesSource.find(p => p.id === selectedId);
@@ -178,8 +194,11 @@ export class IssueRequestSubmissionService {
     const otherFiles = ctx.otherFiles && ctx.otherFiles.length > 0
       ? ctx.otherFiles
       : undefined;
+    const weaponAssociationFiles = ctx.weaponAssociationFiles && ctx.weaponAssociationFiles.length > 0
+      ? ctx.weaponAssociationFiles
+      : undefined;
 
-    this.orderSubmissionService.submitOrder(payload, attachmentUploads, otherFiles).subscribe({
+    this.orderSubmissionService.submitOrder(payload, attachmentUploads, otherFiles, weaponAssociationFiles).subscribe({
       next: (result) => {
         ctx.orderSubmissionState.submittingOrder = false;
         if (result.success) {
@@ -227,6 +246,7 @@ export class IssueRequestSubmissionService {
       orderType: ctx.reviewFormData.orderType,
       attachmentUploads: ctx.attachmentUploads,
       otherFiles: ctx.otherFiles,
+      weaponAssociationFiles: ctx.weaponAssociationFiles,
       weaponAssociations: ctx.weaponAssociations
     };
   }

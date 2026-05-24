@@ -98,6 +98,32 @@
           </div>
         </div>
       </div>
+
+      <!-- Weapon Association Attachments (system slot WEAPON_ASSOCIATION) -->
+      <div
+        *ngIf="hasWeaponAssociationFiles"
+        class="grid grid-cols-1 sm:grid-cols-[180px_minmax(0,26rem)] gap-x-5 gap-y-3 items-start"
+      >
+        <span class="text-sm font-bold text-[var(--color-text)] pt-2.5 min-w-0">
+          {{ 'newIssueRequest.weaponAssociation.attachments' | translate }}
+        </span>
+        <div class="min-w-0 space-y-2">
+          <div
+            *ngFor="let file of weaponAssociationFiles; trackBy: trackFileByIndex"
+            class="flex items-center gap-2 px-5 py-3 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)]"
+          >
+            <span class="text-base text-[var(--color-text-muted)] flex-1 truncate">{{ file.name }}</span>
+            <button
+              type="button"
+              (click)="viewFile(file)"
+              class="text-[var(--color-brand)] hover:text-[var(--color-brand-dark)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 rounded p-1 flex-shrink-0"
+              [title]="'newIssueRequest.view' | translate"
+            >
+              <lucide-angular [img]="Eye" class="h-5 w-5"></lucide-angular>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 

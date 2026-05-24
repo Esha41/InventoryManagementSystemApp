@@ -36,6 +36,11 @@ export interface OrderSubmissionData {
    */
   attachmentUploads?: Map<number, File[]>;
   otherFiles?: File[];
+  /**
+   * Order-level files for the WEAPON_ASSOCIATION system slot. Required by the
+   * backend when any ammunition line uses a non-catalog weapon.
+   */
+  weaponAssociationFiles?: File[];
   weaponAssociations?: Map<number, WeaponAssociation[]>;
 }
 
@@ -231,9 +236,10 @@ export class OrderSubmissionService {
   submitOrder(
     payload: CreateOrderDto,
     attachmentUploads?: Map<number, File[]>,
-    otherFiles?: File[]
+    otherFiles?: File[],
+    weaponAssociationFiles?: File[]
   ): Observable<OrderSubmissionResult> {
-    return this.orderService.createOrder(payload, attachmentUploads, otherFiles).pipe(
+    return this.orderService.createOrder(payload, attachmentUploads, otherFiles, weaponAssociationFiles).pipe(
       switchMap((response: APIOperationResponse<number>) => {
         if (!response?.succeeded) {
           const errorMessage = ErrorHandler.resolveOrderSubmissionError(

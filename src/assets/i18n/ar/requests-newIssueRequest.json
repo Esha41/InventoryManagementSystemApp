@@ -29,7 +29,9 @@
       "viewCompatibleOnly": "عرض المتوافقة فقط",
       "compatibleWeapons": "متوافقة",
       "weaponListScope": "نطاق قائمة الأسلحة",
-      "selectOptionHint": "اختر متوافقة، أو عرض جميع الأسلحة، أو أخرى لربط سلاح ببند الذخيرة هذا."
+      "selectOptionHint": "اختر متوافقة، أو عرض جميع الأسلحة، أو أخرى لربط سلاح ببند الذخيرة هذا.",
+      "attachments": "مرفقات ربط الأسلحة",
+      "attachmentsHint": "مطلوبة عند استخدام أي بند سلاحاً غير مدرج في المعامل."
     },
     "selectOrderSource": "اختر نوع الصرف",
     "selectOrderSourceDescription": "اختر ما إذا كنت تريد الطلب من مقرر وحدتك أو خارجه",
@@ -203,6 +205,7 @@
       "commentsRequired": "التعليقات مطلوبة.",
       "attachmentsRequired": "مطلوب ملف مرفق واحد على الأقل.",
       "attachmentRequirementsInvalid": "هذا الحقل مطلوب.",
+      "weaponAssociationAttachmentsRequired": "يرجى إرفاق مستند واحد على الأقل لربط الأسلحة.",
       "required": "هذا الحقل مطلوب.",
       "correctErrors": "يرجى تصحيح الحقول المحددة قبل المتابعة.",
       "errors": {

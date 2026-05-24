@@ -295,6 +295,83 @@
     </div>
   </div>
 
+  <!--
+    Weapon Association Attachments — order-level files for the WEAPON_ASSOCIATION
+    system slot. Visible (and required) whenever any line uses a non-catalog weapon.
+    Backend enforces the same rule via OrderService.
+  -->
+  <section
+    *ngIf="requiresAttachments"
+    class="space-y-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4 shadow-sm sm:p-6"
+  >
+    <header class="space-y-1">
+      <h3 class="text-base font-semibold text-[var(--color-text)] sm:text-lg">
+        {{ 'newIssueRequest.weaponAssociation.attachments' | translate }}
+        <span class="text-red-500">*</span>
+      </h3>
+      <p class="text-sm text-[var(--color-text-muted)]">
+        {{ 'newIssueRequest.weaponAssociation.attachmentsHint' | translate }}
+      </p>
+    </header>
+
+    <div class="flex flex-wrap items-center gap-3">
+      <input
+        #weaponAttachmentInput
+        type="file"
+        multiple
+        [accept]="attachmentAcceptedTypes"
+        (change)="onAttachmentFilesSelected($event)"
+        class="hidden"
+      />
+      <button
+        type="button"
+        (click)="weaponAttachmentInput.click()"
+        class="rounded-lg bg-[var(--color-brand)] px-4 py-2 text-sm font-medium text-white transition-all hover:bg-[var(--color-brand)]/90"
+      >
+        {{ 'common.chooseFiles' | translate }}
+      </button>
+      <span class="text-sm text-[var(--color-text-muted)]">
+        <span *ngIf="(attachmentFiles?.length ?? 0) === 0">
+          {{ 'common.noFileChosen' | translate }}
+        </span>
+        <span *ngIf="(attachmentFiles?.length ?? 0) > 0">
+          {{ attachmentFiles.length }}
+          {{ attachmentFiles.length === 1
+            ? ('common.file' | translate)
+            : ('common.files' | translate)
+          }}
+        </span>
+      </span>
+    </div>
+
+    <div *ngIf="(attachmentFiles?.length ?? 0) > 0" class="space-y-2">
+      <div
+        *ngFor="let file of attachmentFiles; let i = index; trackBy: trackByFileIndex"
+        class="flex items-center justify-between gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-background-muted)] p-2"
+      >
+        <div class="min-w-0 flex-1">
+          <p class="truncate text-sm font-medium text-[var(--color-text)]">{{ file.name }}</p>
+          <p class="text-xs text-[var(--color-text-muted)]">{{ formatFileSize(file) }}</p>
+        </div>
+        <button
+          type="button"
+          (click)="onRemoveAttachmentFile(i)"
+          class="rounded p-1 text-red-600 transition-colors hover:text-red-700"
+          [attr.aria-label]="'common.remove' | translate"
+        >
+          <lucide-angular [img]="X" class="h-4 w-4"></lucide-angular>
+        </button>
+      </div>
+    </div>
+
+    <p
+      *ngIf="requiresAttachments && (attachmentFiles?.length ?? 0) === 0"
+      class="text-xs text-red-600"
+    >
+      {{ 'newIssueRequest.validation.weaponAssociationAttachmentsRequired' | translate }}
+    </p>
+  </section>
+
   <footer class="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
     <app-button variant="outline" class="w-full justify-center sm:w-auto" (clicked)="previous.emit()">
       {{ 'newIssueRequest.previous' | translate }}

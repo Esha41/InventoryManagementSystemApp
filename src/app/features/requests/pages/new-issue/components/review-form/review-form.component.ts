@@ -58,6 +58,8 @@ export class ReviewFormComponent {
   @Input() files: File[] = [];
   @Input() attachmentRequirements: AttachmentRequirementDto[] = [];
   @Input() attachmentUploads: AttachmentUploadsState = createInitialAttachmentUploadsState();
+  /** Order-level files for the WEAPON_ASSOCIATION system slot. */
+  @Input() weaponAssociationFiles: File[] = [];
 
   @Output() next = new EventEmitter<void>();
   @Output() previous = new EventEmitter<void>();
@@ -103,6 +105,12 @@ export class ReviewFormComponent {
     const fromState = this.attachmentUploads?.otherFiles ?? [];
     return [...fromState, ...legacy];
   }
+
+  get hasWeaponAssociationFiles(): boolean {
+    return (this.weaponAssociationFiles?.length ?? 0) > 0;
+  }
+
+  trackFileByIndex = (index: number, _file: File): number => index;
 
   get showAssociatedWeaponColumn(): boolean {
     return this.selectedCartridges.some(c => c.itemType === 'Ammunition');
