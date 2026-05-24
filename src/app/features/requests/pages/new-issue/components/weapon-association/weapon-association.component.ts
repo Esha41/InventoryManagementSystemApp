@@ -19,7 +19,8 @@ import {
   CircleCheck,
   ChevronRight,
   ChevronDown,
-  Search
+  Search,
+  X
 } from 'lucide-angular';
 import { Cartridge } from '@models/cartridge.model';
 import { WeaponDto } from '@models/weapon.model';
@@ -64,6 +65,10 @@ export class WeaponAssociationComponent implements OnChanges {
   readonly ChevronRight = ChevronRight;
   readonly ChevronDown = ChevronDown;
   readonly Search = Search;
+  readonly X = X;
+
+  /** File types accepted by the Weapon Association Attachments input. */
+  readonly attachmentAcceptedTypes = '.pdf,.docx';
 
   @Input() ammunitionItems: Cartridge[] = [];
   @Input() allWeapons: WeaponDto[] = [];
@@ -73,6 +78,10 @@ export class WeaponAssociationComponent implements OnChanges {
   @Input() loadingWeapons = false;
   @Input() weaponLoadError: string | null = null;
   @Input() canProceed = false;
+  /** Order-level files for the WEAPON_ASSOCIATION system slot. */
+  @Input() attachmentFiles: File[] = [];
+  /** True when at least one ammunition line uses a non-catalog ("other") weapon. */
+  @Input() requiresAttachments = false;
 
   @Output() associateCatalogWeapons = new EventEmitter<{
     ammoItemId: number;
@@ -85,6 +94,7 @@ export class WeaponAssociationComponent implements OnChanges {
     caliberId: number | null;
   }>();
   @Output() clearAssociation = new EventEmitter<number>();
+  @Output() attachmentFilesChange = new EventEmitter<File[]>();
   @Output() next = new EventEmitter<void>();
   @Output() previous = new EventEmitter<void>();
 
@@ -478,5 +488,37 @@ export class WeaponAssociationComponent implements OnChanges {
       if (!name) continue;
       this.otherNameInput.set(ammo.id, name);
     }
+  }
+
+  // ---- Weapon Association Attachments (system slot) ----------------------
+
+  onAttachmentFilesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    if (!input?.files?.length) return;
+
+    const incoming = Array.from(input.files).filter(f => f instanceof File && f.size > 0);
+    const merged = [...(this.attachmentFiles ?? []), ...incoming];
+    this.attachmentFilesChange.emit(merged);
+
+    input.value = '';
+  }
+
+  onRemoveAttachmentFile(index: number): void {
+    if (index < 0 || index >= (this.attachmentFiles?.length ?? 0)) return;
+    const next = [...this.attachmentFiles];
+    next.splice(index, 1);
+    this.attachmentFilesChange.emit(next);
+  }
+
+  formatFileSize(file: File): string {
+    if (!file || !file.size) return '0 B';
+    const bytes = file.size;
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  trackByFileIndex(index: number, _file: File): number {
+    return index;
   }
 }

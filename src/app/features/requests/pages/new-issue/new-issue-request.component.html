@@ -61,9 +61,12 @@
         [loadingWeapons]="facade.weaponAssociationState.loadingWeapons"
         [weaponLoadError]="facade.weaponAssociationState.weaponLoadError"
         [canProceed]="facade.canProceedFromWeaponAssociation"
+        [attachmentFiles]="facade.weaponAssociationState.attachmentFiles"
+        [requiresAttachments]="facade.requiresWeaponAssociationAttachments"
         (associateCatalogWeapons)="facade.onAssociateCatalogWeapons($event)"
         (associateOtherWeapon)="facade.onAssociateOtherWeapon($event)"
         (clearAssociation)="facade.onClearWeaponAssociation($event)"
+        (attachmentFilesChange)="facade.onWeaponAssociationFilesChange($event)"
         (next)="facade.onNext()"
         (previous)="facade.onPrevious()">
       </app-weapon-association>
@@ -122,6 +125,7 @@
       [files]="facade.usageFormFiles"
       [attachmentRequirements]="facade.selectedAttachmentRequirements"
       [attachmentUploads]="facade.attachmentUploads"
+      [weaponAssociationFiles]="facade.weaponAssociationState.attachmentFiles"
       (previous)="facade.onPrevious()"
       (next)="facade.onNext()">
     </app-review-form>

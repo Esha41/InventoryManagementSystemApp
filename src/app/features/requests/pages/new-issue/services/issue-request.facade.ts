@@ -211,8 +211,21 @@ export class IssueRequestFacade {
     return this.selectedCartridges.filter(c => c.itemType === 'Ammunition');
   }
 
+  /**
+   * True when at least one ammunition line uses a non-catalog ("other") weapon.
+   * Mirrors the backend `RequiresWeaponAssociationAttachments` rule in `OrderService`.
+   */
+  get requiresWeaponAssociationAttachments(): boolean {
+    for (const list of this.weaponAssociationState.associations.values()) {
+      if (list?.some(a => a.type === 'other' && !!a.otherName?.trim())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   get canProceedFromWeaponAssociation(): boolean {
-    return this.ammunitionCartridges.every(ammo => {
+    const associationsValid = this.ammunitionCartridges.every(ammo => {
       const list = this.weaponAssociationState.associations.get(ammo.id);
       if (!list?.length) return false;
       return list.every(
@@ -221,6 +234,13 @@ export class IssueRequestFacade {
           (a.type === 'other' && !!a.otherName?.trim())
       );
     });
+
+    if (!associationsValid) return false;
+
+    if (this.requiresWeaponAssociationAttachments) {
+      return (this.weaponAssociationState.attachmentFiles?.length ?? 0) >= 1;
+    }
+    return true;
   }
 
   get currentRequesterName(): string {
@@ -665,12 +685,23 @@ export class IssueRequestFacade {
     });
   }
 
+  onWeaponAssociationFilesChange(files: File[]): void {
+    this.weaponAssociationState.attachmentFiles = (files ?? []).filter(
+      f => f instanceof File && f.size > 0
+    );
+    this.cdr.markForCheck();
+  }
+
   private replaceWeaponAssociations(
     mutator: (map: Map<number, WeaponAssociation[]>) => void
   ): void {
     const next = new Map(this.weaponAssociationState.associations);
     mutator(next);
     this.weaponAssociationState.associations = next;
+
+    if (!this.requiresWeaponAssociationAttachments) {
+      this.weaponAssociationState.attachmentFiles = [];
+    }
     this.cdr.markForCheck();
   }
 
@@ -751,6 +782,7 @@ export class IssueRequestFacade {
     const slotMap = this.attachmentUploads?.filesByRequirementId;
     const slotOthers = this.attachmentUploads?.otherFiles ?? [];
     const otherFiles = [...slotOthers, ...(this.usageFormFiles ?? [])];
+    const weaponAssociationFiles = this.weaponAssociationState.attachmentFiles ?? [];
 
     return {
       cartridgeState: this.cartridgeState,
@@ -764,6 +796,7 @@ export class IssueRequestFacade {
       defaultRequestTypeId: this.DEFAULT_REQUEST_TYPE_ID,
       attachmentUploads: slotMap && slotMap.size > 0 ? slotMap : undefined,
       otherFiles: otherFiles.length > 0 ? otherFiles : undefined,
+      weaponAssociationFiles: weaponAssociationFiles.length > 0 ? weaponAssociationFiles : undefined,
       orderSubmissionState: this.orderSubmissionState,
       weaponAssociations: this.weaponAssociationState.associations
     };

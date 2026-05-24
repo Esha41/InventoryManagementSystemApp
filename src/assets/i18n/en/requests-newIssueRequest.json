@@ -29,7 +29,9 @@
       "viewCompatibleOnly": "View compatible only",
       "compatibleWeapons": "Compatible",
       "weaponListScope": "Weapon list scope",
-      "selectOptionHint": "Choose Compatible, View all weapons, or Other to associate a weapon with this ammunition line."
+      "selectOptionHint": "Choose Compatible, View all weapons, or Other to associate a weapon with this ammunition line.",
+      "attachments": "Weapon Association Attachments",
+      "attachmentsHint": "Required when any item uses a non-catalog weapon."
     },
     "selectOrderSource": "Select Order Source",
     "selectOrderSourceDescription": "Choose whether you want to order from your department's allowance or from all available ammunition",
@@ -202,6 +204,7 @@
       "commentsRequired": "Comments are required.",
       "attachmentsRequired": "At least one file attachment is required.",
       "attachmentRequirementsInvalid": "This field is required.",
+      "weaponAssociationAttachmentsRequired": "Please attach at least one Weapon Association document.",
       "required": "This field is required.",
       "correctErrors": "Please fix the highlighted fields before continuing.",
       "errors": {

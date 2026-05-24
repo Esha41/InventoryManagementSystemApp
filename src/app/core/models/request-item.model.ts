@@ -49,6 +49,12 @@ export interface WeaponAssociationState {
   weaponsByAmmunitionCaliberId: Map<number, WeaponDto[]>;
   loadingWeapons: boolean;
   weaponLoadError: string | null;
+  /**
+   * Order-level files supporting non-catalog ("other") weapon associations.
+   * Required by the backend WEAPON_ASSOCIATION system slot when any line uses
+   * a non-catalog weapon. Not keyed by ammunition id — one bucket per order.
+   */
+  attachmentFiles: File[];
 }
 
 export function createInitialWeaponAssociationState(): WeaponAssociationState {
@@ -57,7 +63,8 @@ export function createInitialWeaponAssociationState(): WeaponAssociationState {
     allWeapons: [],
     weaponsByAmmunitionCaliberId: new Map(),
     loadingWeapons: false,
-    weaponLoadError: null
+    weaponLoadError: null,
+    attachmentFiles: []
   };
 }
 
