@@ -28,6 +28,9 @@ import { EmployeeFormModalComponent } from '@admin/components/employee-form-moda
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { FocusOnInitDirective } from '@core/directives/focus-on-init.directive';
 import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
+import { PaginationComponent } from '@components/pagination/pagination.component';
+import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
+import { defaultPageSize } from '@constants/app.constants';
 import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 
@@ -43,7 +46,9 @@ import { BackendAuthService } from '@services/backend-auth.service';
     EmployeeFormModalComponent,
     DropdownComponent,
     FocusOnInitDirective,
-    TableClampTooltipDirective
+    TableClampTooltipDirective,
+    PaginationComponent,
+    RowsPerPageComponent
   ],
   providers: [
     WeaponSupplyReviewService,
@@ -101,7 +106,9 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
   orderData: OrderDto | null = null;
   batches: BatchWithSelection[] = [];
 
-  isRequestInfoExpanded = true;
+  assetRowsPerPage = defaultPageSize;
+  private readonly assetPageByBatchId = new Map<number, number>();
+
   isRequestItemsExpanded = true;
   isBatchesExpanded = true;
   isReceiverInfoExpanded = true;
@@ -160,6 +167,21 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
         nsn: ri.nsn,
         quantity: ri.quantity
       }));
+  }
+
+  getPaginatedAssets(batch: BatchWithSelection): AssetDto[] {
+    const page = this.getValidatedAssetPage(batch);
+    const startIndex = (page - 1) * this.assetRowsPerPage;
+    return batch.assets.slice(startIndex, startIndex + this.assetRowsPerPage);
+  }
+
+  getAssetTotalPages(batch: BatchWithSelection): number {
+    const total = batch.assets.length;
+    return total === 0 ? 0 : Math.ceil(total / this.assetRowsPerPage);
+  }
+
+  getAssetRowNumber(batch: BatchWithSelection, pageIndex: number): number {
+    return (this.getValidatedAssetPage(batch) - 1) * this.assetRowsPerPage + pageIndex + 1;
   }
 
   ngOnInit(): void {
@@ -223,6 +245,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
         next: ({ batches, selections }) => {
           this.reviewService.applySelections(selections);
           this.reviewService.applyBatchData(batches);
+          this.resetAssetPagination();
           this.loadingBatches = false;
           this.cdr.markForCheck();
         },
@@ -252,6 +275,31 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
 
   toggleBatch(batchId: number): void {
     this.reviewService.toggleBatchExpanded(batchId);
+  }
+
+  onAssetPageChange(batchId: number, page: number): void {
+    this.assetPageByBatchId.set(batchId, page);
+    this.cdr.markForCheck();
+  }
+
+  onAssetRowsPerPageChange(rows: number): void {
+    this.assetRowsPerPage = rows;
+    this.resetAssetPagination();
+    this.cdr.markForCheck();
+  }
+
+  getValidatedAssetPage(batch: BatchWithSelection): number {
+    const maxPages = this.getAssetTotalPages(batch);
+    let page = this.assetPageByBatchId.get(batch.id) ?? 1;
+    if (maxPages > 0 && page > maxPages) {
+      page = maxPages;
+      this.assetPageByBatchId.set(batch.id, page);
+    }
+    return page;
+  }
+
+  private resetAssetPagination(): void {
+    this.assetPageByBatchId.clear();
   }
 
   // ==================== ASSET MANAGEMENT ====================

@@ -79,6 +79,10 @@
             <tr
               class="cursor-pointer border-b border-[var(--color-border)] transition-colors hover:bg-[var(--color-background-hover)]"
               [class.bg-[var(--color-background-active)]]="isAmmoExpanded(ammo.id)"
+              [class.bg-[rgba(var(--color-danger-rgb,220,38,38),0.04)]]="showAssociationValidation && !hasAssociationForAmmo(ammo.id)"
+              [class.border-s-4]="showAssociationValidation && !hasAssociationForAmmo(ammo.id)"
+              [class.border-s-[rgb(var(--color-danger-rgb,220,38,38))]]="showAssociationValidation && !hasAssociationForAmmo(ammo.id)"
+              [attr.aria-invalid]="showAssociationValidation && !hasAssociationForAmmo(ammo.id) ? true : null"
               (click)="toggleAmmoExpanded(ammo, $event)"
             >
               <td class="min-w-[10rem] px-4 py-3 font-medium text-[var(--color-text)]">
@@ -126,7 +130,14 @@
                     </span>
                   </span>
                   <span
-                    *ngIf="!hasAssociationForAmmo(ammo.id)"
+                    *ngIf="!hasAssociationForAmmo(ammo.id) && showAssociationValidation"
+                    class="inline-flex items-center gap-1 rounded-full bg-[rgba(var(--color-danger-rgb,220,38,38),0.1)] px-2 py-0.5 text-xs font-medium text-[rgb(var(--color-danger-rgb,220,38,38))]"
+                  >
+                    <lucide-angular [img]="AlertCircle" class="h-3 w-3 shrink-0" />
+                    {{ 'newIssueRequest.weaponAssociation.weaponRequired' | translate }}
+                  </span>
+                  <span
+                    *ngIf="!hasAssociationForAmmo(ammo.id) && !showAssociationValidation"
                     class="text-xs text-[var(--color-text-muted)]"
                   >
                     —

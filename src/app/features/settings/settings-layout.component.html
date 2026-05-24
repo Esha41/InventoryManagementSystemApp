@@ -2,8 +2,6 @@
   class="settings-layout flex flex-col md:flex-row flex-1 min-h-0 min-h-[calc(100dvh-8rem)] border-t border-[var(--color-border)] bg-[var(--color-background-muted)]">
   <!-- Inner sidebar -->
   <aside
-    [class.order-first]="!isRTL"
-    [class.order-last]="isRTL"
     class="settings-inner-aside w-full shrink-0 border-b md:border-b-0 md:border-e border-[var(--color-border)] bg-[var(--color-sidebar-bg)] transition-[width] duration-300 ease-in-out md:overflow-x-hidden"
     [class.md:w-56]="!innerNavCollapsed"
     [class.md:w-20]="innerNavCollapsed">
@@ -31,7 +29,11 @@
           [class.md:mx-auto]="innerNavCollapsed"
           aria-hidden="true">
         </lucide-angular>
-        <span class="min-w-0 truncate text-sm font-semibold leading-snug text-[var(--color-text)]" [class.md:hidden]="innerNavCollapsed">
+        <span
+          class="min-w-0 truncate text-sm font-semibold leading-snug text-[var(--color-text)]"
+          [class.text-left]="!isRTL"
+          [class.text-right]="isRTL"
+          [class.md:hidden]="innerNavCollapsed">
           {{ 'nav.settingsConfiguration' | translate }}
         </span>
       </div>
@@ -42,24 +44,33 @@
         [attr.aria-label]="innerNavCollapsed ? ('settingsLayout.expandNav' | translate) : ('settingsLayout.collapseNav' | translate)"
         (click)="toggleInnerNav()">
         <lucide-angular
-          [img]="innerNavCollapsed ? (isRTL ? ChevronRight : ChevronLeft) : (isRTL ? ChevronLeft : ChevronRight)"
-          class="h-5 w-5"></lucide-angular>
+          [img]="innerNavCollapsed ? (isRTL ? ChevronLeft : ChevronRight) : (isRTL ? ChevronRight : ChevronLeft)"
+          class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
       </button>
     </div>
     <nav
       class="settings-inner-nav p-2 space-y-0.5 overflow-y-auto max-h-[40vh] md:max-h-none md:py-2 md:overflow-x-hidden">
-      <a
-        *ngFor="let item of visibleNavItems"
-        [routerLink]="navUrl(item)"
-        routerLinkActive="bg-[var(--color-sidebar-hover)] text-[var(--color-text)] font-medium"
-        [routerLinkActiveOptions]="{ exact: true }"
-        class="settings-inner-nav-link flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-sidebar-active)]"
-        [class.md:justify-center]="innerNavCollapsed"
-        [class.md:px-2]="innerNavCollapsed"
-        [attr.title]="innerNavCollapsed ? (item.labelKey | translate) : null">
-        <lucide-angular [img]="item.icon" class="h-4 w-4 shrink-0 opacity-90" aria-hidden="true"></lucide-angular>
-        <span class="min-w-0 truncate leading-snug" [class.md:hidden]="innerNavCollapsed">{{ item.labelKey | translate }}</span>
-      </a>
+      <ng-container *ngFor="let item of visibleNavItems">
+        <div
+          appSidebarRailTooltip
+          [sidebarRailCollapsed]="innerNavCollapsed"
+          [appSidebarRailTooltip]="item.labelKey | translate">
+          <a
+            [routerLink]="navUrl(item)"
+            routerLinkActive="bg-[var(--color-sidebar-hover)] text-[var(--color-text)] font-medium"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="settings-inner-nav-link flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-sidebar-active)]"
+            [class.md:justify-center]="innerNavCollapsed"
+            [class.md:px-2]="innerNavCollapsed">
+            <lucide-angular [img]="item.icon" class="h-4 w-4 shrink-0 opacity-90" aria-hidden="true"></lucide-angular>
+            <span
+              class="min-w-0 flex-1 truncate leading-snug"
+              [class.text-left]="!isRTL"
+              [class.text-right]="isRTL"
+              [class.md:hidden]="innerNavCollapsed">{{ item.labelKey | translate }}</span>
+          </a>
+        </div>
+      </ng-container>
     </nav>
   </aside>
 

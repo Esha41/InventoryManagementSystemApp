@@ -4,6 +4,9 @@
 /* Driver.js CSS - Required for onboarding tour */
 @import 'driver.js/dist/driver.css';
 
+/* Sidebar rail tooltip — used by SidebarRailTooltipDirective (directives cannot bundle styles) */
+@import './app/shared/ui/sidebar-rail-tooltip/sidebar-rail-tooltip.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

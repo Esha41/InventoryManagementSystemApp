@@ -36,55 +36,6 @@ aside nav.sidebar-nav-scroll::-webkit-scrollbar-thumb:active {
   background: var(--app-scrollbar-thumb-active);
 }
 
-/* Custom tooltip for collapsed sidebar - matches website design */
-.menu-tooltip {
-  position: fixed;
-  padding: 8px 12px;
-  background-color: var(--color-sidebar-bg);
-  color: var(--color-text); /* Primary text color */
-  font-size: 0.875rem; /* text-sm */
-  font-weight: 500;
-  border-radius: var(--radius-lg); /* 8px */
-  white-space: nowrap;
-  pointer-events: none;
-  z-index: 9999;
-  box-shadow: var(--shadow-lg); /* Design system shadow */
-  border: 1px solid var(--color-sidebar-border);
-  opacity: 0;
-  transition: opacity var(--transition-base) ease-in-out 0.5s;
-  transform: translateY(-50%);
-}
-
-.group:hover .menu-tooltip {
-  opacity: 1;
-}
-
-/* Arrow pointer for LTR (points left, tooltip on right) */
-.menu-tooltip.ltr-tooltip::before,
-[dir="ltr"] .menu-tooltip::before,
-.menu-tooltip::before {
-  content: '';
-  position: absolute;
-  right: 100%;
-  top: 50%;
-  transform: translateY(-50%);
-  border: 6px solid transparent;
-  border-right-color: var(--color-sidebar-bg);
-}
-
-/* Arrow pointer for RTL (points right, tooltip on left) */
-.menu-tooltip.rtl-tooltip::before,
-[dir="rtl"] .menu-tooltip::before {
-  content: '';
-  position: absolute;
-  left: 100%;
-  top: 50%;
-  transform: translateY(-50%);
-  border: 6px solid transparent;
-  border-left-color: var(--color-sidebar-bg);
-  right: auto;
-}
-
 /* RTL support for collapsible menu chevron alignment */
 /* In both LTR and RTL, margin-left: auto pushes to the visual right edge */
 button .chevron-right {
