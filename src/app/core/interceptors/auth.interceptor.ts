@@ -1,7 +1,7 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, throwError, switchMap } from 'rxjs';
+import { catchError, switchMap, throwError, timer } from 'rxjs';
 import { StorageService } from '@services/storage.service';
 import { ConfigService } from '@services/config.service';
 import { BackendAuthService } from '@services/backend-auth.service';
@@ -125,16 +125,31 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
             });
             return next(retryReq);
           }),
-          catchError(refreshError => {
-            configService.logWarning('Token refresh failed - redirecting to login');
-            const hadActiveSession = backendAuth.getCurrentUser() !== null;
-            backendAuth.clearSession();
-            if (hadActiveSession) {
-              storageService.set('sessionExpired', true);
-            }
-            router.navigate(['/auth/login']);
-            return throwError(() => refreshError);
-          })
+          catchError(() =>
+            // First refresh attempt failed (could be a transient network error or a
+            // grace-window retry needed after a lost Set-Cookie response).
+            // Wait 2 s and try once more before clearing the session.
+            timer(2000).pipe(
+              switchMap(() => backendAuth.refreshToken()),
+              switchMap(loginResponse => {
+                const retryReq = req.clone({
+                  withCredentials: true,
+                  setHeaders: { Authorization: `Bearer ${loginResponse.accessToken}` }
+                });
+                return next(retryReq);
+              }),
+              catchError(finalError => {
+                configService.logWarning('Token refresh failed after retry — redirecting to login');
+                const hadActiveSession = backendAuth.getCurrentUser() !== null;
+                backendAuth.clearSession();
+                if (hadActiveSession) {
+                  storageService.set('sessionExpired', true);
+                }
+                router.navigate(['/auth/login']);
+                return throwError(() => finalError);
+              })
+            )
+          )
         );
       }
 
