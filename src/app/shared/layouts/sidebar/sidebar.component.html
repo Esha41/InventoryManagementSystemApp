@@ -48,9 +48,11 @@
         </div>
 
         <!-- Menu Item with Children (Submenu) -->
-        <div *ngIf="!item.isHeader && hasChildren(item)" class="mb-1 relative group" #menuItem
-          [attr.data-onboarding]="item.label === 'nav.requestManagement' ? 'request-management' : null"
-          (mouseenter)="showTooltip($event)" (mouseleave)="hideTooltip()">
+        <div *ngIf="!item.isHeader && hasChildren(item)" class="mb-1" #menuItem
+          appSidebarRailTooltip
+          [sidebarRailCollapsed]="isCollapsed"
+          [appSidebarRailTooltip]="item.label | translate"
+          [attr.data-onboarding]="item.label === 'nav.requestManagement' ? 'request-management' : null">
           <button (click)="toggleSubmenu(item.label)"
             class="w-full flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[var(--color-sidebar-active)] text-[var(--color-text-muted)]">
             <lucide-angular [img]="item.icon" class="h-5 w-5 flex-shrink-0" [class.mr-3]="!isRTL"
@@ -73,10 +75,6 @@
             <lucide-angular *ngIf="!isCollapsed" [img]="isSubmenuExpanded(item.label) ? ChevronUp : ChevronDown"
               class="h-4 w-4 flex-shrink-0 transition-transform duration-200 chevron-right"></lucide-angular>
           </button>
-          <!-- Tooltip for collapsed state -->
-          <div *ngIf="isCollapsed" class="menu-tooltip">
-            {{ item.label | translate }}
-          </div>
           <!-- Submenu Items -->
           <ul *ngIf="!isCollapsed && isSubmenuExpanded(item.label) && item.children" class="mt-1 space-y-1"
             [class.ml-8]="!isRTL" [class.mr-8]="isRTL">
@@ -121,8 +119,10 @@
         </div>
 
         <!-- Regular Menu Item (No Children) -->
-        <div *ngIf="!item.isHeader && !hasChildren(item)" class="relative group" #menuItem
-          (mouseenter)="showTooltip($event)" (mouseleave)="hideTooltip()">
+        <div *ngIf="!item.isHeader && !hasChildren(item)" #menuItem
+          appSidebarRailTooltip
+          [sidebarRailCollapsed]="isCollapsed"
+          [appSidebarRailTooltip]="item.label | translate">
           <a [routerLink]="item.route" routerLinkActive="bg-[var(--color-background-hover)] text-[var(--color-text)]"
             [routerLinkActiveOptions]="{ exact: false }"
             class="flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[var(--color-sidebar-active)] text-[var(--color-text-muted)]">
@@ -132,10 +132,6 @@
               {{ item.label | translate }}
             </span>
           </a>
-          <!-- Tooltip for collapsed state -->
-          <div *ngIf="isCollapsed" class="menu-tooltip">
-            {{ item.label | translate }}
-          </div>
         </div>
 
         <!-- Separator after Reports section -->

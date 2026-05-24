@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { ApiService } from '@services/api.service';
 import { ConfigService } from '@services/config.service';
 
@@ -147,6 +147,32 @@ export class AssetSupplyService {
     private apiService: ApiService,
     private config: ConfigService
   ) { }
+
+  /**
+   * Get depot IDs that have ready-to-issue assets matching the order's requested items.
+   */
+  getDepotsWithAvailableItems(orderId: number): Observable<number[]> {
+    this.config.log('Getting depots with available items', { orderId });
+    return this.apiService.get<unknown[]>(
+      `${this.baseEndpoint}/order/${orderId}/depots-with-available-items`
+    ).pipe(
+      map(data => {
+        if (!Array.isArray(data)) return [];
+        return data
+          .map(entry => {
+            if (entry != null && typeof entry === 'object' && 'depotId' in entry) {
+              return Number((entry as { depotId: unknown }).depotId);
+            }
+            return Number(entry);
+          })
+          .filter(id => !Number.isNaN(id) && id > 0);
+      }),
+      catchError(error => {
+        this.config.logError('Failed to get depots with available items', error);
+        return throwError(() => error);
+      })
+    );
+  }
 
   /**
    * Get batches in the given depots that contain assets matching the order's requested items

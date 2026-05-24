@@ -87,11 +87,14 @@ export class WeaponSupplyLookupService {
 
     private createDepotOptions(): DropdownOption<number>[] {
         const currentLang = getCurrentLang(this.translate);
-        return this.availableDepots.map(depot => ({
-            value: depot.id!,
-            label: getLocalizedName(depot, currentLang) || `Depot ${depot.id}`,
-            description: depot.code || ''
-        })).sort((a, b) => a.label.localeCompare(b.label));
+        return this.availableDepots
+            .filter(depot => depot.id != null && !Number.isNaN(Number(depot.id)))
+            .map(depot => ({
+                value: Number(depot.id),
+                label: getLocalizedName(depot, currentLang) || `Depot ${depot.id}`,
+                description: depot.code || ''
+            }))
+            .sort((a, b) => a.label.localeCompare(b.label));
     }
 
     refreshDepotOptionsOnLangChange(): void {

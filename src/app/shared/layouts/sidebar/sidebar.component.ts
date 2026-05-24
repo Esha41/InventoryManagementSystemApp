@@ -7,6 +7,7 @@ import { LucideAngularModule, House, Boxes, Users, ChevronLeft, ChevronRight, Ch
 import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { TranslationService } from '@services/translation.service';
+import { SidebarRailTooltipDirective } from '@shared/ui/sidebar-rail-tooltip/sidebar-rail-tooltip.directive';
 
 interface MenuItem {
   label: string;
@@ -20,7 +21,7 @@ interface MenuItem {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule, TranslateModule],
+  imports: [CommonModule, RouterModule, LucideAngularModule, TranslateModule, SidebarRailTooltipDirective],
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.css']
 })
@@ -562,46 +563,5 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
 
   hasChildren(item: MenuItem): boolean {
     return !!(item.children && item.children.length > 0);
-  }
-
-  showTooltip(event: MouseEvent): void {
-    if (!this.isCollapsed) return;
-
-    const target = event.currentTarget as HTMLElement;
-    const rect = target.getBoundingClientRect();
-    const tooltip = target.querySelector('.menu-tooltip') as HTMLElement;
-    const isRTL = this.translationService.isRTL();
-
-    if (tooltip) {
-      // Sidebar has will-change-transform, so fixed tooltip is positioned relative to it.
-      // Convert viewport coordinates to sidebar-relative for correct alignment.
-      const sidebar = target.closest('aside');
-      const sidebarRect = sidebar?.getBoundingClientRect() ?? { left: 0, top: 0 };
-      const centerY = rect.top + rect.height / 2 - sidebarRect.top;
-
-      // Position tooltip based on RTL/LTR
-      if (isRTL) {
-        // In RTL, position tooltip to the left of the sidebar
-        tooltip.style.left = `${rect.left - sidebarRect.left}px`;
-        tooltip.style.right = 'auto';
-        tooltip.style.transform = 'translate(-100%, -50%)';
-        // Add RTL class for arrow direction
-        tooltip.classList.add('rtl-tooltip');
-        tooltip.classList.remove('ltr-tooltip');
-      } else {
-        // In LTR, position tooltip to the right of the sidebar
-        tooltip.style.left = `${rect.right - sidebarRect.left + 8}px`;
-        tooltip.style.right = 'auto';
-        tooltip.style.transform = 'translateY(-50%)';
-        // Add LTR class for arrow direction
-        tooltip.classList.add('ltr-tooltip');
-        tooltip.classList.remove('rtl-tooltip');
-      }
-      tooltip.style.top = `${centerY}px`;
-    }
-  }
-
-  hideTooltip(): void {
-    // Tooltip will hide automatically via CSS group-hover
   }
 }

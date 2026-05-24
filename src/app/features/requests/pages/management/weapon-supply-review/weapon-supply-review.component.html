@@ -28,51 +28,6 @@
 
     <div class="space-y-6">
 
-      <!-- Request Information -->
-      <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md border border-[var(--color-border)]">
-        <button (click)="isRequestInfoExpanded = !isRequestInfoExpanded"
-          class="w-full flex items-center justify-between p-6 hover:bg-[var(--color-background-hover)] transition-colors rounded-t-xl section-header-btn">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
-              <lucide-angular [img]="FileText" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
-            </div>
-            <h2 class="text-lg font-semibold text-[var(--color-text)]">
-              {{ 'weaponSupplyReview.requestInformation' | translate }}
-            </h2>
-          </div>
-          <lucide-angular [img]="isRequestInfoExpanded ? ChevronUp : ChevronDown"
-            class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
-        </button>
-        <div *ngIf="isRequestInfoExpanded" class="px-6 pb-6 border-t border-[var(--color-border)]">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
-            <div class="space-y-1">
-              <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
-                {{ 'weaponSupplyReview.orderNo' | translate }}
-              </span>
-              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ orderData.requestNo || orderData.orderNo }}</p>
-            </div>
-            <div class="space-y-1">
-              <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
-                {{ 'weaponSupplyReview.department' | translate }}
-              </span>
-              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ getDepartmentName() }}</p>
-            </div>
-            <div class="space-y-1">
-              <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
-                {{ 'weaponSupplyReview.requester' | translate }}
-              </span>
-              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ getRequesterName() }}</p>
-            </div>
-            <div *ngIf="orderData.usageLocation" class="space-y-1">
-              <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
-                {{ 'weaponSupplyReview.usageLocation' | translate }}
-              </span>
-              <p class="text-sm text-[var(--color-text)] mt-1 font-medium">{{ orderData.usageLocation }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Request Items -->
       <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md border border-[var(--color-border)]">
         <button (click)="isRequestItemsExpanded = !isRequestItemsExpanded"
@@ -256,8 +211,8 @@
                                 </tr>
                               </thead>
                               <tbody>
-                                <tr *ngFor="let asset of batch.assets; let i = index; trackBy: trackByAssetId">
-                                  <td class="text-[var(--color-text-muted)]">{{ i + 1 }}</td>
+                                <tr *ngFor="let asset of getPaginatedAssets(batch); let i = index; trackBy: trackByAssetId">
+                                  <td class="text-[var(--color-text-muted)]">{{ getAssetRowNumber(batch, i) }}</td>
                                   <td>
                                     <!-- Display mode -->
                                     <div *ngIf="editingSerialAssetId !== asset.id" class="flex items-center gap-2 min-w-0">
@@ -332,6 +287,29 @@ class="assets-table-input w-full min-w-0">
                                 </tr>
                               </tbody>
                             </table>
+                          </div>
+
+                          <div *ngIf="batch.assets.length > 0"
+                            class="mt-3 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[var(--color-border)] pt-3"
+                            [class.sm:flex-row-reverse]="isRTL"
+                            (click)="$event.stopPropagation()">
+                            <app-rows-per-page
+                              [rowsPerPage]="assetRowsPerPage"
+                              [totalItems]="batch.assets.length"
+                              [visibleItems]="getPaginatedAssets(batch).length"
+                              (rowsPerPageChange)="onAssetRowsPerPageChange($event)">
+                            </app-rows-per-page>
+
+                            <div *ngIf="getAssetTotalPages(batch) > 1" class="flex items-center gap-3">
+                              <app-pagination
+                                [currentPage]="getValidatedAssetPage(batch)"
+                                [totalPages]="getAssetTotalPages(batch)"
+                                (pageChange)="onAssetPageChange(batch.id, $event)">
+                              </app-pagination>
+                              <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+                                {{ getValidatedAssetPage(batch) }} {{ 'common.of' | translate }} {{ getAssetTotalPages(batch) }}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </td>

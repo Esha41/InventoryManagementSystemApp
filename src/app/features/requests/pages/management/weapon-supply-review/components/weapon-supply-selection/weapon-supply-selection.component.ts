@@ -1,9 +1,9 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule, ArrowLeft, ArrowRight, CheckCircle, AlertTriangle, Warehouse, Building2, Layers, Check, X, Package } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ArrowRight, CheckCircle, AlertTriangle, Warehouse, Building2, Layers, Check, X, Package, Search } from 'lucide-angular';
 import { Subject, takeUntil, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
@@ -22,6 +22,7 @@ import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/tabl
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { defaultPageSize } from '@constants/app.constants';
+import { computeDepotAvailabilityTooltipPosition } from './depot-availability-tooltip.utils';
 
 @Component({
   selector: 'app-weapon-supply-selection',
@@ -38,10 +39,13 @@ import { defaultPageSize } from '@constants/app.constants';
   ],
   providers: [WeaponSupplyLookupService, WeaponSupplyDisplayService],
   templateUrl: './weapon-supply-selection.component.html',
-  styleUrls: ['./weapon-supply-selection.component.css']
+  styleUrl: './weapon-supply-selection.component.css'
 })
 export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
+  @ViewChild('depotAvailabilityTooltip') depotAvailabilityTooltip?: ElementRef<HTMLElement>;
+
   private destroy$ = new Subject<void>();
+  private depotTooltipAnchorRect: DOMRect | null = null;
 
   readonly ArrowLeft = ArrowLeft;
   readonly ArrowRight = ArrowRight;
@@ -53,6 +57,9 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
   readonly Check = Check;
   readonly X = X;
   readonly Package = Package;
+  readonly Search = Search;
+
+  depotSearchTerm = '';
 
   get isRTL(): boolean {
     return this.translationService?.isRTL() ?? false;
@@ -66,6 +73,7 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
   loading: boolean = true;
 
   selectedDepotIds: number[] = [];
+  depotIdsWithAvailableItems = new Set<number>();
   depotsConfirmed: boolean = false;
   batchOptions: BatchForOrderDepotDto[] = [];
   selectedBatchIds: number[] = [];
@@ -77,6 +85,9 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
 
   depotCurrentPage = 1;
   depotRowsPerPage = defaultPageSize;
+
+  depotTooltipVisible = false;
+  depotTooltipStyles: Record<string, string> = {};
 
   constructor(
     private route: ActivatedRoute,
@@ -104,14 +115,91 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
     return this.orderData?.requestItems || [];
   }
 
+  get filteredDepotOptions() {
+    const term = this.depotSearchTerm.trim().toLowerCase();
+    let options = this.depotDropdownOptions;
+    if (term) {
+      options = options.filter(
+        depot =>
+          (depot.label ?? '').toLowerCase().includes(term) ||
+          (depot.description ?? '').toLowerCase().includes(term) ||
+          String(depot.value).includes(term)
+      );
+    }
+    return [...options].sort((a, b) => {
+      const aHas = this.depotIdsWithAvailableItems.has(Number(a.value));
+      const bHas = this.depotIdsWithAvailableItems.has(Number(b.value));
+      if (aHas !== bHas) return aHas ? -1 : 1;
+      return (a.label ?? '').localeCompare(b.label ?? '');
+    });
+  }
+
+  depotHasAvailableItems(depotId: number): boolean {
+    return this.depotIdsWithAvailableItems.has(Number(depotId));
+  }
+
+  private normalizeDepotIds(ids: unknown[] | null | undefined): Set<number> {
+    return new Set(
+      (ids ?? [])
+        .map(id => {
+          if (id != null && typeof id === 'object' && 'depotId' in id) {
+            return Number((id as { depotId: unknown }).depotId);
+          }
+          return Number(id);
+        })
+        .filter(id => !Number.isNaN(id) && id > 0)
+    );
+  }
+
+  showDepotAvailabilityTooltip(event: MouseEvent | FocusEvent): void {
+    const el = event.currentTarget as HTMLElement | null;
+    if (!el) return;
+
+    this.depotTooltipAnchorRect = el.getBoundingClientRect();
+    this.depotTooltipStyles = computeDepotAvailabilityTooltipPosition(this.depotTooltipAnchorRect, {
+      isRTL: this.isRTL,
+      tooltipWidth: 200,
+      tooltipHeight: 36
+    });
+    this.depotTooltipVisible = true;
+    this.cdr.markForCheck();
+    requestAnimationFrame(() => this.repositionDepotAvailabilityTooltip());
+  }
+
+  hideDepotAvailabilityTooltip(): void {
+    if (!this.depotTooltipVisible) return;
+    this.depotTooltipVisible = false;
+    this.depotTooltipAnchorRect = null;
+    this.cdr.markForCheck();
+  }
+
+  onDepotAvailabilityTrigger(event: MouseEvent | FocusEvent, depotId: number): void {
+    if (this.depotHasAvailableItems(depotId)) {
+      this.showDepotAvailabilityTooltip(event);
+    }
+  }
+
+  private repositionDepotAvailabilityTooltip(): void {
+    const anchorRect = this.depotTooltipAnchorRect;
+    const tooltipEl = this.depotAvailabilityTooltip?.nativeElement;
+    if (!anchorRect || !tooltipEl || !this.depotTooltipVisible) return;
+
+    this.depotTooltipStyles = computeDepotAvailabilityTooltipPosition(anchorRect, {
+      isRTL: this.isRTL,
+      tooltipWidth: tooltipEl.offsetWidth,
+      tooltipHeight: tooltipEl.offsetHeight
+    });
+    this.cdr.markForCheck();
+  }
+
   get paginatedDepotOptions() {
     this.validateDepotCurrentPage();
     const startIndex = (this.depotCurrentPage - 1) * this.depotRowsPerPage;
-    return this.depotDropdownOptions.slice(startIndex, startIndex + this.depotRowsPerPage);
+    return this.filteredDepotOptions.slice(startIndex, startIndex + this.depotRowsPerPage);
   }
 
   get depotTotalPages(): number {
-    const total = this.depotDropdownOptions.length;
+    const total = this.filteredDepotOptions.length;
     return total === 0 ? 0 : Math.ceil(total / this.depotRowsPerPage);
   }
 
@@ -143,24 +231,15 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
     forkJoin({
       order: this.orderService.getOrderById(this.orderId),
       depots: this.lookupService.loadDepots(),
-      savedSelection: this.assetSupplyService.getWeaponSupplySelection(this.orderId).pipe(
-        catchError(() => of([]))
+      depotsWithItems: this.assetSupplyService.getDepotsWithAvailableItems(this.orderId).pipe(
+        catchError(() => of([] as number[]))
       )
     }).pipe(takeUntil(this.destroy$)).subscribe({
-      next: ({ order, savedSelection }) => {
+      next: ({ order, depotsWithItems }) => {
         this.orderData = order;
+        this.depotIdsWithAvailableItems = this.normalizeDepotIds(depotsWithItems);
         this.loading = false;
         this.depotCurrentPage = 1;
-        if (savedSelection && savedSelection.length > 0) {
-          this.selectedDepotIds = [...new Set(savedSelection.map(s => s.depotId))];
-          this.depotsConfirmed = true;
-          const savedBatchIds = [...new Set(savedSelection.map(s => s.batchId))];
-          const savedItemQuantities = new Map<string, number>();
-          savedSelection.forEach(s => {
-            savedItemQuantities.set(`${s.batchId}_${s.itemId}`, s.quantity);
-          });
-          this.loadBatchesWithSavedSelection(savedBatchIds, savedItemQuantities);
-        }
       },
       error: (error) => {
         this.config.logError('Failed to load data', error);
@@ -172,6 +251,18 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
         this.goBack();
       }
     });
+  }
+
+  onDepotSearchChange(value: string): void {
+    this.depotSearchTerm = value;
+    this.depotCurrentPage = 1;
+    this.cdr.markForCheck();
+  }
+
+  clearDepotSearch(): void {
+    this.depotSearchTerm = '';
+    this.depotCurrentPage = 1;
+    this.cdr.markForCheck();
   }
 
   onDepotPageChange(page: number): void {

@@ -1,3 +1,12 @@
+<div #depotAvailabilityTooltip
+  *ngIf="depotTooltipVisible"
+  class="pointer-events-none fixed z-[200] max-w-[min(280px,calc(100vw-24px))] rounded-md bg-[var(--color-text)] px-2.5 py-1.5 text-start text-xs font-normal leading-snug text-[var(--color-background)] shadow-custom-md whitespace-normal break-words"
+  [ngStyle]="depotTooltipStyles"
+  [attr.dir]="isRTL ? 'rtl' : 'ltr'"
+  role="tooltip">
+  {{ 'weaponSupplyReview.depotHasAvailableItems' | translate }}
+</div>
+
 <div class="min-h-full bg-[var(--color-background-muted)] p-6">
   <app-loading-state *ngIf="loading" size="lg" [fullPage]="true">
   </app-loading-state>
@@ -51,7 +60,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-[var(--color-border)]">
-            <tr *ngFor="let item of requestItems" class="selection-table-row">
+            <tr *ngFor="let item of requestItems" class="transition-colors duration-150 hover:bg-[var(--color-background-hover)]">
               <td class="px-4 py-3 text-sm font-medium text-[var(--color-text)] min-w-0">
                 <span [appTableClampTooltip]="item.itemName || '-'">{{ item.itemName || '-' }}</span>
               </td>
@@ -90,15 +99,85 @@
       <div *ngIf="!loadingDepots && depotDropdownOptions.length > 0" class="space-y-6">
         <!-- Depot selection -->
         <div>
-          <div class="mb-4 flex w-full flex-col gap-4 sm:flex-row sm:items-center"
-            [class.items-end]="!isRTL"
-            [class.items-start]="isRTL"
-            [class.sm:justify-end]="!isRTL"
-            [class.sm:justify-start]="isRTL">
-            <p class="text-sm text-[var(--color-text-muted)]">
-              {{ 'weaponSupplyReview.selectedDepotsCount' | translate }}: <span class="font-semibold text-[var(--color-text)]">{{ selectedDepotIds.length }}</span>
+          <div class="mb-4">
+            <div class="app-search-field max-w-md">
+              <lucide-angular [img]="Search" class="app-search-field__icon"></lucide-angular>
+              <input
+                type="text"
+                inputmode="search"
+                [ngModel]="depotSearchTerm"
+                (ngModelChange)="onDepotSearchChange($event)"
+                [placeholder]="'weaponSupplyReview.searchDepots' | translate"
+                class="app-search-field__input-surface-sm app-search-field__input-ps pe-10 w-full" />
+              <div *ngIf="depotSearchTerm" class="app-search-field__actions">
+                <button
+                  type="button"
+                  (click)="clearDepotSearch()"
+                  class="rounded-md p-1 text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]"
+                  [attr.aria-label]="'common.clear' | translate"
+                  [title]="'common.clear' | translate">
+                  <lucide-angular [img]="X" class="h-4 w-4"></lucide-angular>
+                </button>
+              </div>
+            </div>
+            <p *ngIf="depotSearchTerm && filteredDepotOptions.length === 0" class="mt-2 text-xs text-[var(--color-text-muted)]">
+              {{ 'common.noResultsFound' | translate }}
             </p>
-            <div class="flex gap-2">
+          </div>
+
+          <div *ngIf="filteredDepotOptions.length > 0" class="overflow-x-auto rounded-lg border border-[var(--color-border)]">
+            <table class="min-w-full divide-y divide-[var(--color-border)]">
+              <thead class="bg-[var(--color-background-muted)]">
+                <tr>
+                  <th scope="col" class="w-12 px-4 py-3 text-start">
+                    <span class="sr-only">{{ 'weaponSupplyReview.select' | translate }}</span>
+                  </th>
+                  <th scope="col" class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text)]">
+                    {{ 'weaponSupplyReview.depot' | translate }}
+                  </th>
+                  <th scope="col" class="px-4 py-3 text-start text-sm font-semibold text-[var(--color-text)]">
+                    {{ 'weaponSupplyReview.depotCode' | translate }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[var(--color-border)]">
+                <tr *ngFor="let depot of paginatedDepotOptions"
+                  class="transition-colors duration-150 hover:bg-[var(--color-background-hover)]"
+                  [ngClass]="{
+                    'opacity-50': depotsConfirmed && !selectedDepotIds.includes(depot.value) && !depotHasAvailableItems(depot.value),
+                    'depot-row-available': depotHasAvailableItems(depot.value) && !isRTL,
+                    'depot-row-available--rtl': depotHasAvailableItems(depot.value) && isRTL
+                  }">
+                  <td class="w-12 px-4 py-3"
+                    (mouseenter)="onDepotAvailabilityTrigger($event, depot.value)"
+                    (mouseleave)="hideDepotAvailabilityTooltip()"
+                    (focusin)="onDepotAvailabilityTrigger($event, depot.value)"
+                    (focusout)="hideDepotAvailabilityTooltip()">
+                    <input type="checkbox" [id]="'depot-' + depot.value" [checked]="selectedDepotIds.includes(depot.value)"
+                      [disabled]="depotsConfirmed" (change)="toggleDepotSelection(depot.value)"
+                      class="w-4 h-4 text-[var(--color-brand)] border-[var(--color-border)] rounded focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 cursor-pointer disabled:cursor-not-allowed">
+                  </td>
+                  <td class="px-4 py-3 text-start text-sm font-medium text-[var(--color-text)]"
+                    [class.cursor-help]="depotHasAvailableItems(depot.value)"
+                    (mouseenter)="onDepotAvailabilityTrigger($event, depot.value)"
+                    (mouseleave)="hideDepotAvailabilityTooltip()">
+                    {{ depot.label }}
+                  </td>
+                  <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">
+                    {{ depot.description || '-' }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="mt-4 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-end"
+            [class.sm:flex-row-reverse]="isRTL">
+            <p class="text-sm text-[var(--color-text-muted)] sm:text-end">
+              {{ 'weaponSupplyReview.selectedDepotsCount' | translate }}:
+              <span class="font-semibold text-[var(--color-text)]">{{ selectedDepotIds.length }}</span>
+            </p>
+            <div class="flex flex-wrap gap-2 sm:justify-end">
               <button *ngIf="!depotsConfirmed" (click)="confirmDepotSelection()" [disabled]="selectedDepotIds.length === 0"
                 class="flex items-center gap-2 px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-custom-sm">
                 <lucide-angular [img]="Check" class="h-4 w-4"></lucide-angular>
@@ -112,45 +191,10 @@
             </div>
           </div>
 
-          <div class="overflow-x-auto rounded-lg border border-[var(--color-border)]">
-            <table class="min-w-full divide-y divide-[var(--color-border)]">
-              <thead class="bg-[var(--color-background-muted)]">
-                <tr>
-                  <th scope="col" class="w-12 px-4 py-3 text-left">
-                    <span class="sr-only">{{ 'weaponSupplyReview.select' | translate }}</span>
-                  </th>
-                  <th scope="col" class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text)]">
-                    {{ 'weaponSupplyReview.depot' | translate }}
-                  </th>
-                  <th scope="col" class="px-4 py-3 text-left text-sm font-semibold text-[var(--color-text)]">
-                    {{ 'weaponSupplyReview.depotCode' | translate }}
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-[var(--color-border)]">
-                <tr *ngFor="let depot of paginatedDepotOptions"
-                  [ngClass]="{'opacity-50': depotsConfirmed && !selectedDepotIds.includes(depot.value)}"
-                  class="selection-table-row">
-                  <td class="w-12 px-4 py-3">
-                    <input type="checkbox" [id]="'depot-' + depot.value" [checked]="selectedDepotIds.includes(depot.value)"
-                      [disabled]="depotsConfirmed" (change)="toggleDepotSelection(depot.value)"
-                      class="w-4 h-4 text-[var(--color-brand)] border-[var(--color-border)] rounded focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 cursor-pointer disabled:cursor-not-allowed">
-                  </td>
-                  <td class="px-4 py-3 text-sm font-medium text-[var(--color-text)]">
-                    {{ depot.label }}
-                  </td>
-                  <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">
-                    {{ depot.description || '-' }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div *ngIf="depotDropdownOptions.length > 0"
+          <div *ngIf="filteredDepotOptions.length > 0"
             class="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[var(--color-border)] rounded-lg px-4 py-3"
             [class.sm:flex-row-reverse]="isRTL">
-            <app-rows-per-page [rowsPerPage]="depotRowsPerPage" [totalItems]="depotDropdownOptions.length"
+            <app-rows-per-page [rowsPerPage]="depotRowsPerPage" [totalItems]="filteredDepotOptions.length"
               [visibleItems]="paginatedDepotOptions.length" (rowsPerPageChange)="onDepotRowsPerPageChange($event)">
             </app-rows-per-page>
 
@@ -198,64 +242,64 @@
 
           <div *ngIf="!loadingBatches && batchOptions.length > 0" class="space-y-4">
             <div class="overflow-x-auto rounded-lg border border-[var(--color-border)]">
-              <table class="batch-selection-table min-w-full">
+              <table class="w-full min-w-[48rem] max-md:min-w-[42rem] table-fixed border-collapse">
                 <colgroup>
-                  <col class="batch-selection-table__col-select">
-                  <col class="batch-selection-table__col-policy">
-                  <col class="batch-selection-table__col-depot">
-                  <col class="batch-selection-table__col-items">
-                  <col class="batch-selection-table__col-available">
-                  <col class="batch-selection-table__col-quantity">
+                  <col class="w-[6%]">
+                  <col class="w-[11%]">
+                  <col class="w-[12%]">
+                  <col class="w-[34%] max-md:w-[28%]">
+                  <col class="w-[14%] max-md:w-[15%]">
+                  <col class="w-[14%] max-md:w-[16%]">
                 </colgroup>
                 <thead class="bg-[var(--color-background-muted)]">
                   <tr>
-                    <th scope="col" class="batch-selection-table__head batch-selection-table__head--select">
+                    <th scope="col" class="whitespace-nowrap px-3 py-2 text-start text-sm font-semibold leading-tight text-[var(--color-text)] border-e border-b border-[var(--color-border)] align-middle last:border-e-0">
                       {{ 'weaponSupplyReview.select' | translate }}
                     </th>
-                    <th scope="col" class="batch-selection-table__head batch-selection-table__head--policy">
+                    <th scope="col" class="min-w-[6.5rem] whitespace-nowrap px-3 py-2 text-start text-sm font-semibold leading-tight text-[var(--color-text)] border-e border-b border-[var(--color-border)] align-middle last:border-e-0">
                       {{ 'weaponSupplyReview.batchNumber' | translate }}
                     </th>
-                    <th scope="col" class="batch-selection-table__head">
+                    <th scope="col" class="px-3 py-2 text-start text-sm font-semibold leading-tight text-[var(--color-text)] border-e border-b border-[var(--color-border)] align-middle last:border-e-0">
                       {{ 'weaponSupplyReview.depot' | translate }}
                     </th>
-                    <th scope="col" class="batch-selection-table__head">
+                    <th scope="col" class="px-3 py-2 text-start text-sm font-semibold leading-tight text-[var(--color-text)] border-e border-b border-[var(--color-border)] align-middle last:border-e-0">
                       {{ 'weaponSupplyReview.itemsInBatch' | translate }}
                     </th>
-                    <th scope="col" class="batch-selection-table__head batch-selection-table__head--available">
+                    <th scope="col" class="whitespace-nowrap px-3 py-2 text-start text-sm font-semibold leading-tight text-[var(--color-text)] border-e border-b border-[var(--color-border)] align-middle last:border-e-0">
                       {{ 'weaponSupplyReview.availableQuantity' | translate }}
                     </th>
-                    <th scope="col" class="batch-selection-table__head">
+                    <th scope="col" class="px-3 py-2 text-start text-sm font-semibold leading-tight text-[var(--color-text)] border-e border-b border-[var(--color-border)] align-middle last:border-e-0">
                       {{ 'weaponSupplyReview.quantityToTake' | translate }} <span class="text-[var(--color-error)]">*</span>
                     </th>
                   </tr>
                 </thead>
                 <ng-container *ngFor="let batch of batchOptions">
                   <tbody *ngIf="batch.items && batch.items.length > 0; else emptyBatchRow"
-                    class="batch-selection-table__group"
-                    [class.batch-selection-table__group--disabled]="!hasBatchItems(batch)">
-                    <tr *ngFor="let bi of batch.items; let i = index" class="batch-selection-table__row">
+                    class="[&_tr]:transition-colors [&_tr:hover]:bg-[var(--color-background-hover)]"
+                    [class.opacity-50]="!hasBatchItems(batch)">
+                    <tr *ngFor="let bi of batch.items; let i = index">
                         <td *ngIf="i === 0" [attr.rowspan]="batch.items!.length"
-                          class="batch-selection-table__cell batch-selection-table__cell--select batch-selection-table__cell--span">
+                          class="px-3 py-2 text-start align-top border-e border-b border-[var(--color-border)] pt-2 last:border-e-0">
                           <input type="checkbox" [id]="'batch-' + batch.id" [checked]="selectedBatchIds.includes(batch.id)"
                             [disabled]="!hasBatchItems(batch)"
                             (change)="hasBatchItems(batch) && toggleBatchSelection(batch.id)"
-                            class="w-4 h-4 text-[var(--color-brand)] border-[var(--color-border)] rounded focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 cursor-pointer disabled:cursor-not-allowed">
+                            class="block m-0 w-4 h-4 text-[var(--color-brand)] border-[var(--color-border)] rounded focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 cursor-pointer disabled:cursor-not-allowed">
                         </td>
                         <td *ngIf="i === 0" [attr.rowspan]="batch.items!.length"
-                          class="batch-selection-table__cell batch-selection-table__cell--span text-sm font-medium text-[var(--color-text)]">
+                          class="px-3 py-2 align-top border-e border-b border-[var(--color-border)] pt-2 text-sm font-medium text-[var(--color-text)] last:border-e-0">
                           {{ batch.batchNumber }}
                         </td>
                         <td *ngIf="i === 0" [attr.rowspan]="batch.items!.length"
-                          class="batch-selection-table__cell batch-selection-table__cell--span text-sm text-[var(--color-text-muted)]">
+                          class="px-3 py-2 align-top border-e border-b border-[var(--color-border)] pt-2 text-sm text-[var(--color-text-muted)] last:border-e-0">
                           {{ getDepotDisplayName(batch) }}
                         </td>
-                        <td class="batch-selection-table__cell batch-selection-table__cell--item min-w-0 text-sm text-[var(--color-text)]">
+                        <td class="max-w-0 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap px-4 py-2 text-sm text-[var(--color-text)] border-e border-b border-[var(--color-border)] align-middle last:border-e-0">
                           <span [appTableClampTooltip]="bi.itemName || bi.itemNo || '-'">{{ bi.itemName || bi.itemNo || '-' }}</span>
                         </td>
-                        <td class="batch-selection-table__cell batch-selection-table__cell--available text-sm font-semibold tabular-nums text-[var(--color-text)]">
+                        <td class="whitespace-nowrap px-3 py-2 text-sm font-semibold tabular-nums text-[var(--color-text)] border-e border-b border-[var(--color-border)] align-middle last:border-e-0">
                           {{ bi.quantity }}
                         </td>
-                        <td class="batch-selection-table__cell batch-selection-table__cell--quantity">
+                        <td class="whitespace-nowrap px-3 py-2 border-e border-b border-[var(--color-border)] align-middle last:border-e-0">
                           <ng-container *ngIf="selectedBatchIds.includes(batch.id) && isItemOnOrder(bi.itemId); else noQtyInput">
                             <input
                               type="number"
@@ -264,13 +308,13 @@
                               (blur)="onItemQuantityBlur(batch.id, bi)"
                               [max]="getMaxQuantityForBatchItem(batch.id, bi)"
                               [min]="0"
-                              class="batch-selection-table__qty-input border rounded-lg text-center transition-colors
+                              class="h-10 w-28 max-w-full rounded-lg border px-3 py-2 text-center text-base leading-tight transition-colors
                                 bg-[var(--color-background)]
                                 text-[var(--color-text)]
-                                focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] focus:outline-none
+                                focus:border-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]
                                 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                               [ngClass]="isItemQuantityExceeded(batch.id, bi) ? 'border-[var(--color-error)] ring-1 ring-[var(--color-error)]' : 'border-[var(--color-border)]'">
-                            <span *ngIf="isItemQuantityExceeded(batch.id, bi)" class="block text-xs text-[var(--color-error)] mt-0.5 leading-tight">
+                            <span *ngIf="isItemQuantityExceeded(batch.id, bi)" class="mt-0.5 block text-xs leading-tight text-[var(--color-error)]">
                               {{ 'weaponSupplyReview.quantityMaxExceeded' | translate:{ max: getMaxQuantityForBatchItem(batch.id, bi) } }}
                             </span>
                           </ng-container>
@@ -281,24 +325,24 @@
                       </tr>
                   </tbody>
                   <ng-template #emptyBatchRow>
-                    <tbody class="batch-selection-table__group"
-                      [class.batch-selection-table__group--disabled]="!hasBatchItems(batch)">
-                      <tr class="batch-selection-table__row">
-                        <td class="batch-selection-table__cell batch-selection-table__cell--select">
+                    <tbody class="[&_tr]:transition-colors [&_tr:hover]:bg-[var(--color-background-hover)]"
+                      [class.opacity-50]="!hasBatchItems(batch)">
+                      <tr>
+                        <td class="px-3 py-2 text-start border-e border-b border-[var(--color-border)] align-middle last:border-e-0">
                           <input type="checkbox" [id]="'batch-' + batch.id" [checked]="selectedBatchIds.includes(batch.id)"
                             [disabled]="!hasBatchItems(batch)"
                             (change)="hasBatchItems(batch) && toggleBatchSelection(batch.id)"
-                            class="w-4 h-4 text-[var(--color-brand)] border-[var(--color-border)] rounded focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 cursor-pointer disabled:cursor-not-allowed">
+                            class="block m-0 w-4 h-4 text-[var(--color-brand)] border-[var(--color-border)] rounded focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 cursor-pointer disabled:cursor-not-allowed">
                         </td>
-                        <td class="batch-selection-table__cell text-sm font-medium text-[var(--color-text)]">
+                        <td class="px-3 py-2 text-sm font-medium text-[var(--color-text)] border-e border-b border-[var(--color-border)] align-middle last:border-e-0">
                           {{ batch.batchNumber }}
                         </td>
-                        <td class="batch-selection-table__cell text-sm text-[var(--color-text-muted)]">
+                        <td class="px-3 py-2 text-sm text-[var(--color-text-muted)] border-e border-b border-[var(--color-border)] align-middle last:border-e-0">
                           {{ getDepotDisplayName(batch) }}
                         </td>
-                        <td class="batch-selection-table__cell text-sm text-[var(--color-text-muted)]">-</td>
-                        <td class="batch-selection-table__cell batch-selection-table__cell--available text-sm text-[var(--color-text-muted)]">-</td>
-                        <td class="batch-selection-table__cell batch-selection-table__cell--quantity text-xs text-[var(--color-text-muted)]">
+                        <td class="px-3 py-2 text-sm text-[var(--color-text-muted)] border-e border-b border-[var(--color-border)] align-middle last:border-e-0">-</td>
+                        <td class="whitespace-nowrap px-3 py-2 text-sm text-[var(--color-text-muted)] border-e border-b border-[var(--color-border)] align-middle last:border-e-0">-</td>
+                        <td class="whitespace-nowrap px-3 py-2 text-xs text-[var(--color-text-muted)] border-e border-b border-[var(--color-border)] align-middle last:border-e-0">
                           {{ 'weaponSupplyReview.noItemsInBatch' | translate }}
                         </td>
                       </tr>
