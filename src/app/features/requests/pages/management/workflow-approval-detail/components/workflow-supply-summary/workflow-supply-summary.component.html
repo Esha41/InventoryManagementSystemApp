@@ -41,7 +41,7 @@
         </span>
         <p class="text-sm text-[var(--color-text)] font-medium">{{ summary.supplyDate | appDateTime }}</p>
       </div>
-      <div *ngIf="summary.fulfillmentStatus > 0" class="space-y-1">
+      <div *ngIf="showFulfillmentStatusRow()" class="space-y-1">
         <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
           {{ 'workflowApprovalDetail.workflowSupplySummary.fulfillmentStatus' | translate }}
         </span>
@@ -49,32 +49,131 @@
       </div>
     </div>
 
-    <div *ngIf="summary.receiverName || summary.receiverRankName || summary.receiverMilitaryId"
+    <!-- Ammunition / explosives lines (non-weapon) -->
+    <div *ngIf="isAmmoPhase()">
+      <div *ngIf="summary.lines?.length" class="overflow-x-auto rounded-lg border border-[var(--color-border)]">
+        <table class="w-full border-collapse text-sm">
+          <thead class="bg-[var(--color-background-muted)]">
+            <tr>
+              <th class="px-4 py-2.5 text-start text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+                {{ 'workflowApprovalDetail.workflowSupplySummary.colItemName' | translate }}</th>
+              <th class="px-4 py-2.5 text-start text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+                {{ 'workflowApprovalDetail.workflowSupplySummary.colItemNo' | translate }}</th>
+              <th class="px-4 py-2.5 text-end text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+                {{ 'workflowApprovalDetail.workflowSupplySummary.colRequested' | translate }}</th>
+              <th class="px-4 py-2.5 text-end text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+                {{ 'workflowApprovalDetail.workflowSupplySummary.colApproved' | translate }}</th>
+              <th class="px-4 py-2.5 text-end text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+                {{ suppliedColumnKey() | translate }}</th>
+              <th class="px-4 py-2.5 text-end text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+                {{ 'workflowApprovalDetail.workflowSupplySummary.colLot' | translate }}</th>
+              <th class="px-4 py-2.5 text-start text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+                {{ 'workflowApprovalDetail.workflowSupplySummary.colDepot' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let group of ammoGroups; let gi = index">
+              <tr *ngFor="let line of group.splits; let ri = index"
+                class="border-b border-[var(--color-border)] transition-colors last:border-b-0 hover:bg-[var(--color-background-hover)]/50"
+                [ngClass]="{ 'border-t-2 border-[var(--color-border)]': gi > 0 && ri === 0 }">
+                <td *ngIf="ri === 0" [attr.rowspan]="group.splits.length"
+                  class="h-full align-middle border-r border-[var(--color-border)] bg-[var(--color-background-muted)]/40 px-4 py-3">
+                  <span class="block max-w-xs font-semibold leading-snug text-[var(--color-text)]" [appTableClampTooltip]="group.itemName">{{ group.itemName }}</span>
+                </td>
+                <td *ngIf="ri === 0" [attr.rowspan]="group.splits.length"
+                  class="h-full align-middle whitespace-nowrap border-r border-[var(--color-border)] bg-[var(--color-background-muted)]/40 px-4 py-3 text-start text-sm font-medium tabular-nums text-[var(--color-text)]">
+                  <span class="inline-flex min-h-[2.5rem] items-center">{{ group.itemNo || '—' }}</span>
+                </td>
+                <td *ngIf="ri === 0" [attr.rowspan]="group.splits.length"
+                  class="h-full align-middle border-r border-[var(--color-border)] bg-[var(--color-background-muted)]/40 px-4 py-3 text-end text-sm font-semibold tabular-nums text-[var(--color-text)]">
+                  <span class="inline-flex min-h-[2.5rem] w-full items-center justify-end">{{ group.requestedQuantity }}</span>
+                </td>
+                <td *ngIf="ri === 0" [attr.rowspan]="group.splits.length"
+                  class="h-full align-middle border-r border-[var(--color-border)] bg-[var(--color-background-muted)]/40 px-4 py-3 text-end text-sm font-semibold tabular-nums text-[var(--color-text)]">
+                  <span class="inline-flex min-h-[2.5rem] w-full items-center justify-end">{{ group.approvedQuantity }}</span>
+                </td>
+                <td class="align-middle px-4 py-2.5 text-end text-sm font-semibold tabular-nums text-[var(--color-text)]"
+                  [ngClass]="ri > 0 ? 'border-t border-[var(--color-border)]' : ''">
+                  {{ line.suppliedQuantity }}
+                </td>
+                <td class="align-middle px-4 py-2.5 text-end text-sm tabular-nums text-[var(--color-text)]"
+                  [ngClass]="ri > 0 ? 'border-t border-[var(--color-border)]' : ''">
+                  {{ line.lot || '—' }}
+                </td>
+                <td class="min-w-0 align-middle px-4 py-2.5 text-start text-sm text-[var(--color-text)]"
+                  [ngClass]="ri > 0 ? 'border-t border-[var(--color-border)]' : ''">
+                  <span class="break-words">{{ depotDisplay(line) }}</span>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+      <p *ngIf="!summary.lines?.length" class="text-sm text-[var(--color-text-muted)] py-2">
+        {{ 'workflowApprovalDetail.workflowSupplySummary.noLines' | translate }}
+      </p>
+    </div>
+
+    <div *ngIf="showReceiverSection()"
       class="rounded-lg border border-[var(--color-border)] p-4 bg-[var(--color-background-muted)]/50">
       <h3 class="text-sm font-semibold text-[var(--color-text)] mb-3">
         {{ 'workflowApprovalDetail.workflowSupplySummary.receiver' | translate }}
       </h3>
+
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
         <div *ngIf="summary.receiverName">
-          <span class="text-[var(--color-text-muted)]">{{ 'workflowApprovalDetail.receiverName' | translate }}: </span>
-          <span class="text-[var(--color-text)] font-medium">{{ summary.receiverName }}</span>
+          <span class="text-sm text-[var(--color-text-muted)]">{{ 'workflowApprovalDetail.receiverName' | translate }}: </span>
+          <span class="text-sm text-[var(--color-text)] font-medium">{{ summary.receiverName }}</span>
         </div>
         <div *ngIf="summary.receiverRankName">
-          <span class="text-[var(--color-text-muted)]">{{ 'workflowApprovalDetail.workflowSupplySummary.receiverRank' | translate }}: </span>
-          <span class="text-[var(--color-text)] font-medium">{{ summary.receiverRankName }}</span>
+          <span class="text-sm text-[var(--color-text-muted)]">{{ 'workflowApprovalDetail.workflowSupplySummary.receiverRank' | translate }}: </span>
+          <span class="text-sm text-[var(--color-text)] font-medium">{{ summary.receiverRankName }}</span>
         </div>
         <div *ngIf="summary.receiverMilitaryId">
-          <span class="text-[var(--color-text-muted)]">{{ 'workflowApprovalDetail.workflowSupplySummary.receiverMilitaryId' | translate }}: </span>
-          <span class="text-[var(--color-text)] font-medium">{{ summary.receiverMilitaryId }}</span>
+          <span class="text-sm text-[var(--color-text-muted)]">{{ 'workflowApprovalDetail.workflowSupplySummary.receiverMilitaryId' | translate }}: </span>
+          <span class="text-sm text-[var(--color-text)] font-medium">{{ summary.receiverMilitaryId }}</span>
+        </div>
+      </div>
+
+      <div *ngIf="isOrderCompleted() && signatureFiles().length > 0" class="mt-4 pt-4 border-t border-[var(--color-border)] space-y-2">
+        <span class="block text-sm font-medium text-[var(--color-text-muted)]">
+          {{ 'workflowApprovalDetail.topazSignature.label' | translate }}
+        </span>
+        <div *ngFor="let file of signatureFiles()" class="space-y-2">
+          <img *ngIf="signaturePreviewUrls.get(file.id) as previewUrl"
+            [src]="previewUrl"
+            [alt]="file.originalName || file.fileName"
+            class="max-h-32 rounded-lg border border-[var(--color-border)] bg-white object-contain">
+          <button type="button" (click)="downloadFile(file)"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[var(--color-info)] bg-[var(--color-info)]/10 rounded-lg hover:bg-[var(--color-info)]/20 transition-colors">
+            <lucide-angular [img]="Download" class="h-4 w-4"></lucide-angular>
+            {{ 'workflowApprovalDetail.download' | translate }}
+          </button>
         </div>
       </div>
     </div>
 
-    <div *ngIf="summary.notes" class="space-y-1">
-      <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
-        {{ 'workflowApprovalDetail.workflowSupplySummary.supplyNotes' | translate }}
-      </span>
-      <p class="text-sm text-[var(--color-text)] whitespace-pre-wrap">{{ summary.notes }}</p>
+    <div *ngIf="isOrderCompleted() && attachmentFiles().length > 0" class="space-y-3">
+      <div class="flex items-center gap-2">
+        <lucide-angular [img]="Paperclip" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
+        <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+          {{ 'workflowApprovalDetail.attachments' | translate }}
+        </span>
+      </div>
+      <div class="space-y-2">
+        <div *ngFor="let file of attachmentFiles()"
+          class="flex items-center justify-between gap-3 p-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-background-muted)]/50">
+          <div class="flex min-w-0 flex-1 items-center gap-2">
+            <lucide-angular [img]="FileText" class="h-4 w-4 flex-shrink-0 text-[var(--color-info)]"></lucide-angular>
+            <p class="truncate text-sm font-medium text-[var(--color-text)]">{{ file.originalName || file.fileName }}</p>
+          </div>
+          <button type="button" (click)="downloadFile(file)"
+            class="inline-flex shrink-0 items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[var(--color-info)] bg-[var(--color-info)]/10 rounded-lg hover:bg-[var(--color-info)]/20 transition-colors">
+            <lucide-angular [img]="Download" class="h-4 w-4"></lucide-angular>
+            {{ 'workflowApprovalDetail.download' | translate }}
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Weapon order: depot/batch selection table (shown in Selection and Supplied phases) -->
@@ -149,71 +248,11 @@
       </p>
     </div>
 
-    <!-- Ammunition / explosives lines (non-weapon) -->
-    <div *ngIf="isAmmoPhase()">
-      <div *ngIf="summary.lines?.length" class="overflow-x-auto rounded-lg border border-[var(--color-border)]">
-        <table class="w-full border-collapse text-sm">
-          <thead class="bg-[var(--color-background-muted)]">
-            <tr>
-              <th class="px-4 py-2.5 text-start text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
-                {{ 'workflowApprovalDetail.workflowSupplySummary.colItemName' | translate }}</th>
-              <th class="px-4 py-2.5 text-start text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
-                {{ 'workflowApprovalDetail.workflowSupplySummary.colItemNo' | translate }}</th>
-              <th class="px-4 py-2.5 text-end text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
-                {{ 'workflowApprovalDetail.workflowSupplySummary.colRequested' | translate }}</th>
-              <th class="px-4 py-2.5 text-end text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
-                {{ 'workflowApprovalDetail.workflowSupplySummary.colApproved' | translate }}</th>
-              <th class="px-4 py-2.5 text-end text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
-                {{ suppliedColumnKey() | translate }}</th>
-              <th class="px-4 py-2.5 text-end text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
-                {{ 'workflowApprovalDetail.workflowSupplySummary.colLot' | translate }}</th>
-              <th class="px-4 py-2.5 text-start text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
-                {{ 'workflowApprovalDetail.workflowSupplySummary.colDepot' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <ng-container *ngFor="let group of ammoGroups; let gi = index">
-              <tr *ngFor="let line of group.splits; let ri = index"
-                class="border-b border-[var(--color-border)] transition-colors last:border-b-0 hover:bg-[var(--color-background-hover)]/50"
-                [ngClass]="{ 'border-t-2 border-[var(--color-border)]': gi > 0 && ri === 0 }">
-                <!-- Shared request line: vertically centered in rowspan -->
-                <td *ngIf="ri === 0" [attr.rowspan]="group.splits.length"
-                  class="h-full align-middle border-r border-[var(--color-border)] bg-[var(--color-background-muted)]/40 px-4 py-3">
-                  <span class="block max-w-xs font-semibold leading-snug text-[var(--color-text)]" [appTableClampTooltip]="group.itemName">{{ group.itemName }}</span>
-                </td>
-                <td *ngIf="ri === 0" [attr.rowspan]="group.splits.length"
-                  class="h-full align-middle whitespace-nowrap border-r border-[var(--color-border)] bg-[var(--color-background-muted)]/40 px-4 py-3 text-start text-sm font-medium tabular-nums text-[var(--color-text)]">
-                  <span class="inline-flex min-h-[2.5rem] items-center">{{ group.itemNo || '—' }}</span>
-                </td>
-                <td *ngIf="ri === 0" [attr.rowspan]="group.splits.length"
-                  class="h-full align-middle border-r border-[var(--color-border)] bg-[var(--color-background-muted)]/40 px-4 py-3 text-end text-sm font-semibold tabular-nums text-[var(--color-text)]">
-                  <span class="inline-flex min-h-[2.5rem] w-full items-center justify-end">{{ group.requestedQuantity }}</span>
-                </td>
-                <td *ngIf="ri === 0" [attr.rowspan]="group.splits.length"
-                  class="h-full align-middle border-r border-[var(--color-border)] bg-[var(--color-background-muted)]/40 px-4 py-3 text-end text-sm font-semibold tabular-nums text-[var(--color-text)]">
-                  <span class="inline-flex min-h-[2.5rem] w-full items-center justify-end">{{ group.approvedQuantity }}</span>
-                </td>
-                <!-- Per split: consistent row height, subtle separator between splits -->
-                <td class="align-middle px-4 py-2.5 text-end text-sm font-semibold tabular-nums text-[var(--color-text)]"
-                  [ngClass]="ri > 0 ? 'border-t border-[var(--color-border)]' : ''">
-                  {{ line.suppliedQuantity }}
-                </td>
-                <td class="align-middle px-4 py-2.5 text-end text-sm tabular-nums text-[var(--color-text)]"
-                  [ngClass]="ri > 0 ? 'border-t border-[var(--color-border)]' : ''">
-                  {{ line.lot || '—' }}
-                </td>
-                <td class="min-w-0 align-middle px-4 py-2.5 text-start text-sm text-[var(--color-text)]"
-                  [ngClass]="ri > 0 ? 'border-t border-[var(--color-border)]' : ''">
-                  <span class="break-words">{{ depotDisplay(line) }}</span>
-                </td>
-              </tr>
-            </ng-container>
-          </tbody>
-        </table>
-      </div>
-      <p *ngIf="!summary.lines?.length" class="text-sm text-[var(--color-text-muted)] py-2">
-        {{ 'workflowApprovalDetail.workflowSupplySummary.noLines' | translate }}
-      </p>
+    <div *ngIf="summary.notes" class="space-y-1">
+      <span class="text-sm font-medium text-[var(--color-text-muted)]">
+        {{ notesLabelKey() | translate }}
+      </span>
+      <p class="text-sm text-[var(--color-text)] whitespace-pre-wrap">{{ summary.notes }}</p>
     </div>
   </div>
 </div>

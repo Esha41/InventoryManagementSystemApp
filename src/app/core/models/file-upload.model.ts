@@ -40,3 +40,15 @@ export interface FileUploadDto {
     attachmentRequirementNameEn?: string | null;
     attachmentRequirementNameAr?: string | null;
 }
+
+export const ORDER_RECEIVER_SIGNATURE_SLOT_NAME_EN = 'Order Receiver Signature';
+
+/** True when the file is tagged as the order receiver signature slot, or legacy filename. */
+export function isOrderReceiverSignatureFile(file: FileUploadDto): boolean {
+    const slotName = file.attachmentRequirementNameEn?.trim();
+    if (slotName === ORDER_RECEIVER_SIGNATURE_SLOT_NAME_EN) {
+        return true;
+    }
+    const originalName = (file.originalName || file.fileName || '').toLowerCase();
+    return originalName === 'receiver-signature.png';
+}

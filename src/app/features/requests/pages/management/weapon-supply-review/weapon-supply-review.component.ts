@@ -510,11 +510,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
     this.submitting = true;
     this.cdr.markForCheck();
 
-    const filesToSubmit = this.signatureFile
-      ? [this.signatureFile, ...this.selectedFiles]
-      : [...this.selectedFiles];
-
-    this.reviewService.submitSupply(dto, filesToSubmit)
+    this.reviewService.submitSupply(dto, this.selectedFiles, this.signatureFile)
       .pipe(
         takeUntil(this.destroy$),
         catchError((error) => {

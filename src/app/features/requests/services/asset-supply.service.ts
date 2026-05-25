@@ -216,10 +216,13 @@ export class AssetSupplyService {
   }
 
   /**
-   * Create and submit a new asset supply with file attachments (multipart/form-data).
-   * Mirrors the SupplyController.Submit pattern.
+   * Create and submit a new asset supply with receiver signature and optional supporting files.
    */
-  createAndSubmit(dto: CreateAssetSupplyDto, files: File[]): Observable<number> {
+  createAndSubmit(
+    dto: CreateAssetSupplyDto,
+    otherFiles: File[],
+    receiverSignatureFile?: File | null
+  ): Observable<number> {
     this.config.log('Creating asset supply', dto);
 
     const formData = new FormData();
@@ -252,9 +255,11 @@ export class AssetSupplyService {
       }
     });
 
-    // Files
-    files.forEach(file => {
-      formData.append('files', file);
+    if (receiverSignatureFile?.size) {
+      formData.append('receiverSignatureFile', receiverSignatureFile);
+    }
+    otherFiles.forEach(file => {
+      formData.append('otherFiles', file);
     });
 
     return this.apiService.post<number>(`${this.baseEndpoint}`, formData).pipe(

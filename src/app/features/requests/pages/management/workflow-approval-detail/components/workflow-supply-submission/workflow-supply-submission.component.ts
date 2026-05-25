@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, User, AlertTriangle, FileText, Download } from 'lucide-angular';
-import { FileUploadDto } from '@models/file-upload.model';
+import { FileUploadDto, isOrderReceiverSignatureFile } from '@models/file-upload.model';
 import { Subject, takeUntil } from 'rxjs';
 import { SupplyDto } from '@requests/services/supply.service';
 import { LookupItem } from '@services/lookup.service';
@@ -191,6 +191,14 @@ export class WorkflowSupplySubmissionComponent implements OnInit, OnDestroy, OnC
     this.existingFiles = this.supplyData?.files?.length ? [...this.supplyData.files] : [];
   }
 
+  get existingSignatureFiles(): FileUploadDto[] {
+    return this.existingFiles.filter(f => isOrderReceiverSignatureFile(f));
+  }
+
+  get existingSupportingFiles(): FileUploadDto[] {
+    return this.existingFiles.filter(f => !isOrderReceiverSignatureFile(f));
+  }
+
   getLocalizedValue(en: string | undefined, ar: string | undefined): string {
     return getLocalizedValueHelper(en, ar, this.translateService);
   }
@@ -261,7 +269,6 @@ export class WorkflowSupplySubmissionComponent implements OnInit, OnDestroy, OnC
       return;
     }
 
-    // Validate that at least one file is selected
     if (!this.selectedFiles || this.selectedFiles.length === 0) {
       this.translateService.get(['toast.error', 'workflowApprovalDetail.errors.filesRequired']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
         this.toastService.error(

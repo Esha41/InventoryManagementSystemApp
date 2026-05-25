@@ -190,12 +190,14 @@ export class SupplyService {
   }
 
   /**
-   * Submit a supply (requires receiver information and files)
-   * @param id Supply ID
-   * @param dto Submission data
-   * @param files File attachments (at least one required)
+   * Submit a supply (requires receiver information and supporting files)
    */
-  submit(id: number, dto: SubmitSupplyDto, files: File[]): Observable<boolean> {
+  submit(
+    id: number,
+    dto: SubmitSupplyDto,
+    otherFiles: File[],
+    receiverSignatureFile?: File | null
+  ): Observable<boolean> {
     this.config.log(`Submitting supply ${id}`, dto);
 
     const formData = new FormData();
@@ -203,8 +205,11 @@ export class SupplyService {
     if (dto.notes) {
       formData.append('Notes', dto.notes);
     }
-    files.forEach((file) => {
-      formData.append('files', file);
+    if (receiverSignatureFile?.size) {
+      formData.append('receiverSignatureFile', receiverSignatureFile);
+    }
+    otherFiles.forEach((file) => {
+      formData.append('otherFiles', file);
     });
 
     return this.apiService.post<boolean>(`${this.endpoint}/${id}/submit`, formData);

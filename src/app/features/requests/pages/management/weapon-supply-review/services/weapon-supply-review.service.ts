@@ -260,8 +260,12 @@ export class WeaponSupplyReviewService {
         };
     }
 
-    submitSupply(dto: CreateAssetSupplyDto, files: File[]): Observable<number> {
-        return this.assetSupplyService.createAndSubmit(dto, files);
+    submitSupply(
+        dto: CreateAssetSupplyDto,
+        otherFiles: File[],
+        receiverSignatureFile?: File | null
+    ): Observable<number> {
+        return this.assetSupplyService.createAndSubmit(dto, otherFiles, receiverSignatureFile);
     }
 
     searchAssetBySerial(serialNumber: string): Observable<AssetDto | null> {

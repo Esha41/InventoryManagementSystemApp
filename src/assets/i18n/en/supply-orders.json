@@ -287,7 +287,7 @@
     "batchQuantityMismatch": "{{itemName}} under policy number {{batchNumber}}: expected {{expected}} but have {{actual}}",
     "clickApplyToLoadAssets": "Click Apply to load assets",
     "clickApplyToLoadAssetsHint": "Configure filters above (serial numbers only, limit count) and click Apply to fetch assets from the selected depots and policy numbers.",
-    "fileAttachments": "File Attachments",
+    "fileAttachments": "Attachments",
     "fileAttachmentsHint": "Allowed formats: PDF, DOCX.",
     "filesRequired": "At least one file attachment is required",
     "fileUploadFailed": "Failed to upload file attachments",

@@ -165,6 +165,7 @@ export interface WorkflowSupplySummaryDto {
   lines: WorkflowSupplySummaryLineDto[];
   selectionLines?: WeaponSelectionLineDto[];
   weaponLines?: WeaponSuppliedLineDto[];
+  files?: FileUploadDto[];
 }
 
 export interface SupplyDto {

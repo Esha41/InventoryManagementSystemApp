@@ -57,7 +57,7 @@
         </app-dropdown>
       </div>
 
-      <!-- File Upload -->
+      <!-- Supporting documents -->
       <div>
         <span class="block text-sm font-semibold text-[var(--color-text)] mb-2">
           {{ 'workflowApprovalDetail.fileAttachments' | translate }} <span
@@ -107,7 +107,7 @@
       </div>
     </div>
 
-    <!-- Topaz E-Signature (optional; component shows unavailable state when SigWeb is missing) -->
+    <!-- Topaz E-Signature (optional) -->
     <div>
       <span class="block text-sm font-semibold text-[var(--color-text)] mb-1">
         {{ 'workflowApprovalDetail.topazSignature.label' | translate }}
@@ -146,12 +146,32 @@
   <!-- Existing Files Section (shown when supply exists, regardless of submission status) -->
   <div *ngIf="supplyId && supplyData && existingFiles.length > 0"
     class="space-y-6 mt-6 pt-6 border-t border-[var(--color-border)]">
-    <div class="space-y-4">
+    <div *ngIf="existingSignatureFiles.length > 0" class="space-y-4">
+      <span class="block text-sm font-semibold text-[var(--color-text)]">
+        {{ 'workflowApprovalDetail.topazSignature.label' | translate }}
+      </span>
+
+      <div *ngFor="let file of existingSignatureFiles"
+        class="flex items-center justify-between p-3 bg-[var(--color-info)]/20 rounded-lg border border-[var(--color-info)]/40">
+        <div class="flex-1 min-w-0 flex items-center gap-2">
+          <lucide-angular [img]="FileText" class="h-4 w-4 text-[var(--color-info)] flex-shrink-0"></lucide-angular>
+          <p class="text-sm font-medium text-[var(--color-text)] truncate">{{ file.originalName || file.fileName }}</p>
+        </div>
+        <button type="button" (click)="downloadFile(file.id, file.originalName || file.fileName)"
+          [disabled]="isSubmittingSupply || isUploadingAdditionalFiles"
+          class="ms-3 px-3 py-1.5 text-sm font-medium text-[var(--color-info)] bg-[var(--color-info)]/20 rounded-lg hover:bg-[var(--color-info)]/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center">
+          <lucide-angular [img]="Download" class="h-4 w-4 me-1"></lucide-angular>
+          {{ 'workflowApprovalDetail.download' | translate }}
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="existingSupportingFiles.length > 0" class="space-y-4">
       <span class="block text-sm font-semibold text-[var(--color-text)]">
         {{ 'workflowApprovalDetail.existingFiles' | translate }}
       </span>
 
-      <div *ngFor="let file of existingFiles"
+      <div *ngFor="let file of existingSupportingFiles; let i = index"
         class="flex items-center justify-between p-3 bg-[var(--color-info)]/20 rounded-lg border border-[var(--color-info)]/40">
         <div class="flex-1 min-w-0 flex items-center gap-2">
           <lucide-angular [img]="FileText" class="h-4 w-4 text-[var(--color-info)] flex-shrink-0"></lucide-angular>
