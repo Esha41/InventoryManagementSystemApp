@@ -14,6 +14,7 @@ import { takeUntil } from 'rxjs/operators';
 import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { TranslationService } from '@services/translation.service';
+import { SidebarRailTooltipDirective } from '@shared/ui/sidebar-rail-tooltip/sidebar-rail-tooltip.directive';
 
 interface SettingsNavItem {
   labelKey: string;
@@ -27,7 +28,7 @@ interface SettingsNavItem {
 @Component({
   selector: 'app-settings-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslateModule, LucideAngularModule],
+  imports: [CommonModule, RouterModule, TranslateModule, LucideAngularModule, SidebarRailTooltipDirective],
   templateUrl: './settings-layout.component.html',
   styleUrls: ['./settings-layout.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,

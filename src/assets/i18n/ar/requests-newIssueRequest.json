@@ -30,8 +30,7 @@
       "compatibleWeapons": "متوافقة",
       "weaponListScope": "نطاق قائمة الأسلحة",
       "selectOptionHint": "اختر متوافقة، أو عرض جميع الأسلحة، أو أخرى لربط سلاح ببند الذخيرة هذا.",
-      "attachments": "مرفقات ربط الأسلحة",
-      "attachmentsHint": "مطلوبة عند استخدام أي بند سلاحاً غير مدرج في المعامل."
+      "weaponRequired": "السلاح مطلوب"
     },
     "selectOrderSource": "اختر نوع الصرف",
     "selectOrderSourceDescription": "اختر ما إذا كنت تريد الطلب من مقرر وحدتك أو خارجه",

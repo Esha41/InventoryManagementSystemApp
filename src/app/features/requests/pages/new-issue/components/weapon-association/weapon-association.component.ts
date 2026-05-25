@@ -273,6 +273,15 @@ export class WeaponAssociationComponent implements OnChanges {
     );
   }
 
+  get showAssociationValidation(): boolean {
+    return (
+      !this.loadingWeapons &&
+      !this.weaponLoadError &&
+      this.ammunitionItems.length > 0 &&
+      !this.canProceed
+    );
+  }
+
   private applyCatalogSelection(ammo: Cartridge, uniq: number[]): void {
     const prev = this.catalogWeaponIdsFor(ammo.id);
     if (sameWeaponIdSelection(prev, uniq)) return;
