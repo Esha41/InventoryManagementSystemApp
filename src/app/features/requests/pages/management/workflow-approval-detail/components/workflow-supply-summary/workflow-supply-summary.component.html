@@ -41,12 +41,6 @@
         </span>
         <p class="text-sm text-[var(--color-text)] font-medium">{{ summary.supplyDate | appDateTime }}</p>
       </div>
-      <div *ngIf="summary.submissionStatus > 0" class="space-y-1">
-        <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
-          {{ 'workflowApprovalDetail.workflowSupplySummary.submissionStatus' | translate }}
-        </span>
-        <p class="text-sm text-[var(--color-text)] font-medium">{{ submissionLabelKey(summary.submissionStatus) | translate }}</p>
-      </div>
       <div *ngIf="summary.fulfillmentStatus > 0" class="space-y-1">
         <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
           {{ 'workflowApprovalDetail.workflowSupplySummary.fulfillmentStatus' | translate }}

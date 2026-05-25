@@ -33,6 +33,7 @@ import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.co
 import { defaultPageSize } from '@constants/app.constants';
 import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
+import { TopazSignatureComponent } from '@components/topaz-signature/topaz-signature.component';
 
 @Component({
   selector: 'app-weapon-supply-review',
@@ -48,7 +49,8 @@ import { BackendAuthService } from '@services/backend-auth.service';
     FocusOnInitDirective,
     TableClampTooltipDirective,
     PaginationComponent,
-    RowsPerPageComponent
+    RowsPerPageComponent,
+    TopazSignatureComponent,
   ],
   providers: [
     WeaponSupplyReviewService,
@@ -91,6 +93,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
 
   // File upload
   selectedFiles: File[] = [];
+  signatureFile: File | null = null;
   private fileInputElement: HTMLInputElement | null = null;
   getFileSize = getFileSizeFromFile;
 
@@ -467,6 +470,11 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
+  onSignatureChanged(file: File | null): void {
+    this.signatureFile = file;
+    this.cdr.markForCheck();
+  }
+
   // ==================== SUBMISSION ====================
 
   canSubmit(): boolean {
@@ -502,7 +510,11 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
     this.submitting = true;
     this.cdr.markForCheck();
 
-    this.reviewService.submitSupply(dto, this.selectedFiles)
+    const filesToSubmit = this.signatureFile
+      ? [this.signatureFile, ...this.selectedFiles]
+      : [...this.selectedFiles];
+
+    this.reviewService.submitSupply(dto, filesToSubmit)
       .pipe(
         takeUntil(this.destroy$),
         catchError((error) => {
@@ -518,6 +530,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
         }
         this.submitting = false;
         this.selectedFiles = [];
+        this.signatureFile = null;
         this.cdr.markForCheck();
         this.toastService.success(
           this.translate.instant('weaponSupplyReview.submitSuccess'),

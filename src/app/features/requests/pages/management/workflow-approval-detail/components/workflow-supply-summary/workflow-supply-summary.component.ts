@@ -115,13 +115,6 @@ export class WorkflowSupplySummaryComponent implements OnInit, OnChanges {
     return !!this.summary?.weaponLines?.length;
   }
 
-  submissionLabelKey(status: number): string {
-    if (status === 2) {
-      return 'workflowApprovalDetail.workflowSupplySummary.submissionSubmitted';
-    }
-    return 'workflowApprovalDetail.workflowSupplySummary.submissionDraft';
-  }
-
   fulfillmentLabelKey(status: number): string {
     if (status === 2) {
       return 'workflowApprovalDetail.workflowSupplySummary.fulfillmentFull';

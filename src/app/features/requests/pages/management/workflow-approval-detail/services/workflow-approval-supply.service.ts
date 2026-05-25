@@ -17,6 +17,7 @@ import { ErrorHandler } from '@utils/error-handler.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
 import { validateFile, showFileValidationErrors } from '@utils/file.utils';
+import { TOPAZ_SIGNATURE_FILENAME } from '@services/topaz.service';
 
 export interface ReceiverInfo {
   receiverEmployeeId: number | null;
@@ -160,7 +161,8 @@ export class WorkflowApprovalSupplyService {
     supplyId: number,
     receiverInfo: ReceiverInfo,
     files: File[],
-    destroy$: Subject<void>
+    destroy$: Subject<void>,
+    signatureFile?: File | null
   ): Observable<void> {
     return new Observable(observer => {
       const submitDto: SubmitSupplyDto = {
@@ -168,7 +170,9 @@ export class WorkflowApprovalSupplyService {
         notes: receiverInfo.notes?.trim() || undefined
       };
 
-      this.supplyService.submit(supplyId, submitDto, files)
+      const filesToSubmit = this.withOptionalSignature(files, signatureFile);
+
+      this.supplyService.submit(supplyId, submitDto, filesToSubmit)
         .pipe(takeUntil(destroy$))
         .subscribe({
           next: () => {
@@ -182,6 +186,18 @@ export class WorkflowApprovalSupplyService {
           }
         });
     });
+  }
+
+  private withOptionalSignature(files: File[], signatureFile?: File | null): File[] {
+    if (!signatureFile?.size) {
+      return files;
+    }
+
+    const namedSignature = signatureFile.name === TOPAZ_SIGNATURE_FILENAME
+      ? signatureFile
+      : new File([signatureFile], TOPAZ_SIGNATURE_FILENAME, { type: signatureFile.type || 'image/png' });
+
+    return [namedSignature, ...files];
   }
 
   /**

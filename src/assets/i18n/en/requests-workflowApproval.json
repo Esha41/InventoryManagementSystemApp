@@ -237,5 +237,19 @@
     ,"delegationByRoleLabel": "By"
     ,"performedAsRole": "Performed as"
     ,"urgentAttentionRequired": "Urgent attention required"
+    ,"topazSignature": {
+      "label": "Receiver Signature",
+      "optional": "Optional",
+      "detecting": "Checking for signature pad...",
+      "notAvailable": "Topaz SigWeb is not installed on this PC. Install SigWeb to capture signatures.",
+      "padNotConnected": "No Topaz signature pad detected. Connect the pad via USB — the page will update automatically.",
+      "recheckButton": "Check again",
+      "captureButton": "Capture Signature",
+      "capturing": "Pad is active — sign on the pad, then click Done",
+      "doneButton": "Done",
+      "clearButton": "Clear / Redo",
+      "captured": "Signature captured",
+      "noSignaturePoints": "No signature detected. Please sign on the pad before clicking Done."
+    }
   }
 }

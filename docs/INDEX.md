@@ -21,6 +21,7 @@
 ## For Development
 
 - [onboarding.md](onboarding.md) - Setup, workflow, conventions, common pitfalls
+- [topaz-signature-setup.md](topaz-signature-setup.md) - Topaz SigWeb install and signature capture at supply desk
 - [routing.md](routing.md) - Adding routes, using guards, navigation
 - [modules.md](modules.md) - Creating modules, module structure
 - [environment.md](environment.md) - Configuring different environments

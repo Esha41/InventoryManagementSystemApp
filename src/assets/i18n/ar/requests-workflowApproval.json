@@ -238,5 +238,19 @@
     ,"delegationByRoleLabel": "بواسطة"
     ,"performedAsRole": "تم التنفيذ بواسطة"
     ,"urgentAttentionRequired": "يستوجب اهتماماً عاجلاً"
+    ,"topazSignature": {
+      "label": "توقيع المستلم",
+      "optional": "اختياري",
+      "detecting": "جاري التحقق من لوحة التوقيع...",
+      "notAvailable": "برنامج توباز SigWeb غير مثبت على هذا الجهاز. يرجى تثبيت SigWeb لالتقاط التوقيع.",
+      "padNotConnected": "لم يتم اكتشاف لوحة توقيع توباز. وصّل اللوحة عبر USB — ستتحدث الصفحة تلقائياً.",
+      "recheckButton": "إعادة التحقق",
+      "captureButton": "التقاط التوقيع",
+      "capturing": "اللوحة نشطة — وقّع على اللوحة ثم انقر تم",
+      "doneButton": "تم",
+      "clearButton": "مسح / إعادة",
+      "captured": "تم التقاط التوقيع",
+      "noSignaturePoints": "لم يتم اكتشاف توقيع. يرجى التوقيع على اللوحة قبل النقر على تم."
+    }
   }
 }

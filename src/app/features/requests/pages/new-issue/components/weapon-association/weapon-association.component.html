@@ -315,14 +315,11 @@
     *ngIf="requiresAttachments"
     class="space-y-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4 shadow-sm sm:p-6"
   >
-    <header class="space-y-1">
+    <header>
       <h3 class="text-base font-semibold text-[var(--color-text)] sm:text-lg">
         {{ 'newIssueRequest.weaponAssociation.attachments' | translate }}
         <span class="text-red-500">*</span>
       </h3>
-      <p class="text-sm text-[var(--color-text-muted)]">
-        {{ 'newIssueRequest.weaponAssociation.attachmentsHint' | translate }}
-      </p>
     </header>
 
     <div class="flex flex-wrap items-center gap-3">

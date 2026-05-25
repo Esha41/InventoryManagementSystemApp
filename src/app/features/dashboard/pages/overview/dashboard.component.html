@@ -212,8 +212,7 @@
           <tbody class="divide-y divide-[var(--color-border)]">
             <tr *ngFor="let card of visibleCards; trackBy: trackByCard"
               class="group hover:bg-[var(--color-background-muted)] transition-colors"
-              [class.action-required-highlight]="card.isMyTurn"
-              [ngClass]="card.priority === 3 ? 'border-s-[3px] border-s-red-400' : ''">
+              [class.action-required-highlight]="card.isMyTurn">
               <td class="px-5 py-3.5 text-sm font-medium text-[var(--color-text)] whitespace-nowrap">
                 {{ card.orders[0].orderId || card.title }}
               </td>

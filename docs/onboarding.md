@@ -301,8 +301,9 @@ console.log('Value:', myValue);  // Dev only (disabled in prod)
 1. **Code Comments**: Refer to inline documentation in key files
 2. **Architecture Doc**: See `docs/architecture.md`
 3. **Module Docs**: See `docs/modules/` for specific module guides
-4. **Git History**: `git log --oneline` shows recent changes
-5. **Teammate**: Ask on Slack/Teams
+4. **Topaz signature pad**: See `docs/topaz-signature-setup.md` for SigWeb install at supply desk
+5. **Git History**: `git log --oneline` shows recent changes
+6. **Teammate**: Ask on Slack/Teams
 
 ---
 

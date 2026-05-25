@@ -1,0 +1,113 @@
+<!-- Detecting state — silent spinner, no visual noise -->
+<ng-container *ngIf="isDetecting">
+  <div class="flex items-center gap-2 text-sm text-[var(--color-text-muted)] py-1">
+    <lucide-angular [img]="Loader" class="h-4 w-4 animate-spin"></lucide-angular>
+    <span>{{ 'workflowApprovalDetail.topazSignature.detecting' | translate }}</span>
+  </div>
+</ng-container>
+
+<!-- Unavailable — SigWeb software not installed -->
+<ng-container *ngIf="isUnavailable">
+  <div class="flex items-start gap-2 p-3 rounded-lg bg-[var(--color-background-active)] border border-[var(--color-border)]">
+    <lucide-angular [img]="PenLine" class="h-4 w-4 text-[var(--color-text-muted)] flex-shrink-0 mt-0.5"></lucide-angular>
+    <p class="text-sm text-[var(--color-text-muted)]">
+      {{ 'workflowApprovalDetail.topazSignature.notAvailable' | translate }}
+    </p>
+  </div>
+</ng-container>
+
+<!-- Pad unplugged — SigWeb OK but no USB pad detected -->
+<ng-container *ngIf="isNoPad">
+  <div class="flex items-start gap-2 p-3 rounded-lg bg-[var(--color-background-active)] border border-[var(--color-border)]">
+    <lucide-angular [img]="PenLine" class="h-4 w-4 text-[var(--color-text-muted)] flex-shrink-0 mt-0.5"></lucide-angular>
+    <div class="space-y-2">
+      <p class="text-sm text-[var(--color-text-muted)]">
+        {{ 'workflowApprovalDetail.topazSignature.padNotConnected' | translate }}
+      </p>
+      <button type="button"
+        (click)="recheckPad()"
+        class="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--color-brand)] hover:underline">
+        <lucide-angular [img]="RefreshCw" class="h-3 w-3"></lucide-angular>
+        {{ 'workflowApprovalDetail.topazSignature.recheckButton' | translate }}
+      </button>
+    </div>
+  </div>
+</ng-container>
+
+<!-- Idle — ready to capture -->
+<ng-container *ngIf="isIdle">
+  <button type="button"
+    (click)="startCapture()"
+    [disabled]="disabled"
+    class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-[var(--color-brand)] text-[var(--color-brand)] bg-transparent hover:bg-[var(--color-brand)]/5 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+    <lucide-angular [img]="PenLine" class="h-4 w-4"></lucide-angular>
+    {{ 'workflowApprovalDetail.topazSignature.captureButton' | translate }}
+  </button>
+</ng-container>
+
+<!-- Capturing — pad is live -->
+<ng-container *ngIf="isCapturing">
+  <div class="space-y-3">
+    <div class="flex items-center gap-2 p-3 rounded-lg bg-[var(--color-brand)]/5 border border-[var(--color-brand)]/30">
+      <span class="relative flex h-2.5 w-2.5 flex-shrink-0">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-brand)] opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-[var(--color-brand)]"></span>
+      </span>
+      <p class="text-sm font-medium text-[var(--color-brand)]">
+        {{ 'workflowApprovalDetail.topazSignature.capturing' | translate }}
+      </p>
+    </div>
+
+    <!-- No-points warning (shown after a failed Done attempt) -->
+    <div *ngIf="hasNoPoints"
+      class="flex items-center gap-2 p-2 rounded-lg bg-[var(--color-warning)]/10 border border-[var(--color-warning)]/30">
+      <p class="text-xs text-[var(--color-warning)]">
+        {{ 'workflowApprovalDetail.topazSignature.noSignaturePoints' | translate }}
+      </p>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button type="button"
+        (click)="confirmCapture()"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand-dark)] transition-all">
+        <lucide-angular [img]="CircleCheck" class="h-4 w-4"></lucide-angular>
+        {{ 'workflowApprovalDetail.topazSignature.doneButton' | translate }}
+      </button>
+      <button type="button"
+        (click)="clearSignature()"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-[var(--color-border)] text-[var(--color-text-muted)] hover:border-[var(--color-brand)] hover:text-[var(--color-brand)] transition-all">
+        <lucide-angular [img]="RefreshCw" class="h-4 w-4"></lucide-angular>
+        {{ 'workflowApprovalDetail.topazSignature.clearButton' | translate }}
+      </button>
+    </div>
+  </div>
+</ng-container>
+
+<!-- Captured — show preview + redo option -->
+<ng-container *ngIf="isCaptured">
+  <div class="space-y-3">
+    <div class="p-3 rounded-lg border border-[var(--color-success)]/40 bg-[var(--color-success)]/5">
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-1.5">
+          <lucide-angular [img]="CircleCheck" class="h-4 w-4 text-[var(--color-success)]"></lucide-angular>
+          <span class="text-xs font-medium text-[var(--color-success)]">
+            {{ 'workflowApprovalDetail.topazSignature.captured' | translate }}
+          </span>
+        </div>
+        <button type="button"
+          (click)="clearSignature()"
+          [disabled]="disabled"
+          class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border border-[var(--color-border)] text-[var(--color-text-muted)] hover:border-[var(--color-brand)] hover:text-[var(--color-brand)] disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+          <lucide-angular [img]="RefreshCw" class="h-3 w-3"></lucide-angular>
+          {{ 'workflowApprovalDetail.topazSignature.clearButton' | translate }}
+        </button>
+      </div>
+      <div class="bg-white rounded border border-[var(--color-border)] overflow-hidden">
+        <img *ngIf="signaturePreviewUrl"
+          [src]="signaturePreviewUrl"
+          alt="Signature preview"
+          class="w-full h-auto max-h-24 object-contain" />
+      </div>
+    </div>
+  </div>
+</ng-container>

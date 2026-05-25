@@ -2,7 +2,8 @@ import { Component, Input, Output, EventEmitter, OnDestroy, OnChanges, OnInit, S
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule, User, AlertTriangle } from 'lucide-angular';
+import { LucideAngularModule, User, AlertTriangle, FileText, Download } from 'lucide-angular';
+import { FileUploadDto } from '@models/file-upload.model';
 import { Subject, takeUntil } from 'rxjs';
 import { SupplyDto } from '@requests/services/supply.service';
 import { LookupItem } from '@services/lookup.service';
@@ -15,13 +16,14 @@ import { WorkflowApprovalStateService } from '../../services/workflow-approval-s
 import { WorkflowApprovalNavigationService } from '../../services/workflow-approval-navigation.service';
 import { ToastService } from '@services/toast.service';
 import { ConfigService } from '@services/config.service';
-import { getRankDisplayName as getRankDisplayNameHelper } from '../../utils/workflow-approval-helpers';
+import { getRankDisplayName as getRankDisplayNameHelper, getLocalizedValue as getLocalizedValueHelper } from '../../utils/workflow-approval-helpers';
 import { EmployeeService } from '@admin/services/employee.service';
 import { EmployeeDto } from '@core/models/asset.model';
 import { getCurrentLang, Localizable } from '@utils/localization.utils';
 import { EmployeeFormModalComponent } from '@admin/components/employee-form-modal/employee-form-modal.component';
 import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
+import { TopazSignatureComponent } from '@components/topaz-signature/topaz-signature.component';
 
 @Component({
   selector: 'app-workflow-supply-submission',
@@ -32,7 +34,8 @@ import { BackendAuthService } from '@services/backend-auth.service';
     TranslateModule,
     LucideAngularModule,
     DropdownComponent,
-    EmployeeFormModalComponent
+    EmployeeFormModalComponent,
+    TopazSignatureComponent,
   ],
   templateUrl: './workflow-supply-submission.component.html',
   styleUrls: ['./workflow-supply-submission.component.css'],
@@ -51,6 +54,8 @@ export class WorkflowSupplySubmissionComponent implements OnInit, OnDestroy, OnC
 
   readonly User = User;
   readonly AlertTriangle = AlertTriangle;
+  readonly FileText = FileText;
+  readonly Download = Download;
 
   // State from service
   get isLastApprovalCompleted(): boolean {
@@ -81,12 +86,14 @@ export class WorkflowSupplySubmissionComponent implements OnInit, OnDestroy, OnC
   employeeDropdownOptions: DropdownOption<number>[] = [];
   isEmployeeModalOpen = false;
 
+  signatureFile: File | null = null;
+
   isSubmittingSupply: boolean = false;
 
   // File upload for supply submission
   selectedFiles: File[] = [];
   fileInputElement: HTMLInputElement | null = null;
-  existingFiles: Array<{ id: number; fileName: string; originalName: string }> = [];
+  existingFiles: FileUploadDto[] = [];
 
   // Additional file upload after submission
   additionalFiles: File[] = [];
@@ -105,7 +112,7 @@ export class WorkflowSupplySubmissionComponent implements OnInit, OnDestroy, OnC
     private stateService: WorkflowApprovalStateService,
     private navigationService: WorkflowApprovalNavigationService,
     private employeeService: EmployeeService,
-    private authService: BackendAuthService
+    private authService: BackendAuthService,
   ) {}
 
   get canCreateEmployee(): boolean {
@@ -181,15 +188,11 @@ export class WorkflowSupplySubmissionComponent implements OnInit, OnDestroy, OnC
   }
 
   private loadExistingFiles(): void {
-    if (this.supplyData?.files && this.supplyData.files.length > 0) {
-      this.existingFiles = this.supplyData.files.map(f => ({
-        id: f.id,
-        fileName: f.fileName,
-        originalName: f.originalName
-      }));
-    } else {
-      this.existingFiles = [];
-    }
+    this.existingFiles = this.supplyData?.files?.length ? [...this.supplyData.files] : [];
+  }
+
+  getLocalizedValue(en: string | undefined, ar: string | undefined): string {
+    return getLocalizedValueHelper(en, ar, this.translateService);
   }
 
   isSupplySubmitted(): boolean {
@@ -225,6 +228,10 @@ export class WorkflowSupplySubmissionComponent implements OnInit, OnDestroy, OnC
     }
 
     return true;
+  }
+
+  onSignatureChanged(file: File | null): void {
+    this.signatureFile = file;
   }
 
   submitSupply(): void {
@@ -267,13 +274,19 @@ export class WorkflowSupplySubmissionComponent implements OnInit, OnDestroy, OnC
 
     this.isSubmittingSupply = true;
 
-    this.supplyServiceHelper.submitSupply(this.supplyId, this.receiverInfo, this.selectedFiles, this.destroy$)
+    this.supplyServiceHelper.submitSupply(
+      this.supplyId,
+      this.receiverInfo,
+      [...this.selectedFiles],
+      this.destroy$,
+      this.signatureFile
+    )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
           this.isSubmittingSupply = false;
-          // Clear selected files after successful submission
           this.selectedFiles = [];
+          this.signatureFile = null;
           if (this.fileInputElement) {
             this.fileInputElement.value = '';
           }

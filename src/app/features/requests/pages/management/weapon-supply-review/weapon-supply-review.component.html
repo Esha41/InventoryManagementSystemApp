@@ -412,6 +412,19 @@ class="assets-table-input w-full min-w-0">
             </div>
 
             <div class="md:col-span-2 space-y-1">
+              <span class="block text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-1">
+                {{ 'workflowApprovalDetail.topazSignature.label' | translate }}
+                <span class="ms-1.5 text-xs font-normal normal-case text-[var(--color-text-muted)]">
+                  ({{ 'workflowApprovalDetail.topazSignature.optional' | translate }})
+                </span>
+              </span>
+              <app-topaz-signature
+                [disabled]="submitting"
+                (signatureChanged)="onSignatureChanged($event)">
+              </app-topaz-signature>
+            </div>
+
+            <div class="md:col-span-2 space-y-1">
               <label class="block text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-1" for="weapon-supply-review-fld-10-10">
                 {{ 'weaponSupplyReview.notes' | translate }}
               </label>

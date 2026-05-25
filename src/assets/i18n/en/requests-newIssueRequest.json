@@ -30,7 +30,8 @@
       "compatibleWeapons": "Compatible",
       "weaponListScope": "Weapon list scope",
       "selectOptionHint": "Choose Compatible, View all weapons, or Other to associate a weapon with this ammunition line.",
-      "weaponRequired": "Weapon required"
+      "weaponRequired": "Weapon required",
+      "attachments": "Weapon Association Attachments"
     },
     "selectOrderSource": "Select Order Source",
     "selectOrderSourceDescription": "Choose whether you want to order from your department's allowance or from all available ammunition",
