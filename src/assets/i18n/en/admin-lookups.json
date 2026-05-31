@@ -84,6 +84,7 @@
       "requestPurposeDuplicateNameEn": "A request purpose with this English name already exists. Please use a different name or edit the existing one.",
       "requestPurposeDuplicateNameAr": "A request purpose with this Arabic name already exists. Please use a different name or edit the existing one.",
       "requestPurposeDuplicateName": "A request purpose with this name already exists. English and Arabic names must be unique.",
+      "requestPurposeAttachmentDuplicateNameEn": "An attachment requirement with this English name already exists for this purpose.",
       "requestPurposeSaveFailed": "Could not save the request purpose. Please try again or contact support."
     }
   },

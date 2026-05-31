@@ -557,7 +557,11 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
         },
         error: error => {
           this.purposeAttachmentBusyId = null;
-          const errorMessage = ErrorHandler.extractErrorMessage(error, 'Failed to save attachment requirements');
+          const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(
+            error,
+            'Failed to save attachment requirements',
+            this.translateService
+          );
           this.lookupErrorMessage = errorMessage;
           this.cdr.markForCheck();
           this.translateService.get(['toast.error']).pipe(takeUntil(this.destroy$)).subscribe(translations => {
