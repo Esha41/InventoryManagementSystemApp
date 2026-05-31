@@ -15,7 +15,7 @@ import {
 } from 'lucide-angular';
 import { Router } from '@angular/router';
 import { combineLatest, Observable, Subject } from 'rxjs';
-import { debounceTime, finalize, map, shareReplay, startWith, takeUntil, tap } from 'rxjs/operators';
+import { debounceTime, finalize, map, shareReplay, startWith, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { Notification } from '@notifications/models/notification.model';
 import { NotificationService } from '@notifications/services/notification.service';
 import { ButtonComponent } from '@components/button/button.component';
@@ -47,6 +47,11 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 import { NotificationRichMessageComponent } from '@notifications/components/notification-rich-message/notification-rich-message.component';
+import { NotificationRequestNoResolverService } from '@notifications/services/notification-request-no.resolver.service';
+import {
+  getNotificationEntityId,
+  translateNotificationMessageText
+} from '@notifications/utils/notification-message.utils';
 
 @Component({
   selector: 'app-notifications',
@@ -161,6 +166,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     private readonly fb: FormBuilder,
     private readonly translateService: TranslateService,
     private readonly detailService: NotificationDetailService,
+    private readonly requestNoResolver: NotificationRequestNoResolverService,
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef
   ) {
@@ -172,6 +178,14 @@ export class NotificationsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.notificationService.initialize();
+
+    this.notifications$
+      .pipe(
+        switchMap(notifications => this.requestNoResolver.prefetch(notifications)),
+        tap(() => this.cdr.markForCheck()),
+        takeUntil(this.destroy$)
+      )
+      .subscribe();
 
     this.filteredNotifications$ = combineLatest([
       this.notifications$,
@@ -621,115 +635,26 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     return title;
   }
 
-  /**
-   * Translate notification message from backend English to current language
-   */
-  translateNotificationMessage(message: string | null | undefined): string {
-    if (!message) {
-      return '';
-    }
-
-    const messageTrimmed = message.trim();
-    const messageLower = messageTrimmed.toLowerCase();
-
-    // Extract request number (backend: ORD / RTN / DISC per RequestNoGeneratorService; RET/DIS for legacy)
-    const requestNoMatch = messageTrimmed.match(/(ORD|RTN|DISC|RET|DIS)-[\d\-A-Z]+/i);
-    const requestNo = requestNoMatch ? requestNoMatch[0] : '';
-
-    // Map common message patterns to translation keys
-    // Handle "Order request {RequestNo} has been created" pattern
-    if (messageLower.includes('order request') && messageLower.includes('has been created')) {
-      return this.translateService.instant('notifications.messages.orderCreated', {
-        requestNo: requestNo
-      });
-    }
-    // Handle "Return request {RequestNo} has been created" pattern
-    if (messageLower.includes('return request') && messageLower.includes('has been created')) {
-      return this.translateService.instant('notifications.messages.returnCreated', {
-        requestNo: requestNo
-      });
-    }
-    // Handle "Discard request {RequestNo} has been created" pattern
-    if (messageLower.includes('discard request') && messageLower.includes('has been created')) {
-      return this.translateService.instant('notifications.messages.discardCreated', {
-        requestNo: requestNo
-      });
-    }
-    // Handle approval patterns
-    if (messageLower.includes('order request') && messageLower.includes('has been approved')) {
-      return this.translateService.instant('notifications.messages.orderApproved', {
-        requestNo: requestNo
-      });
-    }
-    if (messageLower.includes('order request') && messageLower.includes('has been rejected')) {
-      return this.translateService.instant('notifications.messages.orderRejected', {
-        requestNo: requestNo
-      });
-    }
-    if (messageLower.includes('return request') && messageLower.includes('has been approved')) {
-      return this.translateService.instant('notifications.messages.returnApproved', {
-        requestNo: requestNo
-      });
-    }
-    if (messageLower.includes('return request') && messageLower.includes('has been rejected')) {
-      return this.translateService.instant('notifications.messages.returnRejected', {
-        requestNo: requestNo
-      });
-    }
-    if (messageLower.includes('discard request') && messageLower.includes('has been approved')) {
-      return this.translateService.instant('notifications.messages.discardApproved', {
-        requestNo: requestNo
-      });
-    }
-    if (messageLower.includes('discard request') && messageLower.includes('has been rejected')) {
-      return this.translateService.instant('notifications.messages.discardRejected', {
-        requestNo: requestNo
-      });
-    }
-
-    const workflowTranslated =
-      this.translateWorkflowRequestActionMessage(
-        messageTrimmed,
-        /^Request #(.+?) has been approved\.(?: Comments: (.*))?$/i,
-        /^Request #(.+?) has been approved by (.+?)\.(?: Comments: (.*))?$/i,
-        'notifications.messages.workflowRequestApprovedMessage'
-      ) ??
-      this.translateWorkflowRequestActionMessage(
-        messageTrimmed,
-        /^Request #(.+?) has been rejected\.(?: Comments: (.*))?$/i,
-        /^Request #(.+?) has been rejected by (.+?)\.(?: Comments: (.*))?$/i,
-        'notifications.messages.workflowRequestRejectedMessage'
-      ) ??
-      this.translateWorkflowRequestActionMessage(
-        messageTrimmed,
-        /^Request #(.+?) has been cancelled\.(?: Comments: (.*))?$/i,
-        /^Request #(.+?) has been cancelled by (.+?)\.(?: Comments: (.*))?$/i,
-        'notifications.messages.workflowRequestCancelledMessage'
-      ) ??
-      this.translateWorkflowRequestActionMessage(
-        messageTrimmed,
-        /^Request #(.+?) has been returned for review\.(?: Comments: (.*))?$/i,
-        /^Request #(.+?) has been returned for review by (.+?)\.(?: Comments: (.*))?$/i,
-        'notifications.messages.workflowRequestReturnedForReviewMessage'
-      );
-    if (workflowTranslated !== null) {
-      return workflowTranslated;
-    }
-
-    // If no match, return original (might be already translated or custom)
-    // Approval workflow notifications
-    if (messageLower.includes('awaits your approval')) {
-      return this.translateService.instant('notifications.messages.requestAwaitingApproval');
-    }
-
-    return messageTrimmed;
+  translateNotificationMessage(
+    message: string | null | undefined,
+    fallbackRequestNo = ''
+  ): string {
+    return translateNotificationMessageText(this.translateService, message, fallbackRequestNo);
   }
 
-
   getNotificationMessageParts(notification: Notification, enableLinks = true): NotificationMessagePart[] {
-    const text = this.translateNotificationMessage(notification.message);
+    const fallbackRequestNo = this.resolveFallbackRequestNo(notification);
+    const text = this.translateNotificationMessage(notification.message, fallbackRequestNo);
     const canLink = enableLinks && getWorkflowApprovalNavigation(notification) !== null;
     return splitTranslatedNotificationMessage(text, canLink);
+  }
+
+  private resolveFallbackRequestNo(notification: Notification): string {
+    const entityId = getNotificationEntityId(notification);
+    if (entityId == null) {
+      return '';
+    }
+    return this.requestNoResolver.getCached(entityId) ?? '';
   }
 
   openWorkflowFromNotification(notification: Notification, event?: Event): void {
@@ -740,32 +665,6 @@ export class NotificationsComponent implements OnInit, OnDestroy {
       return;
     }
     void this.router.navigate(nav.path);
-  }
-
-  private translateWorkflowRequestActionMessage(
-    messageTrimmed: string,
-    patternNoActor: RegExp,
-    patternWithActor: RegExp,
-    messageKey: string
-  ): string | null {
-    let m = messageTrimmed.match(patternNoActor);
-    let commentsGroupIndex = 2;
-    if (!m) {
-      m = messageTrimmed.match(patternWithActor);
-      commentsGroupIndex = 3;
-    }
-    if (!m) {
-      return null;
-    }
-    const requestNo = m[1].trim();
-    const comments = m[commentsGroupIndex]?.trim();
-    let out = this.translateService.instant(messageKey, { requestNo });
-    if (comments) {
-      out +=
-        ' ' +
-        this.translateService.instant('notifications.messages.workflowRequestCommentsAppend', { comments });
-    }
-    return out;
   }
 
   hasNotificationActions(notification: Notification | null): boolean {

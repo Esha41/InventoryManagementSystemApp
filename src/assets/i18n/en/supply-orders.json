@@ -69,7 +69,7 @@
     "selectItemAndLot": "Please select an item and a Lot",
     "selectedLotEmpty": "Selected Lot has no available quantity",
     "showAllLots": "Show all Lots",
-    "showAvailableLots": "Show available Lots",
+    "showAvailableLots": "Show suggested Lots",
     "addLotManually": "Add Lot manually",
     "enterLotNumber": "Enter Lot number",
     "getDetails": "Get Details",
