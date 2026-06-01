@@ -289,25 +289,25 @@ export class DashboardDataService {
       filter: filters.length > 0 ? (filters.length === 1 ? filters[0] : { logic: 'and', filters }) : undefined
     };
 
-    // Sorting — default: higher priority first, then newest (see ApplyUserActionsCompositeSort on backend)
-    const columnMap: Record<string, string> = {
-      'orderNumber': 'RequestNo',
-      'usageDate': 'CreationDate',
-      'department': 'Department.NameEn',
-      'requester': 'Requester.UserName',
-      'status': 'Status',
-      'priority': 'Priority'
-    };
+    // Sorting — when no column is selected, backend applies action-required-first default
+    if (sortState.column) {
+      const columnMap: Record<string, string> = {
+        'orderNumber': 'RequestNo',
+        'usageDate': 'CreationDate',
+        'department': 'Department.NameEn',
+        'requester': 'Requester.UserName',
+        'status': 'Status',
+        'priority': 'Priority'
+      };
 
-    const sortColumn = sortState.column ?? 'priority';
-    const sortDir = sortState.column ? sortState.direction : 'desc';
-    const backendColumn = columnMap[sortColumn];
-    if (backendColumn) {
-      if (!pagedRequest.filter) {
-        pagedRequest.filter = {};
+      const backendColumn = columnMap[sortState.column];
+      if (backendColumn) {
+        if (!pagedRequest.filter) {
+          pagedRequest.filter = {};
+        }
+        pagedRequest.filter.sortField = backendColumn;
+        pagedRequest.filter.sortDirection = sortState.direction === 'asc' ? 1 : 2;
       }
-      pagedRequest.filter.sortField = backendColumn;
-      pagedRequest.filter.sortDirection = sortDir === 'asc' ? 1 : 2;
     }
 
     return this.loadPaginatedDashboardCards(pagedRequest);
