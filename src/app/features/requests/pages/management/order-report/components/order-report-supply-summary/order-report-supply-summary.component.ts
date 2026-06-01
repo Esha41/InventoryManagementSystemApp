@@ -63,13 +63,6 @@ export class OrderReportSupplySummaryComponent implements OnInit, OnChanges, OnD
     this.langSub?.unsubscribe();
   }
 
-  submissionLabelKey(status: number): string {
-    if (status === 2) {
-      return 'workflowApprovalDetail.workflowSupplySummary.submissionSubmitted';
-    }
-    return 'workflowApprovalDetail.workflowSupplySummary.submissionDraft';
-  }
-
   fulfillmentLabelKey(status: number): string {
     if (status === 2) {
       return 'workflowApprovalDetail.workflowSupplySummary.fulfillmentFull';

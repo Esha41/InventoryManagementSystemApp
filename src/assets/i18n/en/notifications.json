@@ -79,7 +79,9 @@
       "workflowRequestApproved": "Request {{requestNo}} approved",
       "workflowRequestRejected": "Request {{requestNo}} rejected",
       "workflowRequestCancelled": "Request {{requestNo}} cancelled",
-      "workflowRequestReturnedForReview": "Request {{requestNo}} returned for review"
+      "workflowRequestReturnedForReview": "Request {{requestNo}} returned for review",
+      "supplyPickupDateSet": "Supply Pickup Date Set",
+      "supplyPickupDateConfirmed": "Supply Pickup Date Confirmed"
     },
     "messages": {
       "orderCreated": "Order {{requestNo}} created.",
@@ -99,7 +101,9 @@
       "workflowRequestRejectedMessage": "{{requestNo}} rejected.",
       "workflowRequestCancelledMessage": "{{requestNo}} cancelled.",
       "workflowRequestReturnedForReviewMessage": "{{requestNo}} returned for review.",
-      "workflowRequestCommentsAppend": " {{comments}}"
+      "workflowRequestCommentsAppend": " {{comments}}",
+      "supplyPickupDateSet": "Order {{requestNo}} supply pickup date set to {{date}}.",
+      "supplyPickupDateConfirmed": "Order {{requestNo}} supply pickup date confirmed to {{date}}."
     },
     "entityTypes": {
       "order": "Order",

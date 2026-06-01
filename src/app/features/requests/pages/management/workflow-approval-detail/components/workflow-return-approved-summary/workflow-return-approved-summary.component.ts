@@ -11,9 +11,9 @@ import { CommonModule } from '@angular/common';
 import { Subject, of } from 'rxjs';
 import { catchError, takeUntil } from 'rxjs/operators';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, ChevronDown, ChevronRight, Package, Paperclip } from 'lucide-angular';
+import { LucideAngularModule, ChevronDown, ChevronRight, Download, FileText, Package, Paperclip } from 'lucide-angular';
 import { ReturnService } from '@requests/services/return.service';
-import { FileUploadService } from '@services/file-upload.service';
+import { WorkflowApprovalSupplyService } from '../../services/workflow-approval-supply.service';
 import { FileUploadDto } from '@models/file-upload.model';
 import { ReturnTrackingLineDto } from '@models/return.model';
 import { RequestItem } from '@models/workflow-approval.model';
@@ -56,6 +56,8 @@ export class WorkflowReturnApprovedSummaryComponent implements OnChanges, OnDest
   readonly Paperclip = Paperclip;
   readonly ChevronDown = ChevronDown;
   readonly ChevronRight = ChevronRight;
+  readonly FileText = FileText;
+  readonly Download = Download;
 
   loading = false;
   loadError: string | null = null;
@@ -68,7 +70,7 @@ export class WorkflowReturnApprovedSummaryComponent implements OnChanges, OnDest
 
   constructor(
     private returnService: ReturnService,
-    private fileUploadService: FileUploadService,
+    private supplyServiceHelper: WorkflowApprovalSupplyService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -109,8 +111,31 @@ export class WorkflowReturnApprovedSummaryComponent implements OnChanges, OnDest
     return this.isExpanded(row) ? this.ChevronDown : this.ChevronRight;
   }
 
-  getFileDownloadUrl(file: FileUploadDto): string {
-    return this.fileUploadService.getFileDownloadUrl(file.id);
+  get requestAttachments(): ReturnApprovedAttachmentRow[] {
+    return this.attachmentRows.filter((ar) => ar.source === 'request');
+  }
+
+  get processingAttachments(): ReturnApprovedAttachmentRow[] {
+    return this.attachmentRows.filter((ar) => ar.source === 'line');
+  }
+
+  downloadFile(file: FileUploadDto): void {
+    const fileName = file.originalName || file.fileName;
+    if (!file?.id || !fileName) {
+      return;
+    }
+    this.supplyServiceHelper.downloadFile(file.id, fileName, this.destroy$).subscribe({
+      next: (blob: Blob) => {
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(blobUrl);
+      }
+    });
   }
 
   /** Weapon summary rows (serial-based tracking). */

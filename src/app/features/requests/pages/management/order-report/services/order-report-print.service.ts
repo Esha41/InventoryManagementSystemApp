@@ -256,6 +256,47 @@ export class OrderReportPrintService {
         white-space: pre-wrap !important;
         word-break: break-word !important;
       }
+
+      .supply-receiver-section {
+        padding: 8px 0 !important;
+        margin-bottom: 8px !important;
+        border-bottom: 1px solid #ddd !important;
+      }
+
+      .supply-receiver-heading {
+        font-size: 10pt !important;
+        font-weight: bold !important;
+        color: #000 !important;
+        margin: 0 0 8px 0 !important;
+        padding-bottom: 4px !important;
+        border-bottom: 1px solid #ccc !important;
+      }
+
+      .supply-receiver-lines {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 8px 16px !important;
+        align-items: start !important;
+      }
+
+      .supply-receiver-field {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 2px !important;
+        min-width: 0 !important;
+      }
+
+      .supply-receiver-field-label {
+        font-size: 8pt !important;
+        font-weight: bold !important;
+        color: #333 !important;
+      }
+
+      .supply-receiver-field-value {
+        font-size: 9pt !important;
+        color: #000 !important;
+        word-break: break-word !important;
+      }
       
       .order-info-section {
         position: relative !important;

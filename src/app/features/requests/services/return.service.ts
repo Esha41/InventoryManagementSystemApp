@@ -245,14 +245,12 @@ export class ReturnService {
       if (item.returnedQuantity != null) {
         formData.append(`AmmoExplosiveItems[${index}].ReturnedQuantity`, item.returnedQuantity.toString());
       }
-      formData.append(`AmmoExplosiveItems[${index}].Lot`, item.lot);
       if (item.notes) {
         formData.append(`AmmoExplosiveItems[${index}].Notes`, item.notes);
       }
       if (item.requestItemId != null) {
         formData.append(`AmmoExplosiveItems[${index}].RequestItemId`, item.requestItemId.toString());
       }
-      formData.append(`AmmoExplosiveItems[${index}].ReadyForIssue`, String(item.readyForIssue));
     });
 
     (dto.weaponItems ?? []).forEach((item, index) => {
@@ -282,10 +280,8 @@ export interface ReturnAmmoExplosiveItemDto {
   quantity: number;
   /** Snapshot for audit; omit to default to quantity on the server. */
   returnedQuantity?: number;
-  lot: string;
   notes?: string;
   requestItemId?: number;
-  readyForIssue: boolean;
 }
 
 export interface ReturnWeaponItemDto {

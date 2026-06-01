@@ -1,10 +1,8 @@
 import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SafeHtml } from '@angular/platform-browser';
 import { TranslateModule } from '@ngx-translate/core';
-import { HelpCenterTermsDto } from '@models/help-center.model';
 import { TermsAcceptanceFacade } from '../../facades/terms-acceptance.facade';
-import { HelpCenterHtmlSanitizerService } from '@help-center/services/help-center-html-sanitizer.service';
+import { TranslationService } from '@services/translation.service';
 
 @Component({
   selector: 'app-terms-acceptance-modal',
@@ -16,26 +14,20 @@ import { HelpCenterHtmlSanitizerService } from '@help-center/services/help-cente
 })
 export class TermsAcceptanceModalComponent {
   readonly facade: TermsAcceptanceFacade = inject(TermsAcceptanceFacade);
-  private readonly htmlSanitizer = inject(HelpCenterHtmlSanitizerService);
+  private readonly translation = inject(TranslationService);
 
-  /** User must check this before Continue is enabled. */
   readonly hasReadAndAgreed = signal(false);
 
   constructor() {
     effect(() => {
-      const terms: HelpCenterTermsDto | null = this.facade.pendingTerms();
-      if (terms != null) {
+      if (this.facade.pendingTerms() != null) {
         this.hasReadAndAgreed.set(false);
       }
     });
   }
 
-  safeContent(html: string): SafeHtml {
-    return this.htmlSanitizer.sanitizeRichHtml(html);
-  }
-
-  contentDirection(html: string): 'rtl' | 'ltr' | 'auto' {
-    return this.htmlSanitizer.resolveContainerDir(html);
+  isAppRtl(): boolean {
+    return this.translation.isRTL();
   }
 
   onAgreedChange(event: Event): void {
@@ -46,5 +38,9 @@ export class TermsAcceptanceModalComponent {
   onAccept(): void {
     if (!this.hasReadAndAgreed()) return;
     this.facade.submitAcceptance();
+  }
+
+  onRetry(): void {
+    this.facade.retryTermsGate();
   }
 }

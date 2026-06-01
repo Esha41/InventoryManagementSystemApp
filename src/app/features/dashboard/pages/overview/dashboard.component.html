@@ -116,12 +116,13 @@
       <div class="md:hidden divide-y divide-[var(--color-border)]">
         <div *ngFor="let card of visibleCards; trackBy: trackByCard"
           class="flex items-start gap-3 p-4 transition-colors hover:bg-[var(--color-background-muted)]"
-          [ngClass]="card.isMyTurn ? 'border-s-[3px] border-s-[var(--color-brand)]' : ''">
+          [ngClass]="card.isMyTurn ? 'dashboard-action-required mx-3 my-2 rounded-xl' : ''">
 
           <!-- Status dot -->
           <div class="flex-shrink-0 mt-1">
-            <span class="w-2 h-2 rounded-full block"
-              [ngClass]="getStatusDotClass(card.status)">
+            <span
+              class="w-2 h-2 rounded-full block"
+              [ngClass]="card.isMyTurn ? 'bg-[var(--color-brand)]' : getStatusDotClass(card.status)">
             </span>
           </div>
 
@@ -132,6 +133,12 @@
                 {{ card.orders[0].orderId || card.title }}
               </span>
               <div class="flex items-center gap-1.5 flex-shrink-0">
+                <span
+                  *ngIf="getPriorityTranslationKey(card.priority)"
+                  class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide whitespace-nowrap"
+                  [ngClass]="getPriorityBadgeClass(card.priority)">
+                  {{ getPriorityTranslationKey(card.priority) | translate }}
+                </span>
                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap"
                   [ngClass]="getStatusBadgeClass(card.status)">
                   {{ getRequestStatusTranslationKey(card) | translate }}
@@ -147,8 +154,7 @@
             </div>
             <div class="flex items-center justify-between gap-2 flex-wrap">
               <div class="flex items-center gap-2 flex-wrap">
-                <span *ngIf="card.isMyTurn"
-                  class="text-[10px] font-bold text-[var(--color-brand)] uppercase tracking-wide animate-pulse">
+                <span *ngIf="card.isMyTurn" class="text-xs font-medium text-[var(--color-brand)]">
                   {{ 'requestsManagement.actionRequired' | translate }}
                 </span>
                 <app-auto-reject-countdown [countdown]="getAutoRejectCountdown(card)">
@@ -176,6 +182,7 @@
                     {key:'usageDate',   label:'dashboard.requestDate'},
                     {key:'department',  label:'dashboard.department'},
                     {key:'requester',   label:'dashboard.requester'},
+                    {key:'priority',    label:'dashboard.priority'},
                     {key:'status',      label:'dashboard.status'}
                   ]"
                 class="px-5 py-3 text-start text-[11px] font-semibold text-[var(--color-text-muted)]
@@ -211,8 +218,8 @@
           </thead>
           <tbody class="divide-y divide-[var(--color-border)]">
             <tr *ngFor="let card of visibleCards; trackBy: trackByCard"
-              class="group hover:bg-[var(--color-background-muted)] transition-colors"
-              [class.action-required-highlight]="card.isMyTurn">
+              class="group transition-colors hover:bg-[var(--color-background-muted)]"
+              [class.dashboard-action-required]="card.isMyTurn">
               <td class="px-5 py-3.5 text-sm font-medium text-[var(--color-text)] whitespace-nowrap">
                 {{ card.orders[0].orderId || card.title }}
               </td>
@@ -226,12 +233,21 @@
                 <span [appTableClampTooltip]="displayRequester(card.orders[0])">{{ displayRequester(card.orders[0]) }}</span>
               </td>
               <td class="px-5 py-3.5">
+                <span
+                  *ngIf="getPriorityTranslationKey(card.priority); else noPriority"
+                  class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap"
+                  [ngClass]="getPriorityBadgeClass(card.priority)">
+                  {{ getPriorityTranslationKey(card.priority) | translate }}
+                </span>
+                <ng-template #noPriority>—</ng-template>
+              </td>
+              <td class="px-5 py-3.5">
                 <div class="flex items-center gap-2">
                   <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap"
                     [ngClass]="getStatusBadgeClass(card.status)">
                     {{ getRequestStatusTranslationKey(card) | translate }}
                   </span>
-                  <span *ngIf="card.isMyTurn" class="action-required-badge animate-action-glow whitespace-nowrap">
+                  <span *ngIf="card.isMyTurn" class="text-xs font-medium text-[var(--color-brand)] whitespace-nowrap">
                     {{ 'requestsManagement.actionRequired' | translate }}
                   </span>
                 </div>

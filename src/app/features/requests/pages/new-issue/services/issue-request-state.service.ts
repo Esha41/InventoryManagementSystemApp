@@ -80,12 +80,14 @@ export class IssueRequestStateService {
    * Persists selected entries to query params
    * @param selectedEntries - Selected cartridge entries
    */
-  persistSelections(selectedEntries: Array<{ id: number; quantity: number; itemType?: string }>): void {
-    const queryParams: IssueRequestQueryParams = {};
+  persistSelections(
+    selectedEntries: Array<{ id: number; quantity: number; itemType?: string }>,
+    step: number
+  ): void {
+    const queryParams: IssueRequestQueryParams = { step };
     if (selectedEntries.length > 0) {
       queryParams.selections = JSON.stringify(selectedEntries);
     } else {
-      // Remove selections param if no selections
       queryParams.selections = undefined;
     }
 
@@ -96,7 +98,6 @@ export class IssueRequestStateService {
     });
   }
 
-  
   restoreSelections(
     pendingSelections: Array<{ id: number; quantity: number; itemType?: string }> | null,
     cartridgeState: CartridgeState

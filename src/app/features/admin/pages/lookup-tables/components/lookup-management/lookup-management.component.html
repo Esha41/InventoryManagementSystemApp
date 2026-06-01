@@ -69,9 +69,9 @@
         <button *ngIf="selectedTable.requestPurposeType"
           type="button"
           (click)="togglePurposeExpanded(item.id)"
-          class="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-[var(--color-border-muted)] hover:bg-[var(--color-background-muted)]/40 text-start rtl:text-right transition-colors">
-          <span class="inline-flex items-center gap-2 text-xs font-medium text-[var(--color-text)] min-w-0">
-            <lucide-angular [img]="isPurposeExpanded(item.id) ? ChevronDown : ChevronRight" class="h-4 w-4 flex-shrink-0 text-[var(--color-text-muted)]"></lucide-angular>
+          class="w-full flex items-center justify-start gap-2 px-3 py-2 rounded-lg border border-[var(--color-border-muted)] hover:bg-[var(--color-background-muted)]/40 text-start transition-colors">
+          <span class="inline-flex min-w-0 items-center gap-2 text-xs font-medium text-[var(--color-text)]">
+            <lucide-angular [img]="getPurposeExpandIcon(isPurposeExpanded(item.id))" class="h-4 w-4 flex-shrink-0 text-[var(--color-text-muted)]"></lucide-angular>
             <span class="truncate">{{ 'lookupManagement.attachmentSlots' | translate }}</span>
             <span class="tabular-nums text-[var(--color-text-muted)] flex-shrink-0">({{ getAttachmentSlotCount(item) }})</span>
           </span>
@@ -255,11 +255,11 @@
               <span class="font-medium text-[var(--color-text)]">{{ item.nameEn }}</span>
             </td>
             <td *ngIf="selectedTable.requestPurposeType" class="px-6 py-4 align-middle text-start">
-              <div class="flex items-center gap-2 flex-wrap justify-start min-w-0">
-                <lucide-angular [img]="isPurposeExpanded(item.id) ? ChevronDown : ChevronRight"
-                  class="h-4 w-4 flex-shrink-0 text-[var(--color-text-muted)]"></lucide-angular>
-                <span class="font-medium text-[var(--color-text)] break-words text-start">{{ item.nameEn }}</span>
-              </div>
+              <span class="inline-flex max-w-full min-w-0 items-center gap-2">
+                <lucide-angular [img]="getPurposeExpandIcon(isPurposeExpanded(item.id))"
+                  class="h-4 w-4 shrink-0 text-[var(--color-text-muted)]"></lucide-angular>
+                <span dir="ltr" class="font-medium text-[var(--color-text)] break-words">{{ item.nameEn }}</span>
+              </span>
             </td>
             <td class="px-6 py-4 text-center align-middle">
               <span class="font-medium text-[var(--color-text)]" dir="rtl">{{ item.nameAr }}</span>

@@ -27,86 +27,56 @@
                     <div class="quick-action-icon">
                         <lucide-angular [img]="Users" class="icon"></lucide-angular>
                     </div>
-                    <div class="quick-action-content">
-                        <h3 class="quick-action-title">{{ 'nav.manageAdmins' | translate }}</h3>
-                        <p class="quick-action-description">{{ 'adminDashboard.manageAdminsDescription' | translate }}
-                        </p>
-                    </div>
+                    <h3 class="quick-action-title">{{ 'nav.manageAdmins' | translate }}</h3>
                 </a>
 
                 <a [routerLink]="['/settings/roles']" class="quick-action-card">
                     <div class="quick-action-icon">
                         <lucide-angular [img]="Badge" class="icon"></lucide-angular>
                     </div>
-                    <div class="quick-action-content">
-                        <h3 class="quick-action-title">{{ 'nav.adminRoles' | translate }}</h3>
-                        <p class="quick-action-description">{{ 'adminDashboard.adminRolesDescription' | translate }}</p>
-                    </div>
+                    <h3 class="quick-action-title">{{ 'nav.adminRoles' | translate }}</h3>
                 </a>
 
                 <a [routerLink]="['/settings/role-permissions']" class="quick-action-card">
                     <div class="quick-action-icon">
                         <lucide-angular [img]="Settings" class="icon"></lucide-angular>
                     </div>
-                    <div class="quick-action-content">
-                        <h3 class="quick-action-title">{{ 'nav.rolePermissions' | translate }}</h3>
-                        <p class="quick-action-description">{{ 'adminDashboard.rolePermissionsDescription' | translate
-                            }}</p>
-                    </div>
+                    <h3 class="quick-action-title">{{ 'nav.rolePermissions' | translate }}</h3>
                 </a>
 
                 <a [routerLink]="['/settings/ldap-settings']" class="quick-action-card">
                     <div class="quick-action-icon">
                         <lucide-angular [img]="Settings" class="icon"></lucide-angular>
                     </div>
-                    <div class="quick-action-content">
-                        <h3 class="quick-action-title">{{ 'nav.ldapSettings' | translate }}</h3>
-                        <p class="quick-action-description">{{ 'adminDashboard.ldapSettingsDescription' | translate }}
-                        </p>
-                    </div>
+                    <h3 class="quick-action-title">{{ 'nav.ldapSettings' | translate }}</h3>
                 </a>
 
                 <a [routerLink]="['/settings/email-settings']" class="quick-action-card">
                     <div class="quick-action-icon">
                         <lucide-angular [img]="Mail" class="icon"></lucide-angular>
                     </div>
-                    <div class="quick-action-content">
-                        <h3 class="quick-action-title">{{ 'nav.emailSettings' | translate }}</h3>
-                        <p class="quick-action-description">{{ 'adminDashboard.emailSettingsDescription' | translate }}
-                        </p>
-                    </div>
+                    <h3 class="quick-action-title">{{ 'nav.emailSettings' | translate }}</h3>
                 </a>
 
                 <a [routerLink]="['/settings/import-export']" class="quick-action-card">
                     <div class="quick-action-icon">
                         <lucide-angular [img]="Upload" class="icon"></lucide-angular>
                     </div>
-                    <div class="quick-action-content">
-                        <h3 class="quick-action-title">{{ 'nav.adminImportExport' | translate }}</h3>
-                        <p class="quick-action-description">{{ 'adminDashboard.importExportDescription' | translate }}
-                        </p>
-                    </div>
+                    <h3 class="quick-action-title">{{ 'nav.adminImportExport' | translate }}</h3>
                 </a>
 
                 <a [routerLink]="['/settings/workflow']" class="quick-action-card">
                     <div class="quick-action-icon">
                         <lucide-angular [img]="GitBranch" class="icon"></lucide-angular>
                     </div>
-                    <div class="quick-action-content">
-                        <h3 class="quick-action-title">{{ 'nav.workflow' | translate }}</h3>
-                        <p class="quick-action-description">{{ 'adminDashboard.workflowDescription' | translate }}</p>
-                    </div>
+                    <h3 class="quick-action-title">{{ 'nav.workflow' | translate }}</h3>
                 </a>
 
                 <a [routerLink]="['/settings/stock-notification-settings']" class="quick-action-card">
                     <div class="quick-action-icon">
                         <lucide-angular [img]="Mail" class="icon"></lucide-angular>
                     </div>
-                    <div class="quick-action-content">
-                        <h3 class="quick-action-title">{{ 'nav.stockNotificationSettings' | translate }}</h3>
-                        <p class="quick-action-description">{{ 'adminDashboard.stockNotificationDescription' | translate
-                            }}</p>
-                    </div>
+                    <h3 class="quick-action-title">{{ 'nav.stockNotificationSettings' | translate }}</h3>
                 </a>
 
                 <ng-container *appHasPermission="PERMISSIONS.SETTINGS.ORDER_AUTO_REJECT.PAGE">
@@ -114,10 +84,7 @@
                         <div class="quick-action-icon">
                             <lucide-angular [img]="Timer" class="icon"></lucide-angular>
                         </div>
-                        <div class="quick-action-content">
-                            <h3 class="quick-action-title">{{ 'nav.orderAutoRejectSettings' | translate }}</h3>
-                            <p class="quick-action-description">{{ 'adminDashboard.orderAutoRejectDescription' | translate }}</p>
-                        </div>
+                        <h3 class="quick-action-title">{{ 'nav.orderAutoRejectSettings' | translate }}</h3>
                     </a>
                 </ng-container>
 

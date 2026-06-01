@@ -26,12 +26,9 @@ interface AmmoExplosiveRow {
   itemName: string;
   /** Quantity in the return request (read-only in UI). */
   returnedQuantity: number | null;
-  /** Quantity actually received / posted to inventory (editable). */
+  /** Quantity actually received (editable; stored on return tracking history). */
   receivedQuantity: number | null;
-  lot: string;
   notes: string;
-  /** Maps to inventory detail ReadyForIssue; null until the user selects Yes or No. */
-  readyForIssue: boolean | null;
 }
 
 interface WeaponUnit {
@@ -102,11 +99,6 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
   /** Tracking lines when this return was already processed (audit). */
   trackingLines: ReturnTrackingLineDto[] = [];
 
-  readonly readyForIssueDropdownOptions: DropdownOption<boolean>[] = [
-    { value: true, label: 'processReturnItems.readyForIssueYes' },
-    { value: false, label: 'processReturnItems.readyForIssueNo' }
-  ];
-
   readonly weaponStatusDropdownOptions: DropdownOption<AssetStatus>[] = ASSET_STATUS_FORM_OPTIONS_ORDER.map(
     status => ({ value: status, label: assetStatusLabelKey(status) })
   );
@@ -135,9 +127,7 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
       this.ammoExplosiveRows.every(r =>
         r.itemId &&
         r.receivedQuantity != null &&
-        r.receivedQuantity > 0 &&
-        r.lot?.trim() &&
-        (r.readyForIssue === true || r.readyForIssue === false));
+        r.receivedQuantity > 0);
     const hasWeaponData = this.weaponLines.length > 0 &&
       this.weaponLines.every(line =>
         line.itemId &&
@@ -290,9 +280,7 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
           itemName,
           returnedQuantity: reqOk ? requested : null,
           receivedQuantity: reqOk ? requested : null,
-          lot: '',
-          notes: '',
-          readyForIssue: null
+          notes: ''
         });
       } else if (isWeapon) {
         const returned = Math.max(1, Math.floor(Number(item.quantity) || 1));
@@ -393,19 +381,15 @@ export class ProcessReturnItemsComponent implements OnInit, OnDestroy {
         .filter(r =>
           r.itemId &&
           r.receivedQuantity != null &&
-          r.receivedQuantity > 0 &&
-          r.lot?.trim() &&
-          (r.readyForIssue === true || r.readyForIssue === false))
+          r.receivedQuantity > 0)
         .map(r => {
           const trimmedNotes = r.notes?.trim();
           return {
             itemId: r.itemId,
             quantity: r.receivedQuantity!,
             returnedQuantity: r.returnedQuantity != null ? r.returnedQuantity : undefined,
-            lot: r.lot.trim(),
             notes: trimmedNotes || undefined,
-            requestItemId: r.requestItemId,
-            readyForIssue: r.readyForIssue!
+            requestItemId: r.requestItemId
           };
         }),
       weaponItems: this.weaponLines.flatMap(line =>

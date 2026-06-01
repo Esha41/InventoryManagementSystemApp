@@ -53,7 +53,8 @@
         "loadError": "تعذر تحميل ملخص الصرف.",
         "noLines": "لا توجد بنود صرف مسجلة.",
         "linesTitle": "المواد الموردة",
-        "weaponOrder": "طلب سلاح"
+        "weaponOrder": "طلب سلاح",
+        "receiverInformation": "معلومات المستلم"
       },
       "labels": {
         "department": "الوحدة",

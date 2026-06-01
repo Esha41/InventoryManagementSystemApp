@@ -22,7 +22,6 @@ import { LoginRequest, LoginResponse } from '@models/auth.model';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { getDefaultLandingUrl } from '@utils/default-landing-route.utils';
 import { TermsAcceptanceFacade } from '@features/help/facades/terms-acceptance.facade';
-
 import { TakeOverDialogComponent } from '../../components/take-over-dialog/take-over-dialog.component';
 import { CaptchaService } from '../../services/captcha.service';
 import { analyzeLoginError } from '../../utils/login-error-mapper.util';
@@ -290,17 +289,15 @@ export class LoginComponent implements OnInit {
     this.captchaService.reset();
     this.loginForm.get('captcha')?.setValue('');
 
+    this.termsAcceptance.clearSessionAcceptance();
+
     if (response.requiresRoleSelection) {
       setTimeout(() => void this.router.navigate(['/auth/select-role']), 200);
       return;
     }
 
     setTimeout(() => {
-      void this.router.navigateByUrl(getDefaultLandingUrl(this.backendAuth)).then(navigated => {
-        if (navigated) {
-          this.termsAcceptance.beginPostLoginFlow();
-        }
-      });
+      void this.router.navigateByUrl(getDefaultLandingUrl(this.backendAuth));
     }, 400);
   }
 
@@ -394,12 +391,9 @@ export class LoginComponent implements OnInit {
     resetFailedAttempts(this.storageService);
     this.captchaService.reset();
     this.loginForm.get('captcha')?.setValue('');
+    this.termsAcceptance.clearSessionAcceptance();
     setTimeout(() => {
-      void this.router.navigateByUrl(getDefaultLandingUrl(this.backendAuth)).then(navigated => {
-        if (navigated) {
-          this.termsAcceptance.beginPostLoginFlow();
-        }
-      });
+      void this.router.navigateByUrl(getDefaultLandingUrl(this.backendAuth));
     }, 400);
   }
 

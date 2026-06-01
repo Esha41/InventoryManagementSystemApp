@@ -3,7 +3,8 @@ import {
   OnDestroy,
   OnInit,
   AfterViewInit,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
+  HostListener
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -46,4 +47,11 @@ export class NewIssueRequestComponent implements OnInit, OnDestroy, AfterViewIni
   ngOnInit(): void { this.facade.init(); }
   ngOnDestroy(): void { this.facade.destroy(); }
   ngAfterViewInit(): void { this.facade.afterViewInit(); }
+
+  @HostListener('window:pageshow', ['$event'])
+  onPageShow(event: PageTransitionEvent): void {
+    if (event.persisted) {
+      this.facade.onBfCacheRestore();
+    }
+  }
 }

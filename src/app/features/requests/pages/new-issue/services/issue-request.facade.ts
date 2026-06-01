@@ -49,6 +49,7 @@ import {
   createInitialFilterState,
   createInitialFilterOptions,
   createInitialCartridgeState,
+  createInitialCatalogPagination,
   createInitialUsageFormData,
   createInitialReserveDetailsState,
   createInitialUserContextState,
@@ -291,8 +292,7 @@ export class IssueRequestFacade {
     this.initializeStepFromQueryParams();
     this.loadRequestPurposes();
 
-    this.filterOptions.weaponTypeOptions = getWeaponTypeOptions();
-    this.filterOptions.explosiveTypeOptions = getExplosiveTypeOptions();
+    this.applyStaticFilterOptions();
 
     this.translate.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.rebuildRequestPurposeOptions();
@@ -311,6 +311,13 @@ export class IssueRequestFacade {
   destroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  /** Browser back-forward cache restored this page — start a clean request flow. */
+  onBfCacheRestore(): void {
+    this.resetForm();
+    this.clearQueryParams();
+    this.cdr.markForCheck();
   }
 
   afterViewInit(): void {
@@ -388,7 +395,7 @@ export class IssueRequestFacade {
     const { cartridge, quantity } = event;
     this.cartridgeState.selectedCartridgesCache.set(cartridge.id, { ...cartridge });
     this.addCartridge(cartridge, quantity);
-    this.stateService.persistSelections(this.cartridgeState.selectedEntries);
+    this.persistSelectionsToQueryParams();
 
     if (hasWeaponInSelection([cartridge]) && this.requestPurposeState.selectedRequestPurposeId === TRAINING_ORDER_ID) {
       this.requestPurposeState.selectedRequestPurposeId = null;
@@ -401,7 +408,7 @@ export class IssueRequestFacade {
     this.cartridgeState.selectedCartridgesCache.delete(cartridgeId);
     this.removeCartridge(cartridgeId);
     this.weaponAssociationState.associations.delete(cartridgeId);
-    this.stateService.persistSelections(this.cartridgeState.selectedEntries);
+    this.persistSelectionsToQueryParams();
     this.cdr.markForCheck();
   }
 
@@ -833,7 +840,19 @@ export class IssueRequestFacade {
 
       this.currentStep = params.step;
       this.fromReserve = params.fromReserve;
-      this.pendingSelections = params.pendingSelections;
+
+      if (params.step < 1) {
+        this.pendingSelections = null;
+        if (this.cartridgeState.selectedEntries.length > 0) {
+          this.clearCartridgeSelectionState();
+        }
+        if (params.pendingSelections?.length) {
+          this.clearSelectionsQueryParams();
+        }
+        this.resetCatalogUiState();
+      } else {
+        this.pendingSelections = params.pendingSelections;
+      }
 
       if (this.currentStep === 2 && !this.hasAmmunitionSelected) {
         this.currentStep = 1;
@@ -858,6 +877,50 @@ export class IssueRequestFacade {
 
   private clearQueryParams(): void {
     this.router.navigate(['/requests/new-issue-request'], { queryParams: {}, replaceUrl: true });
+  }
+
+  private clearSelectionsQueryParams(): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { selections: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true
+    });
+  }
+
+  private persistSelectionsToQueryParams(): void {
+    if (this.currentStep >= 1) {
+      this.stateService.persistSelections(this.cartridgeState.selectedEntries, this.currentStep);
+    }
+  }
+
+  private clearCartridgeSelectionState(): void {
+    this.cartridgeState.selectedEntries = [];
+    this.cartridgeState.selectedCartridgesCache.clear();
+    this.weaponAssociationState.associations.clear();
+    for (const cartridge of this.cartridgeState.allCartridges) {
+      cartridge.selected = false;
+      cartridge.added = false;
+      cartridge.quantity = null;
+    }
+  }
+
+  /** Clears search, sidebar filters, facet dropdown data, and cached catalog rows. */
+  private resetCatalogUiState(): void {
+    this.filterState = createInitialFilterState();
+    this.filterOptions = createInitialFilterOptions();
+    this.applyStaticFilterOptions();
+    this.cartridgeState.allCartridges = [];
+    this.cartridgeState.filteredCartridges = [];
+    this.cartridgeState.cartridgeError = null;
+    this.cartridgeState.loadingCartridges = false;
+    this.cartridgeState.catalogPageLoading = false;
+    this.cartridgeState.catalogPagination = createInitialCatalogPagination();
+  }
+
+  private applyStaticFilterOptions(): void {
+    this.filterOptions.weaponTypeOptions = getWeaponTypeOptions();
+    this.filterOptions.explosiveTypeOptions = getExplosiveTypeOptions();
   }
 
   private loadReserveDetails(): void {
@@ -936,7 +999,7 @@ export class IssueRequestFacade {
     this.weaponAssociationLoadedKey = null;
     this.currentStep = 0;
     this.steps.forEach(s => (s.completed = false));
-    this.filterState = createInitialFilterState();
+    this.resetCatalogUiState();
     this.cartridgeState = createInitialCartridgeState();
     this.fromReserve = 'Yes';
     this.usageFormData = createInitialUsageFormData();

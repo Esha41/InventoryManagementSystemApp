@@ -405,6 +405,144 @@ body:has(main.overflow-y-auto) {
   .pagination-page-small-inactive {
     color: var(--color-text-muted);
   }
+
+  /**
+   * Help Center / terms: Quill HTML from API ([innerHTML]).
+   * Global (not ::ng-deep) so editor align, color, and indent apply reliably.
+   */
+  .help-center-rich-html {
+    @apply break-words;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+
+  .help-center-rich-html[dir='rtl'] {
+    direction: rtl;
+    font-family: 'Cairo', 'Tajawal', 'Noto Sans Arabic', 'Segoe UI', Tahoma, Arial, sans-serif;
+  }
+
+  .help-center-rich-html[dir='ltr'] {
+    direction: ltr;
+  }
+
+  .help-center-rich-html .ql-align-left {
+    @apply text-left;
+  }
+
+  .help-center-rich-html .ql-align-center {
+    @apply text-center;
+  }
+
+  .help-center-rich-html .ql-align-right {
+    @apply text-right;
+  }
+
+  .help-center-rich-html .ql-align-justify {
+    @apply text-justify;
+  }
+
+  .help-center-rich-html .ql-direction-rtl {
+    direction: rtl;
+  }
+
+  .help-center-rich-html .ql-direction-ltr {
+    direction: ltr;
+  }
+
+  /* Editor may set both direction + align; align must win */
+  .help-center-rich-html .ql-direction-rtl.ql-align-center,
+  .help-center-rich-html [dir='rtl'].ql-align-center {
+    @apply text-center;
+    direction: rtl;
+  }
+
+  .help-center-rich-html .ql-direction-rtl.ql-align-right,
+  .help-center-rich-html [dir='rtl'].ql-align-right {
+    @apply text-right;
+    direction: rtl;
+  }
+
+  .help-center-rich-html .ql-direction-rtl.ql-align-left,
+  .help-center-rich-html [dir='rtl'].ql-align-left {
+    @apply text-left;
+    direction: rtl;
+  }
+
+  .help-center-rich-html .ql-direction-rtl.ql-align-justify,
+  .help-center-rich-html [dir='rtl'].ql-align-justify {
+    @apply text-justify;
+    direction: rtl;
+  }
+
+  .help-center-rich-html .ql-indent-1:not(.ql-direction-rtl) {
+    padding-left: 3em;
+  }
+  .help-center-rich-html .ql-indent-2:not(.ql-direction-rtl) {
+    padding-left: 6em;
+  }
+  .help-center-rich-html .ql-indent-3:not(.ql-direction-rtl) {
+    padding-left: 9em;
+  }
+  .help-center-rich-html .ql-indent-4:not(.ql-direction-rtl) {
+    padding-left: 12em;
+  }
+  .help-center-rich-html .ql-indent-5:not(.ql-direction-rtl) {
+    padding-left: 15em;
+  }
+
+  .help-center-rich-html .ql-direction-rtl.ql-indent-1 {
+    padding-right: 3em;
+    padding-left: 0;
+  }
+  .help-center-rich-html .ql-direction-rtl.ql-indent-2 {
+    padding-right: 6em;
+    padding-left: 0;
+  }
+  .help-center-rich-html .ql-direction-rtl.ql-indent-3 {
+    padding-right: 9em;
+    padding-left: 0;
+  }
+  .help-center-rich-html .ql-direction-rtl.ql-indent-4 {
+    padding-right: 12em;
+    padding-left: 0;
+  }
+  .help-center-rich-html .ql-direction-rtl.ql-indent-5 {
+    padding-right: 15em;
+    padding-left: 0;
+  }
+
+  .help-center-rich-html p {
+    @apply mb-2.5;
+  }
+
+  .help-center-rich-html ul,
+  .help-center-rich-html ol {
+    @apply mb-2.5 ps-5;
+  }
+
+  .help-center-rich-html h1 {
+    @apply mb-2.5 text-[1.35rem] font-bold;
+  }
+
+  .help-center-rich-html h2 {
+    @apply mb-2 text-xl font-bold;
+  }
+
+  .help-center-rich-html h3 {
+    @apply mb-2 text-lg font-semibold;
+  }
+
+  .help-center-rich-html a {
+    @apply text-[var(--color-brand)] underline;
+  }
+
+  .help-center-rich-html blockquote {
+    @apply mb-2.5 border-s-[3px] border-[var(--color-border)] ps-3.5;
+  }
+
+  .help-center-rich-html img {
+    @apply my-3 block h-auto max-w-full rounded-md;
+  }
 }
 
 /* Base styles */
@@ -726,6 +864,19 @@ tr.action-required-highlight {
   background: var(--color-brand);
   box-shadow: 2px 0 10px color-mix(in srgb, var(--color-brand) 30%, transparent);
   pointer-events: none;
+}
+
+/* Dashboard: theme outline on all sides of the card (not left-only bar) */
+.dashboard-action-required {
+  background-color: color-mix(in srgb, var(--color-brand) 4%, transparent) !important;
+}
+
+.dashboard-action-required:not(tr) {
+  border: 1.5px solid color-mix(in srgb, var(--color-brand) 55%, var(--color-border)) !important;
+}
+
+tr.dashboard-action-required {
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--color-brand) 55%, var(--color-border));
 }
 
 @keyframes action-pulse {

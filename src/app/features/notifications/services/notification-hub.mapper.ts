@@ -5,7 +5,8 @@ import { extractRecord } from '@notifications/utils/notification.utils';
 export { extractEntityIdFromMetadata } from '@notifications/utils/notification.utils';
 
 export function mapHubPayloadToNotification(dto: NotificationHubPayload): Notification {
-  const id = dto.id ?? dto.notificationId ?? 0;
+  const raw = dto as Record<string, unknown>;
+  const id = dto.id ?? dto.notificationId ?? Number(raw['Id']) ?? 0;
   const createdAt = dto.createdAt
     ?? dto.creationDate
     ?? dto.createdOn
@@ -31,6 +32,10 @@ export function mapHubPayloadToNotification(dto: NotificationHubPayload): Notifi
     ?? dto.read
     ?? (dto.readAt != null);
 
+  const entityType = (dto.entityType ?? raw['EntityType'] ?? null) as string | null;
+  const entityIdRaw = dto.entityId ?? raw['EntityId'];
+  const entityId = entityIdRaw != null ? Number(entityIdRaw) : null;
+
   return {
     id,
     userId: dto.userId ?? dto.recipientId ?? dto.createdBy ?? null,
@@ -40,8 +45,8 @@ export function mapHubPayloadToNotification(dto: NotificationHubPayload): Notifi
     type,
     title,
     senderId: dto.senderId ?? dto.createdBy ?? null,
-    entityType: dto.entityType ?? null,
-    entityId: dto.entityId ?? null,
+    entityType,
+    entityId: entityId != null && Number.isFinite(entityId) ? entityId : null,
     metadata: dto.metadata ?? dto.additionalData ?? null
   };
 }

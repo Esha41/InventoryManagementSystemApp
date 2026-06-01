@@ -11,6 +11,7 @@ import {
   Download,
   Upload,
   ChevronRight,
+  ChevronLeft,
   ChevronDown
 } from 'lucide-angular';
 import {
@@ -42,6 +43,9 @@ import { APIOperationResponse } from '@models/api-response.model';
 import { ImportResult } from '@models/import-result.model';
 import { ModalComponent } from '@components/modal/modal.component';
 import { ButtonComponent } from '@components/button/button.component';
+import { TranslationService } from '@services/translation.service';
+
+type PurposeExpandIcon = typeof ChevronDown | typeof ChevronLeft | typeof ChevronRight;
 
 /**
  * Lookup Management Component
@@ -80,6 +84,7 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
   readonly Download = Download;
   readonly Upload = Upload;
   readonly ChevronRight = ChevronRight;
+  readonly ChevronLeft = ChevronLeft;
   readonly ChevronDown = ChevronDown;
 
   lookupTables: LookupTableConfig[] = [];
@@ -140,10 +145,24 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private employeeService: EmployeeService,
     private authService: BackendAuthService,
-    private importExportService: ImportExportService
+    private importExportService: ImportExportService,
+    private translationService: TranslationService
   ) { }
 
+  get isRTL(): boolean {
+    return this.translationService.isRTL();
+  }
+
+  getPurposeExpandIcon(expanded: boolean): PurposeExpandIcon {
+    if (expanded) {
+      return this.ChevronDown;
+    }
+    return this.isRTL ? this.ChevronLeft : this.ChevronRight;
+  }
+
   ngOnInit(): void {
+    this.translateService.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
+
     const allTables = this.lookupManagementService.getLookupTables();
     this.lookupTables = allTables.filter(table =>
       this.authService.hasPermission(table.pagePermission)

@@ -14,8 +14,8 @@ import {
   Info
 } from 'lucide-angular';
 import { Router } from '@angular/router';
-import { combineLatest, Observable, Subject } from 'rxjs';
-import { debounceTime, finalize, map, shareReplay, startWith, switchMap, takeUntil, tap } from 'rxjs/operators';
+import { combineLatest, Observable, of, Subject } from 'rxjs';
+import { catchError, debounceTime, finalize, map, shareReplay, startWith, switchMap, take, takeUntil, tap } from 'rxjs/operators';
 import { Notification } from '@notifications/models/notification.model';
 import { NotificationService } from '@notifications/services/notification.service';
 import { ButtonComponent } from '@components/button/button.component';
@@ -38,7 +38,7 @@ import {
 } from '@notifications/utils/notification.utils';
 import {
   splitTranslatedNotificationMessage,
-  getWorkflowApprovalNavigation,
+  hasWorkflowApprovalNavigation,
   NotificationMessagePart
 } from '@notifications/utils/notification-workflow-navigation.utils';
 import { formatTimeToMilitary } from '@utils/format.utils';
@@ -49,7 +49,9 @@ import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 import { NotificationRichMessageComponent } from '@notifications/components/notification-rich-message/notification-rich-message.component';
 import { NotificationRequestNoResolverService } from '@notifications/services/notification-request-no.resolver.service';
 import {
+  extractRequestNoFromMessage,
   getNotificationEntityId,
+  isSupplyPickupNotification,
   translateNotificationMessageText
 } from '@notifications/utils/notification-message.utils';
 
@@ -623,7 +625,9 @@ export class NotificationsComponent implements OnInit, OnDestroy {
       'discard approved': 'notifications.titles.discardApproved',
       'discard rejected': 'notifications.titles.discardRejected',
       // Approval workflow notifications
-      'new approval required': 'notifications.titles.approvalRequired'
+      'new approval required': 'notifications.titles.approvalRequired',
+      'supply pickup date set': 'notifications.titles.supplyPickupDateSet',
+      'supply pickup date confirmed': 'notifications.titles.supplyPickupDateConfirmed'
     };
 
     const translationKey = titleMap[titleLower.toLowerCase()];
@@ -645,11 +649,14 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   getNotificationMessageParts(notification: Notification, enableLinks = true): NotificationMessagePart[] {
     const fallbackRequestNo = this.resolveFallbackRequestNo(notification);
     const text = this.translateNotificationMessage(notification.message, fallbackRequestNo);
-    const canLink = enableLinks && getWorkflowApprovalNavigation(notification) !== null;
+    const canLink = enableLinks && hasWorkflowApprovalNavigation(notification);
     return splitTranslatedNotificationMessage(text, canLink);
   }
 
   private resolveFallbackRequestNo(notification: Notification): string {
+    if (isSupplyPickupNotification(notification)) {
+      return extractRequestNoFromMessage(notification.message);
+    }
     const entityId = getNotificationEntityId(notification);
     if (entityId == null) {
       return '';
@@ -660,11 +667,20 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   openWorkflowFromNotification(notification: Notification, event?: Event): void {
     event?.stopPropagation();
     event?.preventDefault();
-    const nav = getWorkflowApprovalNavigation(notification);
-    if (!nav) {
-      return;
-    }
-    void this.router.navigate(nav.path);
+
+    this.requestNoResolver.resolveWorkflowOrderId(notification).pipe(
+      take(1),
+      takeUntil(this.destroy$)
+    ).subscribe(orderId => {
+      if (orderId == null) {
+        return;
+      }
+      void this.router.navigate([
+        '/requests/requests-management',
+        String(orderId),
+        'workflow-approval'
+      ]);
+    });
   }
 
   hasNotificationActions(notification: Notification | null): boolean {
