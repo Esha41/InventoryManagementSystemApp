@@ -1,54 +1,59 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { catchError, finalize, of, take } from 'rxjs';
+import { SafeHtml } from '@angular/platform-browser';
+import { EMPTY, catchError, finalize, take } from 'rxjs';
 import { HelpCenterService } from '@help-center/services/help-center.service';
+import { HelpCenterHtmlSanitizerService } from '@help-center/services/help-center-html-sanitizer.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { ONBOARDING_TOUR } from '@core/tokens/onboarding-tour.token';
 import { IOnboardingTourProvider } from '@core/interfaces/onboarding-tour-provider.interface';
-import { HelpCenterTermsDto, TermsAcceptanceStatusDto } from '@models/help-center.model';
+import { HelpCenterTermsDto } from '@models/help-center.model';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { environment } from '@environments/environment';
+import {
+  clearSessionTermsAcceptance,
+  hasSessionAcceptedTermsVersion,
+  setSessionAcceptedTermsVersionId
+} from '@core/utils/terms-acceptance-session.util';
+import type { RichHtmlDirection } from '@help-center/utils/help-center-rich-html.utils';
 
 /**
  * Terms blocking flow after login (Help Center API).
+ * Per-login: sessionStorage records acceptance for the active terms version until logout or new login.
  */
 @Injectable({
   providedIn: 'root'
 })
 export class TermsAcceptanceFacade {
   private readonly helpCenter = inject(HelpCenterService);
+  private readonly htmlSanitizer = inject(HelpCenterHtmlSanitizerService);
   private readonly onboarding = inject(ONBOARDING_TOUR, { optional: true }) as IOnboardingTourProvider | null;
   private readonly toast = inject(ToastService);
   private readonly i18n = inject(TranslationService);
-  /** Same pattern as onboarding: {@link Environment.enableOnboardingTour}. */
-  private readonly isSecurityAcknowledgmentOnLoginEnabled = environment.enableSecurityAcknowledgmentOnLogin === true;
+  private readonly isSecurityAcknowledgmentOnLoginEnabled =
+    environment.enableSecurityAcknowledgmentOnLogin === true;
 
   readonly showModal = signal(false);
   readonly pendingTerms = signal<HelpCenterTermsDto | null>(null);
   readonly accepting = signal(false);
+  readonly gateLoadFailed = signal(false);
+  readonly sanitizedTermsHtml = signal<SafeHtml | null>(null);
+  readonly termsContentDir = signal<RichHtmlDirection>('ltr');
+
   private readonly checkingTerms = signal(false);
 
-  /** True while checking acceptance or until the user accepts (blocks shell interaction). */
   readonly shellBlocked = computed(
     () =>
       this.isSecurityAcknowledgmentOnLoginEnabled &&
-      (this.checkingTerms() || this.showModal())
+      (this.checkingTerms() || this.showModal() || this.gateLoadFailed())
   );
 
-  /**
-   * Run as soon as the main shell mounts (login navigation, refresh, deep link).
-   * When terms gating is enabled, checks acceptance before the user can use the app.
-   */
   onMainShellInit(): void {
     if (this.isSecurityAcknowledgmentOnLoginEnabled) {
       this.evaluateTermsGate();
     }
   }
 
-  /**
-   * Run after the shell view is ready (delayed for onboarding DOM).
-   * When terms gating is off, starts the onboarding tour on refresh / deep link.
-   */
   onMainShellReady(): void {
     if (!this.isSecurityAcknowledgmentOnLoginEnabled) {
       this.onboarding?.checkAndStartTour();
@@ -60,10 +65,20 @@ export class TermsAcceptanceFacade {
     this.onMainShellReady();
   }
 
+  clearSessionAcceptance(): void {
+    clearSessionTermsAcceptance();
+  }
+
   beginPostLoginFlow(): void {
     if (!this.isSecurityAcknowledgmentOnLoginEnabled) {
       return;
     }
+    this.clearSessionAcceptance();
+    this.evaluateTermsGate();
+  }
+
+  retryTermsGate(): void {
+    this.gateLoadFailed.set(false);
     this.evaluateTermsGate();
   }
 
@@ -73,21 +88,46 @@ export class TermsAcceptanceFacade {
     }
 
     this.checkingTerms.set(true);
+    this.gateLoadFailed.set(false);
+
     this.helpCenter
       .getTermsAcceptanceStatus()
       .pipe(
         take(1),
-        catchError(() => of({ mustAccept: false, terms: null } as TermsAcceptanceStatusDto)),
+        catchError(() => {
+          this.resetTermsPresentation();
+          this.gateLoadFailed.set(true);
+          return EMPTY;
+        }),
         finalize(() => this.checkingTerms.set(false))
       )
       .subscribe(status => {
         if (status.mustAccept && status.terms) {
-          this.pendingTerms.set(status.terms);
+          if (hasSessionAcceptedTermsVersion(status.terms.id)) {
+            this.resetTermsPresentation();
+            this.onboarding?.checkAndStartTour();
+            return;
+          }
+          this.prepareTermsPresentation(status.terms);
           this.showModal.set(true);
         } else {
+          this.resetTermsPresentation();
           this.onboarding?.checkAndStartTour();
         }
       });
+  }
+
+  private prepareTermsPresentation(terms: HelpCenterTermsDto): void {
+    this.pendingTerms.set(terms);
+    this.termsContentDir.set(this.htmlSanitizer.resolveContainerDir(terms.content));
+    this.sanitizedTermsHtml.set(this.htmlSanitizer.sanitizeRichHtml(terms.content));
+  }
+
+  private resetTermsPresentation(): void {
+    this.showModal.set(false);
+    this.pendingTerms.set(null);
+    this.sanitizedTermsHtml.set(null);
+    this.termsContentDir.set('ltr');
   }
 
   submitAcceptance(): void {
@@ -100,8 +140,8 @@ export class TermsAcceptanceFacade {
       .subscribe({
         next: () => {
           this.accepting.set(false);
-          this.showModal.set(false);
-          this.pendingTerms.set(null);
+          setSessionAcceptedTermsVersionId(terms.id);
+          this.resetTermsPresentation();
           this.onboarding?.checkAndStartTour();
         },
         error: err => {

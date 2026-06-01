@@ -3,6 +3,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import DOMPurify from 'dompurify';
 import {
   applyBidirectionalAttributes,
+  isRichHtmlRtl as detectRichHtmlRtl,
   resolveRichHtmlContainerDir,
   RichHtmlDirection
 } from '../utils/help-center-rich-html.utils';
@@ -85,5 +86,9 @@ export class HelpCenterHtmlSanitizerService {
   /** Container `dir` for rich HTML (works when app UI is English but content is Arabic). */
   resolveContainerDir(html: string | null | undefined): RichHtmlDirection {
     return resolveRichHtmlContainerDir(html ?? '');
+  }
+
+  isRichHtmlRtl(html: string | null | undefined): boolean {
+    return detectRichHtmlRtl(html ?? '');
   }
 }

@@ -16,6 +16,7 @@ import { IUserProfileProvider } from '../interfaces/user-profile-provider.interf
 import { parseGenerateCaptchaApiPayload } from '@utils/captcha-response-parser.util';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { decodeJwtPayload } from '@utils/jwt.util';
+import { clearSessionTermsAcceptance } from '@core/utils/terms-acceptance-session.util';
 
 type JwtPayload = Record<string, unknown> & {
   userId?: string;
@@ -264,6 +265,7 @@ export class AuthFlowService {
     this.configService.log('Logging out user');
     this.session.setLogoutInProgress(true);
     this.session.pauseSessionHeartbeat();
+    clearSessionTermsAcceptance();
 
     return this.apiService.post<string>(API_ENDPOINTS.AUTH.LOGOUT, {}).pipe(
       map(() => {

@@ -54,10 +54,6 @@
                             class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
                             {{ 'ORDER_TRACKING.CHANGES' | translate }}
                         </th>
-                        <th
-                            class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide w-1/4">
-                            {{ 'ORDER_TRACKING.NOTES' | translate }}
-                        </th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-[var(--color-border)] bg-white">
@@ -102,9 +98,6 @@
                                 class="text-xs text-[var(--color-text-muted)] mt-1">
                                 {{ item.itemName }}
                             </div>
-                        </td>
-                        <td class="px-4 py-3 text-sm text-[var(--color-text-muted)]">
-                            {{ item.notes || item.description || '-' }}
                         </td>
                     </tr>
                 </tbody>
