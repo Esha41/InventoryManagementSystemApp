@@ -101,8 +101,7 @@ export class RequestsManagementService {
   }
 
   /**
-   * Mirrors dashboard list sorting (`DashboardDataService.getDashboardRequests`):
-   * default Priority desc (+ CreationDate on backend composite sort); mapped fields use Dynamic LINQ.
+   * Mirrors dashboard list sorting: action-required first, then priority/date or user-selected column.
    */
   private applySortToPagedRequest(
     pagedRequest: PagedRequest,

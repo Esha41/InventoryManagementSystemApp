@@ -52,7 +52,8 @@
         "loadError": "Could not load supply summary.",
         "noLines": "No supply lines recorded.",
         "linesTitle": "Supplied items",
-        "weaponOrder": "Weapon order"
+        "weaponOrder": "Weapon order",
+        "receiverInformation": "Receiver Information"
       },
       "labels": {
         "department": "Department",

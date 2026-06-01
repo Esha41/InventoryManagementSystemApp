@@ -289,7 +289,7 @@ export class DashboardDataService {
       filter: filters.length > 0 ? (filters.length === 1 ? filters[0] : { logic: 'and', filters }) : undefined
     };
 
-    // Sorting — default: higher priority first, then newest (see ApplyUserActionsCompositeSort on backend)
+    // Sorting — action-required (IsMyTurn) first on backend, then priority/date or user-selected column
     const columnMap: Record<string, string> = {
       'orderNumber': 'RequestNo',
       'usageDate': 'CreationDate',

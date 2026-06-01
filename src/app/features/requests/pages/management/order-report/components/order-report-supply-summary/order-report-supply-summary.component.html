@@ -26,32 +26,29 @@
         <span class="print-info-label">{{ 'workflowApprovalDetail.workflowSupplySummary.supplyPickupDate' | translate }}:</span>
         <span class="print-info-value">{{ summary.supplyDate | appDateTime }}</span>
       </div>
-      <div class="print-info-item" *ngIf="summary.submissionStatus > 0">
-        <span class="print-info-label">{{ 'workflowApprovalDetail.workflowSupplySummary.submissionStatus' | translate }}:</span>
-        <span class="print-info-value">{{ submissionLabelKey(summary.submissionStatus) | translate }}</span>
-      </div>
       <div class="print-info-item" *ngIf="summary.fulfillmentStatus > 0">
         <span class="print-info-label">{{ 'workflowApprovalDetail.workflowSupplySummary.fulfillmentStatus' | translate }}:</span>
         <span class="print-info-value">{{ fulfillmentLabelKey(summary.fulfillmentStatus) | translate }}</span>
       </div>
     </div>
 
-    <div *ngIf="summary.receiverName || summary.receiverRankName || summary.receiverMilitaryId" class="print-info-grid supply-summary-stack">
-      <div class="print-info-item print-info-item--full supply-receiver-block">
-        <span class="print-info-label">{{ 'workflowApprovalDetail.workflowSupplySummary.receiver' | translate }}</span>
-        <div class="supply-receiver-lines">
-          <div *ngIf="summary.receiverName" class="supply-receiver-line">
-            <span class="supply-receiver-line-label">{{ 'workflowApprovalDetail.receiverName' | translate }}:</span>
-            <span class="supply-receiver-line-value">{{ summary.receiverName }}</span>
-          </div>
-          <div *ngIf="summary.receiverRankName" class="supply-receiver-line">
-            <span class="supply-receiver-line-label">{{ 'workflowApprovalDetail.workflowSupplySummary.receiverRank' | translate }}:</span>
-            <span class="supply-receiver-line-value">{{ summary.receiverRankName }}</span>
-          </div>
-          <div *ngIf="summary.receiverMilitaryId" class="supply-receiver-line">
-            <span class="supply-receiver-line-label">{{ 'workflowApprovalDetail.workflowSupplySummary.receiverMilitaryId' | translate }}:</span>
-            <span class="supply-receiver-line-value">{{ summary.receiverMilitaryId }}</span>
-          </div>
+    <div *ngIf="summary.receiverName || summary.receiverRankName || summary.receiverMilitaryId"
+      class="supply-receiver-section supply-summary-stack">
+      <h3 class="supply-receiver-heading">
+        {{ 'requestsManagement.orderReport.supplySummary.receiverInformation' | translate }}
+      </h3>
+      <div class="supply-receiver-lines">
+        <div *ngIf="summary.receiverName" class="supply-receiver-field">
+          <span class="supply-receiver-field-label">{{ 'workflowApprovalDetail.receiverName' | translate }}</span>
+          <span class="supply-receiver-field-value">{{ summary.receiverName }}</span>
+        </div>
+        <div *ngIf="summary.receiverRankName" class="supply-receiver-field">
+          <span class="supply-receiver-field-label">{{ 'workflowApprovalDetail.workflowSupplySummary.receiverRank' | translate }}</span>
+          <span class="supply-receiver-field-value">{{ summary.receiverRankName }}</span>
+        </div>
+        <div *ngIf="summary.receiverMilitaryId" class="supply-receiver-field">
+          <span class="supply-receiver-field-label">{{ 'workflowApprovalDetail.workflowSupplySummary.receiverMilitaryId' | translate }}</span>
+          <span class="supply-receiver-field-value">{{ summary.receiverMilitaryId }}</span>
         </div>
       </div>
     </div>

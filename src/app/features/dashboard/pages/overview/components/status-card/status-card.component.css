@@ -15,16 +15,6 @@
     padding-inline: 0.75rem;
   }
 
-  .status-card-headline-narrow .action-required-badge {
-    font-size: 9px;
-    padding: 2px 8px;
-    letter-spacing: 0.04em;
-  }
-
-  .status-card-headline-narrow .action-required-badge.animate-action-glow {
-    animation: none;
-  }
-
   .status-card-badge-narrow {
     font-size: 0.65rem;
     letter-spacing: 0.12em;

@@ -189,8 +189,8 @@ export class StatusCardComponent implements OnInit, OnDestroy {
     return !!this.orderRequestId && !this.returnRequestId && !this.discardRequestId;
   }
 
-  isVeryUrgent(): boolean {
-    return this.priority === 3;
+  hasPriority(): boolean {
+    return this.priority === 1 || this.priority === 2 || this.priority === 3;
   }
 
   getPriorityBadgeClass(): string {

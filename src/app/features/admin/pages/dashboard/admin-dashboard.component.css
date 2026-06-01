@@ -274,24 +274,14 @@
     color: var(--color-brand);
 }
 
-.quick-action-content {
+.quick-action-title {
     flex: 1;
     min-width: 0;
-}
-
-.quick-action-title {
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--color-text);
-    margin: 0 0 0.25rem 0;
-    line-height: 1.3;
-}
-
-.quick-action-description {
-    font-size: 0.75rem;
-    color: var(--color-text-muted);
     margin: 0;
-    line-height: 1.4;
+    line-height: 1.3;
 }
 
 /* Delegations Section */
