@@ -1,5 +1,6 @@
 import { Notification } from '@notifications/models/notification.model';
 import { extractEntityIdFromMetadata } from './notification.utils';
+import { extractRequestNoFromMessage, getNotificationEntityId } from './notification-message.utils';
 
 export type NotificationMessagePart = { kind: 'text' | 'link'; value: string };
 
@@ -17,6 +18,18 @@ const WORKFLOW_NOTIFICATION_ENTITY_TYPES = new Set([
 
 function normalizeEntityType(notification: Notification): string {
   return (notification.entityType ?? notification.type ?? '').toLowerCase().trim();
+}
+
+function isSupplyPickupWorkflowNotification(notification: Notification): boolean {
+  const title = (notification.title ?? '').trim().toLowerCase();
+  const message = (notification.message ?? '').trim().toLowerCase();
+  if (title.includes('supply pickup date')) {
+    return true;
+  }
+  if (message.includes('supply pickup date for order')) {
+    return true;
+  }
+  return normalizeEntityType(notification) === 'supply';
 }
 
 /** `/requests/requests-management/:id/workflow-approval` when notification carries a workflow-scoped entity id */
@@ -38,7 +51,23 @@ export function getWorkflowApprovalNavigation(
 }
 
 export function hasWorkflowApprovalNavigation(notification: Notification | null): boolean {
-  return getWorkflowApprovalNavigation(notification) !== null;
+  if (!notification) {
+    return false;
+  }
+  if (getWorkflowApprovalNavigation(notification) !== null) {
+    return true;
+  }
+  if (!isSupplyPickupWorkflowNotification(notification)) {
+    return false;
+  }
+  const entityType = normalizeEntityType(notification);
+  if (entityType === 'order' && getNotificationEntityId(notification) != null) {
+    return true;
+  }
+  if (entityType === 'supply' && getNotificationEntityId(notification) != null) {
+    return true;
+  }
+  return !!extractRequestNoFromMessage(notification.message);
 }
 
 /** Split translated body so ORD-/RET-/DIS- segments can become links when deep-link is allowed */

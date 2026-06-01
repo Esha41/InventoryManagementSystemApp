@@ -12,12 +12,26 @@ export function extractRequestNoFromMessage(message: string | null | undefined):
   }
   const trimmed = message.trim();
   const hashMatch = trimmed.match(/Request #(.+?) awaits your approval\.?/i)
-    ?? trimmed.match(/Request #(.+?) requires higher approval\.?/i);
+    ?? trimmed.match(/Request #(.+?) requires higher approval\.?/i)
+    ?? trimmed.match(/Order #((?:ORD|RTN|DISC|RET|DIS)-[\d\-A-Z]+)/i);
   if (hashMatch?.[1]?.trim()) {
     return hashMatch[1].trim();
   }
   const tokenMatch = trimmed.match(REQUEST_NO_IN_TEXT);
   return tokenMatch?.[1] ?? tokenMatch?.[0] ?? '';
+}
+
+export function isSupplyPickupNotification(notification: Notification): boolean {
+  const title = (notification.title ?? '').trim().toLowerCase();
+  const message = (notification.message ?? '').trim().toLowerCase();
+  if (title.includes('supply pickup date')) {
+    return true;
+  }
+  if (message.includes('supply pickup date for order')) {
+    return true;
+  }
+  const entityType = (notification.entityType ?? notification.type ?? '').toLowerCase().trim();
+  return entityType === 'supply';
 }
 
 export function isApprovalRequiredNotification(notification: Notification): boolean {
@@ -134,7 +148,46 @@ export function translateNotificationMessageText(
     return translateService.instant('notifications.messages.requestRequiresHigherApprovalGeneric');
   }
 
+  const supplyPickupTranslated = translateSupplyPickupMessage(translateService, messageTrimmed, requestNo);
+  if (supplyPickupTranslated !== null) {
+    return supplyPickupTranslated;
+  }
+
   return messageTrimmed;
+}
+
+function translateSupplyPickupMessage(
+  translateService: TranslateService,
+  messageTrimmed: string,
+  fallbackRequestNo: string
+): string | null {
+  const setMatch = messageTrimmed.match(
+    /^The supply pickup date for Order #(.+?) has been set to (\d{4}-\d{2}-\d{2})\.\s*(.*)$/is
+  );
+  if (setMatch) {
+    const requestNo = setMatch[1].trim() || fallbackRequestNo;
+    const main = translateService.instant('notifications.messages.supplyPickupDateSet', {
+      requestNo,
+      date: setMatch[2]
+    });
+    const suffix = setMatch[3]?.trim();
+    return suffix ? `${main} ${suffix}` : main;
+  }
+
+  const confirmedMatch = messageTrimmed.match(
+    /^The supply pickup date for Order #(.+?) has been confirmed to (\d{4}-\d{2}-\d{2})\.\s*(.*)$/is
+  );
+  if (confirmedMatch) {
+    const requestNo = confirmedMatch[1].trim() || fallbackRequestNo;
+    const main = translateService.instant('notifications.messages.supplyPickupDateConfirmed', {
+      requestNo,
+      date: confirmedMatch[2]
+    });
+    const suffix = confirmedMatch[3]?.trim();
+    return suffix ? `${main} ${suffix}` : main;
+  }
+
+  return null;
 }
 
 function translateWorkflowRequestActionMessage(

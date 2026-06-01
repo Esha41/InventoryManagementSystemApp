@@ -79,7 +79,9 @@
       "workflowRequestApproved": "تمت الموافقة على الطلب {{requestNo}}",
       "workflowRequestRejected": "تم رفض الطلب {{requestNo}}",
       "workflowRequestCancelled": "تم إلغاء الطلب {{requestNo}}",
-      "workflowRequestReturnedForReview": "تم إرجاع الطلب {{requestNo}} للمراجعة"
+      "workflowRequestReturnedForReview": "تم إرجاع الطلب {{requestNo}} للمراجعة",
+      "supplyPickupDateSet": "تم تحديد تاريخ استلام التوريد",
+      "supplyPickupDateConfirmed": "تم تأكيد تاريخ استلام التوريد"
     },
     "messages": {
       "orderCreated": "تم إنشاء الطلب {{requestNo}}.",
@@ -99,7 +101,9 @@
       "workflowRequestRejectedMessage": "{{requestNo}} · مرفوض.",
       "workflowRequestCancelledMessage": "{{requestNo}} · ملغى.",
       "workflowRequestReturnedForReviewMessage": "{{requestNo}} · للمراجعة.",
-      "workflowRequestCommentsAppend": " {{comments}}"
+      "workflowRequestCommentsAppend": " {{comments}}",
+      "supplyPickupDateSet": "طلب {{requestNo}} · تم تحديد تاريخ استلام التوريد إلى {{date}}.",
+      "supplyPickupDateConfirmed": "طلب {{requestNo}} · تم تأكيد تاريخ استلام التوريد إلى {{date}}."
     },
     "entityTypes": {
       "order": "صرف",
