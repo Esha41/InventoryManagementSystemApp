@@ -30,9 +30,9 @@
     "quantity": "Quantity",
     "sendRequest": "Submit",
     "selectRequestPurpose": "Select Request Purpose",
-    "enterReason": "Enter reason for return (optional)",
+    "enterReason": "",
     "enterNotes": "Enter additional notes (optional)",
-    "requestPurposeNotesPlaceholder": "Enter notes for the selected request purpose",
+    "requestPurposeNotesPlaceholder": "",
     "attachments": "Attachments",
     "filters": {
       "ammunitionType": "Ammunition Type",

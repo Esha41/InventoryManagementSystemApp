@@ -243,7 +243,7 @@
         <!-- Reason (optional) -->
         <div>
           <label class="block text-sm font-semibold text-[var(--color-text)] mb-2" for="rr-fld-reason">
-            {{ 'returnRequest.reason' | translate }}
+            {{ 'returnRequest.comments' | translate }}
           </label>
           <textarea id="rr-fld-reason"
             [ngModel]="reason" (ngModelChange)="reasonChange.emit($event)"

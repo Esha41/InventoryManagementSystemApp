@@ -133,7 +133,7 @@
     "failedToRemoveItem": "فشل إزالة المادة",
     "selectLots": "تحديد lots",
     "approvedQuantity": "الكمية الموافق عليها",
-    "showAvailableLots": "عرض Lots المقترحة",
+    "showAvailableLots":"عرض LOT المقترحة",
     "addLot": "إضافة lot",
     "lotSelectionInfo": "معلومات تحديد lot",
     "dischargeQuantity": "كمية الصرف",
@@ -141,8 +141,8 @@
     "confirmSelection":"تطبيق",
     "available": "متاح",
     "daysRemaining": "الأيام المتبقية",
-    "enterLotNumber": "Enter lot number",
-    "lotNumberPlaceholder": "Enter lot number...",
+    "enterLotNumber": "ادخل رقم الLOT",
+    "lotNumberPlaceholder":"ادخل رقم الLOT",
     "getDetails": "الحصول على التفاصيل",
     "errors": {
       "allowanceExceeded": "تجاوز الكمية المقررة. المتاح: {{availableQuantity}}"
