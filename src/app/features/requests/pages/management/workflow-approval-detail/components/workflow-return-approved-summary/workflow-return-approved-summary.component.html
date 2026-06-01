@@ -7,7 +7,7 @@
   <p class="text-sm text-[var(--color-error)] text-center">{{ loadError | translate }}</p>
 </div>
 
-<ng-template #linesTable let-rows="rows" let-lotHeaderKey="lotHeaderKey">
+<ng-template #linesTable let-rows="rows" let-lotHeaderKey="lotHeaderKey" let-showLotColumn="showLotColumn">
   <div class="overflow-x-auto">
     <table class="w-full text-sm">
       <thead class="bg-[var(--color-background-muted)]">
@@ -21,7 +21,7 @@
             {{ 'workflowReturnApprovedSummary.returnedQty' | translate }}</th>
           <th class="px-4 py-3 text-end text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
             {{ 'workflowReturnApprovedSummary.receivedQty' | translate }}</th>
-          <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+          <th *ngIf="showLotColumn" class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
             {{ lotHeaderKey | translate }}</th>
           <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
             {{ 'workflowReturnApprovedSummary.notes' | translate }}</th>
@@ -45,11 +45,11 @@
             <td class="px-4 py-3 text-[var(--color-text-muted)] tabular-nums">{{ row.itemNo }}</td>
             <td class="px-4 py-3 text-end tabular-nums">{{ row.returnedQty }}</td>
             <td class="px-4 py-3 text-end tabular-nums">{{ row.receivedQty }}</td>
-            <td class="px-4 py-3 text-[var(--color-text)] break-words max-w-[180px]">{{ row.lotOrBatch }}</td>
+            <td *ngIf="showLotColumn" class="px-4 py-3 text-[var(--color-text)] break-words max-w-[180px]">{{ row.lotOrBatch }}</td>
             <td class="px-4 py-3 text-[var(--color-text-muted)] whitespace-pre-wrap break-words max-w-[220px]">{{ row.notes }}</td>
           </tr>
           <tr *ngIf="row.isWeapon && row.detailLines.length && isExpanded(row)" class="bg-[var(--color-background-main)]">
-            <td colspan="7" class="px-4 py-3">
+            <td [attr.colspan]="showLotColumn ? 7 : 6" class="px-4 py-3">
               <p class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-2">
                 {{ 'workflowReturnApprovedSummary.serialDetails' | translate }}
               </p>
@@ -106,7 +106,7 @@
           {{ 'workflowReturnApprovedSummary.sectionWeapons' | translate }}
         </p>
         <ng-container
-          *ngTemplateOutlet="linesTable; context: { rows: weaponMasterRows, lotHeaderKey: 'workflowReturnApprovedSummary.colPolicyNumber' }">
+          *ngTemplateOutlet="linesTable; context: { rows: weaponMasterRows, lotHeaderKey: 'workflowReturnApprovedSummary.colPolicyNumber', showLotColumn: true }">
         </ng-container>
       </div>
     </ng-container>
@@ -118,7 +118,7 @@
           {{ 'workflowReturnApprovedSummary.sectionAmmunition' | translate }}
         </p>
         <ng-container
-          *ngTemplateOutlet="linesTable; context: { rows: ammoLotRows, lotHeaderKey: 'workflowReturnApprovedSummary.colLot' }">
+          *ngTemplateOutlet="linesTable; context: { rows: ammoLotRows, showLotColumn: false }">
         </ng-container>
       </div>
     </ng-container>
@@ -130,7 +130,7 @@
           {{ 'workflowReturnApprovedSummary.sectionExplosives' | translate }}
         </p>
         <ng-container
-          *ngTemplateOutlet="linesTable; context: { rows: explosiveBatchRows, lotHeaderKey: 'workflowReturnApprovedSummary.colBatch' }">
+          *ngTemplateOutlet="linesTable; context: { rows: explosiveBatchRows, showLotColumn: false }">
         </ng-container>
       </div>
     </ng-container>
@@ -143,36 +143,53 @@
         {{ 'workflowReturnApprovedSummary.attachmentsTitle' | translate }}
       </h3>
     </div>
-    <div class="overflow-x-auto rounded-lg border border-[var(--color-border)]">
-      <table class="w-full text-sm">
-        <thead class="bg-[var(--color-background-muted)]">
-          <tr>
-            <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
-              {{ 'workflowReturnApprovedSummary.fileName' | translate }}</th>
-            <th class="px-4 py-3 text-start text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
-              {{ 'workflowReturnApprovedSummary.fileSource' | translate }}</th>
-            <th class="px-4 py-3 text-end text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide w-28">
-              {{ 'workflowReturnApprovedSummary.open' | translate }}</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-[var(--color-border)]">
-          <tr *ngFor="let ar of attachmentRows" class="hover:bg-[var(--color-background-hover)]">
-            <td class="px-4 py-3 text-[var(--color-text)] font-medium truncate max-w-[280px]">
+    <div class="space-y-4">
+      <div *ngIf="requestAttachments.length" class="space-y-2">
+        <span *ngIf="processingAttachments.length"
+          class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+          {{ 'workflowReturnApprovedSummary.sourceRequest' | translate }}
+        </span>
+        <div class="space-y-2">
+          <div *ngFor="let ar of requestAttachments"
+            class="flex items-center gap-2 p-2 bg-[var(--color-background-muted)] rounded-lg">
+            <lucide-angular [img]="FileText" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+            <button type="button" (click)="downloadFile(ar.file)"
+              class="text-sm text-[var(--color-brand)] hover:text-[var(--color-brand-dark)] hover:underline cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 rounded flex-1 text-start truncate">
               {{ ar.file.originalName || ar.file.fileName }}
-            </td>
-            <td class="px-4 py-3 text-[var(--color-text-muted)] text-xs">
-              <span *ngIf="ar.source === 'request'">{{ 'workflowReturnApprovedSummary.sourceRequest' | translate }}</span>
-              <span *ngIf="ar.source === 'line'">{{ 'workflowReturnApprovedSummary.sourceProcessing' | translate }}<ng-container *ngIf="ar.sourceDetail"> — {{ ar.sourceDetail }}</ng-container></span>
-            </td>
-            <td class="px-4 py-3 text-end">
-              <a [href]="getFileDownloadUrl(ar.file)" target="_blank" rel="noopener noreferrer"
-                class="text-sm font-medium text-[var(--color-brand)] hover:underline">
-                {{ 'workflowReturnApprovedSummary.open' | translate }}
-              </a>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            </button>
+            <button type="button" (click)="downloadFile(ar.file)"
+              class="text-[var(--color-brand)] hover:text-[var(--color-brand-dark)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 rounded p-1 shrink-0">
+              <lucide-angular [img]="Download" class="h-4 w-4"></lucide-angular>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="processingAttachments.length" class="space-y-2">
+        <span *ngIf="requestAttachments.length"
+          class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+          {{ 'workflowReturnApprovedSummary.sourceProcessing' | translate }}
+        </span>
+        <div class="space-y-2">
+          <div *ngFor="let ar of processingAttachments"
+            class="flex items-center gap-2 p-2 bg-[var(--color-background-muted)] rounded-lg">
+            <lucide-angular [img]="FileText" class="h-4 w-4 text-[var(--color-brand)]"></lucide-angular>
+            <div class="flex-1 min-w-0">
+              <button type="button" (click)="downloadFile(ar.file)"
+                class="text-sm text-[var(--color-brand)] hover:text-[var(--color-brand-dark)] hover:underline cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 rounded text-start truncate block w-full">
+                {{ ar.file.originalName || ar.file.fileName }}
+              </button>
+              <p *ngIf="ar.sourceDetail" class="text-xs text-[var(--color-text-muted)] truncate mt-0.5">
+                {{ ar.sourceDetail }}
+              </p>
+            </div>
+            <button type="button" (click)="downloadFile(ar.file)"
+              class="text-[var(--color-brand)] hover:text-[var(--color-brand-dark)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 rounded p-1 shrink-0">
+              <lucide-angular [img]="Download" class="h-4 w-4"></lucide-angular>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

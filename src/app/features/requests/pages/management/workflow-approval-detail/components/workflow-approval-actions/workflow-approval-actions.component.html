@@ -184,7 +184,7 @@
           class="text-[10px] text-[var(--color-error)] mt-2 text-center font-semibold uppercase tracking-wider">
           {{ 'workflowApprovalDetail.errors.returnDepotRequired' | translate }}
         </p>
-        <p *ngIf="canSetReturnDeliveryDate() && !isReturnDeliveryDateSet() && !isElevatedWorkflowAdmin"
+        <p *ngIf="showReturnDeliveryDateRequiredMessage()"
           class="text-[10px] text-[var(--color-error)] mt-2 text-center font-semibold uppercase tracking-wider">
           {{ 'workflowApprovalDetail.errors.returnDeliveryDateRequired' | translate }}
         </p>

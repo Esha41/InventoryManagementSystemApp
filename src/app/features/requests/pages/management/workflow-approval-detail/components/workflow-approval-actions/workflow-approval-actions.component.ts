@@ -235,6 +235,17 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
     return this.stateService.isReturnDeliveryDateSet();
   }
 
+  /** Show delivery-date hint only after return depot is set (when depot is also required). */
+  showReturnDeliveryDateRequiredMessage(): boolean {
+    if (!this.canSetReturnDeliveryDate() || this.isReturnDeliveryDateSet() || this.isElevatedWorkflowAdmin) {
+      return false;
+    }
+    if (this.canSetReturnDepot() && !this.isReturnDepotSet()) {
+      return false;
+    }
+    return true;
+  }
+
   shouldShowApproveButton(): boolean {
     if (!this.stateService.canApproveOrReject()) {
       return false;

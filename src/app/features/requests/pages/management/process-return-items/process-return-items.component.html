@@ -54,24 +54,16 @@
 
           <div *ngIf="ammoExplosiveRows.length > 0"
             class="overflow-x-auto overflow-y-hidden overscroll-x-contain border border-[var(--color-border)] rounded-lg">
-            <table class="w-full min-w-[52rem] text-sm border-collapse">
+            <table class="w-full min-w-[36rem] text-sm border-collapse">
               <thead class="bg-[var(--color-background-muted)] text-[var(--color-text)]">
                 <tr>
-                  <th class="px-4 py-3 text-start font-semibold w-[28%]">{{ 'processReturnItems.item' | translate }}</th>
-                  <th class="px-4 py-3 text-start font-semibold whitespace-nowrap w-[12%]">{{ 'processReturnItems.returnedQuantity' | translate }}</th>
-                  <th class="px-4 py-3 text-start font-semibold whitespace-nowrap w-[14%]">
+                  <th class="px-4 py-3 text-start font-semibold w-[36%]">{{ 'processReturnItems.item' | translate }}</th>
+                  <th class="px-4 py-3 text-start font-semibold whitespace-nowrap w-[18%]">{{ 'processReturnItems.returnedQuantity' | translate }}</th>
+                  <th class="px-4 py-3 text-start font-semibold whitespace-nowrap w-[22%]">
                     {{ 'processReturnItems.receivedQuantity' | translate }}
                     <span class="text-[var(--color-error)]" aria-hidden="true">*</span>
                   </th>
-                  <th class="px-4 py-3 text-start font-semibold w-[16%]">
-                    {{ 'processReturnItems.readyForIssue' | translate }}
-                    <span class="text-[var(--color-error)]" aria-hidden="true">*</span>
-                  </th>
-                  <th class="px-4 py-3 text-start font-semibold w-[14%]">
-                    {{ 'processReturnItems.lot' | translate }}
-                    <span class="text-[var(--color-error)]" aria-hidden="true">*</span>
-                  </th>
-                  <th class="px-4 py-3 text-start font-semibold w-[16%]">{{ 'processReturnItems.notes' | translate }}</th>
+                  <th class="px-4 py-3 text-start font-semibold w-[24%]">{{ 'processReturnItems.notes' | translate }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -87,19 +79,6 @@
                     <input type="number" [(ngModel)]="row.receivedQuantity" [disabled]="processing" min="1" required
                       class="w-full min-h-[42px] box-border px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] disabled:opacity-50 tabular-nums"
                       [placeholder]="'processReturnItems.enterReceivedQuantity' | translate">
-                  </td>
-                  <td class="px-4 py-3 align-middle">
-                    <app-dropdown class="block w-full min-w-0" [(ngModel)]="row.readyForIssue"
-                      [name]="'ammoReadyForIssue_' + i" [options]="readyForIssueDropdownOptions" optionValue="value"
-                      optionLabel="label" [translateLabels]="true" [showSearch]="false" [formFieldAligned]="true"
-                      [disabled]="processing" required="true" [placeholderSelectable]="false"
-                      [placeholder]="'processReturnItems.selectReadyForIssue' | translate">
-                    </app-dropdown>
-                  </td>
-                  <td class="px-4 py-3 align-middle">
-                    <input type="text" [(ngModel)]="row.lot" [disabled]="processing" required
-                      class="w-full min-h-[42px] box-border px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] disabled:opacity-50"
-                      [placeholder]="'processReturnItems.enterLot' | translate">
                   </td>
                   <td class="px-4 py-3 align-middle">
                     <input type="text" [(ngModel)]="row.notes" [disabled]="processing"
