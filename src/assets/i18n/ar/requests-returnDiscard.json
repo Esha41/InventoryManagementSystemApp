@@ -28,7 +28,7 @@
     "notes": "ملاحظات",
     "returnItems": "مواد الإرجاع",
     "quantity": "الكمية",
-    "sendRequest": "تنفيذ",
+    "sendRequest": "إرسال",
     "selectRequestPurpose": "اختر الغرض من الطلب",
     "enterReason": "أدخل سبب الإرجاع (اختياري)",
     "enterNotes": "أدخل ملاحظات إضافية (اختياري)",
@@ -64,7 +64,7 @@
     "success": {
       "orderSentSuccessfully": "تم تنفيذ طلب الإرجاع بنجاح",
       "requestNumber": "رقم طلب الإرجاع هو",
-      "trackRequest": "تتبع الطلب"
+      "trackRequest":"متابعة الطلب"
     },
     "confirmDialog": {
       "title": "تأكيد الطلب",
@@ -85,7 +85,7 @@
     "item": "مادة",
     "quantity": "الكمية",
     "itemNotes": "ملاحظات مادة",
-    "sendRequest": "تنفيذ",
+    "sendRequest": "إرسال",
     "selectDepartment": "اختر الوحدة",
     "selectRequester": "اختر المقدم (اختياري)",
     "selectRequestPurpose": "اختر الغرض من الطلب",
