@@ -33,7 +33,7 @@
     "print": "طباعة",
     "priority": "الأولوية",
     "priorityLevels": {
-      "Normal": "عادية",
+      "Normal": "عادي",
       "Urgent": "عاجل",
       "VeryUrgent": "عاجل جداً",
       "Critical": "حرجة"
