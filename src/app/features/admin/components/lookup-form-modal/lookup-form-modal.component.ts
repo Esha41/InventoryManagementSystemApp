@@ -175,28 +175,18 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
       this.errorMessage = '';
 
       if (this.mode === 'create') {
-        this.lookupForm.patchValue({
-          nameEn: '',
-          nameAr: '',
-          code: '',
-          itemType: null,
-          allowanceContext: null
-        });
-        this.clearAttachmentRequirements();
+        this.resetFormForCreate();
       } else if (this.mode === 'edit' && this.lookupItem && this.lookupForm) {
         this.populateForm();
       }
     }
 
+    if (changes['isOpen'] && !this.isOpen && this.lookupForm) {
+      this.resetFormForCreate();
+    }
+
     if (changes['mode'] && this.mode === 'create' && this.isOpen) {
-      this.lookupForm.patchValue({
-        nameEn: '',
-        nameAr: '',
-        code: '',
-        itemType: null,
-        allowanceContext: null
-      });
-      this.clearAttachmentRequirements();
+      this.resetFormForCreate();
       this.errorMessage = '';
       this.isLoading = false;
     }
@@ -205,14 +195,7 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
       if (this.lookupItem && this.lookupForm) {
         this.populateForm();
       } else if (!this.lookupItem && this.mode === 'create' && this.lookupForm) {
-        this.lookupForm.patchValue({
-          nameEn: '',
-          nameAr: '',
-          code: '',
-          itemType: null,
-          allowanceContext: null
-        });
-        this.clearAttachmentRequirements();
+        this.resetFormForCreate();
       }
     }
 
@@ -395,6 +378,15 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   close(): void {
+    this.resetFormForCreate();
+    this.closed.emit();
+  }
+
+  /** Clears values and touched/dirty state so validation does not show on reopen for Add. */
+  private resetFormForCreate(): void {
+    if (!this.lookupForm) {
+      return;
+    }
     this.clearAttachmentRequirements();
     this.lookupForm.reset(
       {
@@ -409,7 +401,6 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
     );
     this.errorMessage = '';
     this.isLoading = false;
-    this.closed.emit();
   }
 
   private markFormGroupTouched(): void {

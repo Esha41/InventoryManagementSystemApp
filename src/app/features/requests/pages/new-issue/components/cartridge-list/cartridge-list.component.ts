@@ -126,6 +126,8 @@ export class CartridgeListComponent implements OnChanges, OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
+    this.draftSearchTerm = this.appliedSearchTerm ?? '';
+    this.searchTerm = this.appliedSearchTerm ?? '';
     this.translate.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
   }
 
