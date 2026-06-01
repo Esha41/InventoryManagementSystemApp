@@ -47,7 +47,7 @@ export class MainLayoutComponent implements OnInit, OnDestroy, AfterViewInit {
     private router: Router,
     private idleService: IdleService,
     @Optional() @Inject(ONBOARDING_TOUR) private onboardingTourService: IOnboardingTourProvider | null,
-    private termsAcceptance: TermsAcceptanceFacade
+    readonly termsAcceptance: TermsAcceptanceFacade
   ) {
     this.checkRoute();
     this.router.events
@@ -78,10 +78,11 @@ export class MainLayoutComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnInit(): void {
     this.idleService.start();
+    this.termsAcceptance.onMainShellInit();
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => this.termsAcceptance.beginShellReadyFlow(), 500);
+    setTimeout(() => this.termsAcceptance.onMainShellReady(), 500);
   }
 
   ngOnDestroy(): void {

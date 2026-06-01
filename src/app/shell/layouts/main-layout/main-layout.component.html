@@ -1,5 +1,7 @@
 <div class="flex flex-col min-h-dvh h-dvh overflow-hidden bg-[var(--color-background-muted)]"
-  [class.mobile-sidebar-open]="mobileSidebarOpen">
+  [class.mobile-sidebar-open]="mobileSidebarOpen"
+  [class.pointer-events-none]="termsAcceptance.shellBlocked()"
+  [class.select-none]="termsAcceptance.shellBlocked()">
   <!-- Navbar - Full Width at Top -->
   <app-navbar (menuClick)="onMobileMenuToggle()"></app-navbar>
 

@@ -1,6 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import DOMPurify from 'dompurify';
+import {
+  applyBidirectionalAttributes,
+  resolveRichHtmlContainerDir,
+  RichHtmlDirection
+} from '../utils/help-center-rich-html.utils';
 
 /**
  * Sanitizes help-center HTML (Quill output, Word paste, etc.) before binding with [innerHTML].
@@ -57,6 +62,7 @@ export class HelpCenterHtmlSanitizerService {
         'rel',
         'class',
         'style',
+        'dir',
         'start',
         'colspan',
         'rowspan',
@@ -72,6 +78,12 @@ export class HelpCenterHtmlSanitizerService {
       ALLOW_DATA_ATTR: false,
       ALLOW_UNKNOWN_PROTOCOLS: false
     });
-    return this.domSanitizer.bypassSecurityTrustHtml(clean);
+    const withDirection = applyBidirectionalAttributes(clean);
+    return this.domSanitizer.bypassSecurityTrustHtml(withDirection);
+  }
+
+  /** Container `dir` for rich HTML (works when app UI is English but content is Arabic). */
+  resolveContainerDir(html: string | null | undefined): RichHtmlDirection {
+    return resolveRichHtmlContainerDir(html ?? '');
   }
 }

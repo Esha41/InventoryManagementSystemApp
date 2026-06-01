@@ -34,6 +34,10 @@ export class TermsAcceptanceModalComponent {
     return this.htmlSanitizer.sanitizeRichHtml(html);
   }
 
+  contentDirection(html: string): 'rtl' | 'ltr' | 'auto' {
+    return this.htmlSanitizer.resolveContainerDir(html);
+  }
+
   onAgreedChange(event: Event): void {
     const checked = (event.target as HTMLInputElement).checked;
     this.hasReadAndAgreed.set(checked);

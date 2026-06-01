@@ -300,7 +300,7 @@ export class WorkflowSupplySubmissionComponent implements OnInit, OnDestroy, OnC
           if (this.supplyData) {
             this.supplyData.submissionStatus = 2; // Submitted
           }
-          // Emit event to parent
+          this.supplyDataChanged.emit();
           this.supplySubmitted.emit();
         },
         error: (error: unknown) => {

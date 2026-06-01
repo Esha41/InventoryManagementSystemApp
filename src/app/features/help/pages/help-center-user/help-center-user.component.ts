@@ -299,6 +299,10 @@ export class HelpCenterUserComponent implements OnInit, OnDestroy {
     return this.htmlSanitizer.sanitizeRichHtml(content);
   }
 
+  richHtmlDir(content: string): 'rtl' | 'ltr' | 'auto' {
+    return this.htmlSanitizer.resolveContainerDir(content);
+  }
+
   termsBodyForCurrentPage(): string {
     const pages = this.termsHtmlPages();
     if (!pages.length) {

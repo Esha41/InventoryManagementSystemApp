@@ -2,6 +2,27 @@
 .prose-terms {
   overflow-wrap: anywhere;
   word-break: break-word;
+  unicode-bidi: isolate;
+}
+
+.prose-terms:dir(rtl) {
+  text-align: right;
+}
+
+.prose-terms ::ng-deep .ql-direction-rtl,
+.prose-terms ::ng-deep [dir='rtl'] {
+  direction: rtl;
+  text-align: right;
+}
+
+.prose-terms ::ng-deep .ql-direction-ltr,
+.prose-terms ::ng-deep [dir='ltr'] {
+  direction: ltr;
+  text-align: left;
+}
+
+.prose-terms ::ng-deep [dir='auto'] {
+  unicode-bidi: plaintext;
 }
 
 .prose-terms ::ng-deep * {

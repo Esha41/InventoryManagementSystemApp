@@ -7,6 +7,27 @@
 .prose-help {
   overflow-wrap: anywhere;
   word-break: break-word;
+  unicode-bidi: isolate;
+}
+
+.prose-help:dir(rtl) {
+  text-align: right;
+}
+
+.prose-help ::ng-deep .ql-direction-rtl,
+.prose-help ::ng-deep [dir='rtl'] {
+  direction: rtl;
+  text-align: right;
+}
+
+.prose-help ::ng-deep .ql-direction-ltr,
+.prose-help ::ng-deep [dir='ltr'] {
+  direction: ltr;
+  text-align: left;
+}
+
+.prose-help ::ng-deep [dir='auto'] {
+  unicode-bidi: plaintext;
 }
 
 .prose-help ::ng-deep * {

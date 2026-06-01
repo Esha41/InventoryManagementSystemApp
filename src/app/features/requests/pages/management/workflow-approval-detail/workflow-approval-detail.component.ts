@@ -846,6 +846,9 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
    * Handle supply submission event from child component
    */
   onSupplySubmitted(): void {
+    // Refresh summary immediately (same pattern as pickup date handlers).
+    this.bumpWorkflowSupplySummaryRefresh();
+    this.loadSupplyData();
     this.loadRequestDetailInternal(false);
   }
 

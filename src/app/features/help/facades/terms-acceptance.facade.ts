@@ -1,5 +1,5 @@
-import { Injectable, inject, signal } from '@angular/core';
-import { catchError, of, take } from 'rxjs';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { catchError, finalize, of, take } from 'rxjs';
 import { HelpCenterService } from '@help-center/services/help-center.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
@@ -26,28 +26,59 @@ export class TermsAcceptanceFacade {
   readonly showModal = signal(false);
   readonly pendingTerms = signal<HelpCenterTermsDto | null>(null);
   readonly accepting = signal(false);
+  private readonly checkingTerms = signal(false);
+
+  /** True while checking acceptance or until the user accepts (blocks shell interaction). */
+  readonly shellBlocked = computed(
+    () =>
+      this.isSecurityAcknowledgmentOnLoginEnabled &&
+      (this.checkingTerms() || this.showModal())
+  );
 
   /**
-   * When {@link environment.enableSecurityAcknowledgmentOnLogin} is off, the terms API is not used;
-   * still run onboarding once the shell is ready (deep link, refresh, new tab).
-   * When it is on, terms + onboarding are handled only after a successful login (see {@link beginPostLoginFlow}).
+   * Run as soon as the main shell mounts (login navigation, refresh, deep link).
+   * When terms gating is enabled, checks acceptance before the user can use the app.
    */
-  beginShellReadyFlow(): void {
+  onMainShellInit(): void {
+    if (this.isSecurityAcknowledgmentOnLoginEnabled) {
+      this.evaluateTermsGate();
+    }
+  }
+
+  /**
+   * Run after the shell view is ready (delayed for onboarding DOM).
+   * When terms gating is off, starts the onboarding tour on refresh / deep link.
+   */
+  onMainShellReady(): void {
     if (!this.isSecurityAcknowledgmentOnLoginEnabled) {
       this.onboarding?.checkAndStartTour();
     }
+  }
+
+  /** @deprecated Use {@link onMainShellReady} */
+  beginShellReadyFlow(): void {
+    this.onMainShellReady();
   }
 
   beginPostLoginFlow(): void {
     if (!this.isSecurityAcknowledgmentOnLoginEnabled) {
       return;
     }
+    this.evaluateTermsGate();
+  }
 
+  private evaluateTermsGate(): void {
+    if (this.checkingTerms() || this.showModal()) {
+      return;
+    }
+
+    this.checkingTerms.set(true);
     this.helpCenter
       .getTermsAcceptanceStatus()
       .pipe(
         take(1),
-        catchError(() => of({ mustAccept: false, terms: null } as TermsAcceptanceStatusDto))
+        catchError(() => of({ mustAccept: false, terms: null } as TermsAcceptanceStatusDto)),
+        finalize(() => this.checkingTerms.set(false))
       )
       .subscribe(status => {
         if (status.mustAccept && status.terms) {
