@@ -9,7 +9,7 @@
       <!-- Filters and Add Button -->
       <div *ngIf="!loading && !error"
         class="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 lg:flex-shrink-0">
-        <div class="flex flex-col sm:flex-row gap-3 flex-1 min-w-0">
+        <div class="flex flex-col sm:flex-row gap-3 flex-1 min-w-0 [&_app-dropdown]:min-w-[180px] sm:[&_app-dropdown]:min-w-[200px] [&_app-dropdown_.app-dropdown-label.app-dropdown-placeholder]:whitespace-normal [&_app-dropdown_.app-dropdown-label.app-dropdown-placeholder]:overflow-visible [&_app-dropdown_.app-dropdown-label.app-dropdown-placeholder]:break-words [&_app-dropdown_.app-dropdown-label.app-dropdown-placeholder]:leading-snug">
           <div class="flex-1 relative min-w-[180px] sm:min-w-[200px]">
             <app-dropdown class="w-full" [(ngModel)]="selectedDepartment" (ngModelChange)="onDepartmentChange()"
               [options]="filteredDepartments" optionValue="id" [optionLabelFn]="departmentOptionLabel"
@@ -75,7 +75,7 @@
 
     <!-- Allowance Table -->
     <div *ngIf="!loading && !error"
-      class="allowance-table-card bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg shadow-custom-sm min-w-0 max-w-full">
+      class="bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg shadow-custom-sm min-w-0 max-w-full">
       <!-- Mobile: quantity sort (same behavior as desktop column headers) -->
       <div
         class="lg:hidden border-b border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 py-3 space-y-2">
@@ -176,17 +176,17 @@
 
       <!-- Desktop Table View -->
       <div class="hidden lg:block min-w-0 max-w-full overflow-hidden rounded-t-lg">
-        <div class="allowance-table-scroll min-w-0 max-w-full overflow-x-auto overscroll-x-contain">
+        <div class="min-w-0 max-w-full overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]">
           <table class="w-full min-w-0 table-fixed border-collapse divide-y divide-[var(--color-border)]">
             <colgroup>
-              <col style="width: 13%" />
-              <col style="width: 5%" />
-              <col style="width: 22%" />
-              <col style="width: 12%" />
-              <col style="width: 12%" />
-              <col style="width: 12%" />
-              <col style="width: 12%" />
-              <col style="width: 12%" />
+              <col class="w-[14%]" />
+              <col class="w-[6%]" />
+              <col class="w-[22%]" />
+              <col class="w-[11%]" />
+              <col class="w-[11%]" />
+              <col class="w-[11%]" />
+              <col class="w-[11%]" />
+              <col class="w-[12%]" />
             </colgroup>
             <thead class="bg-[var(--color-background-muted)]">
               <tr>
@@ -203,26 +203,27 @@
                   {{ 'allowance.table.item' | translate }}
                 </th>
                 <th *ngFor="let qc of quantitySortColumnDefs" scope="col"
-                  class="quantity-sort-th px-4 py-3 align-top font-medium leading-snug text-[var(--color-text-muted)] min-w-0 uppercase tracking-wide"
+                  class="px-4 py-3 align-middle text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)] min-w-0"
                   [attr.aria-sort]="qtyAriaSort(qc.key)">
-                  <button type="button" dir="ltr"
-                    class="quantity-sort-btn flex w-full min-w-0 items-start gap-1.5 px-0 py-0 text-xs font-medium text-inherit transition-colors hover:bg-[var(--color-background-hover)]/90 hover:rounded-md cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--color-brand)] uppercase"
-                    (click)="onQuantitySort(qc.key)"
-                    [attr.aria-label]="qtySortButtonAriaLabel(qc.key)">
-                    <span class="flex-1 min-w-0 text-end leading-snug text-balance break-words whitespace-normal hyphens-auto">
+                  <div dir="ltr" class="grid grid-cols-[minmax(0,1fr)_0.875rem] gap-x-1 items-center">
+                    <span class="min-w-0 text-end leading-snug break-words whitespace-normal">
                       {{ qc.labelKey | translate }}
                     </span>
-                    <span class="inline-flex shrink-0 translate-y-px pt-px" aria-hidden="true">
+                    <button type="button"
+                      class="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center p-0 text-inherit transition-colors hover:opacity-80 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)] rounded-sm"
+                      (click)="onQuantitySort(qc.key)"
+                      [attr.aria-label]="qtySortButtonAriaLabel(qc.key)">
                       <lucide-angular *ngIf="quantitySortColumn !== qc.key" [img]="ArrowUpDown" class="h-3.5 w-3.5 text-[var(--color-text-muted)]"></lucide-angular>
                       <lucide-angular *ngIf="quantitySortColumn === qc.key && quantitySortDirection === 'asc'" [img]="ArrowUp" class="h-3.5 w-3.5 text-[var(--color-brand)]"></lucide-angular>
                       <lucide-angular *ngIf="quantitySortColumn === qc.key && quantitySortDirection === 'desc'" [img]="ArrowDown" class="h-3.5 w-3.5 text-[var(--color-brand)]"></lucide-angular>
-                    </span>
-                  </button>
+                    </button>
+                  </div>
                 </th>
                 <th scope="col"
-                  class="px-4 py-3 text-center align-middle text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider"
-                  style="text-align: center;">
-                  {{ 'allowance.table.actions' | translate }}
+                  class="px-4 py-3 align-middle text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)]">
+                  <div class="mx-auto flex w-fit items-center justify-center">
+                    {{ 'allowance.table.actions' | translate }}
+                  </div>
                 </th>
               </tr>
             </thead>
@@ -235,7 +236,7 @@
                 <td class="px-4 py-4 whitespace-nowrap text-sm text-[var(--color-text-muted)] text-start align-middle">
                   {{ formatDate(allowance.year) }}
                 </td>
-                <td class="allowance-item-cell px-4 py-4 min-w-0 max-w-0 text-sm text-[var(--color-text)] text-start overflow-hidden align-middle">
+                <td class="px-4 py-4 min-w-0 max-w-0 text-sm text-[var(--color-text)] text-start overflow-hidden align-middle">
                   <div class="flex min-w-0 flex-col gap-0.5 justify-center">
                     <span
                       class="block text-sm font-medium leading-snug text-[var(--color-text)]"
@@ -253,20 +254,40 @@
                     </ng-container>
                   </div>
                 </td>
-                <td dir="ltr" class="px-4 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)] text-right tabular-nums align-middle">
-                  {{ allowance.quantity | number }}
+                <td dir="ltr" class="px-4 py-4 align-middle">
+                  <div class="grid grid-cols-[minmax(0,1fr)_0.875rem] gap-x-1 items-center">
+                    <span class="min-w-0 text-end whitespace-nowrap text-sm font-medium text-[var(--color-text)] tabular-nums">
+                      {{ allowance.quantity | number }}
+                    </span>
+                    <span class="w-3.5 shrink-0" aria-hidden="true"></span>
+                  </div>
                 </td>
-                <td dir="ltr" class="px-4 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-right tabular-nums align-middle">
-                  {{ allowance.usedQuantityFromAllowance | number }}
+                <td dir="ltr" class="px-4 py-4 align-middle">
+                  <div class="grid grid-cols-[minmax(0,1fr)_0.875rem] gap-x-1 items-center">
+                    <span class="min-w-0 text-end whitespace-nowrap text-sm text-[var(--color-text)] tabular-nums">
+                      {{ allowance.usedQuantityFromAllowance | number }}
+                    </span>
+                    <span class="w-3.5 shrink-0" aria-hidden="true"></span>
+                  </div>
                 </td>
-                <td dir="ltr" class="px-4 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-right tabular-nums align-middle">
-                  {{ allowance.reservedQuantityByOrdersOnProcessing | number }}
+                <td dir="ltr" class="px-4 py-4 align-middle">
+                  <div class="grid grid-cols-[minmax(0,1fr)_0.875rem] gap-x-1 items-center">
+                    <span class="min-w-0 text-end whitespace-nowrap text-sm text-[var(--color-text)] tabular-nums">
+                      {{ allowance.reservedQuantityByOrdersOnProcessing | number }}
+                    </span>
+                    <span class="w-3.5 shrink-0" aria-hidden="true"></span>
+                  </div>
                 </td>
-                <td dir="ltr" class="px-4 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)] text-right tabular-nums align-middle">
-                  {{ allowance.remainingQuantityFromAllowance | number }}
+                <td dir="ltr" class="px-4 py-4 align-middle">
+                  <div class="grid grid-cols-[minmax(0,1fr)_0.875rem] gap-x-1 items-center">
+                    <span class="min-w-0 text-end whitespace-nowrap text-sm font-medium text-[var(--color-text)] tabular-nums">
+                      {{ allowance.remainingQuantityFromAllowance | number }}
+                    </span>
+                    <span class="w-3.5 shrink-0" aria-hidden="true"></span>
+                  </div>
                 </td>
-                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium align-middle" style="text-align: center;">
-                  <div class="flex items-center justify-center gap-2 mx-auto w-fit">
+                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium align-middle">
+                  <div class="mx-auto flex w-fit items-center justify-center gap-2">
                     <!-- Edit Button -->
                     <button *appHasPermission="PERMISSIONS.DEPARTMENT.ALLOWANCE_ITEM.EDIT" (click)="onEdit(allowance)"
                       class="p-2 text-[var(--color-info)] hover:text-[var(--color-info)]/80 hover:bg-[var(--color-info)]/10 rounded-lg transition-colors"
@@ -311,8 +332,8 @@
         </app-rows-per-page>
 
         <!-- Pagination Controls -->
-        <div *ngIf="totalPages > 1" class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
+        <div *ngIf="totalPages > 1" class="flex flex-col sm:flex-row items-start sm:items-center gap-3 [&_app-pagination]:inline-flex [&_app-pagination]:shrink-0 [&_app-pagination]:items-center [&_.pagination-container]:inline-flex [&_.pagination-container]:items-center [&_.pagination-container]:gap-1">
+          <app-pagination class="inline-flex shrink-0 items-center" [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
           </app-pagination>
           <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap mt-2 sm:mt-0">
             {{ currentPage }} {{ 'common.of' | translate }} {{ totalPages }}

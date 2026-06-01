@@ -64,7 +64,6 @@ type QuantitySortColumn = 'total' | 'used' | 'reserved' | 'remaining';
     TableClampTooltipDirective
   ],
   templateUrl: './allowance-list.component.html',
-  styleUrls: ['./allowance-list.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AllowanceListComponent implements OnInit, OnDestroy {
