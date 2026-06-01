@@ -81,10 +81,10 @@ export class SelectRoleComponent implements OnInit {
         const message = this.translate.instant('auth.selectRole.roleActiveMessage', { role: roleLabel });
         const title = this.translate.instant('auth.selectRole.roleActiveTitle');
         this.cdr.markForCheck();
+        this.termsAcceptance.clearSessionAcceptance();
         void this.router.navigateByUrl(getDefaultLandingUrl(this.backendAuth)).then(navigated => {
           if (navigated) {
             this.toastService.success(message, title);
-            this.termsAcceptance.beginPostLoginFlow();
           }
         });
       },

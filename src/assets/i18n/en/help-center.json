@@ -127,6 +127,9 @@
     "termsAcceptTitle": "Terms and conditions",
     "termsAcceptCheckbox": "I have read and accept the terms and conditions.",
     "termsAcceptButton": "Continue",
-    "acceptTermsError": "Could not save your acceptance. Please try again."
+    "acceptTermsError": "Could not save your acceptance. Please try again.",
+    "termsGateLoadError": "Could not load terms and conditions",
+    "termsGateLoadErrorHint": "You must accept the terms before using the application. Check your connection and try again.",
+    "termsGateRetry": "Try again"
   }
 }

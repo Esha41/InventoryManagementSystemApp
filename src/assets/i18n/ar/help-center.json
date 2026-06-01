@@ -127,6 +127,9 @@
     "termsAcceptTitle": "الشروط والأحكام",
     "termsAcceptCheckbox": "لقد قرأت الشروط والأحكام وأوافق عليها.",
     "termsAcceptButton": "متابعة",
-    "acceptTermsError": "تعذر حفظ موافقتك. يرجى المحاولة مرة أخرى."
+    "acceptTermsError": "تعذر حفظ موافقتك. يرجى المحاولة مرة أخرى.",
+    "termsGateLoadError": "تعذر تحميل الشروط والأحكام",
+    "termsGateLoadErrorHint": "يجب الموافقة على الشروط قبل استخدام التطبيق. تحقق من الاتصال وحاول مرة أخرى.",
+    "termsGateRetry": "إعادة المحاولة"
   }
 }
