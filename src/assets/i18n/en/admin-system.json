@@ -63,7 +63,7 @@
     "downloadTemplate": "Download Template",
     "totalItems": "Total Items",
     "assetsDescription": "Import or export asset data (ammunition, weapons, explosives) from/to Excel files. Use the template to ensure proper formatting.",
-    "inventorySummaryDescription": "Export inventory summary data to Excel. This includes all items with their quantities, lots, and status information.",
+    "inventorySummaryDescription": "Export inventory summary data to Excel. This includes all items with their quantities, LOT, and status information.",
     "inventorySummaryImportNote": "Note: To import items, please use the Materials (Assets) section. Inventory Summary is a read-only view of aggregated data.",
     "warehouseInventoryDescription": "Import or export warehouse inventory data for a specific depot. Select a depot first, then choose the item type.",
     "selectDepot": "Select Depot",

@@ -28,7 +28,7 @@
     "systemAutoRejectedBy": "النظام",
     "systemAutoRejectedRole": "نظام الرفض التلقائي",
     "noApprovalWorkflowData": "لا توجد بيانات سير عمل الموافقة متاحة",
-    "requestItems":  "المواد المطلوبة",
+    "requestItems": "المواد المطلوبة",
     "items": "مواد",
     "review": "المراجعة والتعديل",
     "reviewItems": "مراجعة المواد",
@@ -83,7 +83,7 @@
       "colApproved": "المعتمد",
       "colSupplied": "تم صرفه",
       "colShouldBeSupplied": "المقرر صرفه",
-      "colLot": "lot",
+      "colLot": "LOT",
       "colDepot": "المستودع",
       "noLines": "لا توجد تفاصيل لبنود التوريد.",
       "weaponSelectionTitle": "اختيارات المستودع ورقم البوليصة",
@@ -160,7 +160,7 @@
     "noPreviousSteps": "لا توجد خطوات سابقة متاحة",
     "returnRequest": "إرجاع الطلب",
     "skipToStep": "إرسال إلى",
-    "selectSkipToStep":"",
+    "selectSkipToStep": "",
     "skipToStepHint": "حدد الخطوة التي يجب الإنتقال إليها عند الموافقة على هذا الطلب",
     "selectSkipToStepRequired": "يرجى اختيار خطوة للإنتقال إليها",
     "confirmApprove": "تأكيد الموافقة",
@@ -231,15 +231,15 @@
     "valueSet": "تم التحديد",
     "update": "تعديل",
     "processReturnItems": "مراجعة وإكمال الطلب",
-    "goToProcessReturnItems": "مراجعة وإكمال الطلب"
-    ,"approvedThroughDelegation": "تمت الموافقة بالإنـابـة"
-    ,"rejectedThroughDelegation": "تم الرفض بالإنـابـة"
-    ,"returnedThroughDelegation": "تم الإرجاع بالإنـابـة"
-    ,"actedThroughDelegation": "تم الإجراء بالإنـابـة"
-    ,"delegationByRoleLabel": "بواسطة"
-    ,"performedAsRole": "تم التنفيذ بواسطة"
-    ,"urgentAttentionRequired": "يستوجب اهتماماً عاجلاً"
-    ,"topazSignature": {
+    "goToProcessReturnItems": "مراجعة وإكمال الطلب",
+    "approvedThroughDelegation": "تمت الموافقة بالإنـابـة",
+    "rejectedThroughDelegation": "تم الرفض بالإنـابـة",
+    "returnedThroughDelegation": "تم الإرجاع بالإنـابـة",
+    "actedThroughDelegation": "تم الإجراء بالإنـابـة",
+    "delegationByRoleLabel": "بواسطة",
+    "performedAsRole": "تم التنفيذ بواسطة",
+    "urgentAttentionRequired": "يستوجب اهتماماً عاجلاً",
+    "topazSignature": {
       "label": "توقيع المستلم",
       "optional": "اختياري",
       "detecting": "جاري التحقق من لوحة التوقيع...",

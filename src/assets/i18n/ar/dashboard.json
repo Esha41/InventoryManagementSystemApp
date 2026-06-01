@@ -138,7 +138,7 @@
       "items": "مواد",
       "empty": "لا توجد مواد",
       "noFilterMatch": "لا توجد مواد تطابق عوامل التصفية",
-      "clickHint": "انقر على صف لعرض التفاصيل (Lots للذخيرة والمتفجرات، أصول للأسلحة)",
+      "clickHint": "انقر على صف لعرض التفاصيل (LOT للذخيرة والمتفجرات، أصول للأسلحة)",
       "filteredHint": "من أصل {{total}} في نطاق المستودع الحالي",
       "totalsHint": "إجماليات الجدول تعكس القائمة المصفاة أعلاه.",
       "totalsRow": "الإجماليات",
@@ -151,7 +151,7 @@
         "usedQty": "الكمية المستخدمة",
         "reservedQty": "الكمية المحجوزة",
         "remainingQty": "الكمية المتبقية",
-        "lots": "Lots"
+        "lots": "LOT"
       },
       "filters": {
         "depot": "المستودع",
@@ -185,7 +185,7 @@
     },
     "lotDetail": {
       "title": "تفاصيل",
-      "lots": "Lots",
+      "lots": "LOT",
       "totalsRow": "إجمالي الدفعات",
       "empty": "لا توجد دفعات لهذه المادة",
       "cols": {
@@ -223,10 +223,10 @@
       }
     },
     "expiringLots": {
-      "title": "Lots قريبة من الانتهاء",
+      "title": "LOT قريبة من الانتهاء",
       "itemName": "اسم المادة",
       "itemNo": "رقم المادة",
-      "lot": "lot",
+      "lot": "LOT",
       "batchNo": "Batch No",
       "expiryDate": "تاريخ الانتهاء",
       "daysUntilExpiry": "الأيام حتى الانتهاء",
@@ -235,7 +235,7 @@
       "depot": "المستودع",
       "supplier": "المورد",
       "manufacturer": "الشركة المصنعة",
-      "noLots": "لا توجد Lots ستنتهي صلاحيتها خلال الـ 30 يوماً القادمة"
+      "noLots": "لا توجد LOT ستنتهي صلاحيتها خلال الـ 30 يوماً القادمة"
     },
     "lowStock": {
       "title": "المخزون المنخفض",
@@ -301,11 +301,11 @@
     "usedQty": "الكمية المصروفة سابقا",
     "reservedQty": "الكمية المحجوزة",
     "remainingQty": "الكمية المتبقية",
-    "totalLots": "Total lots/batches",
+    "totalLots": "Total LOT/batches",
     "totalAssets": "إجمالي الأصول",
-    "lotDetails": "تفاصيل lot",
+    "lotDetails": "تفاصيل LOT",
     "assetDetails": "تفاصيل الأصول",
-    "lotNumber": "lot number",
+    "lotNumber": "LOT number",
     "depot": "المستودع",
     "supplier": "المورد",
     "manufacturer": "الشركة المصنعة",
@@ -315,13 +315,13 @@
     "expiryDate": "تاريخ الانتهاء",
     "originalQty": "الكمية الأصلية",
     "status": "الحالة",
-    "noLots": "لا يوجد lot متاح لهذه المادة",
+    "noLots": "لا يوجد LOT متاح لهذه المادة",
     "noAssets": "لا توجد أصول متاحة لهذه المادة",
     "noItems": "لا توجد مواد مخزون متاحة",
     "searchPlaceholder": "البحث ....",
     "noResults": "لا توجد مواد تطابق معايير البحث",
-    "exportWithDetails": "تصدير مع تفاصيل Lots",
-    "exportingWithDetails": "جارٍ تحميل تفاصيل Lots للتصدير. الرجاء الانتظار...",
+    "exportWithDetails": "تصدير مع تفاصيل LOT",
+    "exportingWithDetails": "جارٍ تحميل تفاصيل LOT للتصدير. الرجاء الانتظار...",
     "totalItems": "إجمالي المواد",
     "totalsHint": "إجماليات الكميات تعكس الصفحة الحالية (ومرشح البحث إن وُجد)."
   },

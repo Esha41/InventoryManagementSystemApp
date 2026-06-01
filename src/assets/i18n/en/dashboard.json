@@ -92,13 +92,13 @@
       "distinctItemTypes": "Distinct item types",
       "totalRemaining": "Total Remaining",
       "availableUnits": "Available units",
-      "totalLots": "Total lots",
-      "totalLotsHint": "Ammunition & explosive lots",
+      "totalLots": "Total LOT",
+      "totalLotsHint": "Ammunition & explosive LOT",
       "totalBatches": "Total policy numbers",
       "totalBatchesHint": "Weapon policy numbers in scope",
       "totalWeapons": "Total weapons",
       "totalWeaponsHint": "Tracked weapon assets",
-      "activeLots": "Active lots/batches",
+      "activeLots": "Active LOT/batches",
       "byType": "Items by Type"
     },
     "weaponsAndPipeline": {
@@ -138,7 +138,7 @@
       "items": "items",
       "empty": "No inventory items found",
       "noFilterMatch": "No items match your filters",
-      "clickHint": "Click a row to expand details (Lots for ammunition/explosives, assets for weapons)",
+      "clickHint": "Click a row to expand details (LOT for ammunition/explosives, assets for weapons)",
       "filteredHint": "of {{total}} in current depot scope",
       "totalsHint": "Table totals reflect the filtered list above.",
       "totalsRow": "Totals",
@@ -151,7 +151,7 @@
         "usedQty": "Used Qty",
         "reservedQty": "Reserved Qty",
         "remainingQty": "Remaining Qty",
-        "lots": "Lots"
+        "lots": "LOT"
       },
       "filters": {
         "depot": "Depot",
@@ -184,12 +184,12 @@
       }
     },
     "lotDetail": {
-      "title": "Lot Details",
-      "lots": "Lots",
-      "totalsRow": "Lot totals",
-      "empty": "No lots found for this item",
+      "title": "LOT Details",
+      "lots": "LOT",
+      "totalsRow": "LOT totals",
+      "empty": "No LOT found for this item",
       "cols": {
-        "lot": "Lot",
+        "lot": "LOT",
         "depot": "Depot",
         "batchNo": "Batch No",
         "originalQty": "Original Qty",
@@ -213,7 +213,7 @@
       "empty": "No stock items found for this depot",
       "cols": {
         "item": "Item",
-        "lot": "Lot",
+        "lot": "LOT",
         "batchNo": "Batch No",
         "originalQty": "Original Qty",
         "currentQty": "Current Qty",
@@ -223,10 +223,10 @@
       }
     },
     "expiringLots": {
-      "title": "Expiring lots",
+      "title": "Expiring LOT",
       "itemName": "Item Name",
       "itemNo": "Item No",
-      "lot": "lot",
+      "lot": "LOT",
       "batchNo": "Batch No",
       "expiryDate": "Expiry Date",
       "daysUntilExpiry": "Days Until Expiry",
@@ -235,7 +235,7 @@
       "depot": "Depot",
       "supplier": "Supplier",
       "manufacturer": "Manufacturer",
-      "noLots": "No lots expiring in the next 30 days"
+      "noLots": "No LOT expiring in the next 30 days"
     },
     "lowStock": {
       "title": "Low Stock",
@@ -301,11 +301,11 @@
     "usedQty": "Used Qty",
     "reservedQty": "Hold Quantity",
     "remainingQty": "Remaining Qty",
-    "totalLots": "Total lots/batches",
+    "totalLots": "Total LOT/batches",
     "totalAssets": "Total Assets",
-    "lotDetails": "Lot Details",
+    "lotDetails": "LOT Details",
     "assetDetails": "Asset Details",
-    "lotNumber": "Lot Number",
+    "lotNumber": "LOT Number",
     "depot": "Depot",
     "supplier": "Supplier",
     "manufacturer": "Manufacturer",
@@ -315,13 +315,13 @@
     "expiryDate": "Expiry Date",
     "originalQty": "Original Qty",
     "status": "Status",
-    "noLots": "No lots available for this item",
+    "noLots": "No LOT available for this item",
     "noAssets": "No assets available for this item",
     "noItems": "No inventory items available",
     "searchPlaceholder": "Search ....",
     "noResults": "No items match your search criteria",
-    "exportWithDetails": "Export with lot details",
-    "exportingWithDetails": "Loading lot details for export. Please wait...",
+    "exportWithDetails": "Export with LOT details",
+    "exportingWithDetails": "Loading LOT details for export. Please wait...",
     "totalItems": "Total items",
     "totalsHint": "Quantity totals reflect the current page (and search filter, if any)."
   },

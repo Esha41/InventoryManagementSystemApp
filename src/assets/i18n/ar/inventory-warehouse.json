@@ -37,7 +37,7 @@
     "filtersSection": "الفلاتر",
     "filtersSearch": "بحث",
     "clearFilters": "مسح الخيارات",
-    "searchPlaceholder": "البحث باسم الماده، رقم مادة، مورد، lot...",
+    "searchPlaceholder": "البحث باسم الماده، رقم مادة، مورد، LOT...",
     "searchPlaceholderBatch": "Search...",
     "filterByItem": "المواد",
     "filterBySupplier": "الموردين",
@@ -55,7 +55,7 @@
     "primaryPurpose": "الغرض الأساسي",
     "batchNo": "رقم البوليصة",
     "batchNoLabelAmmoExplosive": "رقم الدفعة",
-    "lot": "Lot",
+    "lot": "LOT",
     "quantity": "الكمية",
     "currentQty": "الكمية الحالية",
     "expiryDate": "تاريخ الانتهاء",
@@ -106,7 +106,7 @@
     "no": "لا",
     "inventoryInformation": "معلومات المخزون",
     "country": "البلد",
-    "lotNumber": "رقم ال Lot",
+    "lotNumber": "رقم ال LOT",
     "stockSummary": "ملخص المخزون",
     "totalQuantity": "الكمية الإجمالية",
     "currentAvailable": "المتاح حالياً",
@@ -118,7 +118,7 @@
     "stockUtilization": "استخدام المخزون",
     "quantityUtilization": "استخدام الكميات",
     "detailTabThisInventory": "المخزون",
-    "detailTabAllLots": "كل الـ Lots",
+    "detailTabAllLots": "كل الـ LOT",
     "inventoryEntryDetails": "تفاصيل المخزون",
     "originalQty": "الكمية الأصلية",
     "usedQty": "الكمية المستخدمة",
@@ -149,7 +149,7 @@
     "usePagedBatchAssets": "استخدام الصفحات",
     "batchItemDetailEmptyPage": "لا توجد أصول لهذا الصنف في الصفحة الحالية. جرّب صفحة أخرى أو «عرض الكل».",
     "errors": {
-      "lotLinkedToSupplyOrder": "لا يمكن حذف هذا الـ Lot أو تعديله لأنه مرتبط بطلب صرف."
+      "lotLinkedToSupplyOrder": "لا يمكن حذف هذا الـ LOT أو تعديله لأنه مرتبط بطلب صرف."
     }
   }
 }

@@ -1,7 +1,7 @@
 {
   "workflowReturnApprovedSummary": {
     "title": "Return completion summary",
-    "subtitle": "Quantities, lots or policy numbers, and serials as recorded when the return was processed.",
+    "subtitle": "Quantities, LOT or policy numbers, and serials as recorded when the return was processed.",
     "item": "Item",
     "itemNo": "Item No",
     "sectionWeapons": "Weapons",
@@ -11,7 +11,7 @@
     "receivedQty": "Received Qty",
     "colBatch": "Batch",
     "colPolicyNumber": "Policy number",
-    "colLot": "Lot",
+    "colLot": "LOT",
     "notes": "Notes",
     "serialDetails": "Serial numbers",
     "serial": "Serial",

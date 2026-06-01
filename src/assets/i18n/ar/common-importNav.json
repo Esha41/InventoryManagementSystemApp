@@ -83,7 +83,7 @@
     "inventorySummary": "تقرير المخزون",
     "lowStock": "المخزون المنخفض",
     "criticalStock": "المخزون الحرج",
-    "expiringLots": "lots علي وشك الانتهاء",
+    "expiringLots": "LOT علي وشك الانتهاء",
     "reports": "التقارير",
     "inventoryReports": "تقارير المخزون",
     "depotManagement": "إدارة المستودعات",

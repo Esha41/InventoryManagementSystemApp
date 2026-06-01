@@ -1,7 +1,7 @@
 {
   "workflowReturnApprovedSummary": {
     "title": "ملخص طلب الإرجاع",
-    "subtitle": "الكميات و Lot أو أرقام البواليص والأرقام التسلسلية كما سُجّلت عند معالجة الإرجاع.",
+    "subtitle": "الكميات و LOT أو أرقام البواليص والأرقام التسلسلية كما سُجّلت عند معالجة الإرجاع.",
     "item": "المادة",
     "itemNo": "رقم المادة",
     "sectionWeapons": "أسلحة",
@@ -11,7 +11,7 @@
     "receivedQty": "الكمية المستلمة",
     "colBatch": "رقم الدفعة",
     "colPolicyNumber": "رقم البوليصة",
-    "colLot": "Lot",
+    "colLot": "LOT",
     "notes": "ملاحظات",
     "serialDetails": "الأرقام التسلسلية",
     "serial": "التسلسل",
