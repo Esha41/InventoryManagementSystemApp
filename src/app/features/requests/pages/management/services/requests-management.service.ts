@@ -101,12 +101,17 @@ export class RequestsManagementService {
   }
 
   /**
-   * Mirrors dashboard list sorting: action-required first, then priority/date or user-selected column.
+   * When sortState.column is set, sends sortField to the backend.
+   * When null, backend applies action-required-first default (IsMyTurn → Priority → CreationDate).
    */
   private applySortToPagedRequest(
     pagedRequest: PagedRequest,
     sortState: { column: string | null; direction: 'asc' | 'desc' }
   ): void {
+    if (!sortState.column) {
+      return;
+    }
+
     const columnMap: Record<string, string> = {
       orderNumber: 'RequestNo',
       usageDate: 'CreationDate',
@@ -115,16 +120,14 @@ export class RequestsManagementService {
       status: 'Status'
     };
 
-    const sortColumn = sortState.column ?? 'priority';
-    const sortDir = sortState.column ? sortState.direction : 'desc';
-    const backendColumn = columnMap[sortColumn];
+    const backendColumn = columnMap[sortState.column];
     if (!backendColumn) return;
 
     if (!pagedRequest.filter) {
       pagedRequest.filter = {};
     }
     pagedRequest.filter.sortField = backendColumn;
-    pagedRequest.filter.sortDirection = sortDir === 'asc' ? 1 : 2;
+    pagedRequest.filter.sortDirection = sortState.direction === 'asc' ? 1 : 2;
   }
 
   /**

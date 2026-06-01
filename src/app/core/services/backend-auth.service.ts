@@ -60,6 +60,18 @@ export class BackendAuthService {
     return this.authFlow.getUserClaims();
   }
 
+  /**
+   * Re-fetches the current user's claims and applies them to the active session in place, so
+   * newly inherited permissions (e.g. after approving a delegation) take effect without a re-login.
+   */
+  refreshUserClaims(): Observable<AuthenticatedUser> {
+    return this.authFlow.getUserClaims().pipe(
+      tap(userWithClaims => {
+        this.session.updateCurrentUserClaims(userWithClaims.permissions || [], userWithClaims.roles || []);
+      })
+    );
+  }
+
   refreshToken(): Observable<LoginResponse> {
     return this.tokenRefresh.getRefreshedLoginResponse().pipe(
       tap(data => {

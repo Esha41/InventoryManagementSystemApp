@@ -67,6 +67,21 @@ export class AuthSessionService {
   }
 
   /**
+   * Updates the stored user's permissions/roles in place (storage + subject) without touching
+   * the bearer token or expiry. Used to apply freshly fetched claims (e.g. after a delegatee
+   * approves a delegation and inherits the delegator's role) without forcing a re-login.
+   */
+  updateCurrentUserClaims(permissions: AuthenticatedUser['permissions'], roles: AuthenticatedUser['roles']): void {
+    const current = this.getCurrentUser();
+    if (!current) {
+      return;
+    }
+    const updated: AuthenticatedUser = { ...current, permissions, roles };
+    this.storageService.set('current_user', updated);
+    this.currentUserSubject.next(updated);
+  }
+
+  /**
    * After refresh: update bearer, expiry, and rotated refresh token without rewriting `current_user` in storage.
    * If the access token identity does not match the session user (split cookie vs storage), sign out locally.
    */

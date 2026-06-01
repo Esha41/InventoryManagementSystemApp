@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { UserDelegationService } from '@admin/services/user-delegation.service';
+import { BackendAuthService } from '@services/backend-auth.service';
 import { UserDelegation } from '@models/user-delegation';
 import { ConfirmationDialogComponent } from '@components/confirmation-dialog/confirmation-dialog.component';
 import { LucideAngularModule, CheckCircle, XCircle, Calendar, User, AlertCircle } from 'lucide-angular';
@@ -38,6 +39,7 @@ export class PendingDelegationsComponent implements OnInit {
 
     constructor(
         private delegationService: UserDelegationService,
+        private authService: BackendAuthService,
         private translate: TranslateService,
         private cdr: ChangeDetectorRef
     ) { }
@@ -78,6 +80,9 @@ export class PendingDelegationsComponent implements OnInit {
             this.delegationService.approve(this.delegationToProcess.id).subscribe({
                 next: (success) => {
                     if (success) {
+                        // The delegatee now inherits the delegator's role; refresh claims so the
+                        // newly granted permissions apply immediately without a re-login.
+                        this.authService.refreshUserClaims().subscribe();
                         this.loadPendingDelegations();
                     }
                 }
