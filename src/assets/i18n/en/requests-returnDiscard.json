@@ -23,6 +23,7 @@
     },
     "reason": "Reason",
     "priority": "Priority",
+    "comments": "Comments",
     "requestPurpose": "Request Purpose",
     "requestPurposeNotes": "Request Purpose Notes",
     "notes": "Notes",
