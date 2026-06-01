@@ -2,8 +2,8 @@ import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { UserDelegationService } from '@admin/services/user-delegation.service';
+import { BackendAuthService } from '@services/backend-auth.service';
 import { UserDelegation } from '@models/user-delegation';
-import { getDelegationScopeI18nSuffix } from '@models/delegation-scope.enum';
 import { AddDelegationModalComponent } from './add-delegation-modal/add-delegation-modal.component';
 import { ConfirmationDialogComponent } from '@components/confirmation-dialog/confirmation-dialog.component';
 import { LucideAngularModule, Plus, Trash2, Calendar, User, AlertCircle, CheckCircle, XCircle, Ban } from 'lucide-angular';
@@ -33,7 +33,6 @@ export class DelegationListComponent implements OnInit {
     readonly CheckCircle = CheckCircle;
     readonly Ban = Ban;
     readonly XCircle = XCircle;
-    readonly scopeI18nSuffix = getDelegationScopeI18nSuffix;
 
     activeTab: 'my-delegations' | 'pending-requests' = 'my-delegations';
     delegations: UserDelegation[] = [];
@@ -51,6 +50,7 @@ export class DelegationListComponent implements OnInit {
 
     constructor(
         private delegationService: UserDelegationService,
+        private authService: BackendAuthService,
         private translate: TranslateService,
         private cdr: ChangeDetectorRef
     ) { }
@@ -144,6 +144,9 @@ export class DelegationListComponent implements OnInit {
             this.delegationService.approve(this.delegationToProcess.id).subscribe({
                 next: (success) => {
                     if (success) {
+                        // The delegatee now inherits the delegator's role; refresh claims so the
+                        // newly granted permissions apply immediately without a re-login.
+                        this.authService.refreshUserClaims().subscribe();
                         this.loadPendingDelegations();
                         this.loadDelegations();
                     } else {
