@@ -206,6 +206,7 @@
     "PENDING_REQUESTS": "Pending Delegation Requests",
     "INCOMING": "Incoming",
     "OUTGOING": "Outgoing",
+    "DIRECTION": "Direction",
     "NO_PENDING_REQUESTS": "No pending delegation requests",
     "APPROVE_CONFIRMATION_TITLE": "Approve Delegation",
     "APPROVE_CONFIRMATION_MESSAGE": "Are you sure you want to approve this delegation request?",

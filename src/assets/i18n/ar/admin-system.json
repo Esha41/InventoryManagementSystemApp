@@ -205,6 +205,7 @@
     "PENDING_REQUESTS": "طلبات التفويض المعلقة",
     "INCOMING": "وارد",
     "OUTGOING": "صادر",
+    "DIRECTION": "الاتجاه",
     "NO_PENDING_REQUESTS": "لا توجد طلبات تفويض معلقة",
     "APPROVE_CONFIRMATION_TITLE": "الموافقة على التفويض",
     "APPROVE_CONFIRMATION_MESSAGE": "هل أنت متأكد من أنك تريد الموافقة على طلب التفويض هذا؟",
