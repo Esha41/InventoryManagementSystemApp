@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, ArrowRight, AlertTriangle, CheckCircle, Clock, User, Package, FileText, Eye, ChevronDown, ChevronUp, RotateCcw, X, Check, XCircle, History as HistoryIcon } from 'lucide-angular';
-import { Subject, takeUntil, of } from 'rxjs';
+import { Subject, takeUntil, of, interval, fromEvent } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { ToastService } from '@services/toast.service';
@@ -57,7 +57,6 @@ import { WorkflowReturnApprovedSummaryComponent } from './components/workflow-re
 import { AutoRejectCountdownService } from '@requests/services/auto-reject-countdown.service';
 import { RequestAutoRejectCountdownDto } from '@models/workflow.model';
 import { AutoRejectCountdownComponent } from '@requests/components/auto-reject-countdown/auto-reject-countdown.component';
-import { NotificationHubService } from '@core/notifications/notification-hub.service';
 
 @Component({
   selector: 'app-workflow-approval-detail',
@@ -90,6 +89,9 @@ import { NotificationHubService } from '@core/notifications/notification-hub.ser
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
+  /** How often to poll for workflow changes while this page is open (no SignalR required). */
+  private static readonly WORKFLOW_POLL_MS = 15_000;
+
   readonly ArrowLeft = ArrowLeft;
   readonly ArrowRight = ArrowRight;
   readonly AlertTriangle = AlertTriangle;
@@ -138,8 +140,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   requestId: number = 0;
   /** Incremented on each full/silent detail load so async completions can ignore stale work. */
   private detailLoadSeq = 0;
-  /** Request id whose SignalR live-update group this component has joined (for cleanup). */
-  private liveUpdateRequestId: number | null = null;
+  /** Fingerprint of the last-known workflow state; used to detect remote changes via polling. */
+  private workflowStateFingerprint = '';
   requestDetail: RequestDetail | null = null;
   autoRejectCountdown: RequestAutoRejectCountdownDto | null = null;
   loading: boolean = true;
@@ -207,7 +209,6 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     private stateService: WorkflowApprovalStateService,
     private assetSupplyService: AssetSupplyService,
     private autoRejectCountdownService: AutoRejectCountdownService,
-    private notificationHub: NotificationHubService,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -341,14 +342,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     const isSuperAdmin = this.authService.isSuperAdmin();
     this.stateService.updateState({ isSuperAdmin });
 
-    // Live updates: when another user changes this request's workflow state, refresh in place.
-    this.notificationHub.workflowStateChanged$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(requestId => {
-        if (requestId === this.requestId) {
-          this.onRemoteWorkflowStateChanged();
-        }
-      });
+    this.startWorkflowPolling();
 
     // Use route params observable instead of snapshot for better reactivity
     this.route.params
@@ -364,31 +358,92 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
           return;
         }
         this.requestId = id;
-        this.joinLiveUpdatesForRequest(id);
+        this.workflowStateFingerprint = '';
         this.loadRequestDetail();
       });
   }
 
   ngOnDestroy(): void {
-    if (this.liveUpdateRequestId !== null) {
-      this.notificationHub.leaveRequestGroup(this.liveUpdateRequestId);
-      this.liveUpdateRequestId = null;
-    }
     this.destroy$.next();
     this.destroy$.complete();
     this.stateService.resetState();
   }
 
-  /** Join the SignalR group for this request, leaving any previously-joined one first. */
-  private joinLiveUpdatesForRequest(id: number): void {
-    if (this.liveUpdateRequestId === id) {
+  /**
+   * Poll the API while this page is open so another approver's action is picked up without SignalR.
+   * Also refresh immediately when the user returns to this browser tab.
+   */
+  private startWorkflowPolling(): void {
+    interval(WorkflowApprovalDetailComponent.WORKFLOW_POLL_MS)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.pollForRemoteWorkflowChanges());
+
+    fromEvent(document, 'visibilitychange')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (document.visibilityState === 'visible') {
+          this.pollForRemoteWorkflowChanges();
+        }
+      });
+  }
+
+  /** Lightweight poll: re-fetch only when workflow fingerprint differs from what is on screen. */
+  private pollForRemoteWorkflowChanges(): void {
+    if (!this.requestId || this.loading || this.processing) {
       return;
     }
-    if (this.liveUpdateRequestId !== null) {
-      this.notificationHub.leaveRequestGroup(this.liveUpdateRequestId);
+
+    this.dataService.loadBaseRequest(this.requestId, this.destroy$)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: unknown) => {
+          const baseRequest = this.parseBaseRequestResponse(response);
+          if (!baseRequest) {
+            return;
+          }
+          const incomingFingerprint = this.computeWorkflowStateFingerprint(mapToRequestDetail(baseRequest));
+          if (!this.workflowStateFingerprint || incomingFingerprint === this.workflowStateFingerprint) {
+            return;
+          }
+          this.onRemoteWorkflowStateChanged();
+        },
+        error: () => undefined
+      });
+  }
+
+  private parseBaseRequestResponse(response: unknown): BaseRequestDto | null {
+    const responseObj =
+      typeof response === 'object' && response !== null
+        ? response as { succeeded?: boolean; data?: BaseRequestDto; id?: number }
+        : null;
+
+    if (responseObj?.succeeded && responseObj?.data) {
+      return responseObj.data;
     }
-    this.notificationHub.joinRequestGroup(id);
-    this.liveUpdateRequestId = id;
+    if (responseObj?.id) {
+      return responseObj as BaseRequestDto;
+    }
+    return null;
+  }
+
+  private computeWorkflowStateFingerprint(detail: RequestDetail | null): string {
+    if (!detail) {
+      return '';
+    }
+    const stepsKey = (detail.approvalHistory ?? [])
+      .map(step =>
+        [
+          step.workflowApprovalstepId ?? step.id,
+          step.status,
+          step.isPending ? 1 : 0,
+          step.approvedDateTime ?? step.changedAt ?? ''
+        ].join(':'))
+      .join('|');
+    return `${detail.rawStatus ?? detail.status}|${stepsKey}`;
+  }
+
+  private syncWorkflowStateFingerprint(): void {
+    this.workflowStateFingerprint = this.computeWorkflowStateFingerprint(this.requestDetail);
   }
 
   /**
@@ -664,18 +719,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response: unknown) => {
           if (loadSeq !== this.detailLoadSeq) return;
-          // Handle API response format: { succeeded: true, data: {...} } or direct BaseRequestDto
-          const responseObj =
-            typeof response === 'object' && response !== null
-              ? response as { succeeded?: boolean; data?: BaseRequestDto; id?: number }
-              : null;
-
-          const baseRequest: BaseRequestDto | null =
-            responseObj?.succeeded && responseObj?.data
-              ? responseObj.data
-              : responseObj?.id
-                ? (responseObj as BaseRequestDto)
-                : null;
+          const baseRequest = this.parseBaseRequestResponse(response);
 
           if (!baseRequest) {
             if (showLoading) {
@@ -709,6 +753,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
             // Update requestDetail - this triggers change detection for timeline component
             // The timeline component uses @Input() requestDetail and will automatically update
             this.requestDetail = mapToRequestDetail(baseRequest);
+            this.syncWorkflowStateFingerprint();
 
             // Update state service to ensure all child components get updated data
             this.stateService.updateState({
@@ -748,6 +793,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
             if (loadSeq !== this.detailLoadSeq) return;
             // Even on error, update with what we have
             this.requestDetail = mapToRequestDetail(baseRequest);
+            this.syncWorkflowStateFingerprint();
             // Update state service with request detail
             this.stateService.updateState({
               requestId: this.requestId,
