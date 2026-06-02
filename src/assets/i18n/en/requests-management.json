@@ -115,7 +115,7 @@
         "approvedQty": "Approved",
         "suppliedQty": "Supplied",
         "shouldBeSuppliedQty": "Should be Supplied",
-        "lot": "lot",
+        "lot": "LOT",
         "depot": "Depot",
         "notes": "Notes"
       },

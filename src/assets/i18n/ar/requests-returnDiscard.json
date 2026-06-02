@@ -33,7 +33,7 @@
     "selectRequestPurpose": "اختر الغرض من الطلب",
     "enterReason": "",
     "enterNotes": "أدخل ملاحظات إضافية (اختياري)",
-    "requestPurposeNotesPlaceholder":"",
+    "requestPurposeNotesPlaceholder": "",
     "attachments": "المرفقات",
     "filters": {
       "ammunitionType": "نوع الذخيرة",
@@ -65,7 +65,7 @@
     "success": {
       "orderSentSuccessfully": "تم تنفيذ طلب الإرجاع بنجاح",
       "requestNumber": "رقم طلب الإرجاع هو",
-      "trackRequest":"متابعة الطلب"
+      "trackRequest": "متابعة الطلب"
     },
     "confirmDialog": {
       "title": "تأكيد الطلب",

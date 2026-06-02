@@ -83,7 +83,7 @@
       "colApproved": "Approved",
       "colSupplied": "Supplied",
       "colShouldBeSupplied": "Should be Supplied",
-      "colLot": "lot",
+      "colLot": "LOT",
       "colDepot": "Depot",
       "noLines": "No supply line details recorded.",
       "weaponSelectionTitle": "Depot & policy number selections",
@@ -230,15 +230,15 @@
     "valueSet": "Set",
     "update": "Update",
     "processReturnItems": "Review and complete the request",
-    "goToProcessReturnItems": "Review & complete the request"
-    ,"approvedThroughDelegation": "Approved through delegation"
-    ,"rejectedThroughDelegation": "Rejected through delegation"
-    ,"returnedThroughDelegation": "Returned through delegation"
-    ,"actedThroughDelegation": "Processed through delegation"
-    ,"delegationByRoleLabel": "By"
-    ,"performedAsRole": "Performed as"
-    ,"urgentAttentionRequired": "Urgent attention required"
-    ,"topazSignature": {
+    "goToProcessReturnItems": "Review & complete the request",
+    "approvedThroughDelegation": "Approved through delegation",
+    "rejectedThroughDelegation": "Rejected through delegation",
+    "returnedThroughDelegation": "Returned through delegation",
+    "actedThroughDelegation": "Processed through delegation",
+    "delegationByRoleLabel": "By",
+    "performedAsRole": "Performed as",
+    "urgentAttentionRequired": "Urgent attention required",
+    "topazSignature": {
       "label": "Receiver Signature",
       "optional": "Optional",
       "detecting": "Checking for signature pad...",

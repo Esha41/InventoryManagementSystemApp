@@ -53,7 +53,7 @@
     "supplier": "Supplier",
     "manufacturer": "Manufacturer",
     "primaryPurpose": "Primary Purpose",
-    "lot": "Lot",
+    "lot": "LOT",
     "quantity": "Quantity",
     "batchNo": "Policy No.",
     "batchNoLabelAmmoExplosive": "Batch No",
@@ -110,7 +110,7 @@
     "no": "No",
     "inventoryInformation": "Inventory Information",
     "country": "Country",
-    "lotNumber": "Lot Number",
+    "lotNumber": "LOT Number",
     "stockSummary": "Stock Summary",
     "totalQuantity": "Total Quantity",
     "currentAvailable": "Current Available",
@@ -122,7 +122,7 @@
     "stockUtilization": "Stock Utilization",
     "quantityUtilization": "Quantity utilization",
     "detailTabThisInventory": "Inventory",
-    "detailTabAllLots": "All lots",
+    "detailTabAllLots": "All LOT",
     "inventoryEntryDetails": "Inventory details",
     "reservedQty": "Reserved Qty",
     "itemNotFound": "Inventory item not found",
@@ -155,7 +155,7 @@
     "usePagedBatchAssets": "Use Pages",
     "batchItemDetailEmptyPage": "No assets for this item on the current page. Try another page or \"Show All\".",
     "errors": {
-      "lotLinkedToSupplyOrder": "You cannot delete or change this lot because it is linked to a supply order."
+      "lotLinkedToSupplyOrder": "You cannot delete or change this LOT because it is linked to a supply order."
     }
   }
 }
