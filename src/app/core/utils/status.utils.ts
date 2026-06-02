@@ -61,7 +61,7 @@ export function getSubmissionStatusClass(status: number): string {
  * For handling request statuses (Orders, Returns, Discards)
  */
 
-export type CardStatus = 'new' | 'on-progress' | 'completed' | 'declined' | 'returned' | 'action-required';
+export type CardStatus = 'new' | 'on-progress' | 'completed' | 'declined' | 'cancelled' | 'returned' | 'action-required';
 export type DisplayableStatus = typeof RequestStatusEnum[keyof typeof RequestStatusEnum];
 
 // Re-export approved constant for backward compatibility
