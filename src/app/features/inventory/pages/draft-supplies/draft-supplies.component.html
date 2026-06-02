@@ -27,31 +27,23 @@
     </app-error-state>
 
     <div *ngIf="!loading && !error && rows.length > 0"
-      class="w-full min-w-0 bg-[var(--color-background)] rounded-xl shadow-custom-sm border border-[var(--color-border)] overflow-hidden mb-8">
-      <div class="w-full min-w-0 overflow-x-auto">
-        <table class="w-full min-w-full table-fixed divide-y divide-[var(--color-border)]">
-          <colgroup>
-            <col style="width: 34%" />
-            <col style="width: 33%" />
-            <col style="width: 33%" />
-          </colgroup>
+      class="bg-[var(--color-background)] rounded-xl shadow-custom-sm border border-[var(--color-border)] overflow-hidden mb-8">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-[var(--color-border)]">
           <thead class="bg-[var(--color-background-muted)]">
             <tr>
               <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
                 {{ 'inventoryDashboard.draftSuppliesPage.cols.kind' | translate }}</th>
               <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
                 {{ 'inventoryDashboard.draftSuppliesPage.cols.order' | translate }}</th>
-              <th class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
-                {{ 'inventoryDashboard.draftSuppliesPage.cols.submissionStatus' | translate }}</th>
             </tr>
           </thead>
           <tbody class="bg-[var(--color-background)] divide-y divide-[var(--color-border)]">
             <tr *ngFor="let row of paginatedRows" class="hover:bg-[var(--color-background-hover)] transition-colors">
               <td class="px-6 py-4 text-sm text-[var(--color-text)] break-words">{{ row.rowKind }}</td>
-              <td dir="ltr" class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)]" [class.text-right]="isRTL" [class.text-left]="!isRTL">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)]">
                 {{ row.orderNumber || row.orderId }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-start">{{ submissionStatusKey(row.submissionStatus) | translate }}</td>
             </tr>
           </tbody>
         </table>
@@ -59,12 +51,12 @@
     </div>
 
     <div *ngIf="!loading && !error && rows.length > 0"
-      class="flex w-full min-w-0 flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] rounded-lg px-4 sm:px-6 py-4 mb-8"
+      class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-t border-[var(--color-border)] bg-[var(--color-background-muted)] rounded-lg px-4 sm:px-6 py-4 mb-8"
       [class.sm:flex-row-reverse]="isRTL">
-      <app-rows-per-page class="w-full sm:w-auto min-w-0" [rowsPerPage]="rowsPerPage" [totalItems]="rows.length"
+      <app-rows-per-page [rowsPerPage]="rowsPerPage" [totalItems]="rows.length"
         [visibleItems]="paginatedRows.length" (rowsPerPageChange)="onRowsPerPageChange($event)">
       </app-rows-per-page>
-      <div *ngIf="totalPages > 1" class="flex w-full sm:w-auto items-center justify-center sm:justify-end gap-3 shrink-0">
+      <div *ngIf="totalPages > 1" class="flex items-center gap-3">
         <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
         </app-pagination>
         <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">

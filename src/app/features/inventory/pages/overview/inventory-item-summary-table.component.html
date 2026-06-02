@@ -88,10 +88,16 @@
             </span>
           </div>
         </th>
-        <th *ngIf="showLotQuantityColumns" scope="col" class="py-2.5 ps-2 pe-4 sm:pe-6 align-middle text-right text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)]" (click)="onItemSort('totalLots')">
-          <span class="block w-full min-w-0 break-words leading-snug">
-            {{ 'inventoryDashboard.itemSummary.cols.lots' | translate }}
-          </span>
+        <th *ngIf="showLotQuantityColumns" scope="col" dir="ltr" class="py-2.5 align-middle text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)]"
+          [ngClass]="isRTL ? 'px-2 pe-4 sm:pe-6' : 'ps-4 pe-4 sm:pe-6'" (click)="onItemSort('totalLots')">
+          <div class="flex w-full min-w-0 flex-nowrap items-center gap-1.5 justify-end">
+            <span class="min-w-0 break-words text-end leading-snug">{{ 'inventoryDashboard.itemSummary.cols.lots' | translate }}</span>
+            <span class="shrink-0 inline-flex">
+              <lucide-angular *ngIf="itemSortColumn !== 'totalLots'" [img]="ArrowUpDown" class="h-3.5 w-3.5 text-[var(--color-text-muted)]"></lucide-angular>
+              <lucide-angular *ngIf="itemSortColumn === 'totalLots' && itemSortDirection === 'asc'" [img]="ArrowUp" class="h-3.5 w-3.5 text-[var(--color-brand)]"></lucide-angular>
+              <lucide-angular *ngIf="itemSortColumn === 'totalLots' && itemSortDirection === 'desc'" [img]="ArrowDown" class="h-3.5 w-3.5 text-[var(--color-brand)]"></lucide-angular>
+            </span>
+          </div>
         </th>
       </tr>
     </thead>
@@ -128,7 +134,8 @@
             <ng-container *ngIf="showLotMetricForRow(item)">{{ item.remainingQuantity | number }}</ng-container>
             <ng-container *ngIf="!showLotMetricForRow(item)">—</ng-container>
           </td>
-          <td *ngIf="showLotQuantityColumns" dir="ltr" class="ps-2 pe-4 sm:pe-6 py-2.5 align-middle text-end text-sm tabular-nums text-[var(--color-text)] whitespace-nowrap">
+          <td *ngIf="showLotQuantityColumns" dir="ltr" class="py-2.5 align-middle text-end text-sm tabular-nums text-[var(--color-text)] whitespace-nowrap"
+            [ngClass]="isRTL ? 'px-2 pe-4 sm:pe-6' : 'ps-4 pe-4 sm:pe-6'">
             <ng-container *ngIf="showLotMetricForRow(item)">{{ item.totalLots | number }}</ng-container>
             <ng-container *ngIf="!showLotMetricForRow(item)">—</ng-container>
           </td>
@@ -398,7 +405,8 @@
         <td *ngIf="showLotQuantityColumns" dir="ltr" class="px-2 py-2.5 align-middle text-sm text-end tabular-nums font-semibold text-[var(--color-text-muted)] whitespace-nowrap">{{ sumUsedQtyFiltered | number }}</td>
         <td *ngIf="showLotQuantityColumns" dir="ltr" class="px-2 py-2.5 align-middle text-sm text-end tabular-nums font-semibold text-[var(--color-text-muted)] whitespace-nowrap">{{ sumReservedQtyFiltered | number }}</td>
         <td *ngIf="showLotQuantityColumns" dir="ltr" class="px-2 py-2.5 align-middle text-sm text-end tabular-nums font-semibold whitespace-nowrap" [ngClass]="getRemainingQtyClass(sumRemainingQtyFiltered, sumTotalQtyFiltered)">{{ sumRemainingQtyFiltered | number }}</td>
-        <td *ngIf="showLotQuantityColumns" dir="ltr" class="ps-2 pe-4 sm:pe-6 py-2.5 align-middle text-end text-sm tabular-nums font-semibold text-[var(--color-text)] whitespace-nowrap">{{ sumLotsFiltered | number }}</td>
+        <td *ngIf="showLotQuantityColumns" dir="ltr" class="py-2.5 align-middle text-end text-sm tabular-nums font-semibold text-[var(--color-text)] whitespace-nowrap"
+          [ngClass]="isRTL ? 'px-2 pe-4 sm:pe-6' : 'ps-4 pe-4 sm:pe-6'">{{ sumLotsFiltered | number }}</td>
       </tr>
     </tfoot>
   </table>
