@@ -619,7 +619,6 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response: unknown) => {
           if (loadSeq !== this.detailLoadSeq) return;
-          // Handle API response format: { succeeded: true, data: {...} } or direct BaseRequestDto
           const responseObj =
             typeof response === 'object' && response !== null
               ? response as { succeeded?: boolean; data?: BaseRequestDto; id?: number }

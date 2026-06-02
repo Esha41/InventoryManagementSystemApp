@@ -5,7 +5,7 @@ export const environment: Environment = {
   apiUrl: 'https://localhost:7148/api',
   appName: 'Ettad (Dev)',
   enableLogging: true,
-  version: '1.3.0',
+  version: '1.4.0',
   notificationHubUrl: 'https://localhost:7148/hubs/notification',
   idleWarningAfterMinutes: 15,
   idleLogoutCountdownSeconds: 60,

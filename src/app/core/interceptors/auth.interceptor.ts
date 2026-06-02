@@ -117,39 +117,43 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           return throwError(() => error);
         }
 
-        return backendAuth.refreshToken().pipe(
+        // A 401 here may mean the access token expired — try to refresh, then retry the request.
+        // Crucially, distinguish two failure modes so a *non-auth* 401 can never force a logout:
+        //   • refresh itself fails           → the session really is dead → clear + go to login
+        //   • refresh succeeds but the retried request still fails (e.g. an application-level
+        //     401/403/409) → NOT a token problem → propagate the error and keep the session
+        let refreshSucceeded = false;
+
+        // Refresh with one grace-window retry: the first attempt can fail on a transient network
+        // error or a lost Set-Cookie response, so wait 2 s and try once more before giving up.
+        const refreshWithRetry$ = backendAuth.refreshToken().pipe(
+          catchError(() => timer(2000).pipe(switchMap(() => backendAuth.refreshToken())))
+        );
+
+        return refreshWithRetry$.pipe(
           switchMap(loginResponse => {
+            refreshSucceeded = true;
             const retryReq = req.clone({
               withCredentials: true,
               setHeaders: { Authorization: `Bearer ${loginResponse.accessToken}` }
             });
             return next(retryReq);
           }),
-          catchError(() =>
-            // First refresh attempt failed (could be a transient network error or a
-            // grace-window retry needed after a lost Set-Cookie response).
-            // Wait 2 s and try once more before clearing the session.
-            timer(2000).pipe(
-              switchMap(() => backendAuth.refreshToken()),
-              switchMap(loginResponse => {
-                const retryReq = req.clone({
-                  withCredentials: true,
-                  setHeaders: { Authorization: `Bearer ${loginResponse.accessToken}` }
-                });
-                return next(retryReq);
-              }),
-              catchError(finalError => {
-                configService.logWarning('Token refresh failed after retry — redirecting to login');
-                const hadActiveSession = backendAuth.getCurrentUser() !== null;
-                backendAuth.clearSession();
-                if (hadActiveSession) {
-                  storageService.set('sessionExpired', true);
-                }
-                router.navigate(['/auth/login']);
-                return throwError(() => finalError);
-              })
-            )
-          )
+          catchError(err => {
+            if (refreshSucceeded) {
+              // The token was refreshed fine; the request still failed for a non-auth reason.
+              // Surface it to the caller instead of logging the user out.
+              return throwError(() => err);
+            }
+            configService.logWarning('Token refresh failed — redirecting to login');
+            const hadActiveSession = backendAuth.getCurrentUser() !== null;
+            backendAuth.clearSession();
+            if (hadActiveSession) {
+              storageService.set('sessionExpired', true);
+            }
+            router.navigate(['/auth/login']);
+            return throwError(() => err);
+          })
         );
       }
 

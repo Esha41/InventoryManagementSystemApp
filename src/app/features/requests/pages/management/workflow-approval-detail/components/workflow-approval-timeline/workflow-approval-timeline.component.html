@@ -28,7 +28,8 @@
                 'rejected': approval.status === 'Rejected' || approval.status === 'AutoRejected' || approval.status === 'Cancelled',
                 'submitted': approval.status === 'Submitted',
                 'border-[var(--color-success)]': approval.status === 'Approved' || approval.status === 'Submitted',
-                'border-[var(--color-brand)]/40': approval.status === 'Pending' || approval.status === 'Rejected' || approval.status === 'AutoRejected' || approval.status === 'Cancelled' || approval.status === 'ReturnedForReview' || approval.status === 'Returned'
+                'border-[var(--color-brand)]/40': approval.status === 'Pending' || approval.status === 'Rejected' || approval.status === 'AutoRejected' || approval.status === 'Cancelled',
+                'border-purple-300': approval.status === 'ReturnedForReview' || approval.status === 'Returned'
               }">
               <lucide-angular [img]="getApprovalStatusIcon(approval.status)" class="h-6 w-6">
               </lucide-angular>

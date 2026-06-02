@@ -59,6 +59,7 @@ export class RequestFilterBarComponent {
         { label: 'dashboard.statusLabels.underProcess', value: 'on-progress' },
         { label: 'requestsManagement.orderReport.workflowStatus.completed', value: 'completed' },
         { label: 'dashboard.statusLabels.rejected', value: 'declined' },
+        { label: 'dashboard.statusLabels.cancelled', value: 'cancelled' },
         { label: 'dashboard.statusLabels.returnedForReview', value: 'returned' }
     ];
 

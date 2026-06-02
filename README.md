@@ -1,8 +1,8 @@
 # Ettad Frontend - Supply Chain & Inventory Management System
 
-**Version**: 1.3.0  
+**Version**: 1.4.0  
 **Status**: Production-Ready  
-**Last Updated**: 2026-05-03
+**Last Updated**: 2026-06-02
 
 ---
 
@@ -114,7 +114,7 @@ export const environment: Environment = {
   apiUrl: 'https://your-api:7148/api',
   appName: 'Ettad (Dev)',
   enableLogging: true,
-  version: '1.3.0'
+  version: '1.4.0'
 };
 ```
 
@@ -141,4 +141,5 @@ See `docs/` folder:
 
 | Version | Date | Status |
 |---------|------|--------|
-| 1.3.0 | 2026-05-03 | Current Production |
+| 1.4.0 | 2026-06-02 | Current Production |
+| 1.3.0 | 2026-05-03 | Previous |

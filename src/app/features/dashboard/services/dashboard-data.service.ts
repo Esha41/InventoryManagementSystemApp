@@ -260,6 +260,7 @@ export class DashboardDataService {
           'on-progress': 2,
           completed: 3,
           declined: 4,
+          cancelled: 5,
           returned: 6
         };
         const statusValue = dashboardStatusToBackendStatus[statusFilter];

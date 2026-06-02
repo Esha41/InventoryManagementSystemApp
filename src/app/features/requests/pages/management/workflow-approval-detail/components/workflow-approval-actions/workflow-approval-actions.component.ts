@@ -405,6 +405,18 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
   }
 
   /**
+   * Resolve the WorkflowApprovalStep id the user is currently looking at, used as an
+   * optimistic-concurrency token. Prefers the pending step this user can action; falls back to
+   * any pending step. Returns null when none is resolvable (backend then skips the check).
+   */
+  private getCurrentApprovalStepId(): number | null {
+    const steps = this.requestDetail?.approvalHistory ?? [];
+    const mine = steps.find(s => s.isPending && s.isCurrentUserApprover && (s.workflowApprovalstepId ?? 0) > 0);
+    const anyPending = steps.find(s => s.isPending && (s.workflowApprovalstepId ?? 0) > 0);
+    return (mine ?? anyPending)?.workflowApprovalstepId ?? null;
+  }
+
+  /**
    * Approve request
    */
   approveRequest(): void {
@@ -492,7 +504,8 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
             comments: this.comments,
             sendToHigherApproval: this.sendToHigherApproval === 'yes',
             nextStepId: this.selectedNextStepId,
-            files: this.approvalFiles
+            files: this.approvalFiles,
+            expectedWorkflowApprovalStepId: this.getCurrentApprovalStepId()
           }, this.destroy$)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
@@ -542,7 +555,8 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
             isApproved: false,
             comments: this.comments,
             sendToHigherApproval: this.sendToHigherApproval === 'yes',
-            files: this.approvalFiles
+            files: this.approvalFiles,
+            expectedWorkflowApprovalStepId: this.getCurrentApprovalStepId()
           }, this.destroy$)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
@@ -666,7 +680,8 @@ export class WorkflowApprovalActionsComponent implements OnInit, OnDestroy, Afte
             requestId: this.requestId,
             returnToStepId: this.returnToStepId!,
             comments: returnComment,
-            files: this.approvalFiles
+            files: this.approvalFiles,
+            expectedWorkflowApprovalStepId: this.getCurrentApprovalStepId()
           }, this.destroy$)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
