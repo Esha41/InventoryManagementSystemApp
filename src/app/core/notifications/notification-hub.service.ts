@@ -15,14 +15,19 @@ import { NotificationHubPayload } from './notification-hub.types';
 export class NotificationHubService implements OnDestroy {
   private readonly notificationReceivedSubject = new Subject<NotificationHubPayload>();
   private readonly unreadCountUpdatedSubject = new Subject<number>();
+  private readonly workflowStateChangedSubject = new Subject<number>();
 
   readonly notificationReceived$: Observable<NotificationHubPayload> =
     this.notificationReceivedSubject.asObservable();
   readonly unreadCountUpdated$: Observable<number> = this.unreadCountUpdatedSubject.asObservable();
+  /** Emits the requestId whose workflow state changed (a step was approved/rejected/returned/cancelled). */
+  readonly workflowStateChanged$: Observable<number> = this.workflowStateChangedSubject.asObservable();
 
   private hubConnection?: HubConnection;
   private reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
   private activeUserId: string | null = null;
+  /** Request groups this client wants to be in; re-joined after (re)connect. */
+  private readonly joinedRequestGroups = new Set<string>();
 
   constructor(
     private readonly configService: ConfigService,
@@ -39,6 +44,7 @@ export class NotificationHubService implements OnDestroy {
    */
   stop(): void {
     this.activeUserId = null;
+    this.joinedRequestGroups.clear();
     this.disconnectSocket();
   }
 
@@ -108,9 +114,18 @@ export class NotificationHubService implements OnDestroy {
       });
     });
 
+    this.hubConnection.on('WorkflowStateChanged', (payload: number | { requestId?: number } | null) => {
+      const requestId = typeof payload === 'number' ? payload : payload?.requestId;
+      if (requestId != null) {
+        this.ngZone.run(() => this.workflowStateChangedSubject.next(requestId));
+      }
+    });
+
     this.hubConnection.onreconnected(() => {
       this.ngZone.run(() => {
         this.joinUserGroup(userId).catch(() => undefined);
+        // Re-subscribe to any request groups missed during the disconnect.
+        this.joinedRequestGroups.forEach(id => this.invokeJoinRequestGroup(id));
       });
     });
 
@@ -126,6 +141,8 @@ export class NotificationHubService implements OnDestroy {
         this.joinUserGroup(userId).catch(err => {
           this.configService.logError('Failed to join user group', err);
         });
+        // Restore any request-group subscriptions requested before the socket was ready.
+        this.joinedRequestGroups.forEach(id => this.invokeJoinRequestGroup(id));
       })
       .catch((error: unknown) => {
         this.configService.logError('Failed to start notification hub connection', error);
@@ -164,5 +181,36 @@ export class NotificationHubService implements OnDestroy {
     }
 
     return this.hubConnection.invoke('JoinUserGroup', userId);
+  }
+
+  /**
+   * Subscribe to live workflow updates for a request (called while its detail page is open).
+   * Safe to call before the socket is connected — the join is replayed once connected/reconnected.
+   */
+  joinRequestGroup(requestId: number | string): void {
+    const id = String(requestId);
+    if (!id) {
+      return;
+    }
+    this.joinedRequestGroups.add(id);
+    this.invokeJoinRequestGroup(id);
+  }
+
+  /** Stop receiving live updates for a request (called when leaving its detail page). */
+  leaveRequestGroup(requestId: number | string): void {
+    const id = String(requestId);
+    if (!id) {
+      return;
+    }
+    this.joinedRequestGroups.delete(id);
+    if (this.hubConnection?.state === HubConnectionState.Connected) {
+      this.hubConnection.invoke('LeaveRequestGroup', id).catch(() => undefined);
+    }
+  }
+
+  private invokeJoinRequestGroup(id: string): void {
+    if (this.hubConnection?.state === HubConnectionState.Connected) {
+      this.hubConnection.invoke('JoinRequestGroup', id).catch(() => undefined);
+    }
   }
 }

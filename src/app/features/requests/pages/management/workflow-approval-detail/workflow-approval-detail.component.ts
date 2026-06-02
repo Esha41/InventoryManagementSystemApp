@@ -57,6 +57,7 @@ import { WorkflowReturnApprovedSummaryComponent } from './components/workflow-re
 import { AutoRejectCountdownService } from '@requests/services/auto-reject-countdown.service';
 import { RequestAutoRejectCountdownDto } from '@models/workflow.model';
 import { AutoRejectCountdownComponent } from '@requests/components/auto-reject-countdown/auto-reject-countdown.component';
+import { NotificationHubService } from '@core/notifications/notification-hub.service';
 
 @Component({
   selector: 'app-workflow-approval-detail',
@@ -137,6 +138,8 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
   requestId: number = 0;
   /** Incremented on each full/silent detail load so async completions can ignore stale work. */
   private detailLoadSeq = 0;
+  /** Request id whose SignalR live-update group this component has joined (for cleanup). */
+  private liveUpdateRequestId: number | null = null;
   requestDetail: RequestDetail | null = null;
   autoRejectCountdown: RequestAutoRejectCountdownDto | null = null;
   loading: boolean = true;
@@ -204,6 +207,7 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     private stateService: WorkflowApprovalStateService,
     private assetSupplyService: AssetSupplyService,
     private autoRejectCountdownService: AutoRejectCountdownService,
+    private notificationHub: NotificationHubService,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -337,6 +341,15 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     const isSuperAdmin = this.authService.isSuperAdmin();
     this.stateService.updateState({ isSuperAdmin });
 
+    // Live updates: when another user changes this request's workflow state, refresh in place.
+    this.notificationHub.workflowStateChanged$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(requestId => {
+        if (requestId === this.requestId) {
+          this.onRemoteWorkflowStateChanged();
+        }
+      });
+
     // Use route params observable instead of snapshot for better reactivity
     this.route.params
       .pipe(takeUntil(this.destroy$))
@@ -351,14 +364,46 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
           return;
         }
         this.requestId = id;
+        this.joinLiveUpdatesForRequest(id);
         this.loadRequestDetail();
       });
   }
 
   ngOnDestroy(): void {
+    if (this.liveUpdateRequestId !== null) {
+      this.notificationHub.leaveRequestGroup(this.liveUpdateRequestId);
+      this.liveUpdateRequestId = null;
+    }
     this.destroy$.next();
     this.destroy$.complete();
     this.stateService.resetState();
+  }
+
+  /** Join the SignalR group for this request, leaving any previously-joined one first. */
+  private joinLiveUpdatesForRequest(id: number): void {
+    if (this.liveUpdateRequestId === id) {
+      return;
+    }
+    if (this.liveUpdateRequestId !== null) {
+      this.notificationHub.leaveRequestGroup(this.liveUpdateRequestId);
+    }
+    this.notificationHub.joinRequestGroup(id);
+    this.liveUpdateRequestId = id;
+  }
+
+  /**
+   * Another approver changed this request while it was open. Silently refresh so the displayed
+   * state and action buttons match the backend, and let the user know why the page updated.
+   */
+  private onRemoteWorkflowStateChanged(): void {
+    this.loadRequestDetailInternal(false);
+    this.translateService.get('workflowApprovalDetail.liveUpdate.requestUpdated')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(msg => {
+        if (msg) {
+          this.toastService.info(msg);
+        }
+      });
   }
 
   loadRequestDetail(): void {

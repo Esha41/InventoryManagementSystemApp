@@ -119,6 +119,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300';
       case 'declined':
         return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300';
       case 'returned':
         return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-300';
       default:
@@ -137,6 +139,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       case 'completed':
         return 'bg-green-500';
       case 'declined':
+        return 'bg-red-500';
+      case 'cancelled':
         return 'bg-red-500';
       case 'returned':
         return 'bg-purple-500';
@@ -169,6 +173,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         return 'dashboard.completed';
       case 'declined':
         return 'dashboard.statusLabels.rejected';
+      case 'cancelled':
+        return 'dashboard.statusLabels.cancelled';
       case 'returned':
         return 'dashboard.statusLabels.returnedForReview';
       default:

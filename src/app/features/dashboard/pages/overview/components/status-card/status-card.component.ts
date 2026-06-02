@@ -11,7 +11,7 @@ import type { OrderItem, ReturnItem } from '@models/dashboard-order-display.mode
 
 export type { OrderItem, ReturnItem };
 
-export type StatusType = 'new-issue' | 'on-progress' | 'completed' | 'new' | 'declined' | 'returned' | 'action-required';
+export type StatusType = 'new-issue' | 'on-progress' | 'completed' | 'new' | 'declined' | 'cancelled' | 'returned' | 'action-required';
 
 @Component({
   selector: 'app-status-card',
@@ -120,6 +120,8 @@ export class StatusCardComponent implements OnInit, OnDestroy {
         return 'bg-[#10b981]';
       case 'declined':
         return 'bg-[#ef4444]';
+      case 'cancelled':
+        return 'bg-[#ef4444]';
       case 'returned':
         return 'bg-[#a855f7]';
       default:
@@ -141,6 +143,8 @@ export class StatusCardComponent implements OnInit, OnDestroy {
       case 'completed':
         return 'bg-[#10b981]';
       case 'declined':
+        return 'bg-[#ef4444]';
+      case 'cancelled':
         return 'bg-[#ef4444]';
       case 'returned':
         return 'bg-[#a855f7]';
@@ -166,6 +170,8 @@ export class StatusCardComponent implements OnInit, OnDestroy {
         return 'dashboard.completed';
       case 'declined':
         return 'dashboard.statusLabels.rejected';
+      case 'cancelled':
+        return 'dashboard.statusLabels.cancelled';
       case 'returned':
         return 'dashboard.statusLabels.returnedForReview';
       default:

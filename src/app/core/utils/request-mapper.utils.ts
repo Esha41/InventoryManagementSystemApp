@@ -40,7 +40,7 @@ export interface StatusMetadata {
   id: RequestStatusEnum;
   translationKey: string;
   badgeClass: string; // Keys for `getRequestStatusBadgeClass` (e.g. New, InProgress, Approved)
-  cardStatus: string; // 'new' | 'on-progress' | 'completed' | 'declined' | 'returned'
+  cardStatus: string; // 'new' | 'on-progress' | 'completed' | 'declined' | 'cancelled' | 'returned'
 }
 
 export const STATUS_METADATA: Record<RequestStatusEnum, StatusMetadata> = {
@@ -72,7 +72,7 @@ export const STATUS_METADATA: Record<RequestStatusEnum, StatusMetadata> = {
     id: RequestStatusEnum.Cancelled,
     translationKey: 'dashboard.statusLabels.cancelled',
     badgeClass: 'Cancelled',
-    cardStatus: 'declined'
+    cardStatus: 'cancelled'
   },
   [RequestStatusEnum.ReturnedForReview]: {
     id: RequestStatusEnum.ReturnedForReview,

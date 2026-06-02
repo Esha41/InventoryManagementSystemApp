@@ -21,6 +21,8 @@ export interface ApprovalFormData {
   sendToHigherApproval?: boolean;
   nextStepId?: number | null;
   files?: File[];
+  /** Optimistic-concurrency token: the current WorkflowApprovalStep id the user was viewing. */
+  expectedWorkflowApprovalStepId?: number | null;
 }
 
 export interface ReturnForReviewFormData {
@@ -28,6 +30,8 @@ export interface ReturnForReviewFormData {
   returnToStepId: number;
   comments: string;
   files?: File[];
+  /** Optimistic-concurrency token: the current WorkflowApprovalStep id the user was viewing. */
+  expectedWorkflowApprovalStepId?: number | null;
 }
 
 @Injectable({
@@ -65,6 +69,11 @@ export class WorkflowApprovalActionsService {
       formData.append('SendToHigherApproval', 'true');
     }
 
+    // Optimistic-concurrency token so the backend can reject a stale step with 409
+    if (data.expectedWorkflowApprovalStepId != null) {
+      formData.append('ExpectedWorkflowApprovalStepId', data.expectedWorkflowApprovalStepId.toString());
+    }
+
     // Add files if any (backend expects 'files' parameter)
     if (data.files && data.files.length > 0) {
       data.files.forEach((file) => {
@@ -86,6 +95,11 @@ export class WorkflowApprovalActionsService {
     formData.append('IsApproved', 'false');
     formData.append('Action', '6'); // RequestStatus.ReturnedForReview = 6
     formData.append('ReturnToWorkflowStepId', data.returnToStepId.toString());
+
+    // Optimistic-concurrency token so the backend can reject a stale step with 409
+    if (data.expectedWorkflowApprovalStepId != null) {
+      formData.append('ExpectedWorkflowApprovalStepId', data.expectedWorkflowApprovalStepId.toString());
+    }
 
     // Use the comment from the dialog (required)
     if (data.comments) {
