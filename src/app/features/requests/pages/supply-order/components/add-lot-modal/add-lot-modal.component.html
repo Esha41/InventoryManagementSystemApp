@@ -77,13 +77,7 @@
         </button>
       </div>
 
-      <!-- Info Message -->
-      <div
-        class="flex items-center gap-2 text-xs text-[var(--color-text-muted)] bg-[var(--color-info)]/10 p-2 rounded border-2 border-[var(--color-info)]/30">
-        <lucide-angular [img]="AlertTriangle" class="h-4 w-4 text-[var(--color-info)] flex-shrink-0"></lucide-angular>
-        <span>{{ 'supplyOrder.lotSelectionInfo' | translate }}</span>
-      </div>
-
+      
       <!-- Lots List -->
       <div *ngIf="availableLots.length > 0" class="space-y-3 max-h-[40vh] overflow-y-auto pe-2">
         <div *ngFor="let lot of availableLots" class="border-2 rounded-lg p-4 transition-all cursor-pointer"

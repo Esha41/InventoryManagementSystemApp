@@ -184,9 +184,6 @@
       "returnDeliveryDateSet": "Delivery date set successfully.",
       "returnedForReview": "Request returned for review successfully"
     },
-    "liveUpdate": {
-      "requestUpdated": "This request was just updated by another user. The page has been refreshed with the latest status."
-    },
     "selectSkipToStepRequired": "Please select a step to go to from the \"Go To Step\" dropdown before approving this request.",
     "errors": {
       "invalidRequestData": "Invalid request data",
