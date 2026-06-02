@@ -1,6 +1,6 @@
 # Documentation Index
 
-**Complete Documentation for Ettad Frontend v1.3.0**
+**Complete Documentation for Ettad Frontend v1.4.0**
 
 ---
 

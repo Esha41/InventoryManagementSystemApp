@@ -38,7 +38,7 @@ export interface Environment {
 apiUrl: 'https://localhost:7148/api'
 appName: 'Ettad (Dev)'
 enableLogging: true
-version: '1.3.0'
+version: '1.4.0'
 idleWarningAfterMinutes: 15
 enableOnboardingTour: false
 ```
@@ -53,7 +53,7 @@ appName: 'Ettad (Local)'
 enableLogging: true
 debugMode: true
 mockData: false
-version: '1.3.0'
+version: '1.4.0'
 ```
 
 Used by: npm run start:local
