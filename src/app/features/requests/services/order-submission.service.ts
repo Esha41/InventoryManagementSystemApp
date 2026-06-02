@@ -9,6 +9,7 @@ import type { WeaponAssociation } from '@models/request-item.model';
 import { formatDateForInput } from '@core/utils/format.utils';
 import {
   USAGE_DATE_TO_ON_OR_AFTER_FROM_KEY,
+  normalizeUsageDateYmd,
   validateUsageDateTimeRange
 } from '@core/utils/usage-datetime.utils';
 
@@ -167,8 +168,9 @@ export class OrderSubmissionService {
    * Builds the order payload from submission data
    */
   buildOrderPayload(data: OrderSubmissionData): CreateOrderDto {
-    const usageDateTimeFrom = this.combineDateAndTime(data.usageDateFrom, data.usageTimeFrom);
-    const usageDateTimeTo = this.combineDateAndTime(data.usageDateTo, data.usageTimeTo);
+    // Send calendar dates as YYYY-MM-DD; times are sent separately to avoid UTC shift from toISOString().
+    const usageDateFrom = normalizeUsageDateYmd(data.usageDateFrom) ?? data.usageDateFrom;
+    const usageDateTo = normalizeUsageDateYmd(data.usageDateTo) ?? data.usageDateTo;
 
     const requestItems = data.selectedEntries.map(entry => {
       const isAmmo = entry.itemType === 'Ammunition';
@@ -216,9 +218,9 @@ export class OrderSubmissionService {
       depotId: null,
       requestPurposeId: data.selectedRequestPurposeId ?? data.defaultRequestPurposeId,
       isFromAllowance: data.fromReserve === 'Yes',
-      usageDateFrom: usageDateTimeFrom.toISOString(),
+      usageDateFrom,
       usageTimeFrom: this.formatTimeOnly(data.usageTimeFrom),
-      usageDateTo: usageDateTimeTo.toISOString(),
+      usageDateTo,
       usageTimeTo: this.formatTimeOnly(data.usageTimeTo),
       usagePurpose: getValueOrDefault(data.usePurpose, 'General usage'),
       annualDiscard: null,
@@ -316,31 +318,6 @@ export class OrderSubmissionService {
   }
 
   /**
-   * Combines date and time strings into a Date object
-   * Handles military time format (HHMM) and legacy format (HH:mm)
-   */
-  private combineDateAndTime(dateStr: string, timeStr: string): Date {
-    const datePart = dateStr || new Date().toISOString().substring(0, 10);
-    let timePart = '00:00';
-
-    if (timeStr) {
-      // Handle military format (HHMM - 4 digits)
-      if (timeStr.length === 4 && /^\d{4}$/.test(timeStr)) {
-        const hours = timeStr.substring(0, 2);
-        const minutes = timeStr.substring(2, 4);
-        timePart = `${hours}:${minutes}`;
-      }
-      // Handle legacy format (HH:mm - 5 characters)
-      else if (timeStr.length >= 5 && timeStr.includes(':')) {
-        timePart = timeStr.substring(0, 5);
-      }
-    }
-
-    const isoString = `${datePart}T${timePart}:00`;
-    return new Date(isoString);
-  }
-
-  /**
    * Formats a time string to HH:mm:ss format for .NET TimeOnly parsing
    * Handles both military format (HHMM) and legacy format (HH:mm)
    */
@@ -367,15 +344,5 @@ export class OrderSubmissionService {
 
     // Default fallback
     return '00:00:00';
-  }
-
-  /**
-   * Formats a Date object to HH:mm:ss format
-   */
-  private formatUsageTime(date: Date): string {
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const seconds = date.getSeconds().toString().padStart(2, '0');
-    return `${hours}:${minutes}:${seconds}`;
   }
 }
