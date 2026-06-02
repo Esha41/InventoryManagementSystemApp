@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslationService } from '@services/translation.service';
 import { UserDelegationService } from '@admin/services/user-delegation.service';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { UserDelegation } from '@models/user-delegation';
@@ -52,8 +53,43 @@ export class DelegationListComponent implements OnInit {
         private delegationService: UserDelegationService,
         private authService: BackendAuthService,
         private translate: TranslateService,
+        private translationService: TranslationService,
         private cdr: ChangeDetectorRef
     ) { }
+
+    getDelegationUserDisplayLabel(delegation: UserDelegation): string {
+        const userType = delegation.isIncoming ? 'delegator' : 'delegatee';
+        return this.getUserDisplayLabel(delegation, userType);
+    }
+
+    getDelegatorDisplayLabel(delegation: UserDelegation): string {
+        return this.getUserDisplayLabel(delegation, 'delegator');
+    }
+
+    private getUserDisplayLabel(
+        delegation: UserDelegation,
+        userType: 'delegator' | 'delegatee'
+    ): string {
+        const isArabic = this.translationService.getCurrentLanguage() === 'ar';
+        const nameEn = userType === 'delegator'
+            ? (delegation.delegatorFullNameEn || delegation.delegatorFullName)
+            : (delegation.delegateeFullNameEn || delegation.delegateeFullName);
+        const nameAr = userType === 'delegator'
+            ? (delegation.delegatorFullNameAr || delegation.delegatorFullName)
+            : (delegation.delegateeFullNameAr || delegation.delegateeFullName);
+        const userName = userType === 'delegator'
+            ? delegation.delegatorUserName
+            : delegation.delegateeUserName;
+        const militaryId = userType === 'delegator'
+            ? delegation.delegatorMilitaryId
+            : delegation.delegateeMilitaryId;
+
+        const name = isArabic
+            ? (nameAr || nameEn || userName)
+            : (nameEn || nameAr || userName);
+
+        return militaryId ? `${name} (${militaryId})` : (name || '—');
+    }
 
     ngOnInit(): void {
         this.loadDelegations();

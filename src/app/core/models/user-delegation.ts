@@ -3,9 +3,15 @@ export interface UserDelegation {
     delegatorUserId: string;
     delegatorUserName: string;
     delegatorFullName: string;
+    delegatorFullNameEn?: string;
+    delegatorFullNameAr?: string;
+    delegatorMilitaryId?: string;
     delegateeUserId: string;
     delegateeUserName: string;
     delegateeFullName: string;
+    delegateeFullNameEn?: string;
+    delegateeFullNameAr?: string;
+    delegateeMilitaryId?: string;
     startDate: string; // ISO Date
     endDate: string; // ISO Date
     reason: string;
