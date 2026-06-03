@@ -1,0 +1,57 @@
+<ng-content></ng-content>
+
+@if (isOpen && menuItem?.children?.length) {
+  <div
+    #flyoutPanel
+    class="sidebar-collapsed-flyout"
+    [class.sidebar-collapsed-flyout--ltr]="!isRTL"
+    [class.sidebar-collapsed-flyout--rtl]="isRTL"
+    role="menu"
+    [attr.aria-label]="title"
+    (mouseenter)="onFlyoutEnter()"
+    (mouseleave)="onFlyoutLeave()"
+  >
+    <div class="sidebar-collapsed-flyout__header">{{ title }}</div>
+
+    <ul class="sidebar-collapsed-flyout__list">
+      @for (child of menuItem.children; track child.label) {
+        @if (child.isHeader) {
+          <li class="sidebar-collapsed-flyout__section-header" role="presentation">
+            <span>{{ child.label | translate }}</span>
+          </li>
+        } @else if (hasChildren(child)) {
+          <li class="sidebar-collapsed-flyout__group" role="presentation">
+            <span class="sidebar-collapsed-flyout__group-label">{{ child.label | translate }}</span>
+            <ul class="sidebar-collapsed-flyout__nested-list">
+              @for (nested of child.children!; track nested.label) {
+                @if (!nested.isHeader && nested.route) {
+                  <li>
+                    <a
+                      [routerLink]="nested.route"
+                      routerLinkActive="sidebar-collapsed-flyout__link--active"
+                      [routerLinkActiveOptions]="{ exact: true }"
+                      class="sidebar-collapsed-flyout__link"
+                      role="menuitem"
+                      (click)="close()"
+                    >{{ nested.label | translate }}</a>
+                  </li>
+                }
+              }
+            </ul>
+          </li>
+        } @else if (child.route) {
+          <li>
+            <a
+              [routerLink]="child.route"
+              routerLinkActive="sidebar-collapsed-flyout__link--active"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="sidebar-collapsed-flyout__link"
+              role="menuitem"
+              (click)="close()"
+            >{{ child.label | translate }}</a>
+          </li>
+        }
+      }
+    </ul>
+  </div>
+}

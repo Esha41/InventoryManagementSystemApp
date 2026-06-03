@@ -12,6 +12,18 @@ export interface WorkflowTypeItem {
 export { WorkflowType } from '@models/backend-enums';
 
 import { AutoRejectTriggerMode, WorkflowType } from '@models/backend-enums';
+
+// Backend serializes AutoRejectTriggerMode as a string; normalize to the numeric enum on the way in.
+export function normalizeAutoRejectTriggerMode(mode: string | null | undefined): AutoRejectTriggerMode | undefined {
+  switch (mode) {
+    case 'Role': return AutoRejectTriggerMode.Role;
+    case 'Step': return AutoRejectTriggerMode.Step;
+    case 'Disabled': return AutoRejectTriggerMode.Disabled;
+    case 'None': return AutoRejectTriggerMode.None;
+    default: return undefined;
+  }
+}
+
 export interface WorkflowDto {
   id: number;
   name: string;
@@ -42,8 +54,8 @@ export interface BackendWorkflowDto {
   isActive: boolean;
   isDeleted?: boolean;
   isSpecialOrReserved?: boolean;
-  /** null | empty | "role" | "step" — per-workflow auto-reject trigger (edit workflow only). */
-  autoRejectTriggerMode?: AutoRejectTriggerMode | null;
+  /** Backend sends a string: "None" | "Role" | "Step" | "Disabled" | null */
+  autoRejectTriggerMode?: string | null;
   autoRejectTriggerRoleIds?: string[];
   autoRejectTriggerStepIds?: number[];
   workflowSteps?: WorkflowStepDto[];
