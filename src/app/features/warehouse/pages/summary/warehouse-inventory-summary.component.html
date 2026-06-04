@@ -10,10 +10,10 @@
     </div>
 
     <!-- Main Content -->
-    <div class="page-container">
+    <div class="page-container flex flex-col gap-6">
         <!-- Enhanced Tabs -->
         <div
-            class="mb-6 bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg shadow-custom-sm overflow-hidden">
+            class="bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg shadow-custom-sm overflow-hidden">
             <div class="bg-[var(--color-background-muted)] overflow-x-auto">
                 <nav class="flex gap-1 p-2 min-w-max" aria-label="Tabs" [class.flex-row-reverse]="isRTL">
                     <button (click)="switchTab('ammunition')" [ngClass]="{
@@ -74,7 +74,7 @@
         </div>
 
         <!-- Search Bar -->
-        <app-card [shadow]="true" class="mb-6">
+        <app-card [shadow]="true">
             <div class="p-6">
                 <div class="app-search-field">
                     <lucide-icon [img]="Search" class="app-search-field__icon app-search-field__icon--lg"></lucide-icon>
@@ -86,13 +86,13 @@
         </app-card>
 
         <!-- Totals: item count = server tab total; quantities = visible rows (current page, after search) -->
-        <app-card *ngIf="!loading && !error" [shadow]="true" class="mb-6">
+        <app-card *ngIf="!loading && !error" [shadow]="true">
             <div class="p-3 sm:p-4">
                 <div *ngIf="serverTotalCount === 0" class="text-center py-6 text-[var(--color-text-muted)] text-sm">
                     {{ 'inventorySummary.noItems' | translate }}
                 </div>
                 <div *ngIf="serverTotalCount > 0"
-                    class="grid grid-cols-2 gap-2 sm:gap-3"
+                    class="summary-stat-grid grid grid-cols-2 gap-4 sm:gap-5 lg:gap-6"
                     [ngClass]="activeTab === 'weapon' ? 'lg:grid-cols-2' : 'lg:grid-cols-3'">
                     <div
                         class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background-muted)] px-3 py-3 text-center">
@@ -169,7 +169,7 @@
                 </button>
             </div>
             <!-- Mobile/Tablet Card View -->
-            <div class="lg:hidden space-y-4">
+            <div class="lg:hidden p-4 flex flex-col gap-6">
                 <div *ngFor="let item of displayRows; trackBy: trackByItemId"
                     class="bg-[var(--color-background)] rounded-xl shadow-sm border border-[var(--color-border)] overflow-hidden">
                     <!-- Card Header / Main Info -->

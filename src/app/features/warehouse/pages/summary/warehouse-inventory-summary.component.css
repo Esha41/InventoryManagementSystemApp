@@ -1,5 +1,13 @@
 /* Inventory Summary - Dark Mode Compatible */
 
+.page-container app-card {
+    display: block;
+}
+
+.summary-stat-grid > div {
+    min-height: 0;
+}
+
 /* Main summary table: horizontal scroll + wrap long text in descriptive columns */
 .inventory-table-scroll {
     overflow-x: auto;
