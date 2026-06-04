@@ -1,36 +1,43 @@
 <div class="flex flex-col gap-6">
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">
+        {{ 'lookupManagement.title' | translate }}
+      </h1>
+    </div>
+    <div *ngIf="lookupTables.length > 0" class="flex flex-wrap items-center justify-end gap-2 w-full sm:w-auto">
+      <ng-container *ngIf="isEmployeeTable">
+        <button (click)="onDownloadTemplate()"
+          class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-background-muted)] transition-colors">
+          <lucide-angular [img]="Download" class="h-3.5 w-3.5"></lucide-angular>
+          {{ 'common.downloadTemplate' | translate }}
+        </button>
+        <button (click)="onExportEmployees()"
+          class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white bg-[var(--color-success)] hover:opacity-90 transition-colors">
+          <lucide-angular [img]="Download" class="h-3.5 w-3.5"></lucide-angular>
+          {{ 'common.export' | translate }}
+        </button>
+        <button *ngIf="canAdd()" (click)="onOpenImport()"
+          class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+          <lucide-angular [img]="Upload" class="h-3.5 w-3.5"></lucide-angular>
+          {{ 'common.import' | translate }}
+        </button>
+      </ng-container>
+      <button *ngIf="canAdd()" (click)="onAddLookup()"
+        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors w-full sm:w-auto">
+        <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
+        {{ getAddButtonLabel() }}
+      </button>
+    </div>
+  </div>
+
   <!-- Empty state when user has no lookup permissions -->
   <app-card *ngIf="lookupTables.length === 0" class="p-8 text-center">
     <p class="text-[var(--color-text-muted)]">{{ 'lookupManagement.noLookupPermissions' | translate }}</p>
   </app-card>
 
   <ng-container *ngIf="lookupTables.length > 0">
-  <!-- Header with Actions -->
-  <div class="flex flex-wrap items-center justify-end gap-2">
-    <ng-container *ngIf="isEmployeeTable">
-      <button (click)="onDownloadTemplate()"
-        class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-background-muted)] transition-colors">
-        <lucide-angular [img]="Download" class="h-3.5 w-3.5"></lucide-angular>
-        {{ 'common.downloadTemplate' | translate }}
-      </button>
-      <button (click)="onExportEmployees()"
-        class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white bg-[var(--color-success)] hover:opacity-90 transition-colors">
-        <lucide-angular [img]="Download" class="h-3.5 w-3.5"></lucide-angular>
-        {{ 'common.export' | translate }}
-      </button>
-      <button *ngIf="canAdd()" (click)="onOpenImport()"
-        class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors">
-        <lucide-angular [img]="Upload" class="h-3.5 w-3.5"></lucide-angular>
-        {{ 'common.import' | translate }}
-      </button>
-    </ng-container>
-    <button *ngIf="canAdd()" (click)="onAddLookup()"
-      class="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors">
-      <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
-      {{ getAddButtonLabel() }}
-    </button>
-  </div>
-
   <!-- Filters -->
   <div class="space-y-4">
     <app-lookup-filters [lookupTables]="lookupTables" [selectedTable]="selectedTable" [searchTerm]="lookupSearchTerm"

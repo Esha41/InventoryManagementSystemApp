@@ -1,8 +1,10 @@
 <div class="page-wrapper">
-  <div class="page-container space-y-6">
+  <div class="page-container space-y-6 space-x-6">
     <!-- Header -->
-    <div>
-      <h1 class="text-2xl font-bold text-[var(--color-text)]">{{ 'ldapSettings.title' | translate }}</h1>
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div class="min-w-0">
+        <h1 class="text-2xl font-bold text-[var(--color-text)]">{{ 'ldapSettings.title' | translate }}</h1>
+      </div>
     </div>
 
     <!-- Error Message -->
@@ -16,7 +18,7 @@
     <!-- LDAP Settings Card -->
     <app-card>
       <div class="p-6">
-        <h2 class="text-xl font-semibold text-[var(--color-text)] mb-6">{{ 'ldapSettings.ldapSettings' | translate }}</h2>
+        <h2 class="mb-6 text-xl font-semibold text-[var(--color-text)]">{{ 'ldapSettings.ldapSettings' | translate }}</h2>
 
         <!-- Loading State -->
         <div *ngIf="isLoading" class="text-center py-12">

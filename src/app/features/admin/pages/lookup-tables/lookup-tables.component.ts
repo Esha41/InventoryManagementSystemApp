@@ -1,6 +1,5 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
 import { LookupManagementComponent } from './components/lookup-management/lookup-management.component';
 
 /**
@@ -12,22 +11,11 @@ import { LookupManagementComponent } from './components/lookup-management/lookup
   standalone: true,
   imports: [
     CommonModule,
-    TranslateModule,
     LookupManagementComponent
   ],
   template: `
     <div class="page-wrapper">
-      <div class="page-container space-y-8">
-        <!-- Header -->
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2">
-          <div>
-            <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">
-              {{ 'lookupManagement.title' | translate }}
-            </h1>
-          </div>
-        </div>
-
-        <!-- Lookup Management Content -->
+      <div class="page-container space-y-6">
         <app-lookup-management></app-lookup-management>
       </div>
     </div>
