@@ -30,6 +30,8 @@ export interface RequestPurpose {
   id: number;
   nameAr: string;
   nameEn: string;
+  /** Allowed item types for this purpose (empty = all types). */
+  itemTypes?: number[];
   attachmentRequirements?: AttachmentRequirementDto[];
 }
 
@@ -49,6 +51,8 @@ export interface ReturnDetailsState {
 }
 
 export interface ReturnLookupState {
+  /** Full list from API; filtered copy exposed as requestPurposes for the dropdown. */
+  requestPurposesSource: RequestPurpose[];
   requestPurposes: RequestPurpose[];
   isLoadingRequestPurposes: boolean;
   ammunitionTypeOptions: { label: string; value: string }[];
@@ -102,6 +106,7 @@ export function createInitialDetailsState(): ReturnDetailsState {
 
 export function createInitialLookupState(): ReturnLookupState {
   return {
+    requestPurposesSource: [],
     requestPurposes: [],
     isLoadingRequestPurposes: false,
     ammunitionTypeOptions: [

@@ -12,6 +12,7 @@ import { TranslateService } from '@ngx-translate/core';
 
 import { DropdownOption } from '@components/dropdown/dropdown.component';
 import { ReturnService } from '@requests/services/return.service';
+import { RequestPurposeService } from '@requests/services/request-purpose.service';
 import { AmmunitionService } from '@assets/services/ammunition.service';
 import { WeaponService } from '@assets/services/weapon.service';
 import { ExplosiveService } from '@assets/services/explosive.service';
@@ -62,7 +63,9 @@ import {
   getDepartmentIdForRequest,
   resolveCurrentRequesterName,
   resolveRequesterDepartmentDisplay,
-  syncRequesterNameFromUserDetails
+  syncRequesterNameFromUserDetails,
+  collectItemTypeEnumsFromSelection,
+  isRequestPurposeAllowedForSelectedItemTypes
 } from '@requests/utils/issue-request.utils';
 
 import {
@@ -127,13 +130,14 @@ export class ReturnRequestFacade {
   get selectedAttachmentRequirements(): AttachmentRequirementDto[] {
     const id = this.detailsState.requestPurposeId;
     if (id == null) return [];
-    const purpose = this.lookupState.requestPurposes.find((p) => p.id === id);
+    const purpose = this.lookupState.requestPurposesSource.find((p) => p.id === id);
     const reqs = purpose?.attachmentRequirements ?? [];
     return [...reqs].sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
   }
 
   constructor(
     private readonly returnService: ReturnService,
+    private readonly requestPurposeService: RequestPurposeService,
     private readonly ammunitionService: AmmunitionService,
     private readonly weaponService: WeaponService,
     private readonly explosiveService: ExplosiveService,
@@ -353,12 +357,14 @@ export class ReturnRequestFacade {
       ];
     }
     this.refreshMergedList();
+    this.syncRequestPurposesForSelection();
     this.cdr.markForCheck();
   }
 
   removeItem(itemId: number): void {
     this.selectionState.selectedItems = this.selectionState.selectedItems.filter((i) => i.itemId !== itemId);
     this.refreshMergedList();
+    this.syncRequestPurposesForSelection();
     this.cdr.markForCheck();
   }
 
@@ -654,7 +660,7 @@ export class ReturnRequestFacade {
   // ---- Lookup helpers ------------------------------------------------------
 
   getRequestPurposeName(purposeId: number): string {
-    const p = this.lookupState.requestPurposes.find((x) => x.id === purposeId);
+    const p = this.lookupState.requestPurposesSource.find((x) => x.id === purposeId);
     return p ? getLocalizedName(p, getCurrentLang(this.translate)) : '';
   }
 
@@ -753,12 +759,27 @@ export class ReturnRequestFacade {
 
   private loadRequestPurposes(): void {
     this.lookupState.isLoadingRequestPurposes = true;
-    this.apiService
-      .get<RequestPurpose[]>(API_ENDPOINTS.REQUEST_PURPOSES.FOR_RETURN)
+    this.requestPurposeService
+      .getAll('return')
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (data) => {
-          if (Array.isArray(data)) this.lookupState.requestPurposes = data;
+        next: (items) => {
+          this.lookupState.requestPurposesSource = items.map(item => ({
+            id: item.id!,
+            nameEn: item.nameEn ?? '',
+            nameAr: item.nameAr ?? '',
+            itemTypes: item.itemTypes ?? [],
+            attachmentRequirements: (item.attachmentRequirements ?? []).map(slot => ({
+              id: slot.id ?? 0,
+              nameEn: slot.nameEn,
+              nameAr: slot.nameAr,
+              isRequired: slot.isRequired,
+              minCount: slot.minCount,
+              maxCount: slot.maxCount,
+              displayOrder: slot.displayOrder
+            }))
+          }));
+          this.applyFilteredRequestPurposes();
           this.lookupState.isLoadingRequestPurposes = false;
           this.cdr.markForCheck();
         },
@@ -772,10 +793,31 @@ export class ReturnRequestFacade {
                 t['toast.error']
               );
             });
+          this.lookupState.requestPurposesSource = [];
+          this.lookupState.requestPurposes = [];
           this.lookupState.isLoadingRequestPurposes = false;
           this.cdr.markForCheck();
         }
       });
+  }
+
+  private applyFilteredRequestPurposes(): void {
+    const selectedTypes = collectItemTypeEnumsFromSelection(this.selectionState.selectedItems);
+    this.lookupState.requestPurposes = this.lookupState.requestPurposesSource.filter(p =>
+      isRequestPurposeAllowedForSelectedItemTypes(p.itemTypes, selectedTypes)
+    );
+  }
+
+  private syncRequestPurposesForSelection(): void {
+    this.applyFilteredRequestPurposes();
+    const id = this.detailsState.requestPurposeId;
+    if (id == null) return;
+    const stillValid = this.lookupState.requestPurposes.some(p => p.id === id);
+    if (!stillValid) {
+      this.detailsState.requestPurposeId = null;
+      this.detailsState.requestPurposeNotes = '';
+      this.detailsState.attachmentUploads = createInitialAttachmentUploadsState();
+    }
   }
 
   private initializeUserContext(): void {

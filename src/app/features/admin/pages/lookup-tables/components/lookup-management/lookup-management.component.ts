@@ -504,6 +504,23 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
     }
   }
 
+  getRequestPurposeItemTypes(item: LookupItem): number[] {
+    return this.lookupManagementService.getRequestPurposeItemTypes(item);
+  }
+
+  getRequestPurposeItemTypeLabel(itemType: number): string {
+    return this.lookupManagementService.getItemTypeEnumLabel(itemType);
+  }
+
+  getRequestPurposeItemTypeBadgeClass(itemType: number): Record<string, boolean> {
+    return {
+      'bg-blue-100 text-blue-800': itemType === 1,
+      'bg-red-100 text-red-800': itemType === 2,
+      'bg-orange-100 text-orange-800': itemType === 3,
+      'bg-purple-100 text-purple-800': itemType === 4
+    };
+  }
+
   getDesktopLookupColSpan(): number {
     const t = this.selectedTable;
     if (!t) return 2;
@@ -512,7 +529,7 @@ export class LookupManagementComponent implements OnInit, OnDestroy {
     if (t.name === 'Employee') n += 5;
     if (t.name === 'ItemType' || t.name === 'Unit') n++;
     if (t.name === 'Caliber') n++;
-    if (t.requestPurposeType) n++;
+    if (t.requestPurposeType) n += 2;
     if (t.requestPurposeType === 'order') n++;
     if (this.canEdit() || this.canDelete()) n++;
     return n;

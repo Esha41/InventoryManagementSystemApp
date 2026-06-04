@@ -21,6 +21,7 @@ export interface RequestPurposeApiDto {
   allowanceContext?: unknown;
   code?: string;
   isDeleted?: boolean;
+  itemTypes?: number[] | null;
   attachmentRequirements?: ApiAttachmentRequirement[] | null;
 }
 
@@ -119,6 +120,7 @@ export class RequestPurposeService {
     if (dto.allowanceContext != null) {
       payload['allowanceContext'] = dto.allowanceContext;
     }
+    payload['itemTypes'] = dto.itemTypes ?? [];
     if (dto.attachmentRequirements != null && dto.attachmentRequirements.length > 0) {
       payload['attachmentRequirements'] = dto.attachmentRequirements.map(r => ({
         id: r.id != null && r.id > 0 ? r.id : null,
@@ -144,6 +146,7 @@ export class RequestPurposeService {
       isDeleted: item.isDeleted,
       requestType: item.requestType,
       allowanceContext: normalizeRequestPurposeAllowanceContext(item.allowanceContext),
+      itemTypes: Array.isArray(item.itemTypes) ? item.itemTypes : [],
       attachmentRequirements: this.mapAttachmentRequirements(item.attachmentRequirements)
     };
   }

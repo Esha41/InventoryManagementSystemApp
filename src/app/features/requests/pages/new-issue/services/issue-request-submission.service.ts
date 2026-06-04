@@ -15,7 +15,9 @@ import {
 import type { WeaponAssociation } from '@models/request-item.model';
 import {
   getDepartmentIdForRequest as getDepartmentIdForRequestUtil,
-  isPurposeAllowedForAllowance
+  isPurposeAllowedForAllowance,
+  collectItemTypeEnumsFromSelection,
+  isRequestPurposeAllowedForSelectedItemTypes
 } from '@requests/utils/issue-request.utils';
 import { ToastService } from '@services/toast.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
@@ -74,6 +76,7 @@ export class IssueRequestSubmissionService {
           nameEn: item.nameEn,
           nameAr: item.nameAr,
           allowanceContext: item.allowanceContext,
+          itemTypes: item.itemTypes ?? [],
           attachmentRequirements: (item.attachmentRequirements ?? []).map(slot => ({
             id: slot.id ?? 0,
             nameEn: slot.nameEn,
@@ -88,16 +91,24 @@ export class IssueRequestSubmissionService {
     );
   }
 
-  rebuildRequestPurposeOptions(requestPurposeState: RequestPurposeState): Map<number, { usePurpose: string }> {
+  rebuildRequestPurposeOptions(
+    requestPurposeState: RequestPurposeState,
+    selectedEntries: Array<{ itemType?: string }> = []
+  ): Map<number, { usePurpose: string }> {
     const currentLang = getCurrentLang(this.translate);
     const optionsMap = new Map<number, { usePurpose: string }>();
+    const selectedItemTypes = collectItemTypeEnumsFromSelection(selectedEntries);
 
-    requestPurposeState.requestPurposeOptions = requestPurposeState.requestPurposesSource.map(p => ({
+    const visiblePurposes = requestPurposeState.requestPurposesSource.filter(p =>
+      isRequestPurposeAllowedForSelectedItemTypes(p.itemTypes, selectedItemTypes)
+    );
+
+    requestPurposeState.requestPurposeOptions = visiblePurposes.map(p => ({
       label: getLocalizedName(p, currentLang),
       value: p.id
     }));
 
-    requestPurposeState.requestPurposesSource.forEach(p => {
+    visiblePurposes.forEach(p => {
       optionsMap.set(p.id, { usePurpose: getLocalizedName(p, currentLang) });
     });
 

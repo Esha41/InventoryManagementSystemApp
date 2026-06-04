@@ -1,4 +1,5 @@
 import { Cartridge } from '@models/cartridge.model';
+import { ItemType } from '@models/backend-enums';
 import { RequestPurposeAllowanceContext } from '@models/lookup.model';
 import { ReserveDetailItem, UserContextState } from '@requests/pages/new-issue/new-issue-request.state';
 import { BackendUserDto } from '@models/backend-user.model';
@@ -278,6 +279,51 @@ export function isPurposeAllowedForAllowance(
     default:
       return true;
   }
+}
+
+const ITEM_TYPE_STRING_TO_ENUM: Record<string, ItemType> = {
+  Ammunition: ItemType.Ammunition,
+  Weapon: ItemType.Weapon,
+  Explosive: ItemType.Explosive,
+  Accessory: ItemType.Accessory
+};
+
+/** Distinct ItemType enum values from selected request lines (string itemType labels). */
+export function collectItemTypeEnumsFromSelection(
+  entries: Array<{ itemType?: string | null }>
+): Set<number> {
+  const types = new Set<number>();
+  for (const entry of entries) {
+    const key = entry.itemType?.trim();
+    if (!key) continue;
+    const value = ITEM_TYPE_STRING_TO_ENUM[key];
+    if (value != null) {
+      types.add(value);
+    }
+  }
+  return types;
+}
+
+/**
+ * Request purposes with no configured item types apply to all lines.
+ * When the user has selected items, every selected type must be allowed by the purpose.
+ */
+export function isRequestPurposeAllowedForSelectedItemTypes(
+  purposeItemTypes: number[] | null | undefined,
+  selectedItemTypes: Set<number>
+): boolean {
+  if (!purposeItemTypes?.length) {
+    return true;
+  }
+  if (selectedItemTypes.size === 0) {
+    return true;
+  }
+  for (const selected of selectedItemTypes) {
+    if (!purposeItemTypes.includes(selected)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 /**

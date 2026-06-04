@@ -29,7 +29,8 @@ import type {
 const ITEM_TYPE_NAME_TO_VALUE: Record<string, number> = {
   Ammunition: 1,
   Weapon: 2,
-  Explosive: 3
+  Explosive: 3,
+  Accessory: 4
 };
 
 function coerceInt(v: unknown): number | null {
@@ -114,17 +115,26 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
 
   allowanceContextOptions: DropdownOption<number>[] = [];
 
+  requestPurposeItemTypeOptions: DropdownOption<number>[] = [
+    { value: 1, label: '' },
+    { value: 2, label: '' },
+    { value: 3, label: '' },
+    { value: 4, label: '' }
+  ];
+
   constructor(private fb: FormBuilder, private translateService: TranslateService) {
     this.translateService.onTranslationChange.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.updateItemTypeTranslations();
       this.updateCaliberItemTypeTranslations();
       this.updateAllowanceContextTranslations();
+      this.updateRequestPurposeItemTypeTranslations();
     });
 
     this.translateService.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.updateItemTypeTranslations();
       this.updateCaliberItemTypeTranslations();
       this.updateAllowanceContextTranslations();
+      this.updateRequestPurposeItemTypeTranslations();
     });
   }
 
@@ -151,13 +161,16 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
       'lookupFormModal.selectItemType',
       'lookupFormModal.ammunition',
       'lookupFormModal.weapon',
-      'lookupFormModal.explosive'
+      'lookupFormModal.explosive',
+      'lookupFormModal.accessory'
     ]).pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.updateItemTypeTranslations();
       this.updateCaliberItemTypeTranslations();
       this.updateAllowanceContextTranslations();
+      this.updateRequestPurposeItemTypeTranslations();
     });
     this.updateAllowanceContextTranslations();
+    this.updateRequestPurposeItemTypeTranslations();
   }
 
   ngOnDestroy(): void {
@@ -230,6 +243,7 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
       allowanceContext: this.fb.control<number | null>(null, {
         validators: needsAllowanceContext ? [Validators.required] : []
       }),
+      itemTypes: this.fb.control<number[] | null>(null),
       attachmentRequirements: this.fb.array<AttachmentRequirementRowFormGroup>([])
     });
 
@@ -253,7 +267,8 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
       nameAr: this.lookupItem.nameAr || '',
       code: this.lookupItem.code || '',
       ...(needsItemType ? { itemType: normalizeLookupItemType(this.lookupItem) } : { itemType: null }),
-      allowanceContext: this.lookupItem.allowanceContext ?? null
+      allowanceContext: this.lookupItem.allowanceContext ?? null,
+      itemTypes: this.lookupItem.itemTypes?.length ? this.lookupItem.itemTypes : null
     });
 
     this.clearAttachmentRequirements();
@@ -338,6 +353,8 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     if (this.isRequestPurpose) {
+      dto.itemTypes = v.itemTypes ?? [];
+
       let order = 0;
       const drafts: AttachmentRequirementLookupDraft[] = [];
       for (const row of this.attachmentRows.controls) {
@@ -395,6 +412,7 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
         code: '',
         itemType: null,
         allowanceContext: null,
+        itemTypes: null,
         attachmentRequirements: []
       },
       { emitEvent: false }
@@ -483,6 +501,15 @@ export class LookupFormModalComponent implements OnInit, OnChanges, OnDestroy {
         value: RequestPurposeAllowanceContext.Both,
         label: this.translateService.instant('lookupFormModal.both')
       }
+    ];
+  }
+
+  private updateRequestPurposeItemTypeTranslations(): void {
+    this.requestPurposeItemTypeOptions = [
+      { value: 1, label: this.translateService.instant('lookupFormModal.ammunition') },
+      { value: 2, label: this.translateService.instant('lookupFormModal.weapon') },
+      { value: 3, label: this.translateService.instant('lookupFormModal.explosive') },
+      { value: 4, label: this.translateService.instant('lookupFormModal.accessory') }
     ];
   }
 }

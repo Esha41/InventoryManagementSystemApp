@@ -78,7 +78,9 @@ import {
   inferCartridgeItemType,
   applyUserContext as applyUserContextUtil,
   applyAuthenticatedUserContext as applyAuthenticatedUserContextUtil,
-  isPurposeAllowedForAllowance
+  isPurposeAllowedForAllowance,
+  collectItemTypeEnumsFromSelection,
+  isRequestPurposeAllowedForSelectedItemTypes
 } from '@requests/utils/issue-request.utils';
 import { resolveCatalogItemCaliberId, isCatalogItemExplicitlyDeleted } from '@utils/catalog-caliber.utils';
 
@@ -348,6 +350,7 @@ export class IssueRequestFacade {
         if (this.pendingSelections) {
           this.catalogOrchestrator.restoreSelections(this.pendingSelections, this.catalogCtx);
           this.pendingSelections = null;
+          this.syncRequestPurposeAfterSelectionChange();
         }
       }
     };
@@ -401,6 +404,7 @@ export class IssueRequestFacade {
       this.requestPurposeState.selectedRequestPurposeId = null;
       this.usageFormData.usePurpose = '';
     }
+    this.syncRequestPurposeAfterSelectionChange();
     this.cdr.markForCheck();
   }
 
@@ -409,6 +413,7 @@ export class IssueRequestFacade {
     this.removeCartridge(cartridgeId);
     this.weaponAssociationState.associations.delete(cartridgeId);
     this.persistSelectionsToQueryParams();
+    this.syncRequestPurposeAfterSelectionChange();
     this.cdr.markForCheck();
   }
 
@@ -972,7 +977,27 @@ export class IssueRequestFacade {
   }
 
   private rebuildRequestPurposeOptions(): void {
-    this.requestPurposeOptionsMap = this.submissionService.rebuildRequestPurposeOptions(this.requestPurposeState);
+    this.requestPurposeOptionsMap = this.submissionService.rebuildRequestPurposeOptions(
+      this.requestPurposeState,
+      this.cartridgeState.selectedEntries
+    );
+  }
+
+  private syncRequestPurposeAfterSelectionChange(): void {
+    this.rebuildRequestPurposeOptions();
+    this.clearRequestPurposeIfNotAllowedForItemTypes();
+  }
+
+  private clearRequestPurposeIfNotAllowedForItemTypes(): void {
+    const id = this.requestPurposeState.selectedRequestPurposeId;
+    if (id == null) return;
+    const purpose = this.requestPurposeState.requestPurposesSource.find(p => p.id === id);
+    const selectedTypes = collectItemTypeEnumsFromSelection(this.cartridgeState.selectedEntries);
+    if (purpose && !isRequestPurposeAllowedForSelectedItemTypes(purpose.itemTypes, selectedTypes)) {
+      this.requestPurposeState.selectedRequestPurposeId = null;
+      this.usageFormData.usePurpose = '';
+      this.usageFormData.requestPurposeNotes = '';
+    }
   }
 
   private updateUsePurposeFromSelection(id: number | null): void {

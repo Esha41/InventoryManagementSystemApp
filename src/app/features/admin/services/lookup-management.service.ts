@@ -122,7 +122,8 @@ export class LookupManagementService {
       (item.rankName && item.rankName.toLowerCase().includes(search)) ||
       (item.phone && item.phone !== '-' && item.phone.toLowerCase().includes(search)) ||
       (item.email && item.email !== '-' && item.email.toLowerCase().includes(search)) ||
-      this.getItemTypeName(item).toLowerCase().includes(search)
+      this.getItemTypeName(item).toLowerCase().includes(search) ||
+      (item.itemTypes?.some(t => this.getItemTypeEnumLabel(t).toLowerCase().includes(search)) ?? false)
     );
   }
 
@@ -132,6 +133,28 @@ export class LookupManagementService {
   getLookupItemName(item: LookupItem | null | undefined): string {
     if (!item) return '';
     return getLocalizedName(item, getCurrentLang(this.translateService)) || item.nameEn || '';
+  }
+
+  /**
+   * Translated label for a single ItemType enum value (1–4).
+   */
+  getItemTypeEnumLabel(itemType: number): string {
+    const translationKey =
+      itemType === 1 ? 'lookupFormModal.ammunition'
+        : itemType === 2 ? 'lookupFormModal.weapon'
+          : itemType === 3 ? 'lookupFormModal.explosive'
+            : itemType === 4 ? 'lookupFormModal.accessory'
+              : '';
+
+    return translationKey ? this.translateService.instant(translationKey) : '—';
+  }
+
+  /** Sorted ItemType values assigned to a request purpose (admin list). */
+  getRequestPurposeItemTypes(item: LookupItem): number[] {
+    if (!item.itemTypes?.length) {
+      return [];
+    }
+    return [...item.itemTypes].sort((a, b) => a - b);
   }
 
   /**
@@ -154,14 +177,7 @@ export class LookupManagementService {
     // If still 0 or invalid, return dash
     if (itemType === 0) return '-';
 
-    const translationKey = itemType === 1 ? 'lookupFormModal.ammunition'
-      : itemType === 2 ? 'lookupFormModal.weapon'
-        : itemType === 3 ? 'lookupFormModal.explosive'
-          : '';
-
-    if (!translationKey) return '-';
-
-    return this.translateService.instant(translationKey);
+    return this.getItemTypeEnumLabel(itemType);
   }
 
   /**

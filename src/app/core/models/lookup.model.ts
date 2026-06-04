@@ -28,6 +28,8 @@ export interface LookupItem {
   attachmentRequirements?: AttachmentRequirementLookupDraft[];
   /** Order request purposes: from allowance / outside allowance / both. */
   allowanceContext?: RequestPurposeAllowanceContext;
+  /** RequestPurpose: allowed item types (1=Ammunition, 2=Weapon, 3=Explosive, 4=Accessory). */
+  itemTypes?: number[];
 }
 
 // Backward compatibility aliases
@@ -59,6 +61,8 @@ export interface CreateUpdateLookupDto {
   attachmentRequirements?: AttachmentRequirementLookupDraft[];
   /** Required for order request purposes in admin. */
   allowanceContext?: RequestPurposeAllowanceContext;
+  /** RequestPurpose: allowed item types (1=Ammunition, 2=Weapon, 3=Explosive, 4=Accessory). */
+  itemTypes?: number[];
 }
 
 export type RequestPurposeType = 'discard' | 'return' | 'order';

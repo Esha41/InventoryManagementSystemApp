@@ -18,6 +18,8 @@ export interface RequestPurposeDto {
   nameEn?: string | null;
   nameAr?: string | null;
   allowanceContext?: number;
+  /** Allowed item types for this purpose (empty = all types). */
+  itemTypes?: number[];
   attachmentRequirements?: AttachmentRequirementDto[];
 }
 

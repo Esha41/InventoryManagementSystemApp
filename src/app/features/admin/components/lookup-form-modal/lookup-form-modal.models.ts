@@ -14,6 +14,8 @@ export interface LookupModalFormControls {
   itemType: FormControl<number | null>;
   /** Order request purposes only */
   allowanceContext: FormControl<number | null>;
+  /** RequestPurpose: multi-select of allowed item types */
+  itemTypes: FormControl<number[] | null>;
   /** Used when managing RequestPurpose; empty array otherwise */
   attachmentRequirements: FormArray<AttachmentRequirementRowFormGroup>;
 }
