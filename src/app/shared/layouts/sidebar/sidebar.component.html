@@ -48,15 +48,26 @@
         </div>
 
         <!-- Menu Item with Children (Submenu) -->
-        <div *ngIf="!item.isHeader && hasChildren(item)" class="mb-1" #menuItem
-          appSidebarRailTooltip
-          [sidebarRailCollapsed]="isCollapsed"
-          [appSidebarRailTooltip]="item.label | translate"
+        <app-sidebar-collapsed-flyout
+          #flyout
+          *ngIf="!item.isHeader && hasChildren(item)"
+          class="mb-1"
+          [collapsed]="isCollapsed"
+          [menuItem]="item"
+          [title]="item.label | translate"
+          [submenuExpanded]="isSubmenuExpanded(item.label)"
           [attr.data-onboarding]="item.label === 'nav.requestManagement' ? 'request-management' : null">
-          <button (click)="toggleSubmenu(item.label)"
-            class="w-full flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[var(--color-sidebar-active)] text-[var(--color-text-muted)]">
-            <lucide-angular [img]="item.icon" class="h-5 w-5 flex-shrink-0" [class.mr-3]="!isRTL"
-              [class.ml-3]="isRTL"></lucide-angular>
+          <button
+            type="button"
+            data-flyout-trigger
+            (click)="onParentSubmenuClick($event, item.label)"
+            class="w-full flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 hover:bg-[var(--color-sidebar-active)] text-[var(--color-text-muted)]"
+            [class.justify-center]="isCollapsed"
+            [class.bg-[var(--color-sidebar-active)]]="isCollapsed && isSubmenuRouteActive(item)"
+            [attr.aria-expanded]="isCollapsed ? flyout.isOpen : isSubmenuExpanded(item.label)"
+            [attr.aria-haspopup]="isCollapsed ? 'menu' : null">
+            <lucide-angular [img]="item.icon" class="h-5 w-5 flex-shrink-0"
+              [class.mr-3]="!isRTL && !isCollapsed" [class.ml-3]="isRTL && !isCollapsed"></lucide-angular>
             <ng-container *ngIf="item.label === 'nav.requestManagement'; else regularParentLabel">
               <span class="font-medium flex-1 transition-opacity duration-300 leading-tight" [class.text-left]="!isRTL"
                 [class.text-right]="isRTL" [class.opacity-0]="isCollapsed" [class.opacity-100]="!isCollapsed"
@@ -72,8 +83,10 @@
                 {{ item.label | translate }}
               </span>
             </ng-template>
-            <lucide-angular *ngIf="!isCollapsed" [img]="isSubmenuExpanded(item.label) ? ChevronUp : ChevronDown"
-              class="h-4 w-4 flex-shrink-0 transition-transform duration-200 chevron-right"></lucide-angular>
+            <lucide-angular *ngIf="!isCollapsed" [img]="isRTL ? ChevronLeft : ChevronRight"
+              class="h-4 w-4 flex-shrink-0 transition-transform duration-200 chevron-right"
+              [class.rotate-90]="!isRTL && isSubmenuExpanded(item.label)"
+              [class.-rotate-90]="isRTL && isSubmenuExpanded(item.label)"></lucide-angular>
           </button>
           <!-- Submenu Items -->
           <ul *ngIf="!isCollapsed && isSubmenuExpanded(item.label) && item.children" class="mt-1 space-y-1"
@@ -91,8 +104,10 @@
                   class="w-full flex items-center px-3 py-2 rounded-lg transition-all duration-200 hover:bg-[var(--color-sidebar-active)] text-[var(--color-text-muted)] text-sm">
                   <span class="font-medium flex-1" [class.text-left]="!isRTL" [class.text-right]="isRTL">{{ child.label
                     | translate }}</span>
-                  <lucide-angular [img]="isSubmenuExpanded(child.label) ? ChevronUp : ChevronDown"
-                    class="h-3 w-3 flex-shrink-0 transition-transform duration-200"></lucide-angular>
+                  <lucide-angular [img]="isRTL ? ChevronLeft : ChevronRight"
+                    class="h-3 w-3 flex-shrink-0 transition-transform duration-200"
+                    [class.rotate-90]="!isRTL && isSubmenuExpanded(child.label)"
+                    [class.-rotate-90]="isRTL && isSubmenuExpanded(child.label)"></lucide-angular>
                 </button>
                 <!-- Nested submenu items -->
                 <ul *ngIf="isSubmenuExpanded(child.label) && child.children" class="mt-1 space-y-1"
@@ -116,7 +131,7 @@
               </a>
             </li>
           </ul>
-        </div>
+        </app-sidebar-collapsed-flyout>
 
         <!-- Regular Menu Item (No Children) -->
         <div *ngIf="!item.isHeader && !hasChildren(item)" #menuItem

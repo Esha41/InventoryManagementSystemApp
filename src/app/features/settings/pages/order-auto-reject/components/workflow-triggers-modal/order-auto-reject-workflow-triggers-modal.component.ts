@@ -20,7 +20,7 @@ import { ToastService } from '@services/toast.service';
 import { ConfigService } from '@services/config.service';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
 import { AutoRejectTriggerMode } from '@models/backend-enums';
-import { BackendWorkflowDto, WorkflowStepDto } from '@models/workflow.model';
+import { BackendWorkflowDto, WorkflowStepDto, normalizeAutoRejectTriggerMode } from '@models/workflow.model';
 import { RoleDto } from '@models/backend-user.model';
 import { TranslationMap } from '@models/common.types';
 import { ErrorHandler } from '@utils/error-handler.utils';
@@ -139,7 +139,7 @@ export class OrderAutoRejectWorkflowTriggersModalComponent implements OnInit, On
       this.triggerStepIds = [];
       return;
     }
-    const mode = wf.autoRejectTriggerMode ?? AutoRejectTriggerMode.None;
+    const mode = normalizeAutoRejectTriggerMode(wf.autoRejectTriggerMode) ?? AutoRejectTriggerMode.None;
     if (mode === AutoRejectTriggerMode.Role) {
       this.triggerMode = 'role';
       this.triggerRoleIds = [...(wf.autoRejectTriggerRoleIds ?? []).filter(Boolean)];

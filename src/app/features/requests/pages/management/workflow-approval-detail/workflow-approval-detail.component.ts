@@ -5,7 +5,8 @@ import { ActivatedRoute } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, ArrowRight, AlertTriangle, CheckCircle, Clock, User, Package, FileText, Eye, ChevronDown, ChevronUp, RotateCcw, X, Check, XCircle, History as HistoryIcon } from 'lucide-angular';
 import { Subject, takeUntil, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, filter } from 'rxjs/operators';
+import { NotificationHubService } from '@core/notifications/notification-hub.service';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { ToastService } from '@services/toast.service';
 import { SupplyService, SupplyDto } from '@requests/services/supply.service';
@@ -204,8 +205,12 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     private stateService: WorkflowApprovalStateService,
     private assetSupplyService: AssetSupplyService,
     private autoRejectCountdownService: AutoRejectCountdownService,
+    private notificationHub: NotificationHubService,
     private cdr: ChangeDetectorRef
   ) { }
+
+  /** Request currently subscribed to for live workflow updates (so we can switch groups on route change). */
+  private liveUpdatesRequestId: number | null = null;
 
   // Permission check methods - delegate to service
   canApproveOrReject(): boolean {
@@ -337,6 +342,17 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
     const isSuperAdmin = this.authService.isSuperAdmin();
     this.stateService.updateState({ isSuperAdmin });
 
+    // Live updates: when another approver actions this request, the server broadcasts a
+    // "WorkflowStateChanged" signal carrying only the requestId. We silently re-fetch so the
+    // timeline/actions reflect authoritative state instead of acting on stale data.
+    // Skip while we're the ones processing — onActionCompleted() already refreshes the actor.
+    this.notificationHub.workflowStateChanged$
+      .pipe(
+        filter(requestId => requestId === this.requestId && !this.processing),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => this.loadRequestDetailInternal(false));
+
     // Use route params observable instead of snapshot for better reactivity
     this.route.params
       .pipe(takeUntil(this.destroy$))
@@ -351,11 +367,28 @@ export class WorkflowApprovalDetailComponent implements OnInit, OnDestroy {
           return;
         }
         this.requestId = id;
+        this.switchLiveUpdatesGroup(id);
         this.loadRequestDetail();
       });
   }
 
+  /** Join this request's live-update group, leaving any previously joined one (route reuse). */
+  private switchLiveUpdatesGroup(requestId: number): void {
+    if (this.liveUpdatesRequestId === requestId) {
+      return;
+    }
+    if (this.liveUpdatesRequestId !== null) {
+      this.notificationHub.leaveRequestGroup(this.liveUpdatesRequestId);
+    }
+    this.notificationHub.joinRequestGroup(requestId);
+    this.liveUpdatesRequestId = requestId;
+  }
+
   ngOnDestroy(): void {
+    if (this.liveUpdatesRequestId !== null) {
+      this.notificationHub.leaveRequestGroup(this.liveUpdatesRequestId);
+      this.liveUpdatesRequestId = null;
+    }
     this.destroy$.next();
     this.destroy$.complete();
     this.stateService.resetState();

@@ -7,6 +7,9 @@
 /* Sidebar rail tooltip — used by SidebarRailTooltipDirective (directives cannot bundle styles) */
 @import './app/shared/ui/sidebar-rail-tooltip/sidebar-rail-tooltip.css';
 
+/* Collapsed sidebar flyout — portaled to document.body */
+@import './app/shared/ui/sidebar-collapsed-flyout/sidebar-collapsed-flyout.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

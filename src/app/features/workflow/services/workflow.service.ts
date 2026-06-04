@@ -18,7 +18,8 @@ import {
   WorkflowStepDto,
   workflowTypeToNumber,
   UpdateWorkflowAutoRejectTriggersDto,
-  WorkflowAutoRejectTriggerDto
+  WorkflowAutoRejectTriggerDto,
+  normalizeAutoRejectTriggerMode
 } from '@models/workflow.model';
 
 /**
@@ -82,7 +83,7 @@ export class WorkflowService {
             status: status,
             workflowType: numericWorkflowType,
             workflowTypeName: w.workflowTypeName ?? undefined,
-            autoRejectTriggerMode: w.autoRejectTriggerMode ?? undefined,
+            autoRejectTriggerMode: normalizeAutoRejectTriggerMode(w.autoRejectTriggerMode),
             autoRejectTriggerRoleIds: w.autoRejectTriggerRoleIds,
             autoRejectTriggerStepIds: w.autoRejectTriggerStepIds
           };
@@ -144,9 +145,7 @@ export class WorkflowService {
         if (steps?.length) {
           return {
             ...data,
-            workflowSteps: [...steps].sort(
-              (a, b) => (a.stepOrder || 0) - (b.stepOrder || 0)
-            )
+            workflowSteps: [...steps].sort((a, b) => (a.stepOrder || 0) - (b.stepOrder || 0))
           };
         }
         return data;

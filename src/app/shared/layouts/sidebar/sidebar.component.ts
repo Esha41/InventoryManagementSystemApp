@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil, filter } from 'rxjs';
-import { LucideAngularModule, House, Boxes, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, List, Badge, FileText, Plus, TrendingUp, Settings, Warehouse, ClipboardList, Package, Building2, BarChart3 } from 'lucide-angular';
+import { LucideAngularModule, House, Boxes, Users, ChevronLeft, ChevronRight, List, Badge, FileText, Plus, TrendingUp, Settings, Warehouse, ClipboardList, Package, Building2, BarChart3 } from 'lucide-angular';
 import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { TranslationService } from '@services/translation.service';
 import { SidebarRailTooltipDirective } from '@shared/ui/sidebar-rail-tooltip/sidebar-rail-tooltip.directive';
+import { SidebarCollapsedFlyoutComponent } from '@shared/ui/sidebar-collapsed-flyout/sidebar-collapsed-flyout.component';
 
 interface MenuItem {
   label: string;
@@ -21,7 +22,14 @@ interface MenuItem {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule, TranslateModule, SidebarRailTooltipDirective],
+  imports: [
+    CommonModule,
+    RouterModule,
+    LucideAngularModule,
+    TranslateModule,
+    SidebarRailTooltipDirective,
+    SidebarCollapsedFlyoutComponent,
+  ],
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.css']
 })
@@ -34,8 +42,6 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   isCollapsed = false;
   readonly ChevronLeft = ChevronLeft;
   readonly ChevronRight = ChevronRight;
-  readonly ChevronDown = ChevronDown;
-  readonly ChevronUp = ChevronUp;
   readonly Package = Package;
   readonly Building2 = Building2;
   expandedMenus: Set<string> = new Set();
@@ -543,6 +549,24 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   toggleCollapse(): void {
     this.isCollapsed = !this.isCollapsed;
     this.toggleSidebar.emit(this.isCollapsed);
+  }
+
+  onParentSubmenuClick(_event: MouseEvent, label: string): void {
+    if (!this.isCollapsed) {
+      this.toggleSubmenu(label);
+    }
+  }
+
+  isSubmenuRouteActive(item: MenuItem): boolean {
+    const url = this.router.url.split('?')[0];
+    return this.menuItemContainsRoute(item, url);
+  }
+
+  private menuItemContainsRoute(item: MenuItem, url: string): boolean {
+    if (item.route && (url === item.route || url.startsWith(item.route + '/'))) {
+      return true;
+    }
+    return (item.children ?? []).some(child => this.menuItemContainsRoute(child, url));
   }
 
   onCloseMobile(): void {
