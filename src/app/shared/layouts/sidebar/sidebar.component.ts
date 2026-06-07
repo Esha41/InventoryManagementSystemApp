@@ -170,9 +170,7 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
       icon: Package,
       route: '/assets/weapon-asset-master',
       permissions: [
-        PERMISSIONS.ASSETS.WEAPON_ASSET_MASTER.PAGE,
-        PERMISSIONS.ASSETS.ASSET.PAGE,
-        PERMISSIONS.ASSETS.ASSET.VIEW
+        PERMISSIONS.ASSETS.WEAPON_ASSET_MASTER.PAGE
       ]
     },
     // Temporarily commented out - contains dummy data, will be implemented later
