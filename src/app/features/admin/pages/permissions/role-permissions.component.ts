@@ -113,6 +113,7 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
     'request_manage': { key: 'request_manage', label: 'Manage', description: 'Edit, approve, and manage all requests', page: '/requests/requests-management' },
     'asset_create': { key: 'asset_create', label: 'Create', description: 'Add new ammunition/assets to inventory', page: '/assets/add-asset' },
     'asset_view': { key: 'asset_view', label: 'View', description: 'View ammunition inventory list', page: '/assets/asset-list' },
+    'WeaponAssetMasterPage': { key: 'WeaponAssetMasterPage', label: 'Weapon Tracker', description: 'View weapon tracker (asset master list and custody history)', page: '/assets/weapon-asset-master' },
     'inventory_view': { key: 'inventory_view', label: 'View', description: 'View warehouse inventory', page: '/warehouse' },
     'user_view': { key: 'user_view', label: 'View', description: 'View system users list', page: '/admin/manage-admins' },
     'role_view': { key: 'role_view', label: 'View', description: 'View roles list', page: '/settings/roles' },

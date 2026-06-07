@@ -295,6 +295,9 @@ export const PERMISSIONS = {
       CREATE_CLAIM: 'Asset.Create',
       EDIT_CLAIM: 'Asset.Edit',
       DELETE: 'Asset.Delete'
+    },
+    WEAPON_ASSET_MASTER: {
+      PAGE: 'weaponAssetMasterPage'
     }
   },
   SETTINGS: {
