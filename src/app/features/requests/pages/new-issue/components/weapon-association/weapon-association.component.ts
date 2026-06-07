@@ -372,6 +372,31 @@ export class WeaponAssociationComponent implements OnChanges {
     return !!(this.otherNameInput.get(ammo.id) ?? '').trim();
   }
 
+  canCancelOtherWeapon(ammo: Cartridge): boolean {
+    return this.canConfirmOtherWeapon(ammo) || !!this.firstOtherName(ammo.id);
+  }
+
+  onOtherWeaponCancel(ammo: Cartridge, event?: Event): void {
+    event?.stopPropagation();
+    if (!this.canCancelOtherWeapon(ammo)) return;
+
+    this.otherNameInput.delete(ammo.id);
+
+    if (this.firstOtherName(ammo.id)) {
+      const ammoCal = this.effectiveAmmoCaliberId(ammo);
+      const caliberId =
+        ammoCal != null && Number.isFinite(Number(ammoCal)) ? Number(ammoCal) : null;
+
+      this.associateOtherWeapon.emit({
+        ammoItemId: ammo.id,
+        otherName: '',
+        caliberId
+      });
+    }
+
+    this.cdr.markForCheck();
+  }
+
   onOtherWeaponConfirm(ammo: Cartridge, event?: Event): void {
     event?.stopPropagation();
     const name = (this.otherNameInput.get(ammo.id) ?? '').trim();

@@ -25,6 +25,12 @@ export const ASSETS_ROUTES: Routes = [
     path: 'weapon-asset-master',
     loadComponent: () => import('./pages/weapon-asset-master/weapon-asset-master.component').then(m => m.WeaponAssetMasterComponent),
     canActivate: [permissionGuard],
-    data: { permissions: [PERMISSIONS.ASSETS.ASSET.PAGE, PERMISSIONS.ASSETS.ASSET.VIEW] }
+    data: {
+      permissions: [
+        PERMISSIONS.ASSETS.WEAPON_ASSET_MASTER.PAGE,
+        PERMISSIONS.ASSETS.ASSET.PAGE,
+        PERMISSIONS.ASSETS.ASSET.VIEW
+      ]
+    }
   }
 ];

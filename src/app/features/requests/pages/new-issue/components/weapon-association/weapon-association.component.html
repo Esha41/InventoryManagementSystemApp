@@ -292,6 +292,14 @@
                             >
                               {{ 'newIssueRequest.weaponAssociation.confirm' | translate }}
                             </app-button>
+                            <app-button
+                              variant="outline"
+                              class="shrink-0"
+                              [disabled]="!canCancelOtherWeapon(ammo)"
+                              (clicked)="onOtherWeaponCancel(ammo, $event)"
+                            >
+                              {{ 'common.cancel' | translate }}
+                            </app-button>
                           </div>
                         </div>
                       </ng-container>
