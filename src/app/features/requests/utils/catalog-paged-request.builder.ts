@@ -57,6 +57,14 @@ function wrapPagedRequest(page: number, pageSize: number, filters: FilterData[])
   };
 }
 
+function appendCaliberIdFilter(filters: FilterData[], caliberId: string | null | undefined): void {
+  const raw = caliberId?.trim() ?? '';
+  if (!raw) return;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n <= 0) return;
+  filters.push({ field: 'CaliberId', operator: 'eq', value: String(n) });
+}
+
 export function buildAmmunitionPagedRequest(page: number, pageSize: number, fs: FilterState): PagedRequest {
   const filters: FilterData[] = [];
   const search = fs.searchTerm?.trim() ?? '';
@@ -64,13 +72,7 @@ export function buildAmmunitionPagedRequest(page: number, pageSize: number, fs: 
   if (fs.selectedAmmunitionType) filters.push({ field: 'AmmunitionType', operator: 'eq', value: fs.selectedAmmunitionType });
   if (fs.selectedLinked === 'Linked') filters.push({ field: 'IsLinked', operator: 'eq', value: 'true' });
   else if (fs.selectedLinked === 'Not Linked') filters.push({ field: 'IsLinked', operator: 'eq', value: 'false' });
-  if (fs.selectedBulletDiameter?.trim()) {
-    filters.push({
-      field: 'BulletDiameterUnit.NameEn',
-      operator: 'contains',
-      value: fs.selectedBulletDiameter.trim()
-    });
-  }
+  appendCaliberIdFilter(filters, fs.selectedCaliber);
   if (fs.selectedNature?.trim()) {
     const v = fs.selectedNature.trim();
     filters.push({
@@ -97,16 +99,7 @@ export function buildWeaponPagedRequest(page: number, pageSize: number, fs: Filt
       value: spacedFromEnumKey(fs.selectedWeaponType.trim())
     });
   }
-  const caliber = fs.selectedCaliber?.trim() ?? '';
-  if (caliber) {
-    filters.push({
-      logic: 'or',
-      filters: [
-        { field: 'LookupCaliber.NameEn', operator: 'contains', value: caliber },
-        { field: 'LookupCaliber.NameAr', operator: 'contains', value: caliber }
-      ]
-    });
-  }
+  appendCaliberIdFilter(filters, fs.selectedCaliber);
   const nsn = fs.selectedNSN?.trim() ?? '';
   if (nsn) filters.push({ field: 'Nsn', operator: 'contains', value: nsn });
   return wrapPagedRequest(page, pageSize, filters);

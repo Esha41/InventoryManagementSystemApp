@@ -39,13 +39,12 @@ export class CartridgeListComponent implements OnChanges, OnInit, OnDestroy {
 
   // Ammunition Options
   @Input() ammunitionTypeOptions: Array<string | DropdownOption<string>> = [];
-  @Input() bulletDiameters: string[] = [];
+  @Input() caliberOptions: DropdownOption<string>[] = [];
   @Input() linkedOptions: Array<string | DropdownOption<string>> = [];
   @Input() natureOptions: string[] = [];
 
   // Weapon Options
   @Input() weaponTypeOptions: Array<DropdownOption<string>> = [];
-  @Input() caliberOptions: string[] = []; // If we have predefined calibers
 
   // Explosive Options
   @Input() explosiveTypeOptions: Array<DropdownOption<string>> = [];
@@ -55,7 +54,6 @@ export class CartridgeListComponent implements OnChanges, OnInit, OnDestroy {
 
   // Ammunition Selections
   @Input() selectedAmmunitionType: string = '';
-  @Input() selectedBulletDiameter: string = '';
   @Input() selectedLinked: string = '';
   @Input() selectedNature: string = '';
 
@@ -90,7 +88,6 @@ export class CartridgeListComponent implements OnChanges, OnInit, OnDestroy {
   @Output() itemTypeChange = new EventEmitter<string>();
 
   @Output() ammunitionTypeChange = new EventEmitter<string>();
-  @Output() bulletDiameterChange = new EventEmitter<string>();
   @Output() linkedChange = new EventEmitter<string>();
   @Output() natureChange = new EventEmitter<string>();
 
@@ -336,11 +333,6 @@ export class CartridgeListComponent implements OnChanges, OnInit, OnDestroy {
 
   onAmmunitionTypeChange(value: string): void {
     this.ammunitionTypeChange.emit(value);
-    this.onFilterChange();
-  }
-
-  onBulletDiameterChange(value: string): void {
-    this.bulletDiameterChange.emit(value);
     this.onFilterChange();
   }
 

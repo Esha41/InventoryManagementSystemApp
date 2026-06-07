@@ -64,11 +64,6 @@ export class StepSelectionComponent {
         this.triggerFilter();
     }
 
-    onBulletDiameterChange(value: string): void {
-        this.filterState.selectedBulletDiameter = value;
-        this.triggerFilter();
-    }
-
     onLinkedChange(value: string): void {
         this.filterState.selectedLinked = value;
         this.triggerFilter();

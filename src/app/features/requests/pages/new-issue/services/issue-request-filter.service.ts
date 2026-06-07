@@ -21,12 +21,12 @@ export class IssueRequestFilterService {
         (cartridge.ncn?.toLowerCase().includes(searchLower));
 
       if (filterState.selectedItemType === 'Ammunition') {
-        const diameterLabel = cartridge.bulletDiameterLabel ?? '';
         const linkedLabelForFilter = cartridge.linkedLabelEn ?? cartridge.linkedLabel ?? '';
         const natureLabel = cartridge.natureLabel ?? '';
         const nsn = cartridge.ncn ?? '';
 
-        const byDiameter = !filterState.selectedBulletDiameter || filterState.selectedBulletDiameter === diameterLabel;
+        const selectedCaliberId = filterState.selectedCaliber?.trim() ?? '';
+        const byCaliber = !selectedCaliberId || String(cartridge.caliberId ?? '') === selectedCaliberId;
         const byLinked = !filterState.selectedLinked || filterState.selectedLinked === linkedLabelForFilter;
         const byNature = !filterState.selectedNature || filterState.selectedNature === natureLabel;
 
@@ -37,14 +37,14 @@ export class IssueRequestFilterService {
           (cartridge.ammunitionType !== undefined &&
             String(cartridge.ammunitionType).toLowerCase() === filterState.selectedAmmunitionType.toLowerCase());
 
-        return byDiameter && byLinked && byNature && byNSN && byAmmunitionType && bySearch;
+        return byCaliber && byLinked && byNature && byNSN && byAmmunitionType && bySearch;
 
       } else if (filterState.selectedItemType === 'Weapon') {
         const byWeaponType = !filterState.selectedWeaponType || cartridge.weaponType === filterState.selectedWeaponType;
 
         // Caliber might be numeric or string, loosely matching or contains
-        const caliberFilter = filterState.selectedCaliber?.toLowerCase() ?? '';
-        const byCaliber = !caliberFilter || (cartridge.caliber && String(cartridge.caliber).toLowerCase().includes(caliberFilter));
+        const selectedCaliberId = filterState.selectedCaliber?.trim() ?? '';
+        const byCaliber = !selectedCaliberId || String(cartridge.caliberId ?? '') === selectedCaliberId;
 
         const nsn = cartridge.ncn ?? '';
         const nsnFilterLower = filterState.selectedNSN?.toLowerCase() ?? '';
@@ -70,7 +70,7 @@ export class IssueRequestFilterService {
     // Reset based on current type
     if (itemType === 'Ammunition') {
       filterState.selectedAmmunitionType = '';
-      filterState.selectedBulletDiameter = '';
+      filterState.selectedCaliber = '';
       filterState.selectedLinked = '';
       filterState.selectedNature = '';
     } else if (itemType === 'Weapon') {

@@ -3,6 +3,7 @@ import { AmmunitionReadDto } from '@models/ammunition.model';
 import { WeaponDto } from '@models/weapon.model';
 import { ExplosiveDto } from '@models/explosive.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { resolveCatalogItemCaliberId } from '@utils/catalog-caliber.utils';
 import { TranslateService } from '@ngx-translate/core';
 import type { CatalogListItem, ReturnSelectedItem } from '@requests/pages/return-request/return-request.state';
 
@@ -54,7 +55,8 @@ export function catalogListItemToCartridge(item: CatalogListItem, itemType: stri
     return {
       ...base,
       ammunitionType: a.ammunitionType != null ? String(a.ammunitionType) : undefined,
-      bulletDiameterLabel: lookupLabel(a.bulletDiameterUnit ?? null, lang),
+      caliber: lookupLabel(a.caliber ?? null, lang) || undefined,
+      caliberId: resolveCatalogItemCaliberId(a) ?? undefined,
       linkedLabel,
       linkedLabelEn: linkedLabel,
       natureLabel: lookupLabel(a.natureOption ?? null, lang),
@@ -68,7 +70,8 @@ export function catalogListItemToCartridge(item: CatalogListItem, itemType: stri
     return {
       ...base,
       weaponType: wt || undefined,
-      caliber: lookupLabel(w.caliber ?? null, lang) || undefined
+      caliber: lookupLabel(w.caliber ?? null, lang) || undefined,
+      caliberId: resolveCatalogItemCaliberId(w) ?? undefined
     };
   }
 

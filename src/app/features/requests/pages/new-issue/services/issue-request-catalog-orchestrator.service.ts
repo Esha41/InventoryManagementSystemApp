@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Injectable } from '@angular/core';
 import { Subject, debounceTime, takeUntil, Observable } from 'rxjs';
 import { Cartridge } from '@models/cartridge.model';
+import { ItemType } from '@models/backend-enums';
 import { PagedRequest } from '@models/api-response.model';
 import {
   CartridgeDataService,
@@ -21,6 +22,7 @@ import {
   buildWeaponPagedRequest,
   buildExplosivePagedRequest
 } from '@requests/utils/catalog-paged-request.builder';
+import { DropdownOption } from '@components/dropdown/dropdown.component';
 
 export interface CatalogOrchestratorContext {
   cartridgeState: CartridgeState;
@@ -61,11 +63,15 @@ export class IssueRequestCatalogOrchestratorService {
     return this.cartridgeDataService.loadAmmunitionPaginated(buildAmmunitionPagedRequest(page, pageSize, filterState));
   }
 
-  private loadAmmunitionFacetSample(): Observable<{ bulletDiameters: string[]; natureOptions: string[] }> {
+  private loadAmmunitionNatureFacetSample(): Observable<{ natureOptions: string[] }> {
     const request: PagedRequest = { page: 1, pageSize: 500, filter: { sortField: 'Name', sortDirection: 1 } };
     return this.cartridgeDataService.loadAmmunitionFacetSample(request);
   }
 
+  private loadCaliberFilterOptions(itemType: string): Observable<DropdownOption<string>[]> {
+    const lookupItemType = itemType === 'Weapon' ? ItemType.Weapon : ItemType.Ammunition;
+    return this.cartridgeDataService.loadCaliberFilterOptions(lookupItemType);
+  }
   // ---- Public orchestration API -------------------------------------------
 
   /** New-issue flow always uses paginated server catalog (same for allowance and non-allowance orders). */
@@ -80,19 +86,33 @@ export class IssueRequestCatalogOrchestratorService {
   loadCartridges(ctx: CatalogOrchestratorContext, hooks: CatalogLoadHooks = {}): void {
     ctx.cartridgeState.cartridgeError = null;
     this.resetCatalogPagination(ctx);
-    this.loadAmmunitionFacetMetadataIfNeeded(ctx);
+    this.loadFilterMetadataIfNeeded(ctx);
     this.loadCatalogPage(1, 'initial', ctx, hooks);
   }
 
-  loadAmmunitionFacetMetadataIfNeeded(ctx: CatalogOrchestratorContext): void {
-    if (ctx.filterState.selectedItemType !== 'Ammunition') return;
-    this.loadAmmunitionFacetSample().subscribe({
-      next: (facets) => {
-        ctx.filterOptions.bulletDiameters = facets.bulletDiameters;
-        ctx.filterOptions.natureOptions = facets.natureOptions;
-        ctx.cdr.markForCheck();
-      }
-    });
+  loadFilterMetadataIfNeeded(ctx: CatalogOrchestratorContext): void {
+    const itemType = ctx.filterState.selectedItemType;
+    if (itemType === 'Ammunition' || itemType === 'Weapon') {
+      this.loadCaliberFilterOptions(itemType).subscribe({
+        next: (options) => {
+          ctx.filterOptions.caliberOptions = options;
+          ctx.cdr.markForCheck();
+        }
+      });
+    } else {
+      ctx.filterOptions.caliberOptions = [];
+    }
+
+    if (itemType === 'Ammunition') {
+      this.loadAmmunitionNatureFacetSample().subscribe({
+        next: (facets) => {
+          ctx.filterOptions.natureOptions = facets.natureOptions;
+          ctx.cdr.markForCheck();
+        }
+      });
+    } else {
+      ctx.filterOptions.natureOptions = [];
+    }
   }
 
   loadCatalogPage(page: number, loadMode: 'initial' | 'overlay', ctx: CatalogOrchestratorContext, hooks: CatalogLoadHooks = {}): void {
@@ -183,7 +203,8 @@ export class IssueRequestCatalogOrchestratorService {
     ctx.filterState.selectedItemType = value;
     this.filterService.clearFilters(ctx.filterState, value);
     ctx.cartridgeState.allCartridges = [];
-    if (value !== 'Ammunition') { ctx.filterOptions.bulletDiameters = []; ctx.filterOptions.natureOptions = []; }
+    if (value !== 'Ammunition') { ctx.filterOptions.natureOptions = []; }
+    if (value !== 'Ammunition' && value !== 'Weapon') { ctx.filterOptions.caliberOptions = []; }
     this.loadCartridges(ctx, hooks);
   }
 

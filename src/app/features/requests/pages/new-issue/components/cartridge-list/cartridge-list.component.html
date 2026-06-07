@@ -127,11 +127,11 @@
         </app-dropdown>
       </div>
 
-      <!-- Select Bullet Diameter -->
+      <!-- Select Caliber -->
       <div>
         <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
-          <span>{{ 'newIssueRequest.selectBulletDiameter' | translate }}</span>
-          <button *ngIf="selectedBulletDiameter" (click)="onBulletDiameterChange('')" type="button"
+          <span>{{ 'addAsset.caliber' | translate }}</span>
+          <button *ngIf="selectedCaliber" (click)="onCaliberChange('')" type="button"
             class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -139,9 +139,11 @@
             <span>{{ 'common.clear' | translate }}</span>
           </button>
         </span>
-        <app-dropdown class="w-full" [ngModel]="selectedBulletDiameter" (ngModelChange)="onBulletDiameterChange($event)"
-          [options]="bulletDiameters" [placeholderSelectable]="false" [placeholderValue]="''"
-          placeholder="{{ 'newIssueRequest.selectBulletDiameter' | translate }}">
+        <app-dropdown class="w-full" [ngModel]="selectedCaliber" (ngModelChange)="onCaliberChange($event)"
+          [options]="caliberOptions" optionLabel="label" optionValue="value"
+          [placeholderSelectable]="false" [placeholderValue]="''"
+          [noDataText]="'common.noData' | translate"
+          placeholder="{{ 'addAsset.selectCaliber' | translate }}">
         </app-dropdown>
       </div>
 
@@ -220,7 +222,7 @@
         </app-dropdown>
       </div>
       <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between" for="cartridge-list-fld-8-8">
+        <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
           <span>{{ 'addAsset.caliber' | translate }}</span>
           <button *ngIf="selectedCaliber" (click)="onCaliberChange('')" type="button"
             class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
@@ -229,11 +231,13 @@
             </svg>
             <span>{{ 'common.clear' | translate }}</span>
           </button>
-        </label>
-        <!-- Assuming caliber matches text input or dropdown, keeping simplified as input/dropdown driven by options -->
-        <input id="cartridge-list-fld-8-8" type="text" [ngModel]="selectedCaliber" (ngModelChange)="onCaliberChange($event)"
-          placeholder="{{ 'addAsset.enterCaliber' | translate }}"
-          class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent placeholder:text-[var(--color-text-muted)]">
+        </span>
+        <app-dropdown class="w-full" [ngModel]="selectedCaliber" (ngModelChange)="onCaliberChange($event)"
+          [options]="caliberOptions" optionLabel="label" optionValue="value"
+          [placeholderSelectable]="false" [placeholderValue]="''"
+          [noDataText]="'common.noData' | translate"
+          placeholder="{{ 'addAsset.selectCaliber' | translate }}">
+        </app-dropdown>
       </div>
 
       <!-- NSN for Weapon too -->

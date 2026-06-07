@@ -36,7 +36,6 @@ export interface AttachmentUploadsState {
 export interface FilterState {
   selectedItemType: string;
   selectedAmmunitionType: string;
-  selectedBulletDiameter: string;
   selectedLinked: string;
   selectedNature: string;
   selectedNSN: string;
@@ -60,7 +59,7 @@ export interface ExtendedFilterState extends FilterState {
 export interface FilterOptions {
   itemTypeOptions: string[];
   ammunitionTypeOptions: DropdownOption<string>[] | string[];
-  bulletDiameters: string[];
+  caliberOptions: DropdownOption<string>[];
   linkedOptions: DropdownOption<string>[] | string[];
   natureOptions: string[];
 
@@ -173,7 +172,6 @@ export function createInitialFilterState(): ExtendedFilterState {
   return {
     selectedItemType: 'Ammunition',
     selectedAmmunitionType: '',
-    selectedBulletDiameter: '',
     selectedLinked: '',
     selectedNature: '',
     selectedNSN: '',
@@ -193,7 +191,7 @@ export function createInitialFilterOptions(): ExtendedFilterOptions {
       { label: 'newIssueRequest.ammunitionTypeMedium', value: '2' },
       { label: 'newIssueRequest.ammunitionTypeLarge', value: '3' }
     ],
-    bulletDiameters: [],
+    caliberOptions: [],
     linkedOptions: [
       { label: 'newIssueRequest.linkedOptionLinked', value: 'Linked' },
       { label: 'newIssueRequest.linkedOptionNotLinked', value: 'Not Linked' }

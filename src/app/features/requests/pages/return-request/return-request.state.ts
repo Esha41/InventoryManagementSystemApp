@@ -1,4 +1,5 @@
 import { ConfirmationType } from '@components/confirmation-dialog/confirmation-dialog.component';
+import { DropdownOption } from '@components/dropdown/dropdown.component';
 import { AmmunitionReadDto } from '@models/ammunition.model';
 import { WeaponDto } from '@models/weapon.model';
 import { ExplosiveDto } from '@models/explosive.model';
@@ -59,7 +60,7 @@ export interface ReturnLookupState {
   linkedOptions: { label: string; value: string }[];
   weaponTypeOptions: { label: string; value: string }[];
   explosiveTypeOptions: { label: string; value: string }[];
-  bulletDiameters: string[];
+  caliberOptions: DropdownOption<string>[];
   natureOptions: string[];
 }
 
@@ -120,7 +121,7 @@ export function createInitialLookupState(): ReturnLookupState {
     ],
     weaponTypeOptions: [],
     explosiveTypeOptions: [],
-    bulletDiameters: [],
+    caliberOptions: [],
     natureOptions: []
   };
 }

@@ -28,6 +28,7 @@ import { IssueRequestFilterService } from '@requests/pages/new-issue/services/is
 import { Step } from '@components/stepper/stepper.component';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { PaginatedList, PagedRequest } from '@models/api-response.model';
+import { ItemType } from '@models/backend-enums';
 import { CreateReturnDto } from '@models/return.model';
 import { Cartridge } from '@models/cartridge.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
@@ -328,8 +329,10 @@ export class ReturnRequestFacade {
     this.selectionState.selectedItemType = value as ReturnItemType;
     this.filterService.clearFilters(this.filterState, value);
     if (value !== 'Ammunition') {
-      this.filterOptions.bulletDiameters = [];
       this.filterOptions.natureOptions = [];
+    }
+    if (value !== 'Ammunition' && value !== 'Weapon') {
+      this.filterOptions.caliberOptions = [];
     }
     this.loadCartridgesInitial();
   }
@@ -673,20 +676,35 @@ export class ReturnRequestFacade {
   private loadCartridgesInitial(): void {
     this.cartridgeState.cartridgeError = null;
     this.cartridgeState.catalogPagination = createInitialCatalogPagination();
-    this.loadAmmunitionFacetMetadataIfNeeded();
+    this.loadFilterMetadataIfNeeded();
     this.loadCatalogPage(1, 'initial');
   }
 
-  private loadAmmunitionFacetMetadataIfNeeded(): void {
-    if (this.filterState.selectedItemType !== 'Ammunition') return;
-    const request: PagedRequest = { page: 1, pageSize: 500, filter: { sortField: 'Name', sortDirection: 1 } };
-    this.cartridgeDataService.loadAmmunitionFacetSample(request).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (facets) => {
-        this.filterOptions.bulletDiameters = facets.bulletDiameters;
-        this.filterOptions.natureOptions = facets.natureOptions;
-        this.cdr.markForCheck();
-      }
-    });
+  private loadFilterMetadataIfNeeded(): void {
+    const itemType = this.filterState.selectedItemType;
+    if (itemType === 'Ammunition' || itemType === 'Weapon') {
+      const lookupItemType = itemType === 'Weapon' ? ItemType.Weapon : ItemType.Ammunition;
+      this.cartridgeDataService.loadCaliberFilterOptions(lookupItemType).pipe(takeUntil(this.destroy$)).subscribe({
+        next: (options) => {
+          this.filterOptions.caliberOptions = options;
+          this.cdr.markForCheck();
+        }
+      });
+    } else {
+      this.filterOptions.caliberOptions = [];
+    }
+
+    if (itemType === 'Ammunition') {
+      const request: PagedRequest = { page: 1, pageSize: 500, filter: { sortField: 'Name', sortDirection: 1 } };
+      this.cartridgeDataService.loadAmmunitionFacetSample(request).pipe(takeUntil(this.destroy$)).subscribe({
+        next: (facets) => {
+          this.filterOptions.natureOptions = facets.natureOptions;
+          this.cdr.markForCheck();
+        }
+      });
+    } else {
+      this.filterOptions.natureOptions = [];
+    }
   }
 
   private loadCatalogPage(page: number, loadMode: 'initial' | 'overlay'): void {

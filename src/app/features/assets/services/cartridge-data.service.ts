@@ -5,11 +5,15 @@ import { AmmunitionService } from './ammunition.service';
 import { WeaponService } from './weapon.service';
 import { ExplosiveService } from './explosive.service';
 import { ApiService } from '@services/api.service';
+import { LookupService } from '@services/lookup.service';
 import { CartridgeMapperService } from './cartridge-mapper.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { Cartridge } from '@models/cartridge.model';
+import { ItemType } from '@models/backend-enums';
 import { TranslateService } from '@ngx-translate/core';
 import { getCurrentLang } from '@utils/localization.utils';
+import { createFilterOptions } from '@utils/asset-list.utils';
+import { DropdownOption } from '@components/dropdown/dropdown.component';
 import { PagedRequest, PaginatedList } from '@models/api-response.model';
 import { AmmunitionReadDto } from '@models/ammunition.model';
 import { WeaponDto } from '@models/weapon.model';
@@ -79,6 +83,7 @@ export class CartridgeDataService {
     private weaponService: WeaponService,
     private explosiveService: ExplosiveService,
     private apiService: ApiService,
+    private lookupService: LookupService,
     private mapperService: CartridgeMapperService,
     private translateService: TranslateService
   ) { }
@@ -318,16 +323,30 @@ export class CartridgeDataService {
   }
 
   /**
-   * One paginated sample (no extra filters) to populate ammunition facet dropdowns when not using full catalog.
+   * All caliber lookup rows for ammunition or weapon filters (same source as asset list / add asset).
    */
-  loadAmmunitionFacetSample(request: PagedRequest): Observable<{ bulletDiameters: string[]; natureOptions: string[] }> {
+  loadCaliberFilterOptions(itemType: ItemType.Ammunition | ItemType.Weapon): Observable<DropdownOption<string>[]> {
+    return this.lookupService.getCalibersByItemType(itemType).pipe(
+      map(items =>
+        createFilterOptions(items, this.translateService)
+          .map(opt => ({ label: opt.label, value: String(opt.value) }))
+          .sort((a, b) => a.label.localeCompare(b.label))
+      ),
+      catchError(() => of([]))
+    );
+  }
+
+  /**
+   * One paginated sample (no extra filters) to populate ammunition nature facet dropdown.
+   */
+  loadAmmunitionFacetSample(request: PagedRequest): Observable<{ natureOptions: string[] }> {
     const currentLang = getCurrentLang(this.translateService);
     return this.ammunitionService.getAllPaginated(request).pipe(
       map((res: PaginatedList<AmmunitionReadDto>) => {
         const cartridges = this.mapperService.mapAmmunitionArrayToCartridges(res.items || [], currentLang);
         return this.buildFilterOptions(cartridges);
       }),
-      catchError(() => of({ bulletDiameters: [], natureOptions: [] }))
+      catchError(() => of({ natureOptions: [] }))
     );
   }
 
@@ -376,23 +395,17 @@ export class CartridgeDataService {
   }
 
   buildFilterOptions(cartridges: Cartridge[]): {
-    bulletDiameters: string[];
     natureOptions: string[];
   } {
-    const diameters = new Set<string>();
     const natures = new Set<string>();
 
     for (const cartridge of cartridges) {
-      if (cartridge.bulletDiameterLabel) {
-        diameters.add(cartridge.bulletDiameterLabel);
-      }
       if (cartridge.natureLabel) {
         natures.add(cartridge.natureLabel);
       }
     }
 
     return {
-      bulletDiameters: Array.from(diameters).sort((a, b) => a.localeCompare(b)),
       natureOptions: Array.from(natures).sort((a, b) => a.localeCompare(b))
     };
   }
