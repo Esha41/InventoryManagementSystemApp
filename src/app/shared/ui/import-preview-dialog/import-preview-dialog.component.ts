@@ -270,6 +270,13 @@ export class ImportPreviewDialogComponent {
     getColumnHeader(column: string): string {
         if (!column) return '';
 
+        if (column === 'name') {
+            return this.translationService.getTranslation('addAsset.nameEnglish');
+        }
+        if (column === 'nameAr') {
+            return this.translationService.getTranslation('addAsset.nameArabic');
+        }
+
         // Try different translation paths
         const paths = [
             `warehouseInventory.fields.${column}`,

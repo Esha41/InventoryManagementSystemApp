@@ -38,28 +38,35 @@ export class AssetExportService {
   /**
    * Build export columns based on active tab
    */
+  private buildAccessoryColumns(markRequired = false): ExcelColumn[] {
+    const withRequired = (label: string, required: boolean) =>
+      markRequired && required ? `${label}*` : label;
+
+    return [
+      {
+        header: withRequired(this.translateService.instant('addAsset.nameEnglish'), true),
+        key: 'name',
+        width: 30,
+        format: (value: string) => value || '-'
+      },
+      {
+        header: withRequired(this.translateService.instant('addAsset.nameArabic'), false),
+        key: 'nameAr',
+        width: 30,
+        format: (value: string) => value || '-'
+      },
+      {
+        header: withRequired(this.translateService.instant('assetList.table.itemNo'), true),
+        key: 'itemNo',
+        width: 15,
+        format: (value: string) => value || '-'
+      }
+    ];
+  }
+
   private buildExportColumns(activeTab: AssetType): ExcelColumn[] {
     if (activeTab === 'accessory') {
-      return [
-        {
-          header: this.translateService.instant('addAsset.nameEnglish'),
-          key: 'name',
-          width: 30,
-          format: (value: string) => value || '-'
-        },
-        {
-          header: this.translateService.instant('addAsset.nameArabic'),
-          key: 'nameAr',
-          width: 30,
-          format: (value: string) => value || '-'
-        },
-        {
-          header: this.translateService.instant('assetList.table.itemNo'),
-          key: 'itemNo',
-          width: 15,
-          format: (value: string) => value || '-'
-        }
-      ];
+      return this.buildAccessoryColumns(false);
     }
 
     const columns: ExcelColumn[] = [
@@ -296,11 +303,7 @@ export class AssetExportService {
         }
       ];
     } else if (activeTab === 'accessory') {
-      headers = [
-        { header: 'Name', key: 'name' },
-        { header: 'Name (Arabic)', key: 'nameAr' },
-        { header: 'Item No', key: 'itemNo' }
-      ];
+      headers = this.buildAccessoryColumns(true).map(({ header, key }) => ({ header, key }));
 
       sampleData = [
         {

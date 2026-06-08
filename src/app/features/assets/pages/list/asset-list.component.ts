@@ -19,6 +19,7 @@ import { AssetFilterBarComponent } from './components/asset-filter-bar/asset-fil
 import { AssetTableComponent } from './components/asset-table/asset-table.component';
 import { AssetListHeaderComponent } from './components/asset-list-header/asset-list-header.component';
 import { AssetListFacade } from './services/asset-list.facade';
+import { AssetExportService } from './services/asset-export.service';
 import { AssetListCrudHandlerService, EditSaveEvent } from './services/asset-list-crud-handler.service';
 import { AssetModalService } from './services/asset-modal.service';
 import { TranslationService } from '@services/translation.service';
@@ -35,7 +36,10 @@ import { IImportableService } from '@core/interfaces/importable-service.interfac
 import { APIOperationResponse } from '@models/api-response.model';
 import { ImportResult } from '@models/import-result.model';
 import { ErrorHandler } from '@utils/error-handler.utils';
-import { mapImportResultToPreviewData } from '@core/utils/asset-master-import-preview.utils';
+import {
+  ACCESSORY_IMPORT_PREVIEW_COLUMNS,
+  mapImportResultToPreviewData
+} from '@core/utils/asset-master-import-preview.utils';
 import { AssetType } from '@models/asset-list.model';
 import { LookupItem } from '@models/lookup.model';
 import { BackendAuthService } from '@services/backend-auth.service';
@@ -88,6 +92,7 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
     private readonly weaponService: WeaponService,
     private readonly explosiveService: ExplosiveService,
     private readonly accessoryService: AccessoryService,
+    private readonly assetExportService: AssetExportService,
     private readonly importExportService: ImportExportService,
     private readonly toastService: ToastService,
     private readonly propertyAccessor: AssetPropertyAccessor,
@@ -422,6 +427,11 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   downloadImportTemplateFromApi(): void {
+    if (this.facade.activeTab === 'accessory') {
+      this.assetExportService.downloadImportTemplate('accessory');
+      return;
+    }
+
     const service = this.getAssetImportService(this.facade.activeTab);
     const lang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
     service
@@ -476,7 +486,12 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
             return;
           }
 
-          const preview = mapImportResultToPreviewData(res.data);
+          const preview = mapImportResultToPreviewData(
+            res.data,
+            this.facade.activeTab === 'accessory'
+              ? { includeColumns: ACCESSORY_IMPORT_PREVIEW_COLUMNS }
+              : undefined
+          );
           if (preview) {
             this.previewData = preview;
             this.showPreviewModal = true;
