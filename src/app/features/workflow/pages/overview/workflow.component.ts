@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, Search, ChevronLeft, ChevronRight, Eye, FileEdit, Plus } from 'lucide-angular';
+import { LucideAngularModule, Search, ChevronLeft, ChevronRight, Eye, FileEdit, Plus, Copy } from 'lucide-angular';
 import { WorkflowService } from '@workflow/services/workflow.service';
 import { LookupService } from '@services/lookup.service';
 import { BackendUserService } from '@services/backend-user.service';
@@ -37,6 +37,7 @@ export class WorkflowComponent implements OnInit, OnDestroy {
   readonly Eye = Eye;
   readonly FileEdit = FileEdit;
   readonly Plus = Plus;
+  readonly Copy = Copy;
   readonly trackById = trackById;
   readonly trackByIndex = trackByIndex;
 
@@ -249,6 +250,9 @@ export class WorkflowComponent implements OnInit, OnDestroy {
     this.router.navigate(['/workflow', id, 'edit']);
   }
 
+  onCopy(id: number): void {
+    this.router.navigate(['/workflow/add'], { queryParams: { copyFrom: id } });
+  }
 
   onAddWorkflow(): void {
     this.router.navigate(['/workflow/add']);

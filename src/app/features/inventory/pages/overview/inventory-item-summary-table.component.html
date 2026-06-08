@@ -118,7 +118,9 @@
           <td class="px-3 py-2.5 align-middle min-w-0">
             <span class="text-sm font-medium text-[var(--color-text)]" [appTableClampTooltip]="itemSummaryDisplayName(item)">{{ itemSummaryDisplayName(item) }}</span>
           </td>
-          <td dir="ltr" class="px-3 py-2.5 align-middle text-sm text-[var(--color-text-muted)] whitespace-nowrap tabular-nums" [class.text-right]="isRTL" [class.text-left]="!isRTL">{{ item.itemNo || '—' }}</td>
+          <td class="px-3 py-2.5 align-middle text-start text-sm text-[var(--color-text-muted)] whitespace-nowrap tabular-nums">
+            <span dir="ltr" class="inline-block">{{ item.itemNo || '—' }}</span>
+          </td>
           <td dir="ltr" class="py-2.5 align-middle text-sm text-end tabular-nums text-[var(--color-text)] whitespace-nowrap"
             [ngClass]="showLotQuantityColumns ? 'px-2' : 'ps-2 pe-4 sm:pe-6'">{{ item.totalQuantity | number }}</td>
           <td *ngIf="showLotQuantityColumns" dir="ltr" class="px-2 py-2.5 align-middle text-sm text-end tabular-nums text-[var(--color-text-muted)] whitespace-nowrap">
