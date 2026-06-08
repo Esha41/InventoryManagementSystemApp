@@ -335,6 +335,18 @@ export class WorkflowApprovalPermissionsService {
    * Requires canReviewWeaponSupply context AND the SelectDepots permission.
    */
   canSelectDepots(requestDetail: RequestDetail | null, isWeaponOrder: boolean): boolean {
+    if (!requestDetail) {
+      return false;
+    }
+
+    if (requestDetail.requestType !== 'Order') {
+      return false;
+    }
+
+    if (requestDetail.status !== 'Pending') {
+      return false;
+    }
+
     if (!isWeaponOrder) {
       return false;
     }
@@ -343,6 +355,19 @@ export class WorkflowApprovalPermissionsService {
       if (this.authService.isSuperAdmin()) {
         return true;
       }
+
+      const currentPendingStep = requestDetail.approvalHistory?.find(
+        step => step.status === 'Pending' && step.isPending === true
+      );
+
+      if (!currentPendingStep) {
+        return false;
+      }
+
+      if (currentPendingStep.isPending !== true || currentPendingStep.isCurrentUserApprover !== true) {
+        return false;
+      }
+
       return this.authService.hasPermission(this.SELECT_DEPOTS_PERMISSION);
     } catch (_error) {
       return false;
