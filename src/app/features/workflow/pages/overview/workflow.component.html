@@ -23,14 +23,29 @@
   </div>
 
   <!-- Status Filter -->
-  <div class="filters-row mb-4">
-    <button type="button" class="filter-btn" [class.filter-btn--active]="statusFilter === 'all'" (click)="setStatusFilter('all')">
+  <div class="flex flex-wrap gap-2 mb-4">
+    <button type="button"
+      class="px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 border"
+      [ngClass]="statusFilter === 'all'
+        ? 'bg-[var(--color-brand)] text-white border-[var(--color-brand)]'
+        : 'bg-[var(--color-background-soft)] text-[var(--color-text-muted)] border-[var(--color-border)] hover:bg-[var(--color-background-muted)] hover:text-[var(--color-text)]'"
+      (click)="setStatusFilter('all')">
       {{ 'common.all' | translate }}
     </button>
-    <button type="button" class="filter-btn" [class.filter-btn--active]="statusFilter === 'Active'" (click)="setStatusFilter('Active')">
+    <button type="button"
+      class="px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 border"
+      [ngClass]="statusFilter === 'Active'
+        ? 'bg-[var(--color-brand)] text-white border-[var(--color-brand)]'
+        : 'bg-[var(--color-background-soft)] text-[var(--color-text-muted)] border-[var(--color-border)] hover:bg-[var(--color-background-muted)] hover:text-[var(--color-text)]'"
+      (click)="setStatusFilter('Active')">
       {{ 'workflow.active' | translate }}
     </button>
-    <button type="button" class="filter-btn" [class.filter-btn--active]="statusFilter === 'Inactive'" (click)="setStatusFilter('Inactive')">
+    <button type="button"
+      class="px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 border"
+      [ngClass]="statusFilter === 'Inactive'
+        ? 'bg-[var(--color-brand)] text-white border-[var(--color-brand)]'
+        : 'bg-[var(--color-background-soft)] text-[var(--color-text-muted)] border-[var(--color-border)] hover:bg-[var(--color-background-muted)] hover:text-[var(--color-text)]'"
+      (click)="setStatusFilter('Inactive')">
       {{ 'workflow.inactive' | translate }}
     </button>
   </div>
@@ -78,6 +93,12 @@
             <lucide-angular [img]="Eye" class="h-4 w-4"></lucide-angular>
             <span>{{ 'workflow.view' | translate }}</span>
           </button>
+          <button *ngIf="isSuperAdmin" type="button" (click)="onCopy(workflow.id)"
+            class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[var(--color-info)]/10 text-[var(--color-info)] rounded-lg text-xs font-medium hover:bg-[var(--color-info)]/20 transition-colors"
+            title="{{ 'workflow.copy' | translate }}">
+            <lucide-angular [img]="Copy" class="h-4 w-4"></lucide-angular>
+            <span>{{ 'workflow.copy' | translate }}</span>
+          </button>
           <button *ngIf="isSuperAdmin" type="button" (click)="onEdit(workflow.id)"
             class="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[var(--color-brand)]/10 text-[var(--color-brand)] rounded-lg text-xs font-medium hover:bg-[var(--color-brand)]/20 transition-colors"
             title="{{ 'workflow.edit' | translate }}">
@@ -118,7 +139,8 @@
               {{ 'workflow.status' | translate }}
             </th>
             <th class="px-6 py-3">
-              <div class="actions-header">
+              <div
+                class="flex justify-center items-center h-full py-2 px-6 text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
                 {{ 'workflow.actions' | translate }}
               </div>
             </th>
@@ -146,17 +168,28 @@
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-center">
               <div class="flex items-center gap-2 justify-center">
-                <button type="button" (click)="onViewDetails(workflow.id)" class="action-icon-button"
+                <button type="button" (click)="onViewDetails(workflow.id)"
+                  class="group inline-flex items-center justify-center p-2 rounded-lg cursor-pointer transition-colors duration-150 hover:bg-[var(--color-background)]"
                   title="{{ 'workflow.view' | translate }}">
-                  <lucide-angular [img]="Eye" class="h-4 w-4 action-icon"></lucide-angular>
+                  <lucide-angular [img]="Eye"
+                    class="h-4 w-4 text-[var(--color-text-muted)] transition-colors duration-150 group-hover:text-[var(--color-brand)]"></lucide-angular>
                 </button>
-                <button *ngIf="isSuperAdmin" type="button" (click)="onEdit(workflow.id)" class="action-icon-button"
+                <button *ngIf="isSuperAdmin" type="button" (click)="onCopy(workflow.id)"
+                  class="group inline-flex items-center justify-center p-2 rounded-lg cursor-pointer transition-colors duration-150 hover:bg-[var(--color-background)]"
+                  title="{{ 'workflow.copy' | translate }}">
+                  <lucide-angular [img]="Copy"
+                    class="h-4 w-4 text-[var(--color-text-muted)] transition-colors duration-150 group-hover:text-[var(--color-brand)]"></lucide-angular>
+                </button>
+                <button *ngIf="isSuperAdmin" type="button" (click)="onEdit(workflow.id)"
+                  class="group inline-flex items-center justify-center p-2 rounded-lg cursor-pointer transition-colors duration-150 hover:bg-[var(--color-background)]"
                   title="{{ 'workflow.edit' | translate }}">
-                  <lucide-angular [img]="FileEdit" class="h-4 w-4 action-icon"></lucide-angular>
+                  <lucide-angular [img]="FileEdit"
+                    class="h-4 w-4 text-[var(--color-text-muted)] transition-colors duration-150 group-hover:text-[var(--color-brand)]"></lucide-angular>
                 </button>
                 <button *ngIf="isSuperAdmin" type="button" (click)="onDelete(workflow.id)"
-                  class="action-icon-button action-icon-button-danger" title="{{ 'common.delete' | translate }}">
-                  <svg class="h-4 w-4 action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  class="group inline-flex items-center justify-center p-2 rounded-lg cursor-pointer transition-colors duration-150 hover:bg-red-600/10"
+                  title="{{ 'common.delete' | translate }}">
+                  <svg class="h-4 w-4 text-[var(--color-text-muted)] transition-colors duration-150 group-hover:text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m-7 0V5a2 2 0 012-2h2a2 2 0 012 2v2" />
                   </svg>
@@ -176,8 +209,10 @@
           [visibleItems]="paginatedWorkflows.length" (rowsPerPageChange)="onRowsPerPageChange($event)">
         </app-rows-per-page>
 
-        <div *ngIf="totalPages > 1" class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="onPageChange($event)">
+        <div *ngIf="totalPages > 1"
+          class="flex flex-col sm:flex-row items-start sm:items-center gap-3 [&_app-pagination]:inline-flex [&_app-pagination]:shrink-0 [&_app-pagination]:items-center [&_.pagination-container]:inline-flex [&_.pagination-container]:items-center [&_.pagination-container]:gap-1">
+          <app-pagination class="inline-flex shrink-0 items-center" [currentPage]="currentPage" [totalPages]="totalPages"
+            (pageChange)="onPageChange($event)">
           </app-pagination>
           <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
             {{ currentPage }} {{ 'common.of' | translate }} {{ totalPages }}

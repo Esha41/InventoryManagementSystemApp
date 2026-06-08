@@ -1,10 +1,10 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { PERMISSIONS } from '@constants/permissions.constants';
 
-import { Subject, takeUntil } from 'rxjs';
+import { forkJoin, Subject, takeUntil } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { LucideAngularModule, Save, X, ArrowLeft, ArrowRight, GripVertical } from 'lucide-angular';
@@ -13,7 +13,7 @@ import { BackendUserService } from '@services/backend-user.service';
 import { RoleDto, ApplicationEntityDto } from '@models/backend-user.model';
 import { TranslationService } from '@services/translation.service';
 import { LookupService } from '@services/lookup.service';
-import { CreateWorkflowDto } from '@models/workflow.model';
+import { BackendWorkflowDto, CreateWorkflowDto } from '@models/workflow.model';
 import { ToastService } from '@services/toast.service';
 import { ConfigService } from '@services/config.service';
 import { DropdownComponent } from '@components/dropdown/dropdown.component';
@@ -76,6 +76,9 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
 
   steps: AddStepForm[] = [];
 
+  copyFromId: number | null = null;
+  copySourceName = '';
+
   roles: RoleDto[] = [];
   allApplicationEntities: Array<{ id: number; name?: string; entity?: ApplicationEntityDto }> = [];
   workflowTypes: Array<{ id: number; name: string }> = [];
@@ -91,6 +94,7 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
     private backendUserService: BackendUserService,
     private translationService: TranslationService,
     private lookupService: LookupService,
+    private route: ActivatedRoute,
     private router: Router,
     private translate: TranslateService,
     private toastService: ToastService,
@@ -120,6 +124,98 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
     if (this.workflowTypes.length > 0) {
       this.selectedWorkflowType = this.workflowTypes[0].id;
     }
+
+    const copyFrom = this.route.snapshot.queryParamMap.get('copyFrom');
+    if (copyFrom) {
+      const id = Number(copyFrom);
+      if (!Number.isNaN(id) && id > 0) {
+        this.initCopyMode(id);
+      }
+    }
+  }
+
+  private initCopyMode(sourceId: number): void {
+    this.loading = true;
+    this.copyFromId = sourceId;
+    this.cdr.markForCheck();
+
+    this.workflowService.getWorkflowDetailById(sourceId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (source) => this.applyCopiedWorkflow(source),
+      error: (err) => {
+        this.configService.logError('Failed to load workflow for copy', err);
+        this.loading = false;
+        this.copyFromId = null;
+        this.cdr.markForCheck();
+        this.translate.get(['toast.error', 'toast.failedToLoadDetails']).pipe(takeUntil(this.destroy$)).subscribe((translations: TranslationMap) => {
+          const errorMsg = translations['toast.failedToLoadDetails'] || 'Failed to load workflow';
+          this.toastService.error(errorMsg, translations['toast.error']);
+          this.router.navigate(['/workflow']);
+        });
+      }
+    });
+  }
+
+  private applyCopiedWorkflow(source: BackendWorkflowDto): void {
+    const suffix = this.translate.instant('workflow.nameCopySuffix');
+    this.copySourceName = source.workflowName || '';
+    this.workflowForm.name = `${source.workflowName}${suffix}`;
+    this.workflowForm.status = 'Active';
+    this.selectedWorkflowType = source.workflowType;
+
+    const sortedSteps = [...(source.workflowSteps || [])].sort(
+      (a, b) => (a.stepOrder || 0) - (b.stepOrder || 0)
+    );
+
+    this.steps = sortedSteps.map(step => ({
+      roleId: step.applicationRoleId || null,
+      applicationEntityId: step.applicationEntityId || null,
+      entities: [],
+      requireHigherApproval: !!step.requireHigherApproval,
+      higherApprovalRoleId: step.higherApprovalRoleId || null,
+      higherApplicationEntityId: step.higherApplicationEntityId
+        ?? step.higherApprovalApplicationEntityId
+        ?? step.higherApprovalEntityId
+        ?? null,
+      canReturn: !!step.canReturn,
+      parallelRoleIds: (step.parallelRoles || []).map(pr => pr.roleId).filter(Boolean),
+      errors: { role: false, entity: false, higherRole: false, higherEntity: false }
+    }));
+
+    const stepsWithRoles = this.steps
+      .map((step, index) => ({ step, index }))
+      .filter(({ step }) => !!step.roleId);
+
+    if (stepsWithRoles.length === 0) {
+      this.steps.forEach((_, idx) => this.updateStepErrors(idx));
+      this.loading = false;
+      this.cdr.markForCheck();
+      return;
+    }
+
+    forkJoin(
+      stepsWithRoles.map(({ step }) =>
+        this.backendUserService.getApplicationEntitiesByRole(step.roleId as string)
+      )
+    ).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (entityIdLists) => {
+        entityIdLists.forEach((ids, i) => {
+          const step = stepsWithRoles[i].step;
+          step.entities = ids;
+          if (!ids.includes(step.applicationEntityId || -1)) {
+            step.applicationEntityId = null;
+          }
+        });
+        this.steps.forEach((_, idx) => this.updateStepErrors(idx));
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.configService.logError('Failed to load entities for copied steps', err);
+        this.steps.forEach((_, idx) => this.updateStepErrors(idx));
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   private loadApplicationEntities(): void {
@@ -184,13 +280,17 @@ export class AddWorkflowComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
 
     this.workflowService.createBackendWorkflow(payload).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => {
+      next: (created) => {
         this.submitting = false;
         this.cdr.markForCheck();
         const message = this.translate.instant('workflow.createdSuccess');
         const title = this.translate.instant('toast.success');
         this.toastService.success(message, title);
-        this.router.navigate(['/workflow']);
+        if (this.copyFromId && created.id) {
+          this.router.navigate(['/workflow', created.id, 'edit']);
+        } else {
+          this.router.navigate(['/workflow']);
+        }
       },
       error: (error) => {
         this.submitting = false;

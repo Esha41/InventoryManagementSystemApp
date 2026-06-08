@@ -11,8 +11,23 @@
     </h1>
   </div>
 
+  <!-- Copy mode banner -->
+  <div *ngIf="copyFromId"
+    class="mb-4 p-4 bg-[var(--color-info)]/10 border-2 border-[var(--color-info)]/20 rounded-lg">
+    <p class="text-sm font-medium text-[var(--color-text)]">
+      {{ 'workflow.copyingFrom' | translate: { name: copySourceName } }}
+    </p>
+    <p class="text-xs text-[var(--color-text-muted)] mt-1">{{ 'workflow.copiedRedirectHint' | translate }}</p>
+  </div>
+
+  <!-- Loading (copy mode) -->
+  <div *ngIf="loading"
+    class="bg-[var(--color-background)] rounded-lg shadow-custom-md border-2 border-[var(--color-border)] p-12 text-center text-sm text-[var(--color-text-muted)]">
+    {{ 'common.loading' | translate }}
+  </div>
+
   <!-- Form Card -->
-  <div
+  <div *ngIf="!loading"
     class="bg-[var(--color-background)] rounded-lg shadow-custom-md border-2 border-[var(--color-border)] p-4 sm:p-6 w-full max-w-full overflow-x-hidden">
     <!-- Error Message -->
     <div *ngIf="errorMessage"

@@ -198,17 +198,20 @@ export class WorkflowService {
   /**
    * Create workflow via backend contract (Swagger model)
    */
-  createBackendWorkflow(payload: BackendCreateWorkflowDto): Observable<boolean> {
+  createBackendWorkflow(payload: BackendCreateWorkflowDto): Observable<BackendWorkflowDto> {
     this.configService.log('Creating backend workflow', { name: payload.workflowName });
 
     return this.apiService.post<BackendWorkflowDto>(
       API_ENDPOINTS.WORKFLOWS.BASE,
       payload
     ).pipe(
-      map(() => {
-        return true;
+      map(data => {
+        if (!data) {
+          throw new Error('Failed to create workflow');
+        }
+        return data;
       }),
-      tap(() => this.configService.log('Backend workflow created successfully')),
+      tap(created => this.configService.log('Backend workflow created successfully', { id: created.id })),
       catchError(error => {
         this.configService.logError('Failed to create backend workflow', error);
         return throwError(() => new Error(error.message || 'Failed to create workflow'));
