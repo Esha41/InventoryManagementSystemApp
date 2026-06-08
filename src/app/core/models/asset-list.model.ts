@@ -4,11 +4,12 @@ import { APIOperationResponse } from './api-response.model';
 import type { AmmunitionReadDto } from './ammunition.model';
 import type { WeaponDto } from './weapon.model';
 import type { ExplosiveDto } from './explosive.model';
+import type { AccessoryDto } from './accessory.model';
 
 /**
  * Asset type for tab management
  */
-export type AssetType = 'ammunition' | 'weapon' | 'explosive';
+export type AssetType = 'ammunition' | 'weapon' | 'explosive' | 'accessory';
 
 /**
  * Sort direction for table sorting
@@ -67,7 +68,7 @@ export interface Asset {
   totalWeightUnit?: LookupDto;
 
   // Original DTO references for Edit/View (optional)
-  originalData?: AmmunitionReadDto | WeaponDto | ExplosiveDto;
+  originalData?: AmmunitionReadDto | WeaponDto | ExplosiveDto | AccessoryDto;
 }
 
 /**
@@ -158,7 +159,7 @@ export interface AssetModalState {
   showPermanentDeleteModal: boolean;
   showRestoreModal: boolean;
   showViewModal: boolean;
-  selectedAsset: Asset | AmmunitionReadDto | WeaponDto | ExplosiveDto | null;
+  selectedAsset: Asset | AmmunitionReadDto | WeaponDto | ExplosiveDto | AccessoryDto | null;
 }
 
 /**

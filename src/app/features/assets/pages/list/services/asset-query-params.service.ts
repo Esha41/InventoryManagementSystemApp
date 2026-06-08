@@ -14,10 +14,11 @@ export interface AssetQueryParamsState {
   ammunitionView: 'available' | 'deleted' | null;
   explosivesView: 'available' | 'deleted' | null;
   weaponsView: 'available' | 'deleted' | null;
+  accessoriesView: 'available' | 'deleted' | null;
   viewItemId: string | null;
 }
 
-const VALID_ASSET_TYPES: AssetType[] = ['ammunition', 'weapon', 'explosive'];
+const VALID_ASSET_TYPES: AssetType[] = ['ammunition', 'weapon', 'explosive', 'accessory'];
 
 function isValidAssetType(value: unknown): value is AssetType {
   return typeof value === 'string' && VALID_ASSET_TYPES.includes(value as AssetType);
@@ -46,6 +47,8 @@ export class AssetQueryParamsService {
       : params['explosivesView'] === 'available' ? 'available' as const : null;
     const weaponsView = params['weaponsView'] === 'deleted' ? 'deleted' as const
       : params['weaponsView'] === 'available' ? 'available' as const : null;
+    const accessoriesView = params['accessoriesView'] === 'deleted' ? 'deleted' as const
+      : params['accessoriesView'] === 'available' ? 'available' as const : null;
 
     const viewItemId = params['viewItemId'] != null ? String(params['viewItemId']) : null;
 
@@ -55,6 +58,7 @@ export class AssetQueryParamsService {
       ammunitionView,
       explosivesView,
       weaponsView,
+      accessoriesView,
       viewItemId
     };
   }

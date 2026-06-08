@@ -27,9 +27,10 @@ import { AssetDetailsFormatterService } from './asset-details-formatter.service'
 import { AmmunitionReadDto } from '@models/ammunition.model';
 import { WeaponDto } from '@models/weapon.model';
 import { ExplosiveDto } from '@models/explosive.model';
-import { isAmmunition, isExplosive, isWeapon } from '@utils/asset-property.utils';
+import { AccessoryDto } from '@models/accessory.model';
+import { isAccessory, isAmmunition, isExplosive, isWeapon } from '@utils/asset-property.utils';
 
-export type AssetDetailsData = AmmunitionReadDto | WeaponDto | ExplosiveDto | null;
+export type AssetDetailsData = AmmunitionReadDto | WeaponDto | ExplosiveDto | AccessoryDto | null;
 
 @Component({
   selector: 'app-asset-details',
@@ -59,7 +60,7 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
 
   // Internal signals - Angular 21 best practice
   private readonly _asset = signal<AssetDetailsData>(null);
-  private readonly _assetType = signal<'ammunition' | 'weapon' | 'explosive' | undefined>(undefined);
+  private readonly _assetType = signal<'ammunition' | 'weapon' | 'explosive' | 'accessory' | undefined>(undefined);
   private readonly _assetId = signal<number | undefined>(undefined);
   private readonly _isPage = signal<boolean>(true);
   private readonly _showBackButton = signal<boolean>(true);
@@ -102,6 +103,14 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
     if (type === 'ammunition') return true;
     if (asset === null) return false;
     return isAmmunition(asset);
+  });
+
+  readonly isAccessory = computed(() => {
+    const type = this._assetType();
+    const asset = this._asset();
+    if (type === 'accessory') return true;
+    if (asset === null) return false;
+    return isAccessory(asset);
   });
 
   readonly currentAssetId = computed(() => {
@@ -181,10 +190,10 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   @Input()
-  set assetType(value: 'ammunition' | 'weapon' | 'explosive' | undefined) {
+  set assetType(value: 'ammunition' | 'weapon' | 'explosive' | 'accessory' | undefined) {
     this._assetType.set(value);
   }
-  get assetType(): 'ammunition' | 'weapon' | 'explosive' | undefined {
+  get assetType(): 'ammunition' | 'weapon' | 'explosive' | 'accessory' | undefined {
     return this._assetType();
   }
 
@@ -240,7 +249,7 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
 
           // Get item type from query params (support both 'tab' and 'itemType')
           const tabParam = queryParams['tab'] || queryParams['itemType'];
-          if (tabParam && (tabParam === 'ammunition' || tabParam === 'weapon' || tabParam === 'explosive')) {
+          if (tabParam && (tabParam === 'ammunition' || tabParam === 'weapon' || tabParam === 'explosive' || tabParam === 'accessory')) {
             this._assetType.set(tabParam);
           }
 
@@ -337,7 +346,7 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
       });
   }
 
-  private loadImage(assetId: number, assetType: 'ammunition' | 'weapon' | 'explosive'): void {
+  private loadImage(assetId: number, assetType: 'ammunition' | 'weapon' | 'explosive' | 'accessory'): void {
     // Prevent duplicate concurrent loads for the same asset
     const loadKey = `${assetId}-${assetType}`;
     if (this.loadingImageFor && `${this.loadingImageFor.assetId}-${this.loadingImageFor.assetType}` === loadKey) {

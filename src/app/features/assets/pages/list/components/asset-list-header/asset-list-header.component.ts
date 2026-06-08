@@ -43,6 +43,7 @@ export class AssetListHeaderComponent {
   @Input() ammunitionViewMode: ViewMode = 'available';
   @Input() explosivesViewMode: ViewMode = 'available';
   @Input() weaponsViewMode: ViewMode = 'available';
+  @Input() accessoriesViewMode: ViewMode = 'available';
   @Input() isRTL = false;
 
   @Output() tabChange = new EventEmitter<AssetType>();
@@ -60,7 +61,8 @@ export class AssetListHeaderComponent {
     return (
       (this.activeTab !== 'ammunition' || this.ammunitionViewMode === 'available') &&
       (this.activeTab !== 'explosive' || this.explosivesViewMode === 'available') &&
-      (this.activeTab !== 'weapon' || this.weaponsViewMode === 'available')
+      (this.activeTab !== 'weapon' || this.weaponsViewMode === 'available') &&
+      (this.activeTab !== 'accessory' || this.accessoriesViewMode === 'available')
     );
   }
 
@@ -83,6 +85,10 @@ export class AssetListHeaderComponent {
 
   get tabPermsWeapon(): string[] {
     return [...ASSET_LIST_TAB_PERMISSIONS.weapon];
+  }
+
+  get tabPermsAccessory(): string[] {
+    return [...ASSET_LIST_TAB_PERMISSIONS.accessory];
   }
 
   onTabClick(tab: AssetType): void {

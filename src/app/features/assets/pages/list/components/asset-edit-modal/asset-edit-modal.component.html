@@ -12,6 +12,8 @@
               translate }}</span>
             <span *ngIf="activeTab === 'explosive'">{{ 'assetList.tabs.explosive' | translate }} - {{ 'common.edit' |
               translate }}</span>
+            <span *ngIf="activeTab === 'accessory'">{{ 'assetList.tabs.accessory' | translate }} - {{ 'common.edit' |
+              translate }}</span>
           </h3>
           <button (click)="close()" class="p-1 rounded-lg hover:bg-[var(--color-background-hover)] transition-colors">
             <lucide-angular [img]="X" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>

@@ -21,7 +21,8 @@ export enum FileEntityType {
     HelpCenter = 11,
     /** User manual downloads (singleton bundle: use entityId = 1). */
     HelpCenterUserManual = 12,
-    ReturnTrackingLine = 13
+    ReturnTrackingLine = 13,
+    Accessory = 14
 }
 
 /**

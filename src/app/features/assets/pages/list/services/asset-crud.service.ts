@@ -9,6 +9,7 @@ import { map, switchMap } from 'rxjs/operators';
 import { AmmunitionService } from '@assets/services/ammunition.service';
 import { WeaponService } from '@assets/services/weapon.service';
 import { ExplosiveService } from '@assets/services/explosive.service';
+import { AccessoryService } from '@assets/services/accessory.service';
 import { FileUploadService } from '@services/file-upload.service';
 import { FileEntityType } from '@models/file-upload.model';
 import { AssetType } from '@models/asset-list.model';
@@ -16,10 +17,15 @@ import { APIOperationResponse } from '@models/api-response.model';
 import { AmmunitionCreateDto } from '@models/ammunition.model';
 import { CreateUpdateWeaponDto } from '@models/weapon.model';
 import { CreateUpdateExplosiveDto } from '@models/explosive.model';
+import { CreateUpdateAccessoryDto } from '@models/accessory.model';
 
-export type AssetEntityService = AmmunitionService | WeaponService | ExplosiveService;
+export type AssetEntityService = AmmunitionService | WeaponService | ExplosiveService | AccessoryService;
 
-export type AssetCreateUpdateDto = AmmunitionCreateDto | CreateUpdateWeaponDto | CreateUpdateExplosiveDto;
+export type AssetCreateUpdateDto =
+  | AmmunitionCreateDto
+  | CreateUpdateWeaponDto
+  | CreateUpdateExplosiveDto
+  | CreateUpdateAccessoryDto;
 
 export interface EditImageResult {
   url: string;
@@ -33,6 +39,7 @@ export class AssetCrudService {
   private readonly ammunitionService = inject(AmmunitionService);
   private readonly weaponService = inject(WeaponService);
   private readonly explosiveService = inject(ExplosiveService);
+  private readonly accessoryService = inject(AccessoryService);
   private readonly fileUploadService = inject(FileUploadService);
 
   /**
@@ -46,6 +53,8 @@ export class AssetCrudService {
         return this.weaponService;
       case 'explosive':
         return this.explosiveService;
+      case 'accessory':
+        return this.accessoryService;
       default:
         return this.ammunitionService;
     }
@@ -62,6 +71,8 @@ export class AssetCrudService {
         return FileEntityType.Weapon;
       case 'explosive':
         return FileEntityType.Explosive;
+      case 'accessory':
+        return FileEntityType.Accessory;
       default:
         return FileEntityType.Ammunition;
     }

@@ -19,6 +19,8 @@
             translate }}</span>
           <span *ngIf="assetType === 'explosive'">{{ 'assetList.tabs.explosive' | translate }} {{ 'common.details' |
             translate }}</span>
+          <span *ngIf="assetType === 'accessory'">{{ 'assetList.tabs.accessory' | translate }} {{ 'common.details' |
+            translate }}</span>
         </h1>
       </div>
     </div>
@@ -99,17 +101,17 @@
               <p class="text-[var(--color-text)]">{{ getProductId() }}</p>
             </div>
 
-            <div *ngIf="getPartNo() !== '-'">
+            <div *ngIf="!isAccessory() && getPartNo() !== '-'">
               <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.table.partNo' | translate }}</p>
               <p class="text-[var(--color-text)]">{{ getPartNo() }}</p>
             </div>
 
-            <div>
+            <div *ngIf="!isAccessory()">
               <p class="text-[var(--color-text-muted)] mb-1">{{ 'newIssueRequest.nsn' | translate }}</p>
               <p class="text-[var(--color-text)]">{{ getNSN() }}</p>
             </div>
 
-            <div *ngIf="getBatchNo() !== '-'">
+            <div *ngIf="!isAccessory() && getBatchNo() !== '-'">
               <p class="text-[var(--color-text-muted)] mb-1">{{ (isWeapon() ? 'assetList.table.policyNumber' : 'assetList.table.batchNo') | translate }}</p>
               <p class="text-[var(--color-text)]">{{ getBatchNo() }}</p>
             </div>
@@ -410,8 +412,8 @@
           </div>
         </div>
 
-        <!-- Common Fields (All Asset Types) -->
-        <div class="space-y-4">
+        <!-- Common Fields (non-accessory asset types) -->
+        <div class="space-y-4" *ngIf="!isAccessory()">
           <h4 class="text-base font-bold text-[var(--color-text)]">{{ 'assetList.viewModal.commonFields' | translate }}
           </h4>
 

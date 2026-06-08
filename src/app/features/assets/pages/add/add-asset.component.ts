@@ -16,6 +16,7 @@ import { LookupItem } from '@models/lookup.model';
 import { AmmunitionCreateDto, AmmunitionReadDto } from '@models/ammunition.model';
 import { WeaponDto, CreateUpdateWeaponDto } from '@models/weapon.model';
 import { ExplosiveDto, CreateUpdateExplosiveDto } from '@models/explosive.model';
+import { AccessoryDto, CreateUpdateAccessoryDto } from '@models/accessory.model';
 import { ApiService } from '@services/api.service';
 import { DropdownOption, DropdownComponent } from '@components/dropdown/dropdown.component';
 import { ToastService } from '@services/toast.service';
@@ -79,7 +80,7 @@ interface AssetForm {
   unitId: string; // Unit lookup ID
 }
 
-type AssetType = 'ammunition' | 'weapon' | 'explosive';
+type AssetType = 'ammunition' | 'weapon' | 'explosive' | 'accessory';
 
 @Component({
   selector: 'app-add-asset',
@@ -217,7 +218,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     // Check for tab query parameter
     this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const tab = params['tab'];
-      if (tab && (tab === 'ammunition' || tab === 'weapon' || tab === 'explosive')) {
+      if (tab && (tab === 'ammunition' || tab === 'weapon' || tab === 'explosive' || tab === 'accessory')) {
         const tabTyped = tab as AssetType;
         const tabChanged = this.activeTab !== tabTyped;
         this.activeTab = tabTyped;
@@ -267,6 +268,8 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
       itemType = ItemType.Weapon;
     } else if (tab === 'explosive') {
       itemType = ItemType.Explosive;
+    } else if (tab === 'accessory') {
+      itemType = ItemType.Accessory;
     }
 
     this.lookupService.getUnitsByItemType(itemType)
@@ -365,6 +368,8 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
       this.submitWeapon();
     } else if (this.activeTab === 'explosive') {
       this.submitExplosive();
+    } else if (this.activeTab === 'accessory') {
+      this.submitAccessory();
     }
   }
 
@@ -520,9 +525,33 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     request.pipe(takeUntil(this.destroy$)).subscribe(this.getSubmitObserver());
   }
 
+  private submitAccessory() {
+    const dto: CreateUpdateAccessoryDto = {
+      name: this.assetForm.name.trim(),
+      itemNo: this.assetForm.itemNo.trim()
+    };
+
+    if (this.assetForm.nameAr?.trim()) dto.nameAr = this.assetForm.nameAr.trim();
+
+    const formData = new FormData();
+    (Object.keys(dto) as (keyof CreateUpdateAccessoryDto)[]).forEach(key => {
+      const val = dto[key];
+      if (val === undefined || val === null) return;
+      const capKey = key.charAt(0).toUpperCase() + key.slice(1);
+      formData.append(capKey, val.toString());
+    });
+
+    if (this.assetForm.image) {
+      formData.append('files', this.assetForm.image);
+    }
+
+    const request = this.apiService.post<AccessoryDto>('/Accessory', formData);
+    request.pipe(takeUntil(this.destroy$)).subscribe(this.getSubmitObserver());
+  }
+
   private getSubmitObserver() {
     return {
-      next: (asset: AmmunitionReadDto | WeaponDto | ExplosiveDto) => {
+      next: (asset: AmmunitionReadDto | WeaponDto | ExplosiveDto | AccessoryDto) => {
         if (asset) {
           const successMessage = this.translationService.getTranslation('addAsset.successMessage');
           this.toastService.success(successMessage || 'Asset created successfully', this.translationService.getTranslation('toast.success'));
@@ -752,4 +781,5 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
   get explosiveItemTypes(): LookupItem[] {
     return this.getFilteredItemTypes(ItemType.Explosive);
   }
+
 }

@@ -287,6 +287,14 @@ export const PERMISSIONS = {
       EDIT: 'Explosive.Edit',
       DELETE: 'Explosive.Delete'
     },
+    ACCESSORY: {
+      VIEW: 'accessory.view',
+      PAGE: 'accessory.page',
+      CREATE: 'accessory.create',
+      CREATE_CLAIM: 'Accessory.Create',
+      EDIT: 'Accessory.Edit',
+      DELETE: 'Accessory.Delete'
+    },
     ASSET: {
       PAGE: 'asset.page',
       VIEW: 'asset.view',

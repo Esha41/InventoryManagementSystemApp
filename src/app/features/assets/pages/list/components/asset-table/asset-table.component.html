@@ -5,6 +5,7 @@
         <span *ngIf="activeTab === 'ammunition'" class="min-w-0">{{ 'assetList.ammunitionItems' | translate }}</span>
         <span *ngIf="activeTab === 'weapon'" class="min-w-0">{{ 'assetList.weaponItems' | translate }}</span>
         <span *ngIf="activeTab === 'explosive'" class="min-w-0">{{ 'assetList.explosiveItems' | translate }}</span>
+        <span *ngIf="activeTab === 'accessory'" class="min-w-0">{{ 'assetList.accessoryItems' | translate }}</span>
         <span dir="ltr" class="inline-block whitespace-nowrap tabular-nums asset-table-item-count-suffix">
           ({{ totalItems }})
         </span>
@@ -41,6 +42,22 @@
           </button>
         </nav>
       </div>
+      <div *ngIf="activeTab === 'accessory'" class="view-tabs-container">
+        <nav class="view-tabs" role="tablist" aria-label="Accessories view">
+          <button role="tab" (click)="onAccessoriesViewModeChange('available')"
+            [attr.aria-selected]="accessoriesViewMode === 'available'"
+            [class.view-tab-active]="accessoriesViewMode === 'available'"
+            class="view-tab flex items-center gap-2 px-6 py-4 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap">
+            <span>{{ 'assetList.accessories.availableAccessories' | translate }}</span>
+          </button>
+          <button role="tab" (click)="onAccessoriesViewModeChange('deleted')"
+            [attr.aria-selected]="accessoriesViewMode === 'deleted'"
+            [class.view-tab-active]="accessoriesViewMode === 'deleted'"
+            class="view-tab flex items-center gap-2 px-6 py-4 font-medium text-sm transition-colors flex-shrink-0 whitespace-nowrap">
+            <span>{{ 'assetList.accessories.deletedAccessories' | translate }}</span>
+          </button>
+        </nav>
+      </div>
       <div *ngIf="activeTab === 'weapon'" class="view-tabs-container">
         <nav class="view-tabs" role="tablist" aria-label="Weapons view">
           <button role="tab" (click)="onWeaponsViewModeChange('available')"
@@ -68,15 +85,25 @@
       <div *ngFor="let asset of paginatedAssets; trackBy: trackByAssetId"
         class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] flex flex-col gap-3">
 
-        <div class="min-w-0">
-          <h3 class="asset-table__name-label font-bold text-[var(--color-text)] text-sm m-0"
-            [attr.title]="getAssetName(asset)">{{ getAssetName(asset) }}</h3>
-          <div class="flex items-center gap-2 mt-1">
-            <span
-              class="text-xs font-mono bg-[var(--color-background-subtle)] px-1.5 py-0.5 rounded text-[var(--color-text-muted)] border border-[var(--color-border-muted)]">
-              {{ asset.itemNo }}
-            </span>
-            <span *ngIf="asset.nsn" class="text-xs text-[var(--color-text-muted)]">NSN: {{ asset.nsn }}</span>
+        <div class="flex items-start gap-3 min-w-0">
+          <div *ngIf="activeTab === 'accessory'"
+            class="w-12 h-12 flex-shrink-0 rounded-lg border border-[var(--color-border)] bg-[var(--color-background-muted)] overflow-hidden">
+            <img *ngIf="asset.imageUrl" [src]="asset.imageUrl" [alt]="getAssetName(asset)"
+              class="w-full h-full object-cover" />
+          </div>
+          <div class="min-w-0">
+            <h3 class="asset-table__name-label font-bold text-[var(--color-text)] text-sm m-0"
+              [attr.title]="getAssetName(asset)">{{ getAssetName(asset) }}</h3>
+            <div class="flex items-center gap-2 mt-1">
+              <span
+                class="text-xs font-mono bg-[var(--color-background-subtle)] px-1.5 py-0.5 rounded text-[var(--color-text-muted)] border border-[var(--color-border-muted)]">
+                {{ asset.itemNo }}
+              </span>
+              <span *ngIf="activeTab !== 'accessory' && asset.nsn" class="text-xs text-[var(--color-text-muted)]">NSN: {{ asset.nsn }}</span>
+            </div>
+            <p *ngIf="activeTab === 'accessory' && asset.nameAr" class="text-xs text-[var(--color-text-muted)] mt-1 text-start">
+              <bdi>{{ asset.nameAr }}</bdi>
+            </p>
           </div>
         </div>
 
@@ -87,7 +114,7 @@
           </span>
         </div>
 
-        <div class="grid grid-cols-2 gap-2 text-xs border-t border-[var(--color-border-muted)] pt-3">
+        <div *ngIf="activeTab !== 'accessory'" class="grid grid-cols-2 gap-2 text-xs border-t border-[var(--color-border-muted)] pt-3">
           <div>
             <span class="text-[var(--color-text-muted)] block mb-0.5">{{ 'assetList.table.minimumQuantity' | translate }}</span>
             <span class="text-[var(--color-text)] font-medium">{{ formatQuantity(asset.minimumQuantity) }}</span>
@@ -105,11 +132,18 @@
             <lucide-angular [img]="Eye" class="h-4 w-4"></lucide-angular>
           </button>
           <ng-container *ngIf="showEditDelete">
-            <button *appHasPermission="PERMISSIONS.ASSETS.AMMUNITION.EDIT" (click)="onEdit(asset.id)"
+            <ng-container *ngIf="activeTab === 'weapon' && weaponsViewMode === 'available'">
+              <button *appHasPermission="PERMISSIONS.ASSETS.WEAPON.EDIT" (click)="onLinkAccessories(asset.id)"
+                class="flex-shrink-0 min-w-[2.75rem] min-h-[2.75rem] flex items-center justify-center p-2 text-[var(--color-brand)] bg-[var(--color-brand)]/10 rounded-lg transition-colors"
+                [title]="'assetList.actions.linkAccessories' | translate">
+                <lucide-angular [img]="Link2" class="h-4 w-4"></lucide-angular>
+              </button>
+            </ng-container>
+            <button *appHasPermission="editPermission" (click)="onEdit(asset.id)"
               class="flex-shrink-0 min-w-[2.75rem] min-h-[2.75rem] flex items-center justify-center p-2 text-[var(--color-info)] bg-[var(--color-info)]/10 rounded-lg transition-colors">
               <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
             </button>
-            <button *appHasPermission="PERMISSIONS.ASSETS.AMMUNITION.DELETE" (click)="onDelete(asset.id)"
+            <button *appHasPermission="deletePermission" (click)="onDelete(asset.id)"
               class="flex-shrink-0 min-w-[2.75rem] min-h-[2.75rem] flex items-center justify-center p-2 text-[var(--color-error)] bg-[var(--color-error)]/10 rounded-lg transition-colors">
               <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
             </button>
@@ -136,9 +170,18 @@
       <table class="w-full asset-table">
         <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
           <tr>
+            <th *ngIf="activeTab === 'accessory'"
+              class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider w-20">
+              {{ 'assetList.table.image' | translate }}
+            </th>
             <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'name', labelKey: 'assetList.table.name' }"></ng-container>
+            <ng-container *ngIf="activeTab === 'accessory'">
+              <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'nameAr', labelKey: 'addAsset.nameArabic' }"></ng-container>
+            </ng-container>
             <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'itemNo', labelKey: 'assetList.table.itemNo' }"></ng-container>
-            <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'nsn', labelKey: 'assetList.table.nsn' }"></ng-container>
+            <ng-container *ngIf="activeTab !== 'accessory'">
+              <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'nsn', labelKey: 'assetList.table.nsn' }"></ng-container>
+            </ng-container>
 
             <ng-container *ngIf="activeTab === 'ammunition'">
               <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'caliber', labelKey: 'addAsset.caliber' }"></ng-container>
@@ -157,8 +200,10 @@
               <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'unNumber', labelKey: 'addAsset.unNumber' }"></ng-container>
             </ng-container>
 
-            <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'minimumQuantity', labelKey: 'assetList.table.minimumQuantity' }"></ng-container>
-            <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'criticalQuantity', labelKey: 'addAsset.criticalQuantity' }"></ng-container>
+            <ng-container *ngIf="activeTab !== 'accessory'">
+              <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'minimumQuantity', labelKey: 'assetList.table.minimumQuantity' }"></ng-container>
+              <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'criticalQuantity', labelKey: 'addAsset.criticalQuantity' }"></ng-container>
+            </ng-container>
             <th class="px-6 py-3 text-end text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
               {{ 'assetList.table.actions' | translate }}
             </th>
@@ -167,14 +212,23 @@
         <tbody class="divide-y divide-[var(--color-border)]">
           <tr *ngFor="let asset of paginatedAssets; trackBy: trackByAssetId"
             class="hover:bg-[var(--color-background-muted)] transition-colors">
+            <td *ngIf="activeTab === 'accessory'" class="px-6 py-4 align-middle">
+              <div class="w-12 h-12 rounded-lg border border-[var(--color-border)] bg-[var(--color-background-muted)] overflow-hidden">
+                <img *ngIf="asset.imageUrl" [src]="asset.imageUrl" [alt]="getAssetName(asset)"
+                  class="w-full h-full object-cover" />
+              </div>
+            </td>
             <td class="asset-table__name-col px-6 py-4 align-top">
               <div class="asset-table__cell-wrap font-medium text-[var(--color-text)] min-w-0"
                 [attr.title]="getAssetName(asset)">{{ getAssetName(asset) }}</div>
             </td>
+            <td *ngIf="activeTab === 'accessory'" class="px-6 py-4">
+              <div class="text-sm text-[var(--color-text)] text-start"><bdi>{{ asset.nameAr || '-' }}</bdi></div>
+            </td>
             <td class="px-6 py-4">
               <div class="text-sm text-[var(--color-text)]">{{ asset.itemNo }}</div>
             </td>
-            <td class="px-6 py-4">
+            <td *ngIf="activeTab !== 'accessory'" class="px-6 py-4">
               <div class="text-sm text-[var(--color-text)]">{{ asset.nsn || '-' }}</div>
             </td>
 
@@ -205,10 +259,10 @@
               <div class="text-sm text-[var(--color-text)]">{{ asset.unNumber || '-' }}</div>
             </td>
 
-            <td class="px-6 py-4">
+            <td *ngIf="activeTab !== 'accessory'" class="px-6 py-4">
               <div class="text-sm text-[var(--color-text)]">{{ formatQuantity(asset.minimumQuantity) }}</div>
             </td>
-            <td class="px-6 py-4">
+            <td *ngIf="activeTab !== 'accessory'" class="px-6 py-4">
               <div class="text-sm text-[var(--color-text)]">{{ formatQuantity(asset.criticalQuantity) }}</div>
             </td>
             <td class="px-6 py-4 text-end align-middle">
@@ -221,12 +275,19 @@
                 </button>
 
                 <ng-container *ngIf="showEditDelete">
-                  <button *appHasPermission="PERMISSIONS.ASSETS.AMMUNITION.EDIT" (click)="onEdit(asset.id)"
+                  <ng-container *ngIf="activeTab === 'weapon' && weaponsViewMode === 'available'">
+                    <button *appHasPermission="PERMISSIONS.ASSETS.WEAPON.EDIT" (click)="onLinkAccessories(asset.id)"
+                      class="p-2 rounded-lg text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 transition-colors group"
+                      [title]="'assetList.actions.linkAccessories' | translate">
+                      <lucide-angular [img]="Link2" class="h-4 w-4"></lucide-angular>
+                    </button>
+                  </ng-container>
+                  <button *appHasPermission="editPermission" (click)="onEdit(asset.id)"
                     class="p-2 rounded-lg text-[var(--color-info)] hover:bg-[var(--color-info)]/10 transition-colors"
                     [title]="'common.edit' | translate">
                     <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
                   </button>
-                  <button *appHasPermission="PERMISSIONS.ASSETS.AMMUNITION.DELETE" (click)="onDelete(asset.id)"
+                  <button *appHasPermission="deletePermission" (click)="onDelete(asset.id)"
                     class="p-2 text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-lg transition-colors group"
                     [title]="'common.delete' | translate">
                     <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>

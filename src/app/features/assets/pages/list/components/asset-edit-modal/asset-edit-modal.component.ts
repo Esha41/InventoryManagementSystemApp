@@ -9,6 +9,7 @@ import { AssetType, AssetImageState, Asset } from '@models/asset-list.model';
 import { AmmunitionReadDto, AmmunitionCreateDto } from '@models/ammunition.model';
 import { WeaponDto, CreateUpdateWeaponDto } from '@models/weapon.model';
 import { ExplosiveDto, CreateUpdateExplosiveDto } from '@models/explosive.model';
+import { AccessoryDto, CreateUpdateAccessoryDto } from '@models/accessory.model';
 import { LookupItem } from '@models/lookup.model';
 import { ItemType } from '@models/inventory.model';
 import { createAssetEditForm } from '@utils/asset-list-form.utils';
@@ -61,7 +62,7 @@ function caliberClassApiToFormSelectValue(value: unknown): string {
 export class AssetEditModalComponent implements OnInit, OnChanges {
   @Input() isOpen = false;
   @Input() activeTab: AssetType = 'ammunition';
-  @Input() selectedAsset: Asset | AmmunitionReadDto | WeaponDto | ExplosiveDto | null = null;
+  @Input() selectedAsset: Asset | AmmunitionReadDto | WeaponDto | ExplosiveDto | AccessoryDto | null = null;
   @Input() loading = false;
   @Input() units: LookupItem[] = [];
   @Input() caseTypeList: LookupItem[] = [];
@@ -80,7 +81,7 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
   @Input() imageState: AssetImageState = createInitialImageState();
 
   @Output() closed = new EventEmitter<void>();
-  @Output() saved = new EventEmitter<{ dto: AmmunitionCreateDto | CreateUpdateWeaponDto | CreateUpdateExplosiveDto; imageFile: File | null; imageFileId: number | null; removeImageRequested: boolean }>();
+  @Output() saved = new EventEmitter<{ dto: AmmunitionCreateDto | CreateUpdateWeaponDto | CreateUpdateExplosiveDto | CreateUpdateAccessoryDto; imageFile: File | null; imageFileId: number | null; removeImageRequested: boolean }>();
   @Output() imageFileSelected = new EventEmitter<File>();
   @Output() imageDropped = new EventEmitter<File>();
 
@@ -153,8 +154,8 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
       const srcAny = source as { nameAr?: string | null; nameAR?: string | null };
       const nameArVal = (srcAny.nameAr ?? srcAny.nameAR ?? '').toString();
       this.editForm.patchValue({ nameAr: nameArVal }, { emitEvent: false });
-      if ((this.activeTab === 'ammunition' || this.activeTab === 'explosive' || this.activeTab === 'weapon') && source) {
-        const catalog = source as AmmunitionReadDto | ExplosiveDto | WeaponDto;
+      if ((this.activeTab === 'ammunition' || this.activeTab === 'explosive' || this.activeTab === 'weapon' || this.activeTab === 'accessory') && source) {
+        const catalog = source as AmmunitionReadDto | ExplosiveDto | WeaponDto | AccessoryDto;
         const fromList = catalog.primaryPurposes?.map(p => p.id).filter((id): id is number => id != null);
         const ids =
           fromList && fromList.length > 0
@@ -225,7 +226,7 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
       delete formData['nameAr'];
     }
 
-    let dto: AmmunitionCreateDto | CreateUpdateWeaponDto | CreateUpdateExplosiveDto;
+    let dto: AmmunitionCreateDto | CreateUpdateWeaponDto | CreateUpdateExplosiveDto | CreateUpdateAccessoryDto;
 
     if (this.activeTab === 'ammunition') {
       const raw = formData as Record<string, unknown>;
@@ -271,6 +272,15 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
         raw['caliberId'] = parseInt(cid, 10);
       }
       dto = raw as unknown as CreateUpdateWeaponDto;
+    } else if (this.activeTab === 'accessory') {
+      const accessoryDto: CreateUpdateAccessoryDto = {
+        name: String(formData['name'] ?? '').trim(),
+        itemNo: String(formData['itemNo'] ?? '').trim()
+      };
+      if (nameArTrimmed) {
+        accessoryDto.nameAr = nameArTrimmed;
+      }
+      dto = accessoryDto;
     } else {
       const raw = formData as Record<string, unknown>;
       delete raw['ammunitionType'];
@@ -389,4 +399,5 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
   get explosiveItemTypes(): LookupItem[] {
     return this.getFilteredItemTypes(ItemType.Explosive);
   }
+
 }

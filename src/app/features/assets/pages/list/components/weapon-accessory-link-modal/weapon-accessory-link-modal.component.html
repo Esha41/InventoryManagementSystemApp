@@ -1,0 +1,128 @@
+<div *ngIf="isOpen" class="fixed inset-0 z-50 overflow-y-auto">
+  <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+    <div class="fixed inset-0 z-0 transition-opacity bg-black/60 backdrop-blur-sm" (click)="close()"></div>
+    <div
+      class="relative z-10 inline-block align-bottom bg-[var(--color-background)] rounded-xl text-start overflow-hidden shadow-custom-xl sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+      <div class="bg-[var(--color-background)] px-6 py-4 border-b border-[var(--color-border)]">
+        <div class="flex items-center justify-between gap-4">
+          <div class="min-w-0">
+            <h3 class="text-xl font-semibold text-[var(--color-text)]">
+              {{ 'assetList.weaponAccessoryLink.title' | translate }}
+            </h3>
+            <p *ngIf="weaponName" class="text-sm text-[var(--color-text-muted)] mt-1 truncate">{{ weaponName }}</p>
+          </div>
+          <button type="button" (click)="close()"
+            class="p-1 rounded-lg hover:bg-[var(--color-background-hover)] transition-colors">
+            <lucide-angular [img]="X" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+          </button>
+        </div>
+      </div>
+
+      <div class="px-6 py-4">
+        <p class="text-sm text-[var(--color-text-muted)] mb-4">
+          {{ 'assetList.weaponAccessoryLink.description' | translate }}
+        </p>
+
+        <app-loading-state *ngIf="loading" message="assetList.weaponAccessoryLink.loading" size="sm"
+          containerClass="text-center py-8">
+        </app-loading-state>
+
+        <ng-container *ngIf="!loading">
+          <!-- Add accessory row -->
+          <div class="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-3 items-end mb-6">
+            <div class="min-w-0">
+              <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
+                {{ 'assetList.weaponAccessoryLink.selectAccessory' | translate }}
+              </span>
+              <app-dropdown class="w-full" [(ngModel)]="selectedAccessoryId" [options]="accessoryDropdownOptions"
+                optionLabel="label" optionValue="value" [placeholderSelectable]="false" [placeholderValue]="null"
+                [disabled]="accessoryDropdownOptions.length === 0"
+                [placeholder]="'assetList.weaponAccessoryLink.selectAccessoryPlaceholder' | translate"
+                [noDataText]="'assetList.weaponAccessoryLink.noAccessoriesAvailable' | translate">
+              </app-dropdown>
+            </div>
+
+            <div class="w-full sm:w-28">
+              <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="weapon-accessory-add-qty">
+                {{ 'assetList.weaponAccessoryLink.defaultQuantity' | translate }}
+              </label>
+              <input id="weapon-accessory-add-qty" type="number" min="1" step="1"
+                [ngModel]="addQuantity" (ngModelChange)="onAddQuantityChange($event)"
+                [attr.aria-label]="'assetList.weaponAccessoryLink.defaultQuantity' | translate"
+                [title]="'assetList.weaponAccessoryLink.defaultQuantityHint' | translate"
+                class="w-full px-3 py-2.5 border border-[var(--color-border)] rounded-lg text-end bg-[var(--color-background)] text-sm text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none" />
+            </div>
+
+            <app-button variant="primary" type="button" class="w-full sm:w-auto"
+              [disabled]="!selectedAccessoryId || accessoryDropdownOptions.length === 0"
+              (click)="addAccessory()">
+              <span class="inline-flex items-center gap-2">
+                <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
+                {{ 'assetList.weaponAccessoryLink.addAccessory' | translate }}
+              </span>
+            </app-button>
+          </div>
+
+          <!-- Linked accessories list -->
+          <div class="border border-[var(--color-border)] rounded-lg overflow-hidden">
+            <div class="px-4 py-3 bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
+              <h4 class="text-sm font-semibold text-[var(--color-text)]">
+                {{ 'assetList.weaponAccessoryLink.linkedAccessories' | translate }}
+                <span class="text-[var(--color-text-muted)] font-normal">({{ linkedCount }})</span>
+              </h4>
+            </div>
+
+            <div *ngIf="linkedItems.length === 0" class="px-4 py-8 text-center text-sm text-[var(--color-text-muted)]">
+              {{ 'assetList.weaponAccessoryLink.noLinkedAccessories' | translate }}
+            </div>
+
+            <table *ngIf="linkedItems.length > 0" class="w-full text-sm">
+              <thead class="bg-[var(--color-background-muted)]">
+                <tr>
+                  <th class="px-4 py-3 text-start font-semibold text-[var(--color-text)]">
+                    {{ 'assetList.table.itemNo' | translate }}
+                  </th>
+                  <th class="px-4 py-3 text-start font-semibold text-[var(--color-text)]">
+                    {{ 'assetList.table.name' | translate }}
+                  </th>
+                  <th class="px-4 py-3 text-end font-semibold text-[var(--color-text)] w-32"
+                    [title]="'assetList.weaponAccessoryLink.defaultQuantityHint' | translate">
+                    {{ 'assetList.weaponAccessoryLink.defaultQuantity' | translate }}
+                  </th>
+                  <th class="px-4 py-3 w-12"></th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[var(--color-border)]">
+                <tr *ngFor="let row of linkedItems" class="hover:bg-[var(--color-background-muted)]">
+                  <td class="px-4 py-3 font-mono text-[var(--color-text)]">{{ row.itemNo }}</td>
+                  <td class="px-4 py-3 text-[var(--color-text)]">{{ row.name }}</td>
+                  <td class="px-4 py-3 text-end">
+                    <input type="number" min="1" step="1"
+                      [ngModel]="row.defaultQuantity" (ngModelChange)="onLinkedQuantityChange(row, $event)"
+                      [attr.aria-label]="'assetList.weaponAccessoryLink.defaultQuantity' | translate"
+                      class="w-24 px-2 py-1.5 border border-[var(--color-border)] rounded-lg text-end bg-[var(--color-background)]" />
+                  </td>
+                  <td class="px-4 py-3 text-end">
+                    <button type="button" (click)="removeAccessory(row.accessoryId)"
+                      class="p-2 rounded-lg text-[var(--color-error)] hover:bg-[var(--color-error)]/10 transition-colors"
+                      [title]="'common.delete' | translate">
+                      <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+      </div>
+
+      <div class="bg-[var(--color-background)] px-6 py-4 border-t border-[var(--color-border)] flex justify-end gap-3">
+        <app-button variant="outline" type="button" (click)="close()">{{ 'common.cancel' | translate }}</app-button>
+        <app-button variant="primary" type="button" [disabled]="loading || saving" (click)="save()">
+          {{ saving ? ('common.saving' | translate) : ('common.save' | translate) }}
+        </app-button>
+      </div>
+    </div>
+  </div>
+</div>
+

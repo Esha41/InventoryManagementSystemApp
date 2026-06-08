@@ -12,6 +12,7 @@ import { AmmunitionService } from '@assets/services/ammunition.service';
 import { FileUploadService } from '@services/file-upload.service';
 import { WeaponService } from '@assets/services/weapon.service';
 import { ExplosiveService } from '@assets/services/explosive.service';
+import { AccessoryService } from '@assets/services/accessory.service';
 
 export interface ImageLoadResult {
   assetId: string;
@@ -27,7 +28,8 @@ export class AssetImageService {
   constructor(
     private ammunitionService: AmmunitionService,
     private weaponService: WeaponService,
-    private explosiveService: ExplosiveService
+    private explosiveService: ExplosiveService,
+    private accessoryService: AccessoryService
   ) { }
 
   /**
@@ -58,6 +60,8 @@ export class AssetImageService {
           fileBlob$ = this.weaponService.getFileBlob(image.id);
         } else if (activeTab === 'explosive') {
           fileBlob$ = this.explosiveService.getFileBlob(image.id);
+        } else if (activeTab === 'accessory') {
+          fileBlob$ = this.accessoryService.getFileBlob(image.id);
         } else {
           return null;
         }
@@ -103,6 +107,8 @@ export class AssetImageService {
       entityType = FileEntityType.Weapon;
     } else if (activeTab === 'explosive') {
       entityType = FileEntityType.Explosive;
+    } else if (activeTab === 'accessory') {
+      entityType = FileEntityType.Accessory;
     } else {
       if (callback) callback();
       return of({ fileId: null, url: null });
@@ -151,7 +157,7 @@ export class AssetImageService {
   /**
    * Get the appropriate service for the active tab
    */
-  private getServiceForTab(activeTab: AssetType): AmmunitionService | WeaponService | ExplosiveService {
+  private getServiceForTab(activeTab: AssetType): AmmunitionService | WeaponService | ExplosiveService | AccessoryService {
     switch (activeTab) {
       case 'ammunition':
         return this.ammunitionService;
@@ -159,6 +165,8 @@ export class AssetImageService {
         return this.weaponService;
       case 'explosive':
         return this.explosiveService;
+      case 'accessory':
+        return this.accessoryService;
       default:
         return this.ammunitionService;
     }

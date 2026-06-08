@@ -39,6 +39,29 @@ export class AssetExportService {
    * Build export columns based on active tab
    */
   private buildExportColumns(activeTab: AssetType): ExcelColumn[] {
+    if (activeTab === 'accessory') {
+      return [
+        {
+          header: this.translateService.instant('addAsset.nameEnglish'),
+          key: 'name',
+          width: 30,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: this.translateService.instant('addAsset.nameArabic'),
+          key: 'nameAr',
+          width: 30,
+          format: (value: string) => value || '-'
+        },
+        {
+          header: this.translateService.instant('assetList.table.itemNo'),
+          key: 'itemNo',
+          width: 15,
+          format: (value: string) => value || '-'
+        }
+      ];
+    }
+
     const columns: ExcelColumn[] = [
       {
         header: this.translateService.instant('addAsset.nameEnglish'),
@@ -150,7 +173,6 @@ export class AssetExportService {
       );
     }
 
-    // Add common columns
     columns.push(
       {
         header: this.translateService.instant('assetList.table.price'),
@@ -271,6 +293,25 @@ export class AssetExportService {
           overallLength: 33,
           weight: 6.9,
           capacity: 30
+        }
+      ];
+    } else if (activeTab === 'accessory') {
+      headers = [
+        { header: 'Name', key: 'name' },
+        { header: 'Name (Arabic)', key: 'nameAr' },
+        { header: 'Item No', key: 'itemNo' }
+      ];
+
+      sampleData = [
+        {
+          name: 'Rifle Scope',
+          nameAr: 'منظار بندقية',
+          itemNo: 'ACC-001'
+        },
+        {
+          name: 'Tactical Flashlight',
+          nameAr: 'مصباح تكتيكي',
+          itemNo: 'ACC-002'
         }
       ];
     } else if (activeTab === 'explosive') {

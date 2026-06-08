@@ -26,6 +26,7 @@
           <span *ngIf="activeTab === 'ammunition'">{{ 'assetList.addAmmunition' | translate }}</span>
           <span *ngIf="activeTab === 'weapon'">{{ 'assetList.addWeapon' | translate }}</span>
           <span *ngIf="activeTab === 'explosive'">{{ 'assetList.addExplosive' | translate }}</span>
+          <span *ngIf="activeTab === 'accessory'">{{ 'assetList.addAccessory' | translate }}</span>
         </span>
       </app-button>
   </div>
@@ -57,6 +58,14 @@
         class="asset-tab flex items-center gap-2 px-3 sm:px-5 py-2.5 sm:py-3 min-h-[2.75rem] rounded-lg font-semibold text-sm transition-all duration-200 flex-shrink-0 whitespace-nowrap"
       >
         <span>{{ 'assetList.tabs.weapon' | translate }}</span>
+      </button>
+      <button type="button" *appHasPermission="tabPermsAccessory" appPermissionMode="any" (click)="onTabClick('accessory')" [ngClass]="{
+        'bg-[var(--color-brand)] text-white shadow-md': activeTab === 'accessory',
+        'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)] border-2 border-[var(--color-border)]': activeTab !== 'accessory'
+      }"
+        class="asset-tab flex items-center gap-2 px-3 sm:px-5 py-2.5 sm:py-3 min-h-[2.75rem] rounded-lg font-semibold text-sm transition-all duration-200 flex-shrink-0 whitespace-nowrap"
+      >
+        <span>{{ 'assetList.tabs.accessory' | translate }}</span>
       </button>
     </nav>
   </div>

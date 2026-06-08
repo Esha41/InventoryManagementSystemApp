@@ -20,10 +20,12 @@ import { CreateUpdateExplosiveDto } from '@models/explosive.model';
 import { AmmunitionReadDto } from '@models/ammunition.model';
 import { WeaponDto } from '@models/weapon.model';
 import { ExplosiveDto } from '@models/explosive.model';
+import { CreateUpdateAccessoryDto } from '@models/accessory.model';
+import { AccessoryDto } from '@models/accessory.model';
 import { ErrorHandler } from '@utils/error-handler.utils';
 
 export interface EditSaveEvent {
-  dto: AmmunitionCreateDto | CreateUpdateWeaponDto | CreateUpdateExplosiveDto;
+  dto: AmmunitionCreateDto | CreateUpdateWeaponDto | CreateUpdateExplosiveDto | CreateUpdateAccessoryDto;
   imageFile: File | null;
   imageFileId: number | null;
   removeImageRequested: boolean;
@@ -67,7 +69,7 @@ export class AssetListCrudHandlerService {
     service.getById(numericId)
       .pipe(takeUntil(destroy$))
       .subscribe({
-        next: (data: AmmunitionReadDto | WeaponDto | ExplosiveDto) => {
+        next: (data: AmmunitionReadDto | WeaponDto | ExplosiveDto | AccessoryDto) => {
           const newModalState = { ...modalState, selectedAsset: data };
           setModalState(newModalState);
 
