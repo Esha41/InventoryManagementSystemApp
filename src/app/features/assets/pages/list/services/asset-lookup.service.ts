@@ -54,6 +54,8 @@ export class AssetLookupService {
       itemType = ItemType.Weapon;
     } else if (tab === 'explosive') {
       itemType = ItemType.Explosive;
+    } else if (tab === 'accessory') {
+      itemType = ItemType.Accessory;
     }
     return this.lookupService.getUnitsByItemType(itemType);
   }
@@ -80,7 +82,6 @@ export class AssetLookupService {
       lookups.hazardDivisions,
       lookups.compatibilities
     );
-
     return {
       caseType: ammoOptions.caseType,
       primaryPurpose: ammoOptions.primaryPurpose,

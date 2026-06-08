@@ -27,6 +27,8 @@ import { ImportPreviewDialogComponent, PreviewData } from '@components/import-pr
 import { AmmunitionService } from '@assets/services/ammunition.service';
 import { WeaponService } from '@assets/services/weapon.service';
 import { ExplosiveService } from '@assets/services/explosive.service';
+import { AccessoryService } from '@assets/services/accessory.service';
+import { WeaponAccessoryLinkModalComponent } from './components/weapon-accessory-link-modal/weapon-accessory-link-modal.component';
 import { ImportExportService } from '@admin/services/import-export.service';
 import { ToastService } from '@services/toast.service';
 import { IImportableService } from '@core/interfaces/importable-service.interface';
@@ -53,7 +55,8 @@ import { BackendAuthService } from '@services/backend-auth.service';
     AssetTableComponent,
     AssetListHeaderComponent,
     ImportDialogComponent,
-    ImportPreviewDialogComponent
+    ImportPreviewDialogComponent,
+    WeaponAccessoryLinkModalComponent
   ],
   templateUrl: './asset-list.component.html',
   styleUrls: ['./asset-list.component.css'],
@@ -69,6 +72,10 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
   isPreviewInProgress = false;
   isImportInProgress = false;
 
+  showWeaponAccessoryLinkModal = false;
+  weaponAccessoryLinkWeaponId: number | null = null;
+  weaponAccessoryLinkWeaponName = '';
+
   constructor(
     readonly facade: AssetListFacade,
     private readonly crudHandler: AssetListCrudHandlerService,
@@ -80,6 +87,7 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
     private readonly ammunitionService: AmmunitionService,
     private readonly weaponService: WeaponService,
     private readonly explosiveService: ExplosiveService,
+    private readonly accessoryService: AccessoryService,
     private readonly importExportService: ImportExportService,
     private readonly toastService: ToastService,
     private readonly propertyAccessor: AssetPropertyAccessor,
@@ -109,6 +117,7 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
   get ammunitionViewMode() { return this.facade.ammunitionViewMode; }
   get explosivesViewMode() { return this.facade.explosivesViewMode; }
   get weaponsViewMode() { return this.facade.weaponsViewMode; }
+  get accessoriesViewMode() { return this.facade.accessoriesViewMode; }
   get filterState() { return this.facade.filterState; }
   get filterOptions() { return this.facade.filterOptions; }
   get assets() { return this.facade.assets; }
@@ -192,6 +201,31 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
     this.facade.switchViewMode(mode, 'weapon');
   }
 
+  switchAccessoriesViewMode(mode: 'available' | 'deleted'): void {
+    this.facade.switchViewMode(mode, 'accessory');
+  }
+
+  onLinkAccessories(assetId: string): void {
+    const asset = this.facade.assets.find(a => a.id === assetId);
+    const numericId = parseInt(assetId, 10);
+    if (!asset || isNaN(numericId)) return;
+    this.weaponAccessoryLinkWeaponId = numericId;
+    this.weaponAccessoryLinkWeaponName = this.getAssetName(asset);
+    this.showWeaponAccessoryLinkModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeWeaponAccessoryLinkModal(): void {
+    this.showWeaponAccessoryLinkModal = false;
+    this.weaponAccessoryLinkWeaponId = null;
+    this.weaponAccessoryLinkWeaponName = '';
+    this.cdr.markForCheck();
+  }
+
+  onWeaponAccessoryLinkSaved(): void {
+    this.closeWeaponAccessoryLinkModal();
+  }
+
   onFilterChange(): void {
     this.facade.onFilterChange();
   }
@@ -243,6 +277,10 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.facade.activeTab === 'weapon' && this.facade.weaponsViewMode === 'deleted') {
       queryParams['includeDeleted'] = 'true';
       queryParams['weaponsView'] = 'deleted';
+    }
+    if (this.facade.activeTab === 'accessory' && this.facade.accessoriesViewMode === 'deleted') {
+      queryParams['includeDeleted'] = 'true';
+      queryParams['accessoriesView'] = 'deleted';
     }
     this.router.navigate(['/assets/asset-list', numericId], { queryParams });
   }
@@ -564,6 +602,8 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
         return this.weaponService;
       case 'explosive':
         return this.explosiveService;
+      case 'accessory':
+        return this.accessoryService;
       default:
         return this.ammunitionService;
     }

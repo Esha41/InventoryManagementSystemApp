@@ -10,6 +10,7 @@ import { AssetService } from '@assets/services/asset.service';
 import { AmmunitionService } from '@assets/services/ammunition.service';
 import { WeaponService } from '@assets/services/weapon.service';
 import { ExplosiveService } from '@assets/services/explosive.service';
+import { AccessoryService } from '@assets/services/accessory.service';
 import { PaginatedList, PagedRequest, FilterData } from '@models/api-response.model';
 import {
   Asset,
@@ -25,7 +26,8 @@ import { ExplosiveDto } from '@models/explosive.model';
 import {
   mapAmmunitionArrayToAssets,
   mapWeaponArrayToAssets,
-  mapExplosiveArrayToAssets
+  mapExplosiveArrayToAssets,
+  mapAccessoryArrayToAssets
 } from '@utils/asset-list.mapper';
 import { assetMatchesCatalogPrimaryPurpose } from '@utils/asset-list.utils';
 import { TranslateService } from '@ngx-translate/core';
@@ -161,6 +163,22 @@ function appendExplosiveColumnFilters(filters: FilterData[], cf: AssetColumnFilt
   appendContainsFilter(filters, 'UNNumber', cf.unNumber);
 }
 
+/** Build OR filter for accessory search */
+function buildAccessorySearchFilters(searchTerm: string): FilterData {
+  const term = searchTerm.trim();
+  const filters: FilterData[] = [
+    { field: 'Name', operator: 'contains', value: term },
+    { field: 'NameAr', operator: 'contains', value: term },
+    { field: 'ItemNo', operator: 'contains', value: term }
+  ];
+  return { logic: 'or', filters };
+}
+
+function appendAccessoryColumnFilters(filters: FilterData[], cf: AssetColumnFilters): void {
+  appendContainsFilter(filters, 'Name', cf.name);
+  appendContainsFilter(filters, 'ItemNo', cf.itemNo);
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -170,6 +188,7 @@ export class AssetListService {
     private ammunitionService: AmmunitionService,
     private weaponService: WeaponService,
     private explosiveService: ExplosiveService,
+    private accessoryService: AccessoryService,
     private translateService: TranslateService
   ) { }
 
@@ -178,6 +197,7 @@ export class AssetListService {
    * @param ammunitionDeletedOnly When activeTab is 'ammunition' and true, returns items where IsDeleted = true
    * @param explosivesDeletedOnly When activeTab is 'explosive' and true, returns items where IsDeleted = true
    * @param weaponsDeletedOnly When activeTab is 'weapon' and true, returns items where IsDeleted = true
+   * @param accessoriesDeletedOnly When activeTab is 'accessory' and true, returns items where IsDeleted = true
    */
   getAssets(
     activeTab: AssetType,
@@ -187,7 +207,8 @@ export class AssetListService {
     sortState: AssetSortState,
     ammunitionDeletedOnly?: boolean,
     explosivesDeletedOnly?: boolean,
-    weaponsDeletedOnly?: boolean
+    weaponsDeletedOnly?: boolean,
+    accessoriesDeletedOnly?: boolean
   ): Observable<PaginatedList<Asset>> {
     if (activeTab === 'weapon') {
       return this.getWeaponsPaginated(page, pageSize, filterState, sortState, weaponsDeletedOnly);
@@ -195,6 +216,8 @@ export class AssetListService {
       return this.getAmmunitionPaginated(page, pageSize, filterState, sortState, ammunitionDeletedOnly);
     } else if (activeTab === 'explosive') {
       return this.getExplosivePaginated(page, pageSize, filterState, sortState, explosivesDeletedOnly);
+    } else if (activeTab === 'accessory') {
+      return this.getAccessoryPaginated(page, pageSize, filterState, sortState, accessoriesDeletedOnly);
     }
     
     return this.getAmmunitionPaginated(page, pageSize, filterState, sortState, ammunitionDeletedOnly);
@@ -205,6 +228,7 @@ export class AssetListService {
    * @param ammunitionDeletedOnly When activeTab is 'ammunition' and true, exports items where IsDeleted = true
    * @param explosivesDeletedOnly When activeTab is 'explosive' and true, exports items where IsDeleted = true
    * @param weaponsDeletedOnly When activeTab is 'weapon' and true, exports items where IsDeleted = true
+   * @param accessoriesDeletedOnly When activeTab is 'accessory' and true, exports items where IsDeleted = true
    */
   getAllFilteredAssetsForExport(
     activeTab: AssetType,
@@ -212,7 +236,8 @@ export class AssetListService {
     sortState: AssetSortState,
     ammunitionDeletedOnly?: boolean,
     explosivesDeletedOnly?: boolean,
-    weaponsDeletedOnly?: boolean
+    weaponsDeletedOnly?: boolean,
+    accessoriesDeletedOnly?: boolean
   ): Observable<Asset[]> {
     if (activeTab === 'weapon') {
       return this.getAllWeaponsForExport(filterState, sortState, weaponsDeletedOnly);
@@ -220,6 +245,8 @@ export class AssetListService {
       return this.getAllAmmunitionForExport(filterState, sortState, ammunitionDeletedOnly);
     } else if (activeTab === 'explosive') {
       return this.getAllExplosiveForExport(filterState, sortState, explosivesDeletedOnly);
+    } else if (activeTab === 'accessory') {
+      return this.getAllAccessoryForExport(filterState, sortState, accessoriesDeletedOnly);
     }
     
     return this.getAllAmmunitionForExport(filterState, sortState, ammunitionDeletedOnly);
@@ -706,6 +733,77 @@ export class AssetListService {
 
     return this.ammunitionService.getAllPaginated(request).pipe(
       map(paginatedData => mapAmmunitionArrayToAssets(paginatedData.items, this.translateService))
+    );
+  }
+
+  private buildAccessoryPagedRequest(
+    page: number,
+    pageSize: number,
+    filterState: AssetFilterState,
+    sortState: AssetSortState,
+    deletedOnly?: boolean
+  ): PagedRequest {
+    const filters: FilterData[] = [];
+
+    if (filterState.searchTerm && filterState.searchTerm.trim()) {
+      filters.push(buildAccessorySearchFilters(filterState.searchTerm));
+    }
+
+    appendAccessoryColumnFilters(filters, filterState.columnFilters ?? createEmptyColumnFilters());
+
+    let sortField: string | undefined;
+    let sortDirection: number | undefined;
+
+    if (sortState.column) {
+      const fieldMap: Record<string, string> = {
+        name: 'Name',
+        nameAr: 'NameAr',
+        itemNo: 'ItemNo'
+      };
+
+      sortField = fieldMap[sortState.column] || sortState.column;
+      sortDirection = sortState.direction === 'asc' ? 1 : 2;
+    }
+
+    return {
+      page,
+      pageSize,
+      ...(deletedOnly === true && { deletedOnly: true }),
+      filter: filters.length > 0 || sortField
+        ? {
+            ...(filters.length > 0 && { logic: 'and', filters }),
+            ...(sortField && { sortField, sortDirection })
+          }
+        : undefined
+    };
+  }
+
+  private getAccessoryPaginated(
+    page: number,
+    pageSize: number,
+    filterState: AssetFilterState,
+    sortState: AssetSortState,
+    deletedOnly?: boolean
+  ): Observable<PaginatedList<Asset>> {
+    const request = this.buildAccessoryPagedRequest(page, pageSize, filterState, sortState, deletedOnly);
+
+    return this.accessoryService.getAllPaginated(request).pipe(
+      map(paginatedData => ({
+        ...paginatedData,
+        items: mapAccessoryArrayToAssets(paginatedData.items, this.translateService)
+      }))
+    );
+  }
+
+  private getAllAccessoryForExport(
+    filterState: AssetFilterState,
+    sortState: AssetSortState,
+    deletedOnly?: boolean
+  ): Observable<Asset[]> {
+    const request = this.buildAccessoryPagedRequest(1, 10000, filterState, sortState, deletedOnly);
+
+    return this.accessoryService.getAllPaginated(request).pipe(
+      map(paginatedData => mapAccessoryArrayToAssets(paginatedData.items, this.translateService))
     );
   }
 

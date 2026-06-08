@@ -8,7 +8,7 @@ import { PERMISSIONS } from '@constants/permissions.constants';
 
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule, Eye, Edit, Trash2, RotateCcw, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-angular';
+import { LucideAngularModule, Eye, Edit, Trash2, RotateCcw, ArrowUp, ArrowDown, ArrowUpDown, Link2 } from 'lucide-angular';
 import { CardComponent } from '@components/card/card.component';
 import { LoadingStateComponent } from '@components/loading-state/loading-state.component';
 import { PaginationComponent } from '@components/pagination/pagination.component';
@@ -52,6 +52,7 @@ export class AssetTableComponent implements OnInit, OnDestroy {
   @Input() ammunitionViewMode: 'available' | 'deleted' = 'available';
   @Input() explosivesViewMode: 'available' | 'deleted' = 'available';
   @Input() weaponsViewMode: 'available' | 'deleted' = 'available';
+  @Input() accessoriesViewMode: 'available' | 'deleted' = 'available';
   /** When false, hides Edit and Delete action buttons (e.g. when viewing deleted ammunition) */
   @Input() showEditDelete = true;
   /** When true, shows Restore action button (e.g. when viewing deleted ammunition) */
@@ -71,6 +72,8 @@ export class AssetTableComponent implements OnInit, OnDestroy {
   @Output() ammunitionViewModeChange = new EventEmitter<'available' | 'deleted'>();
   @Output() explosivesViewModeChange = new EventEmitter<'available' | 'deleted'>();
   @Output() weaponsViewModeChange = new EventEmitter<'available' | 'deleted'>();
+  @Output() accessoriesViewModeChange = new EventEmitter<'available' | 'deleted'>();
+  @Output() linkAccessories = new EventEmitter<string>();
 
   constructor(
     private readonly translate: TranslateService,
@@ -95,6 +98,25 @@ export class AssetTableComponent implements OnInit, OnDestroy {
   readonly ArrowUp = ArrowUp;
   readonly ArrowDown = ArrowDown;
   readonly ArrowUpDown = ArrowUpDown;
+  readonly Link2 = Link2;
+
+  get editPermission(): string {
+    switch (this.activeTab) {
+      case 'weapon': return PERMISSIONS.ASSETS.WEAPON.EDIT;
+      case 'explosive': return PERMISSIONS.ASSETS.EXPLOSIVE.EDIT;
+      case 'accessory': return PERMISSIONS.ASSETS.ACCESSORY.EDIT;
+      default: return PERMISSIONS.ASSETS.AMMUNITION.EDIT;
+    }
+  }
+
+  get deletePermission(): string {
+    switch (this.activeTab) {
+      case 'weapon': return PERMISSIONS.ASSETS.WEAPON.DELETE;
+      case 'explosive': return PERMISSIONS.ASSETS.EXPLOSIVE.DELETE;
+      case 'accessory': return PERMISSIONS.ASSETS.ACCESSORY.DELETE;
+      default: return PERMISSIONS.ASSETS.AMMUNITION.DELETE;
+    }
+  }
 
   get filteredAssets(): Asset[] {
     return this.assets;
@@ -119,6 +141,8 @@ export class AssetTableComponent implements OnInit, OnDestroy {
         return base + 3 + tail; // weaponType, primaryPurpose, caliber
       case 'explosive':
         return base + 3 + tail; // armNumber, primaryPurpose, unNumber
+      case 'accessory':
+        return 5; // image, name, nameAr, itemNo, actions
       default:
         return base + tail;
     }
@@ -170,5 +194,13 @@ export class AssetTableComponent implements OnInit, OnDestroy {
 
   onWeaponsViewModeChange(mode: 'available' | 'deleted'): void {
     this.weaponsViewModeChange.emit(mode);
+  }
+
+  onAccessoriesViewModeChange(mode: 'available' | 'deleted'): void {
+    this.accessoriesViewModeChange.emit(mode);
+  }
+
+  onLinkAccessories(assetId: string): void {
+    this.linkAccessories.emit(assetId);
   }
 }

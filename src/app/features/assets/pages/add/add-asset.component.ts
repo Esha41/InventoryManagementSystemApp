@@ -17,6 +17,7 @@ import { AmmunitionCreateDto, AmmunitionReadDto } from '@models/ammunition.model
 import { WeaponDto, CreateUpdateWeaponDto } from '@models/weapon.model';
 import { ExplosiveDto, CreateUpdateExplosiveDto } from '@models/explosive.model';
 import { AccessoryDto, CreateUpdateAccessoryDto } from '@models/accessory.model';
+import { AccessoryService } from '@assets/services/accessory.service';
 import { ApiService } from '@services/api.service';
 import { DropdownOption, DropdownComponent } from '@components/dropdown/dropdown.component';
 import { ToastService } from '@services/toast.service';
@@ -149,6 +150,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     private translationService: TranslationService,
     private lookupService: LookupService,
     private apiService: ApiService,
+    private accessoryService: AccessoryService,
     private toastService: ToastService,
     private router: Router,
     private route: ActivatedRoute,
@@ -533,20 +535,18 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
 
     if (this.assetForm.nameAr?.trim()) dto.nameAr = this.assetForm.nameAr.trim();
 
-    const formData = new FormData();
-    (Object.keys(dto) as (keyof CreateUpdateAccessoryDto)[]).forEach(key => {
-      const val = dto[key];
-      if (val === undefined || val === null) return;
-      const capKey = key.charAt(0).toUpperCase() + key.slice(1);
-      formData.append(capKey, val.toString());
-    });
-
-    if (this.assetForm.image) {
-      formData.append('files', this.assetForm.image);
-    }
-
-    const request = this.apiService.post<AccessoryDto>('/Accessory', formData);
-    request.pipe(takeUntil(this.destroy$)).subscribe(this.getSubmitObserver());
+    this.accessoryService.create(dto, this.assetForm.image ?? null)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          if (res.succeeded) {
+            this.getSubmitObserver().next(res.data as unknown as AccessoryDto);
+          } else {
+            this.getSubmitObserver().error(res.message ?? 'Failed to create accessory');
+          }
+        },
+        error: (error: unknown) => this.getSubmitObserver().error(error)
+      });
   }
 
   private getSubmitObserver() {

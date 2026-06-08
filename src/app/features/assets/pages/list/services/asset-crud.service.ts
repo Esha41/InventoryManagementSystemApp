@@ -5,7 +5,7 @@
 
 import { inject, Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { AmmunitionService } from '@assets/services/ammunition.service';
 import { WeaponService } from '@assets/services/weapon.service';
 import { ExplosiveService } from '@assets/services/explosive.service';
@@ -17,9 +17,10 @@ import { APIOperationResponse } from '@models/api-response.model';
 import { AmmunitionCreateDto } from '@models/ammunition.model';
 import { CreateUpdateWeaponDto } from '@models/weapon.model';
 import { CreateUpdateExplosiveDto } from '@models/explosive.model';
-import { CreateUpdateAccessoryDto } from '@models/accessory.model';
+import { AccessoryDto, CreateUpdateAccessoryDto } from '@models/accessory.model';
 
 export type AssetEntityService = AmmunitionService | WeaponService | ExplosiveService | AccessoryService;
+export type FileBlobAssetService = AmmunitionService | WeaponService | ExplosiveService;
 
 export type AssetCreateUpdateDto =
   | AmmunitionCreateDto
@@ -60,9 +61,17 @@ export class AssetCrudService {
     }
   }
 
-  /**
-   * Get FileEntityType for the active tab
-   */
+  getFileBlobService(activeTab: Exclude<AssetType, 'accessory'>): FileBlobAssetService {
+    switch (activeTab) {
+      case 'ammunition':
+        return this.ammunitionService;
+      case 'weapon':
+        return this.weaponService;
+      case 'explosive':
+        return this.explosiveService;
+    }
+  }
+
   getFileEntityType(activeTab: AssetType): FileEntityType {
     switch (activeTab) {
       case 'ammunition':
@@ -85,8 +94,29 @@ export class AssetCrudService {
     activeTab: AssetType,
     entityId: number
   ): Observable<EditImageResult | null> {
+    if (activeTab === 'accessory') {
+      return this.accessoryService.getById<AccessoryDto>(entityId).pipe(
+        switchMap(dto => {
+          const fileId = this.accessoryService.getMainImageFileId(dto.images);
+          if (!fileId) {
+            return of(null);
+          }
+          return this.accessoryService.getImageBlob(entityId).pipe(
+            map(blob => {
+              if (blob.size > 0 && (blob.type.startsWith('image/') || blob.type === 'application/octet-stream' || !blob.type)) {
+                return { url: URL.createObjectURL(blob), fileId };
+              }
+              return { url: '', fileId };
+            }),
+            catchError(() => of(fileId ? { url: '', fileId } : null))
+          );
+        }),
+        catchError(() => of(null))
+      );
+    }
+
     const entityType = this.getFileEntityType(activeTab);
-    const service = this.getAssetService(activeTab);
+    const service = this.getFileBlobService(activeTab);
 
     return this.fileUploadService.getFilesByEntity(entityType, entityId).pipe(
       switchMap(files => {
@@ -127,7 +157,15 @@ export class AssetCrudService {
     imageFileId: number | null,
     removeImageRequested: boolean
   ): Observable<APIOperationResponse<unknown>> {
-    const service = this.getAssetService(activeTab);
+    if (activeTab === 'accessory') {
+      return this.accessoryService.update(id, dto as CreateUpdateAccessoryDto, {
+        file: imageFile,
+        removeImage: removeImageRequested
+      });
+    }
+
+    const service = this.getFileBlobService(activeTab);
+
     return service.update(id, dto).pipe(
       switchMap(res => {
         if (!res.succeeded) {

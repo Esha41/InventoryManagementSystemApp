@@ -61,7 +61,9 @@ export class AssetImageService {
         } else if (activeTab === 'explosive') {
           fileBlob$ = this.explosiveService.getFileBlob(image.id);
         } else if (activeTab === 'accessory') {
-          fileBlob$ = this.accessoryService.getFileBlob(image.id);
+          const accessoryId = parseInt(asset.id, 10);
+          if (Number.isNaN(accessoryId)) return null;
+          fileBlob$ = this.accessoryService.getImageBlob(accessoryId);
         } else {
           return null;
         }
@@ -108,13 +110,41 @@ export class AssetImageService {
     } else if (activeTab === 'explosive') {
       entityType = FileEntityType.Explosive;
     } else if (activeTab === 'accessory') {
-      entityType = FileEntityType.Accessory;
+      return this.accessoryService.getById(id).pipe(
+        switchMap(dto => {
+          const fileId = this.accessoryService.getMainImageFileId(dto.images);
+          if (!fileId) {
+            if (callback) callback();
+            return of({ fileId: null, url: null });
+          }
+          return this.accessoryService.getImageBlob(id).pipe(
+            map((blob: Blob) => {
+              if (blob.size > 0 && (blob.type.startsWith('image/') || blob.type === 'application/octet-stream' || !blob.type)) {
+                const blobUrl = URL.createObjectURL(blob);
+                this.blobUrls.add(blobUrl);
+                if (callback) callback();
+                return { fileId, url: blobUrl };
+              }
+              if (callback) callback();
+              return { fileId, url: null };
+            }),
+            catchError(() => {
+              if (callback) callback();
+              return of({ fileId, url: null });
+            })
+          );
+        }),
+        catchError(() => {
+          if (callback) callback();
+          return of({ fileId: null, url: null });
+        })
+      );
     } else {
       if (callback) callback();
       return of({ fileId: null, url: null });
     }
 
-    const service = this.getServiceForTab(activeTab);
+    const service = this.getServiceForTab(activeTab as Exclude<AssetType, 'accessory'>);
 
     return fileUploadService.getFilesByEntity(entityType, id).pipe(
       switchMap((files: FileUploadDto[]) => {
@@ -157,7 +187,7 @@ export class AssetImageService {
   /**
    * Get the appropriate service for the active tab
    */
-  private getServiceForTab(activeTab: AssetType): AmmunitionService | WeaponService | ExplosiveService | AccessoryService {
+  private getServiceForTab(activeTab: Exclude<AssetType, 'accessory'>): AmmunitionService | WeaponService | ExplosiveService {
     switch (activeTab) {
       case 'ammunition':
         return this.ammunitionService;
@@ -165,10 +195,6 @@ export class AssetImageService {
         return this.weaponService;
       case 'explosive':
         return this.explosiveService;
-      case 'accessory':
-        return this.accessoryService;
-      default:
-        return this.ammunitionService;
     }
   }
 

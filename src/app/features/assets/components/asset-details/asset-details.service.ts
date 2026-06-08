@@ -147,6 +147,22 @@ export class AssetDetailsService {
     assetId: number,
     assetType: 'ammunition' | 'weapon' | 'explosive' | 'accessory'
   ): Observable<string | null> {
+    if (assetType === 'accessory') {
+      return this.accessoryService.getImageBlob(assetId).pipe(
+        switchMap((blob: Blob) => {
+          if (blob.size > 0 && (blob.type.startsWith('image/') || blob.type === 'application/octet-stream' || !blob.type)) {
+            return of(URL.createObjectURL(blob));
+          }
+          this.configService.logWarning('Accessory image rejected due to invalid type or empty size');
+          return of(null);
+        }),
+        catchError((err) => {
+          this.configService.logWarning('Failed to load accessory image blob', err);
+          return of(null);
+        })
+      );
+    }
+
     const entityType = this.getFileEntityType(assetType);
 
     return this.fileUploadService.getFilesByEntity(entityType, assetId).pipe(

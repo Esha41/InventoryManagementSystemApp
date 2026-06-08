@@ -154,8 +154,8 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
       const srcAny = source as { nameAr?: string | null; nameAR?: string | null };
       const nameArVal = (srcAny.nameAr ?? srcAny.nameAR ?? '').toString();
       this.editForm.patchValue({ nameAr: nameArVal }, { emitEvent: false });
-      if ((this.activeTab === 'ammunition' || this.activeTab === 'explosive' || this.activeTab === 'weapon' || this.activeTab === 'accessory') && source) {
-        const catalog = source as AmmunitionReadDto | ExplosiveDto | WeaponDto | AccessoryDto;
+      if ((this.activeTab === 'ammunition' || this.activeTab === 'explosive' || this.activeTab === 'weapon') && source) {
+        const catalog = source as AmmunitionReadDto | ExplosiveDto | WeaponDto;
         const fromList = catalog.primaryPurposes?.map(p => p.id).filter((id): id is number => id != null);
         const ids =
           fromList && fromList.length > 0
