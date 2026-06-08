@@ -7,7 +7,7 @@ import { LucideAngularModule, ArrowLeft, ArrowRight, CheckCircle, AlertTriangle,
 import { Subject, takeUntil, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
-import { AssetSupplyService, BatchForOrderDepotDto, BatchItemDto } from '@requests/services/asset-supply.service';
+import { AssetSupplyService, BatchForOrderDepotDto, BatchItemDto, DepotBatchSelectionDto } from '@requests/services/asset-supply.service';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { OrderService } from '@requests/services/order.service';
 import { OrderDto } from '@models/order.model';
@@ -151,6 +151,22 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
     );
   }
 
+  private parseSavedSelection(selections: DepotBatchSelectionDto[]): {
+    depotIds: number[];
+    batchIds: number[];
+    itemQuantities: Map<string, number>;
+  } {
+    const depotIds = [...new Set(selections.map(s => s.depotId))];
+    const batchIds = [...new Set(selections.map(s => s.batchId))];
+    const itemQuantities = new Map<string, number>();
+    for (const s of selections) {
+      if (s.quantity > 0) {
+        itemQuantities.set(`${s.batchId}_${s.itemId}`, s.quantity);
+      }
+    }
+    return { depotIds, batchIds, itemQuantities };
+  }
+
   showDepotAvailabilityTooltip(event: MouseEvent | FocusEvent): void {
     const el = event.currentTarget as HTMLElement | null;
     if (!el) return;
@@ -233,13 +249,23 @@ export class WeaponSupplySelectionComponent implements OnInit, OnDestroy {
       depots: this.lookupService.loadDepots(),
       depotsWithItems: this.assetSupplyService.getDepotsWithAvailableItems(this.orderId).pipe(
         catchError(() => of([] as number[]))
+      ),
+      savedSelection: this.assetSupplyService.getWeaponSupplySelection(this.orderId).pipe(
+        catchError(() => of([] as DepotBatchSelectionDto[]))
       )
     }).pipe(takeUntil(this.destroy$)).subscribe({
-      next: ({ order, depotsWithItems }) => {
+      next: ({ order, depotsWithItems, savedSelection }) => {
         this.orderData = order;
         this.depotIdsWithAvailableItems = this.normalizeDepotIds(depotsWithItems);
         this.loading = false;
         this.depotCurrentPage = 1;
+
+        if (savedSelection.length > 0) {
+          const { depotIds, batchIds, itemQuantities } = this.parseSavedSelection(savedSelection);
+          this.selectedDepotIds = depotIds;
+          this.depotsConfirmed = true;
+          this.loadBatchesWithSavedSelection(batchIds, itemQuantities);
+        }
       },
       error: (error) => {
         this.config.logError('Failed to load data', error);
