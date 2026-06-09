@@ -111,6 +111,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
 
   assetRowsPerPage = defaultPageSize;
   private readonly assetPageByBatchId = new Map<number, number>();
+  private readonly accessoryExpandedByAssetId = new Map<number, boolean>();
 
   isRequestItemsExpanded = true;
   isBatchesExpanded = true;
@@ -241,11 +242,13 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
 
     forkJoin({
       batches: this.reviewService.loadBatchesFromApi(this.orderId).pipe(catchError(() => of([]))),
-      selections: this.reviewService.loadSelections(this.orderId).pipe(catchError(() => of([])))
+      selections: this.reviewService.loadSelections(this.orderId).pipe(catchError(() => of([]))),
+      accessoryDefaults: this.reviewService.loadAccessoryDefaults(this.orderId).pipe(catchError(() => of({ defaultsByWeaponItemId: {} })))
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: ({ batches, selections }) => {
+        next: ({ batches, selections, accessoryDefaults }) => {
+          this.reviewService.applyAccessoryDefaults(accessoryDefaults);
           this.reviewService.applySelections(selections);
           this.reviewService.applyBatchData(batches);
           this.resetAssetPagination();
@@ -309,6 +312,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
 
   removeAsset(batchId: number, assetId: number): void {
     this.reviewService.removeAsset(batchId, assetId);
+    this.accessoryExpandedByAssetId.delete(assetId);
   }
 
   openAddSerial(batchId: number): void {
@@ -622,6 +626,52 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
 
   getNotes(batch: BatchWithSelection, assetId: number): string {
     return batch.notesMap.get(assetId) ?? '';
+  }
+
+  getAccessories(assetId: number) {
+    return this.reviewService.getAccessoriesForAsset(assetId);
+  }
+
+  hasAccessories(assetId: number): boolean {
+    return this.reviewService.hasAccessoriesForAsset(assetId);
+  }
+
+  getAccessoryName(row: { name: string; nameAr?: string | null }): string {
+    const lang = this.displayService.getCurrentLang();
+    if (lang === 'ar' && row.nameAr) {
+      return row.nameAr;
+    }
+    return row.name;
+  }
+
+  onSuppliedQuantityChange(assetId: number, accessoryId: number, value: string): void {
+    const parsed = parseInt(value, 10);
+    this.reviewService.setSuppliedQuantity(assetId, accessoryId, Number.isNaN(parsed) ? 0 : parsed);
+    this.cdr.markForCheck();
+  }
+
+  isAccessoriesExpanded(assetId: number): boolean {
+    return this.accessoryExpandedByAssetId.get(assetId) === true;
+  }
+
+  toggleAccessoriesExpanded(assetId: number): void {
+    const expanded = this.isAccessoriesExpanded(assetId);
+    this.accessoryExpandedByAssetId.set(assetId, !expanded);
+    this.cdr.markForCheck();
+  }
+
+  hasCustomAccessoryQuantities(assetId: number): boolean {
+    return this.getAccessories(assetId).some(
+      acc => acc.suppliedQuantity !== acc.defaultQuantity
+    );
+  }
+
+  getAccessoriesCollapsedSummary(assetId: number): string {
+    const count = this.getAccessories(assetId).length;
+    const key = this.hasCustomAccessoryQuantities(assetId)
+      ? 'weaponSupplyReview.accessoriesSummaryModified'
+      : 'weaponSupplyReview.accessoriesSummaryDefaults';
+    return this.translate.instant(key, { count });
   }
 
   trackByBatchId(_index: number, batch: BatchWithSelection): number {

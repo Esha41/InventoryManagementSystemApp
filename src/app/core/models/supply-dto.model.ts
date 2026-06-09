@@ -134,6 +134,15 @@ export interface WeaponSelectionLineDto {
   selectedQuantity: number;
 }
 
+export interface WeaponSuppliedAccessoryDto {
+  accessoryId: number;
+  itemNo?: string | null;
+  name?: string | null;
+  nameAr?: string | null;
+  defaultQuantity: number;
+  suppliedQuantity: number;
+}
+
 export interface WeaponSuppliedLineDto {
   itemId: number;
   itemName: string;
@@ -147,6 +156,7 @@ export interface WeaponSuppliedLineDto {
   batchNumber?: string | null;
   assigneeName?: string | null;
   notes?: string | null;
+  accessories?: WeaponSuppliedAccessoryDto[];
 }
 
 export interface WorkflowSupplySummaryDto {

@@ -2,7 +2,13 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
-import { AssetSupplyService, CreateAssetSupplyDto, DepotBatchSelectionDto } from '@requests/services/asset-supply.service';
+import {
+  AssetSupplyService,
+  CreateAssetSupplyDto,
+  DepotBatchSelectionDto,
+  WeaponAccessoryDefaultLineDto,
+  WeaponAccessoryDefaultsDto
+} from '@requests/services/asset-supply.service';
 import { AssetService } from '@assets/services/asset.service';
 import { AssetDto } from '@core/models/asset.model';
 import { BatchDto } from '@core/models/batch.model';
@@ -14,6 +20,15 @@ export interface ReceiverInfo {
     location?: string;
     expectedReturnDate?: string;
     notes?: string;
+}
+
+export interface AssetAccessoryRow {
+    accessoryId: number;
+    itemNo?: string | null;
+    name: string;
+    nameAr?: string | null;
+    defaultQuantity: number;
+    suppliedQuantity: number;
 }
 
 export interface BatchWithSelection extends BatchDto {
@@ -34,6 +49,10 @@ export class WeaponSupplyReviewService {
     private requestedItemMap = new Map<number, { itemName: string; quantity: number }>();
     /** Original selection: batchId -> itemId -> quantity */
     private selectionQuantities = new Map<number, Map<number, number>>();
+    /** weapon itemId -> catalog template rows */
+    private accessoryTemplates = new Map<number, AssetAccessoryRow[]>();
+    /** asset id -> accessory rows for that serial */
+    private accessoryMap = new Map<number, AssetAccessoryRow[]>();
 
     constructor(
         private assetSupplyService: AssetSupplyService,
@@ -73,6 +92,38 @@ export class WeaponSupplyReviewService {
         return this.assetSupplyService.getWeaponSupplySelection(orderId);
     }
 
+    loadAccessoryDefaults(orderId: number): Observable<WeaponAccessoryDefaultsDto> {
+        return this.assetSupplyService.getWeaponAccessoryDefaults(orderId);
+    }
+
+    applyAccessoryDefaults(defaults: WeaponAccessoryDefaultsDto): void {
+        this.accessoryTemplates.clear();
+        const byWeapon = defaults?.defaultsByWeaponItemId ?? {};
+        Object.entries(byWeapon).forEach(([weaponItemId, lines]) => {
+            this.accessoryTemplates.set(
+                Number(weaponItemId),
+                (lines ?? []).map(line => this.toAccessoryRow(line))
+            );
+        });
+    }
+
+    getAccessoriesForAsset(assetId: number): AssetAccessoryRow[] {
+        return this.accessoryMap.get(assetId) ?? [];
+    }
+
+    hasAccessoriesForAsset(assetId: number): boolean {
+        return this.getAccessoriesForAsset(assetId).length > 0;
+    }
+
+    setSuppliedQuantity(assetId: number, accessoryId: number, quantity: number): void {
+        const rows = this.accessoryMap.get(assetId);
+        if (!rows) return;
+        const row = rows.find(r => r.accessoryId === accessoryId);
+        if (row) {
+            row.suppliedQuantity = quantity;
+        }
+    }
+
     applySelections(selections: DepotBatchSelectionDto[]): void {
         this.selectionQuantities.clear();
         for (const s of selections) {
@@ -84,10 +135,6 @@ export class WeaponSupplyReviewService {
         }
     }
 
-    /**
-     * Validates that the current batch assets match the original selection quantities exactly.
-     * Returns null if valid, or an array of error messages if not.
-     */
     validateQuantities(): string[] | null {
         const errors: string[] = [];
 
@@ -125,6 +172,7 @@ export class WeaponSupplyReviewService {
     }
 
     applyBatchData(batchDtos: BatchDto[]): void {
+        this.accessoryMap.clear();
         const batches: BatchWithSelection[] = batchDtos.map(b => {
             const selectedIds = new Set<number>();
             const custodianMap = new Map<number, number | undefined>();
@@ -134,6 +182,7 @@ export class WeaponSupplyReviewService {
                 selectedIds.add(a.id);
                 custodianMap.set(a.id, this.defaultCustodianId);
                 notesMap.set(a.id, '');
+                this.initAccessoriesForAsset(a.id, a.itemId);
             });
 
             return {
@@ -167,6 +216,7 @@ export class WeaponSupplyReviewService {
         batch.assetCount = batch.assets.length;
         batch.custodianMap.delete(assetId);
         batch.notesMap.delete(assetId);
+        this.accessoryMap.delete(assetId);
         this.setBatches(batches);
     }
 
@@ -187,6 +237,7 @@ export class WeaponSupplyReviewService {
         batch.assetCount = batch.assets.length;
         batch.custodianMap.set(asset.id, this.defaultCustodianId);
         batch.notesMap.set(asset.id, '');
+        this.initAccessoriesForAsset(asset.id, asset.itemId);
         this.setBatches(batches);
 
         this.toastService.success(
@@ -232,11 +283,26 @@ export class WeaponSupplyReviewService {
         return true;
     }
 
+    private accessoriesAreValid(): boolean {
+        for (const batch of this.batches) {
+            for (const asset of batch.assets) {
+                const rows = this.accessoryMap.get(asset.id) ?? [];
+                for (const row of rows) {
+                    if (row.suppliedQuantity < 0) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
     canSubmit(receiverEmployeeId: number | undefined, hasFiles: boolean = false): boolean {
         if (!receiverEmployeeId) return false;
         if (!hasFiles) return false;
         if (this.getTotalSelectedCount() === 0) return false;
         if (this.validateQuantities() !== null) return false;
+        if (!this.accessoriesAreValid()) return false;
         return true;
     }
 
@@ -246,7 +312,12 @@ export class WeaponSupplyReviewService {
                 assetId: a.id,
                 conditionOnSupply: undefined,
                 custodianId: batch.custodianMap.get(a.id),
-                notes: batch.notesMap.get(a.id) || undefined
+                notes: batch.notesMap.get(a.id) || undefined,
+                accessories: (this.accessoryMap.get(a.id) ?? []).map(row => ({
+                    accessoryId: row.accessoryId,
+                    defaultQuantity: row.defaultQuantity,
+                    suppliedQuantity: row.suppliedQuantity
+                }))
             }))
         );
 
@@ -270,5 +341,28 @@ export class WeaponSupplyReviewService {
 
     searchAssetBySerial(serialNumber: string): Observable<AssetDto | null> {
         return this.assetService.getBySerialNumber<AssetDto>(serialNumber);
+    }
+
+    private initAccessoriesForAsset(assetId: number, weaponItemId: number): void {
+        const template = this.accessoryTemplates.get(weaponItemId) ?? [];
+        if (template.length === 0) {
+            this.accessoryMap.delete(assetId);
+            return;
+        }
+        this.accessoryMap.set(
+            assetId,
+            template.map(row => ({ ...row }))
+        );
+    }
+
+    private toAccessoryRow(line: WeaponAccessoryDefaultLineDto): AssetAccessoryRow {
+        return {
+            accessoryId: line.accessoryId,
+            itemNo: line.itemNo,
+            name: line.name,
+            nameAr: line.nameAr,
+            defaultQuantity: line.defaultQuantity,
+            suppliedQuantity: line.defaultQuantity
+        };
     }
 }
