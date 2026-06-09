@@ -109,13 +109,12 @@
                   required maxlength="200" #nameModel="ngModel" />
               </div>
 
-              <!-- Item No (Required) -->
+              <!-- Item No (required except accessories) -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-itemno-2">{{ 'addAsset.itemNo' | translate }}
-                  *</label>
+                <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-itemno-2">{{ 'addAsset.itemNo' | translate }}<span *ngIf="activeTab !== 'accessory'"> *</span></label>
                 <input id="add-itemno-2" type="text" [(ngModel)]="assetForm.itemNo" name="itemNo"
                   [class]="getInputClass(itemNoModel.invalid, itemNoModel.dirty, itemNoModel.touched)"
-                  [placeholder]="'addAsset.enterItemNumber' | translate" required maxlength="100"
+                  [placeholder]="'addAsset.enterItemNumber' | translate" [required]="activeTab !== 'accessory'" maxlength="100"
                   #itemNoModel="ngModel" />
               </div>
 

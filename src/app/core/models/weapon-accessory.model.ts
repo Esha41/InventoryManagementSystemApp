@@ -4,7 +4,7 @@
 
 export interface WeaponAccessoryItemSummaryDto {
   id: number;
-  itemNo: string;
+  itemNo?: string | null;
   name: string;
   nameAr?: string | null;
 }

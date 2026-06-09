@@ -529,10 +529,11 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private submitAccessory() {
     const dto: CreateUpdateAccessoryDto = {
-      name: this.assetForm.name.trim(),
-      itemNo: this.assetForm.itemNo.trim()
+      name: this.assetForm.name.trim()
     };
 
+    const itemNoTrimmed = this.assetForm.itemNo?.trim();
+    if (itemNoTrimmed) dto.itemNo = itemNoTrimmed;
     if (this.assetForm.nameAr?.trim()) dto.nameAr = this.assetForm.nameAr.trim();
 
     this.accessoryService.create(dto, this.assetForm.image ?? null)
@@ -593,7 +594,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
       this.errorMessage = 'Name is required';
       return false;
     }
-    if (!this.assetForm.itemNo || !this.assetForm.itemNo.trim()) {
+    if (this.activeTab !== 'accessory' && (!this.assetForm.itemNo || !this.assetForm.itemNo.trim())) {
       this.errorMessage = 'Item number is required';
       return false;
     }

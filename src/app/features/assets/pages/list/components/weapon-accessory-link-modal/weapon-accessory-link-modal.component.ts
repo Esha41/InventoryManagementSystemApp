@@ -6,6 +6,8 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   OnChanges,
+  OnDestroy,
+  OnInit,
   SimpleChanges
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -22,11 +24,13 @@ import { WeaponAccessoryDto } from '@models/weapon-accessory.model';
 import { ToastService } from '@services/toast.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { Subject, forkJoin, takeUntil } from 'rxjs';
+import { getCurrentLang, getLocalizedName } from '@utils/localization.utils';
 
 interface LinkedAccessoryRow {
   accessoryId: number;
-  itemNo: string;
+  itemNo?: string | null;
   name: string;
+  nameAr?: string | null;
   defaultQuantity: number;
 }
 
@@ -45,7 +49,7 @@ interface LinkedAccessoryRow {
   templateUrl: './weapon-accessory-link-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class WeaponAccessoryLinkModalComponent implements OnChanges {
+export class WeaponAccessoryLinkModalComponent implements OnInit, OnChanges, OnDestroy {
   @Input() isOpen = false;
   @Input() weaponId: number | null = null;
   @Input() weaponName = '';
@@ -75,6 +79,17 @@ export class WeaponAccessoryLinkModalComponent implements OnChanges {
     private readonly cdr: ChangeDetectorRef
   ) {}
 
+  ngOnInit(): void {
+    this.translateService.onLangChange
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.cdr.markForCheck());
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isOpen'] && this.isOpen && this.weaponId) {
       this.loadData();
@@ -89,9 +104,26 @@ export class WeaponAccessoryLinkModalComponent implements OnChanges {
     return this.allAccessories
       .filter(accessory => !linkedIds.has(accessory.id))
       .map(accessory => ({
-        label: `${accessory.itemNo} — ${accessory.name}`,
+        label: this.getAccessoryLabel(accessory),
         value: accessory.id
       }));
+  }
+
+  getAccessoryLabel(accessory: AccessoryDto): string {
+    const name = getLocalizedName(accessory, getCurrentLang(this.translateService)) || accessory.name;
+    const itemNo = accessory.itemNo?.trim();
+    return itemNo ? `${itemNo} — ${name}` : name;
+  }
+
+  getRowDisplayName(row: LinkedAccessoryRow): string {
+    return getLocalizedName(
+      { name: row.name, nameAr: row.nameAr },
+      getCurrentLang(this.translateService)
+    ) || row.name;
+  }
+
+  getRowItemNo(row: LinkedAccessoryRow): string {
+    return row.itemNo?.trim() || '-';
   }
 
   get linkedCount(): number {
@@ -149,6 +181,7 @@ export class WeaponAccessoryLinkModalComponent implements OnChanges {
         accessoryId: accessory.id,
         itemNo: accessory.itemNo,
         name: accessory.name,
+        nameAr: accessory.nameAr,
         defaultQuantity: this.addQuantity
       }
     ];
@@ -233,6 +266,7 @@ export class WeaponAccessoryLinkModalComponent implements OnChanges {
                 accessoryId: accessory.id,
                 itemNo: accessory.itemNo,
                 name: accessory.name,
+                nameAr: accessory.nameAr,
                 defaultQuantity: link.defaultQuantity > 0 ? link.defaultQuantity : 1
               };
             });

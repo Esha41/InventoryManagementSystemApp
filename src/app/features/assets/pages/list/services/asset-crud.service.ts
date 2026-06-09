@@ -22,11 +22,12 @@ import { AccessoryDto, CreateUpdateAccessoryDto } from '@models/accessory.model'
 export type AssetEntityService = AmmunitionService | WeaponService | ExplosiveService | AccessoryService;
 export type FileBlobAssetService = AmmunitionService | WeaponService | ExplosiveService;
 
-export type AssetCreateUpdateDto =
+export type NonAccessoryCreateUpdateDto =
   | AmmunitionCreateDto
   | CreateUpdateWeaponDto
-  | CreateUpdateExplosiveDto
-  | CreateUpdateAccessoryDto;
+  | CreateUpdateExplosiveDto;
+
+export type AssetCreateUpdateDto = NonAccessoryCreateUpdateDto | CreateUpdateAccessoryDto;
 
 export interface EditImageResult {
   url: string;
@@ -166,7 +167,7 @@ export class AssetCrudService {
 
     const service = this.getFileBlobService(activeTab);
 
-    return service.update(id, dto).pipe(
+    return service.update(id, dto as NonAccessoryCreateUpdateDto).pipe(
       switchMap(res => {
         if (!res.succeeded) {
           return of(res);

@@ -122,28 +122,35 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     this.editForm = createAssetEditForm(this.fb);
-    this.updateCaliberCategoryValidators();
+    this.updateTabValidators();
   }
 
-  /** Ammunition: ammunitionType required. Weapon: caliberCategory required. Explosive: neither. */
-  private updateCaliberCategoryValidators(): void {
+  /** Ammunition: ammunitionType required. Weapon: caliberCategory required. Accessory: itemNo optional. */
+  private updateTabValidators(): void {
     const at = this.editForm?.get('ammunitionType');
     const cc = this.editForm?.get('caliberCategory');
-    if (!at || !cc) return;
+    const itemNo = this.editForm?.get('itemNo');
+    if (!at || !cc || !itemNo) return;
     at.clearValidators();
     cc.clearValidators();
+    itemNo.clearValidators();
     if (this.activeTab === 'ammunition') {
       at.setValidators([Validators.required]);
+      itemNo.setValidators([Validators.required]);
     } else if (this.activeTab === 'weapon') {
       cc.setValidators([Validators.required]);
+      itemNo.setValidators([Validators.required]);
+    } else if (this.activeTab === 'explosive') {
+      itemNo.setValidators([Validators.required]);
     }
     at.updateValueAndValidity({ emitEvent: false });
     cc.updateValueAndValidity({ emitEvent: false });
+    itemNo.updateValueAndValidity({ emitEvent: false });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['activeTab'] && this.editForm) {
-      this.updateCaliberCategoryValidators();
+      this.updateTabValidators();
     }
     if (changes['selectedAsset'] && this.selectedAsset && this.editForm) {
       // Use originalData when available (Asset from table) for correct IDs and entity-specific fields
@@ -187,7 +194,7 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
       } else {
         this.editForm.patchValue({ ammunitionType: '', caliberCategory: '1' });
       }
-      this.updateCaliberCategoryValidators();
+      this.updateTabValidators();
       this.cdr.markForCheck();
     }
     if (changes['imageState'] && this.imageState) {
@@ -274,9 +281,12 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
       dto = raw as unknown as CreateUpdateWeaponDto;
     } else if (this.activeTab === 'accessory') {
       const accessoryDto: CreateUpdateAccessoryDto = {
-        name: String(formData['name'] ?? '').trim(),
-        itemNo: String(formData['itemNo'] ?? '').trim()
+        name: String(formData['name'] ?? '').trim()
       };
+      const itemNoTrimmed = String(formData['itemNo'] ?? '').trim();
+      if (itemNoTrimmed) {
+        accessoryDto.itemNo = itemNoTrimmed;
+      }
       if (nameArTrimmed) {
         accessoryDto.nameAr = nameArTrimmed;
       }

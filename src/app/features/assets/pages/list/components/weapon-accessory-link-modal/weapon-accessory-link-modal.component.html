@@ -94,8 +94,8 @@
               </thead>
               <tbody class="divide-y divide-[var(--color-border)]">
                 <tr *ngFor="let row of linkedItems" class="hover:bg-[var(--color-background-muted)]">
-                  <td class="px-4 py-3 font-mono text-[var(--color-text)]">{{ row.itemNo }}</td>
-                  <td class="px-4 py-3 text-[var(--color-text)]">{{ row.name }}</td>
+                  <td class="px-4 py-3 font-mono text-[var(--color-text)]">{{ getRowItemNo(row) }}</td>
+                  <td class="px-4 py-3 text-[var(--color-text)]"><bdi>{{ getRowDisplayName(row) }}</bdi></td>
                   <td class="px-4 py-3 text-end">
                     <input type="number" min="1" step="1"
                       [ngModel]="row.defaultQuantity" (ngModelChange)="onLinkedQuantityChange(row, $event)"

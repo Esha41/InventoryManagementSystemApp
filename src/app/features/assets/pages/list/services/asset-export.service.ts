@@ -56,7 +56,7 @@ export class AssetExportService {
         format: (value: string) => value || '-'
       },
       {
-        header: withRequired(this.translateService.instant('assetList.table.itemNo'), true),
+        header: withRequired(this.translateService.instant('assetList.table.itemNo'), false),
         key: 'itemNo',
         width: 15,
         format: (value: string) => value || '-'

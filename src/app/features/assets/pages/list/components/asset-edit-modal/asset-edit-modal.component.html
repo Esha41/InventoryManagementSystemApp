@@ -82,8 +82,7 @@
 
               <!-- Item No -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="asset-edit-modal-itemno-2">{{ 'addAsset.itemNo' | translate
-                  }} *</label>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="asset-edit-modal-itemno-2">{{ 'addAsset.itemNo' | translate }}<span *ngIf="activeTab !== 'accessory'"> *</span></label>
                 <input id="asset-edit-modal-itemno-2" type="text" formControlName="itemNo"
                   class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                   [placeholder]="'assetList.editModal.itemNoPlaceholder' | translate" />
