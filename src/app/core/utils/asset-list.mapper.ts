@@ -2,6 +2,7 @@ import { Asset } from '../models/asset-list.model';
 import { AmmunitionReadDto, LookupDto } from '../models/ammunition.model';
 import { WeaponDto } from '../models/weapon.model';
 import { ExplosiveDto } from '../models/explosive.model';
+import { AccessoryDto } from '../models/accessory.model';
 import { getLocalizedName, getCurrentLang } from './localization.utils';
 import { formatDateShort } from './format.utils';
 import { getExplosiveTypeName } from './explosive.utils';
@@ -165,5 +166,27 @@ export function mapWeaponArrayToAssets(dtos: WeaponDto[], translateService: Tran
 export function mapExplosiveArrayToAssets(dtos: ExplosiveDto[], translateService: TranslateService): Asset[] {
   const currentLang = getCurrentLang(translateService);
   return (dtos || []).map(dto => mapExplosiveToAsset(dto, currentLang));
+}
+
+/**
+ * Maps AccessoryDto to Asset
+ */
+export function mapAccessoryToAsset(dto: AccessoryDto, _currentLang: string): Asset {
+  return {
+    id: dto.id?.toString() || '-',
+    name: dto.name || 'Unknown',
+    nameAr: dto.nameAr,
+    itemNo: dto.itemNo || '-',
+    partNo: '-',
+    batchNo: '-',
+    readyForIssue: true,
+    imageUrl: undefined,
+    originalData: dto
+  };
+}
+
+export function mapAccessoryArrayToAssets(dtos: AccessoryDto[], translateService: TranslateService): Asset[] {
+  const currentLang = getCurrentLang(translateService);
+  return (dtos || []).map(dto => mapAccessoryToAsset(dto, currentLang));
 }
 

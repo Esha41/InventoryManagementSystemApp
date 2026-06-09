@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { AmmunitionReadDto, LookupDto } from '../models/ammunition.model';
 import { WeaponDto } from '../models/weapon.model';
 import { ExplosiveDto } from '../models/explosive.model';
+import { AccessoryDto } from '../models/accessory.model';
 import { Asset } from '../models/asset-list.model';
 import { LookupItem } from '../models/lookup.model';
 import { TranslateService } from '@ngx-translate/core';
@@ -11,7 +12,7 @@ import { ItemType, BaseItemDto, normalizeItemType } from '../models/inventory.mo
 import { formatDateShort } from './format.utils';
 import { getCurrentLang, getLocalizedName, Localizable } from './localization.utils';
 
-export type AssetUnion = Asset | AmmunitionReadDto | WeaponDto | ExplosiveDto | null;
+export type AssetUnion = Asset | AmmunitionReadDto | WeaponDto | ExplosiveDto | AccessoryDto | null;
 type LegacyExplosiveLike = {
   itemType?: unknown;
   distribution?: string;
@@ -35,9 +36,9 @@ function asLegacyExplosiveLike(asset: AssetUnion): LegacyExplosiveLike | null {
 
 function assetCore(
   asset: AssetUnion
-): AmmunitionReadDto | WeaponDto | ExplosiveDto | undefined {
+): AmmunitionReadDto | WeaponDto | ExplosiveDto | AccessoryDto | undefined {
   if (asset === null) return undefined;
-  return (asset as Asset).originalData ?? (asset as AmmunitionReadDto | WeaponDto | ExplosiveDto);
+  return (asset as Asset).originalData ?? (asset as AmmunitionReadDto | WeaponDto | ExplosiveDto | AccessoryDto);
 }
 
 function resolvedCatalogItemType(asset: AssetUnion): ItemType | null {
@@ -72,6 +73,12 @@ export function isWeapon(asset: AssetUnion): asset is WeaponDto {
   return 'caliberCategory' in (core ?? {}) && !('explosiveType' in (core ?? {}));
 }
 
+export function isAccessory(asset: AssetUnion): asset is AccessoryDto {
+  if (!asset) return false;
+  const kind = resolvedCatalogItemType(asset);
+  return kind === ItemType.Accessory;
+}
+
 export function isExplosive(asset: AssetUnion): asset is ExplosiveDto {
   if (!asset) return false;
   const kind = resolvedCatalogItemType(asset);
@@ -96,14 +103,14 @@ export function isExplosive(asset: AssetUnion): asset is ExplosiveDto {
 @Injectable({ providedIn: 'root' })
 export class AssetPropertyAccessor {
   private _units: LookupItem[] = [];
-  private _activeTab: 'ammunition' | 'weapon' | 'explosive' = 'ammunition';
+  private _activeTab: 'ammunition' | 'weapon' | 'explosive' | 'accessory' = 'ammunition';
 
   constructor(private translateService: TranslateService) {}
 
   /**
    * Initialize the accessor with current context
    */
-  initialize(units: LookupItem[], activeTab: 'ammunition' | 'weapon' | 'explosive'): void {
+  initialize(units: LookupItem[], activeTab: 'ammunition' | 'weapon' | 'explosive' | 'accessory'): void {
     this._units = units;
     this._activeTab = activeTab;
   }
@@ -165,7 +172,7 @@ export class AssetPropertyAccessor {
   /**
    * Get active tab for context-aware operations
    */
-  get activeTab(): 'ammunition' | 'weapon' | 'explosive' {
+  get activeTab(): 'ammunition' | 'weapon' | 'explosive' | 'accessory' {
     return this._activeTab;
   }
 

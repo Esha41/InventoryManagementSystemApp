@@ -26,9 +26,10 @@ import { Subject, takeUntil } from 'rxjs';
 
 import { getCurrentLang, getLocalizedName } from '@core/utils/localization.utils';
 
-import { Download, FileText, LucideAngularModule, Package, Paperclip } from 'lucide-angular';
+import { ChevronDown, ChevronRight, Download, FileText, LucideAngularModule, Package, Paperclip } from 'lucide-angular';
 
 import { SupplyService, WorkflowSupplySummaryDto } from '@requests/services/supply.service';
+import type { WeaponSuppliedLineDto } from '@models/supply-dto.model';
 
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 
@@ -71,6 +72,12 @@ export class WorkflowSupplySummaryComponent implements OnInit, OnChanges, OnDest
   readonly FileText = FileText;
 
   readonly Paperclip = Paperclip;
+
+  readonly ChevronDown = ChevronDown;
+
+  readonly ChevronRight = ChevronRight;
+
+  private readonly accessoryExpandedByAssetId = new Map<number, boolean>();
 
 
 
@@ -177,6 +184,8 @@ export class WorkflowSupplySummaryComponent implements OnInit, OnChanges, OnDest
         next: (data) => {
 
           this.summary = data;
+
+          this.accessoryExpandedByAssetId.clear();
 
           this.ammoGroups = groupAmmoSupplyLines(data.lines ?? []);
 
@@ -429,6 +438,34 @@ export class WorkflowSupplySummaryComponent implements OnInit, OnChanges, OnDest
   }
 
 
+
+  accessoryDisplayName(acc: { name?: string | null; nameAr?: string | null }): string {
+    return getLocalizedName(
+      { nameEn: acc.name ?? undefined, nameAr: acc.nameAr ?? undefined },
+      getCurrentLang(this.translate)
+    ) || '—';
+  }
+
+  isAccessoriesExpanded(assetId: number): boolean {
+    return this.accessoryExpandedByAssetId.get(assetId) === true;
+  }
+
+  toggleAccessoriesExpanded(assetId: number): void {
+    this.accessoryExpandedByAssetId.set(assetId, !this.isAccessoriesExpanded(assetId));
+    this.cdr.markForCheck();
+  }
+
+  hasCustomAccessoryQuantities(line: WeaponSuppliedLineDto): boolean {
+    return (line.accessories ?? []).some(acc => acc.suppliedQuantity !== acc.defaultQuantity);
+  }
+
+  getAccessoriesCollapsedSummary(line: WeaponSuppliedLineDto): string {
+    const count = line.accessories?.length ?? 0;
+    const key = this.hasCustomAccessoryQuantities(line)
+      ? 'workflowApprovalDetail.workflowSupplySummary.accessoriesSummaryModified'
+      : 'workflowApprovalDetail.workflowSupplySummary.accessoriesSummaryDefaults';
+    return this.translate.instant(key, { count });
+  }
 
   depotDisplay(line: {
 

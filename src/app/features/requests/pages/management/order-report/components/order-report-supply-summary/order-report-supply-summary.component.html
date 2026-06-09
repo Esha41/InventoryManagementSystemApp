@@ -73,16 +73,44 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let line of summary.weaponLines; let i = index" class="print-table-row">
-            <td class="print-table-cell">{{ i + 1 }}</td>
-            <td class="print-table-cell min-w-0">
-              <span [appTableClampTooltip]="line.itemName">{{ line.itemName }}</span>
-            </td>
-            <td class="print-table-cell" style="font-family: monospace">{{ line.serialNumber || '—' }}</td>
-            <td class="print-table-cell">{{ line.batchNumber || '—' }}</td>
-            <td class="print-table-cell">{{ depotDisplay(line) }}</td>
-            <td class="print-table-cell">{{ line.assigneeName || '—' }}</td>
-          </tr>
+          <ng-container *ngFor="let line of summary.weaponLines; let i = index">
+            <tr class="print-table-row">
+              <td class="print-table-cell">{{ i + 1 }}</td>
+              <td class="print-table-cell min-w-0">
+                <span [appTableClampTooltip]="line.itemName">{{ line.itemName }}</span>
+              </td>
+              <td class="print-table-cell" style="font-family: monospace">{{ line.serialNumber || '—' }}</td>
+              <td class="print-table-cell">{{ line.batchNumber || '—' }}</td>
+              <td class="print-table-cell">{{ depotDisplay(line) }}</td>
+              <td class="print-table-cell">{{ line.assigneeName || '—' }}</td>
+            </tr>
+            <tr *ngIf="line.accessories?.length" class="print-table-row">
+              <td class="print-table-cell"></td>
+              <td class="print-table-cell" colspan="5">
+                <div class="text-xs font-semibold mb-1">
+                  {{ 'workflowApprovalDetail.workflowSupplySummary.colAccessories' | translate }}
+                </div>
+                <table class="print-table">
+                  <thead>
+                    <tr>
+                      <th class="print-table-header">{{ 'workflowApprovalDetail.workflowSupplySummary.colItemName' | translate }}</th>
+                      <th class="print-table-header">{{ 'workflowApprovalDetail.workflowSupplySummary.colItemNo' | translate }}</th>
+                      <th class="print-table-header print-table-header-right">{{ 'workflowApprovalDetail.workflowSupplySummary.colDefaultQty' | translate }}</th>
+                      <th class="print-table-header print-table-header-right">{{ 'workflowApprovalDetail.workflowSupplySummary.colSuppliedQty' | translate }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let acc of line.accessories" class="print-table-row">
+                      <td class="print-table-cell">{{ accessoryDisplayName(acc) }}</td>
+                      <td class="print-table-cell">{{ acc.itemNo || '—' }}</td>
+                      <td class="print-table-cell print-table-cell-right">{{ acc.defaultQuantity }}</td>
+                      <td class="print-table-cell print-table-cell-right">{{ acc.suppliedQuantity }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </ng-container>
         </tbody>
       </table>
       <p *ngIf="!hasWeaponSuppliedLines()" class="print-table-empty">

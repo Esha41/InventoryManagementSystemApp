@@ -112,6 +112,13 @@ export class OrderReportSupplySummaryComponent implements OnInit, OnChanges, OnD
     return !!this.summary?.weaponLines?.length;
   }
 
+  accessoryDisplayName(acc: { name?: string | null; nameAr?: string | null }): string {
+    return getLocalizedName(
+      { nameEn: acc.name ?? undefined, nameAr: acc.nameAr ?? undefined },
+      getCurrentLang(this.translate)
+    ) || '—';
+  }
+
   ammoSupplyRowNumber(groupIndex: number, splitIndex: number): number {
     return ammoSupplyTableRowNumber(this.ammoGroups, groupIndex, splitIndex);
   }

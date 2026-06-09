@@ -5,12 +5,14 @@ import { ConfigService } from '@services/config.service';
 import { AmmunitionService } from '@assets/services/ammunition.service';
 import { WeaponService } from '@assets/services/weapon.service';
 import { ExplosiveService } from '@assets/services/explosive.service';
+import { AccessoryService } from '@assets/services/accessory.service';
 import { FileUploadService, FileEntityType } from '@services/file-upload.service';
 import { AmmunitionReadDto } from '@models/ammunition.model';
 import { WeaponDto } from '@models/weapon.model';
 import { ExplosiveDto } from '@models/explosive.model';
+import { AccessoryDto } from '@models/accessory.model';
 import { AssetDetailsData } from './asset-details.component';
-import { isAmmunition, isExplosive, isWeapon } from '@utils/asset-property.utils';
+import { isAccessory, isAmmunition, isExplosive, isWeapon } from '@utils/asset-property.utils';
 
 /**
  * Service for asset details business logic
@@ -21,6 +23,7 @@ export class AssetDetailsService {
   private readonly ammunitionService = inject(AmmunitionService);
   private readonly weaponService = inject(WeaponService);
   private readonly explosiveService = inject(ExplosiveService);
+  private readonly accessoryService = inject(AccessoryService);
   private readonly fileUploadService = inject(FileUploadService);
   private readonly http = inject(HttpClient);
   private readonly configService = inject(ConfigService);
@@ -32,7 +35,7 @@ export class AssetDetailsService {
    */
   loadAsset(
     assetId: number,
-    assetType?: 'ammunition' | 'weapon' | 'explosive',
+    assetType?: 'ammunition' | 'weapon' | 'explosive' | 'accessory',
     includeDeleted = false
   ): Observable<AssetDetailsData> {
     // If assetType is provided, try that specific type first
@@ -50,15 +53,17 @@ export class AssetDetailsService {
    */
   private loadAssetByType(
     assetId: number,
-    assetType: 'ammunition' | 'weapon' | 'explosive',
+    assetType: 'ammunition' | 'weapon' | 'explosive' | 'accessory',
     includeDeleted = false
   ): Observable<AssetDetailsData> {
-    let service$: Observable<AmmunitionReadDto | WeaponDto | ExplosiveDto>;
+    let service$: Observable<AmmunitionReadDto | WeaponDto | ExplosiveDto | AccessoryDto>;
 
     if (assetType === 'weapon') {
       service$ = this.weaponService.getById<WeaponDto>(assetId, includeDeleted);
     } else if (assetType === 'explosive') {
       service$ = this.explosiveService.getById<ExplosiveDto>(assetId, includeDeleted);
+    } else if (assetType === 'accessory') {
+      service$ = this.accessoryService.getById<AccessoryDto>(assetId, includeDeleted);
     } else {
       service$ = this.ammunitionService.getById<AmmunitionReadDto>(assetId, includeDeleted);
     }
@@ -83,9 +88,12 @@ export class AssetDetailsService {
           catchError(() => {
             // If weapon fails, try explosive
             return this.explosiveService.getById<ExplosiveDto>(assetId).pipe(
-              catchError((_err) => {
-                // All three failed
-                throw new Error('Failed to load asset details: asset not found in ammunition, weapon, or explosive');
+              catchError(() => {
+                return this.accessoryService.getById<AccessoryDto>(assetId).pipe(
+                  catchError((_err) => {
+                    throw new Error('Failed to load asset details: asset not found');
+                  })
+                );
               })
             );
           })
@@ -97,7 +105,7 @@ export class AssetDetailsService {
   /**
    * Determine asset type from asset data
    */
-  detectAssetType(asset: AssetDetailsData): 'ammunition' | 'weapon' | 'explosive' | null {
+  detectAssetType(asset: AssetDetailsData): 'ammunition' | 'weapon' | 'explosive' | 'accessory' | null {
     if (!asset) {
       return null;
     }
@@ -110,18 +118,23 @@ export class AssetDetailsService {
     if (isWeapon(asset)) {
       return 'weapon';
     }
+    if (isAccessory(asset)) {
+      return 'accessory';
+    }
     return null;
   }
 
   /**
    * Get file entity type from asset type
    */
-  getFileEntityType(assetType: 'ammunition' | 'weapon' | 'explosive'): FileEntityType {
+  getFileEntityType(assetType: 'ammunition' | 'weapon' | 'explosive' | 'accessory'): FileEntityType {
     switch (assetType) {
       case 'weapon':
         return FileEntityType.Weapon;
       case 'explosive':
         return FileEntityType.Explosive;
+      case 'accessory':
+        return FileEntityType.Accessory;
       default:
         return FileEntityType.Ammunition;
     }
@@ -132,8 +145,24 @@ export class AssetDetailsService {
    */
   loadAssetImage(
     assetId: number,
-    assetType: 'ammunition' | 'weapon' | 'explosive'
+    assetType: 'ammunition' | 'weapon' | 'explosive' | 'accessory'
   ): Observable<string | null> {
+    if (assetType === 'accessory') {
+      return this.accessoryService.getImageBlob(assetId).pipe(
+        switchMap((blob: Blob) => {
+          if (blob.size > 0 && (blob.type.startsWith('image/') || blob.type === 'application/octet-stream' || !blob.type)) {
+            return of(URL.createObjectURL(blob));
+          }
+          this.configService.logWarning('Accessory image rejected due to invalid type or empty size');
+          return of(null);
+        }),
+        catchError((err) => {
+          this.configService.logWarning('Failed to load accessory image blob', err);
+          return of(null);
+        })
+      );
+    }
+
     const entityType = this.getFileEntityType(assetType);
 
     return this.fileUploadService.getFilesByEntity(entityType, assetId).pipe(

@@ -66,6 +66,7 @@ export class AssetListFacade {
   private readonly _ammunitionViewMode = new BehaviorSubject<ViewMode>('available');
   private readonly _explosivesViewMode = new BehaviorSubject<ViewMode>('available');
   private readonly _weaponsViewMode = new BehaviorSubject<ViewMode>('available');
+  private readonly _accessoriesViewMode = new BehaviorSubject<ViewMode>('available');
   private readonly _filterState = new BehaviorSubject<AssetFilterState>(createInitialFilterState());
   private readonly _sortState = new BehaviorSubject<AssetSortState>(createInitialSortState());
   private readonly _paginationState = new BehaviorSubject<AssetPaginationState>(createInitialPaginationState());
@@ -97,6 +98,7 @@ export class AssetListFacade {
   readonly ammunitionViewMode$ = this._ammunitionViewMode.asObservable();
   readonly explosivesViewMode$ = this._explosivesViewMode.asObservable();
   readonly weaponsViewMode$ = this._weaponsViewMode.asObservable();
+  readonly accessoriesViewMode$ = this._accessoriesViewMode.asObservable();
   readonly filterState$ = this._filterState.asObservable();
   readonly sortState$ = this._sortState.asObservable();
   readonly paginationState$ = this._paginationState.asObservable();
@@ -134,6 +136,7 @@ export class AssetListFacade {
       if (parsed.ammunitionView) this._ammunitionViewMode.next(parsed.ammunitionView);
       if (parsed.explosivesView) this._explosivesViewMode.next(parsed.explosivesView);
       if (parsed.weaponsView) this._weaponsViewMode.next(parsed.weaponsView);
+      if (parsed.accessoriesView) this._accessoriesViewMode.next(parsed.accessoriesView);
       this.loadUnitsForTab(safeTab);
     }
 
@@ -217,6 +220,10 @@ export class AssetListFacade {
       this._weaponsViewMode.next('deleted');
       this.loadAssets();
     }
+    if (parsed.accessoriesView === 'deleted' && this._accessoriesViewMode.value !== 'deleted') {
+      this._accessoriesViewMode.next('deleted');
+      this.loadAssets();
+    }
     // viewItemId is handled by the component's route subscription
   }
 
@@ -257,6 +264,7 @@ export class AssetListFacade {
     const ammoDeleted = this._activeTab.value === 'ammunition' && this._ammunitionViewMode.value === 'deleted';
     const expDeleted = this._activeTab.value === 'explosive' && this._explosivesViewMode.value === 'deleted';
     const weapDeleted = this._activeTab.value === 'weapon' && this._weaponsViewMode.value === 'deleted';
+    const accDeleted = this._activeTab.value === 'accessory' && this._accessoriesViewMode.value === 'deleted';
 
     this.assetListService.getAssets(
       this._activeTab.value,
@@ -266,7 +274,8 @@ export class AssetListFacade {
       this._sortState.value,
       ammoDeleted,
       expDeleted,
-      weapDeleted
+      weapDeleted,
+      accDeleted
     )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -312,6 +321,7 @@ export class AssetListFacade {
     this._ammunitionViewMode.next('available');
     this._explosivesViewMode.next('available');
     this._weaponsViewMode.next('available');
+    this._accessoriesViewMode.next('available');
     this.loadUnitsForTab(tab);
     this._paginationState.next({ ...this._paginationState.value, currentPage: 1 });
     this._filterState.next(resetFilterState(this._filterState.value));
@@ -325,7 +335,7 @@ export class AssetListFacade {
 
   switchViewMode(
     mode: ViewMode,
-    tab: 'ammunition' | 'explosive' | 'weapon'
+    tab: 'ammunition' | 'explosive' | 'weapon' | 'accessory'
   ): void {
     if (tab === 'ammunition') {
       if (this._ammunitionViewMode.value === mode) return;
@@ -333,6 +343,9 @@ export class AssetListFacade {
     } else if (tab === 'explosive') {
       if (this._explosivesViewMode.value === mode) return;
       this._explosivesViewMode.next(mode);
+    } else if (tab === 'accessory') {
+      if (this._accessoriesViewMode.value === mode) return;
+      this._accessoriesViewMode.next(mode);
     } else {
       if (this._weaponsViewMode.value === mode) return;
       this._weaponsViewMode.next(mode);
@@ -391,6 +404,7 @@ export class AssetListFacade {
     const ammoDeleted = this._activeTab.value === 'ammunition' && this._ammunitionViewMode.value === 'deleted';
     const expDeleted = this._activeTab.value === 'explosive' && this._explosivesViewMode.value === 'deleted';
     const weapDeleted = this._activeTab.value === 'weapon' && this._weaponsViewMode.value === 'deleted';
+    const accDeleted = this._activeTab.value === 'accessory' && this._accessoriesViewMode.value === 'deleted';
 
     this.assetListService.getAllFilteredAssetsForExport(
       this._activeTab.value,
@@ -398,7 +412,8 @@ export class AssetListFacade {
       this._sortState.value,
       ammoDeleted,
       expDeleted,
-      weapDeleted
+      weapDeleted,
+      accDeleted
     )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -425,6 +440,7 @@ export class AssetListFacade {
   get ammunitionViewMode(): ViewMode { return this._ammunitionViewMode.value; }
   get explosivesViewMode(): ViewMode { return this._explosivesViewMode.value; }
   get weaponsViewMode(): ViewMode { return this._weaponsViewMode.value; }
+  get accessoriesViewMode(): ViewMode { return this._accessoriesViewMode.value; }
   get filterState(): AssetFilterState { return this._filterState.value; }
   get sortState(): AssetSortState { return this._sortState.value; }
   get paginationState(): AssetPaginationState { return this._paginationState.value; }

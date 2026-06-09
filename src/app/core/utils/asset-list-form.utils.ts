@@ -8,7 +8,7 @@ export function createAssetEditForm(fb: FormBuilder): FormGroup {
     id: [0 as number],
     name: ['', Validators.required],
     nameAr: [''],
-    itemNo: ['', Validators.required],
+    itemNo: [''],
     partNo: [''],
 
     // Shared/Common (Nullable)

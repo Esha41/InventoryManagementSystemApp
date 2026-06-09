@@ -116,6 +116,9 @@
     "selectAmmunitionTypeClass": "Select Caliber Category",
     "selectWeaponType": "Select weapon type",
     "selectExplosiveType": "Select explosive type",
+    "accessoryType": "Accessory Type",
+    "selectAccessoryType": "Select accessory type",
+    "addAccessory": "Add Weapon Accessory",
     "notes": "Notes",
     "enterNotes": "Enter notes",
     "errors": {
@@ -247,12 +250,14 @@
     "addAmmunition": "Add Ammunition",
     "addWeapon": "Add Weapon",
     "addExplosive": "Add Explosive",
+    "addAccessory": "Add Weapon Accessory",
     "searchPlaceholder": "Search....",
     "searchPlaceholderWeapons": "Search....",
     "tabs": {
       "ammunition": "Ammunition",
       "weapon": "Weapons",
-      "explosive": "Explosives"
+      "explosive": "Explosives",
+      "accessory": "Weapon Accessories"
     },
     "ammunition": {
       "availableAmmunition": "Available Ammunition",
@@ -271,6 +276,12 @@
       "deletedWeapons": "Deleted Weapons",
       "restoreSuccess": "Weapon restored successfully",
       "permanentDeleteSuccess": "Weapon permanently deleted"
+    },
+    "accessories": {
+      "availableAccessories": "Available Accessories",
+      "deletedAccessories": "Deleted Accessories",
+      "restoreSuccess": "Accessory restored successfully",
+      "permanentDeleteSuccess": "Accessory permanently deleted"
     },
     "weapon": "Weapons",
     "explosive": "Explosives",
@@ -297,6 +308,7 @@
       "allClassifications": "All Classifications",
       "allCountries": "All Countries",
       "allExplosiveTypes": "All Explosive Types",
+      "allAccessoryTypes": "All Accessory Types",
       "defaultSort": "Default",
       "moreColumnFilters": "Additional filters",
       "hideColumnFilters": "Hide additional filters",
@@ -314,6 +326,7 @@
     "ammunitionItems": "Ammunition Items",
     "weaponItems": "Weapon Items",
     "explosiveItems": "Explosive Items",
+    "accessoryItems": "Weapon Accessory Items",
     "loading": "Loading data...",
     "loadingAmmunition": "Loading ammunition data...",
     "loadingWeapons": "Loading weapons data...",
@@ -340,7 +353,26 @@
     "actions": {
       "viewDetails": "View Details",
       "restore": "Restore",
-      "permanentDelete": "Permanent Delete"
+      "permanentDelete": "Permanent Delete",
+      "linkAccessories": "Link Accessories"
+    },
+    "weaponAccessoryLink": {
+      "title": "Link Weapon Accessories",
+      "description": "Choose an accessory from the list, enter how many per weapon, then click Add. Repeat for each accessory you want to link.",
+      "selectAccessory": "Accessory",
+      "selectAccessoryPlaceholder": "Select accessory",
+      "selectAccessoryFirst": "Please select an accessory first",
+      "noAccessoriesAvailable": "All accessories are already linked",
+      "addAccessory": "Add",
+      "linkedAccessories": "Linked accessories",
+      "noLinkedAccessories": "No accessories linked yet. Use the dropdown above to add one.",
+      "defaultQuantity": "Default Quantity",
+      "defaultQuantityHint": "Number of this accessory per weapon",
+      "loading": "Loading accessories...",
+      "selectedCount": "{{count}} accessory(ies) selected",
+      "saveSuccess": "Weapon accessories updated successfully",
+      "invalidQuantity": "Quantity must be at least 1",
+      "duplicateAccessory": "This accessory is already linked"
     },
     "noItems": "No items found",
     "noItemsDescription": "Try adjusting your filters or add a new item",

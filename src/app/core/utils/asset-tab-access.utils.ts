@@ -1,7 +1,7 @@
 import { AssetType } from '@models/asset-list.model';
 import { ASSET_LIST_TAB_PERMISSIONS } from '@core/constants/asset-import-export-permissions';
 
-const TAB_ORDER: AssetType[] = ['ammunition', 'explosive', 'weapon'];
+const TAB_ORDER: AssetType[] = ['ammunition', 'explosive', 'weapon', 'accessory'];
 
 /**
  * Pick the active catalog tab: honor `requested` if allowed, else first allowed tab in order, else ammunition.

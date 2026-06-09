@@ -5,6 +5,7 @@
       [ammunitionViewMode]="ammunitionViewMode"
       [explosivesViewMode]="explosivesViewMode"
       [weaponsViewMode]="weaponsViewMode"
+      [accessoriesViewMode]="accessoriesViewMode"
       [isRTL]="isRTL"
       (tabChange)="switchTab($event)"
       (addClick)="navigateToAddAsset()"
@@ -31,13 +32,15 @@
     <div class="pt-3">
       <app-asset-table [assets]="(facade.assets$ | async) ?? []" [activeTab]="activeTab" [loading]="(facade.loading$ | async) ?? false" [sortState]="sortState"
         [ammunitionViewMode]="ammunitionViewMode" [explosivesViewMode]="explosivesViewMode" [weaponsViewMode]="weaponsViewMode"
-        [totalItems]="(facade.totalItems$ | async) ?? 0" [showEditDelete]="(activeTab !== 'ammunition' || ammunitionViewMode === 'available') && (activeTab !== 'explosive' || explosivesViewMode === 'available') && (activeTab !== 'weapon' || weaponsViewMode === 'available')"
-        [showRestore]="(activeTab === 'ammunition' && ammunitionViewMode === 'deleted') || (activeTab === 'explosive' && explosivesViewMode === 'deleted') || (activeTab === 'weapon' && weaponsViewMode === 'deleted')"
-        [showPermanentDelete]="isSuperAdmin && ((activeTab === 'ammunition' && ammunitionViewMode === 'deleted') || (activeTab === 'explosive' && explosivesViewMode === 'deleted') || (activeTab === 'weapon' && weaponsViewMode === 'deleted'))"
+        [accessoriesViewMode]="accessoriesViewMode"
+        [totalItems]="(facade.totalItems$ | async) ?? 0" [showEditDelete]="(activeTab !== 'ammunition' || ammunitionViewMode === 'available') && (activeTab !== 'explosive' || explosivesViewMode === 'available') && (activeTab !== 'weapon' || weaponsViewMode === 'available') && (activeTab !== 'accessory' || accessoriesViewMode === 'available')"
+        [showRestore]="(activeTab === 'ammunition' && ammunitionViewMode === 'deleted') || (activeTab === 'explosive' && explosivesViewMode === 'deleted') || (activeTab === 'weapon' && weaponsViewMode === 'deleted') || (activeTab === 'accessory' && accessoriesViewMode === 'deleted')"
+        [showPermanentDelete]="isSuperAdmin && ((activeTab === 'ammunition' && ammunitionViewMode === 'deleted') || (activeTab === 'explosive' && explosivesViewMode === 'deleted') || (activeTab === 'weapon' && weaponsViewMode === 'deleted') || (activeTab === 'accessory' && accessoriesViewMode === 'deleted'))"
         [paginationState]="paginationState" [totalPages]="totalPages" [getAssetName]="getAssetName"
         (view)="onView($event)" (edit)="onEdit($event)" (delete)="onDelete($event)" (restore)="onRestore($event)" (permanentDelete)="onPermanentDelete($event)" (sort)="sortByColumn($event)"
         (pageChange)="onPageChange($event)" (rowsPerPageChange)="onRowsPerPageChange($event)"
-        (ammunitionViewModeChange)="switchAmmunitionViewMode($event)" (explosivesViewModeChange)="switchExplosivesViewMode($event)" (weaponsViewModeChange)="switchWeaponsViewMode($event)">
+        (ammunitionViewModeChange)="switchAmmunitionViewMode($event)" (explosivesViewModeChange)="switchExplosivesViewMode($event)" (weaponsViewModeChange)="switchWeaponsViewMode($event)"
+        (accessoriesViewModeChange)="switchAccessoriesViewMode($event)" (linkAccessories)="onLinkAccessories($event)">
       </app-asset-table>
     </div>
 
@@ -69,6 +72,14 @@
       cancelText="{{ 'common.cancel' | translate }}" confirmVariant="danger" (confirmed)="confirmPermanentDelete()"
       (cancelled)="closePermanentDeleteModal()">
     </app-confirm-dialog>
+
+    <app-weapon-accessory-link-modal
+      [isOpen]="showWeaponAccessoryLinkModal"
+      [weaponId]="weaponAccessoryLinkWeaponId"
+      [weaponName]="weaponAccessoryLinkWeaponName"
+      (closed)="closeWeaponAccessoryLinkModal()"
+      (saved)="onWeaponAccessoryLinkSaved()">
+    </app-weapon-accessory-link-modal>
 
     <!-- Restore Confirmation Modal -->
     <app-confirm-dialog [isOpen]="modalState.showRestoreModal"

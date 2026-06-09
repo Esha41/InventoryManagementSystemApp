@@ -9,6 +9,7 @@ import { AssetType, AssetImageState, Asset } from '@models/asset-list.model';
 import { AmmunitionReadDto, AmmunitionCreateDto } from '@models/ammunition.model';
 import { WeaponDto, CreateUpdateWeaponDto } from '@models/weapon.model';
 import { ExplosiveDto, CreateUpdateExplosiveDto } from '@models/explosive.model';
+import { AccessoryDto, CreateUpdateAccessoryDto } from '@models/accessory.model';
 import { LookupItem } from '@models/lookup.model';
 import { ItemType } from '@models/inventory.model';
 import { createAssetEditForm } from '@utils/asset-list-form.utils';
@@ -61,7 +62,7 @@ function caliberClassApiToFormSelectValue(value: unknown): string {
 export class AssetEditModalComponent implements OnInit, OnChanges {
   @Input() isOpen = false;
   @Input() activeTab: AssetType = 'ammunition';
-  @Input() selectedAsset: Asset | AmmunitionReadDto | WeaponDto | ExplosiveDto | null = null;
+  @Input() selectedAsset: Asset | AmmunitionReadDto | WeaponDto | ExplosiveDto | AccessoryDto | null = null;
   @Input() loading = false;
   @Input() units: LookupItem[] = [];
   @Input() caseTypeList: LookupItem[] = [];
@@ -80,7 +81,7 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
   @Input() imageState: AssetImageState = createInitialImageState();
 
   @Output() closed = new EventEmitter<void>();
-  @Output() saved = new EventEmitter<{ dto: AmmunitionCreateDto | CreateUpdateWeaponDto | CreateUpdateExplosiveDto; imageFile: File | null; imageFileId: number | null; removeImageRequested: boolean }>();
+  @Output() saved = new EventEmitter<{ dto: AmmunitionCreateDto | CreateUpdateWeaponDto | CreateUpdateExplosiveDto | CreateUpdateAccessoryDto; imageFile: File | null; imageFileId: number | null; removeImageRequested: boolean }>();
   @Output() imageFileSelected = new EventEmitter<File>();
   @Output() imageDropped = new EventEmitter<File>();
 
@@ -121,28 +122,35 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     this.editForm = createAssetEditForm(this.fb);
-    this.updateCaliberCategoryValidators();
+    this.updateTabValidators();
   }
 
-  /** Ammunition: ammunitionType required. Weapon: caliberCategory required. Explosive: neither. */
-  private updateCaliberCategoryValidators(): void {
+  /** Ammunition: ammunitionType required. Weapon: caliberCategory required. Accessory: itemNo optional. */
+  private updateTabValidators(): void {
     const at = this.editForm?.get('ammunitionType');
     const cc = this.editForm?.get('caliberCategory');
-    if (!at || !cc) return;
+    const itemNo = this.editForm?.get('itemNo');
+    if (!at || !cc || !itemNo) return;
     at.clearValidators();
     cc.clearValidators();
+    itemNo.clearValidators();
     if (this.activeTab === 'ammunition') {
       at.setValidators([Validators.required]);
+      itemNo.setValidators([Validators.required]);
     } else if (this.activeTab === 'weapon') {
       cc.setValidators([Validators.required]);
+      itemNo.setValidators([Validators.required]);
+    } else if (this.activeTab === 'explosive') {
+      itemNo.setValidators([Validators.required]);
     }
     at.updateValueAndValidity({ emitEvent: false });
     cc.updateValueAndValidity({ emitEvent: false });
+    itemNo.updateValueAndValidity({ emitEvent: false });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['activeTab'] && this.editForm) {
-      this.updateCaliberCategoryValidators();
+      this.updateTabValidators();
     }
     if (changes['selectedAsset'] && this.selectedAsset && this.editForm) {
       // Use originalData when available (Asset from table) for correct IDs and entity-specific fields
@@ -186,7 +194,7 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
       } else {
         this.editForm.patchValue({ ammunitionType: '', caliberCategory: '1' });
       }
-      this.updateCaliberCategoryValidators();
+      this.updateTabValidators();
       this.cdr.markForCheck();
     }
     if (changes['imageState'] && this.imageState) {
@@ -225,7 +233,7 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
       delete formData['nameAr'];
     }
 
-    let dto: AmmunitionCreateDto | CreateUpdateWeaponDto | CreateUpdateExplosiveDto;
+    let dto: AmmunitionCreateDto | CreateUpdateWeaponDto | CreateUpdateExplosiveDto | CreateUpdateAccessoryDto;
 
     if (this.activeTab === 'ammunition') {
       const raw = formData as Record<string, unknown>;
@@ -271,6 +279,18 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
         raw['caliberId'] = parseInt(cid, 10);
       }
       dto = raw as unknown as CreateUpdateWeaponDto;
+    } else if (this.activeTab === 'accessory') {
+      const accessoryDto: CreateUpdateAccessoryDto = {
+        name: String(formData['name'] ?? '').trim()
+      };
+      const itemNoTrimmed = String(formData['itemNo'] ?? '').trim();
+      if (itemNoTrimmed) {
+        accessoryDto.itemNo = itemNoTrimmed;
+      }
+      if (nameArTrimmed) {
+        accessoryDto.nameAr = nameArTrimmed;
+      }
+      dto = accessoryDto;
     } else {
       const raw = formData as Record<string, unknown>;
       delete raw['ammunitionType'];
@@ -389,4 +409,5 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
   get explosiveItemTypes(): LookupItem[] {
     return this.getFilteredItemTypes(ItemType.Explosive);
   }
+
 }

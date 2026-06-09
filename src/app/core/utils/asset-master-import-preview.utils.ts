@@ -1,7 +1,11 @@
 import { ImportResult } from '@models/import-result.model';
 import { PreviewData } from '@components/import-preview-dialog/import-preview-dialog.component';
 
+export const ACCESSORY_IMPORT_PREVIEW_COLUMNS = ['name', 'nameAr', 'itemNo'] as const;
+
 export interface MapImportPreviewOptions {
+  /** When set, only these camelCase column keys are shown (in this order). */
+  includeColumns?: readonly string[];
   /** Column keys (camelCase) to omit from preview table and error export (e.g. assetId, itemId). */
   excludeColumns?: string[];
 
@@ -39,12 +43,33 @@ function batchImportRowHasDualAssignment(data: Record<string, unknown>): boolean
   return hasDept && hasEmp;
 }
 
-function filterPreviewColumns(columns: string[], excludeColumns: string[] | undefined): string[] {
-  if (!excludeColumns?.length) {
-    return columns;
+function filterPreviewColumns(
+  columns: string[],
+  options?: Pick<MapImportPreviewOptions, 'includeColumns' | 'excludeColumns'>
+): string[] {
+  if (options?.includeColumns?.length) {
+    return [...options.includeColumns];
   }
-  const drop = new Set(excludeColumns);
+
+  if (!options?.excludeColumns?.length) {
+    return columns.filter((c) => c !== 'rowNumber');
+  }
+
+  const drop = new Set([...options.excludeColumns, 'rowNumber']);
   return columns.filter((c) => !drop.has(c));
+}
+
+function pickPreviewRowData(
+  data: Record<string, unknown>,
+  columns: string[]
+): Record<string, unknown> {
+  const picked: Record<string, unknown> = {};
+  columns.forEach((col) => {
+    if (col in data) {
+      picked[col] = data[col];
+    }
+  });
+  return picked;
 }
 
 /**
@@ -133,7 +158,7 @@ export function mapImportResultToPreviewData(
         ? Object.keys(previewRows[0].data)
         : [];
 
-  let columns = filterPreviewColumns(rawColumns, options?.excludeColumns);
+  let columns = filterPreviewColumns(rawColumns, options);
   if (options?.batchImportActions) {
     columns = [
       BATCH_IMPORT_ACTION_COLUMN,
@@ -141,9 +166,16 @@ export function mapImportResultToPreviewData(
     ];
   }
 
+  const rows = columns.length > 0
+    ? previewRows.map((row) => ({
+        ...row,
+        data: pickPreviewRowData(row.data, columns)
+      }))
+    : previewRows;
+
   return {
-    rows: previewRows,
-    totalRows: previewRows.length,
+    rows,
+    totalRows: rows.length,
     validRows,
     invalidRows,
     columns

@@ -12,6 +12,7 @@ import { AmmunitionService } from '@assets/services/ammunition.service';
 import { FileUploadService } from '@services/file-upload.service';
 import { WeaponService } from '@assets/services/weapon.service';
 import { ExplosiveService } from '@assets/services/explosive.service';
+import { AccessoryService } from '@assets/services/accessory.service';
 
 export interface ImageLoadResult {
   assetId: string;
@@ -27,7 +28,8 @@ export class AssetImageService {
   constructor(
     private ammunitionService: AmmunitionService,
     private weaponService: WeaponService,
-    private explosiveService: ExplosiveService
+    private explosiveService: ExplosiveService,
+    private accessoryService: AccessoryService
   ) { }
 
   /**
@@ -58,6 +60,10 @@ export class AssetImageService {
           fileBlob$ = this.weaponService.getFileBlob(image.id);
         } else if (activeTab === 'explosive') {
           fileBlob$ = this.explosiveService.getFileBlob(image.id);
+        } else if (activeTab === 'accessory') {
+          const accessoryId = parseInt(asset.id, 10);
+          if (Number.isNaN(accessoryId)) return null;
+          fileBlob$ = this.accessoryService.getImageBlob(accessoryId);
         } else {
           return null;
         }
@@ -103,12 +109,42 @@ export class AssetImageService {
       entityType = FileEntityType.Weapon;
     } else if (activeTab === 'explosive') {
       entityType = FileEntityType.Explosive;
+    } else if (activeTab === 'accessory') {
+      return this.accessoryService.getById(id).pipe(
+        switchMap(dto => {
+          const fileId = this.accessoryService.getMainImageFileId(dto.images);
+          if (!fileId) {
+            if (callback) callback();
+            return of({ fileId: null, url: null });
+          }
+          return this.accessoryService.getImageBlob(id).pipe(
+            map((blob: Blob) => {
+              if (blob.size > 0 && (blob.type.startsWith('image/') || blob.type === 'application/octet-stream' || !blob.type)) {
+                const blobUrl = URL.createObjectURL(blob);
+                this.blobUrls.add(blobUrl);
+                if (callback) callback();
+                return { fileId, url: blobUrl };
+              }
+              if (callback) callback();
+              return { fileId, url: null };
+            }),
+            catchError(() => {
+              if (callback) callback();
+              return of({ fileId, url: null });
+            })
+          );
+        }),
+        catchError(() => {
+          if (callback) callback();
+          return of({ fileId: null, url: null });
+        })
+      );
     } else {
       if (callback) callback();
       return of({ fileId: null, url: null });
     }
 
-    const service = this.getServiceForTab(activeTab);
+    const service = this.getServiceForTab(activeTab as Exclude<AssetType, 'accessory'>);
 
     return fileUploadService.getFilesByEntity(entityType, id).pipe(
       switchMap((files: FileUploadDto[]) => {
@@ -151,7 +187,7 @@ export class AssetImageService {
   /**
    * Get the appropriate service for the active tab
    */
-  private getServiceForTab(activeTab: AssetType): AmmunitionService | WeaponService | ExplosiveService {
+  private getServiceForTab(activeTab: Exclude<AssetType, 'accessory'>): AmmunitionService | WeaponService | ExplosiveService {
     switch (activeTab) {
       case 'ammunition':
         return this.ammunitionService;
@@ -159,8 +195,6 @@ export class AssetImageService {
         return this.weaponService;
       case 'explosive':
         return this.explosiveService;
-      default:
-        return this.ammunitionService;
     }
   }
 

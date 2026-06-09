@@ -44,7 +44,7 @@ export type RowFilter = 'all' | 'valid' | 'invalid';
 })
 export class ImportPreviewDialogComponent {
     @Input() previewData: PreviewData | null = null;
-    @Input() assetType: 'ammunition' | 'weapon' | 'explosive' | 'batch' = 'ammunition';
+    @Input() assetType: 'ammunition' | 'weapon' | 'explosive' | 'accessory' | 'batch' = 'ammunition';
     @Input() importPreviewMode: ImportPreviewMode = 'strict';
     @Output() confirm = new EventEmitter<PreviewRow[]>();
     @Output() importCancelled = new EventEmitter<void>();
@@ -269,6 +269,13 @@ export class ImportPreviewDialogComponent {
      */
     getColumnHeader(column: string): string {
         if (!column) return '';
+
+        if (column === 'name') {
+            return this.translationService.getTranslation('addAsset.nameEnglish');
+        }
+        if (column === 'nameAr') {
+            return this.translationService.getTranslation('addAsset.nameArabic');
+        }
 
         // Try different translation paths
         const paths = [

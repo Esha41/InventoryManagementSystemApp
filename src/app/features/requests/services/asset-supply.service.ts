@@ -39,11 +39,39 @@ export interface OrderAssetsToSupplyDto {
   canFullyFulfill: boolean;
 }
 
+export interface CreateAssetSupplyAccessoryDto {
+  accessoryId: number;
+  defaultQuantity: number;
+  suppliedQuantity: number;
+}
+
 export interface CreateAssetSupplyDetailDto {
   assetId: number;
   conditionOnSupply?: string;
   custodianId?: number;
   notes?: string;
+  accessories?: CreateAssetSupplyAccessoryDto[];
+}
+
+export interface WeaponAccessoryDefaultLineDto {
+  accessoryId: number;
+  itemNo?: string | null;
+  name: string;
+  nameAr?: string | null;
+  defaultQuantity: number;
+}
+
+export interface WeaponAccessoryDefaultsDto {
+  defaultsByWeaponItemId: Record<string, WeaponAccessoryDefaultLineDto[]>;
+}
+
+export interface AssetSupplyAccessoryDetailDto {
+  accessoryId: number;
+  itemNo?: string | null;
+  name?: string | null;
+  nameAr?: string | null;
+  defaultQuantity: number;
+  suppliedQuantity: number;
 }
 
 export interface CreateAssetSupplyDto {
@@ -253,6 +281,11 @@ export class AssetSupplyService {
       if (detail.notes) {
         formData.append(`SupplyDetails[${index}].Notes`, detail.notes);
       }
+      (detail.accessories ?? []).forEach((accessory, accIndex) => {
+        formData.append(`SupplyDetails[${index}].Accessories[${accIndex}].AccessoryId`, accessory.accessoryId.toString());
+        formData.append(`SupplyDetails[${index}].Accessories[${accIndex}].DefaultQuantity`, accessory.defaultQuantity.toString());
+        formData.append(`SupplyDetails[${index}].Accessories[${accIndex}].SuppliedQuantity`, accessory.suppliedQuantity.toString());
+      });
     });
 
     if (receiverSignatureFile?.size) {
@@ -274,6 +307,18 @@ export class AssetSupplyService {
    * Get selected batches with their pre-picked assets for weapon supply review.
    * Backend returns batches grouped with assets (serial first, then non-serial).
    */
+  getWeaponAccessoryDefaults(orderId: number): Observable<WeaponAccessoryDefaultsDto> {
+    this.config.log('Getting weapon accessory defaults', { orderId });
+    return this.apiService.get<WeaponAccessoryDefaultsDto>(
+      `${this.baseEndpoint}/order/${orderId}/weapon-accessory-defaults`
+    ).pipe(
+      catchError(error => {
+        this.config.logError('Failed to get weapon accessory defaults', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
   getSelectedBatchesWithAssets(orderId: number): Observable<import('@models/batch.model').BatchDto[]> {
     this.config.log(`Getting selected batches with assets for order ${orderId}`);
     return this.apiService.get<import('@models/batch.model').BatchDto[]>(

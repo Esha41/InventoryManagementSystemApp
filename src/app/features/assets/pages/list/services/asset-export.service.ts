@@ -38,7 +38,37 @@ export class AssetExportService {
   /**
    * Build export columns based on active tab
    */
+  private buildAccessoryColumns(markRequired = false): ExcelColumn[] {
+    const withRequired = (label: string, required: boolean) =>
+      markRequired && required ? `${label}*` : label;
+
+    return [
+      {
+        header: withRequired(this.translateService.instant('addAsset.nameEnglish'), true),
+        key: 'name',
+        width: 30,
+        format: (value: string) => value || '-'
+      },
+      {
+        header: withRequired(this.translateService.instant('addAsset.nameArabic'), false),
+        key: 'nameAr',
+        width: 30,
+        format: (value: string) => value || '-'
+      },
+      {
+        header: withRequired(this.translateService.instant('assetList.table.itemNo'), false),
+        key: 'itemNo',
+        width: 15,
+        format: (value: string) => value || '-'
+      }
+    ];
+  }
+
   private buildExportColumns(activeTab: AssetType): ExcelColumn[] {
+    if (activeTab === 'accessory') {
+      return this.buildAccessoryColumns(false);
+    }
+
     const columns: ExcelColumn[] = [
       {
         header: this.translateService.instant('addAsset.nameEnglish'),
@@ -150,7 +180,6 @@ export class AssetExportService {
       );
     }
 
-    // Add common columns
     columns.push(
       {
         header: this.translateService.instant('assetList.table.price'),
@@ -271,6 +300,21 @@ export class AssetExportService {
           overallLength: 33,
           weight: 6.9,
           capacity: 30
+        }
+      ];
+    } else if (activeTab === 'accessory') {
+      headers = this.buildAccessoryColumns(true).map(({ header, key }) => ({ header, key }));
+
+      sampleData = [
+        {
+          name: 'Rifle Scope',
+          nameAr: 'منظار بندقية',
+          itemNo: 'ACC-001'
+        },
+        {
+          name: 'Tactical Flashlight',
+          nameAr: 'مصباح تكتيكي',
+          itemNo: 'ACC-002'
         }
       ];
     } else if (activeTab === 'explosive') {

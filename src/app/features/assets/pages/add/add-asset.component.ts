@@ -16,6 +16,8 @@ import { LookupItem } from '@models/lookup.model';
 import { AmmunitionCreateDto, AmmunitionReadDto } from '@models/ammunition.model';
 import { WeaponDto, CreateUpdateWeaponDto } from '@models/weapon.model';
 import { ExplosiveDto, CreateUpdateExplosiveDto } from '@models/explosive.model';
+import { AccessoryDto, CreateUpdateAccessoryDto } from '@models/accessory.model';
+import { AccessoryService } from '@assets/services/accessory.service';
 import { ApiService } from '@services/api.service';
 import { DropdownOption, DropdownComponent } from '@components/dropdown/dropdown.component';
 import { ToastService } from '@services/toast.service';
@@ -79,7 +81,7 @@ interface AssetForm {
   unitId: string; // Unit lookup ID
 }
 
-type AssetType = 'ammunition' | 'weapon' | 'explosive';
+type AssetType = 'ammunition' | 'weapon' | 'explosive' | 'accessory';
 
 @Component({
   selector: 'app-add-asset',
@@ -148,6 +150,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     private translationService: TranslationService,
     private lookupService: LookupService,
     private apiService: ApiService,
+    private accessoryService: AccessoryService,
     private toastService: ToastService,
     private router: Router,
     private route: ActivatedRoute,
@@ -217,7 +220,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     // Check for tab query parameter
     this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const tab = params['tab'];
-      if (tab && (tab === 'ammunition' || tab === 'weapon' || tab === 'explosive')) {
+      if (tab && (tab === 'ammunition' || tab === 'weapon' || tab === 'explosive' || tab === 'accessory')) {
         const tabTyped = tab as AssetType;
         const tabChanged = this.activeTab !== tabTyped;
         this.activeTab = tabTyped;
@@ -267,6 +270,8 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
       itemType = ItemType.Weapon;
     } else if (tab === 'explosive') {
       itemType = ItemType.Explosive;
+    } else if (tab === 'accessory') {
+      itemType = ItemType.Accessory;
     }
 
     this.lookupService.getUnitsByItemType(itemType)
@@ -365,6 +370,8 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
       this.submitWeapon();
     } else if (this.activeTab === 'explosive') {
       this.submitExplosive();
+    } else if (this.activeTab === 'accessory') {
+      this.submitAccessory();
     }
   }
 
@@ -520,9 +527,32 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     request.pipe(takeUntil(this.destroy$)).subscribe(this.getSubmitObserver());
   }
 
+  private submitAccessory() {
+    const dto: CreateUpdateAccessoryDto = {
+      name: this.assetForm.name.trim()
+    };
+
+    const itemNoTrimmed = this.assetForm.itemNo?.trim();
+    if (itemNoTrimmed) dto.itemNo = itemNoTrimmed;
+    if (this.assetForm.nameAr?.trim()) dto.nameAr = this.assetForm.nameAr.trim();
+
+    this.accessoryService.create(dto, this.assetForm.image ?? null)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          if (res.succeeded) {
+            this.getSubmitObserver().next(res.data as unknown as AccessoryDto);
+          } else {
+            this.getSubmitObserver().error(res.message ?? 'Failed to create accessory');
+          }
+        },
+        error: (error: unknown) => this.getSubmitObserver().error(error)
+      });
+  }
+
   private getSubmitObserver() {
     return {
-      next: (asset: AmmunitionReadDto | WeaponDto | ExplosiveDto) => {
+      next: (asset: AmmunitionReadDto | WeaponDto | ExplosiveDto | AccessoryDto) => {
         if (asset) {
           const successMessage = this.translationService.getTranslation('addAsset.successMessage');
           this.toastService.success(successMessage || 'Asset created successfully', this.translationService.getTranslation('toast.success'));
@@ -564,7 +594,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
       this.errorMessage = 'Name is required';
       return false;
     }
-    if (!this.assetForm.itemNo || !this.assetForm.itemNo.trim()) {
+    if (this.activeTab !== 'accessory' && (!this.assetForm.itemNo || !this.assetForm.itemNo.trim())) {
       this.errorMessage = 'Item number is required';
       return false;
     }
@@ -752,4 +782,5 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
   get explosiveItemTypes(): LookupItem[] {
     return this.getFilteredItemTypes(ItemType.Explosive);
   }
+
 }

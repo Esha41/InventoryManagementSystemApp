@@ -116,6 +116,9 @@
     "selectItemType": "اختر نوع المادة",
     "selectWeaponType": "اختر نوع السلاح",
     "selectExplosiveType": "اختر نوع المتفجر",
+    "accessoryType": "نوع الملحق",
+    "selectAccessoryType": "اختر نوع الملحق",
+    "addAccessory": "إضافة ملحق سلاح",
     "notes": "ملاحظات",
     "enterNotes": "أدخل الملاحظات",
     "errors": {
@@ -246,12 +249,14 @@
     "addAmmunition": "إضافة ذخيرة",
     "addWeapon": "إضافة سلاح",
     "addExplosive": "إضافة متفجر",
+    "addAccessory": "إضافة ملحق سلاح",
     "searchPlaceholder": "البحث....",
     "searchPlaceholderWeapons": "البحث....",
     "tabs": {
       "ammunition": "الذخيرة",
       "weapon": "الأسلحة",
-      "explosive": "المتفجرات"
+      "explosive": "المتفجرات",
+      "accessory": "ملحقات الأسلحة"
     },
     "ammunition": {
       "availableAmmunition": "الذخيرة المتاحة",
@@ -270,6 +275,12 @@
       "deletedWeapons": "الأسلحة المحذوفة",
       "restoreSuccess": "تم استعادة السلاح بنجاح",
       "permanentDeleteSuccess": "تم حذف السلاح نهائياً"
+    },
+    "accessories": {
+      "availableAccessories": "الملحقات المتاحة",
+      "deletedAccessories": "الملحقات المحذوفة",
+      "restoreSuccess": "تم استعادة الملحق بنجاح",
+      "permanentDeleteSuccess": "تم حذف الملحق نهائياً"
     },
     "weapon": "الأسلحة",
     "explosive": "المتفجرات",
@@ -296,6 +307,7 @@
       "allClassifications": "جميع التصنيفات",
       "allCountries": "جميع البلدان",
       "allExplosiveTypes": "جميع أنواع المتفجرات",
+      "allAccessoryTypes": "جميع أنواع الملحقات",
       "defaultSort": "افتراضي",
       "moreColumnFilters": "فلاتر إضافية",
       "hideColumnFilters": "إخفاء الفلاتر الإضافية",
@@ -313,6 +325,7 @@
     "ammunitionItems": "مواد الذخيرة",
     "weaponItems": "مواد الأسلحة",
     "explosiveItems": "مواد المتفجرات",
+    "accessoryItems": "مواد ملحقات الأسلحة",
     "loading": "جاري تحميل البيانات...",
     "loadingAmmunition": "جاري تحميل بيانات الذخيرة...",
     "loadingWeapons": "جاري تحميل بيانات الأسلحة...",
@@ -338,7 +351,26 @@
     "actions": {
       "viewDetails": "عرض التفاصيل",
       "restore": "استعادة",
-      "permanentDelete": "حذف نهائي"
+      "permanentDelete": "حذف نهائي",
+      "linkAccessories": "ربط الملحقات"
+    },
+    "weaponAccessoryLink": {
+      "title": "ربط ملحقات السلاح",
+      "description": "اختر ملحقاً من القائمة، أدخل العدد لكل سلاح، ثم اضغط إضافة. كرر ذلك لكل ملحق تريد ربطه.",
+      "selectAccessory": "الملحق",
+      "selectAccessoryPlaceholder": "اختر ملحقاً",
+      "selectAccessoryFirst": "يرجى اختيار ملحق أولاً",
+      "noAccessoriesAvailable": "جميع الملحقات مرتبطة بالفعل",
+      "addAccessory": "إضافة",
+      "linkedAccessories": "الملحقات المرتبطة",
+      "noLinkedAccessories": "لا توجد ملحقات مرتبطة بعد. استخدم القائمة أعلاه لإضافة ملحق.",
+      "defaultQuantity": "العدد",
+      "defaultQuantityHint": "عدد وحدات هذا الملحق لكل سلاح",
+      "loading": "جاري تحميل الملحقات...",
+      "selectedCount": "تم اختيار {{count}} ملحق",
+      "saveSuccess": "تم تحديث ملحقات السلاح بنجاح",
+      "invalidQuantity": "يجب أن يكون العدد 1 على الأقل",
+      "duplicateAccessory": "هذا الملحق مرتبط بالفعل"
     },
     "noItems": "لم يتم العثور على أي مواد",
     "noItemsDescription": "حاول تعديل الفلاتر أو إضافة مادة جديدة",

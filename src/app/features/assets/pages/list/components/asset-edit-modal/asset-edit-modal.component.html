@@ -12,6 +12,8 @@
               translate }}</span>
             <span *ngIf="activeTab === 'explosive'">{{ 'assetList.tabs.explosive' | translate }} - {{ 'common.edit' |
               translate }}</span>
+            <span *ngIf="activeTab === 'accessory'">{{ 'assetList.tabs.accessory' | translate }} - {{ 'common.edit' |
+              translate }}</span>
           </h3>
           <button (click)="close()" class="p-1 rounded-lg hover:bg-[var(--color-background-hover)] transition-colors">
             <lucide-angular [img]="X" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
@@ -80,8 +82,7 @@
 
               <!-- Item No -->
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="asset-edit-modal-itemno-2">{{ 'addAsset.itemNo' | translate
-                  }} *</label>
+                <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="asset-edit-modal-itemno-2">{{ 'addAsset.itemNo' | translate }}<span *ngIf="activeTab !== 'accessory'"> *</span></label>
                 <input id="asset-edit-modal-itemno-2" type="text" formControlName="itemNo"
                   class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                   [placeholder]="'assetList.editModal.itemNoPlaceholder' | translate" />

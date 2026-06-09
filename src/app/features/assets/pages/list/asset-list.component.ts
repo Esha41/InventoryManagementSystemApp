@@ -19,6 +19,7 @@ import { AssetFilterBarComponent } from './components/asset-filter-bar/asset-fil
 import { AssetTableComponent } from './components/asset-table/asset-table.component';
 import { AssetListHeaderComponent } from './components/asset-list-header/asset-list-header.component';
 import { AssetListFacade } from './services/asset-list.facade';
+import { AssetExportService } from './services/asset-export.service';
 import { AssetListCrudHandlerService, EditSaveEvent } from './services/asset-list-crud-handler.service';
 import { AssetModalService } from './services/asset-modal.service';
 import { TranslationService } from '@services/translation.service';
@@ -27,13 +28,18 @@ import { ImportPreviewDialogComponent, PreviewData } from '@components/import-pr
 import { AmmunitionService } from '@assets/services/ammunition.service';
 import { WeaponService } from '@assets/services/weapon.service';
 import { ExplosiveService } from '@assets/services/explosive.service';
+import { AccessoryService } from '@assets/services/accessory.service';
+import { WeaponAccessoryLinkModalComponent } from './components/weapon-accessory-link-modal/weapon-accessory-link-modal.component';
 import { ImportExportService } from '@admin/services/import-export.service';
 import { ToastService } from '@services/toast.service';
 import { IImportableService } from '@core/interfaces/importable-service.interface';
 import { APIOperationResponse } from '@models/api-response.model';
 import { ImportResult } from '@models/import-result.model';
 import { ErrorHandler } from '@utils/error-handler.utils';
-import { mapImportResultToPreviewData } from '@core/utils/asset-master-import-preview.utils';
+import {
+  ACCESSORY_IMPORT_PREVIEW_COLUMNS,
+  mapImportResultToPreviewData
+} from '@core/utils/asset-master-import-preview.utils';
 import { AssetType } from '@models/asset-list.model';
 import { LookupItem } from '@models/lookup.model';
 import { BackendAuthService } from '@services/backend-auth.service';
@@ -53,7 +59,8 @@ import { BackendAuthService } from '@services/backend-auth.service';
     AssetTableComponent,
     AssetListHeaderComponent,
     ImportDialogComponent,
-    ImportPreviewDialogComponent
+    ImportPreviewDialogComponent,
+    WeaponAccessoryLinkModalComponent
   ],
   templateUrl: './asset-list.component.html',
   styleUrls: ['./asset-list.component.css'],
@@ -69,6 +76,10 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
   isPreviewInProgress = false;
   isImportInProgress = false;
 
+  showWeaponAccessoryLinkModal = false;
+  weaponAccessoryLinkWeaponId: number | null = null;
+  weaponAccessoryLinkWeaponName = '';
+
   constructor(
     readonly facade: AssetListFacade,
     private readonly crudHandler: AssetListCrudHandlerService,
@@ -80,6 +91,8 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
     private readonly ammunitionService: AmmunitionService,
     private readonly weaponService: WeaponService,
     private readonly explosiveService: ExplosiveService,
+    private readonly accessoryService: AccessoryService,
+    private readonly assetExportService: AssetExportService,
     private readonly importExportService: ImportExportService,
     private readonly toastService: ToastService,
     private readonly propertyAccessor: AssetPropertyAccessor,
@@ -109,6 +122,7 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
   get ammunitionViewMode() { return this.facade.ammunitionViewMode; }
   get explosivesViewMode() { return this.facade.explosivesViewMode; }
   get weaponsViewMode() { return this.facade.weaponsViewMode; }
+  get accessoriesViewMode() { return this.facade.accessoriesViewMode; }
   get filterState() { return this.facade.filterState; }
   get filterOptions() { return this.facade.filterOptions; }
   get assets() { return this.facade.assets; }
@@ -192,6 +206,31 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
     this.facade.switchViewMode(mode, 'weapon');
   }
 
+  switchAccessoriesViewMode(mode: 'available' | 'deleted'): void {
+    this.facade.switchViewMode(mode, 'accessory');
+  }
+
+  onLinkAccessories(assetId: string): void {
+    const asset = this.facade.assets.find(a => a.id === assetId);
+    const numericId = parseInt(assetId, 10);
+    if (!asset || isNaN(numericId)) return;
+    this.weaponAccessoryLinkWeaponId = numericId;
+    this.weaponAccessoryLinkWeaponName = this.getAssetName(asset);
+    this.showWeaponAccessoryLinkModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeWeaponAccessoryLinkModal(): void {
+    this.showWeaponAccessoryLinkModal = false;
+    this.weaponAccessoryLinkWeaponId = null;
+    this.weaponAccessoryLinkWeaponName = '';
+    this.cdr.markForCheck();
+  }
+
+  onWeaponAccessoryLinkSaved(): void {
+    this.closeWeaponAccessoryLinkModal();
+  }
+
   onFilterChange(): void {
     this.facade.onFilterChange();
   }
@@ -243,6 +282,10 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.facade.activeTab === 'weapon' && this.facade.weaponsViewMode === 'deleted') {
       queryParams['includeDeleted'] = 'true';
       queryParams['weaponsView'] = 'deleted';
+    }
+    if (this.facade.activeTab === 'accessory' && this.facade.accessoriesViewMode === 'deleted') {
+      queryParams['includeDeleted'] = 'true';
+      queryParams['accessoriesView'] = 'deleted';
     }
     this.router.navigate(['/assets/asset-list', numericId], { queryParams });
   }
@@ -384,6 +427,11 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   downloadImportTemplateFromApi(): void {
+    if (this.facade.activeTab === 'accessory') {
+      this.assetExportService.downloadImportTemplate('accessory');
+      return;
+    }
+
     const service = this.getAssetImportService(this.facade.activeTab);
     const lang = this.translateService.currentLang || this.translateService.defaultLang || 'en';
     service
@@ -438,7 +486,12 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
             return;
           }
 
-          const preview = mapImportResultToPreviewData(res.data);
+          const preview = mapImportResultToPreviewData(
+            res.data,
+            this.facade.activeTab === 'accessory'
+              ? { includeColumns: ACCESSORY_IMPORT_PREVIEW_COLUMNS }
+              : undefined
+          );
           if (preview) {
             this.previewData = preview;
             this.showPreviewModal = true;
@@ -564,6 +617,8 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
         return this.weaponService;
       case 'explosive':
         return this.explosiveService;
+      case 'accessory':
+        return this.accessoryService;
       default:
         return this.ammunitionService;
     }
