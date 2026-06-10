@@ -100,7 +100,7 @@
 
 .chart-body {
     flex: 1;
-    min-height: 300px;
+    min-height: min(300px, 38dvh);
     position: relative;
 }
 

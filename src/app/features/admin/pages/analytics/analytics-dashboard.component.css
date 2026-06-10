@@ -30,13 +30,14 @@
 
 @media (min-width: 768px) {
     .analytics-chart-item {
-        min-height: 350px;
+        /* Height-aware: wide-but-short screens (768px laptops, 125% scaling) get less */
+        min-height: min(350px, 45dvh);
     }
 }
 
 @media (min-width: 1024px) {
     .analytics-chart-item {
-        min-height: 400px;
+        min-height: min(400px, 50dvh);
     }
 }
 

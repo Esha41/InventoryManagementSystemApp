@@ -447,81 +447,136 @@
               <tr *ngIf="isExpanded(asset.id)" class="bg-[var(--color-background-muted)]/60">
                 <td colspan="10" class="p-4 ps-12">
                   <div class="bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] p-4 shadow-sm">
-                    <div class="flex items-center gap-2 mb-4 text-[var(--color-brand)]">
-                      <lucide-angular [img]="History" class="h-5 w-5"></lucide-angular>
-                      <h3 class="font-semibold text-[var(--color-text)]">{{ 'weaponAssetMaster.historyTitle' | translate }}</h3>
+
+                    <!-- Header -->
+                    <div class="flex items-center justify-between mb-4">
+                      <div class="flex items-center gap-2 text-[var(--color-brand)]">
+                        <lucide-angular [img]="History" class="h-5 w-5"></lucide-angular>
+                        <h3 class="font-semibold text-[var(--color-text)]">{{ 'weaponAssetMaster.historyTitle' | translate }}</h3>
+                      </div>
+                      <button
+                        type="button"
+                        (click)="refreshHistory(asset.id)"
+                        [disabled]="isLoadingHistory(asset.id)"
+                        class="text-xs flex items-center gap-1 text-[var(--color-text-muted)] hover:text-[var(--color-brand)] disabled:opacity-40 transition-colors"
+                      >
+                        {{ 'assetHistory.refresh' | translate }}
+                      </button>
                     </div>
 
+                    <!-- Loading -->
                     <div *ngIf="isLoadingHistory(asset.id)" class="flex justify-center py-6">
-                      <div
-                        class="size-8 shrink-0 animate-spin rounded-full border-[3px] border-[var(--color-border)] border-t-[var(--color-brand)]"
-                        role="status"
-                        aria-hidden="true"
-                      ></div>
+                      <div class="size-8 shrink-0 animate-spin rounded-full border-[3px] border-[var(--color-border)] border-t-[var(--color-brand)]"
+                        role="status" aria-hidden="true"></div>
                     </div>
 
-                    <div *ngIf="!isLoadingHistory(asset.id) && !hasExpandedHistoryContent(asset)" class="text-center py-4 text-[var(--color-text-muted)]">
-                      {{ 'weaponAssetMaster.noHistory' | translate }}
+                    <!-- Empty state -->
+                    <div *ngIf="!isLoadingHistory(asset.id) && !hasExpandedHistoryContent(asset)"
+                      class="flex flex-col items-center gap-2 py-8 text-[var(--color-text-muted)]">
+                      <lucide-angular [img]="History" class="h-10 w-10 opacity-20"></lucide-angular>
+                      <p class="text-sm">{{ 'weaponAssetMaster.noHistory' | translate }}</p>
                     </div>
 
-                    <div *ngIf="!isLoadingHistory(asset.id) && hasExpandedHistoryContent(asset)" class="relative">
-                      <div class="absolute start-4 top-0 bottom-0 w-0.5 bg-[var(--color-border)]"></div>
-                      <div class="space-y-6">
-                        <div *ngIf="getAssignmentHistoryEntries(asset.id).length" class="space-y-6">
-                          <h4 class="text-sm font-semibold text-[var(--color-text)] ps-10 border-b border-[var(--color-border)] pb-2">
-                            {{ 'weaponAssetMaster.assignmentDetailsSection' | translate }}
-                          </h4>
-                          <div *ngFor="let entry of getAssignmentHistoryEntries(asset.id); trackBy: trackById" class="relative ps-10">
-                            <div
-                              class="absolute start-[11px] top-1.5 w-3 h-3 rounded-full bg-[var(--color-brand)] ring-4 ring-[var(--color-background)]"
-                            ></div>
-                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-1">
-                              <span class="font-medium text-[var(--color-text)]">{{
-                                entry.description?.trim() ? entry.description : entry.actionTypeName
-                              }}</span>
-                              <span class="text-xs text-[var(--color-text-muted)]">{{ entry.actionDate | appDate: 'military' }}</span>
-                            </div>
+                    <!-- Timeline -->
+                    <div *ngIf="!isLoadingHistory(asset.id) && hasExpandedHistoryContent(asset)" class="relative ps-8">
+                      <div class="absolute start-3 top-0 bottom-0 w-px bg-[var(--color-border)]"></div>
 
-                            <div *ngIf="hasAssignmentLocationFields(entry)" class="mt-2 space-y-1">
-                              <div *ngIf="entry.previousCustodianName || entry.newCustodianName || entry.previousDepartmentName || entry.newDepartmentName" class="text-xs flex flex-wrap gap-2">
-                                <span *ngIf="entry.previousCustodianName || entry.previousDepartmentName" class="text-[var(--color-text-muted)]">
-                                  {{ entry.previousCustodianName || '—' }} / {{ entry.previousDepartmentName || '—' }}
-                                </span>
-                                <span *ngIf="(entry.previousCustodianName || entry.previousDepartmentName) && (entry.newCustodianName || entry.newDepartmentName)" class="text-[var(--color-text-muted)]">→</span>
-                                <span *ngIf="entry.newCustodianName" class="inline-flex items-center gap-1 bg-blue-50 dark:bg-blue-950/30 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded border border-blue-100 dark:border-blue-900">
-                                  <lucide-angular [img]="User" class="h-3 w-3"></lucide-angular>
-                                  {{ entry.newCustodianName }}
-                                </span>
-                                <span *ngIf="entry.newDepartmentName" class="inline-flex items-center gap-1 bg-purple-50 dark:bg-purple-950/30 text-purple-800 dark:text-purple-200 px-2 py-0.5 rounded border border-purple-100 dark:border-purple-900">
-                                  <lucide-angular [img]="Building" class="h-3 w-3"></lucide-angular>
-                                  {{ entry.newDepartmentName }}
-                                </span>
-                              </div>
-                              <div *ngIf="entry.previousLocation || entry.newLocation" class="text-xs text-[var(--color-text-muted)]">
-                                <span *ngIf="entry.previousLocation">{{ entry.previousLocation }}</span>
-                                <span *ngIf="entry.previousLocation && entry.newLocation"> → </span>
-                                <span *ngIf="entry.newLocation" class="text-[var(--color-text)]">{{ entry.newLocation }}</span>
-                              </div>
-                            </div>
+                      <div class="space-y-5">
+                        <div *ngFor="let entry of getHistory(asset.id); trackBy: trackById" class="relative">
 
-                            <div
-                              *ngIf="!hasAssignmentLocationFields(entry) && (entry.previousStatusName || entry.newStatusName)"
-                              class="mt-2 text-xs flex flex-wrap items-center gap-2 text-[var(--color-text-muted)] bg-[var(--color-background-muted)] px-2 py-1 rounded w-fit"
-                            >
-                              <span *ngIf="entry.previousStatusName">{{ entry.previousStatusName }}</span>
-                              <lucide-angular [img]="ArrowRight" class="h-3 w-3 shrink-0"></lucide-angular>
-                              <span *ngIf="entry.newStatusName" class="font-medium text-[var(--color-text)]">{{ entry.newStatusName }}</span>
-                            </div>
-
-                            <div *ngIf="entry.orderRequestNo" class="mt-1 text-xs text-[var(--color-text-muted)]">
-                              {{ 'weaponAssetMaster.orderRef' | translate }}: {{ entry.orderRequestNo }}
-                            </div>
-
-                            <div *ngIf="entry.notes" class="mt-1 text-xs text-[var(--color-text-muted)] italic">"{{ entry.notes }}"</div>
+                          <!-- Timeline dot with action-type color -->
+                          <div class="absolute -start-5 top-1 w-4 h-4 rounded-full ring-2 ring-[var(--color-background)] flex items-center justify-center"
+                            [ngClass]="getHistoryDotClass(entry.actionType)">
+                            <lucide-angular [img]="getHistoryIcon(entry.actionType)"
+                              [ngClass]="getHistoryActionTypeIconClass(entry.actionType, isRTL)"
+                              class="h-2.5 w-2.5 text-white"></lucide-angular>
                           </div>
+
+                          <!-- Event header: label + timestamp -->
+                          <div class="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
+                            <span class="font-semibold text-sm text-[var(--color-text)]">
+                              {{ getHistoryActionTypeKey(entry.actionType) | translate }}
+                            </span>
+                            <span class="text-xs text-[var(--color-text-muted)] shrink-0">{{ entry.actionDate | appDate: 'military' }}</span>
+                          </div>
+
+                          <!-- Plain-language summary of what happened -->
+                          <p class="mt-1 text-xs text-[var(--color-text)] leading-relaxed">
+                            {{ getHistoryMessage(entry) }}
+                          </p>
+
+                          <!-- Custodian / Department (Assigned / Returned) -->
+                          <div *ngIf="entry.previousCustodianName || entry.newCustodianName || entry.previousDepartmentName || entry.newDepartmentName"
+                            class="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
+
+                            <!-- Previous -->
+                            <ng-container *ngIf="entry.previousCustodianName || entry.previousDepartmentName">
+                              <span class="inline-flex items-center gap-1 bg-[var(--color-background-muted)] text-[var(--color-text-muted)] px-2 py-0.5 rounded border border-[var(--color-border)]">
+                                <lucide-angular [img]="User" class="h-3 w-3"></lucide-angular>
+                                {{ getLocalizedCustodianName(entry.previousCustodianName, entry.previousCustodianNameAr) }}
+                              </span>
+                              <span *ngIf="entry.previousDepartmentName"
+                                class="inline-flex items-center gap-1 bg-[var(--color-background-muted)] text-[var(--color-text-muted)] px-2 py-0.5 rounded border border-[var(--color-border)]">
+                                <lucide-angular [img]="Building" class="h-3 w-3"></lucide-angular>
+                                {{ getLocalizedDeptName(entry.previousDepartmentName, entry.previousDepartmentNameAr) }}
+                              </span>
+                              <lucide-angular [img]="historyFlowArrow" class="h-3 w-3 shrink-0 text-[var(--color-text-muted)]"></lucide-angular>
+                            </ng-container>
+
+                            <!-- New -->
+                            <span *ngIf="entry.newCustodianName"
+                              class="inline-flex items-center gap-1 bg-blue-50 dark:bg-blue-950/30 text-blue-800 dark:text-blue-200 px-2 py-0.5 rounded border border-blue-100 dark:border-blue-900 font-medium">
+                              <lucide-angular [img]="User" class="h-3 w-3"></lucide-angular>
+                              {{ getLocalizedCustodianName(entry.newCustodianName, entry.newCustodianNameAr) }}
+                            </span>
+                            <span *ngIf="entry.newDepartmentName"
+                              class="inline-flex items-center gap-1 bg-purple-50 dark:bg-purple-950/30 text-purple-800 dark:text-purple-200 px-2 py-0.5 rounded border border-purple-100 dark:border-purple-900 font-medium">
+                              <lucide-angular [img]="Building" class="h-3 w-3"></lucide-angular>
+                              {{ getLocalizedDeptName(entry.newDepartmentName, entry.newDepartmentNameAr) }}
+                            </span>
+                          </div>
+
+                          <!-- Status change -->
+                          <div *ngIf="entry.previousStatus != null || entry.newStatus != null"
+                            class="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
+                            <span class="text-[var(--color-text-muted)]">{{ 'assetHistory.previousStatus' | translate }}:</span>
+                            <span class="bg-[var(--color-background-muted)] px-2 py-0.5 rounded border border-[var(--color-border)] text-[var(--color-text-muted)]">
+                              {{ getTranslatedStatusLabel(entry.previousStatus) || '—' }}
+                            </span>
+                            <lucide-angular [img]="historyFlowArrow" class="h-3 w-3 shrink-0 text-[var(--color-text-muted)]"></lucide-angular>
+                            <span class="text-[var(--color-text-muted)]">{{ 'assetHistory.newStatus' | translate }}:</span>
+                            <span class="bg-[var(--color-brand)]/10 text-[var(--color-brand)] px-2 py-0.5 rounded border border-[var(--color-brand)]/20 font-medium">
+                              {{ getTranslatedStatusLabel(entry.newStatus) || '—' }}
+                            </span>
+                          </div>
+
+                          <!-- Location change -->
+                          <div *ngIf="entry.previousLocation || entry.newLocation"
+                            class="mt-2 text-xs text-[var(--color-text-muted)] flex items-center gap-1">
+                            <span *ngIf="entry.previousLocation">{{ entry.previousLocation }}</span>
+                            <lucide-angular *ngIf="entry.previousLocation && entry.newLocation" [img]="historyFlowArrow" class="h-3 w-3 shrink-0"></lucide-angular>
+                            <span *ngIf="entry.newLocation" class="text-[var(--color-text)] font-medium">{{ entry.newLocation }}</span>
+                          </div>
+
+                          <!-- References -->
+                          <div class="mt-2 flex flex-wrap gap-3 text-xs text-[var(--color-text-muted)]">
+                            <span *ngIf="entry.orderRequestNo">
+                              {{ 'weaponAssetMaster.orderRef' | translate }}: <span class="font-mono font-medium text-[var(--color-text)]">{{ entry.orderRequestNo }}</span>
+                            </span>
+                            <span *ngIf="entry.batchNumber">
+                              {{ 'assetHistory.batchRef' | translate }}: <span class="font-mono font-medium text-[var(--color-text)]">{{ entry.batchNumber }}</span>
+                            </span>
+                          </div>
+
+                          <!-- Performer -->
+                          <p class="mt-1.5 text-[10px] text-[var(--color-text-muted)]">
+                            {{ 'assetHistory.performedBy' | translate }}:
+                            <span class="font-medium">{{ entry.performedByUserName || ('weaponAssetMaster.system' | translate) }}</span>
+                          </p>
                         </div>
                       </div>
                     </div>
+
                   </div>
                 </td>
               </tr>
