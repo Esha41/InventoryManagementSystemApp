@@ -17,7 +17,7 @@ import { API_ENDPOINTS } from '@constants/app.constants';
 })
 export class SessionHeartbeatService {
   private sessionHeartbeatSubscription: Subscription | null = null;
-  private readonly SESSION_HEARTBEAT_INTERVAL_MS = 15000;
+  private readonly SESSION_HEARTBEAT_INTERVAL_MS = 60000;
   private readonly IDLE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
   private lastActivityTime = Date.now();
 

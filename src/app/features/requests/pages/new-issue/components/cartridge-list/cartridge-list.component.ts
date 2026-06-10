@@ -16,8 +16,10 @@ import { Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
 import { getCurrentLang, localizedCartridgeDisplayName } from '@utils/localization.utils';
+import { LucideAngularModule, ChevronDown } from 'lucide-angular';
 import { ButtonComponent } from '@components/button/button.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
+import { ASSET_LIST_MORE_FILTER_TEXT_INPUT_CLASS } from '@assets/pages/list/components/asset-filter-bar/asset-filter-bar.ui-classes';
 import { CatalogPaginationState } from '../../new-issue-request.state';
 import { ConfigService } from '@services/config.service';
 import { ItemTypeValidationService } from '@admin/services/item-type-validation.service';
@@ -26,7 +28,7 @@ import { Cartridge } from '@models/cartridge.model';
 @Component({
   selector: 'app-cartridge-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule, ButtonComponent, DropdownComponent, RouterLink],
+  imports: [CommonModule, FormsModule, TranslateModule, LucideAngularModule, ButtonComponent, DropdownComponent, RouterLink],
   templateUrl: './cartridge-list.component.html',
   styleUrls: ['./cartridge-list.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -41,7 +43,13 @@ export class CartridgeListComponent implements OnChanges, OnInit, OnDestroy {
   @Input() ammunitionTypeOptions: Array<string | DropdownOption<string>> = [];
   @Input() caliberOptions: DropdownOption<string>[] = [];
   @Input() linkedOptions: Array<string | DropdownOption<string>> = [];
-  @Input() natureOptions: string[] = [];
+  @Input() primaryPurposeOptions: DropdownOption<string>[] = [];
+  @Input() classificationOptions: DropdownOption<string>[] = [];
+  @Input() caseTypeOptions: DropdownOption<string>[] = [];
+  @Input() compatibilityOptions: DropdownOption<string>[] = [];
+  @Input() hazardDivisionOptions: DropdownOption<string>[] = [];
+  @Input() propellantOptions: DropdownOption<string>[] = [];
+  @Input() countryOptions: DropdownOption<string>[] = [];
 
   // Weapon Options
   @Input() weaponTypeOptions: Array<DropdownOption<string>> = [];
@@ -55,15 +63,32 @@ export class CartridgeListComponent implements OnChanges, OnInit, OnDestroy {
   // Ammunition Selections
   @Input() selectedAmmunitionType: string = '';
   @Input() selectedLinked: string = '';
-  @Input() selectedNature: string = '';
+  @Input() selectedPrimaryPurposeId: string = '';
+  @Input() selectedClassificationId: string = '';
+  @Input() selectedCaseType: string = '';
+  @Input() selectedCompatibility: string = '';
+  @Input() selectedHazardDivision: string = '';
+  @Input() selectedPropellant: string = '';
+  @Input() selectedAmmunitionArmNumber: string = '';
+  @Input() selectedAmmunitionPartNo: string = '';
 
   // Weapon Selections
   @Input() selectedWeaponType: string = '';
   @Input() selectedCaliber: string = '';
+  @Input() selectedCountryOfManufacture: string = '';
+  @Input() selectedWeaponUNNumber: string = '';
+  @Input() selectedPartNo: string = '';
+  @Input() selectedWeaponModel: string = '';
+  @Input() selectedWeaponReferenceNo: string = '';
 
   // Explosive Selections
   @Input() selectedExplosiveType: string = '';
-  @Input() selectedUNNumber: string = ''; // Similar to NSN search
+  @Input() selectedUNNumber: string = '';
+  @Input() selectedExplosiveHazardDivision: string = '';
+  @Input() selectedExplosiveCompatibility: string = '';
+  @Input() selectedArmNumber: string = '';
+  @Input() selectedExplosivePartNo: string = '';
+  @Input() selectedExplosiveReferenceNo: string = '';
 
   @Input() selectedNSN: string = '';
   @Input() canProceed: boolean = false;
@@ -89,13 +114,30 @@ export class CartridgeListComponent implements OnChanges, OnInit, OnDestroy {
 
   @Output() ammunitionTypeChange = new EventEmitter<string>();
   @Output() linkedChange = new EventEmitter<string>();
-  @Output() natureChange = new EventEmitter<string>();
+  @Output() primaryPurposeChange = new EventEmitter<string>();
+  @Output() classificationChange = new EventEmitter<string>();
+  @Output() caseTypeChange = new EventEmitter<string>();
+  @Output() compatibilityChange = new EventEmitter<string>();
+  @Output() hazardDivisionChange = new EventEmitter<string>();
+  @Output() propellantChange = new EventEmitter<string>();
+  @Output() ammunitionArmNumberChange = new EventEmitter<string>();
+  @Output() ammunitionPartNoChange = new EventEmitter<string>();
 
   @Output() weaponTypeChange = new EventEmitter<string>();
   @Output() caliberChange = new EventEmitter<string>();
+  @Output() countryOfManufactureChange = new EventEmitter<string>();
+  @Output() weaponUNNumberChange = new EventEmitter<string>();
+  @Output() partNoChange = new EventEmitter<string>();
+  @Output() weaponModelChange = new EventEmitter<string>();
+  @Output() weaponReferenceNoChange = new EventEmitter<string>();
 
   @Output() explosiveTypeChange = new EventEmitter<string>();
   @Output() unNumberChange = new EventEmitter<string>();
+  @Output() explosiveHazardDivisionChange = new EventEmitter<string>();
+  @Output() explosiveCompatibilityChange = new EventEmitter<string>();
+  @Output() armNumberChange = new EventEmitter<string>();
+  @Output() explosivePartNoChange = new EventEmitter<string>();
+  @Output() explosiveReferenceNoChange = new EventEmitter<string>();
 
   @Output() nsnChange = new EventEmitter<string>();
   @Output() addSelection = new EventEmitter<{ cartridge: Cartridge; quantity: number }>();
@@ -104,6 +146,11 @@ export class CartridgeListComponent implements OnChanges, OnInit, OnDestroy {
   @Output() applyCatalogSearch = new EventEmitter<string>();
   @Output() catalogPageNext = new EventEmitter<void>();
   @Output() catalogPagePrev = new EventEmitter<void>();
+
+  readonly ChevronDown = ChevronDown;
+  readonly moreFilterInputClass = ASSET_LIST_MORE_FILTER_TEXT_INPUT_CLASS;
+
+  showMoreFilters = false;
 
   pendingCartridgeId: number | null = null;
   pendingQuantity: number = 1;
@@ -323,12 +370,21 @@ export class CartridgeListComponent implements OnChanges, OnInit, OnDestroy {
   }
 
   onClear(): void {
+    this.showMoreFilters = false;
     this.clearFilters.emit();
+    this.cdr.markForCheck();
   }
 
   onItemTypeChange(value: string): void {
+    this.showMoreFilters = false;
     this.itemTypeChange.emit(value);
     this.onFilterChange();
+    this.cdr.markForCheck();
+  }
+
+  toggleMoreFilters(): void {
+    this.showMoreFilters = !this.showMoreFilters;
+    this.cdr.markForCheck();
   }
 
   onAmmunitionTypeChange(value: string): void {
@@ -341,8 +397,43 @@ export class CartridgeListComponent implements OnChanges, OnInit, OnDestroy {
     this.onFilterChange();
   }
 
-  onNatureChange(value: string): void {
-    this.natureChange.emit(value);
+  onPrimaryPurposeChange(value: string): void {
+    this.primaryPurposeChange.emit(value);
+    this.onFilterChange();
+  }
+
+  onClassificationChange(value: string): void {
+    this.classificationChange.emit(value);
+    this.onFilterChange();
+  }
+
+  onCaseTypeChange(value: string): void {
+    this.caseTypeChange.emit(value);
+    this.onFilterChange();
+  }
+
+  onCompatibilityChange(value: string): void {
+    this.compatibilityChange.emit(value);
+    this.onFilterChange();
+  }
+
+  onHazardDivisionChange(value: string): void {
+    this.hazardDivisionChange.emit(value);
+    this.onFilterChange();
+  }
+
+  onPropellantChange(value: string): void {
+    this.propellantChange.emit(value);
+    this.onFilterChange();
+  }
+
+  onAmmunitionArmNumberChange(value: string): void {
+    this.ammunitionArmNumberChange.emit(value);
+    this.onFilterChange();
+  }
+
+  onAmmunitionPartNoChange(value: string): void {
+    this.ammunitionPartNoChange.emit(value);
     this.onFilterChange();
   }
 
@@ -356,6 +447,31 @@ export class CartridgeListComponent implements OnChanges, OnInit, OnDestroy {
     this.onFilterChange();
   }
 
+  onCountryOfManufactureChange(value: string): void {
+    this.countryOfManufactureChange.emit(value);
+    this.onFilterChange();
+  }
+
+  onWeaponUNNumberChange(value: string): void {
+    this.weaponUNNumberChange.emit(value);
+    this.onFilterChange();
+  }
+
+  onPartNoChange(value: string): void {
+    this.partNoChange.emit(value);
+    this.onFilterChange();
+  }
+
+  onWeaponModelChange(value: string): void {
+    this.weaponModelChange.emit(value);
+    this.onFilterChange();
+  }
+
+  onWeaponReferenceNoChange(value: string): void {
+    this.weaponReferenceNoChange.emit(value);
+    this.onFilterChange();
+  }
+
   onExplosiveTypeChange(value: string): void {
     this.explosiveTypeChange.emit(value);
     this.onFilterChange();
@@ -363,6 +479,31 @@ export class CartridgeListComponent implements OnChanges, OnInit, OnDestroy {
 
   onUnNumberChange(value: string): void {
     this.unNumberChange.emit(value);
+    this.onFilterChange();
+  }
+
+  onExplosiveHazardDivisionChange(value: string): void {
+    this.explosiveHazardDivisionChange.emit(value);
+    this.onFilterChange();
+  }
+
+  onExplosiveCompatibilityChange(value: string): void {
+    this.explosiveCompatibilityChange.emit(value);
+    this.onFilterChange();
+  }
+
+  onArmNumberChange(value: string): void {
+    this.armNumberChange.emit(value);
+    this.onFilterChange();
+  }
+
+  onExplosivePartNoChange(value: string): void {
+    this.explosivePartNoChange.emit(value);
+    this.onFilterChange();
+  }
+
+  onExplosiveReferenceNoChange(value: string): void {
+    this.explosiveReferenceNoChange.emit(value);
     this.onFilterChange();
   }
 

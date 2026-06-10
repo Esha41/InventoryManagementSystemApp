@@ -69,7 +69,6 @@ export class AssetEditModalComponent implements OnInit, OnChanges {
   @Input() propellantList: LookupItem[] = [];
   @Input() compatibilityList: LookupItem[] = [];
   @Input() hazardDivisionList: LookupItem[] = [];
-  @Input() natureOptions: LookupItem[] = [];
   @Input() primaryPurposes: LookupItem[] = [];
   @Input() projectileColors: LookupItem[] = [];
   @Input() projectailMaterials: LookupItem[] = [];

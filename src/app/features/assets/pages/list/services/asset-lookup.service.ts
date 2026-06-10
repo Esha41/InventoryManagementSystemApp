@@ -31,7 +31,6 @@ export class AssetLookupService {
       propellants: this.lookupService.getPropellants(),
       compatibilities: this.lookupService.getCompatibilities(),
       hazardDivisions: this.lookupService.getHazardDivisions(),
-      natureOptions: this.lookupService.getNatureOptions(),
       primaryPurposes: this.lookupService.getPrimaryPurposes(),
       colors: this.lookupService.getColors(),
       materials: this.lookupService.getProjectailMaterials(),

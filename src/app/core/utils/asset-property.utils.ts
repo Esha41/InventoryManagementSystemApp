@@ -544,10 +544,6 @@ export class AssetPropertyAccessor {
     return isAmmunition(asset) ? (asset.isLinked ? 'Yes' : 'No') : '-';
   }
 
-  getNature(asset: AssetUnion): string {
-    return isAmmunition(asset) ? this.getLookupName(asset.natureOption) : '-';
-  }
-
   getPrimaryPurpose(asset: AssetUnion): string {
     if (!asset) return '-';
     const fromList = (purposes: LookupDto[] | null | undefined): string | null => {

@@ -542,12 +542,6 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           format: (value: LookupDisplayInput) => getLookupDisplayName(value, this.translateService) || '-'
         },
         {
-          header: this.translateService.instant('addAsset.nature') || 'Nature Option',
-          key: 'natureOption',
-          width: 20,
-          format: (value: LookupDisplayInput) => getLookupDisplayName(value, this.translateService) || '-'
-        },
-        {
           header: this.translateService.instant('addAsset.primaryPurpose') || 'Primary Purpose',
           key: 'primaryPurpos',
           width: 20,

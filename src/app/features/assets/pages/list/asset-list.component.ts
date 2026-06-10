@@ -138,7 +138,6 @@ export class AssetListComponent implements OnInit, OnDestroy, AfterViewInit {
   get propellantList() { return this.facade.lookups?.propellants ?? []; }
   get compatibilityList() { return this.facade.lookups?.compatibilities ?? []; }
   get hazardDivisionList() { return this.facade.lookups?.hazardDivisions ?? []; }
-  get natureOptions() { return this.facade.lookups?.natureOptions ?? []; }
   get primaryPurposes() { return this.facade.lookups?.primaryPurposes ?? []; }
   get projectileColors() { return this.facade.lookups?.colors ?? []; }
   get projectailMaterials() { return this.facade.lookups?.materials ?? []; }

@@ -398,17 +398,6 @@
                   </app-dropdown>
                 </div>
 
-                <!-- Nature -->
-                <div>
-                  <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.nature' | translate
-                    }}</span>
-                  <app-dropdown class="w-full" [(ngModel)]="assetForm.natureOptionId" name="natureOptionId"
-                    [options]="natureOptions" optionValue="id" [optionLabelFn]="lookupOptionLabel"
-                    [placeholderSelectable]="false" [placeholderValue]="null"
-                    [placeholder]="'addAsset.selectNatureOption' | translate">
-                  </app-dropdown>
-                </div>
-
                 <!-- Classification -->
                 <div>
                   <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.classification' | translate
