@@ -29,29 +29,30 @@
     <div class="space-y-6">
 
       <!-- Request Items -->
-      <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md border border-[var(--color-border)]">
-        <button (click)="isRequestItemsExpanded = !isRequestItemsExpanded"
-          class="w-full flex items-center justify-between p-6 hover:bg-[var(--color-background-hover)] transition-colors rounded-t-xl section-header-btn">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
-              <lucide-angular [img]="ListOrdered" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
+      <section class="review-section">
+        <button type="button" class="review-section__toggle" (click)="isRequestItemsExpanded = !isRequestItemsExpanded">
+          <div class="review-section__icon">
+            <lucide-angular [img]="ListOrdered" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
+          </div>
+          <div class="min-w-0 flex-1 text-start">
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 class="text-lg font-semibold text-[var(--color-text)]">
+                {{ 'weaponSupplyReview.requestItems' | translate }}
+              </h2>
+              <span *ngIf="requestItems.length > 0"
+                class="text-xs font-medium px-2.5 py-1 rounded-full bg-[var(--color-brand)]/10 text-[var(--color-brand)]">
+                {{ requestItems.length }}
+              </span>
             </div>
-            <h2 class="text-lg font-semibold text-[var(--color-text)]">
-              {{ 'weaponSupplyReview.requestItems' | translate }}
-            </h2>
-            <span *ngIf="requestItems.length > 0"
-              class="text-xs font-medium px-2.5 py-1 rounded-full bg-[var(--color-brand)]/10 text-[var(--color-brand)]">
-              {{ requestItems.length }}
-            </span>
           </div>
           <lucide-angular [img]="isRequestItemsExpanded ? ChevronUp : ChevronDown"
-            class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+            class="h-5 w-5 text-[var(--color-text-muted)] flex-shrink-0"></lucide-angular>
         </button>
-        <div *ngIf="isRequestItemsExpanded" class="pb-0 border-t border-[var(--color-border)]">
-          <div *ngIf="requestItems.length === 0" class="py-8 text-center text-[var(--color-text-muted)] px-6">
+        <div *ngIf="isRequestItemsExpanded" class="review-section__body border-t border-[var(--color-border)]">
+          <div *ngIf="requestItems.length === 0" class="py-8 text-center text-[var(--color-text-muted)]">
             {{ 'weaponSupplyReview.noItems' | translate }}
           </div>
-          <div *ngIf="requestItems.length > 0" class="overflow-hidden">
+          <div *ngIf="requestItems.length > 0" class="overflow-x-auto rounded-lg border border-[var(--color-border)]">
             <table class="w-full review-table">
               <thead>
                 <tr>
@@ -76,344 +77,239 @@
             </table>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- Batches with Assets (Accordion) -->
-      <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md border border-[var(--color-border)]">
-        <button (click)="isBatchesExpanded = !isBatchesExpanded"
-          class="w-full flex items-center justify-between p-6 hover:bg-[var(--color-background-hover)] transition-colors rounded-t-xl section-header-btn">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
-              <lucide-angular [img]="Package" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
-            </div>
-            <h2 class="text-lg font-semibold text-[var(--color-text)]">
-              {{ 'weaponSupplyReview.batchesAndAssets' | translate }}
-            </h2>
-            <span *ngIf="batches.length > 0"
-              class="text-xs font-medium px-2.5 py-1 rounded-full bg-[var(--color-brand)]/10 text-[var(--color-brand)]">
-              {{ batches.length }}
-            </span>
+      <!-- Policy numbers & assets -->
+      <section class="review-section">
+        <button type="button" class="review-section__toggle" (click)="isBatchesSectionExpanded = !isBatchesSectionExpanded">
+          <div class="review-section__icon">
+            <lucide-angular [img]="Package" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
           </div>
-          <lucide-angular [img]="isBatchesExpanded ? ChevronUp : ChevronDown"
-            class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+          <div class="min-w-0 flex-1 text-start">
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 class="text-lg font-semibold text-[var(--color-text)]">
+                {{ 'weaponSupplyReview.batchesAndAssets' | translate }}
+              </h2>
+              <span *ngIf="batches.length > 0"
+                class="text-xs font-medium px-2.5 py-1 rounded-full bg-[var(--color-brand)]/10 text-[var(--color-brand)]">
+                {{ batches.length }}
+              </span>
+            </div>
+          </div>
+          <lucide-angular [img]="isBatchesSectionExpanded ? ChevronUp : ChevronDown"
+            class="h-5 w-5 text-[var(--color-text-muted)] flex-shrink-0"></lucide-angular>
         </button>
 
-        <div *ngIf="isBatchesExpanded" class="pb-0 border-t border-[var(--color-border)]">
-          <!-- Loading batches -->
-          <div *ngIf="loadingBatches" class="text-center py-12 px-6">
+        <div *ngIf="isBatchesSectionExpanded" class="review-section__body review-section__body--compact border-t border-[var(--color-border)]">
+          <div *ngIf="hasExpandedBatch" class="flex justify-end mb-3">
+            <button type="button" (click)="collapseAllBatches()"
+              class="text-sm font-medium text-[var(--color-brand)] hover:underline">
+              {{ 'weaponSupplyReview.collapseAllBatches' | translate }}
+            </button>
+          </div>
+          <div *ngIf="loadingBatches" class="text-center py-12">
             <div class="inline-flex flex-col items-center gap-3">
               <div class="animate-spin w-8 h-8 border-3 border-[var(--color-brand)] border-t-transparent rounded-full"></div>
               <p class="text-sm text-[var(--color-text-muted)]">{{ 'weaponSupplyReview.loadingAssets' | translate }}</p>
             </div>
           </div>
 
-          <!-- No batches / No selection -->
-          <div *ngIf="!loadingBatches && batches.length === 0" class="text-center py-12 px-6">
-            <div class="inline-flex flex-col items-center gap-3">
+          <div *ngIf="!loadingBatches && batches.length === 0" class="text-center py-12">
+            <div class="inline-flex flex-col items-center gap-3 max-w-md">
               <div class="w-14 h-14 rounded-full bg-[var(--color-warning)]/10 flex items-center justify-center">
                 <lucide-angular [img]="Info" class="h-7 w-7 text-[var(--color-warning)]"></lucide-angular>
               </div>
-              <p class="text-sm font-medium text-[var(--color-text)] mb-1">
+              <p class="text-sm font-medium text-[var(--color-text)]">
                 {{ 'weaponSupplyReview.noSelectionFound' | translate }}
               </p>
-              <p class="text-xs text-[var(--color-text-muted)] mb-4">
+              <p class="text-xs text-[var(--color-text-muted)]">
                 {{ 'weaponSupplyReview.noSelectionFoundHint' | translate }}
               </p>
               <button (click)="goToSelectionPage()"
-                class="px-6 py-2.5 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-all font-medium shadow-custom-sm flex items-center gap-2">
+                class="mt-2 px-6 py-2.5 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-all font-medium shadow-custom-sm flex items-center gap-2">
                 <lucide-angular [img]="Warehouse" class="h-4 w-4"></lucide-angular>
                 {{ 'weaponSupplyReview.goToSelection' | translate }}
               </button>
             </div>
           </div>
 
-          <!-- Batch Accordion Table -->
-          <div *ngIf="!loadingBatches && batches.length > 0" class="overflow-hidden">
-            <div class="overflow-x-auto">
-              <table class="w-full review-table">
-                <thead>
-                  <tr>
-                    <th>{{ 'weaponSupplyReview.batchNumber' | translate }}</th>
-                    <th>{{ 'weaponSupplyReview.depot' | translate }}</th>
-                    <th class="text-center">{{ 'weaponSupplyReview.assetCount' | translate }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <ng-container *ngFor="let batch of batches; trackBy: trackByBatchId">
-                    <!-- Batch Row (Accordion Trigger) -->
-                    <tr class="accordion-row cursor-pointer"
-                      [class.expanded]="batch.expanded"
-                      (click)="toggleBatch(batch.id)">
-                      <td>
-                        <div class="flex items-center gap-3">
-                          <button type="button" (click)="toggleBatch(batch.id); $event.stopPropagation()"
-                            class="p-1 hover:bg-[var(--color-background-hover)] rounded transition-colors">
-                            <lucide-angular
-                              [img]="batch.expanded ? ChevronDown : ChevronRight"
-                              class="h-5 w-5 text-[var(--color-text-muted)]">
-                            </lucide-angular>
-                          </button>
-                          <span class="text-base font-semibold text-[var(--color-text)]">
-                            {{ batch.batchNumber }}
-                          </span>
-                        </div>
-                      </td>
-                      <td class="text-[var(--color-text)]">{{ getDepotName(batch) }}</td>
-                      <td class="text-center text-[var(--color-text)]">{{ batch.assets.length }}</td>
-                    </tr>
+          <div *ngIf="!loadingBatches && batches.length > 0" class="batch-accordion rounded-lg border border-[var(--color-border)] overflow-hidden">
+            <ng-container *ngFor="let batch of batches; trackBy: trackByBatchId">
+              <button type="button" class="batch-accordion__trigger"
+                [class.batch-accordion__trigger--expanded]="batch.expanded"
+                (click)="toggleBatch(batch.id)">
+                <lucide-angular
+                  [img]="batch.expanded ? ChevronDown : ChevronRight"
+                  class="h-4 w-4 text-[var(--color-text-muted)] flex-shrink-0">
+                </lucide-angular>
+                <span class="batch-accordion__number">{{ batch.batchNumber }}</span>
+                <span class="batch-accordion__depot">{{ getDepotName(batch) }}</span>
+                <span class="batch-accordion__count">{{ batch.assets.length }}</span>
+              </button>
 
-                    <!-- Expanded Detail Row -->
-                    <tr *ngIf="batch.expanded" class="detail-row">
-                      <td colspan="3" class="p-0 bg-[var(--color-background-muted)]">
-                        <div class="p-6">
-                          <!-- Header with Add button -->
-                          <div class="flex items-center justify-between gap-4 mb-4 pb-4 border-b border-[var(--color-border)]">
-                            <h3 class="text-sm font-semibold text-[var(--color-text)] uppercase tracking-wider">
-                              {{ 'weaponSupplyReview.assets' | translate }}
-                            </h3>
-                            <div *ngIf="addSerialBatchId !== batch.id">
-                              <button (click)="openAddSerial(batch.id); $event.stopPropagation()"
-                                class="flex items-center gap-2 px-4 py-2 bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors text-sm font-medium">
-                                <lucide-angular [img]="Plus" class="h-4 w-4"></lucide-angular>
-                                {{ 'weaponSupplyReview.addAssetBySerial' | translate }}
-                              </button>
-                            </div>
-                            <div *ngIf="addSerialBatchId === batch.id" class="flex items-center gap-3 flex-wrap">
-                              <input type="text" [(ngModel)]="addSerialValue"
-                                [placeholder]="'weaponSupplyReview.enterSerialNumber' | translate"
-                                (keydown.enter)="confirmAddSerial(batch.id)"
-                                (keydown.escape)="cancelAddSerial()"
-                                (click)="$event.stopPropagation()"
-                                class="w-48 px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-[var(--color-text)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)]">
-                              <button (click)="confirmAddSerial(batch.id); $event.stopPropagation()"
-                                class="px-4 py-2 text-sm font-medium text-white bg-[var(--color-brand)] rounded-lg hover:bg-[var(--color-brand-dark)] transition-colors">
-                                {{ 'weaponSupplyReview.add' | translate }}
-                              </button>
-                              <button (click)="cancelAddSerial(); $event.stopPropagation()"
-                                class="px-4 py-2 text-sm font-medium text-[var(--color-text-muted)] bg-[var(--color-background-muted)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors">
-                                {{ 'common.cancel' | translate }}
-                              </button>
-                            </div>
-                          </div>
-
-                          <!-- Inner Assets Table -->
-                          <div class="overflow-x-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-background)]">
-                            <table class="w-full review-table assets-table">
-                              <thead>
-                                <tr>
-                                  <th class="w-12">#</th>
-                                  <th class="min-w-[140px]">{{ 'weaponSupplyReview.serialNumber' | translate }}</th>
-                                  <th class="min-w-[120px]">{{ 'weaponSupplyReview.itemName' | translate }}</th>
-                                  <th class="min-w-[140px]">{{ 'weaponSupplyReview.depot' | translate }}</th>
-                                  <th class="min-w-[260px]">{{ 'weaponSupplyReview.assignee' | translate }}</th>
-                                  <th class="min-w-[140px]">{{ 'weaponSupplyReview.notes' | translate }}</th>
-                                  <th class="text-center w-20">{{ 'common.actions' | translate }}</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <ng-container *ngFor="let asset of getPaginatedAssets(batch); let i = index; trackBy: trackByAssetId">
-                                <tr>
-                                  <td class="text-[var(--color-text-muted)]">{{ getAssetRowNumber(batch, i) }}</td>
-                                  <td>
-                                    <!-- Display mode -->
-                                    <div *ngIf="editingSerialAssetId !== asset.id" class="flex items-center gap-2 min-w-0">
-                                      <span class="font-medium truncate"
-                                        [class.text-[var(--color-text)]]="asset.serialNumber"
-                                        [class.text-[var(--color-text-muted)]]="!asset.serialNumber"
-                                        [class.italic]="!asset.serialNumber">
-                                        {{ asset.serialNumber || ('weaponSupplyReview.noSerial' | translate) }}
-                                      </span>
-                                      <button (click)="startEditingSerial(asset); $event.stopPropagation()"
-                                        class="flex-shrink-0 p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 rounded transition-colors"
-                                        [title]="'common.edit' | translate">
-                                        <lucide-angular [img]="Pencil" class="h-3.5 w-3.5"></lucide-angular>
-                                      </button>
-                                    </div>
-                                    <!-- Edit mode -->
-                                    <div *ngIf="editingSerialAssetId === asset.id" class="flex items-center gap-2 min-w-0"
-                                      (click)="$event.stopPropagation()">
-                                      <input type="text" [(ngModel)]="editingSerialValue"
-                                        [placeholder]="'weaponSupplyReview.addSerialNumber' | translate"
-                                        (keydown.enter)="saveSerial(asset)"
-                                        (keydown.escape)="cancelEditingSerial()"
-                                        class="flex-1 min-w-0 px-2.5 py-1.5 border border-[var(--color-brand)] rounded bg-[var(--color-background)] text-[var(--color-text)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-                                        appFocusOnInit>
-                                      <button (click)="saveSerial(asset)"
-                                        class="flex-shrink-0 px-2.5 py-1.5 text-xs font-medium text-white bg-[var(--color-brand)] rounded hover:bg-[var(--color-brand-dark)] transition-colors">
-                                        {{ 'common.save' | translate }}
-                                      </button>
-                                      <button (click)="cancelEditingSerial()"
-                                        class="flex-shrink-0 px-2.5 py-1.5 text-xs font-medium text-[var(--color-text-muted)] bg-[var(--color-background-muted)] border border-[var(--color-border)] rounded hover:bg-[var(--color-background-hover)] transition-colors">
-                                        {{ 'common.cancel' | translate }}
-                                      </button>
-                                    </div>
-                                  </td>
-                                  <td class="text-[var(--color-text)] min-w-0">
-                                    <span [appTableClampTooltip]="getItemName(asset)">{{ getItemName(asset) }}</span>
-                                  </td>
-                                  <td class="text-[var(--color-text)]">{{ getAssetDepotName(asset) }}</td>
-                                  <td (click)="$event.stopPropagation()">
-                                    <app-dropdown
-                                      [options]="employeeDropdownOptions"
-                                      [ngModel]="getCustodianId(batch, asset.id)"
-                                      (ngModelChange)="onCustodianChange(batch.id, asset.id, $event)"
-                                      [placeholder]="'weaponSupplyReview.selectAssignee' | translate"
-                                      [addActionLabel]="canCreateEmployee ? ('weaponSupplyReview.addEmployee' | translate) : undefined"
-                                      (addActionClick)="openAddEmployeeModal()"
-                                      optionValue="value" optionLabel="label"
-                                      class="assets-table-dropdown">
-</app-dropdown>
-                                    </td>
-                                    <td (click)="$event.stopPropagation()">
-                                      <input type="text"
-                                      [value]="getNotes(batch, asset.id)"
-                                      (input)="onNotesChange(batch.id, asset.id, $any($event.target).value)"
-                                      [placeholder]="'weaponSupplyReview.enterNotes' | translate"
-class="assets-table-input w-full min-w-0">
-                                    </td>
-                                    <td class="text-center">
-                                    <button (click)="removeAsset(batch.id, asset.id); $event.stopPropagation()"
-                                      class="assets-table-delete-btn p-2 rounded-lg transition-colors"
-                                      [title]="'common.delete' | translate">
-                                      <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
-                                    </button>
-                                  </td>
-                                </tr>
-                                <tr *ngIf="hasAccessories(asset.id)" class="accessory-detail-row">
-                                  <td colspan="7" class="p-0">
-                                    <div class="px-4 py-2 bg-[var(--color-background-muted)] border-t border-[var(--color-border)]"
-                                      (click)="$event.stopPropagation()">
-                                      <button type="button"
-                                        (click)="toggleAccessoriesExpanded(asset.id)"
-                                        class="flex items-center gap-2 w-full text-start py-1 hover:opacity-80 transition-opacity">
-                                        <lucide-angular
-                                          [img]="isAccessoriesExpanded(asset.id) ? ChevronDown : ChevronRight"
-                                          class="h-4 w-4 text-[var(--color-text-muted)] flex-shrink-0">
-                                        </lucide-angular>
-                                        <span class="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
-                                          {{ 'weaponSupplyReview.accessories' | translate }}
-                                        </span>
-                                        <span *ngIf="!isAccessoriesExpanded(asset.id)"
-                                          class="text-xs text-[var(--color-text-muted)] normal-case font-normal">
-                                          — {{ getAccessoriesCollapsedSummary(asset.id) }}
-                                        </span>
-                                        <span *ngIf="!isAccessoriesExpanded(asset.id) && hasCustomAccessoryQuantities(asset.id)"
-                                          class="text-xs font-medium px-2 py-0.5 rounded-full bg-[var(--color-brand)]/10 text-[var(--color-brand)]">
-                                          {{ 'weaponSupplyReview.accessoriesModified' | translate }}
-                                        </span>
-                                        <span class="ms-auto text-xs text-[var(--color-brand)] font-medium">
-                                          {{ isAccessoriesExpanded(asset.id)
-                                            ? ('weaponSupplyReview.collapseAccessories' | translate)
-                                            : ('weaponSupplyReview.expandAccessories' | translate) }}
-                                        </span>
-                                      </button>
-                                      <div *ngIf="isAccessoriesExpanded(asset.id)" class="pt-2 pb-1">
-                                        <table class="w-full text-sm accessory-subtable">
-                                          <thead>
-                                            <tr>
-                                              <th class="text-start text-xs font-semibold text-[var(--color-text-muted)] pb-1">
-                                                {{ 'weaponSupplyReview.accessoryName' | translate }}
-                                              </th>
-                                              <th class="text-start text-xs font-semibold text-[var(--color-text-muted)] pb-1">
-                                                {{ 'weaponSupplyReview.itemNumber' | translate }}
-                                              </th>
-                                              <th class="text-center text-xs font-semibold text-[var(--color-text-muted)] pb-1">
-                                                {{ 'weaponSupplyReview.defaultQuantity' | translate }}
-                                              </th>
-                                              <th class="text-center text-xs font-semibold text-[var(--color-text-muted)] pb-1">
-                                                {{ 'weaponSupplyReview.suppliedQuantity' | translate }}
-                                              </th>
-                                            </tr>
-                                          </thead>
-                                          <tbody>
-                                            <tr *ngFor="let acc of getAccessories(asset.id)">
-                                              <td class="py-1 text-[var(--color-text)]">{{ getAccessoryName(acc) }}</td>
-                                              <td class="py-1 text-[var(--color-text)]">{{ acc.itemNo || '—' }}</td>
-                                              <td class="py-1 text-center text-[var(--color-text)]">{{ acc.defaultQuantity }}</td>
-                                              <td class="py-1 text-center">
-                                                <input type="number" min="0"
-                                                  [value]="acc.suppliedQuantity"
-                                                  (input)="onSuppliedQuantityChange(asset.id, acc.accessoryId, $any($event.target).value)"
-                                                  class="w-20 px-2 py-1 border border-[var(--color-border)] rounded bg-[var(--color-background)] text-[var(--color-text)] text-sm text-center focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]">
-                                              </td>
-                                            </tr>
-                                          </tbody>
-                                        </table>
-                                      </div>
-                                    </div>
-                                  </td>
-                                </tr>
-                                <tr *ngIf="!hasAccessories(asset.id)" class="accessory-detail-row">
-                                  <td colspan="7" class="p-0">
-                                    <div class="px-4 py-2 bg-[var(--color-background-muted)] border-t border-[var(--color-border)] text-xs text-[var(--color-text-muted)] italic"
-                                      (click)="$event.stopPropagation()">
-                                      {{ 'weaponSupplyReview.noAccessoriesConfigured' | translate }}
-                                    </div>
-                                  </td>
-                                </tr>
-                                </ng-container>
-                                <tr *ngIf="batch.assets.length === 0">
-                                  <td colspan="7" class="py-12 text-center">
-                                    <p class="text-sm text-[var(--color-text-muted)]">
-                                      {{ 'weaponSupplyReview.noAssetsInBatch' | translate }}
-                                    </p>
-                                  </td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-
-                          <div *ngIf="batch.assets.length > 0"
-                            class="mt-3 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[var(--color-border)] pt-3"
-                            [class.sm:flex-row-reverse]="isRTL"
-                            (click)="$event.stopPropagation()">
-                            <app-rows-per-page
-                              [rowsPerPage]="assetRowsPerPage"
-                              [totalItems]="batch.assets.length"
-                              [visibleItems]="getPaginatedAssets(batch).length"
-                              (rowsPerPageChange)="onAssetRowsPerPageChange($event)">
-                            </app-rows-per-page>
-
-                            <div *ngIf="getAssetTotalPages(batch) > 1" class="flex items-center gap-3">
-                              <app-pagination
-                                [currentPage]="getValidatedAssetPage(batch)"
-                                [totalPages]="getAssetTotalPages(batch)"
-                                (pageChange)="onAssetPageChange(batch.id, $event)">
-                              </app-pagination>
-                              <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
-                                {{ getValidatedAssetPage(batch) }} {{ 'common.of' | translate }} {{ getAssetTotalPages(batch) }}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
+              <div *ngIf="batch.expanded" class="batch-accordion__panel">
+                <div class="batch-accordion__toolbar">
+                  <ng-container *ngIf="addSerialBatchId !== batch.id">
+                    <button type="button" (click)="openAddSerial(batch.id)"
+                      class="batch-accordion__add-serial inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[var(--color-brand)] border border-[var(--color-brand)]/30 rounded-lg hover:bg-[var(--color-brand)]/10">
+                      <lucide-angular [img]="Plus" class="h-3.5 w-3.5"></lucide-angular>
+                      {{ 'weaponSupplyReview.addAssetBySerial' | translate }}
+                    </button>
                   </ng-container>
-                </tbody>
-              </table>
-            </div>
+                  <div *ngIf="addSerialBatchId === batch.id" class="batch-accordion__add-serial-form flex flex-wrap items-center justify-end gap-2 w-full">
+                    <input type="text" [(ngModel)]="addSerialValue"
+                      [placeholder]="'weaponSupplyReview.enterSerialNumber' | translate"
+                      (keydown.enter)="confirmAddSerial(batch.id)"
+                      (keydown.escape)="cancelAddSerial()"
+                      class="flex-1 min-w-[10rem] px-3 py-1.5 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]">
+                    <button type="button" (click)="confirmAddSerial(batch.id)"
+                      class="px-3 py-1.5 text-sm font-medium text-white bg-[var(--color-brand)] rounded-lg">
+                      {{ 'weaponSupplyReview.add' | translate }}
+                    </button>
+                    <button type="button" (click)="cancelAddSerial()"
+                      class="px-3 py-1.5 text-sm font-medium border border-[var(--color-border)] rounded-lg">
+                      {{ 'common.cancel' | translate }}
+                    </button>
+                  </div>
+                </div>
+
+                <div *ngIf="batch.assets.length === 0" class="py-8 text-center text-sm text-[var(--color-text-muted)]">
+                  {{ 'weaponSupplyReview.noAssetsInBatch' | translate }}
+                </div>
+
+                <div *ngIf="batch.assets.length > 0" class="overflow-x-auto">
+                  <table class="w-full review-table assets-table compact-table">
+                    <thead>
+                      <tr>
+                        <th class="w-10">#</th>
+                        <th class="min-w-[120px]">{{ 'weaponSupplyReview.serialNumber' | translate }}</th>
+                        <th class="min-w-[120px]">{{ 'weaponSupplyReview.itemName' | translate }}</th>
+                        <th class="min-w-[200px]">{{ 'weaponSupplyReview.assignee' | translate }}</th>
+                        <th class="min-w-[120px]">{{ 'weaponSupplyReview.notes' | translate }}</th>
+                        <th class="text-center min-w-[100px]">{{ 'weaponSupplyReview.accessories' | translate }}</th>
+                        <th class="text-center w-14"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let asset of getPaginatedAssets(batch); let i = index; trackBy: trackByAssetId">
+                        <td class="text-[var(--color-text-muted)]">{{ getAssetRowNumber(batch, i) }}</td>
+                        <td>
+                          <div *ngIf="editingSerialAssetId !== asset.id" class="flex items-center gap-1 min-w-0">
+                            <span class="truncate text-sm font-medium"
+                              [class.text-[var(--color-text-muted)]]="!asset.serialNumber"
+                              [class.italic]="!asset.serialNumber">
+                              {{ asset.serialNumber || ('weaponSupplyReview.noSerial' | translate) }}
+                            </span>
+                            <button type="button" (click)="startEditingSerial(asset)"
+                              class="p-1 text-[var(--color-text-muted)] hover:text-[var(--color-brand)] rounded"
+                              [title]="'common.edit' | translate">
+                              <lucide-angular [img]="Pencil" class="h-3 w-3"></lucide-angular>
+                            </button>
+                          </div>
+                          <div *ngIf="editingSerialAssetId === asset.id" class="flex items-center gap-2 min-w-0">
+                            <input type="text" [(ngModel)]="editingSerialValue"
+                              [placeholder]="'weaponSupplyReview.addSerialNumber' | translate"
+                              (keydown.enter)="saveSerial(asset)"
+                              (keydown.escape)="cancelEditingSerial()"
+                              class="flex-1 min-w-0 px-2 py-1 text-sm border border-[var(--color-brand)] rounded focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                              appFocusOnInit>
+                            <button type="button" (click)="saveSerial(asset)"
+                              class="flex-shrink-0 px-2 py-1 text-xs font-medium text-white bg-[var(--color-brand)] rounded hover:bg-[var(--color-brand-dark)]">
+                              {{ 'common.save' | translate }}
+                            </button>
+                            <button type="button" (click)="cancelEditingSerial()"
+                              class="flex-shrink-0 px-2 py-1 text-xs font-medium text-[var(--color-text-muted)] border border-[var(--color-border)] rounded hover:bg-[var(--color-background-hover)]">
+                              {{ 'common.cancel' | translate }}
+                            </button>
+                          </div>
+                        </td>
+                        <td class="min-w-0">
+                          <span class="text-sm truncate block" [appTableClampTooltip]="getItemName(asset)">{{ getItemName(asset) }}</span>
+                        </td>
+                        <td>
+                          <app-dropdown
+                            [options]="employeeDropdownOptions"
+                            [ngModel]="getCustodianId(batch, asset.id)"
+                            (ngModelChange)="onCustodianChange(batch.id, asset.id, $event)"
+                            [placeholder]="'weaponSupplyReview.selectAssignee' | translate"
+                            [addActionLabel]="canCreateEmployee ? ('weaponSupplyReview.addEmployee' | translate) : undefined"
+                            (addActionClick)="openAddEmployeeModal()"
+                            optionValue="value" optionLabel="label"
+                            class="assets-table-dropdown">
+                          </app-dropdown>
+                        </td>
+                        <td>
+                          <input type="text"
+                            [value]="getNotes(batch, asset.id)"
+                            (input)="onNotesChange(batch.id, asset.id, $any($event.target).value)"
+                            [placeholder]="'weaponSupplyReview.enterNotes' | translate"
+                            class="assets-table-input w-full min-w-0">
+                        </td>
+                        <td class="text-center">
+                          <button *ngIf="hasAccessories(asset.id)" type="button"
+                            (click)="openAccessoriesModal(batch.id, asset.id)"
+                            class="accessories-btn"
+                            [class.accessories-btn--modified]="hasCustomAccessoryQuantities(asset.id)">
+                            <lucide-angular [img]="Link2" class="h-3.5 w-3.5"></lucide-angular>
+                            <span>{{ getAccessoriesButtonLabel(asset.id) }}</span>
+                          </button>
+                          <span *ngIf="!hasAccessories(asset.id)" class="text-xs text-[var(--color-text-muted)]">—</span>
+                        </td>
+                        <td class="text-center">
+                          <button type="button" (click)="removeAsset(batch.id, asset.id)"
+                            class="assets-table-delete-btn p-1.5 rounded-lg"
+                            [title]="'common.delete' | translate">
+                            <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div *ngIf="batch.assets.length > 0"
+                  class="batch-accordion__pagination"
+                  [class.batch-accordion__pagination--rtl]="isRTL">
+                  <app-rows-per-page
+                    [rowsPerPage]="assetRowsPerPage"
+                    [totalItems]="batch.assets.length"
+                    [visibleItems]="getPaginatedAssets(batch).length"
+                    (rowsPerPageChange)="onAssetRowsPerPageChange($event)">
+                  </app-rows-per-page>
+                  <div *ngIf="getAssetTotalPages(batch) > 1" class="flex items-center gap-3">
+                    <app-pagination
+                      [currentPage]="getValidatedAssetPage(batch)"
+                      [totalPages]="getAssetTotalPages(batch)"
+                      (pageChange)="onAssetPageChange(batch.id, $event)">
+                    </app-pagination>
+                    <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+                      {{ getValidatedAssetPage(batch) }} {{ 'common.of' | translate }} {{ getAssetTotalPages(batch) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- Receiver Information -->
-      <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md border border-[var(--color-border)]">
-        <button (click)="isReceiverInfoExpanded = !isReceiverInfoExpanded"
-          class="w-full flex items-center justify-between p-6 hover:bg-[var(--color-background-hover)] transition-colors rounded-t-xl section-header-btn">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
-              <lucide-angular [img]="Users" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
-            </div>
+      <!-- Receiver Information (collapsed by default) -->
+      <section class="review-section">
+        <button type="button" class="review-section__toggle" (click)="isReceiverInfoExpanded = !isReceiverInfoExpanded">
+          <div class="review-section__icon">
+            <lucide-angular [img]="Users" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
+          </div>
+          <div class="min-w-0 flex-1 text-start">
             <h2 class="text-lg font-semibold text-[var(--color-text)]">
               {{ 'weaponSupplyReview.receiverInformation' | translate }}
             </h2>
           </div>
           <lucide-angular [img]="isReceiverInfoExpanded ? ChevronUp : ChevronDown"
-            class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+            class="h-5 w-5 text-[var(--color-text-muted)] flex-shrink-0"></lucide-angular>
         </button>
 
-        <div *ngIf="isReceiverInfoExpanded" class="px-6 pb-6 border-t border-[var(--color-border)]">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
+        <div *ngIf="isReceiverInfoExpanded" class="review-section__body border-t border-[var(--color-border)]">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-1">
               <span class="block text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-1">
                 {{ 'weaponSupplyReview.receiver' | translate }} <span class="text-[var(--color-error)]">*</span>
@@ -507,7 +403,7 @@ class="assets-table-input w-full min-w-0">
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       <!-- Summary and Submit -->
       <div class="bg-[var(--color-background)] rounded-xl shadow-custom-md border-2 border-[var(--color-brand)] p-6">
@@ -566,4 +462,55 @@ class="assets-table-input w-full min-w-0">
   <app-employee-form-modal [isOpen]="isEmployeeModalOpen" mode="create"
     (closed)="onEmployeeModalClosed()" (saved)="onEmployeeSaved()">
   </app-employee-form-modal>
+
+  <!-- Accessories Modal -->
+  <div *ngIf="accessoriesModal && accessoriesModalAsset" class="accessories-modal-backdrop" (click)="closeAccessoriesModal()">
+    <div class="accessories-modal" role="dialog" (click)="$event.stopPropagation()">
+      <div class="accessories-modal__header">
+        <div class="min-w-0">
+          <h3 class="text-base font-semibold text-[var(--color-text)]">
+            {{ 'weaponSupplyReview.accessories' | translate }}
+          </h3>
+          <p class="text-sm text-[var(--color-text-muted)] mt-0.5 truncate">
+            <ng-container *ngIf="accessoriesModalAsset.serialNumber">{{ accessoriesModalAsset.serialNumber }} · </ng-container>{{ getItemName(accessoriesModalAsset) }}
+          </p>
+        </div>
+        <button type="button" (click)="closeAccessoriesModal()"
+          class="p-1.5 rounded-lg hover:bg-[var(--color-background-hover)]">
+          <lucide-angular [img]="X" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>
+        </button>
+      </div>
+      <div class="accessories-modal__body">
+        <table class="w-full accessory-table text-sm">
+          <thead>
+            <tr>
+              <th>{{ 'weaponSupplyReview.accessoryName' | translate }}</th>
+              <th>{{ 'weaponSupplyReview.itemNumber' | translate }}</th>
+              <th class="text-center">{{ 'weaponSupplyReview.defaultQuantity' | translate }}</th>
+              <th class="text-center">{{ 'weaponSupplyReview.suppliedQuantity' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let acc of getAccessories(accessoriesModal.assetId)">
+              <td><bdi>{{ getAccessoryName(acc) }}</bdi></td>
+              <td class="text-[var(--color-text-muted)]">{{ acc.itemNo || '—' }}</td>
+              <td class="text-center">{{ acc.defaultQuantity }}</td>
+              <td class="text-center">
+                <input type="number" min="0"
+                  [value]="acc.suppliedQuantity"
+                  (input)="onSuppliedQuantityChange(accessoriesModal!.assetId, acc.accessoryId, $any($event.target).value)"
+                  class="w-20 px-2 py-1 border border-[var(--color-border)] rounded-lg text-center text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]">
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="accessories-modal__footer">
+        <button type="button" (click)="closeAccessoriesModal()"
+          class="px-4 py-2 text-sm font-medium bg-[var(--color-brand)] text-white rounded-lg hover:bg-[var(--color-brand-dark)]">
+          {{ 'common.close' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

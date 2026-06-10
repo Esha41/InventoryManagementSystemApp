@@ -197,13 +197,28 @@ export class WeaponSupplyReviewService {
         this.setBatches(batches);
     }
 
+    /** Single-expand accordion: opening one policy number closes the others. */
     toggleBatchExpanded(batchId: number): void {
         const batches = this.batches;
         const batch = batches.find(b => b.id === batchId);
-        if (batch) {
-            batch.expanded = !batch.expanded;
-            this.setBatches(batches);
+        if (!batch) return;
+
+        const opening = !batch.expanded;
+        batches.forEach(b => { b.expanded = false; });
+        if (opening) {
+            batch.expanded = true;
         }
+        this.setBatches(batches);
+    }
+
+    collapseAllBatches(): void {
+        const batches = this.batches;
+        batches.forEach(b => { b.expanded = false; });
+        this.setBatches(batches);
+    }
+
+    getTotalAssetCount(): number {
+        return this.batches.reduce((sum, b) => sum + b.assets.length, 0);
     }
 
     removeAsset(batchId: number, assetId: number): void {

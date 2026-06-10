@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule, ArrowLeft, ArrowRight, ChevronDown, ChevronUp,ChevronRight, CheckCircle, AlertTriangle, Package, Clock, User, 
-  Shield, FileText, Warehouse, Building2, Users, ClipboardList,ListOrdered, Check, X, Search, Info, Paperclip,Plus, Trash2, Pencil } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ArrowRight, ChevronDown, ChevronUp, ChevronRight, CheckCircle, AlertTriangle, Package, Clock, User,
+  Shield, FileText, Warehouse, Building2, Users, ClipboardList, ListOrdered, Check, X, Search, Info, Paperclip, Plus, Trash2, Pencil, Link2 } from 'lucide-angular';
 import { Subject, takeUntil, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
@@ -69,6 +69,7 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
   readonly ArrowRight = ArrowRight;
   readonly ChevronDown = ChevronDown;
   readonly ChevronUp = ChevronUp;
+  readonly ChevronRight = ChevronRight;
   readonly CheckCircle = CheckCircle;
   readonly AlertTriangle = AlertTriangle;
   readonly Package = Package;
@@ -88,8 +89,8 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
   readonly Plus = Plus;
   readonly Trash2 = Trash2;
   readonly Pencil = Pencil;
-  readonly ChevronRight = ChevronRight;
   readonly Paperclip = Paperclip;
+  readonly Link2 = Link2;
 
   // File upload
   selectedFiles: File[] = [];
@@ -111,11 +112,11 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
 
   assetRowsPerPage = defaultPageSize;
   private readonly assetPageByBatchId = new Map<number, number>();
-  private readonly accessoryExpandedByAssetId = new Map<number, boolean>();
 
   isRequestItemsExpanded = true;
-  isBatchesExpanded = true;
+  isBatchesSectionExpanded = true;
   isReceiverInfoExpanded = true;
+  accessoriesModal: { batchId: number; assetId: number } | null = null;
 
   loading = true;
   loadingBatches = false;
@@ -252,6 +253,10 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
           this.reviewService.applySelections(selections);
           this.reviewService.applyBatchData(batches);
           this.resetAssetPagination();
+          if (this.batches.length === 1) {
+            this.batches[0].expanded = true;
+            this.reviewService.setBatches(this.batches);
+          }
           this.loadingBatches = false;
           this.cdr.markForCheck();
         },
@@ -277,10 +282,42 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ==================== BATCH ACCORDION ====================
-
   toggleBatch(batchId: number): void {
     this.reviewService.toggleBatchExpanded(batchId);
+  }
+
+  collapseAllBatches(): void {
+    this.reviewService.collapseAllBatches();
+    this.cdr.markForCheck();
+  }
+
+  get hasExpandedBatch(): boolean {
+    return this.batches.some(b => b.expanded);
+  }
+
+  get totalAssetCount(): number {
+    return this.reviewService.getTotalAssetCount();
+  }
+
+  openAccessoriesModal(batchId: number, assetId: number): void {
+    this.accessoriesModal = { batchId, assetId };
+    this.cdr.markForCheck();
+  }
+
+  closeAccessoriesModal(): void {
+    this.accessoriesModal = null;
+    this.cdr.markForCheck();
+  }
+
+  get accessoriesModalAsset(): AssetDto | null {
+    if (!this.accessoriesModal) return null;
+    const batch = this.batches.find(b => b.id === this.accessoriesModal!.batchId);
+    return batch?.assets.find(a => a.id === this.accessoriesModal!.assetId) ?? null;
+  }
+
+  getAccessoriesButtonLabel(assetId: number): string {
+    const count = this.getAccessories(assetId).length;
+    return this.translate.instant('weaponSupplyReview.viewAccessories', { count });
   }
 
   onAssetPageChange(batchId: number, page: number): void {
@@ -311,8 +348,10 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
   // ==================== ASSET MANAGEMENT ====================
 
   removeAsset(batchId: number, assetId: number): void {
+    if (this.accessoriesModal?.assetId === assetId) {
+      this.closeAccessoriesModal();
+    }
     this.reviewService.removeAsset(batchId, assetId);
-    this.accessoryExpandedByAssetId.delete(assetId);
   }
 
   openAddSerial(batchId: number): void {
@@ -650,28 +689,10 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  isAccessoriesExpanded(assetId: number): boolean {
-    return this.accessoryExpandedByAssetId.get(assetId) === true;
-  }
-
-  toggleAccessoriesExpanded(assetId: number): void {
-    const expanded = this.isAccessoriesExpanded(assetId);
-    this.accessoryExpandedByAssetId.set(assetId, !expanded);
-    this.cdr.markForCheck();
-  }
-
   hasCustomAccessoryQuantities(assetId: number): boolean {
     return this.getAccessories(assetId).some(
       acc => acc.suppliedQuantity !== acc.defaultQuantity
     );
-  }
-
-  getAccessoriesCollapsedSummary(assetId: number): string {
-    const count = this.getAccessories(assetId).length;
-    const key = this.hasCustomAccessoryQuantities(assetId)
-      ? 'weaponSupplyReview.accessoriesSummaryModified'
-      : 'weaponSupplyReview.accessoriesSummaryDefaults';
-    return this.translate.instant(key, { count });
   }
 
   trackByBatchId(_index: number, batch: BatchWithSelection): number {
