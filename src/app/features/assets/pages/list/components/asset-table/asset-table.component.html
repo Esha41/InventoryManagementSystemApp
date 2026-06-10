@@ -5,7 +5,7 @@
         <span *ngIf="activeTab === 'ammunition'" class="min-w-0">{{ 'assetList.ammunitionItems' | translate }}</span>
         <span *ngIf="activeTab === 'weapon'" class="min-w-0">{{ 'assetList.weaponItems' | translate }}</span>
         <span *ngIf="activeTab === 'explosive'" class="min-w-0">{{ 'assetList.explosiveItems' | translate }}</span>
-        <span *ngIf="activeTab === 'accessory'" class="min-w-0">{{ 'assetList.accessoryItems' | translate }}</span>
+        <!-- <span *ngIf="activeTab === 'accessory'" class="min-w-0">{{ 'assetList.accessoryItems' | translate }}</span> -->
         <span dir="ltr" class="inline-block whitespace-nowrap tabular-nums asset-table-item-count-suffix">
           ({{ totalItems }})
         </span>
@@ -42,6 +42,7 @@
           </button>
         </nav>
       </div>
+      <!-- Accessory view tabs hidden temporarily
       <div *ngIf="activeTab === 'accessory'" class="view-tabs-container">
         <nav class="view-tabs" role="tablist" aria-label="Accessories view">
           <button role="tab" (click)="onAccessoriesViewModeChange('available')"
@@ -58,6 +59,7 @@
           </button>
         </nav>
       </div>
+      -->
       <div *ngIf="activeTab === 'weapon'" class="view-tabs-container">
         <nav class="view-tabs" role="tablist" aria-label="Weapons view">
           <button role="tab" (click)="onWeaponsViewModeChange('available')"
@@ -132,6 +134,7 @@
             <lucide-angular [img]="Eye" class="h-4 w-4"></lucide-angular>
           </button>
           <ng-container *ngIf="showEditDelete">
+            <!-- Link weapon accessories hidden temporarily
             <ng-container *ngIf="activeTab === 'weapon' && weaponsViewMode === 'available'">
               <button *appHasPermission="PERMISSIONS.ASSETS.WEAPON.EDIT" (click)="onLinkAccessories(asset.id)"
                 class="flex-shrink-0 min-w-[2.75rem] min-h-[2.75rem] flex items-center justify-center p-2 text-[var(--color-brand)] bg-[var(--color-brand)]/10 rounded-lg transition-colors"
@@ -139,6 +142,7 @@
                 <lucide-angular [img]="Link2" class="h-4 w-4"></lucide-angular>
               </button>
             </ng-container>
+            -->
             <button *appHasPermission="editPermission" (click)="onEdit(asset.id)"
               class="flex-shrink-0 min-w-[2.75rem] min-h-[2.75rem] flex items-center justify-center p-2 text-[var(--color-info)] bg-[var(--color-info)]/10 rounded-lg transition-colors">
               <lucide-angular [img]="Edit" class="h-4 w-4"></lucide-angular>
@@ -275,6 +279,7 @@
                 </button>
 
                 <ng-container *ngIf="showEditDelete">
+                  <!-- Link weapon accessories hidden temporarily
                   <ng-container *ngIf="activeTab === 'weapon' && weaponsViewMode === 'available'">
                     <button *appHasPermission="PERMISSIONS.ASSETS.WEAPON.EDIT" (click)="onLinkAccessories(asset.id)"
                       class="p-2 rounded-lg text-[var(--color-brand)] hover:bg-[var(--color-brand)]/10 transition-colors group"
@@ -282,6 +287,7 @@
                       <lucide-angular [img]="Link2" class="h-4 w-4"></lucide-angular>
                     </button>
                   </ng-container>
+                  -->
                   <button *appHasPermission="editPermission" (click)="onEdit(asset.id)"
                     class="p-2 rounded-lg text-[var(--color-info)] hover:bg-[var(--color-info)]/10 transition-colors"
                     [title]="'common.edit' | translate">

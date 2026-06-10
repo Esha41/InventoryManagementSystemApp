@@ -186,7 +186,7 @@
                         <th class="min-w-[120px]">{{ 'weaponSupplyReview.itemName' | translate }}</th>
                         <th class="min-w-[200px]">{{ 'weaponSupplyReview.assignee' | translate }}</th>
                         <th class="min-w-[120px]">{{ 'weaponSupplyReview.notes' | translate }}</th>
-                        <th class="text-center min-w-[100px]">{{ 'weaponSupplyReview.accessories' | translate }}</th>
+                        <!-- <th class="text-center min-w-[100px]">{{ 'weaponSupplyReview.accessories' | translate }}</th> -->
                         <th class="text-center w-14"></th>
                       </tr>
                     </thead>
@@ -245,6 +245,7 @@
                             [placeholder]="'weaponSupplyReview.enterNotes' | translate"
                             class="assets-table-input w-full min-w-0">
                         </td>
+                        <!-- Weapon accessories column hidden temporarily
                         <td class="text-center">
                           <button *ngIf="hasAccessories(asset.id)" type="button"
                             (click)="openAccessoriesModal(batch.id, asset.id)"
@@ -255,6 +256,7 @@
                           </button>
                           <span *ngIf="!hasAccessories(asset.id)" class="text-xs text-[var(--color-text-muted)]">—</span>
                         </td>
+                        -->
                         <td class="text-center">
                           <button type="button" (click)="removeAsset(batch.id, asset.id)"
                             class="assets-table-delete-btn p-1.5 rounded-lg"
@@ -463,7 +465,7 @@
     (closed)="onEmployeeModalClosed()" (saved)="onEmployeeSaved()">
   </app-employee-form-modal>
 
-  <!-- Accessories Modal -->
+  <!-- Accessories Modal hidden temporarily
   <div *ngIf="accessoriesModal && accessoriesModalAsset" class="accessories-modal-backdrop" (click)="closeAccessoriesModal()">
     <div class="accessories-modal" role="dialog" (click)="$event.stopPropagation()">
       <div class="accessories-modal__header">
@@ -536,4 +538,5 @@
       </div>
     </div>
   </div>
+  -->
 </div>

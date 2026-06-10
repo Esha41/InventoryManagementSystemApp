@@ -42,6 +42,7 @@
           >
             <span>{{ 'assetList.tabs.weapon' | translate }}</span>
           </button>
+          <!-- Weapon accessories tab hidden temporarily
           <button (click)="setActiveTab('accessory')" [ngClass]="{
             'bg-[var(--color-brand)] text-white shadow-md': activeTab === 'accessory',
             'bg-[var(--color-background)] text-[var(--color-text-muted)] hover:bg-[var(--color-background-hover)] hover:text-[var(--color-text)] border-2 border-[var(--color-border)]': activeTab !== 'accessory'
@@ -50,6 +51,7 @@
           >
             <span>{{ 'assetList.tabs.accessory' | translate }}</span>
           </button>
+          -->
         </nav>
       </div>
     </app-card>
@@ -62,7 +64,7 @@
           <span *ngIf="activeTab === 'ammunition'">{{ 'addAsset.addAmmunition' | translate }}</span>
           <span *ngIf="activeTab === 'weapon'">{{ 'addAsset.addWeapon' | translate }}</span>
           <span *ngIf="activeTab === 'explosive'">{{ 'addAsset.addExplosive' | translate }}</span>
-          <span *ngIf="activeTab === 'accessory'">{{ 'addAsset.addAccessory' | translate }}</span>
+          <!-- <span *ngIf="activeTab === 'accessory'">{{ 'addAsset.addAccessory' | translate }}</span> -->
         </h2>
 
         <form #f="ngForm" (ngSubmit)="onSubmit()" class="space-y-6">

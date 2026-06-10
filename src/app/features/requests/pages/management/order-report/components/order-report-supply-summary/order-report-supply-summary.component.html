@@ -84,6 +84,7 @@
               <td class="print-table-cell">{{ depotDisplay(line) }}</td>
               <td class="print-table-cell">{{ line.assigneeName || '—' }}</td>
             </tr>
+            <!-- Weapon accessories row hidden temporarily
             <tr *ngIf="line.accessories?.length" class="print-table-row">
               <td class="print-table-cell"></td>
               <td class="print-table-cell" colspan="5">
@@ -110,6 +111,7 @@
                 </table>
               </td>
             </tr>
+            -->
           </ng-container>
         </tbody>
       </table>

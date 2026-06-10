@@ -29,7 +29,7 @@ import { AmmunitionService } from '@assets/services/ammunition.service';
 import { WeaponService } from '@assets/services/weapon.service';
 import { ExplosiveService } from '@assets/services/explosive.service';
 import { AccessoryService } from '@assets/services/accessory.service';
-import { WeaponAccessoryLinkModalComponent } from './components/weapon-accessory-link-modal/weapon-accessory-link-modal.component';
+// import { WeaponAccessoryLinkModalComponent } from './components/weapon-accessory-link-modal/weapon-accessory-link-modal.component';
 import { ImportExportService } from '@admin/services/import-export.service';
 import { ToastService } from '@services/toast.service';
 import { IImportableService } from '@core/interfaces/importable-service.interface';
@@ -60,7 +60,7 @@ import { BackendAuthService } from '@services/backend-auth.service';
     AssetListHeaderComponent,
     ImportDialogComponent,
     ImportPreviewDialogComponent,
-    WeaponAccessoryLinkModalComponent
+    // WeaponAccessoryLinkModalComponent
   ],
   templateUrl: './asset-list.component.html',
   styleUrls: ['./asset-list.component.css'],
