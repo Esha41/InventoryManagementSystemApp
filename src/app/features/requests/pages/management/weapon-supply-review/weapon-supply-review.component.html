@@ -481,29 +481,52 @@
         </button>
       </div>
       <div class="accessories-modal__body">
-        <table class="w-full accessory-table text-sm">
-          <thead>
-            <tr>
-              <th>{{ 'weaponSupplyReview.accessoryName' | translate }}</th>
-              <th>{{ 'weaponSupplyReview.itemNumber' | translate }}</th>
-              <th class="text-center">{{ 'weaponSupplyReview.defaultQuantity' | translate }}</th>
-              <th class="text-center">{{ 'weaponSupplyReview.suppliedQuantity' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let acc of getAccessories(accessoriesModal.assetId)">
-              <td><bdi>{{ getAccessoryName(acc) }}</bdi></td>
-              <td class="text-[var(--color-text-muted)]">{{ acc.itemNo || '—' }}</td>
-              <td class="text-center">{{ acc.defaultQuantity }}</td>
-              <td class="text-center">
-                <input type="number" min="0"
-                  [value]="acc.suppliedQuantity"
-                  (input)="onSuppliedQuantityChange(accessoriesModal!.assetId, acc.accessoryId, $any($event.target).value)"
-                  class="w-20 px-2 py-1 border border-[var(--color-border)] rounded-lg text-center text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]">
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="accessories-modal__table-scroll overflow-x-auto">
+          <table class="w-full accessory-table text-sm">
+            <thead>
+              <tr>
+                <th>{{ 'weaponSupplyReview.accessoryName' | translate }}</th>
+                <th>{{ 'weaponSupplyReview.itemNumber' | translate }}</th>
+                <th class="text-center">{{ 'weaponSupplyReview.defaultQuantity' | translate }}</th>
+                <th class="text-center">{{ 'weaponSupplyReview.suppliedQuantity' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let acc of getPaginatedAccessories(accessoriesModal.assetId); trackBy: trackByAccessoryId">
+                <td><bdi>{{ getAccessoryName(acc) }}</bdi></td>
+                <td class="text-[var(--color-text-muted)]">{{ acc.itemNo || '—' }}</td>
+                <td class="text-center">{{ acc.defaultQuantity }}</td>
+                <td class="text-center">
+                  <input type="number" min="0"
+                    [value]="acc.suppliedQuantity"
+                    (input)="onSuppliedQuantityChange(accessoriesModal!.assetId, acc.accessoryId, $any($event.target).value)"
+                    class="w-20 px-2 py-1 border border-[var(--color-border)] rounded-lg text-center text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]">
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div *ngIf="getAccessories(accessoriesModal.assetId).length > 0"
+          class="accessories-modal__pagination"
+          [class.accessories-modal__pagination--rtl]="isRTL">
+          <app-rows-per-page
+            [rowsPerPage]="accessoryRowsPerPage"
+            [totalItems]="getAccessories(accessoriesModal.assetId).length"
+            [visibleItems]="getPaginatedAccessories(accessoriesModal.assetId).length"
+            (rowsPerPageChange)="onAccessoryRowsPerPageChange($event)">
+          </app-rows-per-page>
+          <div *ngIf="getAccessoryTotalPages(accessoriesModal.assetId) > 1" class="flex items-center gap-3">
+            <app-pagination
+              [currentPage]="getValidatedAccessoryPage(accessoriesModal.assetId)"
+              [totalPages]="getAccessoryTotalPages(accessoriesModal.assetId)"
+              (pageChange)="onAccessoryPageChange($event)">
+            </app-pagination>
+            <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+              {{ getValidatedAccessoryPage(accessoriesModal.assetId) }} {{ 'common.of' | translate }} {{ getAccessoryTotalPages(accessoriesModal.assetId) }}
+            </span>
+          </div>
+        </div>
       </div>
       <div class="accessories-modal__footer">
         <button type="button" (click)="closeAccessoriesModal()"

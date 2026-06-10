@@ -19,18 +19,14 @@
       </div>
 
       <div class="px-6 py-4">
-        <p class="text-sm text-[var(--color-text-muted)] mb-4">
-          {{ 'assetList.weaponAccessoryLink.description' | translate }}
-        </p>
-
         <app-loading-state *ngIf="loading" message="assetList.weaponAccessoryLink.loading" size="sm"
           containerClass="text-center py-8">
         </app-loading-state>
 
         <ng-container *ngIf="!loading">
           <!-- Add accessory row -->
-          <div class="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-3 items-end mb-6">
-            <div class="min-w-0">
+          <div class="weapon-accessory-add-row mb-6">
+            <div class="weapon-accessory-add-row__field weapon-accessory-add-row__field--grow">
               <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
                 {{ 'assetList.weaponAccessoryLink.selectAccessory' | translate }}
               </span>
@@ -42,7 +38,7 @@
               </app-dropdown>
             </div>
 
-            <div class="w-full sm:w-28">
+            <div class="weapon-accessory-add-row__field weapon-accessory-add-row__field--qty">
               <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="weapon-accessory-add-qty">
                 {{ 'assetList.weaponAccessoryLink.defaultQuantity' | translate }}
               </label>
@@ -53,7 +49,7 @@
                 class="w-full px-3 py-2.5 border border-[var(--color-border)] rounded-lg text-end bg-[var(--color-background)] text-sm text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none" />
             </div>
 
-            <app-button variant="primary" type="button" class="w-full sm:w-auto"
+            <app-button variant="primary" type="button" class="weapon-accessory-add-row__action"
               [disabled]="!selectedAccessoryId || accessoryDropdownOptions.length === 0"
               (click)="addAccessory()">
               <span class="inline-flex items-center gap-2">
@@ -64,7 +60,7 @@
           </div>
 
           <!-- Linked accessories list -->
-          <div class="border border-[var(--color-border)] rounded-lg overflow-hidden">
+          <div class="linked-accessories-panel">
             <div class="px-4 py-3 bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
               <h4 class="text-sm font-semibold text-[var(--color-text)]">
                 {{ 'assetList.weaponAccessoryLink.linkedAccessories' | translate }}
@@ -76,42 +72,65 @@
               {{ 'assetList.weaponAccessoryLink.noLinkedAccessories' | translate }}
             </div>
 
-            <table *ngIf="linkedItems.length > 0" class="w-full text-sm">
-              <thead class="bg-[var(--color-background-muted)]">
-                <tr>
-                  <th class="px-4 py-3 text-start font-semibold text-[var(--color-text)]">
-                    {{ 'assetList.table.itemNo' | translate }}
-                  </th>
-                  <th class="px-4 py-3 text-start font-semibold text-[var(--color-text)]">
-                    {{ 'assetList.table.name' | translate }}
-                  </th>
-                  <th class="px-4 py-3 text-end font-semibold text-[var(--color-text)] w-32"
-                    [title]="'assetList.weaponAccessoryLink.defaultQuantityHint' | translate">
-                    {{ 'assetList.weaponAccessoryLink.defaultQuantity' | translate }}
-                  </th>
-                  <th class="px-4 py-3 w-12"></th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-[var(--color-border)]">
-                <tr *ngFor="let row of linkedItems" class="hover:bg-[var(--color-background-muted)]">
-                  <td class="px-4 py-3 font-mono text-[var(--color-text)]">{{ getRowItemNo(row) }}</td>
-                  <td class="px-4 py-3 text-[var(--color-text)]"><bdi>{{ getRowDisplayName(row) }}</bdi></td>
-                  <td class="px-4 py-3 text-end">
-                    <input type="number" min="1" step="1"
-                      [ngModel]="row.defaultQuantity" (ngModelChange)="onLinkedQuantityChange(row, $event)"
-                      [attr.aria-label]="'assetList.weaponAccessoryLink.defaultQuantity' | translate"
-                      class="w-24 px-2 py-1.5 border border-[var(--color-border)] rounded-lg text-end bg-[var(--color-background)]" />
-                  </td>
-                  <td class="px-4 py-3 text-end">
-                    <button type="button" (click)="removeAccessory(row.accessoryId)"
-                      class="p-2 rounded-lg text-[var(--color-error)] hover:bg-[var(--color-error)]/10 transition-colors"
-                      [title]="'common.delete' | translate">
-                      <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <ng-container *ngIf="linkedItems.length > 0">
+              <div class="linked-accessories-panel__scroll">
+                <table class="linked-accessories-table w-full text-sm">
+                  <thead class="bg-[var(--color-background-muted)]">
+                    <tr>
+                      <th class="px-4 py-3 text-start font-semibold text-[var(--color-text)]">
+                        {{ 'assetList.table.name' | translate }}
+                      </th>
+                      <th class="px-4 py-3 text-start font-semibold text-[var(--color-text)]">
+                        {{ 'assetList.table.itemNo' | translate }}
+                      </th>
+                      <th class="px-4 py-3 text-end font-semibold text-[var(--color-text)] w-32"
+                        [title]="'assetList.weaponAccessoryLink.defaultQuantityHint' | translate">
+                        {{ 'assetList.weaponAccessoryLink.defaultQuantity' | translate }}
+                      </th>
+                      <th class="px-4 py-3 w-12"></th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-[var(--color-border)]">
+                    <tr *ngFor="let row of paginatedLinkedItems; trackBy: trackByAccessoryId" class="hover:bg-[var(--color-background-muted)]">
+                      <td class="px-4 py-3 text-[var(--color-text)]"><bdi>{{ getRowDisplayName(row) }}</bdi></td>
+                      <td class="px-4 py-3 font-mono text-[var(--color-text-muted)]">{{ getRowItemNo(row) }}</td>
+                      <td class="px-4 py-3 text-end">
+                        <input type="number" min="1" step="1"
+                          [ngModel]="row.defaultQuantity" (ngModelChange)="onLinkedQuantityChange(row, $event)"
+                          [attr.aria-label]="'assetList.weaponAccessoryLink.defaultQuantity' | translate"
+                          class="w-24 px-2 py-1.5 border border-[var(--color-border)] rounded-lg text-end bg-[var(--color-background)]" />
+                      </td>
+                      <td class="px-4 py-3 text-end">
+                        <button type="button" (click)="removeAccessory(row.accessoryId)"
+                          class="p-2 rounded-lg text-[var(--color-error)] hover:bg-[var(--color-error)]/10 transition-colors"
+                          [title]="'common.delete' | translate">
+                          <lucide-angular [img]="Trash2" class="h-4 w-4"></lucide-angular>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="linked-accessories-pagination" [class.linked-accessories-pagination--rtl]="isRTL">
+                <app-rows-per-page
+                  [rowsPerPage]="rowsPerPage"
+                  [totalItems]="linkedItems.length"
+                  [visibleItems]="paginatedLinkedItems.length"
+                  (rowsPerPageChange)="onRowsPerPageChange($event)">
+                </app-rows-per-page>
+                <div *ngIf="totalPages > 1" class="flex items-center gap-3">
+                  <app-pagination
+                    [currentPage]="getValidatedPage()"
+                    [totalPages]="totalPages"
+                    (pageChange)="onPageChange($event)">
+                  </app-pagination>
+                  <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
+                    {{ getValidatedPage() }} {{ 'common.of' | translate }} {{ totalPages }}
+                  </span>
+                </div>
+              </div>
+            </ng-container>
           </div>
         </ng-container>
       </div>
@@ -125,4 +144,4 @@
     </div>
   </div>
 </div>
-
+

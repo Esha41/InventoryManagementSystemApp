@@ -17,6 +17,10 @@ import { LucideAngularModule, X, Plus, Trash2 } from 'lucide-angular';
 import { ButtonComponent } from '@components/button/button.component';
 import { LoadingStateComponent } from '@components/loading-state/loading-state.component';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
+import { PaginationComponent } from '@components/pagination/pagination.component';
+import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
+import { defaultPageSize } from '@constants/app.constants';
+import { TranslationService } from '@services/translation.service';
 import { AccessoryService } from '@assets/services/accessory.service';
 import { WeaponAccessoryService } from '@assets/services/weapon-accessory.service';
 import { AccessoryDto } from '@models/accessory.model';
@@ -44,9 +48,12 @@ interface LinkedAccessoryRow {
     LucideAngularModule,
     ButtonComponent,
     LoadingStateComponent,
-    DropdownComponent
+    DropdownComponent,
+    PaginationComponent,
+    RowsPerPageComponent
   ],
   templateUrl: './weapon-accessory-link-modal.component.html',
+  styleUrls: ['./weapon-accessory-link-modal.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WeaponAccessoryLinkModalComponent implements OnInit, OnChanges, OnDestroy {
@@ -67,6 +74,8 @@ export class WeaponAccessoryLinkModalComponent implements OnInit, OnChanges, OnD
   linkedItems: LinkedAccessoryRow[] = [];
   selectedAccessoryId: number | null = null;
   addQuantity = 1;
+  rowsPerPage = defaultPageSize;
+  currentPage = 1;
 
   private initialLinkedItemsSnapshot = '';
   private readonly destroy$ = new Subject<void>();
@@ -75,9 +84,25 @@ export class WeaponAccessoryLinkModalComponent implements OnInit, OnChanges, OnD
     private readonly accessoryService: AccessoryService,
     private readonly weaponAccessoryService: WeaponAccessoryService,
     private readonly translateService: TranslateService,
+    private readonly translationService: TranslationService,
     private readonly toastService: ToastService,
     private readonly cdr: ChangeDetectorRef
   ) {}
+
+  get isRTL(): boolean {
+    return this.translationService?.isRTL() ?? false;
+  }
+
+  get paginatedLinkedItems(): LinkedAccessoryRow[] {
+    const page = this.getValidatedPage();
+    const startIndex = (page - 1) * this.rowsPerPage;
+    return this.linkedItems.slice(startIndex, startIndex + this.rowsPerPage);
+  }
+
+  get totalPages(): number {
+    const total = this.linkedItems.length;
+    return total === 0 ? 0 : Math.ceil(total / this.rowsPerPage);
+  }
 
   ngOnInit(): void {
     this.translateService.onLangChange
@@ -112,7 +137,7 @@ export class WeaponAccessoryLinkModalComponent implements OnInit, OnChanges, OnD
   getAccessoryLabel(accessory: AccessoryDto): string {
     const name = getLocalizedName(accessory, getCurrentLang(this.translateService)) || accessory.name;
     const itemNo = accessory.itemNo?.trim();
-    return itemNo ? `${itemNo} — ${name}` : name;
+    return itemNo ? `${name} — ${itemNo}` : name;
   }
 
   getRowDisplayName(row: LinkedAccessoryRow): string {
@@ -188,12 +213,46 @@ export class WeaponAccessoryLinkModalComponent implements OnInit, OnChanges, OnD
 
     this.selectedAccessoryId = null;
     this.addQuantity = 1;
+    this.resetPagination();
     this.cdr.markForCheck();
   }
 
   removeAccessory(accessoryId: number): void {
     this.linkedItems = this.linkedItems.filter(item => item.accessoryId !== accessoryId);
+    this.resetPagination();
     this.cdr.markForCheck();
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.cdr.markForCheck();
+  }
+
+  onRowsPerPageChange(rows: number): void {
+    this.rowsPerPage = rows;
+    this.currentPage = 1;
+    this.cdr.markForCheck();
+  }
+
+  trackByAccessoryId(_index: number, row: LinkedAccessoryRow): number {
+    return row.accessoryId;
+  }
+
+  getValidatedPage(): number {
+    const maxPages = this.totalPages;
+    if (maxPages > 0 && this.currentPage > maxPages) {
+      this.currentPage = maxPages;
+    }
+    return this.currentPage;
+  }
+
+  private resetPagination(): void {
+    const maxPages = this.totalPages;
+    if (maxPages > 0 && this.currentPage > maxPages) {
+      this.currentPage = maxPages;
+    } else if (maxPages === 0) {
+      this.currentPage = 1;
+    }
   }
 
   save(): void {
@@ -306,6 +365,7 @@ export class WeaponAccessoryLinkModalComponent implements OnInit, OnChanges, OnD
     this.linkedItems = [];
     this.selectedAccessoryId = null;
     this.addQuantity = 1;
+    this.currentPage = 1;
     this.initialLinkedItemsSnapshot = '';
   }
 }

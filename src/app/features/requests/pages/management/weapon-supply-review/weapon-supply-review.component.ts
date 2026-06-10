@@ -111,6 +111,8 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
   batches: BatchWithSelection[] = [];
 
   assetRowsPerPage = defaultPageSize;
+  accessoryRowsPerPage = defaultPageSize;
+  accessoryModalPage = 1;
   private readonly assetPageByBatchId = new Map<number, number>();
 
   isRequestItemsExpanded = true;
@@ -301,11 +303,13 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
 
   openAccessoriesModal(batchId: number, assetId: number): void {
     this.accessoriesModal = { batchId, assetId };
+    this.accessoryModalPage = 1;
     this.cdr.markForCheck();
   }
 
   closeAccessoriesModal(): void {
     this.accessoriesModal = null;
+    this.accessoryModalPage = 1;
     this.cdr.markForCheck();
   }
 
@@ -318,6 +322,39 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
   getAccessoriesButtonLabel(assetId: number): string {
     const count = this.getAccessories(assetId).length;
     return this.translate.instant('weaponSupplyReview.viewAccessories', { count });
+  }
+
+  getPaginatedAccessories(assetId: number) {
+    const accessories = this.getAccessories(assetId);
+    const page = this.getValidatedAccessoryPage(assetId);
+    const startIndex = (page - 1) * this.accessoryRowsPerPage;
+    return accessories.slice(startIndex, startIndex + this.accessoryRowsPerPage);
+  }
+
+  getAccessoryTotalPages(assetId: number): number {
+    const total = this.getAccessories(assetId).length;
+    return total === 0 ? 0 : Math.ceil(total / this.accessoryRowsPerPage);
+  }
+
+  getValidatedAccessoryPage(assetId: number): number {
+    const maxPages = this.getAccessoryTotalPages(assetId);
+    let page = this.accessoryModalPage;
+    if (maxPages > 0 && page > maxPages) {
+      page = maxPages;
+      this.accessoryModalPage = page;
+    }
+    return page;
+  }
+
+  onAccessoryPageChange(page: number): void {
+    this.accessoryModalPage = page;
+    this.cdr.markForCheck();
+  }
+
+  onAccessoryRowsPerPageChange(rows: number): void {
+    this.accessoryRowsPerPage = rows;
+    this.accessoryModalPage = 1;
+    this.cdr.markForCheck();
   }
 
   onAssetPageChange(batchId: number, page: number): void {
@@ -701,6 +738,10 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
 
   trackByAssetId(_index: number, asset: AssetDto): number {
     return asset.id;
+  }
+
+  trackByAccessoryId(_index: number, accessory: { accessoryId: number }): number {
+    return accessory.accessoryId;
   }
 
   // ==================== ERROR HANDLING ====================
