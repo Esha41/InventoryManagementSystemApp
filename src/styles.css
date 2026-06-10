@@ -16,18 +16,25 @@
 
 @layer components {
   .page-wrapper {
-    @apply min-h-screen bg-[var(--color-background-muted)] pb-8;
+    /*
+      min-h-full, NOT min-h-screen: pages render inside the shell's <main>
+      (viewport minus navbar/footer). 100vh here would force every page to be
+      ~100px taller than its scroll container — a permanent scrollbar even
+      when content fits.
+    */
+    @apply min-h-full bg-[var(--color-background-muted)] pb-8;
   }
 
   .page-container {
-    /* 
+    /*
       Global content container
       - Centers content
       - Uses a readable max-width on large screens
       - Still fills smaller screens with comfortable side padding
-      - Allows more stretching on 2xl screens while preventing extreme widths
+      - xl cap keeps 1280–1536px office monitors (incl. 125% Windows scaling)
+        from stretching content full-bleed; 2xl allows wider but bounded layouts
     */
-    @apply w-full mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6 lg:py-8 2xl:max-w-[1800px];
+    @apply w-full mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6 lg:py-8 xl:max-w-[1440px] 2xl:max-w-[1800px];
   }
 
   /* Full-width page container (like analytics page) */

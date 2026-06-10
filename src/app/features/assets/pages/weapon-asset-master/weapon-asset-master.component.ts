@@ -15,7 +15,6 @@ import {
   ChevronDown,
   ChevronRight,
   History,
-  ArrowRight,
   Eye,
   User,
   Building,
@@ -26,6 +25,15 @@ import {
 } from 'lucide-angular';
 import { AssetService } from '@assets/services/asset.service';
 import { AssetHistoryService, AssetHistoryDto } from '@assets/services/asset-history.service';
+import {
+  getHistoryActionTypeKey,
+  getHistoryActionTypeDotClass,
+  getHistoryActionTypeIcon,
+  getHistoryActionTypeIconClass,
+  getHistoryDescriptionKey,
+  getHistoryFlowArrowIcon
+} from '@assets/utils/asset-history.utils';
+import { TranslationService } from '@services/translation.service';
 import { LookupService } from '@services/lookup.service';
 import { EmployeeService } from '@admin/services/employee.service';
 import { AssetDto, AssetStatus, EmployeeDto, getAssetStatusLabel } from '@models/asset.model';
@@ -54,9 +62,6 @@ import {
   WeaponAssetMasterListState,
   writeWeaponAssetMasterListState
 } from './weapon-asset-master-list-state';
-
-/** Backend `AssetHistoryActionType.Created` */
-const HISTORY_ACTION_CREATED = 1;
 
 type SortColumn = 'serial' | 'name' | 'status';
 type CustodyFilter = WamCustodyFilter;
@@ -203,7 +208,6 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
   readonly ChevronDown = ChevronDown;
   readonly ChevronRight = ChevronRight;
   readonly History = History;
-  readonly ArrowRight = ArrowRight;
   readonly Eye = Eye;
   readonly User = User;
   readonly Building = Building;
@@ -212,6 +216,20 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
   readonly FilterX = FilterX;
   readonly Calendar = Calendar;
   readonly trackById = trackById;
+  readonly getHistoryActionTypeIconClass = getHistoryActionTypeIconClass;
+
+  // History utils (used in template via method calls)
+  readonly getHistoryActionTypeKey = getHistoryActionTypeKey;
+  readonly getHistoryDotClass = getHistoryActionTypeDotClass;
+  readonly getHistoryIcon = getHistoryActionTypeIcon;
+
+  get isRTL(): boolean {
+    return this.translationService.isRTL();
+  }
+
+  get historyFlowArrow() {
+    return getHistoryFlowArrowIcon(this.isRTL);
+  }
 
   /** Query params when opening a catalog item; persists list state so Back restores filters. */
   readonly catalogItemQueryParams = { tab: 'weapon', returnTo: '/assets/weapon-asset-master' };
@@ -222,6 +240,7 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
     private lookupService: LookupService,
     private employeeService: EmployeeService,
     private translateService: TranslateService,
+    private translationService: TranslationService,
     private toastService: ToastService,
     private cdr: ChangeDetectorRef
   ) {}
@@ -555,9 +574,7 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
       this.expandedAssetIds.delete(assetId);
     } else {
       this.expandedAssetIds.add(assetId);
-      if (!this.historyByAssetId.has(assetId)) {
-        this.loadHistory(assetId);
-      }
+      this.loadHistory(assetId);
     }
     this.cdr.markForCheck();
   }
@@ -570,7 +587,8 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
     return expanded ? this.ChevronDown : this.ChevronRight;
   }
 
-  private loadHistory(assetId: number): void {
+  private loadHistory(assetId: number, forceRefresh = false): void {
+    if (!forceRefresh && this.historyByAssetId.has(assetId)) return;
     this.loadingHistory.add(assetId);
     this.cdr.markForCheck();
 
@@ -579,11 +597,9 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (rows) => {
-          const sorted = [...(rows ?? [])].sort((a, b) => {
-            const t = new Date(a.actionDate).getTime() - new Date(b.actionDate).getTime();
-            if (t !== 0) return t;
-            return a.actionType - b.actionType;
-          });
+          const sorted = [...(rows ?? [])].sort((a, b) =>
+            new Date(a.actionDate).getTime() - new Date(b.actionDate).getTime()
+          );
           this.historyByAssetId.set(assetId, sorted);
           this.loadingHistory.delete(assetId);
           this.cdr.markForCheck();
@@ -596,31 +612,77 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
       });
   }
 
+  refreshHistory(assetId: number): void {
+    this.loadHistory(assetId, true);
+  }
+
+  invalidateHistoryCache(assetId: number): void {
+    this.historyByAssetId.delete(assetId);
+  }
+
   getHistory(assetId: number): AssetHistoryDto[] {
     return this.historyByAssetId.get(assetId) ?? [];
   }
 
-  getAssignmentHistoryEntries(assetId: number): AssetHistoryDto[] {
-    return this.getHistory(assetId).filter((e) => e.actionType !== HISTORY_ACTION_CREATED);
-  }
-
-  hasAssignmentLocationFields(entry: AssetHistoryDto): boolean {
-    return !!(
-      entry.previousCustodianName ||
-      entry.newCustodianName ||
-      entry.previousDepartmentName ||
-      entry.newDepartmentName ||
-      entry.previousLocation ||
-      entry.newLocation
-    );
-  }
-
   hasExpandedHistoryContent(asset: AssetDto): boolean {
-    return this.getAssignmentHistoryEntries(asset.id).length > 0;
+    return this.getHistory(asset.id).length > 0;
   }
 
   isLoadingHistory(assetId: number): boolean {
     return this.loadingHistory.has(assetId);
+  }
+
+  /** Returns the En or Ar department name depending on current UI language. */
+  getLocalizedDeptName(nameEn?: string, nameAr?: string): string {
+    const lang = getCurrentLang(this.translateService);
+    return (lang === 'ar' ? nameAr : nameEn) || nameEn || nameAr || '—';
+  }
+
+  /** Returns the En or Ar custodian name depending on current UI language. */
+  getLocalizedCustodianName(nameEn?: string, nameAr?: string): string {
+    const lang = getCurrentLang(this.translateService);
+    return (lang === 'ar' ? nameAr : nameEn) || nameEn || nameAr || '—';
+  }
+
+  /** Translates a numeric AssetStatus to a display label. */
+  getTranslatedStatusLabel(status?: number): string {
+    if (status == null) return '';
+    const key = getAssetStatusLabel(status as AssetStatus);
+    return this.translateService.instant(key);
+  }
+
+  /**
+   * Builds a clear, human-readable sentence describing what happened in this
+   * history entry, with all context (status, custodian, department, batch)
+   * interpolated and localized.
+   */
+  getHistoryMessage(entry: AssetHistoryDto): string {
+    const dash = '—';
+
+    const prevCustodian = this.getLocalizedCustodianName(entry.previousCustodianName, entry.previousCustodianNameAr);
+    const newCustodian = this.getLocalizedCustodianName(entry.newCustodianName, entry.newCustodianNameAr);
+    const prevDept = this.getLocalizedDeptName(entry.previousDepartmentName, entry.previousDepartmentNameAr);
+    const newDept = this.getLocalizedDeptName(entry.newDepartmentName, entry.newDepartmentNameAr);
+
+    const params = {
+      fromStatus: this.getTranslatedStatusLabel(entry.previousStatus) || dash,
+      toStatus: this.getTranslatedStatusLabel(entry.newStatus) || dash,
+      custodian: newCustodian !== dash ? newCustodian : prevCustodian,
+      department: newDept !== dash ? newDept : prevDept,
+      fromLocation: entry.previousLocation || dash,
+      toLocation: entry.newLocation || dash,
+      batch: entry.batchNumber || dash,
+      order: entry.orderRequestNo || dash
+    };
+
+    const key = getHistoryDescriptionKey(entry.actionType);
+    const message = this.translateService.instant(key, params);
+
+    // Append free-text notes if the user added any (e.g. reason for status change).
+    if (entry.notes && entry.notes.trim()) {
+      return `${message} — ${entry.notes.trim()}`;
+    }
+    return message;
   }
 
   setSort(column: SortColumn): void {

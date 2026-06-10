@@ -1,1 +1,43 @@
-/* Auth layout specific styles if needed */
+/*
+ * Height-aware sizing for the auth shell.
+ * Tailwind breakpoints are width-only; these rules keep the login screen
+ * fitting (no scrollbar) on short viewports — 1366x768 laptops and
+ * 1080p monitors at 125% Windows scaling (~745px usable height).
+ */
+
+.auth-scroll-root {
+  /* vh fallback for browsers without dvh; dvh tracks mobile dynamic toolbars */
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/*
+ * Logo scales with viewport HEIGHT, not width:
+ * never below 6rem, never above 13rem (old lg:h-52), ~20% of viewport in between.
+ */
+.auth-logo {
+  height: clamp(6rem, 20dvh, 13rem);
+}
+
+@supports not (height: 1dvh) {
+  .auth-logo {
+    height: clamp(6rem, 20vh, 13rem);
+  }
+}
+
+/* Compress decorative spacing before content on short screens */
+@media (max-height: 760px) {
+  .auth-scroll-root {
+    padding-top: max(0.75rem, env(safe-area-inset-top));
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+
+  .auth-card-body {
+    padding-top: 1.25rem;
+    padding-bottom: 1.25rem;
+  }
+
+  .auth-footer {
+    margin-top: 1rem;
+  }
+}

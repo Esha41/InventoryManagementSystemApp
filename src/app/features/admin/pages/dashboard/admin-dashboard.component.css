@@ -2,6 +2,7 @@
 .admin-dashboard-container {
     padding: 1rem;
     min-height: 100vh;
+    min-height: 100dvh;
     background-color: var(--color-background-soft);
 }
 
@@ -182,16 +183,22 @@
 
 .charts-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
     gap: 1.5rem;
 }
 
 .chart-item {
-    min-height: 400px;
+    min-height: min(400px, 50dvh);
 }
 
 .chart-wide {
-    grid-column: span 2;
+    grid-column: 1 / -1;
+}
+
+@media (min-width: 1024px) {
+    .charts-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 

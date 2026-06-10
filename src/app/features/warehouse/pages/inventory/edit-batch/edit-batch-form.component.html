@@ -6,16 +6,12 @@
 </app-error-state>
 
 <div *ngIf="!loading && !error && batch && batchForm" [formGroup]="batchForm"
-  class="edit-batch-form w-full max-w-none space-y-6 text-sm text-[var(--color-text)] leading-relaxed">
+  class="w-full max-w-none space-y-6 text-sm text-[var(--color-text)] leading-relaxed">
   <!-- Batch summary -->
   <div
     class="p-4 md:p-6 bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] shadow-custom-sm">
     <h3 class="text-lg font-semibold text-[var(--color-text)] mb-4">{{ 'editBatch.commonInfo' | translate }}</h3>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
-      <div class="min-w-0">
-        <p class="text-sm text-[var(--color-text-muted)] mb-1">{{ 'editBatch.batchId' | translate }}</p>
-        <p class="text-base font-medium text-[var(--color-text)] font-mono tabular-nums">{{ batch.id }}</p>
-      </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
       <div class="min-w-0 sm:col-span-1">
         <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="edit-batch-number">{{
           'warehouseInventory.batchNumber' | translate }}</label>
@@ -139,149 +135,156 @@
     class="w-full min-w-0 p-4 md:p-6 bg-[var(--color-background)] rounded-lg border-2 border-[var(--color-border)] shadow-custom-sm">
     <h3 class="text-lg font-semibold text-[var(--color-text)] mb-1">{{ 'editBatch.assetsTable' | translate }}</h3>
     <p class="text-sm text-[var(--color-text-muted)] mb-4">{{ 'editBatch.assetsPaginationHint' | translate }}</p>
-    <div
-      class="relative w-full min-w-0 overflow-x-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-background)]"
+    <div class="relative w-full min-w-0 rounded-xl bg-[var(--color-background-muted)]/35 p-3 sm:p-4"
       formArrayName="assets">
       <div *ngIf="pagingAssets"
-        class="absolute inset-0 z-10 flex items-center justify-center bg-[var(--color-background)]/70 rounded-lg">
+        class="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-[var(--color-background)]/70">
         <lucide-angular [img]="Loader2" class="w-6 h-6 animate-spin text-[var(--color-brand)]"></lucide-angular>
       </div>
-      <p class="text-sm text-[var(--color-text-muted)] mb-3 px-3 pt-3">{{ 'editBatch.assignmentModeHint' | translate }}
-      </p>
-      <table class="edit-batch-table w-full min-w-full border-collapse">
-        <thead class="bg-[var(--color-background-muted)] border-b border-[var(--color-border)]">
-          <tr>
-            <th
-              class="px-3 py-2.5 text-start text-xs font-semibold text-[var(--color-text-muted)] tracking-wide w-12">
-              #</th>
-            <th
-              class="px-3 py-2.5 text-start text-xs font-semibold text-[var(--color-text-muted)] tracking-wide min-w-[140px]">
-              {{ 'warehouseInventory.itemName' | translate }}</th>
-            <th
-              class="px-3 py-2.5 text-start text-xs font-semibold text-[var(--color-text-muted)] tracking-wide min-w-[120px]">
-              {{ 'addWeaponAsset.serialNumber' | translate }}</th>
-            <th
-              class="px-3 py-2.5 text-start text-xs font-semibold text-[var(--color-text-muted)] tracking-wide min-w-[110px]">
-              {{ 'addWeaponAsset.rfidTag' | translate }}</th>
-            <th
-              class="px-3 py-2.5 text-start text-xs font-semibold text-[var(--color-text-muted)] tracking-wide min-w-[130px]">
-              {{ 'warehouseInventory.status' | translate }}</th>
-            <th
-              class="px-3 py-2.5 text-start text-xs font-semibold text-[var(--color-text-muted)] tracking-wide min-w-[200px]">
-              {{ 'editBatch.assignment' | translate }}</th>
-            <th *ngIf="showAssignmentNotesColumn"
-              class="px-3 py-2.5 text-start text-xs font-semibold text-[var(--color-text-muted)] tracking-wide min-w-[130px]">
-              {{ 'editBatch.assignmentNotes' | translate }}</th>
-            <th
-              class="px-3 py-2.5 text-start text-xs font-semibold text-[var(--color-text-muted)] tracking-wide min-w-[120px]">
-              {{ 'assetDetails.supplier' | translate }}</th>
-            <th
-              class="px-3 py-2.5 text-start text-xs font-semibold text-[var(--color-text-muted)] tracking-wide min-w-[120px]">
-              {{ 'assetDetails.manufacturer' | translate }}</th>
-            <th
-              class="px-3 py-2.5 text-start text-xs font-semibold text-[var(--color-text-muted)] tracking-wide min-w-[120px]">
-              {{ 'assetDetails.primaryPurpose' | translate }}</th>
-            <th
-              class="px-3 py-2.5 text-start text-xs font-semibold text-[var(--color-text-muted)] tracking-wide min-w-[130px]">
-              {{ 'addWeaponAsset.notes' | translate }}</th>
-            <th class="px-2 py-2.5 w-12"></th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-[var(--color-border)]">
-          <tr *ngFor="let group of assetForms.controls; trackBy: trackByIndex; let i = index" [formGroupName]="i"
-            class="bg-[var(--color-background)] hover:bg-[var(--color-background-hover)]/80 transition-colors align-top">
-            <td class="px-3 py-2.5 text-sm text-[var(--color-text-muted)] font-mono tabular-nums">{{ assetRowDisplayIndex(i)
-              }}</td>
-            <td class="px-3 py-2.5 text-sm text-[var(--color-text)] min-w-0">
-              <span [appTableClampTooltip]="getAssetName(i)">{{ getAssetName(i) }}</span>
-            </td>
-            <td class="px-3 py-2">
+      <div class="mb-4 rounded-lg bg-[var(--color-brand)]/5 px-3 py-2.5 text-sm text-[var(--color-text-muted)]">
+        {{ 'editBatch.assignmentModeHint' | translate }}
+      </div>
+      <div class="space-y-4">
+        <section *ngFor="let group of assetForms.controls; trackBy: trackByIndex; let i = index" [formGroupName]="i"
+          class="rounded-2xl border-s-4 border-s-[var(--color-brand)] bg-[var(--color-background)] p-4 shadow-md shadow-black/5">
+          <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div class="min-w-0">
+              <div class="mb-2 inline-flex rounded-full bg-[var(--color-brand)]/10 px-2.5 py-1 font-mono text-xs font-semibold tabular-nums text-[var(--color-brand)]">
+                #{{ assetRowDisplayIndex(i) }}
+              </div>
+              <h4 class="break-words text-base font-semibold leading-snug text-[var(--color-text)]">
+                {{ getAssetName(i) }}
+              </h4>
+            </div>
+            <button type="button" *ngIf="(batch?.assetCount ?? 0) > 1" (click)="removeRow(i)"
+              class="inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-lg bg-[var(--color-error)]/10 px-3 py-2 text-sm font-medium text-[var(--color-error)] transition-colors hover:bg-[var(--color-error)]/15"
+              [title]="'editBatch.removeRow' | translate">
+              <lucide-angular [img]="Trash2" class="w-4 h-4"></lucide-angular>
+              <span class="hidden sm:inline">{{ 'common.remove' | translate }}</span>
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div class="min-w-0">
+              <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+                {{ 'addWeaponAsset.serialNumber' | translate }}
+              </label>
               <input formControlName="serialNumber" type="text"
-                class="w-full min-h-[2.25rem] px-2.5 py-1.5 text-sm border rounded-md bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/30 focus:border-[var(--color-brand)] min-w-0 transition-colors"
+                class="w-full min-h-[2.25rem] rounded-md border bg-[var(--color-background)] px-2.5 py-1.5 text-sm text-[var(--color-text)] transition-colors focus:border-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/30"
                 [ngClass]="isFieldInvalid(i, 'serialNumber') ? 'border-[var(--color-error)]' : 'border-[var(--color-border)]'">
-            </td>
-            <td class="px-3 py-2">
+            </div>
+
+            <div class="min-w-0">
+              <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+                {{ 'addWeaponAsset.rfidTag' | translate }}
+              </label>
               <input formControlName="rfid" type="text"
-                class="w-full min-h-[2.25rem] px-2.5 py-1.5 text-sm border rounded-md bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/30 focus:border-[var(--color-brand)] min-w-0 transition-colors"
+                class="w-full min-h-[2.25rem] rounded-md border bg-[var(--color-background)] px-2.5 py-1.5 text-sm text-[var(--color-text)] transition-colors focus:border-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/30"
                 [ngClass]="isFieldInvalid(i, 'rfid') ? 'border-[var(--color-error)]' : 'border-[var(--color-border)]'">
-            </td>
-            <td class="px-3 py-2">
-              <app-dropdown class="w-full min-w-[9rem] block text-sm" formControlName="status" [options]="assetStatuses"
+            </div>
+
+            <div class="min-w-0">
+              <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+                {{ 'warehouseInventory.status' | translate }}
+              </label>
+              <app-dropdown class="block w-full min-w-0 text-sm" formControlName="status" [options]="assetStatuses"
                 optionValue="value" optionLabel="label" [translateLabels]="true" [showSearch]="false"
+                [formFieldAligned]="true" [triggerAppendClasses]="editBatchDropdownTriggerClasses"
                 [placeholderSelectable]="false" [placeholder]="'editBatch.selectStatus' | translate">
               </app-dropdown>
-            </td>
-            <td class="px-3 py-2 align-top">
-              <app-dropdown class="w-full min-w-[10rem] block text-sm" formControlName="assignMode"
-                [options]="assignModeDropdownOptions" optionValue="value" [showSearch]="false"
-                (selectionChange)="onRowAssignModeChange(i)"
-                [placeholder]="'addWeaponAsset.assignment.selectAssignType' | translate">
-              </app-dropdown>
-              <div *ngIf="getAssetFormGroup(i).get('assignMode')?.value === 'department'" class="mt-2">
-                <app-dropdown class="w-full min-w-[10rem] block text-sm" formControlName="assignToDepartmentId"
+            </div>
+
+            <div class="min-w-0 rounded-xl bg-[var(--color-background-muted)]/45 p-3 md:col-span-2 xl:col-span-3">
+              <label class="mb-3 block text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+                {{ 'editBatch.assignment' | translate }}
+              </label>
+              <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <app-dropdown class="block w-full min-w-0 text-sm" formControlName="assignMode"
+                  [options]="assignModeDropdownOptions" optionValue="value" [showSearch]="false"
+                  [formFieldAligned]="true" [triggerAppendClasses]="editBatchDropdownTriggerClasses"
+                  (selectionChange)="onRowAssignModeChange(i)"
+                  [placeholder]="'addWeaponAsset.assignment.selectAssignType' | translate">
+                </app-dropdown>
+
+                <app-dropdown *ngIf="getAssetFormGroup(i).get('assignMode')?.value === 'department'"
+                  class="block w-full min-w-0 text-sm" formControlName="assignToDepartmentId"
                   [options]="departments" optionValue="id" [optionLabelFn]="departmentOptionLabel"
-                  [placeholderSelectable]="false" [showSearch]="true"
+                  [placeholderSelectable]="false" [showSearch]="true" [formFieldAligned]="true"
+                  [triggerAppendClasses]="editBatchDropdownTriggerClasses"
                   placeholder="{{ 'editBatch.selectDepartment' | translate }}">
                 </app-dropdown>
+
+                <div *ngIf="getAssetFormGroup(i).get('assignMode')?.value === 'employee'" class="min-w-0 space-y-1">
+                  <app-dropdown class="block w-full min-w-0 text-sm" formControlName="assignToEmployeeId"
+                    [options]="employees" optionValue="id" [optionLabelFn]="employeeOptionLabel"
+                    [placeholderSelectable]="false" [showSearch]="true" [formFieldAligned]="true"
+                    [triggerAppendClasses]="editBatchDropdownTriggerClasses"
+                    [addActionLabel]="canCreateEmployee ? ('addWeaponAsset.assignment.addPerson' | translate) : undefined"
+                    (addActionClick)="openAddEmployeeModal()"
+                    (selectionChange)="onRowAssignmentEmployeeChange(i, $event)"
+                    placeholder="{{ 'editBatch.selectEmployee' | translate }}">
+                  </app-dropdown>
+                  <p *ngIf="selectedEmployeeCannotAssign(getAssetFormGroup(i).get('assignToEmployeeId')?.value)"
+                    class="text-xs leading-snug text-[var(--color-error)]">
+                    {{ 'addWeaponAsset.assignment.employeeCannotAssign' | translate }}
+                  </p>
+                </div>
+
+                <input *ngIf="showAssignmentNotesColumn" formControlName="assignmentNotes" type="text" maxlength="2000"
+                  [hidden]="getAssetFormGroup(i).get('assignMode')?.value === 'none'"
+                  [title]="'editBatch.assignmentNotesHint' | translate"
+                  class="w-full min-h-[2.25rem] rounded-md border border-[var(--color-border)] bg-[var(--color-background)] px-2.5 py-1.5 text-sm text-[var(--color-text)] transition-colors focus:border-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/30"
+                  [placeholder]="'editBatch.assignmentNotesPlaceholder' | translate">
               </div>
-              <div *ngIf="getAssetFormGroup(i).get('assignMode')?.value === 'employee'" class="mt-2 space-y-1">
-                <app-dropdown class="w-full min-w-[10rem] block text-sm" formControlName="assignToEmployeeId"
-                  [options]="employees" optionValue="id" [optionLabelFn]="employeeOptionLabel"
-                  [placeholderSelectable]="false" [showSearch]="true"
-                  [addActionLabel]="canCreateEmployee ? ('addWeaponAsset.assignment.addPerson' | translate) : undefined"
-                  (addActionClick)="openAddEmployeeModal()"
-                  (selectionChange)="onRowAssignmentEmployeeChange(i, $event)"
-                  placeholder="{{ 'editBatch.selectEmployee' | translate }}">
-                </app-dropdown>
-                <p *ngIf="selectedEmployeeCannotAssign(getAssetFormGroup(i).get('assignToEmployeeId')?.value)"
-                  class="text-xs text-[var(--color-error)] leading-snug">
-                  {{ 'addWeaponAsset.assignment.employeeCannotAssign' | translate }}
-                </p>
-              </div>
-            </td>
-            <td *ngIf="showAssignmentNotesColumn" class="px-3 py-2">
-              <input formControlName="assignmentNotes" type="text" maxlength="2000"
-                [hidden]="getAssetFormGroup(i).get('assignMode')?.value === 'none'"
-                [title]="'editBatch.assignmentNotesHint' | translate"
-                class="w-full min-h-[2.25rem] px-2.5 py-1.5 text-sm border rounded-md bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/30 focus:border-[var(--color-brand)] min-w-0 transition-colors border-[var(--color-border)]"
-                [placeholder]="'editBatch.assignmentNotesPlaceholder' | translate">
-            </td>
-            <td class="px-3 py-2 align-top">
-              <app-dropdown class="w-full min-w-[10rem] block text-sm" formControlName="supplierId"
+            </div>
+
+            <div class="min-w-0">
+              <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+                {{ 'assetDetails.supplier' | translate }}
+              </label>
+              <app-dropdown class="block w-full min-w-0 text-sm" formControlName="supplierId"
                 [options]="suppliers" optionValue="id" [optionLabelFn]="supplierOrManufacturerOptionLabel"
-                [placeholderSelectable]="true" [showSearch]="true"
+                [placeholderSelectable]="true" [showSearch]="true" [formFieldAligned]="true"
+                [triggerAppendClasses]="editBatchDropdownTriggerClasses"
                 [placeholder]="'editBatch.selectSupplier' | translate">
               </app-dropdown>
-            </td>
-            <td class="px-3 py-2 align-top">
-              <app-dropdown class="w-full min-w-[10rem] block text-sm" formControlName="manufacturerId"
+            </div>
+
+            <div class="min-w-0">
+              <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+                {{ 'assetDetails.manufacturer' | translate }}
+              </label>
+              <app-dropdown class="block w-full min-w-0 text-sm" formControlName="manufacturerId"
                 [options]="manufacturers" optionValue="id" [optionLabelFn]="supplierOrManufacturerOptionLabel"
-                [placeholderSelectable]="true" [showSearch]="true"
+                [placeholderSelectable]="true" [showSearch]="true" [formFieldAligned]="true"
+                [triggerAppendClasses]="editBatchDropdownTriggerClasses"
                 [placeholder]="'editBatch.selectManufacturer' | translate">
               </app-dropdown>
-            </td>
-            <td class="px-3 py-2 align-top">
-              <app-dropdown class="w-full min-w-[10rem] block text-sm" formControlName="primaryPurposId"
+            </div>
+
+            <div class="min-w-0">
+              <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+                {{ 'assetDetails.primaryPurpose' | translate }}
+              </label>
+              <app-dropdown class="block w-full min-w-0 text-sm" formControlName="primaryPurposId"
                 [options]="getPrimaryPurposeOptionsForRow(i)" optionValue="id" [optionLabelFn]="supplierOrManufacturerOptionLabel"
-                [placeholderSelectable]="true" [showSearch]="true"
+                [placeholderSelectable]="true" [showSearch]="true" [formFieldAligned]="true"
+                [triggerAppendClasses]="editBatchDropdownTriggerClasses"
                 [placeholder]="'editBatch.selectPrimaryPurpose' | translate">
               </app-dropdown>
-            </td>
-            <td class="px-3 py-2">
+            </div>
+
+            <div class="min-w-0 md:col-span-2 xl:col-span-3">
+              <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+                {{ 'addWeaponAsset.notes' | translate }}
+              </label>
               <input formControlName="notes" type="text"
-                class="w-full min-h-[2.25rem] px-2.5 py-1.5 text-sm border rounded-md bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/30 focus:border-[var(--color-brand)] min-w-0 transition-colors"
+                class="w-full min-h-[2.25rem] rounded-md border bg-[var(--color-background)] px-2.5 py-1.5 text-sm text-[var(--color-text)] transition-colors focus:border-[var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]/30"
                 [ngClass]="isFieldInvalid(i, 'notes') ? 'border-[var(--color-error)]' : 'border-[var(--color-border)]'">
-            </td>
-            <td class="px-2 py-2">
-              <button type="button" *ngIf="(batch?.assetCount ?? 0) > 1" (click)="removeRow(i)"
-                class="p-2 inline-flex items-center justify-center text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded-md transition-colors"
-                [title]="'editBatch.removeRow' | translate">
-                <lucide-angular [img]="Trash2" class="w-4 h-4"></lucide-angular>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
     <p *ngIf="!assetForms?.length && !pagingAssets" class="py-6 text-center text-sm text-[var(--color-text-muted)]">
       {{ 'editBatch.noAssets' | translate }}

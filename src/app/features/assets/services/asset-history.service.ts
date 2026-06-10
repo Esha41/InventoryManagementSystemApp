@@ -7,32 +7,41 @@ export interface AssetHistoryDto {
     id: number;
     assetId: number;
     assetSerialNumber?: string;
+    batchNumber?: string;
+
     actionType: number;
-    actionTypeName: string;
     actionDate: string;
-    description: string;
+
     previousStatus?: number;
-    previousStatusName?: string;
     newStatus?: number;
-    newStatusName?: string;
+
     previousDepartmentId?: number;
     previousDepartmentName?: string;
+    previousDepartmentNameAr?: string;
     newDepartmentId?: number;
     newDepartmentName?: string;
-    previousCustodianId?: string;
+    newDepartmentNameAr?: string;
+
+    previousCustodianId?: number;
     previousCustodianName?: string;
-    newCustodianId?: string;
+    previousCustodianNameAr?: string;
+    newCustodianId?: number;
     newCustodianName?: string;
+    newCustodianNameAr?: string;
+
     previousLocation?: string;
     newLocation?: string;
+
     orderId?: number;
     orderRequestNo?: string;
     assetSupplyId?: number;
     assetAssignmentId?: number;
+
     performedByUserId?: string;
     performedByUserName?: string;
     notes?: string;
     metadata?: string;
+
     creationDate: string;
 }
 
@@ -60,7 +69,6 @@ export class AssetHistoryService {
         let params = new HttpParams();
         if (fromDate) params = params.set('fromDate', fromDate);
         if (toDate) params = params.set('toDate', toDate);
-
         return this.apiService.get<AssetHistoryDto[]>(`${this.basePath}/action-type/${actionType}`, params);
     }
 }

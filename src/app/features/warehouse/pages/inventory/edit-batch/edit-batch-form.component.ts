@@ -22,10 +22,9 @@ import { LookupService, LookupItem } from '@services/lookup.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { BatchDto, BulkUpdateBatchAssetsDto, BatchAssetUpdateItem } from '@models/batch.model';
-import { AssetDto, EmployeeDto } from '@models/asset.model';
+import { AssetDto, EmployeeDto, AssetStatus } from '@models/asset.model';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
-import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { EmployeeFormModalComponent } from '@admin/components/employee-form-modal/employee-form-modal.component';
@@ -54,8 +53,7 @@ export type BatchEditAssignMode = 'none' | 'department' | 'employee';
     ErrorStateComponent,
     PaginationComponent,
     RowsPerPageComponent,
-    EmployeeFormModalComponent,
-    TableClampTooltipDirective
+    EmployeeFormModalComponent
   ],
   templateUrl: './edit-batch-form.component.html',
   styleUrls: ['./edit-batch-form.component.css'],
@@ -77,6 +75,8 @@ export class EditBatchFormComponent implements OnDestroy, OnChanges, OnInit {
   readonly Loader2 = Loader2;
   readonly Trash2 = Trash2;
   readonly trackByIndex = trackByIndex;
+  readonly editBatchDropdownTriggerClasses =
+    '!min-h-[2.25rem] !rounded-md !border !px-2.5 !py-1.5 !text-sm !font-normal !leading-5 !shadow-none hover:!shadow-none focus-visible:!shadow-none data-[trigger-state=open]:!shadow-none';
 
   batch: BatchDto | null = null;
   loading = true;
@@ -712,12 +712,12 @@ openExistingFile(fileId: number): void {
   }
 
   readonly assetStatuses = [
-    { value: 'ReadyToIssue', label: 'assetStatus.readyToIssue' },
-    { value: 'NotReadyToIssue', label: 'assetStatus.notReadyToIssue' },
-    { value: 'InMaintenance', label: 'assetStatus.inMaintenance' },
-    { value: 'UnserviceableRepairable', label: 'assetStatus.unserviceableRepairable' },
-    { value: 'UnserviceableUnrepairable', label: 'assetStatus.unserviceableUnrepairable' },
-    { value: 'AwaitingDisposal', label: 'assetStatus.awaitingDisposal' },
-    { value: 'Disposed', label: 'assetStatus.disposed' }
+    { value: AssetStatus.ReadyToIssue, label: 'assetStatus.readyToIssue' },
+    { value: AssetStatus.NotReadyToIssue, label: 'assetStatus.notReadyToIssue' },
+    { value: AssetStatus.InMaintenance, label: 'assetStatus.inMaintenance' },
+    { value: AssetStatus.UnserviceableRepairable, label: 'assetStatus.unserviceableRepairable' },
+    { value: AssetStatus.UnserviceableUnrepairable, label: 'assetStatus.unserviceableUnrepairable' },
+    { value: AssetStatus.AwaitingDisposal, label: 'assetStatus.awaitingDisposal' },
+    { value: AssetStatus.Disposed, label: 'assetStatus.disposed' }
   ];
 }
