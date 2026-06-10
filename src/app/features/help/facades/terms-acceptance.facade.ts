@@ -3,6 +3,7 @@ import { SafeHtml } from '@angular/platform-browser';
 import { EMPTY, catchError, finalize, take } from 'rxjs';
 import { HelpCenterService } from '@help-center/services/help-center.service';
 import { HelpCenterHtmlSanitizerService } from '@help-center/services/help-center-html-sanitizer.service';
+import { BackendAuthService } from '@services/backend-auth.service';
 import { ToastService } from '@services/toast.service';
 import { TranslationService } from '@services/translation.service';
 import { ONBOARDING_TOUR } from '@core/tokens/onboarding-tour.token';
@@ -26,6 +27,7 @@ import type { RichHtmlDirection } from '@help-center/utils/help-center-rich-html
 })
 export class TermsAcceptanceFacade {
   private readonly helpCenter = inject(HelpCenterService);
+  private readonly backendAuth = inject(BackendAuthService);
   private readonly htmlSanitizer = inject(HelpCenterHtmlSanitizerService);
   private readonly onboarding = inject(ONBOARDING_TOUR, { optional: true }) as IOnboardingTourProvider | null;
   private readonly toast = inject(ToastService);
@@ -84,6 +86,10 @@ export class TermsAcceptanceFacade {
 
   private evaluateTermsGate(): void {
     if (this.checkingTerms() || this.showModal()) {
+      return;
+    }
+
+    if (!this.backendAuth.isAuthenticated() || this.backendAuth.isTokenExpired()) {
       return;
     }
 

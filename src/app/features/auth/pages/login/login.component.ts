@@ -102,7 +102,14 @@ export class LoginComponent implements OnInit {
 
     this.applyPasswordValidators();
 
-    if (this.backendAuth.isAuthenticated()) {
+    if (this.storageService.get<boolean>('skipSilentRestore') === true) {
+      this.storageService.remove('skipSilentRestore');
+      this.initLoginFormState();
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (this.backendAuth.isAuthenticated() && !this.backendAuth.isTokenExpired()) {
       this.navigateAfterSessionRestored();
       return;
     }

@@ -117,7 +117,7 @@ npm run build:local - Build local
 | mockData | Use mock data instead of API |
 | idleWarningAfterMinutes | Idle warning delay |
 | idleLogoutCountdownSeconds | Auto-logout countdown |
-| persistAuthAcrossSessions | Keep session across browser close |
+| persistAuthAcrossSessions | Keep tokens in localStorage so the session survives browser close. Leave false: page reloads/new tabs already restore silently via the httpOnly refresh cookie, and the server caps session lifetime regardless |
 | enableOnboardingTour | Show onboarding tour |
 
 ## Accessing Config in Code
@@ -149,4 +149,4 @@ constructor(private configService: ConfigService) {
 
 - Wrong API endpoint: Check environment.ts and runtime-config.json
 - Console logs in production: Verify enableLogging: false in prod
-- Session lost on refresh: Set persistAuthAcrossSessions: true
+- Session lost on refresh: do NOT enable persistAuthAcrossSessions for this — F5/new tabs restore silently through the refresh cookie (authGuard -> restoreSessionSilently). If restore fails, check that the API sets the refreshToken cookie (withCredentials/CORS)

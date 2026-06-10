@@ -171,9 +171,6 @@ export class AuthFlowService {
 
     this.storageService.set('auth_token', response.accessToken);
     this.storageService.set('token_expires_at', expiresAt);
-    if (response.refreshToken) {
-      this.storageService.set('refresh_token', response.refreshToken);
-    }
 
     return this.fetchCompleteUserData().pipe(
       switchMap(result => {

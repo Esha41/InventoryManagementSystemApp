@@ -56,7 +56,7 @@ export const permissionGuard: CanActivateFn = (route: ActivatedRouteSnapshot, st
     return false;
   };
 
-  if (backendAuth.isAuthenticated()) {
+  if (backendAuth.isAuthenticated() && !backendAuth.isTokenExpired()) {
     return checkPermissions();
   }
 

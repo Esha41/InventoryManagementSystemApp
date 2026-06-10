@@ -18,6 +18,14 @@ const isLoginRequest = (url: string): boolean =>
 const isLogoutRequest = (url: string): boolean =>
   url.includes('/account/logout') || url.endsWith('account/logout');
 
+const AUTH_RETRY_HEADER = 'X-Auth-Retry';
+
+const isAuthRetryRequest = (req: { headers: { has: (name: string) => boolean } }): boolean =>
+  req.headers.has(AUTH_RETRY_HEADER);
+
+const isOnLoginRoute = (router: Router): boolean =>
+  router.url.split('?')[0].startsWith('/auth/login');
+
 /** POST select-role after credential login uses roleSelectionToken only; a stale Bearer causes JWT middleware to 401 before AllowAnonymous. */
 const shouldSkipBearerForSelectRole = (
   req: { method: string; url: string },
@@ -81,6 +89,17 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     });
   }
 
+  const redirectToLoginAfterAuthFailure = (hadActiveSession: boolean): void => {
+    backendAuth.clearSession();
+    if (hadActiveSession) {
+      storageService.set('sessionExpired', true);
+    }
+    storageService.set('skipSilentRestore', true);
+    if (!isOnLoginRoute(router)) {
+      router.navigate(['/auth/login']);
+    }
+  };
+
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
       // Skip logging expected 403/404 on EmailSettings (non-admin or config not set)
@@ -96,12 +115,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           // Only flag sessionExpired when the user had an active session.
           // A fresh load with no session (restoreSessionSilently on login page) should
           // not show the "session expired" banner.
-          const hadActiveSession = backendAuth.getCurrentUser() !== null;
-          backendAuth.clearSession();
-          if (hadActiveSession) {
-            storageService.set('sessionExpired', true);
-          }
-          router.navigate(['/auth/login']);
+          const hadActiveSession = backendAuth.isAuthenticated();
+          redirectToLoginAfterAuthFailure(hadActiveSession);
           return throwError(() => error);
         }
 
@@ -109,11 +124,19 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           return throwError(() => error);
         }
 
+        if (isAuthRetryRequest(req)) {
+          configService.logWarning('Authenticated request still unauthorized after refresh retry');
+          redirectToLoginAfterAuthFailure(backendAuth.isAuthenticated());
+          return throwError(() => error);
+        }
+
         // Re-read token at response time: if session was already cleared (e.g. logout
         // completed while this request was in-flight), skip refresh and redirect cleanly.
         const currentToken = storageService.get<string>('auth_token');
         if (!currentToken) {
-          router.navigate(['/auth/login']);
+          if (!isOnLoginRoute(router)) {
+            router.navigate(['/auth/login']);
+          }
           return throwError(() => error);
         }
 
@@ -135,7 +158,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
             refreshSucceeded = true;
             const retryReq = req.clone({
               withCredentials: true,
-              setHeaders: { Authorization: `Bearer ${loginResponse.accessToken}` }
+              setHeaders: {
+                Authorization: `Bearer ${loginResponse.accessToken}`,
+                [AUTH_RETRY_HEADER]: '1'
+              }
             });
             return next(retryReq);
           }),
@@ -146,12 +172,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
               return throwError(() => err);
             }
             configService.logWarning('Token refresh failed — redirecting to login');
-            const hadActiveSession = backendAuth.getCurrentUser() !== null;
-            backendAuth.clearSession();
-            if (hadActiveSession) {
-              storageService.set('sessionExpired', true);
-            }
-            router.navigate(['/auth/login']);
+            redirectToLoginAfterAuthFailure(backendAuth.isAuthenticated());
             return throwError(() => err);
           })
         );

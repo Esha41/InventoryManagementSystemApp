@@ -178,8 +178,7 @@ export class AuthCrossTabSyncService {
           const storedExp = this.storageService.get<Date>('token_expires_at');
           const memToken = this.session.getLastKnownAccessToken();
           if (storedToken && storedExp && storedToken !== memToken) {
-            const rt = this.storageService.get<string>('refresh_token') ?? undefined;
-            this.session.applyRefreshedTokens(storedToken, new Date(storedExp), rt);
+            this.session.applyRefreshedTokens(storedToken, new Date(storedExp));
           }
         }
         this.restoreInProgress = false;
