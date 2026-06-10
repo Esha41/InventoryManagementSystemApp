@@ -29,7 +29,7 @@
       "unknown": "إجراء"
     },
     "description": {
-      "created": "تم تسجيل الأصل ضمن الدفعة {{batch}}.",
+      "created": "تم تسجيل الأصل ضمن البوليصة {{batch}}.",
       "assigned": "تم تسليمه إلى {{custodian}} في {{department}}.",
       "returned": "تم استرداده من {{custodian}} ({{department}}) وإعادته إلى المستودع.",
       "transferred": "تم نقله إلى {{department}} تحت عهدة {{custodian}}.",
@@ -46,7 +46,7 @@
       "unknown": "تم تسجيل إجراء على هذا الأصل."
     },
     "performedBy": "بواسطة",
-    "batchRef": "رقم الدفعة",
+    "batchRef": "رقم البوليصة",
     "supplyRef": "أمر التوريد",
     "refresh": "تحديث",
     "previousStatus": "من",

@@ -29,7 +29,7 @@
       "unknown": "Action"
     },
     "description": {
-      "created": "Asset registered in batch {{batch}}.",
+      "created": "Asset registered under policy number {{batch}}.",
       "assigned": "Issued to {{custodian}} in {{department}}.",
       "returned": "Returned from {{custodian}} ({{department}}) back to the depot.",
       "transferred": "Transferred to {{department}} under {{custodian}}.",
@@ -46,7 +46,7 @@
       "unknown": "An action was recorded on this asset."
     },
     "performedBy": "By",
-    "batchRef": "Batch",
+    "batchRef": "Policy number",
     "supplyRef": "Supply order",
     "refresh": "Refresh",
     "previousStatus": "From",
