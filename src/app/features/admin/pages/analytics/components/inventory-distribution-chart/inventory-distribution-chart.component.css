@@ -67,7 +67,7 @@
 
 .chart-body {
     flex: 1 1 auto;
-    min-height: 300px;
+    min-height: min(300px, 38dvh);
     max-height: 400px;
     position: relative;
     overflow: hidden; /* Prevent expansion */

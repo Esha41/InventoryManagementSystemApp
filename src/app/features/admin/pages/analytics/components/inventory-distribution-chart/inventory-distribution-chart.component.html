@@ -9,7 +9,7 @@
         </div>
     </div>
 
-    <div class="flex-1 relative h-[350px] p-4 overflow-hidden">
+    <div class="flex-1 relative h-[clamp(260px,38dvh,420px)] p-4 overflow-hidden">
         <!-- Content -->
         <div class="relative w-full h-full max-h-[400px] overflow-hidden">
             <div echarts [options]="chartOptions" class="w-full h-full max-h-[400px]"></div>
@@ -18,8 +18,8 @@
             <div
                 class="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
                 <span class="text-3xl font-bold text-[var(--color-text)] leading-none">{{ totalItems | number }}</span>
-                <span class="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wider font-semibold mt-1">{{
-                    'adminDashboard.inventory.totalItems' | translate }}</span>
+                <span class="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wider font-semibold mt-1 text-center max-w-[7rem] leading-tight">{{
+                    'adminDashboard.charts.totalItemsLabel' | translate }}</span>
             </div>
         </div>
     </div>

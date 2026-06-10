@@ -3,10 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, ChevronDown, ChevronRight, ChevronLeft, Package, AlertCircle, Search, Download, Upload, History, ArrowRight, User, Building } from 'lucide-angular';
+import { LucideAngularModule, ChevronDown, ChevronRight, ChevronLeft, Package, AlertCircle, Search, Download, Upload, History } from 'lucide-angular';
 import { InventoryService, LotDetailDto } from '@inventory/services/inventory.service';
 import { AssetService } from '@assets/services/asset.service';
 import { AssetHistoryService, AssetHistoryDto } from '@assets/services/asset-history.service';
+import { getHistoryActionTypeKey, getHistoryActionTypeDotClass, getHistoryActionTypeIcon, getHistoryActionTypeIconClass, getHistoryDescriptionKey, getHistoryFlowArrowIcon } from '@assets/utils/asset-history.utils';
 import { ItemInventorySummaryDto } from '@models/inventory.model';
 import { AssetDto, AssetStatus, getAssetStatusLabel } from '@models/asset.model';
 import { PagedListRequest } from '@models/pagination.model';
@@ -93,9 +94,7 @@ export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
     readonly Upload = Upload;
     readonly Download = Download;
     readonly History = History;
-    readonly ArrowRight = ArrowRight;
-    readonly User = User;
-    readonly Building = Building;
+    readonly getHistoryActionTypeIconClass = getHistoryActionTypeIconClass;
     readonly trackByItemId = trackByKey('itemId');
     readonly trackById = trackById;
     readonly trackByIndex = trackByIndex;
@@ -117,6 +116,10 @@ export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
 
     get isRTL(): boolean {
         return this.translationService?.isRTL() ?? false;
+    }
+
+    get historyFlowArrow() {
+        return getHistoryFlowArrowIcon(this.isRTL);
     }
 
     /** Localized item label (Arabic `itemNameAr` when UI is Arabic, else English `itemName`). */
@@ -340,6 +343,78 @@ export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
 
     getHistoryForAsset(assetId: number): AssetHistoryDto[] {
         return this.historyByAssetId.get(assetId) || [];
+    }
+
+    getHistoryActionLabel(entry: AssetHistoryDto): string {
+        return this.translateService.instant(getHistoryActionTypeKey(entry.actionType));
+    }
+
+    getHistoryDotClass(entry: AssetHistoryDto): string {
+        return getHistoryActionTypeDotClass(entry.actionType);
+    }
+
+    getHistoryIcon(entry: AssetHistoryDto) {
+        return getHistoryActionTypeIcon(entry.actionType);
+    }
+
+    /** Plain-language summary of what happened in this history entry. */
+    getHistoryMessage(entry: AssetHistoryDto): string {
+        const dash = '—';
+        const prevCustodian = this.getLocalizedCustodianName(entry.previousCustodianName, entry.previousCustodianNameAr);
+        const newCustodian = this.getLocalizedCustodianName(entry.newCustodianName, entry.newCustodianNameAr);
+        const prevDept = this.getLocalizedDeptName(entry.previousDepartmentName, entry.previousDepartmentNameAr);
+        const newDept = this.getLocalizedDeptName(entry.newDepartmentName, entry.newDepartmentNameAr);
+
+        const params = {
+            fromStatus: this.getTranslatedStatusLabel(entry.previousStatus) || dash,
+            toStatus: this.getTranslatedStatusLabel(entry.newStatus) || dash,
+            custodian: newCustodian !== dash ? newCustodian : prevCustodian,
+            department: newDept !== dash ? newDept : prevDept,
+            fromLocation: entry.previousLocation || dash,
+            toLocation: entry.newLocation || dash,
+            batch: entry.batchNumber || dash,
+            order: entry.orderRequestNo || dash
+        };
+
+        const message = this.translateService.instant(getHistoryDescriptionKey(entry.actionType), params);
+        if (entry.notes && entry.notes.trim()) {
+            return `${message} — ${entry.notes.trim()}`;
+        }
+        return message;
+    }
+
+    getTranslatedStatusLabel(status?: number): string {
+        if (status == null) return '';
+        return this.translateService.instant(getAssetStatusLabel(status as AssetStatus));
+    }
+
+    getLocalizedDeptName(nameEn?: string, nameAr?: string): string {
+        const lang = getCurrentLang(this.translateService);
+        return (lang === 'ar' ? nameAr : nameEn) || nameEn || nameAr || '—';
+    }
+
+    getLocalizedCustodianName(nameEn?: string, nameAr?: string): string {
+        const lang = getCurrentLang(this.translateService);
+        return (lang === 'ar' ? nameAr : nameEn) || nameEn || nameAr || '—';
+    }
+
+    hasHistoryMovement(entry: AssetHistoryDto): boolean {
+        return !!(
+            entry.previousCustodianName ||
+            entry.newCustodianName ||
+            entry.previousDepartmentName ||
+            entry.newDepartmentName ||
+            entry.previousLocation ||
+            entry.newLocation
+        );
+    }
+
+    hasHistoryReference(entry: AssetHistoryDto): boolean {
+        return !!(entry.orderRequestNo || entry.batchNumber);
+    }
+
+    historyActor(entry: AssetHistoryDto): string {
+        return entry.performedByUserName || this.translateService.instant('weaponAssetMaster.system');
     }
 
     isLoadingHistory(assetId: number): boolean {

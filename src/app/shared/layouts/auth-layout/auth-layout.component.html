@@ -1,5 +1,5 @@
 <div #authScrollRoot
-  class="min-h-dvh min-h-screen bg-gradient-to-br from-[var(--color-background-muted)] to-[var(--color-background-hover)] flex flex-col items-center justify-center py-4 sm:py-6 md:py-8 px-4 sm:px-6 lg:px-8 relative overflow-y-auto
+  class="auth-scroll-root bg-gradient-to-br from-[var(--color-background-muted)] to-[var(--color-background-hover)] flex flex-col items-center justify-center py-4 sm:py-6 md:py-8 px-4 sm:px-6 lg:px-8 relative overflow-y-auto [scrollbar-gutter:stable]
        pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]">
   <!-- Language Switcher & Theme Toggle - Fixed Top Right -->
   <div class="fixed top-4 end-4 sm:top-6 sm:end-6 z-50 flex items-center gap-2 sm:gap-3 pt-[env(safe-area-inset-top)] pe-[env(safe-area-inset-right)]" [style.direction]="isRTL ? 'rtl' : 'ltr'">
@@ -29,7 +29,7 @@
     <div class="text-center mb-2 sm:mb-4">
       <div class="inline-block w-full max-w-[85vw] mx-auto">
         <div
-          class="emdad-logo-mark--brand h-28 sm:h-36 md:h-44 lg:h-52 w-full max-w-[min(85vw,28rem)] mx-auto transition-opacity duration-200"
+          class="emdad-logo-mark--brand auth-logo w-full max-w-[min(85vw,28rem)] mx-auto transition-opacity duration-200"
           role="img"
           aria-label="EMDAD Logo"></div>
       </div>
@@ -38,13 +38,13 @@
     <!-- Auth Content Card -->
     <div
       class="bg-[var(--color-background)] rounded-2xl shadow-custom-xl border border-[var(--color-border)] overflow-hidden">
-      <div class="px-4 py-5 sm:px-6 sm:py-6 md:px-8 md:py-8">
+      <div class="auth-card-body px-4 py-5 sm:px-6 sm:py-6 md:px-8 md:py-8">
         <router-outlet />
       </div>
     </div>
 
     <!-- Footer -->
-    <div class="text-center mt-6 sm:mt-8">
+    <div class="auth-footer text-center mt-6 sm:mt-8">
       <p class="text-xs sm:text-sm text-[var(--color-text-muted)] font-medium max-w-[90vw] mx-auto">
         {{ 'footer.copyright' | translate:{ year: currentYear } }}
         <span class="mx-1.5 sm:mx-2 opacity-50">|</span>
