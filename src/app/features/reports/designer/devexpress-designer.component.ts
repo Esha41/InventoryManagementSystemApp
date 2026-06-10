@@ -7,6 +7,8 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, ArrowRight } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
 import { ConfigService } from '@services/config.service';
+import { StorageService } from '@services/storage.service';
+import { configureDevexpressAuthHeaders } from '@utils/devexpress-auth.util';
 import { LoadingStateComponent } from '@components/index';
 
 @Component({
@@ -50,12 +52,15 @@ export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit,
     private router: Router,
     private route: ActivatedRoute,
     private translationService: TranslationService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private storageService: StorageService
   ) {
     this.host = this.configService.reportingHost;
   }
 
   ngOnInit(): void {
+    configureDevexpressAuthHeaders(this.storageService.get<string>('auth_token'));
+
     const reportUrl = this.route.snapshot.queryParamMap.get('reportUrl')
       ?? this.route.snapshot.queryParamMap.get('url');
     this.reportName = reportUrl ?? 'BaseReportTemplate';

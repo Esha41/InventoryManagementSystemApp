@@ -8,7 +8,9 @@ import { TranslationService } from '@services/translation.service';
 import { ReportService } from '@reports/services/report.service';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { ConfigService } from '@services/config.service';
+import { StorageService } from '@services/storage.service';
 import { UserContextService } from '@services/user-context.service';
+import { configureDevexpressAuthHeaders } from '@utils/devexpress-auth.util';
 
 @Component({
   selector: 'app-report-viewer',
@@ -39,12 +41,15 @@ export class ReportViewerComponent implements OnInit {
     private reportService: ReportService,
     private authService: BackendAuthService,
     private userContextService: UserContextService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private storageService: StorageService
   ) {
     this.host = this.configService.reportingHost;
   }
 
   ngOnInit(): void {
+    configureDevexpressAuthHeaders(this.storageService.get<string>('auth_token'));
+
     const baseReportUrl = this.route.snapshot.queryParamMap.get('reportUrl') || '';
     this.reportName = this.route.snapshot.queryParamMap.get('reportName') || 'Report';
     
