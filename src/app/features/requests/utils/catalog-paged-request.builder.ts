@@ -65,6 +65,24 @@ function appendCaliberIdFilter(filters: FilterData[], caliberId: string | null |
   filters.push({ field: 'CaliberId', operator: 'eq', value: String(n) });
 }
 
+function appendClassificationIdFilter(filters: FilterData[], classificationId: string | null | undefined): void {
+  const raw = classificationId?.trim() ?? '';
+  if (!raw) return;
+  filters.push({ field: 'ClassificationId', operator: 'eq', value: raw });
+}
+
+function appendLookupIdFilter(filters: FilterData[], field: string, id: string | null | undefined): void {
+  const raw = id?.trim() ?? '';
+  if (!raw) return;
+  filters.push({ field, operator: 'eq', value: raw });
+}
+
+function appendContainsFilter(filters: FilterData[], field: string, value: string | null | undefined): void {
+  const raw = value?.trim() ?? '';
+  if (!raw) return;
+  filters.push({ field, operator: 'contains', value: raw });
+}
+
 export function buildAmmunitionPagedRequest(page: number, pageSize: number, fs: FilterState): PagedRequest {
   const filters: FilterData[] = [];
   const search = fs.searchTerm?.trim() ?? '';
@@ -73,18 +91,14 @@ export function buildAmmunitionPagedRequest(page: number, pageSize: number, fs: 
   if (fs.selectedLinked === 'Linked') filters.push({ field: 'IsLinked', operator: 'eq', value: 'true' });
   else if (fs.selectedLinked === 'Not Linked') filters.push({ field: 'IsLinked', operator: 'eq', value: 'false' });
   appendCaliberIdFilter(filters, fs.selectedCaliber);
-  if (fs.selectedNature?.trim()) {
-    const v = fs.selectedNature.trim();
-    filters.push({
-      logic: 'or',
-      filters: [
-        { field: 'NatureOption.NameEn', operator: 'contains', value: v },
-        { field: 'NatureOption.NameAr', operator: 'contains', value: v }
-      ]
-    });
-  }
-  const nsn = fs.selectedNSN?.trim() ?? '';
-  if (nsn) filters.push({ field: 'Nsn', operator: 'contains', value: nsn });
+  appendClassificationIdFilter(filters, fs.selectedClassificationId);
+  appendLookupIdFilter(filters, 'CaseTypeId', fs.selectedCaseType);
+  appendLookupIdFilter(filters, 'CompatibilityId', fs.selectedCompatibility);
+  appendLookupIdFilter(filters, 'HazardDivisionId', fs.selectedHazardDivision);
+  appendLookupIdFilter(filters, 'PropellantId', fs.selectedPropellant);
+  appendContainsFilter(filters, 'ArmNumber', fs.selectedAmmunitionArmNumber);
+  appendContainsFilter(filters, 'PartNo', fs.selectedAmmunitionPartNo);
+  appendContainsFilter(filters, 'Nsn', fs.selectedNSN);
   return wrapPagedRequest(page, pageSize, filters);
 }
 
@@ -100,8 +114,13 @@ export function buildWeaponPagedRequest(page: number, pageSize: number, fs: Filt
     });
   }
   appendCaliberIdFilter(filters, fs.selectedCaliber);
-  const nsn = fs.selectedNSN?.trim() ?? '';
-  if (nsn) filters.push({ field: 'Nsn', operator: 'contains', value: nsn });
+  appendClassificationIdFilter(filters, fs.selectedClassificationId);
+  appendLookupIdFilter(filters, 'CountryOfManufactureId', fs.selectedCountryOfManufacture);
+  appendContainsFilter(filters, 'UNNumber', fs.selectedWeaponUNNumber);
+  appendContainsFilter(filters, 'PartNo', fs.selectedPartNo);
+  appendContainsFilter(filters, 'Model', fs.selectedWeaponModel);
+  appendContainsFilter(filters, 'ReferenceNo', fs.selectedWeaponReferenceNo);
+  appendContainsFilter(filters, 'Nsn', fs.selectedNSN);
   return wrapPagedRequest(page, pageSize, filters);
 }
 
@@ -116,7 +135,13 @@ export function buildExplosivePagedRequest(page: number, pageSize: number, fs: F
       value: spacedFromEnumKey(fs.selectedExplosiveType.trim())
     });
   }
-  const un = fs.selectedUNNumber?.trim() ?? '';
-  if (un) filters.push({ field: 'UNNumber', operator: 'contains', value: un });
+  appendClassificationIdFilter(filters, fs.selectedClassificationId);
+  appendLookupIdFilter(filters, 'HazardDivisionId', fs.selectedExplosiveHazardDivision);
+  appendLookupIdFilter(filters, 'CompatibilityId', fs.selectedExplosiveCompatibility);
+  appendContainsFilter(filters, 'ArmNumber', fs.selectedArmNumber);
+  appendContainsFilter(filters, 'UNNumber', fs.selectedUNNumber);
+  appendContainsFilter(filters, 'PartNo', fs.selectedExplosivePartNo);
+  appendContainsFilter(filters, 'ReferenceNo', fs.selectedExplosiveReferenceNo);
+  appendContainsFilter(filters, 'Nsn', fs.selectedNSN);
   return wrapPagedRequest(page, pageSize, filters);
 }

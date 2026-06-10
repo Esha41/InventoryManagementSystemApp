@@ -13,9 +13,6 @@ import { TranslateService } from '@ngx-translate/core';
 import { DropdownOption } from '@components/dropdown/dropdown.component';
 import { ReturnService } from '@requests/services/return.service';
 import { RequestPurposeService } from '@requests/services/request-purpose.service';
-import { AmmunitionService } from '@assets/services/ammunition.service';
-import { WeaponService } from '@assets/services/weapon.service';
-import { ExplosiveService } from '@assets/services/explosive.service';
 import { CartridgeDataService } from '@assets/services/cartridge-data.service';
 import { ToastService } from '@services/toast.service';
 import { ApiService } from '@services/api.service';
@@ -27,7 +24,6 @@ import { IssueRequestFilterService } from '@requests/pages/new-issue/services/is
 
 import { Step } from '@components/stepper/stepper.component';
 import { API_ENDPOINTS } from '@constants/app.constants';
-import { PaginatedList, PagedRequest } from '@models/api-response.model';
 import { ItemType } from '@models/backend-enums';
 import { CreateReturnDto } from '@models/return.model';
 import { Cartridge } from '@models/cartridge.model';
@@ -49,12 +45,6 @@ import {
 } from '@requests/pages/new-issue/new-issue-request.state';
 
 import {
-  buildAmmunitionPagedRequest,
-  buildWeaponPagedRequest,
-  buildExplosivePagedRequest
-} from '@requests/utils/catalog-paged-request.builder';
-import {
-  catalogListItemToCartridge,
   mergeReturnSelectionsIntoFilteredView,
   returnSelectedItemToCartridge
 } from '@requests/utils/return-catalog-to-cartridge.util';
@@ -71,7 +61,6 @@ import {
 
 import {
   ReturnItemType,
-  CatalogListItem,
   ReturnSelectedItem,
   RequestPurpose,
   createInitialSelectionState,
@@ -139,9 +128,6 @@ export class ReturnRequestFacade {
   constructor(
     private readonly returnService: ReturnService,
     private readonly requestPurposeService: RequestPurposeService,
-    private readonly ammunitionService: AmmunitionService,
-    private readonly weaponService: WeaponService,
-    private readonly explosiveService: ExplosiveService,
     private readonly cartridgeDataService: CartridgeDataService,
     private readonly filterService: IssueRequestFilterService,
     private readonly toastService: ToastService,
@@ -328,8 +314,9 @@ export class ReturnRequestFacade {
     this.filterState.selectedItemType = value;
     this.selectionState.selectedItemType = value as ReturnItemType;
     this.filterService.clearFilters(this.filterState, value);
-    if (value !== 'Ammunition') {
-      this.filterOptions.natureOptions = [];
+    if (value !== 'Ammunition' && value !== 'Weapon' && value !== 'Explosive') {
+      this.filterOptions.primaryPurposeOptions = [];
+      this.filterOptions.classificationOptions = [];
     }
     if (value !== 'Ammunition' && value !== 'Weapon') {
       this.filterOptions.caliberOptions = [];
@@ -694,16 +681,62 @@ export class ReturnRequestFacade {
       this.filterOptions.caliberOptions = [];
     }
 
-    if (itemType === 'Ammunition') {
-      const request: PagedRequest = { page: 1, pageSize: 500, filter: { sortField: 'Name', sortDirection: 1 } };
-      this.cartridgeDataService.loadAmmunitionFacetSample(request).pipe(takeUntil(this.destroy$)).subscribe({
-        next: (facets) => {
-          this.filterOptions.natureOptions = facets.natureOptions;
+    if (itemType === 'Ammunition' || itemType === 'Weapon' || itemType === 'Explosive') {
+      this.cartridgeDataService.loadPrimaryPurposeFilterOptions().pipe(takeUntil(this.destroy$)).subscribe({
+        next: (options) => {
+          this.filterOptions.primaryPurposeOptions = options;
+          this.cdr.markForCheck();
+        }
+      });
+      this.cartridgeDataService.loadClassificationFilterOptions().pipe(takeUntil(this.destroy$)).subscribe({
+        next: (options) => {
+          this.filterOptions.classificationOptions = options;
           this.cdr.markForCheck();
         }
       });
     } else {
-      this.filterOptions.natureOptions = [];
+      this.filterOptions.primaryPurposeOptions = [];
+      this.filterOptions.classificationOptions = [];
+    }
+
+    if (itemType === 'Ammunition') {
+      this.cartridgeDataService.loadCaseTypeFilterOptions().pipe(takeUntil(this.destroy$)).subscribe({
+        next: (options) => { this.filterOptions.caseTypeOptions = options; this.cdr.markForCheck(); }
+      });
+      this.cartridgeDataService.loadCompatibilityFilterOptions().pipe(takeUntil(this.destroy$)).subscribe({
+        next: (options) => { this.filterOptions.compatibilityOptions = options; this.cdr.markForCheck(); }
+      });
+      this.cartridgeDataService.loadHazardDivisionFilterOptions().pipe(takeUntil(this.destroy$)).subscribe({
+        next: (options) => { this.filterOptions.hazardDivisionOptions = options; this.cdr.markForCheck(); }
+      });
+      this.cartridgeDataService.loadPropellantFilterOptions().pipe(takeUntil(this.destroy$)).subscribe({
+        next: (options) => { this.filterOptions.propellantOptions = options; this.cdr.markForCheck(); }
+      });
+      this.filterOptions.countryOptions = [];
+    } else if (itemType === 'Weapon') {
+      this.filterOptions.caseTypeOptions = [];
+      this.filterOptions.compatibilityOptions = [];
+      this.filterOptions.hazardDivisionOptions = [];
+      this.filterOptions.propellantOptions = [];
+      this.cartridgeDataService.loadCountryFilterOptions().pipe(takeUntil(this.destroy$)).subscribe({
+        next: (options) => { this.filterOptions.countryOptions = options; this.cdr.markForCheck(); }
+      });
+    } else if (itemType === 'Explosive') {
+      this.filterOptions.caseTypeOptions = [];
+      this.filterOptions.propellantOptions = [];
+      this.filterOptions.countryOptions = [];
+      this.cartridgeDataService.loadHazardDivisionFilterOptions().pipe(takeUntil(this.destroy$)).subscribe({
+        next: (options) => { this.filterOptions.hazardDivisionOptions = options; this.cdr.markForCheck(); }
+      });
+      this.cartridgeDataService.loadCompatibilityFilterOptions().pipe(takeUntil(this.destroy$)).subscribe({
+        next: (options) => { this.filterOptions.compatibilityOptions = options; this.cdr.markForCheck(); }
+      });
+    } else {
+      this.filterOptions.caseTypeOptions = [];
+      this.filterOptions.compatibilityOptions = [];
+      this.filterOptions.hazardDivisionOptions = [];
+      this.filterOptions.propellantOptions = [];
+      this.filterOptions.countryOptions = [];
     }
   }
 
@@ -717,11 +750,18 @@ export class ReturnRequestFacade {
     }
     this.cdr.markForCheck();
 
-    this.fetchCatalogPage(page).pipe(takeUntil(this.destroy$)).subscribe({
+    const pageSize = this.cartridgeState.catalogPagination.pageSize;
+    const fs = this.filterState;
+    const catalogLoad$ =
+      fs.selectedItemType === 'Weapon'
+        ? this.cartridgeDataService.loadWeaponsCatalogPaginated(page, pageSize, fs)
+        : fs.selectedItemType === 'Explosive'
+          ? this.cartridgeDataService.loadExplosivesCatalogPaginated(page, pageSize, fs)
+          : this.cartridgeDataService.loadAmmunitionCatalogPaginated(page, pageSize, fs);
+
+    catalogLoad$.pipe(takeUntil(this.destroy$)).subscribe({
       next: (result) => {
-        const itemType = this.filterState.selectedItemType;
-        const rows = result.items.map((row) => catalogListItemToCartridge(row, itemType, this.translate));
-        this.cartridgeState.allCartridges = rows;
+        this.cartridgeState.allCartridges = result.cartridges;
         this.cartridgeState.catalogPagination = {
           page: result.pageIndex,
           pageSize: this.cartridgeState.catalogPagination.pageSize,
@@ -752,27 +792,6 @@ export class ReturnRequestFacade {
       this.selectionState.selectedItems,
       this.filterState.selectedItemType
     );
-  }
-
-  private fetchCatalogPage(page: number): Observable<PaginatedList<CatalogListItem>> {
-    const pageSize = this.cartridgeState.catalogPagination.pageSize;
-    const fs = this.filterState;
-    let req: PagedRequest;
-    if (fs.selectedItemType === 'Weapon') {
-      req = buildWeaponPagedRequest(page, pageSize, fs);
-    } else if (fs.selectedItemType === 'Explosive') {
-      req = buildExplosivePagedRequest(page, pageSize, fs);
-    } else {
-      req = buildAmmunitionPagedRequest(page, pageSize, fs);
-    }
-
-    if (fs.selectedItemType === 'Weapon') {
-      return this.weaponService.getAllPaginated(req) as Observable<PaginatedList<CatalogListItem>>;
-    }
-    if (fs.selectedItemType === 'Explosive') {
-      return this.explosiveService.getAllPaginated(req) as Observable<PaginatedList<CatalogListItem>>;
-    }
-    return this.ammunitionService.getAllPaginated(req) as Observable<PaginatedList<CatalogListItem>>;
   }
 
   private loadRequestPurposes(): void {

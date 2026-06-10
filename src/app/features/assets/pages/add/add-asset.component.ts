@@ -11,7 +11,7 @@ import { LucideAngularModule, Save, X } from 'lucide-angular';
 import { TranslationService } from '@services/translation.service';
 import { ONBOARDING_TOUR } from '@core/tokens/onboarding-tour.token';
 import { IOnboardingTourProvider } from '@core/interfaces/onboarding-tour-provider.interface';
-import { LookupService, NatureOptionDto } from '@services/lookup.service';
+import { LookupService } from '@services/lookup.service';
 import { LookupItem } from '@models/lookup.model';
 import { AmmunitionCreateDto, AmmunitionReadDto } from '@models/ammunition.model';
 import { WeaponDto, CreateUpdateWeaponDto } from '@models/weapon.model';
@@ -60,7 +60,6 @@ interface AssetForm {
   propellantId: string;
   compatibilityId: string;
   hazardDivisionId: string;
-  natureOptionId: string;
   primaryPurposIds: number[];
   projectileColorId: string;
   projectailMaterialId: string;
@@ -110,7 +109,6 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
   propellants: LookupItem[] = [];
   compatibilities: LookupItem[] = [];
   hazardDivisions: LookupItem[] = [];
-  natureOptions: NatureOptionDto[] = [];
   primaryPurposes: LookupItem[] = [];
   projectileColors: LookupItem[] = [];
   projectailMaterials: LookupItem[] = [];
@@ -191,7 +189,6 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
       propellantId: '',
       compatibilityId: '',
       hazardDivisionId: '',
-      natureOptionId: '',
       primaryPurposIds: [],
       projectileColorId: '',
       projectailMaterialId: '',
@@ -316,7 +313,6 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
       propellants: this.lookupService.getPropellants(),
       compatibilities: this.lookupService.getCompatibilities(),
       hazardDivisions: this.lookupService.getHazardDivisions(),
-      natureOptions: this.lookupService.getNatureOptions(),
       primaryPurposes: this.lookupService.getPrimaryPurposes(),
       projectileColors: this.lookupService.getColors(),
       projectailMaterials: this.lookupService.getProjectailMaterials(),
@@ -331,7 +327,6 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
           this.propellants = data.propellants;
           this.compatibilities = data.compatibilities;
           this.hazardDivisions = data.hazardDivisions;
-          this.natureOptions = data.natureOptions;
           this.primaryPurposes = data.primaryPurposes;
           this.projectileColors = data.projectileColors;
           this.projectailMaterials = data.projectailMaterials;
@@ -395,7 +390,6 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.assetForm.propellantId) dto.propellantId = parseInt(this.assetForm.propellantId);
     if (this.assetForm.compatibilityId) dto.compatibilityId = parseInt(this.assetForm.compatibilityId);
     if (this.assetForm.hazardDivisionId) dto.hazardDivisionId = parseInt(this.assetForm.hazardDivisionId);
-    if (this.assetForm.natureOptionId) dto.natureOptionId = parseInt(this.assetForm.natureOptionId);
     if (this.assetForm.primaryPurposIds?.length) {
       dto.primaryPurposIds = [...this.assetForm.primaryPurposIds];
     }

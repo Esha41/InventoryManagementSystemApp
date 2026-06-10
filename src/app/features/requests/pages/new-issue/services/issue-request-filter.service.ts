@@ -22,13 +22,11 @@ export class IssueRequestFilterService {
 
       if (filterState.selectedItemType === 'Ammunition') {
         const linkedLabelForFilter = cartridge.linkedLabelEn ?? cartridge.linkedLabel ?? '';
-        const natureLabel = cartridge.natureLabel ?? '';
         const nsn = cartridge.ncn ?? '';
 
         const selectedCaliberId = filterState.selectedCaliber?.trim() ?? '';
         const byCaliber = !selectedCaliberId || String(cartridge.caliberId ?? '') === selectedCaliberId;
         const byLinked = !filterState.selectedLinked || filterState.selectedLinked === linkedLabelForFilter;
-        const byNature = !filterState.selectedNature || filterState.selectedNature === natureLabel;
 
         const nsnFilterLower = filterState.selectedNSN?.toLowerCase() ?? '';
         const byNSN = !nsnFilterLower || (nsn && nsn.toLowerCase().includes(nsnFilterLower));
@@ -37,7 +35,7 @@ export class IssueRequestFilterService {
           (cartridge.ammunitionType !== undefined &&
             String(cartridge.ammunitionType).toLowerCase() === filterState.selectedAmmunitionType.toLowerCase());
 
-        return byCaliber && byLinked && byNature && byNSN && byAmmunitionType && bySearch;
+        return byCaliber && byLinked && byNSN && byAmmunitionType && bySearch;
 
       } else if (filterState.selectedItemType === 'Weapon') {
         const byWeaponType = !filterState.selectedWeaponType || cartridge.weaponType === filterState.selectedWeaponType;
@@ -67,21 +65,40 @@ export class IssueRequestFilterService {
 
  
   clearFilters(filterState: ExtendedFilterState | FilterState, itemType: string): void {
-    // Reset based on current type
     if (itemType === 'Ammunition') {
       filterState.selectedAmmunitionType = '';
       filterState.selectedCaliber = '';
       filterState.selectedLinked = '';
-      filterState.selectedNature = '';
+      filterState.selectedPrimaryPurposeId = '';
+      filterState.selectedClassificationId = '';
+      filterState.selectedCaseType = '';
+      filterState.selectedCompatibility = '';
+      filterState.selectedHazardDivision = '';
+      filterState.selectedPropellant = '';
+      filterState.selectedAmmunitionArmNumber = '';
+      filterState.selectedAmmunitionPartNo = '';
     } else if (itemType === 'Weapon') {
       filterState.selectedWeaponType = '';
       filterState.selectedCaliber = '';
+      filterState.selectedPrimaryPurposeId = '';
+      filterState.selectedClassificationId = '';
+      filterState.selectedCountryOfManufacture = '';
+      filterState.selectedWeaponUNNumber = '';
+      filterState.selectedPartNo = '';
+      filterState.selectedWeaponModel = '';
+      filterState.selectedWeaponReferenceNo = '';
     } else if (itemType === 'Explosive') {
       filterState.selectedExplosiveType = '';
       filterState.selectedUNNumber = '';
+      filterState.selectedPrimaryPurposeId = '';
+      filterState.selectedClassificationId = '';
+      filterState.selectedExplosiveHazardDivision = '';
+      filterState.selectedExplosiveCompatibility = '';
+      filterState.selectedArmNumber = '';
+      filterState.selectedExplosivePartNo = '';
+      filterState.selectedExplosiveReferenceNo = '';
     }
 
-    // Common filters
     filterState.selectedNSN = '';
     filterState.searchTerm = '';
   }

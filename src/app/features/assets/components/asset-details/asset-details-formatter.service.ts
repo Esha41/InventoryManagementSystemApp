@@ -93,11 +93,6 @@ export class AssetDetailsFormatterService {
           ? this.propertyAccessor.getPropellant(asset() as AmmunitionReadDto) || '-'
           : '-'
       ),
-      nature: computed(() =>
-        isAmmunition()
-          ? this.propertyAccessor.getNature(asset() as AmmunitionReadDto) || '-'
-          : '-'
-      ),
       linked: computed(() =>
         isAmmunition()
           ? this.propertyAccessor.getLinked(asset() as AmmunitionReadDto) || '-'

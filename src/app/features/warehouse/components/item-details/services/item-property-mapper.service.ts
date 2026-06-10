@@ -487,14 +487,6 @@ export class ItemPropertyMapperService {
     return '';
   }
 
-  getNature(ctx: ItemDetailsResolvedContext): string {
-    const { item } = ctx;
-    if ((ctx.isAsset || ctx.isDirectDto) && ctx.isAmmunition) {
-      return this.propertyAccessor.getNature(item as Asset | AmmunitionReadDto) || '';
-    }
-    return '';
-  }
-
   getLinked(ctx: ItemDetailsResolvedContext): string {
     const { item } = ctx;
     if ((ctx.isAsset || ctx.isDirectDto) && ctx.isAmmunition) {

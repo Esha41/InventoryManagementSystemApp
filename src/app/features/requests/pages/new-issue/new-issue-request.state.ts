@@ -37,40 +37,59 @@ export interface FilterState {
   selectedItemType: string;
   selectedAmmunitionType: string;
   selectedLinked: string;
-  selectedNature: string;
+  selectedPrimaryPurposeId: string;
+  selectedClassificationId: string;
   selectedNSN: string;
   searchTerm: string;
 
-  // New Filters
   selectedWeaponType?: string;
   selectedCaliber?: string;
   selectedExplosiveType?: string;
   selectedUNNumber?: string;
+
+  /** Ammunition */
+  selectedCaseType?: string;
+  selectedCompatibility?: string;
+  selectedHazardDivision?: string;
+  selectedPropellant?: string;
+  selectedAmmunitionArmNumber?: string;
+  selectedAmmunitionPartNo?: string;
+
+  /** Weapon */
+  selectedCountryOfManufacture?: string;
+  selectedWeaponUNNumber?: string;
+  selectedPartNo?: string;
+  selectedWeaponModel?: string;
+  selectedWeaponReferenceNo?: string;
+
+  /** Explosive */
+  selectedExplosiveHazardDivision?: string;
+  selectedExplosiveCompatibility?: string;
+  selectedArmNumber?: string;
+  selectedExplosivePartNo?: string;
+  selectedExplosiveReferenceNo?: string;
 }
 
-
-export interface ExtendedFilterState extends FilterState {
-  selectedWeaponType?: string;
-  selectedCaliber?: string;
-  selectedExplosiveType?: string;
-  selectedUNNumber?: string;
-}
+export interface ExtendedFilterState extends FilterState {}
 
 export interface FilterOptions {
   itemTypeOptions: string[];
   ammunitionTypeOptions: DropdownOption<string>[] | string[];
   caliberOptions: DropdownOption<string>[];
   linkedOptions: DropdownOption<string>[] | string[];
-  natureOptions: string[];
+  primaryPurposeOptions: DropdownOption<string>[];
+  classificationOptions: DropdownOption<string>[];
+  caseTypeOptions: DropdownOption<string>[];
+  compatibilityOptions: DropdownOption<string>[];
+  hazardDivisionOptions: DropdownOption<string>[];
+  propellantOptions: DropdownOption<string>[];
+  countryOptions: DropdownOption<string>[];
 
-  weaponTypeOptions?: DropdownOption<string>[]; // DropdownOption[]
-  explosiveTypeOptions?: DropdownOption<string>[]; // DropdownOption[]
-}
-
-export interface ExtendedFilterOptions extends FilterOptions {
   weaponTypeOptions?: DropdownOption<string>[];
   explosiveTypeOptions?: DropdownOption<string>[];
 }
+
+export interface ExtendedFilterOptions extends FilterOptions {}
 
 export interface CatalogPaginationState {
   page: number;
@@ -173,13 +192,30 @@ export function createInitialFilterState(): ExtendedFilterState {
     selectedItemType: 'Ammunition',
     selectedAmmunitionType: '',
     selectedLinked: '',
-    selectedNature: '',
+    selectedPrimaryPurposeId: '',
+    selectedClassificationId: '',
     selectedNSN: '',
     searchTerm: '',
     selectedWeaponType: '',
     selectedCaliber: '',
     selectedExplosiveType: '',
-    selectedUNNumber: ''
+    selectedUNNumber: '',
+    selectedCaseType: '',
+    selectedCompatibility: '',
+    selectedHazardDivision: '',
+    selectedPropellant: '',
+    selectedAmmunitionArmNumber: '',
+    selectedAmmunitionPartNo: '',
+    selectedCountryOfManufacture: '',
+    selectedWeaponUNNumber: '',
+    selectedPartNo: '',
+    selectedWeaponModel: '',
+    selectedWeaponReferenceNo: '',
+    selectedExplosiveHazardDivision: '',
+    selectedExplosiveCompatibility: '',
+    selectedArmNumber: '',
+    selectedExplosivePartNo: '',
+    selectedExplosiveReferenceNo: ''
   };
 }
 
@@ -196,7 +232,13 @@ export function createInitialFilterOptions(): ExtendedFilterOptions {
       { label: 'newIssueRequest.linkedOptionLinked', value: 'Linked' },
       { label: 'newIssueRequest.linkedOptionNotLinked', value: 'Not Linked' }
     ],
-    natureOptions: [],
+    primaryPurposeOptions: [],
+    classificationOptions: [],
+    caseTypeOptions: [],
+    compatibilityOptions: [],
+    hazardDivisionOptions: [],
+    propellantOptions: [],
+    countryOptions: [],
     weaponTypeOptions: [],
     explosiveTypeOptions: []
   };

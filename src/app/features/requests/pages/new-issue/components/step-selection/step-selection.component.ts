@@ -69,8 +69,43 @@ export class StepSelectionComponent {
         this.triggerFilter();
     }
 
-    onNatureChange(value: string): void {
-        this.filterState.selectedNature = value;
+    onPrimaryPurposeChange(value: string): void {
+        this.filterState.selectedPrimaryPurposeId = value;
+        this.triggerFilter();
+    }
+
+    onClassificationChange(value: string): void {
+        this.filterState.selectedClassificationId = value;
+        this.triggerFilter();
+    }
+
+    onCaseTypeChange(value: string): void {
+        this.filterState.selectedCaseType = value;
+        this.triggerFilter();
+    }
+
+    onCompatibilityChange(value: string): void {
+        this.filterState.selectedCompatibility = value;
+        this.triggerFilter();
+    }
+
+    onHazardDivisionChange(value: string): void {
+        this.filterState.selectedHazardDivision = value;
+        this.triggerFilter();
+    }
+
+    onPropellantChange(value: string): void {
+        this.filterState.selectedPropellant = value;
+        this.triggerFilter();
+    }
+
+    onAmmunitionArmNumberChange(value: string): void {
+        this.filterState.selectedAmmunitionArmNumber = value;
+        this.triggerFilter();
+    }
+
+    onAmmunitionPartNoChange(value: string): void {
+        this.filterState.selectedAmmunitionPartNo = value;
         this.triggerFilter();
     }
 
@@ -84,6 +119,31 @@ export class StepSelectionComponent {
         this.triggerFilter();
     }
 
+    onCountryOfManufactureChange(value: string): void {
+        this.filterState.selectedCountryOfManufacture = value;
+        this.triggerFilter();
+    }
+
+    onWeaponUNNumberChange(value: string): void {
+        this.filterState.selectedWeaponUNNumber = value;
+        this.triggerFilter();
+    }
+
+    onPartNoChange(value: string): void {
+        this.filterState.selectedPartNo = value;
+        this.triggerFilter();
+    }
+
+    onWeaponModelChange(value: string): void {
+        this.filterState.selectedWeaponModel = value;
+        this.triggerFilter();
+    }
+
+    onWeaponReferenceNoChange(value: string): void {
+        this.filterState.selectedWeaponReferenceNo = value;
+        this.triggerFilter();
+    }
+
     onExplosiveTypeChange(value: string): void {
         this.filterState.selectedExplosiveType = value;
         this.triggerFilter();
@@ -91,6 +151,31 @@ export class StepSelectionComponent {
 
     onUnNumberChange(value: string): void {
         this.filterState.selectedUNNumber = value;
+        this.triggerFilter();
+    }
+
+    onExplosiveHazardDivisionChange(value: string): void {
+        this.filterState.selectedExplosiveHazardDivision = value;
+        this.triggerFilter();
+    }
+
+    onExplosiveCompatibilityChange(value: string): void {
+        this.filterState.selectedExplosiveCompatibility = value;
+        this.triggerFilter();
+    }
+
+    onArmNumberChange(value: string): void {
+        this.filterState.selectedArmNumber = value;
+        this.triggerFilter();
+    }
+
+    onExplosivePartNoChange(value: string): void {
+        this.filterState.selectedExplosivePartNo = value;
+        this.triggerFilter();
+    }
+
+    onExplosiveReferenceNoChange(value: string): void {
+        this.filterState.selectedExplosiveReferenceNo = value;
         this.triggerFilter();
     }
 

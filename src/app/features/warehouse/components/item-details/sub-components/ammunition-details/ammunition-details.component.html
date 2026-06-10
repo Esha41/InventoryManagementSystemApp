@@ -37,11 +37,6 @@
       <p class="text-[var(--color-text)]">{{ mapper.getCaliberCategory(ctx) }}</p>
     </div>
 
-    <div *ngIf="mapper.getNature(ctx)">
-      <p class="text-[var(--color-text-muted)] mb-1">Nature</p>
-      <p class="text-[var(--color-text)]">{{ mapper.getNature(ctx) }}</p>
-    </div>
-
     <div *ngIf="mapper.getLinked(ctx)">
       <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.viewModal.isLinked' | translate }}</p>
       <p class="text-[var(--color-text)]">{{ mapper.getLinked(ctx) }}</p>

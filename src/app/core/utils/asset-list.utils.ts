@@ -121,6 +121,23 @@ export function assetMatchesAmmunitionPrimaryPurpose(asset: Asset, purposeId: nu
   return assetMatchesCatalogPrimaryPurpose(asset, purposeId);
 }
 
+/** Whether a catalog DTO (ammunition / weapon / explosive) matches a single primary-purpose id. */
+export function catalogDtoMatchesPrimaryPurpose(dto: CatalogPrimaryPurposeDto, purposeId: number): boolean {
+  if (dto.primaryPurposId != null && dto.primaryPurposId === purposeId) {
+    return true;
+  }
+  if (dto.primaryPurposes?.length) {
+    return dto.primaryPurposes.some(p => p.id != null && p.id === purposeId);
+  }
+  const single = dto.primaryPurpos?.id;
+  return single != null && single === purposeId;
+}
+
+/** @deprecated Use catalogDtoMatchesPrimaryPurpose */
+export function ammunitionMatchesPrimaryPurpose(dto: CatalogPrimaryPurposeDto, purposeId: number): boolean {
+  return catalogDtoMatchesPrimaryPurpose(dto, purposeId);
+}
+
 /**
  * Filters assets based on filter state
  */

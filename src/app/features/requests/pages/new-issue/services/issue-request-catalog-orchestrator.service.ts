@@ -2,7 +2,6 @@ import { ChangeDetectorRef, Injectable } from '@angular/core';
 import { Subject, debounceTime, takeUntil, Observable } from 'rxjs';
 import { Cartridge } from '@models/cartridge.model';
 import { ItemType } from '@models/backend-enums';
-import { PagedRequest } from '@models/api-response.model';
 import {
   CartridgeDataService,
   CartridgePaginatedLoadResult
@@ -17,11 +16,6 @@ import {
 import { IssueRequestFilterService } from './issue-request-filter.service';
 import { IssueRequestStateService } from './issue-request-state.service';
 import { inferCartridgeItemType } from '@requests/utils/issue-request.utils';
-import {
-  buildAmmunitionPagedRequest,
-  buildWeaponPagedRequest,
-  buildExplosivePagedRequest
-} from '@requests/utils/catalog-paged-request.builder';
 import { DropdownOption } from '@components/dropdown/dropdown.component';
 
 export interface CatalogOrchestratorContext {
@@ -58,14 +52,9 @@ export class IssueRequestCatalogOrchestratorService {
     pageSize: number,
     filterState: FilterState
   ): Observable<CartridgePaginatedLoadResult> {
-    if (itemType === 'Weapon') return this.cartridgeDataService.loadWeaponsPaginated(buildWeaponPagedRequest(page, pageSize, filterState));
-    if (itemType === 'Explosive') return this.cartridgeDataService.loadExplosivesPaginated(buildExplosivePagedRequest(page, pageSize, filterState));
-    return this.cartridgeDataService.loadAmmunitionPaginated(buildAmmunitionPagedRequest(page, pageSize, filterState));
-  }
-
-  private loadAmmunitionNatureFacetSample(): Observable<{ natureOptions: string[] }> {
-    const request: PagedRequest = { page: 1, pageSize: 500, filter: { sortField: 'Name', sortDirection: 1 } };
-    return this.cartridgeDataService.loadAmmunitionFacetSample(request);
+    if (itemType === 'Weapon') return this.cartridgeDataService.loadWeaponsCatalogPaginated(page, pageSize, filterState);
+    if (itemType === 'Explosive') return this.cartridgeDataService.loadExplosivesCatalogPaginated(page, pageSize, filterState);
+    return this.cartridgeDataService.loadAmmunitionCatalogPaginated(page, pageSize, filterState);
   }
 
   private loadCaliberFilterOptions(itemType: string): Observable<DropdownOption<string>[]> {
@@ -103,15 +92,62 @@ export class IssueRequestCatalogOrchestratorService {
       ctx.filterOptions.caliberOptions = [];
     }
 
-    if (itemType === 'Ammunition') {
-      this.loadAmmunitionNatureFacetSample().subscribe({
-        next: (facets) => {
-          ctx.filterOptions.natureOptions = facets.natureOptions;
+    if (itemType === 'Ammunition' || itemType === 'Weapon' || itemType === 'Explosive') {
+      this.cartridgeDataService.loadPrimaryPurposeFilterOptions().subscribe({
+        next: (options) => {
+          ctx.filterOptions.primaryPurposeOptions = options;
+          ctx.cdr.markForCheck();
+        }
+      });
+      this.cartridgeDataService.loadClassificationFilterOptions().subscribe({
+        next: (options) => {
+          ctx.filterOptions.classificationOptions = options;
           ctx.cdr.markForCheck();
         }
       });
     } else {
-      ctx.filterOptions.natureOptions = [];
+      ctx.filterOptions.primaryPurposeOptions = [];
+      ctx.filterOptions.classificationOptions = [];
+    }
+
+    if (itemType === 'Ammunition') {
+      this.cartridgeDataService.loadCaseTypeFilterOptions().subscribe({
+        next: (options) => { ctx.filterOptions.caseTypeOptions = options; ctx.cdr.markForCheck(); }
+      });
+      this.cartridgeDataService.loadCompatibilityFilterOptions().subscribe({
+        next: (options) => { ctx.filterOptions.compatibilityOptions = options; ctx.cdr.markForCheck(); }
+      });
+      this.cartridgeDataService.loadHazardDivisionFilterOptions().subscribe({
+        next: (options) => { ctx.filterOptions.hazardDivisionOptions = options; ctx.cdr.markForCheck(); }
+      });
+      this.cartridgeDataService.loadPropellantFilterOptions().subscribe({
+        next: (options) => { ctx.filterOptions.propellantOptions = options; ctx.cdr.markForCheck(); }
+      });
+      ctx.filterOptions.countryOptions = [];
+    } else if (itemType === 'Weapon') {
+      ctx.filterOptions.caseTypeOptions = [];
+      ctx.filterOptions.compatibilityOptions = [];
+      ctx.filterOptions.hazardDivisionOptions = [];
+      ctx.filterOptions.propellantOptions = [];
+      this.cartridgeDataService.loadCountryFilterOptions().subscribe({
+        next: (options) => { ctx.filterOptions.countryOptions = options; ctx.cdr.markForCheck(); }
+      });
+    } else if (itemType === 'Explosive') {
+      ctx.filterOptions.caseTypeOptions = [];
+      ctx.filterOptions.propellantOptions = [];
+      ctx.filterOptions.countryOptions = [];
+      this.cartridgeDataService.loadHazardDivisionFilterOptions().subscribe({
+        next: (options) => { ctx.filterOptions.hazardDivisionOptions = options; ctx.cdr.markForCheck(); }
+      });
+      this.cartridgeDataService.loadCompatibilityFilterOptions().subscribe({
+        next: (options) => { ctx.filterOptions.compatibilityOptions = options; ctx.cdr.markForCheck(); }
+      });
+    } else {
+      ctx.filterOptions.caseTypeOptions = [];
+      ctx.filterOptions.compatibilityOptions = [];
+      ctx.filterOptions.hazardDivisionOptions = [];
+      ctx.filterOptions.propellantOptions = [];
+      ctx.filterOptions.countryOptions = [];
     }
   }
 
@@ -203,7 +239,10 @@ export class IssueRequestCatalogOrchestratorService {
     ctx.filterState.selectedItemType = value;
     this.filterService.clearFilters(ctx.filterState, value);
     ctx.cartridgeState.allCartridges = [];
-    if (value !== 'Ammunition') { ctx.filterOptions.natureOptions = []; }
+    if (value !== 'Ammunition' && value !== 'Weapon' && value !== 'Explosive') {
+      ctx.filterOptions.primaryPurposeOptions = [];
+      ctx.filterOptions.classificationOptions = [];
+    }
     if (value !== 'Ammunition' && value !== 'Weapon') { ctx.filterOptions.caliberOptions = []; }
     this.loadCartridges(ctx, hooks);
   }

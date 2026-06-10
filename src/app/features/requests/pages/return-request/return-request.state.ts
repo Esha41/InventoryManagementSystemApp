@@ -61,7 +61,6 @@ export interface ReturnLookupState {
   weaponTypeOptions: { label: string; value: string }[];
   explosiveTypeOptions: { label: string; value: string }[];
   caliberOptions: DropdownOption<string>[];
-  natureOptions: string[];
 }
 
 export interface ReturnSuccessState {
@@ -121,8 +120,7 @@ export function createInitialLookupState(): ReturnLookupState {
     ],
     weaponTypeOptions: [],
     explosiveTypeOptions: [],
-    caliberOptions: [],
-    natureOptions: []
+    caliberOptions: []
   };
 }
 

@@ -31,7 +31,6 @@ export function createAssetEditForm(fb: FormBuilder): FormGroup {
     propellantId: [null as number | null],
     compatibilityId: [null as number | null], // Used by both ammunition and explosive
     hazardDivisionId: [null as number | null], // Used by both ammunition and explosive
-    natureOptionId: [null as number | null],
     primaryPurposIds: [[] as number[]],
     projectileColorId: [null as number | null],
     projectailMaterialId: [null as number | null],

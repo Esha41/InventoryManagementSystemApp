@@ -12,7 +12,13 @@ import { Cartridge } from '@models/cartridge.model';
 import { ItemType } from '@models/backend-enums';
 import { TranslateService } from '@ngx-translate/core';
 import { getCurrentLang } from '@utils/localization.utils';
-import { createFilterOptions } from '@utils/asset-list.utils';
+import { catalogDtoMatchesPrimaryPurpose, createFilterOptions } from '@utils/asset-list.utils';
+import {
+  buildAmmunitionPagedRequest,
+  buildWeaponPagedRequest,
+  buildExplosivePagedRequest
+} from '@requests/utils/catalog-paged-request.builder';
+import type { FilterState } from '@requests/pages/new-issue/new-issue-request.state';
 import { DropdownOption } from '@components/dropdown/dropdown.component';
 import { PagedRequest, PaginatedList } from '@models/api-response.model';
 import { AmmunitionReadDto } from '@models/ammunition.model';
@@ -24,6 +30,7 @@ import {
   AllowanceReserveDetailsByItemDto,
   AllowanceItemReserveDetailsDto
 } from '@models/allowance.model';
+import { LookupItem } from '@models/lookup.model';
 
 export interface ReserveDetails {
   totalReserve: number;
@@ -68,6 +75,12 @@ export interface ReserveDetailsResult {
 }
 
 const GET_BY_ID_BATCH_SIZE = 12;
+const CATALOG_PRIMARY_PURPOSE_FETCH_PAGE_SIZE = 500;
+
+type CatalogPrimaryPurposeDto = Pick<
+  AmmunitionReadDto,
+  'primaryPurposId' | 'primaryPurposes' | 'primaryPurpos'
+>;
 
 /** Data inside {@link APIOperationResponse.data} for GET `AllowanceItem/department/{id}/year/{year}`. */
 type AllowanceByDepartmentPayload = AllowanceItemByDepartmentDto & {
@@ -156,6 +169,135 @@ export class CartridgeDataService {
         }))
       )
     );
+  }
+
+  loadAmmunitionCatalogPaginated(
+    page: number,
+    pageSize: number,
+    filterState: FilterState
+  ): Observable<CartridgePaginatedLoadResult> {
+    const currentLang = getCurrentLang(this.translateService);
+    return this.loadCatalogPaginatedWithOptionalPrimaryPurpose(
+      page,
+      pageSize,
+      filterState,
+      (p, ps, fs) => buildAmmunitionPagedRequest(p, ps, fs),
+      req => this.ammunitionService.getAllPaginated(req),
+      items => this.mapperService.mapAmmunitionArrayToCartridges(items, currentLang),
+      'Failed to load ammunition catalog. Please try again.'
+    );
+  }
+
+  loadWeaponsCatalogPaginated(
+    page: number,
+    pageSize: number,
+    filterState: FilterState
+  ): Observable<CartridgePaginatedLoadResult> {
+    const currentLang = getCurrentLang(this.translateService);
+    return this.loadCatalogPaginatedWithOptionalPrimaryPurpose(
+      page,
+      pageSize,
+      filterState,
+      (p, ps, fs) => buildWeaponPagedRequest(p, ps, fs),
+      req => this.weaponService.getAllPaginated(req),
+      items => this.mapperService.mapWeaponArrayToCartridges(items, currentLang),
+      'Failed to load weapon catalog. Please try again.'
+    );
+  }
+
+  loadExplosivesCatalogPaginated(
+    page: number,
+    pageSize: number,
+    filterState: FilterState
+  ): Observable<CartridgePaginatedLoadResult> {
+    const currentLang = getCurrentLang(this.translateService);
+    return this.loadCatalogPaginatedWithOptionalPrimaryPurpose(
+      page,
+      pageSize,
+      filterState,
+      (p, ps, fs) => buildExplosivePagedRequest(p, ps, fs),
+      req => this.explosiveService.getAllPaginated(req),
+      items => this.mapperService.mapExplosiveArrayToCartridges(items, currentLang),
+      'Failed to load explosive catalog. Please try again.'
+    );
+  }
+
+  /**
+   * Server-paginated catalog with optional client-side primary purpose filter (same pattern as asset list).
+   */
+  private loadCatalogPaginatedWithOptionalPrimaryPurpose<T extends CatalogPrimaryPurposeDto>(
+    page: number,
+    pageSize: number,
+    filterState: FilterState,
+    buildPagedRequest: (page: number, pageSize: number, fs: FilterState) => PagedRequest,
+    fetchPaginated: (request: PagedRequest) => Observable<PaginatedList<T>>,
+    mapItemsToCartridges: (items: T[]) => Cartridge[],
+    errorMessage: string
+  ): Observable<CartridgePaginatedLoadResult> {
+    const purposeRaw = filterState.selectedPrimaryPurposeId?.trim() ?? '';
+    const purposeId = purposeRaw ? Number(purposeRaw) : NaN;
+    const hasPrimaryPurposeFilter = Number.isFinite(purposeId) && purposeId > 0;
+
+    if (!hasPrimaryPurposeFilter) {
+      return fetchPaginated(buildPagedRequest(page, pageSize, filterState)).pipe(
+        map(res => ({
+          cartridges: mapItemsToCartridges(res.items || []),
+          totalCount: res.totalCount,
+          pageIndex: res.pageIndex,
+          totalPages: res.totalPages,
+          hasNextPage: res.hasNextPage,
+          hasPreviousPage: res.hasPreviousPage
+        })),
+        catchError(() => throwError(() => this.emptyCatalogPaginatedResult(errorMessage)))
+      );
+    }
+
+    const loadAll = (fetchPage: number, acc: T[]): Observable<T[]> => {
+      const request = buildPagedRequest(fetchPage, CATALOG_PRIMARY_PURPOSE_FETCH_PAGE_SIZE, filterState);
+      return fetchPaginated(request).pipe(
+        concatMap(res => {
+          const merged = [...acc, ...(res.items || [])];
+          if (
+            (res.items?.length ?? 0) < CATALOG_PRIMARY_PURPOSE_FETCH_PAGE_SIZE ||
+            merged.length >= res.totalCount
+          ) {
+            return of(merged);
+          }
+          return loadAll(fetchPage + 1, merged);
+        })
+      );
+    };
+
+    return loadAll(1, []).pipe(
+      map(dtos => {
+        const filtered = dtos.filter(d => catalogDtoMatchesPrimaryPurpose(d, purposeId));
+        const totalCount = filtered.length;
+        const totalPages = totalCount === 0 ? 1 : Math.ceil(totalCount / pageSize);
+        const start = (page - 1) * pageSize;
+        const slice = filtered.slice(start, start + pageSize);
+        return {
+          cartridges: mapItemsToCartridges(slice),
+          totalCount,
+          pageIndex: page,
+          totalPages,
+          hasNextPage: page < totalPages,
+          hasPreviousPage: page > 1
+        };
+      }),
+      catchError(() => throwError(() => this.emptyCatalogPaginatedResult(errorMessage)))
+    );
+  }
+
+  private emptyCatalogPaginatedResult(errorMessage: string): CartridgePaginatedLoadResult {
+    return {
+      cartridges: [],
+      totalCount: 0,
+      pageIndex: 1,
+      totalPages: 0,
+      hasNextPage: false,
+      hasPreviousPage: false,
+      error: errorMessage
+    };
   }
 
   loadWeaponsPaginated(request: PagedRequest): Observable<CartridgePaginatedLoadResult> {
@@ -336,17 +478,58 @@ export class CartridgeDataService {
     );
   }
 
-  /**
-   * One paginated sample (no extra filters) to populate ammunition nature facet dropdown.
-   */
-  loadAmmunitionFacetSample(request: PagedRequest): Observable<{ natureOptions: string[] }> {
-    const currentLang = getCurrentLang(this.translateService);
-    return this.ammunitionService.getAllPaginated(request).pipe(
-      map((res: PaginatedList<AmmunitionReadDto>) => {
-        const cartridges = this.mapperService.mapAmmunitionArrayToCartridges(res.items || [], currentLang);
-        return this.buildFilterOptions(cartridges);
-      }),
-      catchError(() => of({ natureOptions: [] }))
+  loadPrimaryPurposeFilterOptions(): Observable<DropdownOption<string>[]> {
+    return this.lookupService.getPrimaryPurposes().pipe(
+      map(items =>
+        createFilterOptions(items, this.translateService)
+          .map(opt => ({ label: opt.label, value: String(opt.value) }))
+          .sort((a, b) => a.label.localeCompare(b.label))
+      ),
+      catchError(() => of([]))
+    );
+  }
+
+  loadClassificationFilterOptions(): Observable<DropdownOption<string>[]> {
+    return this.lookupService.getClassifications().pipe(
+      map(items =>
+        createFilterOptions(items, this.translateService)
+          .map(opt => ({ label: opt.label, value: String(opt.value) }))
+          .sort((a, b) => a.label.localeCompare(b.label))
+      ),
+      catchError(() => of([]))
+    );
+  }
+
+  loadCaseTypeFilterOptions(): Observable<DropdownOption<string>[]> {
+    return this.loadLookupFilterOptions(() => this.lookupService.getCaseTypes());
+  }
+
+  loadCompatibilityFilterOptions(): Observable<DropdownOption<string>[]> {
+    return this.loadLookupFilterOptions(() => this.lookupService.getCompatibilities());
+  }
+
+  loadHazardDivisionFilterOptions(): Observable<DropdownOption<string>[]> {
+    return this.loadLookupFilterOptions(() => this.lookupService.getHazardDivisions());
+  }
+
+  loadPropellantFilterOptions(): Observable<DropdownOption<string>[]> {
+    return this.loadLookupFilterOptions(() => this.lookupService.getPropellants());
+  }
+
+  loadCountryFilterOptions(): Observable<DropdownOption<string>[]> {
+    return this.loadLookupFilterOptions(() => this.lookupService.getCountries());
+  }
+
+  private loadLookupFilterOptions(
+    fetch: () => Observable<LookupItem[]>
+  ): Observable<DropdownOption<string>[]> {
+    return fetch().pipe(
+      map(items =>
+        createFilterOptions(items, this.translateService)
+          .map(opt => ({ label: opt.label, value: String(opt.value) }))
+          .sort((a, b) => a.label.localeCompare(b.label))
+      ),
+      catchError(() => of([]))
     );
   }
 
@@ -394,19 +577,4 @@ export class CartridgeDataService {
     );
   }
 
-  buildFilterOptions(cartridges: Cartridge[]): {
-    natureOptions: string[];
-  } {
-    const natures = new Set<string>();
-
-    for (const cartridge of cartridges) {
-      if (cartridge.natureLabel) {
-        natures.add(cartridge.natureLabel);
-      }
-    }
-
-    return {
-      natureOptions: Array.from(natures).sort((a, b) => a.localeCompare(b))
-    };
-  }
 }

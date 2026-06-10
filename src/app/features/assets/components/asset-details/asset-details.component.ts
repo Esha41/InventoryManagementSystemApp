@@ -539,10 +539,6 @@ export class AssetDetailsComponent implements OnInit, OnChanges, OnDestroy {
     return this.fields.propellant();
   }
 
-  getNature(): string {
-    return this.fields.nature();
-  }
-
   getLinked(): string {
     return this.fields.linked();
   }

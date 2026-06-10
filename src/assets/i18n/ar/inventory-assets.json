@@ -110,6 +110,8 @@
     "enterReferenceNo": "أدخل الرقم المرجعي",
     "classification": "التصنيف",
     "selectClassification": "اختر التصنيف",
+    "ammunitionSizeClass": "تصنيف العيار",
+    "selectAmmunitionTypeClass": "اختر تصنيف العيار",
     "type": "نوع المادة",
     "weaponType": "نوع السلاح",
     "explosiveType": "نوع المتفجر",
@@ -124,6 +126,7 @@
     "errors": {
       "itemNoAlreadyExists": "رقم المادة موجود مسبقاً. يرجى استخدام رقم مادة فريد.",
       "itemNoAlreadyExistsWithValue": "رقم المادة '{{itemNo}}' موجود مسبقاً. يرجى استخدام رقم مادة فريد.",
+      "ammunitionTypeRequired": "اختر تصنيف العيار",
       "bulletDiameterMustBePositive": "يجب أن يكون قطر الرصاصة أكبر من 0",
       "priceMustBePositive": "يجب أن يكون السعر أكبر من 0",
       "totalWeightMustBePositive": "يجب أن يكون الوزن الإجمالي أكبر من 0"

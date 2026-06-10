@@ -188,7 +188,7 @@
     "no": "لا",
     "previous": "السابق",
     "submit": "إرسال",
-    "clearFilters": "تطبيق الاختيارات",
+    "clearFilters": "مسح الفلاتر",
     "validation": {
       "ammoMustHaveWeapon": "يجب ربط جميع بنود الذخيرة بسلاح قبل التقديم.",
       "usePurposeRequired": "غرض الاستخدام مطلوب.",

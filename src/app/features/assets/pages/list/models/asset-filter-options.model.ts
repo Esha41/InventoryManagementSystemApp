@@ -65,7 +65,6 @@ export interface AssetLookups {
   propellants: LookupItem[];
   compatibilities: LookupItem[];
   hazardDivisions: LookupItem[];
-  natureOptions: LookupItem[];
   primaryPurposes: LookupItem[];
   colors: LookupItem[];
   materials: LookupItem[];
