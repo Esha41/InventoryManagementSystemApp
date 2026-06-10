@@ -1,18 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map, catchError } from 'rxjs';
+import { Observable, map, catchError, of, switchMap } from 'rxjs';
 import { ConfigService } from '@services/config.service';
 import { ApiService } from '@services/api.service';
 import { APIOperationResponse, PagedRequest, PaginatedList } from '@models/api-response.model';
 import { AccessoryDto, CreateUpdateAccessoryDto } from '@models/accessory.model';
-import { FileUploadDto } from '@models/file-upload.model';
+import { FileUploadService, FileUploadDto, FileEntityType } from '@services/file-upload.service';
 import { IImportableService } from '@core/interfaces/importable-service.interface';
 import { ImportResult } from '@models/import-result.model';
-
-export interface AccessoryUpdateOptions {
-  file?: File | null;
-  removeImage?: boolean;
-}
 
 @Injectable({ providedIn: 'root' })
 export class AccessoryService implements IImportableService {
@@ -21,6 +16,7 @@ export class AccessoryService implements IImportableService {
   constructor(
     private apiService: ApiService,
     private http: HttpClient,
+    private fileUploadService: FileUploadService,
     private config: ConfigService
   ) { }
 
@@ -53,13 +49,8 @@ export class AccessoryService implements IImportableService {
     return this.apiService.get<T>(`${this.endpoint}/${id}`, params);
   }
 
-  update<T = AccessoryDto>(
-    id: number,
-    data: CreateUpdateAccessoryDto,
-    options?: AccessoryUpdateOptions
-  ): Observable<APIOperationResponse<T>> {
-    const formData = this.buildFormData(data, options);
-    return this.apiService.putRaw<T>(`${this.endpoint}/${id}`, formData);
+  update<T = AccessoryDto>(id: number, data: CreateUpdateAccessoryDto): Observable<APIOperationResponse<T>> {
+    return this.apiService.putRaw<T>(`${this.endpoint}/${id}`, data);
   }
 
   delete(id: number): Observable<APIOperationResponse<boolean>> {
@@ -78,22 +69,64 @@ export class AccessoryService implements IImportableService {
     data: CreateUpdateAccessoryDto,
     file?: File | null
   ): Observable<APIOperationResponse<T>> {
-    const formData = this.buildFormData(data, { file });
+    const formData = this.buildCreateFormData(data, file);
     return this.apiService.postRaw<T>(this.endpoint, formData);
   }
 
-  /** Download main accessory image via Accessory API (not FileUpload). */
-  getImageBlob(accessoryId: number): Observable<Blob> {
-    const url = `${this.config.apiUrl}${this.endpoint}/${accessoryId}/image`;
-    return this.http.get(url, { responseType: 'blob' });
+  getFileInfo(accessoryId: number): Observable<{ id: number; url: string } | null> {
+    return this.fileUploadService.getFilesByEntity(FileEntityType.Accessory, accessoryId).pipe(
+      map((files: FileUploadDto[]) => {
+        if (files && files.length > 0) {
+          const mainFile = files.find((f) => f.isMain) || files[0];
+          if (mainFile?.id) {
+            return {
+              id: mainFile.id,
+              url: this.fileUploadService.getFileDownloadUrl(mainFile.id)
+            };
+          }
+        }
+        return null;
+      }),
+      catchError(() => of(null))
+    );
   }
 
-  getMainImageFileId(images?: FileUploadDto[] | null): number | null {
-    if (!images?.length) return null;
-    const mainImages = images.filter(img => img.isMain);
-    const pool = mainImages.length > 0 ? mainImages : images;
-    const latest = pool.reduce((a, b) => (a.id > b.id ? a : b));
-    return latest?.id ?? null;
+  getImageUrl(accessoryId: number): Observable<string | null> {
+    return this.getFileInfo(accessoryId).pipe(
+      map((fileInfo) => fileInfo?.url || null)
+    );
+  }
+
+  getFileBlob(fileId: number): Observable<Blob> {
+    const imageUrl = this.fileUploadService.getFileDownloadUrl(fileId);
+    return this.http.get(imageUrl, { responseType: 'blob' });
+  }
+
+  deleteFile(fileId: number): Observable<boolean> {
+    return this.fileUploadService.deleteFile(fileId);
+  }
+
+  uploadFile(accessoryId: number, file: File, isMain: boolean = true): Observable<number> {
+    return this.fileUploadService.uploadFile(file, FileEntityType.Accessory, accessoryId, isMain);
+  }
+
+  updateImage(accessoryId: number, file: File, existingFileId: number | null): Observable<number> {
+    const upload$ = this.uploadFile(accessoryId, file, true);
+
+    if (existingFileId) {
+      return this.deleteFile(existingFileId).pipe(
+        switchMap(() => upload$),
+        catchError(() => upload$)
+      );
+    }
+    return upload$;
+  }
+
+  getImageBlobUrl(accessoryId: number): Observable<string | null> {
+    return this.getImageUrl(accessoryId).pipe(
+      map((imageUrl) => imageUrl || null),
+      catchError(() => of(null))
+    );
   }
 
   importData(file: File, language: string = 'en'): Observable<APIOperationResponse<ImportResult>> {
@@ -115,9 +148,9 @@ export class AccessoryService implements IImportableService {
     return this.http.get(`${this.config.apiUrl}${this.endpoint}/template`, { params, responseType: 'blob' });
   }
 
-  private buildFormData(
+  private buildCreateFormData(
     data: CreateUpdateAccessoryDto,
-    options?: AccessoryUpdateOptions
+    file?: File | null
   ): FormData {
     const formData = new FormData();
     (Object.keys(data) as (keyof CreateUpdateAccessoryDto)[]).forEach(key => {
@@ -127,11 +160,8 @@ export class AccessoryService implements IImportableService {
       formData.append(capKey, val.toString());
     });
 
-    if (options?.file) {
-      formData.append('files', options.file);
-    }
-    if (options?.removeImage) {
-      formData.append('removeImage', 'true');
+    if (file) {
+      formData.append('files', file);
     }
 
     return formData;

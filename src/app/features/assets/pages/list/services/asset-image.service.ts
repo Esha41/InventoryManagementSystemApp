@@ -52,21 +52,12 @@ export class AssetImageService {
           return null;
         }
 
-        // Get the appropriate service based on active tab
-        let fileBlob$: Observable<Blob>;
-        if (activeTab === 'ammunition') {
-          fileBlob$ = this.ammunitionService.getFileBlob(image.id);
-        } else if (activeTab === 'weapon') {
-          fileBlob$ = this.weaponService.getFileBlob(image.id);
-        } else if (activeTab === 'explosive') {
-          fileBlob$ = this.explosiveService.getFileBlob(image.id);
-        } else if (activeTab === 'accessory') {
-          const accessoryId = parseInt(asset.id, 10);
-          if (Number.isNaN(accessoryId)) return null;
-          fileBlob$ = this.accessoryService.getImageBlob(accessoryId);
-        } else {
+        const service = this.getServiceForTab(activeTab);
+        if (!service) {
           return null;
         }
+
+        const fileBlob$ = service.getFileBlob(image.id);
 
         return fileBlob$.pipe(
           map((blob: Blob) => {
@@ -102,6 +93,12 @@ export class AssetImageService {
     fileUploadService: FileUploadService,
     callback?: () => void
   ): Observable<{ fileId: number | null; url: string | null }> {
+    const service = this.getServiceForTab(activeTab);
+    if (!service) {
+      if (callback) callback();
+      return of({ fileId: null, url: null });
+    }
+
     let entityType: FileEntityType;
     if (activeTab === 'ammunition') {
       entityType = FileEntityType.Ammunition;
@@ -110,41 +107,11 @@ export class AssetImageService {
     } else if (activeTab === 'explosive') {
       entityType = FileEntityType.Explosive;
     } else if (activeTab === 'accessory') {
-      return this.accessoryService.getById(id).pipe(
-        switchMap(dto => {
-          const fileId = this.accessoryService.getMainImageFileId(dto.images);
-          if (!fileId) {
-            if (callback) callback();
-            return of({ fileId: null, url: null });
-          }
-          return this.accessoryService.getImageBlob(id).pipe(
-            map((blob: Blob) => {
-              if (blob.size > 0 && (blob.type.startsWith('image/') || blob.type === 'application/octet-stream' || !blob.type)) {
-                const blobUrl = URL.createObjectURL(blob);
-                this.blobUrls.add(blobUrl);
-                if (callback) callback();
-                return { fileId, url: blobUrl };
-              }
-              if (callback) callback();
-              return { fileId, url: null };
-            }),
-            catchError(() => {
-              if (callback) callback();
-              return of({ fileId, url: null });
-            })
-          );
-        }),
-        catchError(() => {
-          if (callback) callback();
-          return of({ fileId: null, url: null });
-        })
-      );
+      entityType = FileEntityType.Accessory;
     } else {
       if (callback) callback();
       return of({ fileId: null, url: null });
     }
-
-    const service = this.getServiceForTab(activeTab as Exclude<AssetType, 'accessory'>);
 
     return fileUploadService.getFilesByEntity(entityType, id).pipe(
       switchMap((files: FileUploadDto[]) => {
@@ -187,7 +154,7 @@ export class AssetImageService {
   /**
    * Get the appropriate service for the active tab
    */
-  private getServiceForTab(activeTab: Exclude<AssetType, 'accessory'>): AmmunitionService | WeaponService | ExplosiveService {
+  private getServiceForTab(activeTab: AssetType): AmmunitionService | WeaponService | ExplosiveService | AccessoryService | null {
     switch (activeTab) {
       case 'ammunition':
         return this.ammunitionService;
@@ -195,6 +162,10 @@ export class AssetImageService {
         return this.weaponService;
       case 'explosive':
         return this.explosiveService;
+      case 'accessory':
+        return this.accessoryService;
+      default:
+        return null;
     }
   }
 
