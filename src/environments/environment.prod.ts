@@ -9,7 +9,9 @@ export const environment: Environment = {
   notificationHubUrl: 'https://localhost:7148/hubs/notification',
   idleWarningAfterMinutes: 15,
   idleLogoutCountdownSeconds: 60,
-  persistAuthAcrossSessions: true,
+  // Keep auth in sessionStorage: page reloads and new tabs restore silently via the
+  // httpOnly refresh cookie, while closing the browser ends the session.
+  persistAuthAcrossSessions: false,
   enableOnboardingTour: true,
   enableSecurityAcknowledgmentOnLogin: true
 };

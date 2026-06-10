@@ -75,7 +75,7 @@ export class BackendAuthService {
   refreshToken(): Observable<LoginResponse> {
     return this.tokenRefresh.getRefreshedLoginResponse().pipe(
       tap(data => {
-        this.session.applyRefreshedTokens(data.accessToken, new Date(data.expiresAt), data.refreshToken);
+        this.session.applyRefreshedTokens(data.accessToken, new Date(data.expiresAt));
       })
     );
   }

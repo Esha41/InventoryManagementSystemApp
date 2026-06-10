@@ -10,6 +10,7 @@ const SESSION_STORAGE_KEYS = new Set([
   'current_user',
   'user_profile_data',
   'sessionExpired',
+  'skipSilentRestore',
   'loginFailedAttempts',
   'bulkAssetData',
   'role_selection_token',
@@ -78,10 +79,18 @@ export class StorageService {
    * Prefer this on logout instead of wiping `localStorage` / `sessionStorage` entirely:
    * a full clear emits cross-tab `storage` events with `key === null`, which can interrupt
    * peer-tab restore flows.
+   *
+   * Removes from BOTH storages: deployments that toggled `persistAuthAcrossSessions`
+   * may have written these keys to either one, and stale auth data must not linger.
    */
   removeSensitiveSessionBackedKeys(): void {
     for (const key of SESSION_STORAGE_KEYS) {
-      this.remove(key);
+      try {
+        sessionStorage.removeItem(key);
+        localStorage.removeItem(key);
+      } catch (_error) {
+        // Silently fail
+      }
     }
   }
 

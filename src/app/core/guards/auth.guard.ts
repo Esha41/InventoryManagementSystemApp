@@ -11,7 +11,7 @@ export const authGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
   const backendAuth = inject(BackendAuthService);
 
-  if (backendAuth.isAuthenticated()) {
+  if (backendAuth.isAuthenticated() && !backendAuth.isTokenExpired()) {
     return true;
   }
 

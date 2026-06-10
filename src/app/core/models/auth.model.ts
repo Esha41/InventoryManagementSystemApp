@@ -36,7 +36,8 @@ export interface RoleForSelection {
  */
 export interface LoginResponse {
   accessToken: string;
-  refreshToken: string;
+  /** Always empty in responses — the refresh token travels only in the httpOnly cookie. */
+  refreshToken?: string;
   expiresAt: string; // ISO date string from backend
   departmentId?: number;
   departmentName?: string;
@@ -130,7 +131,6 @@ export interface AuthState {
   isAuthenticated: boolean;
   user: AuthenticatedUser | null;
   token: string | null;
-  refreshToken: string | null;
   expiresAt: Date | null;
 }
 

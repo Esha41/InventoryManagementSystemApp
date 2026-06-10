@@ -82,10 +82,11 @@ export class AuthSessionService {
   }
 
   /**
-   * After refresh: update bearer, expiry, and rotated refresh token without rewriting `current_user` in storage.
+   * After refresh: update bearer and expiry without rewriting `current_user` in storage.
+   * The rotated refresh token lives only in the httpOnly cookie — never in storage.
    * If the access token identity does not match the session user (split cookie vs storage), sign out locally.
    */
-  applyRefreshedTokens(accessToken: string, expiresAt: Date, refreshToken?: string): void {
+  applyRefreshedTokens(accessToken: string, expiresAt: Date): void {
     const current = this.getCurrentUser();
     const payload = decodeJwtPayload<{ userId?: string; sub?: string }>(accessToken);
     const tokenUserId = String(payload?.userId ?? payload?.sub ?? '').trim();
@@ -106,12 +107,6 @@ export class AuthSessionService {
       this.storageService.set('auth_token', accessToken);
       this.storageService.set('token_expires_at', expiresAt);
     }
-    if (refreshToken) {
-      const existingRt = this.storageService.get<string>('refresh_token');
-      if (existingRt !== refreshToken) {
-        this.storageService.set('refresh_token', refreshToken);
-      }
-    }
     const user = this.getCurrentUser();
     if (user) {
       this.updateAuthState(user, accessToken, expiresAt);
@@ -123,7 +118,6 @@ export class AuthSessionService {
     this.sessionHeartbeat.pause();
     this.profileProvider?.clearProfile();
     this.storageService.remove('auth_token');
-    this.storageService.remove('refresh_token');
     this.storageService.remove('current_user');
     this.storageService.remove('token_expires_at');
     this.storageService.remove('user_profile_data');
@@ -133,7 +127,6 @@ export class AuthSessionService {
       isAuthenticated: false,
       user: null,
       token: null,
-      refreshToken: null,
       expiresAt: null
     });
   }
@@ -159,7 +152,6 @@ export class AuthSessionService {
       isAuthenticated: false,
       user: null,
       token: null,
-      refreshToken: null,
       expiresAt: null
     });
   }
@@ -206,7 +198,6 @@ export class AuthSessionService {
       isAuthenticated: !!token && !!user,
       user: user,
       token: token,
-      refreshToken: null,
       expiresAt: this.storageService.get<Date>('token_expires_at')
     };
   }
@@ -217,14 +208,18 @@ export class AuthSessionService {
 
       if (state.isAuthenticated && state.user) {
         this.currentUserSubject.next(state.user);
-        this.isAuthenticatedSubject.next(true);
-        this.authStateSubject.next(state);
 
         if (!this.isTokenExpired()) {
+          this.isAuthenticatedSubject.next(true);
+          this.authStateSubject.next(state);
           this.sessionHeartbeat.start();
           this.configService.log('User session restored', { userId: state.user.id });
         } else {
-          this.configService.log('Token expired - session kept; refresh will run on next API call');
+          this.authStateSubject.next({
+            ...state,
+            isAuthenticated: false
+          });
+          this.configService.log('Token expired - awaiting silent restore before treating session as active');
         }
       }
     } catch (error) {
@@ -238,7 +233,6 @@ export class AuthSessionService {
       isAuthenticated: true,
       user: user,
       token: token,
-      refreshToken: null,
       expiresAt: expiresAt
     };
 
@@ -257,6 +251,7 @@ export class AuthSessionService {
 
     try {
       this.profileProvider?.clearProfile();
+      // Legacy purge: older builds persisted the refresh token in localStorage.
       this.storageService.remove('refresh_token');
       this.storageService.removeSensitiveSessionBackedKeys();
 
@@ -266,7 +261,6 @@ export class AuthSessionService {
         isAuthenticated: false,
         user: null,
         token: null,
-        refreshToken: null,
         expiresAt: null
       });
     } finally {
