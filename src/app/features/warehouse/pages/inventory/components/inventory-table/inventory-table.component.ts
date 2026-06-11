@@ -19,7 +19,7 @@ export type WarehouseInventoryTableSortColumn =
   | 'quantity'
   | 'readyForIssue'
   | 'expiryDate'
-  | 'invoiceNumber';
+  | 'itemNo';
 
 @Component({
   selector: 'app-inventory-table',
@@ -42,6 +42,7 @@ export class InventoryTableComponent {
   @Input() items: InventoryDetailDto[] = [];
   @Input() isStaticItem: (detail: InventoryDetailDto) => boolean = () => false;
   @Input() getItemName: (detail: InventoryDetailDto) => string = () => '';
+  @Input() getItemNo: (detail: InventoryDetailDto) => string = () => '';
   @Input() getSupplierName: (detail: InventoryDetailDto) => string = () => '';
   @Input() getManufacturerName: (detail: InventoryDetailDto) => string = () => '';
   /** When true, show primary purpose column (ammunition tab). */
@@ -68,7 +69,6 @@ export class InventoryTableComponent {
   @Output() viewItem = new EventEmitter<InventoryDetailDto>();
   /** Navigate to full-page catalog asset details (/assets/asset-list/:id), same as workflow approval item links. */
   @Output() openItemMaster = new EventEmitter<InventoryDetailDto>();
-  @Output() filterByInvoice = new EventEmitter<string>();
   @Output() sortChange = new EventEmitter<WarehouseInventoryTableSortColumn>();
 
   @Input() sortColumn: WarehouseInventoryTableSortColumn = 'itemName';

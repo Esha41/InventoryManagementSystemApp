@@ -307,6 +307,7 @@ import { defaultPageSize } from '@constants/app.constants';
           [items]="paginatedItems"
           [isStaticItem]="isStaticItem"
           [getItemName]="getItemName"
+          [getItemNo]="getItemNo"
           [getSupplierName]="getSupplierName"
           [getManufacturerName]="getManufacturerName"
           [showPrimaryPurposeColumn]="showPrimaryPurposeColumn"
@@ -320,7 +321,6 @@ import { defaultPageSize } from '@constants/app.constants';
           (deleteItem)="deleteItem.emit($event)"
           (viewItem)="viewItem.emit($event)"
           (openItemMaster)="openItemMaster.emit($event)"
-          (filterByInvoice)="filterByInvoice.emit($event)"
           (sortChange)="inventorySortChange.emit($event)">
         </app-inventory-table>
       </div>
@@ -359,6 +359,7 @@ export class WarehouseInventoryTableComponent {
   @Input() isStaticItem: (detail: InventoryDetailDto) => boolean = () => false;
   @Input() isItemExpired: (detail: InventoryDetailDto) => boolean = () => false;
   @Input() getItemName: (detail: InventoryDetailDto) => string = () => '';
+  @Input() getItemNo: (detail: InventoryDetailDto) => string = () => '';
   @Input() getSupplierName: (detail: InventoryDetailDto) => string = () => '';
   @Input() getManufacturerName: (detail: InventoryDetailDto) => string = () => '';
   @Input() getPrimaryPurposeName: (detail: InventoryDetailDto) => string = () => '';
@@ -393,7 +394,6 @@ export class WarehouseInventoryTableComponent {
   @Output() deleteItem = new EventEmitter<InventoryDetailDto>();
   @Output() viewItem = new EventEmitter<InventoryDetailDto>();
   @Output() openItemMaster = new EventEmitter<InventoryDetailDto>();
-  @Output() filterByInvoice = new EventEmitter<string>();
   @Output() inventorySortChange = new EventEmitter<WarehouseInventoryTableSortColumn>();
 
   readonly Eye = Eye;

@@ -182,7 +182,7 @@ export class WarehouseInventoryService {
       quantity: 'ItemQuantity',
       readyForIssue: 'ReadyForIssue',
       expiryDate: 'ExpiryDate',
-      invoiceNumber: 'Inventory.InvoiceNumber'
+      itemNo: 'Item.ItemNo'
     };
     return map[column];
   }
