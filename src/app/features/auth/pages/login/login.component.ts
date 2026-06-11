@@ -72,6 +72,13 @@ export class LoginComponent implements OnInit {
     captchaId?: string;
     captchaCode?: string;
   } | null = null;
+  /**
+   * Snapshot of the sessionExpired flag taken at submit time. A failed login wipes
+   * session storage (AuthFlowService catchError → clearSession), so reading the flag
+   * when the ALREADY_LOGGED_IN error arrives always sees false and the silent
+   * take-over path never fires.
+   */
+  private sessionExpiredAtSubmit = false;
 
   constructor(
     private readonly fb: FormBuilder,
@@ -256,6 +263,8 @@ export class LoginComponent implements OnInit {
     this.loginError = '';
     this.cdr.markForCheck();
 
+    this.sessionExpiredAtSubmit = this.storageService.get<boolean>('sessionExpired') === true;
+
     const formValue = this.loginForm.value as {
       username: string;
       password: string;
@@ -340,7 +349,9 @@ export class LoginComponent implements OnInit {
   }
 
   private handleAlreadyLoggedIn(formValue: { username: string; password: string; captcha: string }): void {
-    const wasSessionExpired = this.storageService.get<boolean>('sessionExpired') === true;
+    const wasSessionExpired =
+      this.sessionExpiredAtSubmit || this.storageService.get<boolean>('sessionExpired') === true;
+    this.sessionExpiredAtSubmit = false;
     this.storageService.remove('sessionExpired');
 
     this.pendingLoginCredentials = {
