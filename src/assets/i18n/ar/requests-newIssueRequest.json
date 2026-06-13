@@ -85,6 +85,7 @@
     "orderSentSuccessfully": "تم إرسال طلبك بنجاح",
     "orderNumber": "رقم طلبك هو",
     "trackOrder": "متابعة الطلب",
+    "goToDashboard": "الانتقال إلى لوحة التحكم",
     "createNewIssueRequest": "إنشاء طلب صرف جديد",
     "productId": "رقم المادة",
     "ncn": "NCN",

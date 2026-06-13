@@ -70,7 +70,7 @@
     "batchNo": "Batch No",
     "expiryDate": "Expiry Date",
     "originalQty": "Original Qty",
-    "usedQty": "Used Qty",
+    "usedQty": "Supplied Qty",
     "reservedQty": "Reserved Qty",
     "remainingQty": "Remaining Qty",
     "totalLots": "Total LOT",

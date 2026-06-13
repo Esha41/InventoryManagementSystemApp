@@ -121,7 +121,7 @@
     "detailTabAllLots": "كل الـ LOT",
     "inventoryEntryDetails": "تفاصيل المخزون",
     "originalQty": "الكمية الأصلية",
-    "usedQty": "الكمية المستخدمة",
+    "usedQty": "الكمية المصروفة",
     "remainingQty": "الكمية المتبقية",
     "reservedQty": "الكمية المحجوزة",
     "itemNotFound": "لم يتم العثور على عنصر المخزون",

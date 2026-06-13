@@ -13,14 +13,10 @@
           <lucide-angular [img]="backIcon" class="w-5 h-5"></lucide-angular>
         </button>
         <h1 class="text-xl sm:text-2xl md:text-3xl font-bold text-[var(--color-text)] truncate">
-          <span *ngIf="assetType === 'ammunition'">{{ 'assetList.tabs.ammunition' | translate }} {{ 'common.details' |
-            translate }}</span>
-          <span *ngIf="assetType === 'weapon'">{{ 'assetList.tabs.weapon' | translate }} {{ 'common.details' |
-            translate }}</span>
-          <span *ngIf="assetType === 'explosive'">{{ 'assetList.tabs.explosive' | translate }} {{ 'common.details' |
-            translate }}</span>
-          <!-- <span *ngIf="assetType === 'accessory'">{{ 'assetList.tabs.accessory' | translate }} {{ 'common.details' |
-            translate }}</span> -->
+          <span *ngIf="assetType === 'ammunition'">{{ 'assetList.ammunitionDetails' | translate }}</span>
+          <span *ngIf="assetType === 'weapon'">{{  'assetList.weaponsDetails' | translate }}</span>
+          <span *ngIf="assetType === 'explosive'">{{ 'assetList.explosivesDetails' | translate }}</span>
+          <!-- <span *ngIf="assetType === 'accessory'">{{ 'assetList.accessoryDetails' | translate }}</span> -->
         </h1>
       </div>
     </div>

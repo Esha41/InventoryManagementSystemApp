@@ -65,7 +65,8 @@
     "success": {
       "orderSentSuccessfully": "Your return request has been sent successfully",
       "requestNumber": "Your return number is",
-      "trackRequest": "Track request"
+      "trackRequest": "Track request",
+      "goToDashboard": "Go to Dashboard"
     },
     "confirmDialog": {
       "title": "Confirm Request",

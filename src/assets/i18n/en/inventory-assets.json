@@ -253,6 +253,10 @@
     "addAccessory": "Add Weapon Accessory",
     "searchPlaceholder": "Search....",
     "searchPlaceholderWeapons": "Search....",
+    "ammunitionDetails": "Ammunition Details",
+    "weaponsDetails": "Weapons Details",
+    "explosivesDetails": "Explosives Details",
+    "accessoryDetails":  "Weapon Accessories Details",
     "tabs": {
       "ammunition": "Ammunition",
       "weapon": "Weapons",

@@ -65,7 +65,8 @@
     "success": {
       "orderSentSuccessfully": "تم تنفيذ طلب الإرجاع بنجاح",
       "requestNumber": "رقم طلب الإرجاع هو",
-      "trackRequest": "متابعة الطلب"
+      "trackRequest": "متابعة الطلب",
+      "goToDashboard": "الانتقال إلى لوحة التحكم"
     },
     "confirmDialog": {
       "title": "تأكيد الطلب",
