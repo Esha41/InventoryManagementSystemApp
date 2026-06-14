@@ -10,12 +10,9 @@
       <div class="bg-[var(--color-background)] px-6 py-4 border-b border-[var(--color-border)]">
         <div class="flex items-center justify-between">
           <h3 class="text-xl font-semibold text-[var(--color-text)]">
-            <span *ngIf="activeTab === 'ammunition'">{{ 'assetList.tabs.ammunition' | translate }} {{ 'common.details' |
-              translate }}</span>
-            <span *ngIf="activeTab === 'weapon'">{{ 'assetList.tabs.weapon' | translate }} {{ 'common.details' |
-              translate }}</span>
-            <span *ngIf="activeTab === 'explosive'">{{ 'assetList.tabs.explosive' | translate }} {{ 'common.details' |
-              translate }}</span>
+            <span *ngIf="activeTab === 'ammunition'">{{ 'assetList.ammunitionDetails' | translate }}</span>
+            <span *ngIf="activeTab === 'weapon'">{{  'assetList.weaponsDetails' | translate }}</span>
+            <span *ngIf="activeTab === 'explosive'">{{ 'assetList.explosivesDetails' | translate }}</span>
           </h3>
           <button (click)="close()" class="p-1 rounded-lg hover:bg-[var(--color-background-hover)] transition-colors">
             <lucide-angular [img]="X" class="h-5 w-5 text-[var(--color-text-muted)]"></lucide-angular>

@@ -70,7 +70,7 @@
     "batchNo": "Batch No",
     "expiryDate": "تاريخ الانتهاء",
     "originalQty": "الكمية الأصلية",
-    "usedQty": "الكمية المستخدمة",
+    "usedQty": "الكمية المصروفة",
     "reservedQty": "الكمية المحجوزة",
     "remainingQty": "الكمية المتبقية",
     "totalLots": "إجمالي LOT",

@@ -99,7 +99,7 @@
       <app-order-success *ngIf="facade.currentStep === 3"
         [titleTranslateKey]="'returnRequest.success.orderSentSuccessfully'"
         [orderNumberLabelKey]="'returnRequest.success.requestNumber'"
-        [trackButtonTranslateKey]="'returnRequest.success.trackRequest'"
+        [trackButtonTranslateKey]="'returnRequest.success.goToDashboard'"
         [orderNumber]="facade.successState.returnNumber"
         [createdOrderId]="facade.successState.createdReturnId"
         (trackOrder)="facade.onTrackReturn()">

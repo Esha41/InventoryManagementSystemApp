@@ -255,6 +255,10 @@
     "addAccessory": "إضافة ملحق سلاح",
     "searchPlaceholder": "البحث....",
     "searchPlaceholderWeapons": "البحث....",
+    "ammunitionDetails": "تفاصيل الذخيرة",
+    "weaponsDetails": "تفاصيل الأسلحة",
+    "explosivesDetails": "تفاصيل المتفجرات",
+    "accessoryDetails": "تفاصيل ملحقات الأسلحة",
     "tabs": {
       "ammunition": "الذخيرة",
       "weapon": "الأسلحة",

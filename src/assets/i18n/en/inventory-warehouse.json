@@ -58,7 +58,7 @@
     "batchNo": "Policy No.",
     "batchNoLabelAmmoExplosive": "Batch No",
     "originalQty": "Original Qty",
-    "usedQty": "Used Qty",
+    "usedQty": "Supplied Qty",
     "remainingQty": "Remaining Qty",
     "currentQty": "Current Qty",
     "warrantyExpiryDate": "Warranty Expiry Date",
