@@ -1,13 +1,15 @@
 import { Component, Input, Output, EventEmitter, OnDestroy, ChangeDetectorRef, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule, Clock, User, ArrowRight, FileText, Activity, RotateCcw } from 'lucide-angular';
+import { LucideAngularModule, Clock, User, FileText, Activity, RotateCcw } from 'lucide-angular';
 import { ModalComponent } from '@components/modal/modal.component';
 import { OrderItemTrackingService, OrderItemHistoryDto, OrderItemActionType } from '../../../../../services/order-item-tracking.service';
 import { Subject } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
-import {  getCurrentLang } from '@utils/localization.utils';
+import { getCurrentLang } from '@utils/localization.utils';
 import { AppDatePipe } from '@shared/pipes/app-date.pipe';
+import { TranslationService } from '@services/translation.service';
+import { getHistoryFlowArrowIcon } from '@assets/utils/asset-history.utils';
 
 @Component({
     selector: 'app-order-item-tracking-modal',
@@ -30,7 +32,6 @@ import { AppDatePipe } from '@shared/pipes/app-date.pipe';
 export class OrderItemTrackingModalComponent implements OnDestroy, OnChanges {
     readonly Clock = Clock;
     readonly User = User;
-    readonly ArrowRight = ArrowRight;
     readonly FileText = FileText;
     readonly Activity = Activity;
     readonly RotateCcw = RotateCcw;
@@ -52,8 +53,17 @@ export class OrderItemTrackingModalComponent implements OnDestroy, OnChanges {
     constructor(
         private trackingService: OrderItemTrackingService,
         private cdr: ChangeDetectorRef,
-        public translate: TranslateService
+        public translate: TranslateService,
+        private translationService: TranslationService
     ) { }
+
+    get isRTL(): boolean {
+        return this.translationService.isRTL();
+    }
+
+    get flowArrowIcon() {
+        return getHistoryFlowArrowIcon(this.isRTL);
+    }
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['isOpen'] && this.isOpen) {

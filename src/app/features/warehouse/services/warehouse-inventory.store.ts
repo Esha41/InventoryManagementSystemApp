@@ -70,6 +70,8 @@ export class WarehouseInventoryStore {
   private readonly _manufacturers = signal<LookupItem[]>([]);
   private readonly _primaryPurposes = signal<LookupItem[]>([]);
   private readonly _weaponItems = signal<LookupItem[]>([]);
+  private readonly _calibersAmmunition = signal<LookupItem[]>([]);
+  private readonly _calibersWeapon = signal<LookupItem[]>([]);
   private readonly _invoiceFilter = signal<string | null>(null);
 
   private readonly _showImportModal = signal(false);
@@ -132,6 +134,8 @@ export class WarehouseInventoryStore {
   readonly manufacturers: Signal<LookupItem[]> = this._manufacturers.asReadonly();
   readonly primaryPurposes: Signal<LookupItem[]> = this._primaryPurposes.asReadonly();
   readonly weaponItems: Signal<LookupItem[]> = this._weaponItems.asReadonly();
+  readonly calibersAmmunition: Signal<LookupItem[]> = this._calibersAmmunition.asReadonly();
+  readonly calibersWeapon: Signal<LookupItem[]> = this._calibersWeapon.asReadonly();
   readonly invoiceFilter: Signal<string | null> = this._invoiceFilter.asReadonly();
   readonly showImportModal: Signal<boolean> = this._showImportModal.asReadonly();
   readonly showPreviewModal: Signal<boolean> = this._showPreviewModal.asReadonly();
@@ -161,6 +165,8 @@ export class WarehouseInventoryStore {
   readonly supplierFilterControl = new FormControl<number | null>(null);
   readonly manufacturerFilterControl = new FormControl<number | null>(null);
   readonly primaryPurposeFilterControl = new FormControl<number | null>(null);
+  readonly caliberFilterControl = new FormControl<number | null>(null);
+  readonly batchCaliberFilterControl = new FormControl<number | null>(null);
   readonly batchItemFilterControl = new FormControl<number[]>([], { nonNullable: true });
   readonly batchSupplierFilterControl = new FormControl<number[]>([], { nonNullable: true });
   readonly batchManufacturerFilterControl = new FormControl<number[]>([], { nonNullable: true });
@@ -204,11 +210,15 @@ export class WarehouseInventoryStore {
     manufacturers?: LookupItem[];
     primaryPurposes?: LookupItem[];
     weaponItems?: LookupItem[];
+    calibersAmmunition?: LookupItem[];
+    calibersWeapon?: LookupItem[];
   }): void {
     if (input.suppliers !== undefined) this._suppliers.set(input.suppliers);
     if (input.manufacturers !== undefined) this._manufacturers.set(input.manufacturers);
     if (input.primaryPurposes !== undefined) this._primaryPurposes.set(input.primaryPurposes);
     if (input.weaponItems !== undefined) this._weaponItems.set(input.weaponItems);
+    if (input.calibersAmmunition !== undefined) this._calibersAmmunition.set(input.calibersAmmunition);
+    if (input.calibersWeapon !== undefined) this._calibersWeapon.set(input.calibersWeapon);
   }
 
   // ---------- Loading / error ----------
@@ -372,6 +382,8 @@ export class WarehouseInventoryStore {
     this.supplierFilterControl.setValue(null, { emitEvent: false });
     this.manufacturerFilterControl.setValue(null, { emitEvent: false });
     this.primaryPurposeFilterControl.setValue(null, { emitEvent: false });
+    this.caliberFilterControl.setValue(null, { emitEvent: false });
+    this.batchCaliberFilterControl.setValue(null, { emitEvent: false });
     this.batchItemFilterControl.setValue([], { emitEvent: false });
     this.batchSupplierFilterControl.setValue([], { emitEvent: false });
     this.batchManufacturerFilterControl.setValue([], { emitEvent: false });

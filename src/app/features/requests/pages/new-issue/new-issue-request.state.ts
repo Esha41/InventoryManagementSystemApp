@@ -70,6 +70,19 @@ export interface FilterState {
   selectedExplosiveReferenceNo?: string;
 }
 
+/** Text fields in the “more filters” panel; applied in one batch via Apply. */
+export interface AdditionalTextFiltersPatch {
+  selectedNSN?: string;
+  selectedAmmunitionArmNumber?: string;
+  selectedAmmunitionPartNo?: string;
+  selectedPartNo?: string;
+  selectedWeaponModel?: string;
+  selectedWeaponReferenceNo?: string;
+  selectedArmNumber?: string;
+  selectedExplosivePartNo?: string;
+  selectedExplosiveReferenceNo?: string;
+}
+
 export interface ExtendedFilterState extends FilterState {}
 
 export interface FilterOptions {

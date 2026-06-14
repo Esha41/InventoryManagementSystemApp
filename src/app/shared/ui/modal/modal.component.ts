@@ -33,8 +33,8 @@ import { LucideAngularModule, X } from 'lucide-angular';
           [class.max-w-6xl]="size === 'xl'"
         >
           <!-- Header -->
-          <div class="flex items-center justify-between p-6 border-b border-[var(--color-border)]">
-            <h2 class="text-xl font-semibold text-[var(--color-text)]">{{ title }}</h2>
+          <div class="flex items-center justify-between gap-3 p-6 border-b border-[var(--color-border)]">
+            <h2 class="text-xl font-semibold text-[var(--color-text)] text-start flex-1 min-w-0">{{ title }}</h2>
             <button
               *ngIf="showCloseButton"
               type="button"

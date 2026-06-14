@@ -2,10 +2,8 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { Observable, BehaviorSubject, interval, of, Subscription, forkJoin } from 'rxjs';
 import { map, shareReplay, switchMap, tap, catchError } from 'rxjs/operators';
 import { ApiService } from '@services/api.service';
-import { InventoryService } from '@inventory/services/inventory.service';
 import { DASHBOARD_CONSTANTS } from '@constants/app.constants';
 import { MonitoringService } from '@services/monitoring.service';
-import { ItemInventorySummaryDto } from '@models/inventory.model';
 import type {
   CategoryDistribution,
   InventoryDistribution,
@@ -69,7 +67,6 @@ export class AdminAnalyticsService implements OnDestroy {
 
   constructor(
     private apiService: ApiService,
-    private inventoryService: InventoryService,
     private monitoringService: MonitoringService
   ) { }
 
@@ -165,41 +162,36 @@ export class AdminAnalyticsService implements OnDestroy {
 
   private fetchInventoryMetrics(): Observable<InventoryMetrics> {
     return forkJoin({
-      items: this.inventoryService.getAllItemsSummary(),
-      lowStock: this.monitoringService.getLowStockItemsCount().pipe(catchError(() => of(0))),
-      expiring: this.monitoringService.getExpiringLotsCount().pipe(catchError(() => of(0)))
+      headline: this.monitoringService.getInventoryHeadlineMetrics().pipe(catchError(() => of(null))),
+      pipeline: this.monitoringService.getInventoryDashboardSummary().pipe(catchError(() => of(null)))
     }).pipe(
-      map(({ items, lowStock, expiring }: { items: ItemInventorySummaryDto[]; lowStock: number; expiring: number }) => {
-        const activeItems = items.filter(x => (x.remainingQuantity ?? 0) > 0);
-        const totalItems = activeItems.length;
+      map(({ headline, pipeline }) => {
+        const categoryEntries: { name: string; value: number }[] = [
+          { name: 'Ammunition', value: headline?.ammunitionItemCount ?? 0 },
+          { name: 'Weapon', value: headline?.weaponItemGroupsCount ?? 0 },
+          { name: 'Explosive', value: headline?.explosiveItemCount ?? 0 },
+          { name: 'Accessory', value: headline?.accessoryItemCount ?? 0 }
+        ];
 
-        const itemTypeNames: Record<number, string> = {
-          1: 'Ammunition',
-          2: 'Weapon',
-          3: 'Explosive',
-          4: 'Accessory'
-        };
+        const activeEntries = categoryEntries.filter(entry => entry.value > 0);
+        const totalItems = headline?.totalDistinctItems
+          ?? activeEntries.reduce((sum, entry) => sum + entry.value, 0);
 
-        const categoriesMap = new Map<string, number>();
-        activeItems.forEach(item => {
-          const typeName = itemTypeNames[item.itemType] ?? 'Other';
-          categoriesMap.set(typeName, (categoriesMap.get(typeName) ?? 0) + 1);
-        });
-
-        const categories: CategoryDistribution[] = [];
-        categoriesMap.forEach((value, name) => {
-          categories.push({
-            name,
-            value,
-            percentage: totalItems > 0 ? (value / totalItems) * 100 : 0
-          });
-        });
-        categories.sort((a, b) => b.value - a.value);
+        const categories: CategoryDistribution[] = activeEntries
+          .map(entry => ({
+            name: entry.name,
+            value: entry.value,
+            percentage: totalItems > 0 ? (entry.value / totalItems) * 100 : 0
+          }))
+          .sort((a, b) => b.value - a.value);
 
         return {
           totalItems,
-          lowStockItems: lowStock,
-          expiringItems: expiring,
+          lowStockItems: headline?.lowStockCount ?? 0,
+          criticalStockItems: headline?.criticalStockCount ?? 0,
+          expiringItems: headline?.expiringSoonCount ?? 0,
+          pendingIssuanceRequests: pipeline?.pipeline?.draftSupplyCount ?? 0,
+          ordersNotFullyFulfilled: pipeline?.pipeline?.ordersAwaitingFulfillmentCount ?? 0,
           inventoryDistribution: { categories },
           lastUpdated: new Date()
         };

@@ -79,14 +79,14 @@ export class WarehouseInventoryExportService {
 
     const columns: ExcelColumn[] = [
       {
-        header: this.translateService.instant('warehouseInventory.itemName'),
-        key: 'itemNameExport',
-        width: 30
-      },
-      {
         header: this.translateService.instant('warehouseInventory.itemNo'),
         key: 'itemNoExport',
         width: 15
+      },
+      {
+        header: this.translateService.instant('warehouseInventory.itemName'),
+        key: 'itemNameExport',
+        width: 30
       },
       {
         header: this.translateService.instant('common.supplier'),

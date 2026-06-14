@@ -915,22 +915,6 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     this.router.navigate(['/inventory-dashboard/critical-stock']);
   }
 
-  onDraftSuppliesClick(): void {
-    const ids = this.selectedDepotIds.length > 0 ? this.selectedDepotIds : undefined;
-    this.router.navigate(
-      ['/inventory-dashboard/draft-supplies'],
-      ids?.length ? { queryParams: { depotIds: ids } } : {}
-    );
-  }
-
-  onOrdersAwaitingClick(): void {
-    const ids = this.selectedDepotIds.length > 0 ? this.selectedDepotIds : undefined;
-    this.router.navigate(
-      ['/inventory-dashboard/orders-awaiting-fulfillment'],
-      ids?.length ? { queryParams: { depotIds: ids } } : {}
-    );
-  }
-
   get selectedDepotLabel(): string {
     return this.selectedDepotLabels;
   }

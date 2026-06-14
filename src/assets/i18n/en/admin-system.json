@@ -114,7 +114,10 @@
       "totalItems": "Stocked Materials",
       "totalQuantity": "Total Quantity",
       "lowStock": "Low Stock",
-      "expiringSoon": "Expiring Soon (30 days)",
+      "criticalStock": "Critical Stock",
+      "expiringSoon": "Expiring LOT Soon (30 days)",
+      "pendingIssuance": "Pending issuance requests",
+      "ordersNotFullyFulfilled": "Orders completed but not fully fulfilled",
       "overstock": "Overstock"
     },
     "requests": {

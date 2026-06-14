@@ -176,12 +176,12 @@
                     <div class="p-4" (click)="toggleRow(item.itemId, item.itemType)">
                         <div class="flex justify-between items-start gap-4">
                             <div>
+                                <span
+                                    class="inline-flex px-2 py-0.5 rounded bg-gray-100 text-gray-700 border border-gray-200 font-mono text-xs mb-1">
+                                    {{ item.itemNo }}
+                                </span>
                                 <h3 class="font-bold text-[var(--color-text)] text-base mb-1">{{ itemDisplayName(item) }}</h3>
                                 <div class="flex flex-wrap gap-2 text-xs">
-                                    <span
-                                        class="inline-flex px-2 py-0.5 rounded bg-gray-100 text-gray-700 border border-gray-200 font-mono">
-                                        {{ item.itemNo }}
-                                    </span>
                                     <span class="text-[var(--color-text)]">{{ getItemTypeName(item.itemType) }}</span>
                                 </div>
                             </div>
@@ -436,12 +436,12 @@
                                 class="inventory-table__cell-fit px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
                             </th>
                             <th
-                                class="inventory-table__cell-text inventory-table__cell-text--wide px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
-                                {{ 'inventorySummary.itemName' | translate }}
-                            </th>
-                            <th
                                 class="inventory-table__cell-text px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
                                 {{ 'inventorySummary.itemNo' | translate }}
+                            </th>
+                            <th
+                                class="inventory-table__cell-text inventory-table__cell-text--wide px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
+                                {{ 'inventorySummary.itemName' | translate }}
                             </th>
                             <th
                                 class="inventory-table__cell-text px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider">
@@ -504,12 +504,12 @@
                                         </lucide-icon>
                                     </button>
                                 </td>
+                                <td class="inventory-table__cell-text px-6 py-4 text-sm text-[var(--color-text)] align-top">
+                                    {{ item.itemNo }}
+                                </td>
                                 <td
                                     class="inventory-table__cell-text inventory-table__cell-text--wide px-6 py-4 text-sm font-medium text-[var(--color-text)] align-top min-w-0">
                                     <span [appTableClampTooltip]="itemDisplayName(item)">{{ itemDisplayName(item) }}</span>
-                                </td>
-                                <td class="inventory-table__cell-text px-6 py-4 text-sm text-[var(--color-text)] align-top">
-                                    {{ item.itemNo }}
                                 </td>
                                 <td class="inventory-table__cell-text px-6 py-4 text-sm text-[var(--color-text)] align-top">
                                     {{ getItemTypeName(item.itemType) }}

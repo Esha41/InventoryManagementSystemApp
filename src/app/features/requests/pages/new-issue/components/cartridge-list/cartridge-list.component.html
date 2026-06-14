@@ -255,20 +255,27 @@
 
           <div>
             <label class="mb-1 block text-xs font-medium text-[var(--color-text-muted)]" for="cartridge-list-fld-6-6">{{ 'newIssueRequest.nsn' | translate }}</label>
-            <input id="cartridge-list-fld-6-6" type="text" [ngModel]="selectedNSN" (ngModelChange)="onNSNChange($event)"
+            <input id="cartridge-list-fld-6-6" type="text" [ngModel]="draftNsn" (ngModelChange)="onNsnDraftChange($event)"
+              (keydown)="onAdditionalFilterKeydown($event)"
               placeholder="{{ 'newIssueRequest.enterNSN' | translate }}" [class]="moreFilterInputClass">
           </div>
 
           <div>
             <label class="mb-1 block text-xs font-medium text-[var(--color-text-muted)]" for="cartridge-list-fld-ammo-arm">{{ 'addAsset.armNumber' | translate }}</label>
-            <input id="cartridge-list-fld-ammo-arm" type="text" [ngModel]="selectedAmmunitionArmNumber" (ngModelChange)="onAmmunitionArmNumberChange($event)"
+            <input id="cartridge-list-fld-ammo-arm" type="text" [ngModel]="draftAmmunitionArmNumber" (ngModelChange)="onAmmunitionArmNumberDraftChange($event)"
+              (keydown)="onAdditionalFilterKeydown($event)"
               placeholder="{{ 'addAsset.enterArmNumber' | translate }}" [class]="moreFilterInputClass">
           </div>
 
           <div>
             <label class="mb-1 block text-xs font-medium text-[var(--color-text-muted)]" for="cartridge-list-fld-ammo-partno">{{ 'assetList.table.partNo' | translate }}</label>
-            <input id="cartridge-list-fld-ammo-partno" type="text" [ngModel]="selectedAmmunitionPartNo" (ngModelChange)="onAmmunitionPartNoChange($event)"
+            <input id="cartridge-list-fld-ammo-partno" type="text" [ngModel]="draftAmmunitionPartNo" (ngModelChange)="onAmmunitionPartNoDraftChange($event)"
+              (keydown)="onAdditionalFilterKeydown($event)"
               placeholder="{{ 'addAsset.enterPartNumber' | translate }}" [class]="moreFilterInputClass">
+          </div>
+
+          <div class="filter-full-width flex justify-end pt-1">
+            <ng-container *ngTemplateOutlet="additionalFiltersApplyBtn"></ng-container>
           </div>
         </div>
       </ng-container>
@@ -357,26 +364,34 @@
         <div class="additional-filters-grid filter-full-width mt-2 border-t border-[var(--color-border)] pt-4">
           <div>
             <label class="mb-1 block text-xs font-medium text-[var(--color-text-muted)]" for="cartridge-list-fld-weapon-partno">{{ 'assetList.table.partNo' | translate }}</label>
-            <input id="cartridge-list-fld-weapon-partno" type="text" [ngModel]="selectedPartNo" (ngModelChange)="onPartNoChange($event)"
+            <input id="cartridge-list-fld-weapon-partno" type="text" [ngModel]="draftPartNo" (ngModelChange)="onPartNoDraftChange($event)"
+              (keydown)="onAdditionalFilterKeydown($event)"
               placeholder="{{ 'addAsset.enterPartNumber' | translate }}" [class]="moreFilterInputClass">
           </div>
 
           <div>
             <label class="mb-1 block text-xs font-medium text-[var(--color-text-muted)]" for="cartridge-list-fld-9-9">{{ 'newIssueRequest.nsn' | translate }}</label>
-            <input id="cartridge-list-fld-9-9" type="text" [ngModel]="selectedNSN" (ngModelChange)="onNSNChange($event)"
+            <input id="cartridge-list-fld-9-9" type="text" [ngModel]="draftNsn" (ngModelChange)="onNsnDraftChange($event)"
+              (keydown)="onAdditionalFilterKeydown($event)"
               placeholder="{{ 'newIssueRequest.enterNSN' | translate }}" [class]="moreFilterInputClass">
           </div>
 
           <div>
             <label class="mb-1 block text-xs font-medium text-[var(--color-text-muted)]" for="cartridge-list-fld-weapon-model">{{ 'addAsset.model' | translate }}</label>
-            <input id="cartridge-list-fld-weapon-model" type="text" [ngModel]="selectedWeaponModel" (ngModelChange)="onWeaponModelChange($event)"
+            <input id="cartridge-list-fld-weapon-model" type="text" [ngModel]="draftWeaponModel" (ngModelChange)="onWeaponModelDraftChange($event)"
+              (keydown)="onAdditionalFilterKeydown($event)"
               placeholder="{{ 'addAsset.enterModel' | translate }}" [class]="moreFilterInputClass">
           </div>
 
           <div>
             <label class="mb-1 block text-xs font-medium text-[var(--color-text-muted)]" for="cartridge-list-fld-weapon-reference">{{ 'addAsset.referenceNo' | translate }}</label>
-            <input id="cartridge-list-fld-weapon-reference" type="text" [ngModel]="selectedWeaponReferenceNo" (ngModelChange)="onWeaponReferenceNoChange($event)"
+            <input id="cartridge-list-fld-weapon-reference" type="text" [ngModel]="draftWeaponReferenceNo" (ngModelChange)="onWeaponReferenceNoDraftChange($event)"
+              (keydown)="onAdditionalFilterKeydown($event)"
               placeholder="{{ 'addAsset.enterReferenceNo' | translate }}" [class]="moreFilterInputClass">
+          </div>
+
+          <div class="filter-full-width flex justify-end pt-1">
+            <ng-container *ngTemplateOutlet="additionalFiltersApplyBtn"></ng-container>
           </div>
         </div>
       </ng-container>
@@ -467,26 +482,34 @@
         <div class="additional-filters-grid filter-full-width mt-2 border-t border-[var(--color-border)] pt-4">
           <div>
             <label class="mb-1 block text-xs font-medium text-[var(--color-text-muted)]" for="cartridge-list-fld-explosive-arm">{{ 'addAsset.armNumber' | translate }}</label>
-            <input id="cartridge-list-fld-explosive-arm" type="text" [ngModel]="selectedArmNumber" (ngModelChange)="onArmNumberChange($event)"
+            <input id="cartridge-list-fld-explosive-arm" type="text" [ngModel]="draftArmNumber" (ngModelChange)="onArmNumberDraftChange($event)"
+              (keydown)="onAdditionalFilterKeydown($event)"
               placeholder="{{ 'addAsset.enterArmNumber' | translate }}" [class]="moreFilterInputClass">
           </div>
 
           <div>
             <label class="mb-1 block text-xs font-medium text-[var(--color-text-muted)]" for="cartridge-list-fld-explosive-nsn">{{ 'newIssueRequest.nsn' | translate }}</label>
-            <input id="cartridge-list-fld-explosive-nsn" type="text" [ngModel]="selectedNSN" (ngModelChange)="onNSNChange($event)"
+            <input id="cartridge-list-fld-explosive-nsn" type="text" [ngModel]="draftNsn" (ngModelChange)="onNsnDraftChange($event)"
+              (keydown)="onAdditionalFilterKeydown($event)"
               placeholder="{{ 'newIssueRequest.enterNSN' | translate }}" [class]="moreFilterInputClass">
           </div>
 
           <div>
             <label class="mb-1 block text-xs font-medium text-[var(--color-text-muted)]" for="cartridge-list-fld-explosive-partno">{{ 'assetList.table.partNo' | translate }}</label>
-            <input id="cartridge-list-fld-explosive-partno" type="text" [ngModel]="selectedExplosivePartNo" (ngModelChange)="onExplosivePartNoChange($event)"
+            <input id="cartridge-list-fld-explosive-partno" type="text" [ngModel]="draftExplosivePartNo" (ngModelChange)="onExplosivePartNoDraftChange($event)"
+              (keydown)="onAdditionalFilterKeydown($event)"
               placeholder="{{ 'addAsset.enterPartNumber' | translate }}" [class]="moreFilterInputClass">
           </div>
 
           <div>
             <label class="mb-1 block text-xs font-medium text-[var(--color-text-muted)]" for="cartridge-list-fld-explosive-reference">{{ 'addAsset.referenceNo' | translate }}</label>
-            <input id="cartridge-list-fld-explosive-reference" type="text" [ngModel]="selectedExplosiveReferenceNo" (ngModelChange)="onExplosiveReferenceNoChange($event)"
+            <input id="cartridge-list-fld-explosive-reference" type="text" [ngModel]="draftExplosiveReferenceNo" (ngModelChange)="onExplosiveReferenceNoDraftChange($event)"
+              (keydown)="onAdditionalFilterKeydown($event)"
               placeholder="{{ 'addAsset.enterReferenceNo' | translate }}" [class]="moreFilterInputClass">
+          </div>
+
+          <div class="filter-full-width flex justify-end pt-1">
+            <ng-container *ngTemplateOutlet="additionalFiltersApplyBtn"></ng-container>
           </div>
 
         </div>
@@ -496,6 +519,13 @@
     </div>
   </div>
 </div>
+
+<ng-template #additionalFiltersApplyBtn>
+  <button type="button" class="additional-filters-apply-btn" (click)="applyAdditionalTextFilters()"
+    [disabled]="catalogPageLoading">
+    {{ 'assetList.filters.applyColumnFilters' | translate }}
+  </button>
+</ng-template>
 
 <ng-template #moreFiltersToggle>
   <div class="filter-full-width w-full flex flex-wrap items-end gap-2 pt-1">

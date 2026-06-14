@@ -48,9 +48,9 @@
       "explosiveType": "نوع المتفجر",
       "unNumber": "رقم الأمم المتحدة",
       "unNumberPlaceholder": "أدخل رقم الأمم المتحدة",
-      "small": "صغير",
-      "medium": "متوسط",
-      "large": "كبير",
+      "small": "عيار خفيف",
+      "medium": "عيار متوسط",
+      "large": "عيار ثقيل",
       "notLinked": "غير مرتبط"
     },
     "errors": {

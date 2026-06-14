@@ -56,6 +56,43 @@
   -webkit-overflow-scrolling: touch;
 }
 
+.additional-filters-apply-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1.25;
+  font-weight: 600;
+  border: none;
+  border-radius: 0;
+  background: var(--color-brand);
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.additional-filters-apply-btn:hover:not(:disabled) {
+  background: var(--color-brand-dark);
+}
+
+.additional-filters-apply-btn:active:not(:disabled) {
+  background: var(--color-brand-dark);
+}
+
+.additional-filters-apply-btn:focus {
+  outline: none;
+}
+
+.additional-filters-apply-btn:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-brand);
+}
+
+.additional-filters-apply-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .issue-catalog-filter-form {
   display: grid;
   gap: 1rem;
