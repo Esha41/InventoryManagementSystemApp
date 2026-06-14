@@ -13,6 +13,7 @@ import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslationService } from '@services/translation.service';
 import { getPriorityKey } from '@utils/priority.utils';
+import { resolveWorkflowApproverDisplayName } from '@utils/request-mapper.utils';
 
 /**
  * Get priority translation key
@@ -124,27 +125,7 @@ export function getApprovalStatusTranslationKey(status: string): string {
  * Get localized approver name based on current language
  */
 export function getApproverName(approval: WorkflowApprovalStep, translationService: TranslationService): string {
-  const currentLang = translationService.getCurrentLanguage();
-
-  // For pending steps, use role name (not user name)
-  if (approval.isPending) {
-    if (currentLang === 'ar' && approval.applicationRoleNameAr) {
-      return approval.applicationRoleNameAr;
-    } else if (approval.applicationRoleName) {
-      return approval.applicationRoleName;
-    }
-  }
-
-  // For completed steps, use user name
-  if (currentLang === 'ar' && approval.approverNameAr) {
-    return approval.approverNameAr;
-  } else if (approval.approverNameEn) {
-    return approval.approverNameEn;
-  } else if (approval.approverName) {
-    return approval.approverName;
-  }
-
-  return '';
+  return resolveWorkflowApproverDisplayName(approval, translationService.getCurrentLanguage());
 }
 
 /**
