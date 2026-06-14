@@ -11,7 +11,8 @@ import {
   ChevronDown,
   ChevronUp,
   CheckCircle,
-  AlertTriangle
+  AlertTriangle,
+  AlertCircle
 } from 'lucide-angular';
 import { catchError, finalize } from 'rxjs/operators';
 import { EMPTY } from 'rxjs';
@@ -45,6 +46,10 @@ import { ErrorHandler } from '@utils/error-handler.utils';
 import { trackByKey } from '@utils/trackby.utils';
 import { filterPartiallyFulfilledOrderItems } from './utils/supply-request-partial-fulfillment.util';
 import { applyTempLotSelectionsToOrderItem } from './utils/supply-request-apply-lot-selections.util';
+import {
+  getItemStockAlertLevel,
+  getProjectedRemainingQuantity
+} from './utils/supply-request-stock-status.util';
 
 @Component({
   selector: 'app-supply-request-detail',
@@ -77,6 +82,7 @@ export class SupplyRequestDetailComponent implements OnInit {
   readonly ChevronUp = ChevronUp;
   readonly CheckCircle = CheckCircle;
   readonly AlertTriangle = AlertTriangle;
+  readonly AlertCircle = AlertCircle;
   readonly Math = Math;
   readonly trackByRequestItemId = trackByKey('requestItemId');
 
@@ -564,6 +570,14 @@ export class SupplyRequestDetailComponent implements OnInit {
 
   formatNumber(num: number): string {
     return formatNumberUtil(num);
+  }
+
+  getItemStockAlertLevel(item: OrderItem): 'critical' | 'low' | null {
+    return getItemStockAlertLevel(item);
+  }
+
+  getProjectedRemainingQuantity(item: OrderItem): number | null {
+    return getProjectedRemainingQuantity(item);
   }
 
   getItemProductId(item: OrderItem): string {

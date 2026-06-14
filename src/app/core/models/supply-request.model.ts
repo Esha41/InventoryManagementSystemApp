@@ -31,6 +31,12 @@ export interface OrderItem {
   availableLots: LotItem[];
   totalSelectedForDischarge: number;
   canFulfillCompletely: boolean;
+  /** Current remaining stock (total − hold − supplied). */
+  remainingQuantity?: number;
+  minimumQuantity?: number | null;
+  criticalQuantity?: number | null;
+  /** Draft supply quantity already reserved for this order. */
+  draftHoldQuantity?: number;
 }
 
 /**

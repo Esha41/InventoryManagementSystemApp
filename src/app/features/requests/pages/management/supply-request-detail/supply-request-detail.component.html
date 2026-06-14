@@ -106,7 +106,7 @@
                     </div>
 
                     <!-- Status Badge -->
-                    <div class="mt-3 flex items-center gap-2">
+                    <div class="mt-3 flex flex-wrap items-center gap-2">
                       <span *ngIf="item.totalSelectedForDischarge === 0"
                         class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-[var(--color-background-active)] text-[var(--color-text)] border border-[var(--color-border)]">
                         {{ 'supplyRequestDetail.clickToSelectLots' | translate }}
@@ -130,7 +130,31 @@
                           [class.ms-1]="isRTL"></lucide-angular>
                         {{ 'supplyRequestDetail.exceedsApproved' | translate }}
                       </span>
+                      <span *ngIf="getItemStockAlertLevel(item) === 'critical'"
+                        class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-[var(--color-error)]/20 text-[var(--color-error)] border border-[var(--color-error)]/40"
+                        [class.flex-row-reverse]="isRTL">
+                        <lucide-angular [img]="AlertTriangle" class="h-3 w-3 flex-shrink-0" [class.me-1]="!isRTL"
+                          [class.ms-1]="isRTL"></lucide-angular>
+                        {{ 'supplyRequestDetail.criticalStockWarning' | translate }}
+                      </span>
+                      <span *ngIf="getItemStockAlertLevel(item) === 'low'"
+                        class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-[var(--color-warning)]/20 text-[var(--color-warning)] border border-[var(--color-warning)]/40"
+                        [class.flex-row-reverse]="isRTL">
+                        <lucide-angular [img]="AlertCircle" class="h-3 w-3 flex-shrink-0" [class.me-1]="!isRTL"
+                          [class.ms-1]="isRTL"></lucide-angular>
+                        {{ 'supplyRequestDetail.lowStockWarning' | translate }}
+                      </span>
                     </div>
+
+                    <p *ngIf="getItemStockAlertLevel(item) && getProjectedRemainingQuantity(item) != null"
+                      class="mt-2 text-xs text-[var(--color-text-muted)]">
+                      {{ 'supplyRequestDetail.projectedRemainingStock' | translate }}:
+                      <span class="font-semibold tabular-nums"
+                        [class.text-[var(--color-error)]]="getItemStockAlertLevel(item) === 'critical'"
+                        [class.text-[var(--color-warning)]]="getItemStockAlertLevel(item) === 'low'">
+                        {{ formatNumber(getProjectedRemainingQuantity(item)!) }}
+                      </span>
+                    </p>
                   </div>
                 </div>
               </div>

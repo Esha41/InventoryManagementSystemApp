@@ -39,6 +39,10 @@ export interface OrderItemSupplySuggestionDto {
   suggestedQuantity: number;
   canFulfillCompletely: boolean;
   lotSuggestions: SupplyLotSuggestionDto[];
+  remainingQuantity?: number;
+  minimumQuantity?: number | null;
+  criticalQuantity?: number | null;
+  draftHoldQuantity?: number;
 }
 
 export interface OrderSupplySuggestionDto {
