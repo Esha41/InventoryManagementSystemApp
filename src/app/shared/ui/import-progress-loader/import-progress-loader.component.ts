@@ -1,7 +1,7 @@
 import { Component, input, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, Database, Upload, ScanLine } from 'lucide-angular';
+import { LucideAngularModule, Database, Download, ScanLine } from 'lucide-angular';
 
 export type ImportLoaderPhase = 'preview' | 'importing' | 'finalizing';
 
@@ -41,8 +41,8 @@ export class ImportProgressLoaderComponent {
   /** RTL flag — flips icon position. Forwarded from parent. */
   isRTL = input<boolean>(false);
 
-  // Lucide icon refs
-  readonly Upload = Upload;
+  // Lucide icon refs (import uses Download — same as Import buttons across the app)
+  readonly Download = Download;
   readonly Database = Database;
   readonly ScanLine = ScanLine;
 
@@ -52,7 +52,7 @@ export class ImportProgressLoaderComponent {
       case 'preview': return this.ScanLine;
       case 'finalizing': return this.Database;
       case 'importing':
-      default: return this.Upload;
+      default: return this.Download;
     }
   });
 
