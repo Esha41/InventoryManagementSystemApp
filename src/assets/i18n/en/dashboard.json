@@ -83,7 +83,7 @@
     "statistics": {
       "totalItems": "Total Items",
       "totalQuantity": "Total Quantity",
-      "expiringSoon": "Expiring Soon",
+      "expiringSoon": "Expiring LOT Soon",
       "lowStock": "Low Stock",
       "criticalStock": "Critical Stock",
       "next30Days": "Next 30 days",

@@ -48,9 +48,9 @@
       "explosiveType": "Explosive Type",
       "unNumber": "UN Number",
       "unNumberPlaceholder": "Enter UN number",
-      "small": "Small",
-      "medium": "Medium",
-      "large": "Large",
+      "small": "Light calibers",
+      "medium": "Medium calibers",
+      "large": "Heavy calibers",
       "notLinked": "Not Linked"
     },
     "errors": {

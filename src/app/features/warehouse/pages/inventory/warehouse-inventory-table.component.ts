@@ -192,18 +192,21 @@ import { defaultPageSize } from '@constants/app.constants';
           class="bg-[var(--color-background)] rounded-xl p-4 shadow-sm border border-[var(--color-border)] flex flex-col gap-3 hover:shadow-md transition-all">
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0 flex-1">
+              <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-mono bg-gray-100 text-gray-600 border border-gray-200">
+                {{ getItemNo(item) }}
+              </span>
               <a
                 *ngIf="getItemMasterRouterLink(item) as lm; else masterNameBtn"
                 [routerLink]="lm.commands"
                 [queryParams]="lm.queryParams"
-                class="font-bold text-[var(--color-brand)] text-sm md:text-base mb-1 break-words min-w-0 inline-block hover:underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]"
+                class="font-bold text-[var(--color-brand)] text-sm md:text-base mb-1 mt-1 break-words min-w-0 inline-block hover:underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]"
                 [attr.aria-label]="('warehouseInventory.viewCatalogItemDetails' | translate) + ': ' + getItemName(item)">
                 {{ getItemName(item) }}
               </a>
               <ng-template #masterNameBtn>
                 <button
                   type="button"
-                  class="font-bold text-[var(--color-brand)] text-sm md:text-base mb-1 break-words min-w-0 text-start hover:underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]"
+                  class="font-bold text-[var(--color-brand)] text-sm md:text-base mb-1 mt-1 break-words min-w-0 text-start hover:underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]"
                   [attr.aria-label]="('warehouseInventory.viewCatalogItemDetails' | translate) + ': ' + getItemName(item)"
                   (click)="openItemMaster.emit(item)">
                   {{ getItemName(item) }}

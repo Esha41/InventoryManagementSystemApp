@@ -96,15 +96,15 @@ export class InventoryDashboardExportService {
   private buildItemColumns(activeTab: InventoryDashboardExportContext['activeTab']): ExcelColumn[] {
     const columns: ExcelColumn[] = [
       {
-        header: this.translate.instant('inventoryDashboard.itemSummary.cols.itemName'),
-        key: 'itemName',
-        width: 30,
-        format: (v: string) => v || '-'
-      },
-      {
         header: this.translate.instant('inventoryDashboard.itemSummary.cols.itemNo'),
         key: 'itemNo',
         width: 15,
+        format: (v: string) => v || '-'
+      },
+      {
+        header: this.translate.instant('inventoryDashboard.itemSummary.cols.itemName'),
+        key: 'itemName',
+        width: 30,
         format: (v: string) => v || '-'
       },
       {

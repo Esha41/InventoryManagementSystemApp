@@ -6,6 +6,7 @@ import { WeaponService } from '@assets/services/weapon.service';
 import { InventoryService } from '@inventory/services/inventory.service';
 import { BatchService } from '@warehouse/services/batch.service';
 import { LookupItem } from '@models/lookup.model';
+import { ItemType } from '@models/inventory.model';
 import { BatchAssetFilter, BatchAssetItemCountDto } from '@models/batch.model';
 import { AssetDto } from '@models/asset.model';
 import { PagedRequest } from '@models/api-response.model';
@@ -17,6 +18,8 @@ export interface WarehouseDepotContext {
   manufacturers: LookupItem[];
   primaryPurposes: LookupItem[];
   weaponItems: LookupItem[];
+  calibersAmmunition: LookupItem[];
+  calibersWeapon: LookupItem[];
 }
 
 export interface ExpandedBatchAssetsResponse {
@@ -45,13 +48,17 @@ export class WarehouseInventoryDataService {
       suppliers: this.lookupService.getSuppliers().pipe(catchError(() => of([] as LookupItem[]))),
       manufacturers: this.lookupService.getManufacturers().pipe(catchError(() => of([] as LookupItem[]))),
       primaryPurposes: this.lookupService.getPrimaryPurposes().pipe(catchError(() => of([] as LookupItem[]))),
+      calibersAmmunition: this.lookupService.getCalibersByItemType(ItemType.Ammunition).pipe(catchError(() => of([] as LookupItem[]))),
+      calibersWeapon: this.lookupService.getCalibersByItemType(ItemType.Weapon).pipe(catchError(() => of([] as LookupItem[]))),
       weapons: this.weaponService.getAll().pipe(catchError(() => of([] as WeaponDto[])))
     }).pipe(
-      map(({ depots, suppliers, manufacturers, primaryPurposes, weapons }) => ({
+      map(({ depots, suppliers, manufacturers, primaryPurposes, calibersAmmunition, calibersWeapon, weapons }) => ({
         depots,
         suppliers,
         manufacturers,
         primaryPurposes,
+        calibersAmmunition,
+        calibersWeapon,
         weaponItems: (weapons ?? []).map(w => ({
           id: w.id,
           // WeaponDto exposes a single `name` field; map it to both localized lookup slots.
@@ -65,7 +72,9 @@ export class WarehouseInventoryDataService {
           suppliers: [],
           manufacturers: [],
           primaryPurposes: [],
-          weaponItems: []
+          weaponItems: [],
+          calibersAmmunition: [],
+          calibersWeapon: []
         })
       )
     );

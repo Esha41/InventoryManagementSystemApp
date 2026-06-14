@@ -1,0 +1,44 @@
+@if (metrics) {
+  <div class="flex flex-col h-full min-h-0">
+    <div class="flex items-center gap-2 mb-4">
+      <lucide-icon [img]="Package" class="w-5 h-5 text-[var(--color-brand)]"></lucide-icon>
+      <h3 class="text-base font-semibold text-[var(--color-text)] m-0">{{ 'adminDashboard.inventory.title' | translate }}</h3>
+    </div>
+
+    <div class="mb-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-brand)]/5 px-4 py-3 text-center">
+      <div class="text-2xl sm:text-3xl font-bold tabular-nums text-[var(--color-text)]">{{ metrics.totalItems | number }}</div>
+      <div class="text-xs text-[var(--color-text-muted)] mt-1">{{ 'adminDashboard.inventory.totalItems' | translate }}</div>
+    </div>
+
+    <div class="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 flex-1 content-start">
+      @for (tile of alertTiles; track tile.labelKey) {
+        @let count = tile.value(metrics);
+        <button
+          type="button"
+          [ngClass]="[
+            'rounded-lg border p-2.5 sm:p-3 text-center transition hover:shadow-sm active:scale-[0.99]',
+            count > 0 ? tile.activeClasses : 'border-[var(--color-border)] bg-[var(--color-background)]',
+            tile.wideOnMobile ? 'col-span-2 lg:col-span-1' : ''
+          ]"
+          (click)="tile.navigate()">
+          <div class="text-xl sm:text-2xl font-bold tabular-nums leading-none"
+               [class]="count > 0 ? tile.activeValueClass : 'text-[var(--color-text)]'">
+            {{ count | number }}
+          </div>
+          <div class="text-[10px] sm:text-xs text-[var(--color-text-muted)] mt-1.5 line-clamp-2 leading-tight">
+            {{ tile.labelKey | translate }}
+          </div>
+        </button>
+      }
+    </div>
+
+    <div class="mt-auto pt-4 border-t border-[var(--color-border)] text-xs text-[var(--color-text-muted)]">
+      {{ 'adminDashboard.lastUpdated' | translate }}: {{ metrics.lastUpdated | appDateTime }}
+    </div>
+  </div>
+} @else {
+  <div class="flex flex-col items-center justify-center h-full gap-2 text-[var(--color-text-muted)]">
+    <div class="w-8 h-8 border-2 border-[var(--color-brand)] border-t-transparent rounded-full animate-spin"></div>
+    <p class="text-sm">Loading inventory metrics...</p>
+  </div>
+}

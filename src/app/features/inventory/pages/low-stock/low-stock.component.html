@@ -37,10 +37,10 @@
             <tr>
               <th
                 class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] tracking-wide">
-                {{ 'inventoryDashboard.lowStock.itemName' | translate }}</th>
+                {{ 'inventoryDashboard.lowStock.itemNo' | translate }}</th>
               <th
                 class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] tracking-wide">
-                {{ 'inventoryDashboard.lowStock.itemNo' | translate }}</th>
+                {{ 'inventoryDashboard.lowStock.itemName' | translate }}</th>
               <th
                 class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] tracking-wide">
                 {{ 'inventoryDashboard.lowStock.nsn' | translate }}</th>
@@ -64,11 +64,11 @@
           <tbody class="bg-[var(--color-background)] divide-y divide-[var(--color-border)]">
             <tr *ngFor="let item of lowStockItems"
               class="hover:bg-[var(--color-background-hover)] transition-colors">
-              <td class="px-6 py-4 text-sm font-medium text-[var(--color-text)] min-w-0">
-                <span [appTableClampTooltip]="lowStockItemDisplayName(item)">{{ lowStockItemDisplayName(item) }}</span>
-              </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
                 {{ item.itemNo || 'N/A' }}
+              </td>
+              <td class="px-6 py-4 text-sm font-medium text-[var(--color-text)] min-w-0">
+                <span [appTableClampTooltip]="lowStockItemDisplayName(item)">{{ lowStockItemDisplayName(item) }}</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
                 {{ item.nsn || 'N/A' }}

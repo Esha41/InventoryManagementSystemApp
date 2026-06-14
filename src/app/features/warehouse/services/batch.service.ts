@@ -156,6 +156,7 @@ export class BatchService {
             ['filters.SupplierIds', filters.supplierIds],
             ['filters.ManufacturerIds', filters.manufacturerIds],
             ['filters.PrimaryPurposeIds', filters.primaryPurposeIds],
+            ['filters.CaliberIds', filters.caliberIds],
         ];
         for (const [key, ids] of entries) {
             if (ids?.length) {

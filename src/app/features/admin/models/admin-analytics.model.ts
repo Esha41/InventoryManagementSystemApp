@@ -106,12 +106,15 @@ export type RequestedItem = RequestedItemDto;
 
 /**
  * Client-composed inventory summary (not a single admin API entity).
- * Built from inventory summary + monitoring endpoints in `AdminAnalyticsService`.
+ * Built from monitoring headline metrics (`GET Monitoring/dashboard/inventory-headline-metrics`) in `AdminAnalyticsService`.
  */
 export interface InventoryMetrics {
   totalItems: number;
   lowStockItems: number;
+  criticalStockItems: number;
   expiringItems: number;
+  pendingIssuanceRequests: number;
+  ordersNotFullyFulfilled: number;
   inventoryDistribution?: InventoryDistribution;
   lastUpdated: Date;
 }

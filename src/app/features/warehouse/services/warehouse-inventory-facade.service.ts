@@ -463,7 +463,8 @@ export class WarehouseInventoryFacadeService {
     merge(
       this.store.supplierFilterControl.valueChanges,
       this.store.manufacturerFilterControl.valueChanges,
-      this.store.primaryPurposeFilterControl.valueChanges
+      this.store.primaryPurposeFilterControl.valueChanges,
+      this.store.caliberFilterControl.valueChanges
     ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       if (this.store.activeTab() === 'batch') return;
       this.store.setCurrentPage(1);
@@ -504,12 +505,14 @@ export class WarehouseInventoryFacadeService {
     this.dataService.loadDepotContext()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: ({ depots, suppliers, manufacturers, primaryPurposes, weaponItems }) => {
+        next: ({ depots, suppliers, manufacturers, primaryPurposes, weaponItems, calibersAmmunition, calibersWeapon }) => {
           this.store.setLookups({
             suppliers: suppliers ?? [],
             manufacturers: manufacturers ?? [],
             primaryPurposes: primaryPurposes ?? [],
-            weaponItems: weaponItems ?? []
+            weaponItems: weaponItems ?? [],
+            calibersAmmunition: calibersAmmunition ?? [],
+            calibersWeapon: calibersWeapon ?? []
           });
           const depot = depots.find(d => d.id === this.store.depoId()) || null;
           this.store.setCurrentDepot(depot);
@@ -546,7 +549,8 @@ export class WarehouseInventoryFacadeService {
       itemIds: this.store.batchItemFilterControl.value ?? [],
       supplierIds: this.store.batchSupplierFilterControl.value ?? [],
       manufacturerIds: this.store.batchManufacturerFilterControl.value ?? [],
-      primaryPurposeIds: this.store.batchPrimaryPurposeFilterControl.value ?? []
+      primaryPurposeIds: this.store.batchPrimaryPurposeFilterControl.value ?? [],
+      caliberId: this.store.batchCaliberFilterControl.value
     });
     this.dataService.loadBatchSummaries(this.store.depoId(), filters)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -574,6 +578,7 @@ export class WarehouseInventoryFacadeService {
       supplierId: this.store.supplierFilterControl.value,
       manufacturerId: this.store.manufacturerFilterControl.value,
       primaryPurposeId: this.store.primaryPurposeFilterControl.value,
+      caliberId: this.store.caliberFilterControl.value,
       sortColumn: this.store.inventorySortColumn(),
       sortDirection: this.store.inventorySortDirection(),
       language: getCurrentLang(this.translateService)
