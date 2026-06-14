@@ -140,18 +140,6 @@
 
               <!-- ============ WEAPON SPECIFIC FIELDS ============ -->
               <ng-container *ngIf="activeTab === 'weapon'">
-                <!-- Caliber -->
-                <div>
-                  <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.caliber' | translate }}
-                  </span>
-                  <app-dropdown class="w-full" [(ngModel)]="assetForm.caliberId" name="catalogCaliberId"
-                    [options]="calibersForDropdown" optionValue="id" [optionLabelFn]="lookupOptionLabel"
-                    [placeholderSelectable]="true" [placeholderValue]="null"
-                    [placeholder]="'addAsset.selectCaliber' | translate"
-                    [noDataText]="'common.noData' | translate">
-                  </app-dropdown>
-                </div>
-
                 <!-- Caliber Unit -->
                 <div>
                   <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.caliberUnit' |
@@ -233,17 +221,6 @@
                   <input id="add-armnumber-13" type="text" [(ngModel)]="assetForm.armNumber" name="armNumber"
                     class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
                     [placeholder]="'addAsset.enterArmNumber' | translate" />
-                </div>
-
-                <!-- Compatibility -->
-                <div>
-                  <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.compatibility' | translate
-                    }}</span>
-                  <app-dropdown class="w-full" [(ngModel)]="assetForm.compatibilityId" name="compatibilityId"
-                    [options]="compatibilities" optionValue="id" [optionLabelFn]="lookupOptionLabel"
-                    [placeholderSelectable]="false" [placeholderValue]="null"
-                    [placeholder]="'addAsset.selectCompatibility' | translate">
-                  </app-dropdown>
                 </div>
 
                 <!-- UN Number -->
@@ -365,17 +342,6 @@
                     [placeholder]="'addAsset.enterDistribution' | translate" maxlength="200" />
                 </div>
 
-                <!-- Compatibility -->
-                <div>
-                  <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.compatibility' | translate
-                    }}</span>
-                  <app-dropdown class="w-full" [(ngModel)]="assetForm.compatibilityId" name="compatibilityId"
-                    [options]="compatibilities" optionValue="id" [optionLabelFn]="lookupOptionLabel"
-                    [placeholderSelectable]="false" [placeholderValue]="null"
-                    [placeholder]="'addAsset.selectCompatibility' | translate">
-                  </app-dropdown>
-                </div>
-
                 <!-- Hazard Division — paired with Primary Purpose (right column) -->
                 <div>
                   <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.hazardDivision' | translate
@@ -436,6 +402,28 @@
                   </app-dropdown>
                   <p *ngIf="fieldErrors['weaponCaliberCategory']" class="mt-1 text-sm text-[var(--color-error)]">{{
                     fieldErrors['weaponCaliberCategory'] }}</p>
+                </div>
+
+                <!-- Caliber -->
+                <div>
+                  <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.caliber' | translate }}
+                  </span>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.caliberId" name="catalogCaliberId"
+                    [options]="calibersForDropdown" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="true" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectCaliber' | translate"
+                    [noDataText]="'common.noData' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Weapon Type -->
+                <div>
+                  <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.weaponType' | translate
+                    }}</span>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.typeId" name="typeId" [options]="weaponItemTypes"
+                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
+                    [placeholderValue]="null" [placeholder]="'addAsset.selectWeaponType' | translate">
+                  </app-dropdown>
                 </div>
 
                 <!-- Part No -->
@@ -505,19 +493,31 @@
                   </app-dropdown>
                 </div>
 
-                <!-- Weapon Type -->
-                <div>
-                  <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.weaponType' | translate
-                    }}</span>
-                  <app-dropdown class="w-full" [(ngModel)]="assetForm.typeId" name="typeId" [options]="weaponItemTypes"
-                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
-                    [placeholderValue]="null" [placeholder]="'addAsset.selectWeaponType' | translate">
-                  </app-dropdown>
-                </div>
               </ng-container>
 
               <!-- ============ EXPLOSIVE SPECIFIC FIELDS ============ -->
               <ng-container *ngIf="activeTab === 'explosive'">
+                <!-- Explosive Type -->
+                <div>
+                  <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.explosiveType' |
+                    translate }}</span>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.typeId" name="typeId" [options]="explosiveItemTypes"
+                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
+                    [placeholderValue]="null" [placeholder]="'addAsset.selectExplosiveType' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Compatibility -->
+                <div>
+                  <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.compatibility' | translate
+                    }}</span>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.compatibilityId" name="compatibilityId"
+                    [options]="compatibilities" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectCompatibility' | translate">
+                  </app-dropdown>
+                </div>
+
                 <!-- Part No -->
                 <div>
                   <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-partno-37">{{ 'addAsset.partNo' | translate
@@ -565,16 +565,6 @@
                     [placeholder]="'addAsset.criticalQuantityPlaceholder' | translate" step="1" min="0" />
                 </div>
 
-                <!-- Explosive Type -->
-                <div>
-                  <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.explosiveType' |
-                    translate }}</span>
-                  <app-dropdown class="w-full" [(ngModel)]="assetForm.typeId" name="typeId" [options]="explosiveItemTypes"
-                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
-                    [placeholderValue]="null" [placeholder]="'addAsset.selectExplosiveType' | translate">
-                  </app-dropdown>
-                </div>
-
                 <!-- Classification -->
                 <div>
                   <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.classification' | translate
@@ -614,6 +604,39 @@
                     fieldErrors['ammunitionType'] }}</p>
                 </div>
 
+                <!-- Caliber -->
+                <div>
+                  <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.caliber' | translate
+                    }}</span>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.caliberId" name="catalogCaliberIdAmmo"
+                    [options]="calibersForDropdown" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="true" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectCaliber' | translate"
+                    [noDataText]="'common.noData' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Item Type -->
+                <div>
+                  <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.type' | translate
+                    }}</span>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.typeId" name="typeId" [options]="ammunitionItemTypes"
+                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
+                    [placeholderValue]="null" [placeholder]="'addAsset.selectItemType' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Compatibility -->
+                <div>
+                  <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.compatibility' | translate
+                    }}</span>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.compatibilityId" name="compatibilityId"
+                    [options]="compatibilities" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectCompatibility' | translate">
+                  </app-dropdown>
+                </div>
+
                 <!-- Part No — same row as Item No (left column) -->
                 <div>
                   <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-partno-47">{{ 'addAsset.partNo' | translate
@@ -631,18 +654,6 @@
                     [placeholder]="'addAsset.enterNsn' | translate" />
                 </div>
 
-                <!-- Caliber — same row as Arm Number (left column) -->
-                <div>
-                  <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.caliber' | translate
-                    }}</span>
-                  <app-dropdown class="w-full" [(ngModel)]="assetForm.caliberId" name="catalogCaliberIdAmmo"
-                    [options]="calibersForDropdown" optionValue="id" [optionLabelFn]="lookupOptionLabel"
-                    [placeholderSelectable]="true" [placeholderValue]="null"
-                    [placeholder]="'addAsset.selectCaliber' | translate"
-                    [noDataText]="'common.noData' | translate">
-                  </app-dropdown>
-                </div>
-
                 <!-- Reference No — same row as UN Number (left column) -->
                 <div>
                   <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-referenceno-50">{{ 'addAsset.referenceNo' | translate
@@ -650,16 +661,6 @@
                   <input id="add-referenceno-50" type="text" [(ngModel)]="assetForm.referenceNo" name="referenceNo"
                     class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
                     [placeholder]="'addAsset.enterReferenceNo' | translate" maxlength="100" />
-                </div>
-
-                <!-- Item Type — same row as Price (left column) -->
-                <div>
-                  <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.type' | translate
-                    }}</span>
-                  <app-dropdown class="w-full" [(ngModel)]="assetForm.typeId" name="typeId" [options]="ammunitionItemTypes"
-                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
-                    [placeholderValue]="null" [placeholder]="'addAsset.selectItemType' | translate">
-                  </app-dropdown>
                 </div>
 
                 <!-- Critical Quantity — same row as Minimum Quantity (left column) -->
