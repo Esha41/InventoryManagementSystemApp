@@ -24,7 +24,7 @@
     "exceedsApproved": "Exceeds approved quantity",
     "lowStockWarning": "Low Stock",
     "criticalStockWarning": "Critical Stock",
-    "projectedRemainingStock": "Projected remaining stock after discharge",
+    "projectedRemainingStock": "Remaining stock after discharge",
     "approvalWorkflow": "Approval Workflow",
     "noApprovalWorkflowData": "No approval workflow data available",
     "dischargeSummary": "Discharge Summary",

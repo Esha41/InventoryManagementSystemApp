@@ -24,7 +24,7 @@
     "exceedsApproved": "يتجاوز الكمية المعتمدة",
     "lowStockWarning": "مخزون منخفض",
     "criticalStockWarning": "مخزون حرج",
-    "projectedRemainingStock": "المخزون المتبقي المتوقع بعد الصرف",
+    "projectedRemainingStock": "المخزون المتبقي بعد الصرف",
     "approvalWorkflow": "سير الموافقات",
     "noApprovalWorkflowData": "لا توجد بيانات لسير الموافقات",
     "dischargeSummary": "ملخص الصرف",
