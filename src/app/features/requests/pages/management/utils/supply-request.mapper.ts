@@ -5,7 +5,7 @@
 
 import { OrderDto } from '@models/order.model';
 import { SupplyRequestDetail, OrderItem } from '@models/supply-request.model';
-import { OrderSupplySuggestionDto } from '@requests/services/supply.service';
+import { OrderItemSupplySuggestionDto, OrderSupplySuggestionDto } from '@models/supply-dto.model';
 import { formatDate } from '@utils/format.utils';
 import { mapSuggestedLotsToLotItems } from './lot-mapper.utils';
 import { mapRequestType } from '@utils/request-mapper.utils';
@@ -82,6 +82,56 @@ function getItemTypeName(itemType?: number): string {
   return typeMap[itemType] || 'Other';
 }
 
+function readSuggestionNumber(
+  suggestion: OrderItemSupplySuggestionDto,
+  camelKey: 'remainingQuantity' | 'minimumQuantity' | 'criticalQuantity' | 'draftHoldQuantity',
+  pascalKey: string
+): number | null | undefined {
+  const direct = suggestion[camelKey];
+  if (typeof direct === 'number') {
+    return direct;
+  }
+  const raw = suggestion as unknown as Record<string, unknown>;
+  const fallback = raw[pascalKey];
+  return typeof fallback === 'number' ? fallback : undefined;
+}
+
+export function applyStockFieldsToOrderItem(
+  item: OrderItem,
+  itemSuggestion: OrderItemSupplySuggestionDto
+): void {
+  const remaining = readSuggestionNumber(itemSuggestion, 'remainingQuantity', 'RemainingQuantity');
+  const minimum = readSuggestionNumber(itemSuggestion, 'minimumQuantity', 'MinimumQuantity');
+  const critical = readSuggestionNumber(itemSuggestion, 'criticalQuantity', 'CriticalQuantity');
+  const draftHold = readSuggestionNumber(itemSuggestion, 'draftHoldQuantity', 'DraftHoldQuantity');
+
+  if (remaining !== undefined && remaining !== null) {
+    item.remainingQuantity = remaining;
+  }
+  if (minimum !== undefined) {
+    item.minimumQuantity = minimum;
+  }
+  if (critical !== undefined) {
+    item.criticalQuantity = critical;
+  }
+  if (draftHold !== undefined && draftHold !== null) {
+    item.draftHoldQuantity = draftHold;
+  }
+}
+
+/** Apply stock thresholds and remaining quantities without changing lot selections. */
+export function applyStockFieldsToItems(
+  requestDetail: SupplyRequestDetail,
+  suggestion: OrderSupplySuggestionDto
+): void {
+  (suggestion.itemSuggestions ?? []).forEach((itemSuggestion) => {
+    const item = requestDetail.items.find((i) => i.requestItemId === itemSuggestion.requestItemId);
+    if (item) {
+      applyStockFieldsToOrderItem(item, itemSuggestion);
+    }
+  });
+}
+
 /**
  * Apply suggestion results to all items in the request
  * Preserves existing lots and selections for items not in suggestions
@@ -110,6 +160,7 @@ export function applySuggestionToItems(
       }
       
       item.canFulfillCompletely = itemSuggestion.canFulfillCompletely;
+      applyStockFieldsToOrderItem(item, itemSuggestion);
       item.availableLots = mapSuggestedLotsToLotItems(itemSuggestion.lotSuggestions, existingSelections, currentLang);
       item.totalSelectedForDischarge = item.availableLots.reduce(
         (sum, lot) => sum + lot.selectedQuantity,

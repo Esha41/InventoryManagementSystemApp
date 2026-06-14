@@ -11,11 +11,13 @@ import { OrderService } from '@requests/services/order.service';
 import { OrderDto } from '@models/order.model';
 import { SupplyService, OrderSupplySuggestionDto, CreateSupplyDto, CreateSupplyDetailDto, SupplyDto } from '@requests/services/supply.service';
 import { InventoryService, LotDetailDto } from '@inventory/services/inventory.service';
+import { AmmunitionService } from '@assets/services/ammunition.service';
+import { ExplosiveService } from '@assets/services/explosive.service';
 import { ApiService } from '@services/api.service';
 import { API_ENDPOINTS } from '@constants/app.constants';
 import { BaseRequestDto, WorkflowApprovalStep } from '@models/workflow-approval.model';
 import { SupplyRequestDetail, OrderItem } from '@models/supply-request.model';
-import { mapOrderToRequestDetail, applySuggestionToItems, capOrderItemDischargeToApprovedQuantity } from '../../utils/supply-request.mapper';
+import { mapOrderToRequestDetail, applySuggestionToItems, applyStockFieldsToItems, capOrderItemDischargeToApprovedQuantity } from '../../utils/supply-request.mapper';
 import { SupplyRequestDraftLotService } from './supply-request-draft-lot.service';
 import { mapApprovalHistory, mapRequestStatus } from '@utils/request-mapper.utils';
 import { ConfigService } from '@services/config.service';
@@ -48,7 +50,9 @@ export class SupplyRequestDetailService {
     private toastService: ToastService,
     private translate: TranslateService,
     private router: Router,
-    private draftLotService: SupplyRequestDraftLotService
+    private draftLotService: SupplyRequestDraftLotService,
+    private ammunitionService: AmmunitionService,
+    private explosiveService: ExplosiveService
   ) { }
 
   /**
@@ -157,32 +161,28 @@ export class SupplyRequestDetailService {
   }
 
   /**
-   * Load supply suggestions and check for existing draft supply
+   * Load supply suggestions and check for existing draft supply.
+   * Always fetches suggestion metadata (including stock thresholds) even when a draft exists.
    */
   loadSuggestionsWithDraftCheck(orderId: number): Observable<LoadSuggestionsResult> {
-    return this.supplyService.checkDraftSupplyExists(orderId).pipe(
+    const suggestion$ = this.supplyService.getSupplySuggestion(orderId);
+    const existingSupply$ = this.supplyService.checkDraftSupplyExists(orderId).pipe(
       switchMap((existingSupply) => {
-        if (existingSupply) {
-          return this.supplyService.getById(existingSupply.id).pipe(
-            map((supply) => ({
-              suggestion: {
-                orderId,
-                orderNo: '',
-                departmentId: 0,
-                canFulfillCompletely: false,
-                itemSuggestions: [],
-                message: 'Draft loaded'
-              },
-              existingSupply: supply
-            }))
-          );
+        if (!existingSupply) {
+          return of(null);
         }
-
-        return this.supplyService.getSupplySuggestion(orderId).pipe(
-          map((suggestion) => ({ suggestion, existingSupply: null }))
-        );
+        return this.supplyService.getById(existingSupply.id);
+      }),
+      catchError((error) => {
+        this.config.logError('Failed to load existing draft supply', error);
+        return of(null);
       })
     );
+
+    return forkJoin({
+      suggestion: suggestion$,
+      existingSupply: existingSupply$
+    });
   }
 
   /**
@@ -195,11 +195,11 @@ export class SupplyRequestDetailService {
   ): Observable<LoadSuggestionsResult> {
     return this.loadSuggestionsWithDraftCheck(orderId).pipe(
       switchMap(({ suggestion, existingSupply }) => {
-        const hasEmptySuggestions = !suggestion.itemSuggestions || suggestion.itemSuggestions.length === 0;
-        const hasExistingSupply =
-          !!existingSupply && !!existingSupply.supplyDetails && existingSupply.supplyDetails.length > 0;
+        const hasExistingSupplyDetails =
+          !!existingSupply?.supplyDetails?.length;
 
-        if (hasEmptySuggestions && hasExistingSupply && existingSupply) {
+        if (hasExistingSupplyDetails && existingSupply) {
+          applyStockFieldsToItems(requestDetail, suggestion);
           return this.draftLotService
             .loadLotsForExistingSelections(
               requestDetail,
@@ -221,8 +221,95 @@ export class SupplyRequestDetailService {
         }
 
         return of({ suggestion, existingSupply });
-      })
+      }),
+      switchMap((result) =>
+        this.enrichMissingStockFields(requestDetail, result.existingSupply).pipe(map(() => result))
+      )
     );
+  }
+
+  /**
+   * Fallback when suggestion API has no stock fields (e.g. draft-only path or older backend).
+   */
+  private enrichMissingStockFields(
+    requestDetail: SupplyRequestDetail,
+    existingSupply: SupplyDto | null
+  ): Observable<void> {
+    const itemsNeedingEnrichment = (requestDetail.items ?? []).filter(
+      (item) =>
+        item.remainingQuantity == null ||
+        ((item.minimumQuantity == null || item.minimumQuantity === undefined) &&
+          (item.criticalQuantity == null || item.criticalQuantity === undefined))
+    );
+
+    if (itemsNeedingEnrichment.length === 0) {
+      return of(undefined);
+    }
+
+    const loads = itemsNeedingEnrichment.map((item) =>
+      forkJoin({
+        summary: this.inventoryService.getItemInventorySummary(item.itemId).pipe(catchError(() => of(null))),
+        catalog: this.loadCatalogStockThresholds(item).pipe(catchError(() => of(null)))
+      }).pipe(
+        tap(({ summary, catalog }) => {
+          if (summary && item.remainingQuantity == null) {
+            item.remainingQuantity = summary.remainingQuantity;
+          }
+          if (catalog?.minimumQuantity != null && item.minimumQuantity == null) {
+            item.minimumQuantity = catalog.minimumQuantity;
+          }
+          if (catalog?.criticalQuantity != null && item.criticalQuantity == null) {
+            item.criticalQuantity = catalog.criticalQuantity;
+          }
+          if (item.draftHoldQuantity == null && existingSupply?.supplyDetails?.length) {
+            item.draftHoldQuantity = existingSupply.supplyDetails
+              .filter((detail) => detail.itemId === item.itemId)
+              .reduce((sum, detail) => sum + (detail.quantity ?? 0), 0);
+          }
+        })
+      )
+    );
+
+    return forkJoin(loads).pipe(map(() => undefined));
+  }
+
+  private loadCatalogStockThresholds(
+    item: OrderItem
+  ): Observable<{ minimumQuantity?: number | null; criticalQuantity?: number | null } | null> {
+    const itemType = this.normalizeItemType(item.itemType);
+    if (itemType === 1) {
+      return this.ammunitionService.getById(item.itemId).pipe(
+        map((ammo) => ({
+          minimumQuantity: ammo.minimumQuantity ?? null,
+          criticalQuantity: ammo.criticalQuantity ?? null
+        }))
+      );
+    }
+    if (itemType === 3) {
+      return this.explosiveService.getById(item.itemId).pipe(
+        map((explosive) => ({
+          minimumQuantity: explosive.minimumQuantity ?? null,
+          criticalQuantity: explosive.criticalQuantity ?? null
+        }))
+      );
+    }
+    return of(null);
+  }
+
+  private normalizeItemType(itemType: string | number | undefined): number | null {
+    if (itemType == null) {
+      return null;
+    }
+    if (typeof itemType === 'number') {
+      return itemType;
+    }
+    const map: Record<string, number> = {
+      Ammunition: 1,
+      Weapon: 2,
+      Explosive: 3,
+      Accessory: 4
+    };
+    return map[itemType] ?? null;
   }
 
   /**
@@ -411,18 +498,25 @@ export class SupplyRequestDetailService {
     requestDetail: SupplyRequestDetail
   ): Observable<OrderSupplySuggestionDto> {
     return this.getSupplySuggestion(orderId).pipe(
-      tap((suggestion) => {
-        this.applySuggestions(requestDetail, suggestion);
-        if (suggestion.canFulfillCompletely) {
-          const message = this.translate.instant('supplyRequestDetail.suggestionsLoadedAllFulfilled');
-          const title = this.translate.instant('toast.success');
-          this.toastService.success(message, title);
-        } else {
-          const message = this.translate.instant('supplyRequestDetail.suggestionsLoadedInsufficient');
-          const title = this.translate.instant('toast.warning');
-          this.toastService.warning(message, title);
-        }
-      })
+      switchMap((suggestion) =>
+        of(suggestion).pipe(
+          tap((s) => {
+            this.applySuggestions(requestDetail, s);
+            if (s.canFulfillCompletely) {
+              const message = this.translate.instant('supplyRequestDetail.suggestionsLoadedAllFulfilled');
+              const title = this.translate.instant('toast.success');
+              this.toastService.success(message, title);
+            } else {
+              const message = this.translate.instant('supplyRequestDetail.suggestionsLoadedInsufficient');
+              const title = this.translate.instant('toast.warning');
+              this.toastService.warning(message, title);
+            }
+          }),
+          switchMap((s) =>
+            this.enrichMissingStockFields(requestDetail, null).pipe(map(() => s))
+          )
+        )
+      )
     );
   }
 
