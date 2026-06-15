@@ -105,7 +105,6 @@
         *ngIf="!loading && !error && requestDetail && requestDetail.requestType === 'Return'"
         [requestId]="requestId"
         [requestDetail]="requestDetail"
-        [destroy$]="destroy$"
         (deliveryDateSet)="onReturnDeliveryDateSet()">
       </app-workflow-return-delivery-date>
 

@@ -92,7 +92,7 @@ export class CartridgeListComponent implements OnChanges, OnInit, OnDestroy {
 
   @Input() selectedNSN: string = '';
   @Input() canProceed: boolean = false;
-  @Input() fromReserve: string = 'No'; // 'Yes' or 'No'
+  @Input() fromReserve: boolean = false;
   @Input() selectedCartridges: Cartridge[] = []; // Currently selected cartridges for validation
   @Input() serverSideCatalog = false;
   @Input() catalogPagination: CatalogPaginationState | null = null;

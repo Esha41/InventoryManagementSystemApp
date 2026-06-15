@@ -6,7 +6,7 @@ import { RequestPurposeService } from '@requests/services/request-purpose.servic
 import { TranslateService } from '@ngx-translate/core';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { EmployeeService } from './employee.service';
-import { EmployeeDto } from '@core/models/asset.model';
+import { EmployeeDto } from '@core/models/employee.model';
 
 /**
  * Lookup Management Service

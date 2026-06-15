@@ -1,4 +1,4 @@
-import { EmployeeDto } from '@models/asset.model';
+import { EmployeeDto } from '@models/employee.model';
 import { DropdownOption } from '@components/dropdown/dropdown.component';
 
 /**

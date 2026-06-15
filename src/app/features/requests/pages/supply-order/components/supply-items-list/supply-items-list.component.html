@@ -47,9 +47,9 @@
             </p>
 
             <div *ngIf="!item.isEditing" class="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-[var(--color-text)]">
-              <span>{{ 'supplyOrder.requested' | translate }} <span class="font-semibold tabular-nums">{{ formatNumber(item.requestedQuantity) }}</span></span>
+              <span>{{ 'supplyOrder.requested' | translate }} <span class="font-semibold tabular-nums">{{ item.requestedQuantity | appNumber }}</span></span>
               <span class="text-[var(--color-text-muted)]" aria-hidden="true">·</span>
-              <span>{{ 'supplyOrder.totalSupplied' | translate }} <span class="font-semibold tabular-nums">{{ formatNumber(item.totalSuppliedQuantity) }}</span></span>
+              <span>{{ 'supplyOrder.totalSupplied' | translate }} <span class="font-semibold tabular-nums">{{ item.totalSuppliedQuantity | appNumber }}</span></span>
               <span *ngIf="item.isFullyFulfilled"
                 class="inline-flex items-center gap-1 rounded-md border border-[var(--color-success)]/35 bg-[var(--color-success)]/15 px-2 py-0.5 text-xs font-medium text-[var(--color-success)]"
                 [class.flex-row-reverse]="isRTL">
@@ -66,10 +66,10 @@
 
             <div *ngIf="item.isEditing" class="text-sm text-[var(--color-text-muted)]">
               {{ 'supplyOrder.requested' | translate }}
-              <span class="font-semibold tabular-nums text-[var(--color-text)]">{{ formatNumber(item.requestedQuantity) }}</span>
+              <span class="font-semibold tabular-nums text-[var(--color-text)]">{{ item.requestedQuantity | appNumber }}</span>
               <span class="mx-2" aria-hidden="true">·</span>
               {{ 'supplyOrder.totalSupplied' | translate }}
-              <span class="font-semibold tabular-nums text-[var(--color-text)]">{{ formatNumber(item.totalSuppliedQuantity) }}</span>
+              <span class="font-semibold tabular-nums text-[var(--color-text)]">{{ item.totalSuppliedQuantity | appNumber }}</span>
             </div>
           </div>
         </div>
@@ -79,7 +79,7 @@
           class="flex w-full shrink-0 flex-col items-end gap-3 border-t border-[var(--color-border)] pt-3 text-end sm:w-auto sm:border-t-0 sm:border-s sm:border-[var(--color-border)] sm:pt-0 sm:ps-4">
           <div>
             <p class="text-sm text-[var(--color-text)]">{{ 'supplyOrder.quantity' | translate }}</p>
-            <p class="text-xl font-semibold tabular-nums text-[var(--color-text)]">{{ formatNumber(item.quantity) }}</p>
+            <p class="text-xl font-semibold tabular-nums text-[var(--color-text)]">{{ item.quantity | appNumber }}</p>
           </div>
 
           <div class="flex flex-wrap justify-end gap-2">
@@ -115,9 +115,9 @@
                 'border-[var(--color-border)] focus:border-[var(--color-brand)] focus:ring-[var(--color-brand)]/25': !item.quantityError
               }" />
             <p class="mt-1.5 text-xs text-[var(--color-text-muted)]">
-              {{ 'supplyOrder.requested' | translate }}: {{ formatNumber(item.requestedQuantity) }}
+              {{ 'supplyOrder.requested' | translate }}: {{ item.requestedQuantity | appNumber }}
               <span class="mx-1" aria-hidden="true">·</span>
-              (Max: {{ formatNumber(getMaxAllowedQuantity(item)) }})
+              (Max: {{ getMaxAllowedQuantity(item) | appNumber }})
             </p>
             <p *ngIf="item.quantityError" class="mt-1.5 text-sm text-[var(--color-error)]">
               {{ item.quantityError }}
@@ -155,6 +155,6 @@
 
   <div class="mt-4 flex items-center justify-between rounded-lg border border-[var(--color-border)] bg-[var(--color-background-muted)] px-4 py-3">
     <span class="text-sm font-medium text-[var(--color-text)]">{{ 'supplyOrder.totalItems' | translate }}</span>
-    <span class="text-lg font-semibold tabular-nums text-[var(--color-text)]">{{ formatNumber(getTotalQuantity()) }}</span>
+    <span class="text-lg font-semibold tabular-nums text-[var(--color-text)]">{{ getTotalQuantity() | appNumber }}</span>
   </div>
 </div>

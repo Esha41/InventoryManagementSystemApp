@@ -2,36 +2,13 @@ import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { ApiService } from '@services/api.service';
 import { ConfigService } from '@services/config.service';
-
-export interface ReportRole {
-  roleId: string;
-  roleName: string;
-  roleNameEn?: string;
-  roleNameAr?: string;
-}
-
-export interface Report {
-  id: string;
-  reportName: string;
-  url: string;
-  reportStatusId: ReportStatus;
-  description?: string;
-  reportParameters?: string;
-  creationDate: Date;
-  createdBy: string;
-  modificationDate?: Date;
-  modifiedBy?: string;
-  isDeleted: boolean;
-  deletionDate?: Date;
-  deletedBy?: string;
-  roles?: ReportRole[];
-}
-
-export enum ReportStatus {
-  Draft = 1,
-  Published = 2,
-  Inactive = 3
-}
+import {
+  Report,
+  ReportTemplate,
+  ScheduledReport,
+  ScheduledReportExecution,
+  CreateScheduledReportDto
+} from '@models/report.model';
 
 @Injectable({
   providedIn: 'root'
@@ -169,15 +146,7 @@ export class ReportService {
    * Get all available report templates
    */
   getTemplates(): Observable<ReportTemplate[]> {
-    return this.apiService.get<ReportTemplate[]>(`${this.endpoint}/templates`).pipe(
-      map(response => {
-        // Handle both direct array and response wrapper
-        if (Array.isArray(response)) {
-          return response;
-        }
-        return (response as any)?.data || [];
-      })
-    );
+    return this.apiService.get<ReportTemplate[]>(`${this.endpoint}/templates`);
   }
 
   // ==================== SCHEDULED REPORTS ====================
@@ -186,120 +155,55 @@ export class ReportService {
    * Get all scheduled reports
    */
   getScheduledReports(): Observable<ScheduledReport[]> {
-    return this.apiService.get<ScheduledReport[]>(`/ScheduledReport`);
+    return this.apiService.get<ScheduledReport[]>(this.scheduledEndpoint);
   }
 
   /**
    * Get scheduled report by ID
    */
   getScheduledReportById(id: string): Observable<ScheduledReport> {
-    return this.apiService.get<ScheduledReport>(`/ScheduledReport/${id}`);
+    return this.apiService.get<ScheduledReport>(`${this.scheduledEndpoint}/${id}`);
   }
 
   /**
    * Create a new scheduled report
    */
   createScheduledReport(data: CreateScheduledReportDto): Observable<string> {
-    return this.apiService.post<string>(`/ScheduledReport`, data);
+    return this.apiService.post<string>(this.scheduledEndpoint, data);
   }
 
   /**
    * Update a scheduled report
    */
   updateScheduledReport(id: string, data: CreateScheduledReportDto): Observable<boolean> {
-    return this.apiService.put<boolean>(`/ScheduledReport/${id}`, data);
+    return this.apiService.put<boolean>(`${this.scheduledEndpoint}/${id}`, data);
   }
 
   /**
    * Delete a scheduled report
    */
   deleteScheduledReport(id: string): Observable<boolean> {
-    return this.apiService.delete<boolean>(`/ScheduledReport/${id}`);
+    return this.apiService.delete<boolean>(`${this.scheduledEndpoint}/${id}`);
   }
 
   /**
    * Toggle scheduled report active status
    */
   toggleScheduledReportActive(id: string, isActive: boolean): Observable<boolean> {
-    return this.apiService.patch<boolean>(`/ScheduledReport/${id}/toggle-active`, { isActive });
+    return this.apiService.patch<boolean>(`${this.scheduledEndpoint}/${id}/toggle-active`, { isActive });
   }
 
   /**
    * Execute scheduled report immediately
    */
   executeScheduledReportNow(id: string): Observable<boolean> {
-    return this.apiService.post<boolean>(`/ScheduledReport/${id}/execute-now`, {});
+    return this.apiService.post<boolean>(`${this.scheduledEndpoint}/${id}/execute-now`, {});
   }
 
   /**
    * Get execution history for a scheduled report
    */
   getExecutionHistory(scheduledReportId: string): Observable<ScheduledReportExecution[]> {
-    return this.apiService.get<ScheduledReportExecution[]>(`/ScheduledReport/${scheduledReportId}/executions`);
+    return this.apiService.get<ScheduledReportExecution[]>(`${this.scheduledEndpoint}/${scheduledReportId}/executions`);
   }
-}
-
-export interface ReportTemplate {
-  url: string;
-  name: string;
-  description?: string;
-}
-
-export interface ScheduledReport {
-  id: string;
-  scheduleName: string;
-  reportId: string;
-  reportName: string;
-  reportUrl: string;
-  outputFormat: string;
-  frequency: string;
-  timeOfDay: string;
-  dayOfWeek?: number;
-  dayOfMonth?: number;
-  nextRunDate?: Date | string;
-  lastRunDate?: Date | string;
-  isActive: boolean;
-  emailSubject?: string;
-  emailBody?: string;
-  recipients: ScheduledReportRecipient[];
-  creationDate: Date | string;
-  createdBy: string;
-}
-
-export interface ScheduledReportRecipient {
-  id: string;
-  scheduledReportId: string;
-  userId?: string;
-  userName?: string;
-  emailAddress: string;
-  recipientType: string;
-}
-
-export interface ScheduledReportExecution {
-  id: string;
-  scheduledReportId: string;
-  executionDate: Date | string;
-  status: string;
-  errorMessage?: string;
-  recipientCount: number;
-  fileSizeBytes?: number;
-}
-
-export interface CreateScheduledReportDto {
-  scheduleName: string;
-  reportId: string;
-  outputFormat: string;
-  frequency: string;
-  timeOfDay: string;
-  dayOfWeek?: number;
-  dayOfMonth?: number;
-  emailSubject?: string;
-  emailBody?: string;
-  recipients: CreateScheduledReportRecipientDto[];
-}
-
-export interface CreateScheduledReportRecipientDto {
-  userId?: string;
-  emailAddress?: string;
-  recipientType: string;
 }

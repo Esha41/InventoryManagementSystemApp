@@ -4,6 +4,7 @@ import { WeaponDto } from '../models/weapon.model';
 import { ExplosiveDto } from '../models/explosive.model';
 import { AccessoryDto } from '../models/accessory.model';
 import { getLocalizedName, getCurrentLang } from './localization.utils';
+import { getPrimaryPurposeNav } from '../models/primary-purpose.model';
 import { formatDateShort } from './format.utils';
 import { getExplosiveTypeName } from './explosive.utils';
 import { TranslateService } from '@ngx-translate/core';
@@ -22,8 +23,9 @@ function formatCatalogPrimaryPurposes(
     const parts = list.map(p => getLocalizedName(p, currentLang)).filter(Boolean);
     return parts.length > 0 ? parts.join(', ') : '-';
   }
-  if (dto.primaryPurpos) {
-    return getLocalizedName(dto.primaryPurpos, currentLang) || '-';
+  const legacyPurpose = getPrimaryPurposeNav(dto);
+  if (legacyPurpose) {
+    return getLocalizedName(legacyPurpose, currentLang) || '-';
   }
   return '-';
 }

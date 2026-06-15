@@ -71,7 +71,7 @@
                   </td>
                   <td class="text-[var(--color-text)]">{{ item.itemNo || '—' }}</td>
                   <td class="text-[var(--color-text)]">{{ item.nsn || '—' }}</td>
-                  <td class="text-center text-[var(--color-text)]">{{ formatNumber(item.quantity) }}</td>
+                  <td class="text-center text-[var(--color-text)]">{{ item.quantity | appNumber }}</td>
                 </tr>
               </tbody>
             </table>
@@ -423,11 +423,11 @@
               <p class="text-sm text-[var(--color-text-muted)]">
                 {{ 'weaponSupplyReview.totalSelected' | translate }}:
                 <span class="font-semibold text-[var(--color-text)] text-base">
-                  {{ formatNumber(reviewService.getTotalSelectedCount()) }}
+                  {{ reviewService.getTotalSelectedCount() | appNumber }}
                 </span>
                 <span class="text-[var(--color-text-muted)] mx-1">/</span>
                 <span class="font-semibold text-[var(--color-text)] text-base">
-                  {{ formatNumber(reviewService.getTotalRequestedCount()) }}
+                  {{ reviewService.getTotalRequestedCount() | appNumber }}
                 </span>
               </p>
               <div class="mt-2 flex items-center gap-2">

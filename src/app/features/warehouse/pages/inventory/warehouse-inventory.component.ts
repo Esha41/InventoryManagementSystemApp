@@ -95,7 +95,6 @@ export class WarehouseInventoryComponent implements OnInit {
   readonly truncateAssetNotes = (a: AssetDto) => this.formatterService.truncateText(a.notes, 80);
   readonly getAssetStatusLabel = (a: AssetDto) => this.formatterService.getAssetStatusLabel(a);
   readonly formatDate = (d?: Date | string) => this.formatterService.formatDate(d);
-  readonly formatNumber = (n: number) => this.formatterService.formatNumber(n);
   readonly isStaticItem = (d: InventoryDetailDto) => this.filterService.isStaticItem(d);
   readonly isItemExpired = (i: InventoryDetailDto) => this.viewModel.isItemExpired(i);
 

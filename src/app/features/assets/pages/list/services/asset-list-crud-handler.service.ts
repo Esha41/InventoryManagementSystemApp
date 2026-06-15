@@ -134,15 +134,10 @@ export class AssetListCrudHandlerService {
     )
       .pipe(takeUntil(destroy$))
       .subscribe({
-        next: (res) => {
-          if (res.succeeded) {
-            closeEdit();
-            this.toastService.success('Asset updated successfully');
-            loadAssets();
-          } else {
-            this.toastService.error(res.message || 'Update failed');
-            setLoading(false);
-          }
+        next: () => {
+          closeEdit();
+          this.toastService.success('Asset updated successfully');
+          loadAssets();
           onReady();
         },
         error: (err: unknown) => {
@@ -174,15 +169,10 @@ export class AssetListCrudHandlerService {
     this.assetCrudService.deleteAsset(id, activeTab)
       .pipe(takeUntil(destroy$))
       .subscribe({
-        next: (res) => {
-          if (res.succeeded) {
-            this.toastService.success('Deleted successfully');
-            closeModal();
-            loadAssets();
-          } else {
-            this.toastService.error(res.message || 'Delete failed');
-            setLoading(false);
-          }
+        next: () => {
+          this.toastService.success('Deleted successfully');
+          closeModal();
+          loadAssets();
           onReady();
         },
         error: (err: unknown) => {
@@ -218,15 +208,10 @@ export class AssetListCrudHandlerService {
     this.assetCrudService.permanentDeleteAsset(id, activeTab)
       .pipe(takeUntil(destroy$))
       .subscribe({
-        next: (res) => {
-          if (res.succeeded) {
-            this.toastService.success(this.translateService.instant(successKey));
-            closeModal();
-            loadAssets();
-          } else {
-            this.toastService.error(res.message || this.translateService.instant('assetList.errors.failedToPermanentDelete'));
-            setLoading(false);
-          }
+        next: () => {
+          this.toastService.success(this.translateService.instant(successKey));
+          closeModal();
+          loadAssets();
           onReady();
         },
         error: (err: unknown) => {
@@ -263,15 +248,10 @@ export class AssetListCrudHandlerService {
     this.assetCrudService.restoreAsset(id, activeTab)
       .pipe(takeUntil(destroy$))
       .subscribe({
-        next: (res) => {
-          if (res.succeeded) {
-            this.toastService.success(this.translateService.instant(successKey));
-            closeModal();
-            loadAssets();
-          } else {
-            this.toastService.error(res.message || this.translateService.instant(errorKey));
-            setLoading(false);
-          }
+        next: () => {
+          this.toastService.success(this.translateService.instant(successKey));
+          closeModal();
+          loadAssets();
           onReady();
         },
         error: (err: unknown) => {

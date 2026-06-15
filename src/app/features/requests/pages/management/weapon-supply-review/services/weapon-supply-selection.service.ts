@@ -7,12 +7,12 @@ import { BatchForOrderDepotDto } from '@requests/services/asset-supply.service';
  */
 @Injectable({ providedIn: 'root' })
 export class WeaponSupplySelectionService {
-  orderId: number = 0;
-  selectedDepotIds: number[] = [];
-  selectedBatchIds: number[] = [];
-  batchOptions: BatchForOrderDepotDto[] = [];
+  private orderId: number = 0;
+  private selectedDepotIds: number[] = [];
+  private selectedBatchIds: number[] = [];
+  private batchOptions: BatchForOrderDepotDto[] = [];
   /** Quantity per batch (batchId -> quantity). Required for every selected batch. */
-  batchQuantities: Map<number, number> = new Map();
+  private batchQuantities: Map<number, number> = new Map();
 
   setSelection(
     orderId: number,

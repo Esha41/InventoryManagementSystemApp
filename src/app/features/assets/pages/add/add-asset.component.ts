@@ -533,13 +533,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     this.accessoryService.create(dto, this.assetForm.image ?? null)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (res) => {
-          if (res.succeeded) {
-            this.getSubmitObserver().next(res.data as unknown as AccessoryDto);
-          } else {
-            this.getSubmitObserver().error(res.message ?? 'Failed to create accessory');
-          }
-        },
+        next: (asset) => this.getSubmitObserver().next(asset),
         error: (error: unknown) => this.getSubmitObserver().error(error)
       });
   }

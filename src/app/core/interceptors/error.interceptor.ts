@@ -44,7 +44,6 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       let errorMessage = 'An unknown error occurred';
-      let errorDetails: string[] = [];
 
       if (error.error instanceof ErrorEvent) {
         // Client-side error
@@ -52,25 +51,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         configService.logError('Client-side error:', error.error);
       } else {
         // Server-side error
-        if (error.error) {
-          const extracted = extractMessageFromErrorBody(error.error);
-          if (extracted) {
-            errorMessage = extracted;
-          } else if (typeof error.error === 'string') {
-            errorMessage = error.error;
-          } else if (error.error.message || error.error.Message) {
-            errorMessage = error.error.message ?? error.error.Message;
-          } else if (error.error.errors) {
-            // Handle validation errors array
-            errorDetails = Array.isArray(error.error.errors) 
-              ? error.error.errors 
-              : Object.values(error.error.errors).flat() as string[];
-            errorMessage = errorDetails.join(', ') || errorMessage;
-          }
-        } else {
-          // HTTP error without error body
-          errorMessage = `Server Error: ${error.status} - ${error.statusText}`;
-        }
+        errorMessage = error.error
+          ? (extractMessageFromErrorBody(error.error) ?? `Server Error: ${error.status}`)
+          : `Server Error: ${error.status}`;
 
         // Skip logging for expected 403/404 on EmailSettings (non-admin or config not set)
         const skipLog = (error.status === 403 || error.status === 404) &&
@@ -78,7 +61,6 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         if (!skipLog) {
           configService.logError(`Server-side error (${error.status}):`, {
             message: errorMessage,
-            details: errorDetails,
             url: error.url
           });
         }
@@ -88,7 +70,6 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       const enhancedError = {
         ...error,
         userMessage: errorMessage,
-        details: errorDetails,
         timestamp: new Date()
       };
 

@@ -11,7 +11,8 @@ import { LucideAngularModule, Package, AlertTriangle, X } from 'lucide-angular';
 import { ModalComponent } from '@components/modal/modal.component';
 import { OrderItem, LotItem } from '@models/supply-request.model';
 import { getLotConditionClass as lookupLotConditionClass } from '../../../utils/ui-helpers.utils';
-import { formatDate as formatDateUtil, formatNumber as formatNumberUtil } from '@utils/format.utils';
+import { formatDate as formatDateUtil } from '@utils/format.utils';
+import { AppNumberPipe } from '@shared/pipes/app-number.pipe';
 
 @Component({
   selector: 'app-lot-selection-modal',
@@ -21,7 +22,8 @@ import { formatDate as formatDateUtil, formatNumber as formatNumberUtil } from '
     FormsModule,
     TranslateModule,
     LucideAngularModule,
-    ModalComponent
+    ModalComponent,
+    AppNumberPipe
   ],
   templateUrl: './lot-selection-modal.component.html',
   styleUrls: ['./lot-selection-modal.component.css'],
@@ -149,10 +151,6 @@ export class LotSelectionModalComponent implements OnInit, OnChanges {
 
   formatDate(date: Date | string | undefined): string {
     return formatDateUtil(date);
-  }
-
-  formatNumber(num: number): string {
-    return formatNumberUtil(num);
   }
 
   getTempQuantity(lotNumber: string): number {

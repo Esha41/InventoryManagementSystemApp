@@ -11,13 +11,14 @@ import { WarehouseDetailLayoutComponent } from '@components/warehouse-detail-lay
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { formatDateShort } from '@utils/format.utils';
+import { AppNumberPipe } from '@shared/pipes/app-number.pipe';
 import { FileUploadService } from '@services/file-upload.service';
 import { FileUploadDto } from '@models/file-upload.model';
 
 @Component({
   selector: 'app-inventory-item-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule, TranslateModule, WarehouseDetailLayoutComponent],
+  imports: [CommonModule, RouterModule, LucideAngularModule, TranslateModule, WarehouseDetailLayoutComponent, AppNumberPipe],
   templateUrl: './inventory-item-detail.component.html',
   styleUrls: ['./inventory-item-detail.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -209,10 +210,6 @@ export class InventoryItemDetailComponent implements OnInit, OnDestroy {
     if (!date) return '-';
     const formatted = formatDateShort(date);
     return formatted === 'N/A' ? '-' : formatted;
-  }
-
-  formatNumber(num: number): string {
-    return num.toLocaleString();
   }
 
   getBatchNoLabelTranslationKey(): string {

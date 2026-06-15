@@ -33,7 +33,7 @@ import { PaginationComponent, RowsPerPageComponent } from '@components/index';
 import { EmployeeFormModalComponent } from '@admin/components/employee-form-modal/employee-form-modal.component';
 import { ImportDialogComponent } from '@components/import-dialog/import-dialog.component';
 import { ImportPreviewDialogComponent, PreviewData } from '@components/import-preview-dialog/import-preview-dialog.component';
-import { EmployeeDto } from '@core/models/asset.model';
+import { EmployeeDto } from '@core/models/employee.model';
 import { EmployeeService } from '@admin/services/employee.service';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { ImportExportService } from '@admin/services/import-export.service';

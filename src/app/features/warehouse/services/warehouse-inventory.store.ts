@@ -184,8 +184,7 @@ export class WarehouseInventoryStore {
       currentPage: this._currentPage(),
       rowsPerPage: this._rowsPerPage(),
       sortColumn: this._batchSortColumn(),
-      sortDirection: this._batchSortDirection(),
-      warehouseInventoryService: this.warehouseInventory
+      sortDirection: this._batchSortDirection()
     })
   );
   readonly previewImportAssetType = computed(() =>

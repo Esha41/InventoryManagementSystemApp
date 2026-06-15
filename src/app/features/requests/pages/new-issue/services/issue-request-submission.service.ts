@@ -27,7 +27,7 @@ export interface RunSubmissionContext {
   requestPurposeState: RequestPurposeState;
   usageFormData: UsageFormData;
   reviewFormData: ReviewFormData;
-  fromReserve: string;
+  fromReserve: boolean;
   currentUserDepartmentId: number | null;
   defaultDepartmentId: number;
   defaultRequestPurposeId: number;

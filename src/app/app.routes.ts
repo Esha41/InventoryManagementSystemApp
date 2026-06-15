@@ -32,28 +32,28 @@ export const routes: Routes = [
         path: 'access-denied',
         loadComponent: () => import('@auth/pages/access-denied/access-denied.component').then(m => m.AccessDeniedComponent)
       },
-      { path: 'admin/help-me', redirectTo: 'admin/help-center', pathMatch: 'full' },
       // ── FEATURE LAZY CHUNKS ───────────────────────────────────────────────
       {
-        path: '',
+        path: 'dashboard',
         loadChildren: () => import('./features/dashboard/dashboard.routes').then(m => m.DASHBOARD_ROUTES)
       },
       {
-        path: '',
+        path: 'forecast',
         loadChildren: () => import('./features/forecast/forecast.routes').then(m => m.FORECAST_ROUTES)
       },
       {
-        path: '',
+        path: 'notifications',
         loadChildren: () => import('./features/notifications/notifications.routes').then(m => m.NOTIFICATIONS_ROUTES)
       },
       {
-        path: '',
+        path: 'profile',
         loadChildren: () => import('./features/profile/profile.routes').then(m => m.PROFILE_ROUTES)
       },
       {
-        path: '',
+        path: 'help',
         loadChildren: () => import('./features/help/help.routes').then(m => m.HELP_ROUTES)
       },
+      { path: 'help-me', redirectTo: 'help', pathMatch: 'full' },
       {
         path: 'warehouse',
         loadChildren: () => import('./features/warehouse/warehouse.routes').then(m => m.WAREHOUSE_ROUTES)

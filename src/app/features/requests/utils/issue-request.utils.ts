@@ -251,8 +251,8 @@ export function hasWeaponInSelection(cartridges: Cartridge[]): boolean {
  * Filters the available item types based on the allowance/reserve mode. Weapon
  * is hidden when the user is requesting from outside the reserve.
  */
-export function getDisplayedItemTypeOptions(itemTypeOptions: string[], fromReserve: string): string[] {
-  if (fromReserve === 'No') {
+export function getDisplayedItemTypeOptions(itemTypeOptions: string[], fromReserve: boolean): string[] {
+  if (!fromReserve) {
     return itemTypeOptions.filter(t => t !== 'Weapon');
   }
   return itemTypeOptions;
@@ -263,22 +263,41 @@ export function getDisplayedItemTypeOptions(itemTypeOptions: string[], fromReser
  */
 export function isPurposeAllowedForAllowance(
   allowanceContext: number | undefined,
-  fromReserve: string
+  fromReserve: boolean
 ): boolean {
   if (allowanceContext == null) {
     return true;
   }
-  const isFromAllowance = fromReserve === 'Yes';
   switch (allowanceContext) {
     case RequestPurposeAllowanceContext.FromAllowance:
-      return isFromAllowance;
+      return fromReserve;
     case RequestPurposeAllowanceContext.OutsideAllowance:
-      return !isFromAllowance;
+      return !fromReserve;
     case RequestPurposeAllowanceContext.Both:
       return true;
     default:
       return true;
   }
+}
+
+/** Parses `fromReserve` query param values (supports legacy Yes/No and boolean strings). */
+export function parseFromReserveQueryParam(value: string | undefined | null): boolean {
+  if (value == null || value === '') {
+    return true;
+  }
+  const normalized = value.trim();
+  if (normalized === 'Yes' || normalized === 'yes' || normalized === 'true') {
+    return true;
+  }
+  if (normalized === 'No' || normalized === 'no' || normalized === 'false') {
+    return false;
+  }
+  return true;
+}
+
+/** Serializes `fromReserve` for URL query params (legacy Yes/No format). */
+export function formatFromReserveQueryParam(fromReserve: boolean): string {
+  return fromReserve ? 'Yes' : 'No';
 }
 
 const ITEM_TYPE_STRING_TO_ENUM: Record<string, ItemType> = {

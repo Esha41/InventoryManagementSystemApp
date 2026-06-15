@@ -50,13 +50,6 @@ export class InventorySummaryUtils {
     }
 
     /**
-     * Format number with locale
-     */
-    static formatNumber(num: number): string {
-        return num.toLocaleString();
-    }
-
-    /**
      * Format date to display format (DD/MM/YYYY)
      */
     static formatDate(date?: string): string {

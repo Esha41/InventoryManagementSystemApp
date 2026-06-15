@@ -35,7 +35,7 @@ import { LotSelectionModalComponent } from './components/lot-selection-modal/lot
 import { DischargeSummaryCardComponent } from './components/discharge-summary-card/discharge-summary-card.component';
 import { ItemManagementModalsComponent } from './components/item-management-modals/item-management-modals.component';
 import { OrderItemsManagementComponent } from '@requests/pages/supply-order/components/order-items-management/order-items-management.component';
-import { formatNumber as formatNumberUtil } from '@utils/format.utils';
+import { AppNumberPipe } from '@shared/pipes/app-number.pipe';
 import {
   getItemTypeIcon as getItemTypeIconUtil,
   getItemProductId as getItemProductIdUtil
@@ -65,7 +65,8 @@ import {
     OrderItemsManagementComponent,
     LoadingStateComponent,
     ModalComponent,
-    ButtonComponent
+    ButtonComponent,
+    AppNumberPipe
   ],
   templateUrl: './supply-request-detail.component.html',
   styleUrls: ['./supply-request-detail.component.css'],
@@ -566,10 +567,6 @@ export class SupplyRequestDetailComponent implements OnInit {
 
   getItemTypeIcon(type: string): any {
     return getItemTypeIconUtil(type);
-  }
-
-  formatNumber(num: number): string {
-    return formatNumberUtil(num);
   }
 
   getItemStockAlertLevel(item: OrderItem): 'critical' | 'low' | null {

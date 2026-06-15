@@ -97,7 +97,7 @@ path: 'requests-management/:id/workflow-approval'  → WorkflowApprovalDetailCom
 path: 'dashboard'  → AdminDashboardComponent
 path: 'analytics-dashboard'  → AnalyticsDashboardComponent
 path: 'depot-management'  → DepotManagementComponent
-path: 'manage-admins'  → ManageAdminsComponent
+path: 'manage-admins'  → ManageUsersComponent
 path: 'lookup-tables'  → LookupTablesComponent
 path: 'roles'  → AdminRolesComponent
 path: 'role-permissions'  → RolePermissionsComponent

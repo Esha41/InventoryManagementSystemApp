@@ -2,6 +2,8 @@ import { Asset, AssetFilterState, AssetSortState } from '../models/asset-list.mo
 import { AmmunitionReadDto, LookupDto } from '../models/ammunition.model';
 import { LookupItem } from '../models/lookup.model';
 import { getLocalizedName, getCurrentLang } from './localization.utils';
+import { getPrimaryPurposeId, getPrimaryPurposeNav } from '../models/primary-purpose.model';
+import { PaginationUtils } from './pagination.utils';
 import { TranslateService } from '@ngx-translate/core';
 
 /**
@@ -106,13 +108,13 @@ type AssetOriginalData = Partial<
 export function assetMatchesCatalogPrimaryPurpose(asset: Asset, purposeId: number): boolean {
   const od = asset.originalData as CatalogPrimaryPurposeDto | undefined;
   if (!od) return false;
-  if (od.primaryPurposId != null && od.primaryPurposId === purposeId) {
+  if (getPrimaryPurposeId(od) === purposeId) {
     return true;
   }
   if (od.primaryPurposes?.length) {
     return od.primaryPurposes.some(p => p.id != null && p.id === purposeId);
   }
-  const single = od.primaryPurpos?.id;
+  const single = getPrimaryPurposeNav(od)?.id;
   return single != null && single === purposeId;
 }
 
@@ -123,13 +125,13 @@ export function assetMatchesAmmunitionPrimaryPurpose(asset: Asset, purposeId: nu
 
 /** Whether a catalog DTO (ammunition / weapon / explosive) matches a single primary-purpose id. */
 export function catalogDtoMatchesPrimaryPurpose(dto: CatalogPrimaryPurposeDto, purposeId: number): boolean {
-  if (dto.primaryPurposId != null && dto.primaryPurposId === purposeId) {
+  if (getPrimaryPurposeId(dto) === purposeId) {
     return true;
   }
   if (dto.primaryPurposes?.length) {
     return dto.primaryPurposes.some(p => p.id != null && p.id === purposeId);
   }
-  const single = dto.primaryPurpos?.id;
+  const single = getPrimaryPurposeNav(dto)?.id;
   return single != null && single === purposeId;
 }
 
@@ -298,8 +300,7 @@ export function paginateAssets(
   currentPage: number,
   rowsPerPage: number
 ): Asset[] {
-  const start = (currentPage - 1) * rowsPerPage;
-  return assets.slice(start, start + rowsPerPage);
+  return PaginationUtils.paginateList(assets, currentPage, rowsPerPage);
 }
 
 /**
@@ -309,7 +310,7 @@ export function calculateTotalPages(
   totalItems: number,
   rowsPerPage: number
 ): number {
-  return Math.ceil(totalItems / rowsPerPage);
+  return PaginationUtils.calculateTotalPages(totalItems, rowsPerPage);
 }
 
 /**
@@ -319,8 +320,6 @@ export function validateCurrentPage(
   currentPage: number,
   totalPages: number
 ): number {
-  if (currentPage < 1) return 1;
-  if (currentPage > totalPages && totalPages > 0) return totalPages;
-  return currentPage;
+  return PaginationUtils.clampCurrentPage(currentPage, totalPages);
 }
 

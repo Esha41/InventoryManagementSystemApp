@@ -1,6 +1,6 @@
 import { FileUploadDto } from './file-upload.model';
 import { OrderDto } from './order.model';
-import { EmployeeDto } from './asset.model';
+import { EmployeeDto } from './employee.model';
 
 /**
  * Supply API DTOs (shared across features; implementation lives in requests/supply.service).

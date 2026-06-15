@@ -4,6 +4,10 @@ import { InventoryDetailDto } from '@models/inventory.model';
 import { AssetDto, getAssetStatusLabel as getAssetStatusKey } from '@models/asset.model';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
 import { formatDateShort, formatNumber as formatNumberUtil } from '@utils/format.utils';
+import {
+  getPrimaryPurposeNav,
+  resolveInventoryDetailPrimaryPurpose,
+} from '@models/primary-purpose.model';
 
 @Injectable({
   providedIn: 'root'
@@ -50,18 +54,9 @@ export class WarehouseInventoryFormatterService {
    */
   getPrimaryPurposeName(detail: InventoryDetailDto): string {
     const lang = getCurrentLang(this.translateService);
-    if (detail.primaryPurpos) {
-      const label = getLocalizedName(detail.primaryPurpos, lang);
-      if (label) {
-        return label;
-      }
-    }
-    const id = detail.primaryPurposId;
-    if (id != null && detail.item?.primaryPurposes?.length) {
-      const match = detail.item.primaryPurposes.find(p => p.id === id);
-      if (match) {
-        return getLocalizedName(match, lang) || '-';
-      }
+    const purpose = resolveInventoryDetailPrimaryPurpose(detail);
+    if (purpose) {
+      return getLocalizedName(purpose, lang) || '-';
     }
     return '-';
   }
@@ -104,13 +99,6 @@ export class WarehouseInventoryFormatterService {
   }
 
   /**
-   * Format number with thousands separator (uses shared format utility)
-   */
-  formatNumber(num: number): string {
-    return formatNumberUtil(num);
-  }
-
-  /**
    * Get delete asset message
    */
   getDeleteAssetMessage(asset: AssetDto | null | undefined): string {
@@ -144,9 +132,10 @@ export class WarehouseInventoryFormatterService {
   }
 
   getAssetPrimaryPurposeLabel(asset: AssetDto | null | undefined): string {
-    if (!asset?.primaryPurpos) return '-';
+    const purpose = getPrimaryPurposeNav(asset);
+    if (!purpose) return '-';
     const lang = getCurrentLang(this.translateService);
-    return getLocalizedName(asset.primaryPurpos, lang) || '-';
+    return getLocalizedName(purpose, lang) || '-';
   }
 
   formatAssetPurchasePrice(price?: number | null): string {

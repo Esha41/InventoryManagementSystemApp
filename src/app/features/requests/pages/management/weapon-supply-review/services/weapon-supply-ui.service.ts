@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ItemWithAssets } from './weapon-supply-review.service';
+import { PaginationUtils } from '@utils/pagination.utils';
 
 /**
  * Service to handle UI-specific state and operations for weapon supply review
@@ -14,8 +15,8 @@ export class WeaponSupplyUIService {
     // Search state
     private _searchTerm: string = '';
 
-    // Accordion state
-    private _expandedState: { [key: number]: boolean } = {};
+    // Accordion state — items are expanded by default; only collapsed IDs are tracked
+    private _collapsedItems = new Set<number>();
 
     get currentPage(): number {
         return this._currentPage;
@@ -48,16 +49,14 @@ export class WeaponSupplyUIService {
      * Get paginated items
      */
     paginateItems(items: ItemWithAssets[]): ItemWithAssets[] {
-        const start = (this._currentPage - 1) * this._pageSize;
-        const end = start + this._pageSize;
-        return items.slice(start, end);
+        return PaginationUtils.paginateList(items, this._currentPage, this._pageSize);
     }
 
     /**
      * Calculate total pages
      */
     getTotalPages(totalItems: number): number {
-        return Math.ceil(totalItems / this._pageSize);
+        return PaginationUtils.calculateTotalPages(totalItems, this._pageSize);
     }
 
     /**
@@ -81,10 +80,10 @@ export class WeaponSupplyUIService {
      * Toggle item expansion state
      */
     toggleItemExpanded(itemId: number): void {
-        if (this._expandedState[itemId] === undefined) {
-            this._expandedState[itemId] = false; // Default is open, so toggle to close
+        if (this._collapsedItems.has(itemId)) {
+            this._collapsedItems.delete(itemId);
         } else {
-            this._expandedState[itemId] = !this._expandedState[itemId];
+            this._collapsedItems.add(itemId);
         }
     }
 
@@ -92,7 +91,7 @@ export class WeaponSupplyUIService {
      * Check if item is expanded
      */
     isItemExpanded(itemId: number): boolean {
-        return this._expandedState[itemId] === undefined ? true : this._expandedState[itemId];
+        return !this._collapsedItems.has(itemId);
     }
 
     /**
@@ -101,6 +100,6 @@ export class WeaponSupplyUIService {
     reset(): void {
         this._currentPage = 1;
         this._searchTerm = '';
-        this._expandedState = {};
+        this._collapsedItems.clear();
     }
 }

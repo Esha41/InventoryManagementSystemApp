@@ -7,11 +7,14 @@ import { BatchSummaryDto } from '@models/batch.model';
 import { WarehouseInventoryService } from './warehouse-inventory.service';
 import { BatchTableSortColumn } from '../pages/inventory/components/batch-table/batch-table.component';
 import { getCurrentLang, getLocalizedName } from '@utils/localization.utils';
+import { PaginationUtils } from '@utils/pagination.utils';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WarehouseInventoryViewModelService {
+  constructor(private warehouseInventoryService: WarehouseInventoryService) {}
+
   getLookupLabel(
     option: DropdownOption<LookupItem> | LookupItem | null,
     translateService: TranslateService
@@ -43,16 +46,14 @@ export class WarehouseInventoryViewModelService {
     rowsPerPage: number;
     sortColumn: BatchTableSortColumn;
     sortDirection: 'asc' | 'desc';
-    warehouseInventoryService: WarehouseInventoryService;
   }): BatchSummaryDto[] {
     if (input.activeTab !== 'batch') return [];
-    const sorted = input.warehouseInventoryService.sortBatches(
+    const sorted = this.warehouseInventoryService.sortBatches(
       input.filteredBatches,
       input.sortColumn,
       input.sortDirection
     );
-    const start = (input.currentPage - 1) * input.rowsPerPage;
-    return sorted.slice(start, start + input.rowsPerPage);
+    return PaginationUtils.paginateList(sorted, input.currentPage, input.rowsPerPage);
   }
 
   private unwrapLookupOption<T>(option: DropdownOption<T> | T | null): T | null {

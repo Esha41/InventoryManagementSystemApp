@@ -102,8 +102,7 @@ export class AnnouncementFormComponent implements OnInit, OnDestroy {
         this.loading.set(true);
         this.cdr.markForCheck();
         this.announcementService.getById(id).pipe(takeUntil(this.destroy$)).subscribe({
-            next: (response) => {
-                const announcement = response.data;
+            next: (announcement) => {
                 this.form.patchValue({
                     message: announcement.message,
                     priority: announcement.priority,

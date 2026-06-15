@@ -40,13 +40,6 @@ export class ImportExportService {
   }
 
   /**
-   * Format number with locale
-   */
-  formatNumber(num: number): string {
-    return num.toLocaleString();
-  }
-
-  /**
    * Export data to Excel
    */
   exportToExcel(config: {

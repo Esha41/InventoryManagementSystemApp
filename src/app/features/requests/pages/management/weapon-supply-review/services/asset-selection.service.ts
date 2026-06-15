@@ -1,40 +1,8 @@
 import { Injectable } from '@angular/core';
-
-/**
- * Selected asset with custodian assignment
- */
-export interface SelectedAsset {
-  id: number;
-  assetId: number;
-  serialNumber?: string;
-  selected: boolean;
-  custodianId?: number;
-  conditionOnSupply?: string;
-  notes?: string;
-  depot?: {
-    id: number;
-    nameEn?: string;
-    nameAr?: string;
-  };
-}
-
-/**
- * Asset pagination state
- */
-export interface AssetPaginationState {
-  currentPage: number;
-  rowsPerPage: number;
-  totalPages: number;
-}
-
-/**
- * Asset filter and sort state
- */
-export interface AssetFilterState {
-  searchTerm: string;
-  sortColumn: 'serialNumber' | null;
-  sortDirection: 'asc' | 'desc';
-}
+import {
+  AssetFilterState,
+  SelectedAsset,
+} from '../models/weapon-supply-review.model';
 
 /**
  * Service for handling asset selection, filtering, sorting, and pagination
@@ -89,60 +57,6 @@ export class AssetSelectionService {
   }
 
   /**
-   * Paginate assets
-   */
-  paginateAssets(assets: SelectedAsset[], paginationState: AssetPaginationState): SelectedAsset[] {
-    const { currentPage, rowsPerPage } = paginationState;
-    const startIndex = (currentPage - 1) * rowsPerPage;
-    const endIndex = startIndex + rowsPerPage;
-    return assets.slice(startIndex, endIndex);
-  }
-
-  /**
-   * Calculate pagination state
-   */
-  calculatePaginationState(
-    totalItems: number,
-    currentPage: number,
-    rowsPerPage: number
-  ): AssetPaginationState {
-    const totalPages = Math.ceil(totalItems / rowsPerPage);
-
-    // Ensure current page is valid
-    let validPage = currentPage;
-    if (validPage > totalPages && totalPages > 0) {
-      validPage = totalPages;
-    }
-    if (validPage < 1) {
-      validPage = 1;
-    }
-
-    return {
-      currentPage: validPage,
-      rowsPerPage,
-      totalPages
-    };
-  }
-
-  /**
-   * Get pagination start index (1-based)
-   */
-  getPaginationStartIndex(paginationState: AssetPaginationState, totalItems: number): number {
-    if (totalItems === 0) return 0;
-    return (paginationState.currentPage - 1) * paginationState.rowsPerPage + 1;
-  }
-
-  /**
-   * Get pagination end index (1-based)
-   */
-  getPaginationEndIndex(paginationState: AssetPaginationState, totalItems: number): number {
-    return Math.min(
-      paginationState.currentPage * paginationState.rowsPerPage,
-      totalItems
-    );
-  }
-
-  /**
    * Check if all filtered assets are selected or disabled
    */
   areAllFilteredAssetsSelected(
@@ -151,9 +65,8 @@ export class AssetSelectionService {
     requestedQuantity: number
   ): boolean {
     if (filteredAssets.length === 0) return false;
-    return filteredAssets.every(a =>
-      a.selected || (!a.selected && selectedCount >= requestedQuantity)
-    );
+    const isAtLimit = selectedCount >= requestedQuantity;
+    return filteredAssets.every(a => a.selected || isAtLimit);
   }
 
   /**
@@ -165,10 +78,9 @@ export class AssetSelectionService {
     requestedQuantity: number
   ): boolean {
     if (filteredAssets.length === 0) return false;
+    const isAtLimit = selectedCount >= requestedQuantity;
     const hasSelected = filteredAssets.some(a => a.selected);
-    const allSelectedOrDisabled = filteredAssets.every(a =>
-      a.selected || (!a.selected && selectedCount >= requestedQuantity)
-    );
+    const allSelectedOrDisabled = filteredAssets.every(a => a.selected || isAtLimit);
     return hasSelected && !allSelectedOrDisabled;
   }
 

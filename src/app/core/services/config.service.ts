@@ -51,10 +51,6 @@ export class ConfigService {
     return environment.production;
   }
 
-  get enableLogging(): boolean {
-    return environment.enableLogging;
-  }
-
   get isLoggingEnabled(): boolean {
     return environment.enableLogging;
   }

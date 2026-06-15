@@ -6,6 +6,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Mail, ArrowLeft, Send } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { FormUtils } from '@utils/form-utils';
 import { ToastService } from '@services/toast.service';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -63,9 +64,7 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
 
     onSubmit(): void {
         if (this.forgotPasswordForm.invalid) {
-            Object.keys(this.forgotPasswordForm.controls).forEach(key => {
-                this.forgotPasswordForm.get(key)?.markAsTouched();
-            });
+            FormUtils.markFormGroupTouched(this.forgotPasswordForm);
             return;
         }
 
@@ -85,7 +84,7 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
                         this.translateService.instant('common.success')
                     );
                 },
-                error: (error) => {
+                error: (error: unknown) => {
                     this.isSubmitting = false;
                     this.cdr.markForCheck();
                     const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, this.translateService.instant('auth.forgotPassword.error'), this.translateService);

@@ -7,8 +7,10 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { FocusOnInitDirective } from '@core/directives/focus-on-init.directive';
-import { AssetSelectionService, SelectedAsset, AssetFilterState, AssetPaginationState } from '../../services/asset-selection.service';
-import { formatNumber as formatNumberUtil } from '@utils/format.utils';
+import { AssetSelectionService } from '../../services/asset-selection.service';
+import { AssetFilterState, AssetPaginationState, SelectedAsset } from '../../models/weapon-supply-review.model';
+import { AppNumberPipe } from '@shared/pipes/app-number.pipe';
+import { PaginationUtils } from '@utils/pagination.utils';
 import { defaultPageSize } from '@constants/app.constants';
 
 /**
@@ -26,7 +28,8 @@ import { defaultPageSize } from '@constants/app.constants';
     DropdownComponent,
     PaginationComponent,
     RowsPerPageComponent,
-    FocusOnInitDirective
+    FocusOnInitDirective,
+    AppNumberPipe
   ],
   templateUrl: './item-asset-selection.component.html',
   styleUrls: ['./item-asset-selection.component.css']
@@ -103,13 +106,13 @@ export class ItemAssetSelectionComponent implements OnInit, OnChanges {
     );
 
     const totalItems = this.filteredAssets.length;
-    this.paginationState = this.assetSelectionService.calculatePaginationState(
+    this.paginationState = PaginationUtils.buildState(
       totalItems,
       this.paginationState.currentPage,
       this.paginationState.rowsPerPage
     );
 
-    this.paginatedAssets = this.assetSelectionService.paginateAssets(
+    this.paginatedAssets = PaginationUtils.paginateListWithState(
       this.filteredAssets,
       this.paginationState
     );
@@ -288,8 +291,9 @@ export class ItemAssetSelectionComponent implements OnInit, OnChanges {
    * Get pagination start index
    */
   getPaginationStartIndex(): number {
-    return this.assetSelectionService.getPaginationStartIndex(
-      this.paginationState,
+    return PaginationUtils.getStartIndex(
+      this.paginationState.currentPage,
+      this.paginationState.rowsPerPage,
       this.filteredAssets.length
     );
   }
@@ -298,8 +302,9 @@ export class ItemAssetSelectionComponent implements OnInit, OnChanges {
    * Get pagination end index
    */
   getPaginationEndIndex(): number {
-    return this.assetSelectionService.getPaginationEndIndex(
-      this.paginationState,
+    return PaginationUtils.getEndIndex(
+      this.paginationState.currentPage,
+      this.paginationState.rowsPerPage,
       this.filteredAssets.length
     );
   }
@@ -309,12 +314,5 @@ export class ItemAssetSelectionComponent implements OnInit, OnChanges {
    */
   getMaxSelectableCount(): number {
     return Math.min(this.requestedQuantity, this.assets.length);
-  }
-
-  /**
-   * Format number utility
-   */
-  formatNumber(num: number): string {
-    return formatNumberUtil(num);
   }
 }

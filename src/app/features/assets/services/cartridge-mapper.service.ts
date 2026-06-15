@@ -4,6 +4,7 @@ import { AmmunitionReadDto, LookupDto } from '@models/ammunition.model';
 import { WeaponDto } from '@models/weapon.model';
 import { ExplosiveDto } from '@models/explosive.model';
 import { getLocalizedName } from '@utils/localization.utils';
+import { getPrimaryPurposeNav } from '@models/primary-purpose.model';
 import { resolveCatalogItemCaliberId } from '@utils/catalog-caliber.utils';
 import { getWeaponTypeName, getActionTypeName } from '@utils/weapon.utils';
 import { getExplosiveTypeName } from '@utils/explosive.utils';
@@ -74,7 +75,7 @@ export class CartridgeMapperService {
       itemNo: dto.itemNo,
       productId: dto.itemNo, // Using itemNo as productId fallback
       ncn: dto.nsn || undefined,
-      primaryPurpose: getLocalizedName(dto.primaryPurpos, currentLang),
+      primaryPurpose: getLocalizedName(getPrimaryPurposeNav(dto), currentLang),
       projectileColor: getLocalizedName(dto.projectileColor, currentLang),
       totalWeight: dto.totalWeight ? `${dto.totalWeight} g` : undefined,
       projectileMaterial: getLocalizedName(dto.projectailMaterial, currentLang),

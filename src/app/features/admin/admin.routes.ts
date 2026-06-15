@@ -24,7 +24,7 @@ export const ADMIN_ROUTES: Routes = [
   },
   {
     path: 'manage-admins',
-    loadComponent: () => import('./pages/manage-users/manage-admins.component').then(m => m.ManageAdminsComponent),
+    loadComponent: () => import('./pages/manage-users/manage-users.component').then(m => m.ManageUsersComponent),
     canActivate: [permissionGuard],
     data: { permissions: [PERMISSIONS.ADMIN.SYSTEM_USERS.PAGE, PERMISSIONS.ADMIN.SYSTEM_USERS.VIEW] },
   },

@@ -20,24 +20,24 @@
         </div>
         <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4 shadow-sm">
           <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.originalQty' | translate }}</p>
-          <p class="text-lg font-semibold text-[var(--color-text)] tabular-nums">{{ formatNumber(inventoryDetail.originalQuantity) }}</p>
+          <p class="text-lg font-semibold text-[var(--color-text)] tabular-nums">{{ inventoryDetail.originalQuantity | appNumber }}</p>
         </div>
         <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4 shadow-sm">
           <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.usedQty' | translate }}</p>
-          <p class="text-lg font-semibold text-[var(--color-text)] tabular-nums">{{ formatNumber(inventoryDetail.usedQuantity) }}</p>
+          <p class="text-lg font-semibold text-[var(--color-text)] tabular-nums">{{ inventoryDetail.usedQuantity | appNumber }}</p>
         </div>
         <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4 shadow-sm">
           <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.reservedQty' | translate }}</p>
-          <p class="text-lg font-semibold text-[var(--color-text)] tabular-nums">{{ formatNumber(inventoryDetail.reservedQuantityByOrdersOnProcessing) }}</p>
+          <p class="text-lg font-semibold text-[var(--color-text)] tabular-nums">{{ inventoryDetail.reservedQuantityByOrdersOnProcessing | appNumber }}</p>
         </div>
         <div class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4 shadow-sm">
           <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.remainingQty' | translate }}</p>
-          <p class="text-lg font-semibold text-[var(--color-success)] tabular-nums">{{ formatNumber(inventoryDetail.remainingQuantity) }}</p>
+          <p class="text-lg font-semibold text-[var(--color-success)] tabular-nums">{{ inventoryDetail.remainingQuantity | appNumber }}</p>
         </div>
         <div *ngIf="inventoryDetail.currentQuantity !== inventoryDetail.remainingQuantity"
           class="rounded-xl border border-[var(--color-border)] bg-[var(--color-background)] p-4 shadow-sm">
           <p class="text-xs font-medium text-[var(--color-text-muted)] mb-1">{{ 'warehouseInventory.currentQty' | translate }}</p>
-          <p class="text-lg font-semibold text-[var(--color-text)] tabular-nums">{{ formatNumber(inventoryDetail.currentQuantity) }}</p>
+          <p class="text-lg font-semibold text-[var(--color-text)] tabular-nums">{{ inventoryDetail.currentQuantity | appNumber }}</p>
         </div>
       </div>
     </div>

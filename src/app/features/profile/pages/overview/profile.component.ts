@@ -7,7 +7,7 @@ import { map, delay, switchMap } from 'rxjs/operators';
 import { LucideAngularModule, User, Users, Mail, Building2, Shield, Hash, Award, Lock, RotateCcw } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { AuthenticatedUser, UserRoleDetail } from '@models/auth.model';
-import { ChangePasswordRequest } from '@profile/models/change-password.model';
+import { ChangePasswordRequest } from '@models/change-password.model';
 import { UserMeResponse } from '@profile/models/profile.model';
 import { TranslationService } from '@services/translation.service';
 import { ApiService } from '@services/api.service';

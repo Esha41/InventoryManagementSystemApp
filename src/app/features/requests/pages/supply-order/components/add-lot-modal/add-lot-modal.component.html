@@ -25,8 +25,7 @@
         </div>
         <div>
           <h3 class="font-semibold text-[var(--color-text)]">{{ getSelectedItemDisplayName() }}</h3>
-          <p class="text-sm text-[var(--color-text-muted)]">{{ 'supplyOrder.requestedQuantity' | translate }}: {{
-            formatNumber(selectedItemForLot.quantity) }}</p>
+          <p class="text-sm text-[var(--color-text-muted)]">{{ 'supplyOrder.requestedQuantity' | translate }}: {{ selectedItemForLot.quantity | appNumber }}</p>
         </div>
       </div>
     </div>
@@ -107,7 +106,7 @@
 
             <div class="text-end">
               <p class="text-sm font-semibold text-[var(--color-text)]">
-                {{ formatNumber(lot.quantity) }} {{ 'supplyOrder.available' | translate }}
+                {{ lot.quantity | appNumber }} {{ 'supplyOrder.available' | translate }}
               </p>
             </div>
           </div>

@@ -15,11 +15,8 @@ import { getLocalizedName, getCurrentLang } from './localization.utils';
  */
 export function getUserName(user: AuthenticatedUser | null, translateService: TranslateService): string {
   if (!user) return '';
-  const currentLang = translateService.currentLang || 'en';
-  if (currentLang === 'ar' && user.nameAr) {
-    return user.nameAr;
-  }
-  return user.nameEn || user.userName || '';
+  return getLocalizedName({ nameEn: user.nameEn, nameAr: user.nameAr }, getCurrentLang(translateService))
+    || user.userName || '';
 }
 
 /**
@@ -65,11 +62,10 @@ export function getActiveRoleDisplay(user: AuthenticatedUser | null, translateSe
  */
 export function getDepartmentName(user: AuthenticatedUser | null, translateService: TranslateService): string {
   if (!user) return '';
-  const currentLang = translateService.currentLang || 'en';
-  if (currentLang === 'ar' && user.departmentNameAr) {
-    return user.departmentNameAr;
-  }
-  return user.departmentNameEn || user.departmentName || '';
+  return getLocalizedName(
+    { nameEn: user.departmentNameEn ?? user.departmentName, nameAr: user.departmentNameAr },
+    getCurrentLang(translateService)
+  );
 }
 
 /**
@@ -80,11 +76,10 @@ export function getDepartmentName(user: AuthenticatedUser | null, translateServi
  */
 export function getRankName(user: AuthenticatedUser | null, translateService: TranslateService): string {
   if (!user) return '';
-  const currentLang = translateService.currentLang || 'en';
-  if (currentLang === 'ar' && user.rankNameAr) {
-    return user.rankNameAr;
-  }
-  return user.rankNameEn || '';
+  return getLocalizedName(
+    { nameEn: user.rankNameEn, nameAr: user.rankNameAr },
+    getCurrentLang(translateService)
+  );
 }
 
 /**
