@@ -324,43 +324,5 @@
     "exportingWithDetails": "Loading LOT details for export. Please wait...",
     "totalItems": "Total items",
     "totalsHint": "Quantity totals reflect the current page (and search filter, if any)."
-  },
-  "forecast": {
-    "title": "Forecast",
-    "weeklyIssuesOverview": "Weekly Issues Overview",
-    "monthlyPerformance": "Monthly Performance",
-    "ammunitionConsumption": "Ammunition Consumption",
-    "budgetConsumption": "Budget Consumption",
-    "annualBudgetForecast": "Annual budget forecast",
-    "details": "Details",
-    "lowReturnsInMay": "Low returns in May",
-    "quantityReduced": "Quantity of ammunition requests is reduced by",
-    "remaining": "Remaining",
-    "consumed": "Consumed",
-    "march2023": "March 2023"
-  },
-  "inventoryForecast": {
-    "title": "Inventory Forecast",
-    "timeframe": "Timeframe",
-    "allTime": "All-time",
-    "ammunition": "Ammunition",
-    "requests": "Requests",
-    "all": "All",
-    "activeCustomers": "Active Customers",
-    "orderFulfillment": "Order Fulfillment",
-    "budgetForecast": "Budget Forecast",
-    "activeSuppliers": "Active Suppliers",
-    "currentStock": "Current Stock",
-    "activityIncrease": "Activity Increase",
-    "hotItems": "Hot Items",
-    "overstock": "Overstock",
-    "reStockForecast": "Re-Stock Forecast",
-    "firstInFirstOut": "First In First Out",
-    "expensesTracking": "Expenses Tracking",
-    "shippingExpenses": "Shipping Expenses",
-    "storageExpenses": "Storage Expenses",
-    "totalExpenses": "Total Expenses",
-    "entryDate": "Entry Date",
-    "consumed": "Consumed"
   }
 }

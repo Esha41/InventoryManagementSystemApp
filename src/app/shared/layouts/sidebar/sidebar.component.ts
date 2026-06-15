@@ -142,13 +142,6 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
         }
       ]
     },
-    // Temporarily commented out - contains dummy data, will be implemented later
-    // {
-    //   label: 'nav.forecast',
-    //   icon: TrendingUp,
-    //   route: '/forecast',
-    //   permissions: ['Forecast_view']
-    // },
     {
       label: 'nav.inventory',
       isHeader: true
@@ -173,13 +166,6 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
         PERMISSIONS.ASSETS.WEAPON_ASSET_MASTER.PAGE
       ]
     },
-    // Temporarily commented out - contains dummy data, will be implemented later
-    // {
-    //   label: 'nav.inventoryForecast',
-    //   icon: TrendingUp,
-    //   route: '/inventory-forecast',
-    //   permissions: ['inventorypage.page', 'inventorypage.view']
-    // },
     {
       label: 'nav.warehouse',
       icon: Warehouse,

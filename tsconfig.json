@@ -99,9 +99,6 @@
       "@department/*": [
         "src/app/features/department/*"
       ],
-      "@forecast/*": [
-        "src/app/features/forecast/*"
-      ],
       "@admin/*": [
         "src/app/features/admin/*"
       ],

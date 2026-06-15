@@ -294,7 +294,6 @@ export const ROUTES = {
   DASHBOARD: '/dashboard',
   NEW_ISSUE_REQUEST: '/new-issue-request',
   REQUESTS_MANAGEMENT: '/requests-management',
-  FORECAST: '/forecast',
   ADD_ASSET: '/add-asset',
   ASSET_LIST: '/asset-list',
   MANAGE_ADMINS: '/manage-admins',

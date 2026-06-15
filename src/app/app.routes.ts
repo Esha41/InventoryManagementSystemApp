@@ -38,10 +38,6 @@ export const routes: Routes = [
         loadChildren: () => import('./features/dashboard/dashboard.routes').then(m => m.DASHBOARD_ROUTES)
       },
       {
-        path: 'forecast',
-        loadChildren: () => import('./features/forecast/forecast.routes').then(m => m.FORECAST_ROUTES)
-      },
-      {
         path: 'notifications',
         loadChildren: () => import('./features/notifications/notifications.routes').then(m => m.NOTIFICATIONS_ROUTES)
       },
