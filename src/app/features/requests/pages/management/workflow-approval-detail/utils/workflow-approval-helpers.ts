@@ -4,7 +4,7 @@ import { RequestDetail, WorkflowApprovalStep, WorkflowStepTransition } from '@mo
 import { WorkflowStepDto } from '@models/workflow.model';
 import { getLocalizedName, getCurrentLang, Localizable } from '@utils/localization.utils';
 import { formatDateTimeExtended } from '@utils/format.utils';
-import { RequestStatusEnum } from '@utils/request-mapper.utils';
+import { RequestStatusEnum, resolveWorkflowApproverDisplayName } from '@utils/request-mapper.utils';
 import { WorkflowApprovalStepOption } from '../services/workflow-approval-data.service';
 
 type WorkflowStepDisplayLike = WorkflowStepDto & {
@@ -234,27 +234,7 @@ export function getApproverName(
   approval: WorkflowApprovalStep,
   translateService: TranslateService
 ): string {
-  const currentLang = getCurrentLang(translateService);
-
-  // For pending steps, use role name (not user name)
-  if (approval.isPending) {
-    if (currentLang === 'ar' && approval.applicationRoleNameAr) {
-      return approval.applicationRoleNameAr;
-    } else if (approval.applicationRoleName) {
-      return approval.applicationRoleName;
-    }
-  }
-
-  // For completed steps, use user name
-  if (currentLang === 'ar' && approval.approverNameAr) {
-    return approval.approverNameAr;
-  } else if (approval.approverNameEn) {
-    return approval.approverNameEn;
-  } else if (approval.approverName) {
-    return approval.approverName;
-  }
-
-  return '';
+  return resolveWorkflowApproverDisplayName(approval, getCurrentLang(translateService));
 }
 
 /**

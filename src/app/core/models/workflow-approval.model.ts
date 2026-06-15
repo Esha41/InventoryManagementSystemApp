@@ -49,6 +49,7 @@ export interface WorkflowApprovalStep {
   approverName?: string;
   approverNameEn?: string;
   approverNameAr?: string;
+  approverUserName?: string;
   status: 'Pending' | 'Approved' | 'Rejected' | 'AutoRejected' | 'Returned' | 'ReturnedForReview' | 'Submitted' | 'Cancelled';
   approvedDate?: string;
   approvedDateTime?: string | Date;
