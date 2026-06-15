@@ -82,9 +82,11 @@ import {
   collectItemTypeEnumsFromSelection,
   isRequestPurposeAllowedForSelectedItemTypes
 } from '@requests/utils/issue-request.utils';
-import { resolveCatalogItemCaliberId, isCatalogItemExplicitlyDeleted } from '@utils/catalog-caliber.utils';
+import { resolveCatalogItemCaliberId, isCatalogItemExplicitlyDeleted, hasIncompatibleCatalogWeaponSelections } from '@utils/catalog-caliber.utils';
 
 const TRAINING_ORDER_ID = 4;
+
+type ConfirmDialogPurpose = 'submit' | 'weaponAssociationIncompatible';
 
 /**
  * Facade for the new-issue-request feature.
@@ -147,6 +149,7 @@ export class IssueRequestFacade {
   reviewFormData: ReviewFormData = createInitialReviewFormData();
   confirmDialogConfig: ConfirmDialogConfig = createInitialConfirmDialogConfig();
   showConfirmDialog = false;
+  private confirmDialogPurpose: ConfirmDialogPurpose = 'submit';
   fromReserve = 'Yes';
   allowanceError: string | null = null;
 
@@ -500,11 +503,11 @@ export class IssueRequestFacade {
 
     if (this.currentStep === 2) {
       if (!this.canProceedFromWeaponAssociation) return;
-      this.steps[2].completed = true;
-      this.currentStep = 3;
-      this.updateQueryParams(3);
-      this.cdr.markForCheck();
-      scrollShellContentToTop();
+      if (this.hasIncompatibleWeaponSelections()) {
+        this.openIncompatibleWeaponConfirmDialog();
+        return;
+      }
+      this.advanceFromWeaponAssociationStep();
       return;
     }
 
@@ -738,10 +741,22 @@ export class IssueRequestFacade {
     }
 
     this.submissionService.loadConfirmationDialogConfig().subscribe(config => {
+      this.confirmDialogPurpose = 'submit';
       this.confirmDialogConfig = config;
       this.showConfirmDialog = true;
       this.cdr.markForCheck();
     });
+  }
+
+  onConfirmDialogConfirmed(): void {
+    if (this.confirmDialogPurpose === 'weaponAssociationIncompatible') {
+      this.showConfirmDialog = false;
+      this.confirmDialogPurpose = 'submit';
+      this.cdr.markForCheck();
+      this.advanceFromWeaponAssociationStep();
+      return;
+    }
+    this.onConfirmSubmit();
   }
 
   onConfirmSubmit(): void {
@@ -778,6 +793,7 @@ export class IssueRequestFacade {
 
   onCancelConfirm(): void {
     this.showConfirmDialog = false;
+    this.confirmDialogPurpose = 'submit';
     this.cdr.markForCheck();
   }
 
@@ -787,6 +803,35 @@ export class IssueRequestFacade {
   }
 
   // ---- Private helpers ----------------------------------------------------
+
+  private hasIncompatibleWeaponSelections(): boolean {
+    return hasIncompatibleCatalogWeaponSelections(
+      this.ammunitionCartridges,
+      this.weaponAssociationState.associations,
+      this.weaponAssociationState.allWeapons
+    );
+  }
+
+  private openIncompatibleWeaponConfirmDialog(): void {
+    this.confirmDialogPurpose = 'weaponAssociationIncompatible';
+    this.confirmDialogConfig = {
+      title: this.translate.instant('newIssueRequest.weaponAssociation.incompatibleConfirmTitle'),
+      message: this.translate.instant('newIssueRequest.weaponAssociation.incompatibleConfirmMessage'),
+      type: 'warning',
+      confirmText: this.translate.instant('newIssueRequest.weaponAssociation.incompatibleConfirmProceed'),
+      cancelText: this.translate.instant('common.cancel')
+    };
+    this.showConfirmDialog = true;
+    this.cdr.markForCheck();
+  }
+
+  private advanceFromWeaponAssociationStep(): void {
+    this.steps[2].completed = true;
+    this.currentStep = 3;
+    this.updateQueryParams(3);
+    this.cdr.markForCheck();
+    scrollShellContentToTop();
+  }
 
   private buildSubmissionContext() {
     // Prefer the new slotted state when present. Always include any

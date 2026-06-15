@@ -51,6 +51,8 @@
     "quantity": "Quantity",
     "associatedWeapons": "Associated Weapons",
     "associatedWeaponOther": "Others",
+    "incompatibleWeaponsWarning": "Some associated weapons are not compatible with the ammunition caliber.",
+    "incompatibleWeaponsLineHint": "Some weapons below are not compatible with this ammunition caliber.",
     "noItemsFound": "No items found for this request",
     "status": "Status",
     "currentStatus": "Current Status",
