@@ -5,6 +5,8 @@ import { catchError, map } from 'rxjs/operators';
 import { ConfigService } from './config.service';
 import { APIOperationResponse } from '@models/api-response.model';
 
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+
 /**
  * Enhanced API Service - Protocol Wrapper
  * 
@@ -107,26 +109,26 @@ export class ApiService {
    * It expects the backend to return `APIOperationResponse<T>`.
    * It unwraps `data` if `succeeded` is true, otherwise it throws an error.
    */
-  private executeRequest<T>(method: string, endpoint: string, body?: unknown, params?: HttpParams, extraOptions?: Record<string, unknown>): Observable<T> {
+  private executeRequest<T>(
+    method: HttpMethod,
+    endpoint: string,
+    body?: unknown,
+    params?: HttpParams,
+    extraOptions?: Record<string, unknown>
+  ): Observable<T> {
     const url = `${this.baseUrl}${endpoint}`;
-    let req$: Observable<APIOperationResponse<T>>;
-
     const options = { ...extraOptions, params, observe: 'body' as const };
 
-    if (method === 'GET') {
-      req$ = this.http.get<APIOperationResponse<T>>(url, options) as unknown as Observable<APIOperationResponse<T>>;
-    } else if (method === 'POST') {
-      req$ = this.http.post<APIOperationResponse<T>>(url, body, options) as unknown as Observable<APIOperationResponse<T>>;
-    } else if (method === 'PUT') {
-      req$ = this.http.put<APIOperationResponse<T>>(url, body, options) as unknown as Observable<APIOperationResponse<T>>;
-    } else if (method === 'DELETE') {
-      // Use request method to correctly handle body in DELETE and type inference
-      req$ = this.http.request<APIOperationResponse<T>>('delete', url, { ...options, body }) as unknown as Observable<APIOperationResponse<T>>;
-    } else if (method === 'PATCH') {
-      req$ = this.http.patch<APIOperationResponse<T>>(url, body, options) as unknown as Observable<APIOperationResponse<T>>;
-    } else {
-      return throwError(() => new Error(`Method ${method} not implemented`));
-    }
+    const dispatchers: Record<HttpMethod, () => Observable<APIOperationResponse<T>>> = {
+      GET: () => this.http.get<APIOperationResponse<T>>(url, options) as unknown as Observable<APIOperationResponse<T>>,
+      POST: () => this.http.post<APIOperationResponse<T>>(url, body, options) as unknown as Observable<APIOperationResponse<T>>,
+      PUT: () => this.http.put<APIOperationResponse<T>>(url, body, options) as unknown as Observable<APIOperationResponse<T>>,
+      DELETE: () =>
+        this.http.request<APIOperationResponse<T>>('delete', url, { ...options, body }) as unknown as Observable<APIOperationResponse<T>>,
+      PATCH: () => this.http.patch<APIOperationResponse<T>>(url, body, options) as unknown as Observable<APIOperationResponse<T>>,
+    };
+
+    const req$ = dispatchers[method]();
 
     return req$.pipe(
       map(response => {

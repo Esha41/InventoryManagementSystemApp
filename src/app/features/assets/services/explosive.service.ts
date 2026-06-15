@@ -56,28 +56,28 @@ export class ExplosiveService implements IImportableService {
   }
 
   // Update explosive
-  update<T = ExplosiveDto>(id: number, data: CreateUpdateExplosiveDto): Observable<APIOperationResponse<T>> {
-    return this.apiService.putRaw<T>(`${this.endpoint}/${id}`, data);
+  update<T = ExplosiveDto>(id: number, data: CreateUpdateExplosiveDto): Observable<T> {
+    return this.apiService.put<T>(`${this.endpoint}/${id}`, data);
   }
 
   // Delete explosive
-  delete(id: number): Observable<APIOperationResponse<boolean>> {
-    return this.apiService.deleteRaw<boolean>(`${this.endpoint}/${id}`);
+  delete(id: number): Observable<boolean> {
+    return this.apiService.delete<boolean>(`${this.endpoint}/${id}`);
   }
 
   // Restore soft-deleted explosive
-  restore(id: number): Observable<APIOperationResponse<boolean>> {
-    return this.apiService.postRaw<boolean>(`${this.endpoint}/${id}/restore`, {});
+  restore(id: number): Observable<boolean> {
+    return this.apiService.post<boolean>(`${this.endpoint}/${id}/restore`, {});
   }
 
   // Permanently delete soft-deleted explosive (irreversible)
-  permanentDelete(id: number): Observable<APIOperationResponse<boolean>> {
-    return this.apiService.deleteRaw<boolean>(`${this.endpoint}/${id}/permanent`);
+  permanentDelete(id: number): Observable<boolean> {
+    return this.apiService.delete<boolean>(`${this.endpoint}/${id}/permanent`);
   }
 
   // Create explosive
-  create<T = ExplosiveDto>(data: CreateUpdateExplosiveDto): Observable<APIOperationResponse<T>> {
-    return this.apiService.postRaw<T>(this.endpoint, data);
+  create<T = ExplosiveDto>(data: CreateUpdateExplosiveDto): Observable<T> {
+    return this.apiService.post<T>(this.endpoint, data);
   }
 
   // Get file info for an explosive (returns file ID and URL)

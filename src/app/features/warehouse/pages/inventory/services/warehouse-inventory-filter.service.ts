@@ -7,18 +7,6 @@ export interface FilterOptions {
   activeTab: 'ammunition' | 'weapon' | 'explosive';
 }
 
-export interface PaginationOptions {
-  currentPage: number;
-  rowsPerPage: number;
-}
-
-export interface PaginatedResult<T> {
-  items: T[];
-  totalPages: number;
-  currentPage: number;
-  totalItems: number;
-}
-
 @Injectable({
   providedIn: 'root'
 })
@@ -35,14 +23,9 @@ export class WarehouseInventoryFilterService {
       return itemType;
     }
     if (typeof itemType === 'string') {
-      const enumMap: { [key: string]: number } = {
-        'Ammunition': 1,
-        'Weapon': 2,
-        'Explosive': 3
-      };
-
-      if (enumMap[itemType] !== undefined) {
-        return enumMap[itemType];
+      const fromEnum = ItemType[itemType as keyof typeof ItemType];
+      if (typeof fromEnum === 'number') {
+        return fromEnum;
       }
 
       const parsed = parseInt(itemType, 10);
@@ -58,14 +41,14 @@ export class WarehouseInventoryFilterService {
     if (activeTab === 'ammunition') {
       return details.filter(d => {
         const itemType = this.normalizeItemType(d.item?.itemType);
-        const isAmmunition = itemType === 1;
+        const isAmmunition = itemType === ItemType.Ammunition;
         const isUndefinedAndNotStatic = itemType === undefined && !this.isStaticItem(d);
         return isAmmunition || isUndefinedAndNotStatic;
       });
     } else if (activeTab === 'explosive') {
       return details.filter(d => {
         const itemType = this.normalizeItemType(d.item?.itemType);
-        return itemType === 3;
+        return itemType === ItemType.Explosive;
       });
     }
     return details;
@@ -123,33 +106,6 @@ export class WarehouseInventoryFilterService {
         serialNumber.includes(term) ||
         rfid.includes(term);
     });
-  }
-
-  /**
-   * Apply pagination to items
-   */
-  paginate<T>(items: T[], options: PaginationOptions): PaginatedResult<T> {
-    const totalItems = items.length;
-    const totalPages = totalItems === 0 ? 1 : Math.ceil(totalItems / options.rowsPerPage);
-    
-    // Validate and adjust current page
-    let currentPage = options.currentPage;
-    if (currentPage > totalPages && totalPages > 0) {
-      currentPage = totalPages;
-    }
-    if (currentPage < 1) {
-      currentPage = 1;
-    }
-
-    const startIndex = (currentPage - 1) * options.rowsPerPage;
-    const paginatedItems = items.slice(startIndex, startIndex + options.rowsPerPage);
-
-    return {
-      items: paginatedItems,
-      totalPages,
-      currentPage,
-      totalItems
-    };
   }
 
   /**

@@ -5,7 +5,7 @@ import { LookupService, LookupItem } from '@services/lookup.service';
 import { WeaponService } from '@assets/services/weapon.service';
 import { EmployeeService } from '@admin/services/employee.service';
 import { WeaponDto } from '@models/weapon.model';
-import { EmployeeDto } from '@models/asset.model';
+import { EmployeeDto } from '@models/employee.model';
 
 export interface WeaponAssetCatalogLoaded {
   currentDepot: LookupItem | null;

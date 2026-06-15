@@ -49,28 +49,28 @@ export class AccessoryService implements IImportableService {
     return this.apiService.get<T>(`${this.endpoint}/${id}`, params);
   }
 
-  update<T = AccessoryDto>(id: number, data: CreateUpdateAccessoryDto): Observable<APIOperationResponse<T>> {
-    return this.apiService.putRaw<T>(`${this.endpoint}/${id}`, data);
+  update<T = AccessoryDto>(id: number, data: CreateUpdateAccessoryDto): Observable<T> {
+    return this.apiService.put<T>(`${this.endpoint}/${id}`, data);
   }
 
-  delete(id: number): Observable<APIOperationResponse<boolean>> {
-    return this.apiService.deleteRaw<boolean>(`${this.endpoint}/${id}`);
+  delete(id: number): Observable<boolean> {
+    return this.apiService.delete<boolean>(`${this.endpoint}/${id}`);
   }
 
-  restore(id: number): Observable<APIOperationResponse<boolean>> {
-    return this.apiService.postRaw<boolean>(`${this.endpoint}/${id}/restore`, {});
+  restore(id: number): Observable<boolean> {
+    return this.apiService.post<boolean>(`${this.endpoint}/${id}/restore`, {});
   }
 
-  permanentDelete(id: number): Observable<APIOperationResponse<boolean>> {
-    return this.apiService.deleteRaw<boolean>(`${this.endpoint}/${id}/permanent`);
+  permanentDelete(id: number): Observable<boolean> {
+    return this.apiService.delete<boolean>(`${this.endpoint}/${id}/permanent`);
   }
 
   create<T = AccessoryDto>(
     data: CreateUpdateAccessoryDto,
     file?: File | null
-  ): Observable<APIOperationResponse<T>> {
+  ): Observable<T> {
     const formData = this.buildCreateFormData(data, file);
-    return this.apiService.postRaw<T>(this.endpoint, formData);
+    return this.apiService.post<T>(this.endpoint, formData);
   }
 
   getFileInfo(accessoryId: number): Observable<{ id: number; url: string } | null> {

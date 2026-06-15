@@ -71,7 +71,9 @@ export class SwitchRoleModalComponent implements OnInit, OnDestroy {
     this.submitLoading = false;
     this.cdr.markForCheck();
 
-    this.userContextService.getCurrentUserDetails(true).subscribe({
+    this.userContextService.getCurrentUserDetails(true)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
       next: details => {
         this.listLoading = false;
         this.roles = (details?.roles ?? []).map(r => ({
@@ -98,7 +100,9 @@ export class SwitchRoleModalComponent implements OnInit, OnDestroy {
     this.error = '';
     this.cdr.markForCheck();
 
-    this.backendAuth.selectRole(roleId, { switchWhileLoggedIn: true }).subscribe({
+    this.backendAuth.selectRole(roleId, { switchWhileLoggedIn: true })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
       next: () => {
         this.submitLoading = false;
         const picked = this.roles.find(r => String(r.id) === String(roleId));

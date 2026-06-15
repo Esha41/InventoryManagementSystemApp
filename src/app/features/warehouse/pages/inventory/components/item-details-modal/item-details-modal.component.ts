@@ -4,11 +4,12 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, X } from 'lucide-angular';
 import { WarehouseInventoryItem } from '@models/warehouse-inventory.model';
 import { formatDateShort } from '@utils/format.utils';
+import { AppNumberPipe } from '@shared/pipes/app-number.pipe';
 
 @Component({
   selector: 'app-item-details-modal',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, TranslateModule],
+  imports: [CommonModule, LucideAngularModule, TranslateModule, AppNumberPipe],
   templateUrl: './item-details-modal.component.html',
   styleUrls: ['./item-details-modal.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -33,10 +34,6 @@ export class ItemDetailsModalComponent {
   formatDate(date: Date): string {
     const formatted = formatDateShort(date);
     return formatted === 'N/A' ? '-' : formatted;
-  }
-
-  formatNumber(num: number): string {
-    return num.toLocaleString();
   }
 }
 

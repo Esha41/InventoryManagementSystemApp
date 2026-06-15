@@ -20,7 +20,8 @@
       <button
         type="button"
         role="tab"
-        [class]="tabClasses(activeTab() === 'articles')"
+        class="admin-tab"
+        [class.active]="activeTab() === 'articles'"
         [attr.aria-selected]="activeTab() === 'articles'"
         (click)="setTab('articles')">
         <lucide-angular [img]="BookOpen" class="h-4 w-4 shrink-0"></lucide-angular>
@@ -29,7 +30,8 @@
       <button
         type="button"
         role="tab"
-        [class]="tabClasses(activeTab() === 'messages')"
+        class="admin-tab"
+        [class.active]="activeTab() === 'messages'"
         [attr.aria-selected]="activeTab() === 'messages'"
         (click)="setTab('messages')">
         <lucide-angular [img]="Inbox" class="h-4 w-4 shrink-0"></lucide-angular>
@@ -44,7 +46,8 @@
       <button
         type="button"
         role="tab"
-        [class]="tabClasses(activeTab() === 'terms')"
+        class="admin-tab"
+        [class.active]="activeTab() === 'terms'"
         [attr.aria-selected]="activeTab() === 'terms'"
         (click)="setTab('terms')">
         <lucide-angular [img]="FileText" class="h-4 w-4 shrink-0"></lucide-angular>
@@ -53,7 +56,8 @@
       <button
         type="button"
         role="tab"
-        [class]="tabClasses(activeTab() === 'manual')"
+        class="admin-tab"
+        [class.active]="activeTab() === 'manual'"
         [attr.aria-selected]="activeTab() === 'manual'"
         (click)="setTab('manual')">
         <lucide-angular [img]="Download" class="h-4 w-4 shrink-0"></lucide-angular>
@@ -62,7 +66,8 @@
       <button
         type="button"
         role="tab"
-        [class]="tabClasses(activeTab() === 'contact')"
+        class="admin-tab"
+        [class.active]="activeTab() === 'contact'"
         [attr.aria-selected]="activeTab() === 'contact'"
         (click)="setTab('contact')">
         <lucide-angular [img]="Phone" class="h-4 w-4 shrink-0"></lucide-angular>

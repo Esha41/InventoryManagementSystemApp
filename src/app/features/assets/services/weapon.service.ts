@@ -67,28 +67,28 @@ export class WeaponService implements IImportableService {
   }
 
   // Update weapon
-  update<T = WeaponDto>(id: number, data: CreateUpdateWeaponDto): Observable<APIOperationResponse<T>> {
-    return this.apiService.putRaw<T>(`${this.endpoint}/${id}`, data);
+  update<T = WeaponDto>(id: number, data: CreateUpdateWeaponDto): Observable<T> {
+    return this.apiService.put<T>(`${this.endpoint}/${id}`, data);
   }
 
   // Delete weapon
-  delete(id: number): Observable<APIOperationResponse<boolean>> {
-    return this.apiService.deleteRaw<boolean>(`${this.endpoint}/${id}`);
+  delete(id: number): Observable<boolean> {
+    return this.apiService.delete<boolean>(`${this.endpoint}/${id}`);
   }
 
   // Restore soft-deleted weapon
-  restore(id: number): Observable<APIOperationResponse<boolean>> {
-    return this.apiService.postRaw<boolean>(`${this.endpoint}/${id}/restore`, {});
+  restore(id: number): Observable<boolean> {
+    return this.apiService.post<boolean>(`${this.endpoint}/${id}/restore`, {});
   }
 
   // Permanently delete soft-deleted weapon (irreversible)
-  permanentDelete(id: number): Observable<APIOperationResponse<boolean>> {
-    return this.apiService.deleteRaw<boolean>(`${this.endpoint}/${id}/permanent`);
+  permanentDelete(id: number): Observable<boolean> {
+    return this.apiService.delete<boolean>(`${this.endpoint}/${id}/permanent`);
   }
 
   // Create weapon
-  create<T = WeaponDto>(data: CreateUpdateWeaponDto): Observable<APIOperationResponse<T>> {
-    return this.apiService.postRaw<T>(this.endpoint, data);
+  create<T = WeaponDto>(data: CreateUpdateWeaponDto): Observable<T> {
+    return this.apiService.post<T>(this.endpoint, data);
   }
 
   // Get file info for a weapon (returns file ID and URL)

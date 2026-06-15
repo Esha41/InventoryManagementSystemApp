@@ -351,11 +351,7 @@ export const PERMISSIONS = {
     SCHEDULED: 'ScheduledReports'
   },
   DASHBOARD: {
-    VIEW: 'dashboard_view',
-    FORECAST: {
-      PAGE: 'forecastpage.page',
-      VIEW: 'forecastpage.view'
-    }
+    VIEW: 'dashboard_view'
   },
   WAREHOUSE: {
     PAGE: {

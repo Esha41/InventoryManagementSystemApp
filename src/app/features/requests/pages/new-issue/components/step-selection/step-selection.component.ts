@@ -26,7 +26,7 @@ export class StepSelectionComponent {
     @Input() cartridgeState!: CartridgeState;
     @Input() filterState!: FilterState;
     @Input() filterOptions!: FilterOptions;
-    @Input() fromReserve: string = 'No';
+    @Input() fromReserve: boolean = false;
     @Input() canProceed: boolean = false;
     @Input() selectedCartridges: Cartridge[] = [];
     @Input() displayedItemTypeOptions: string[] = [];

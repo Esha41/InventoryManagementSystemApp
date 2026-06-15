@@ -20,6 +20,7 @@ import {
   WarehouseInventoryTableSortColumn
 } from './components/inventory-table/inventory-table.component';
 import { defaultPageSize } from '@constants/app.constants';
+import { AppNumberPipe } from '@shared/pipes/app-number.pipe';
 
 @Component({
   selector: 'app-warehouse-inventory-table',
@@ -34,7 +35,8 @@ import { defaultPageSize } from '@constants/app.constants';
     PaginationComponent,
     RowsPerPageComponent,
     BatchTableComponent,
-    InventoryTableComponent
+    InventoryTableComponent,
+    AppNumberPipe
   ],
   template: `
     <app-card *ngIf="!loading && !error" [shadow]="true">
@@ -250,7 +252,7 @@ import { defaultPageSize } from '@constants/app.constants';
                 {{ 'addInventory.quantity' | translate }}
               </span>
               <span class="font-bold text-[var(--color-text)] text-sm md:text-base block truncate">
-                {{ formatNumber(item.originalQuantity) }}
+                {{ item.originalQuantity | appNumber }}
               </span>
             </div>
             <div>
@@ -315,7 +317,6 @@ import { defaultPageSize } from '@constants/app.constants';
           [getManufacturerName]="getManufacturerName"
           [showPrimaryPurposeColumn]="showPrimaryPurposeColumn"
           [getPrimaryPurposeName]="getPrimaryPurposeName"
-          [formatNumber]="formatNumber"
           [formatDate]="formatDate"
           [getItemMasterRouterLink]="getItemMasterRouterLink"
           [sortColumn]="inventorySortColumn"
@@ -366,7 +367,6 @@ export class WarehouseInventoryTableComponent {
   @Input() getSupplierName: (detail: InventoryDetailDto) => string = () => '';
   @Input() getManufacturerName: (detail: InventoryDetailDto) => string = () => '';
   @Input() getPrimaryPurposeName: (detail: InventoryDetailDto) => string = () => '';
-  @Input() formatNumber: (value: number) => string = () => '';
   @Input() formatDate: (date?: Date | string) => string = () => '';
   @Input() getItemMasterRouterLink: (detail: InventoryDetailDto) => {
     commands: readonly (string | number)[];

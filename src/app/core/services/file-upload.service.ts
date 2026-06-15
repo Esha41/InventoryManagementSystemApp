@@ -182,13 +182,5 @@ export class FileUploadService {
     params.append('path', path);
     return `${baseUrl}${API_ENDPOINTS.FILE_UPLOAD.SERVE_BY_PATH}?${params.toString()}`;
   }
-
-  /**
-   * Extract error message from HTTP error response
-   * Handles various error response formats from the backend
-   */
-  private extractErrorMessage(error: unknown): string {
-    return ErrorHandler.extractErrorMessage(error, 'Failed to upload file. Please try again.');
-  }
 }
 

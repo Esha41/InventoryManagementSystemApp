@@ -73,7 +73,7 @@ export class AnnouncementsComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
         this.announcementService.getAll().pipe(takeUntil(this.destroy$)).subscribe({
             next: (response) => {
-                this.announcements.set(response.data);
+                this.announcements.set(response);
                 this.loading.set(false);
                 this.cdr.markForCheck();
             },

@@ -3,34 +3,31 @@ import { ItemType } from '@models/inventory.model';
 
 export const filterAllowances = (
   allowances: AllowanceTableRow[],
-  selectedDepartment: number | string | null | undefined,
-  selectedItem: number | string | null | undefined,
+  selectedDepartment: number | null,
+  selectedItem: number | null,
   selectedItemType: ItemType | null | undefined = null
 ): AllowanceTableRow[] => {
   let filtered = [...allowances];
 
-  if (selectedDepartment !== null && selectedDepartment !== undefined && selectedDepartment !== '') {
-    filtered = filtered.filter(allowance => {
-      const allowanceDeptId = allowance.departmentId;
-      return allowanceDeptId !== undefined && allowanceDeptId !== null &&
-             (allowanceDeptId === Number(selectedDepartment) || String(allowanceDeptId) === String(selectedDepartment));
-    });
+  if (selectedDepartment !== null) {
+    filtered = filtered.filter(allowance =>
+      allowance.departmentId !== undefined &&
+      allowance.departmentId !== null &&
+      allowance.departmentId === selectedDepartment
+    );
   }
 
   if (selectedItemType !== null && selectedItemType !== undefined) {
-    filtered = filtered.filter(allowance => {
-      return allowance.itemType === selectedItemType;
-    });
+    filtered = filtered.filter(allowance => allowance.itemType === selectedItemType);
   }
 
-  if (selectedItem !== null && selectedItem !== undefined && selectedItem !== '') {
-    filtered = filtered.filter(allowance => {
-      const allowanceItemId = allowance.itemId;
-      return allowanceItemId !== undefined && allowanceItemId !== null &&
-             (allowanceItemId === Number(selectedItem) || String(allowanceItemId) === String(selectedItem));
-    });
+  if (selectedItem !== null) {
+    filtered = filtered.filter(allowance =>
+      allowance.itemId !== undefined &&
+      allowance.itemId !== null &&
+      allowance.itemId === selectedItem
+    );
   }
 
   return filtered;
-}
-
+};

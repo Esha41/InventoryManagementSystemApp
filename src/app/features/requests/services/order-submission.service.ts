@@ -26,7 +26,7 @@ export interface OrderSubmissionData {
   numberOfOfficers: number | null;
   numberOfOtherRanks: number | null;
   requesterComments: string;
-  fromReserve: string;
+  fromReserve: boolean;
   departmentId: number;
   defaultRequestPurposeId: number;
   defaultRequestTypeId: number;
@@ -217,7 +217,7 @@ export class OrderSubmissionService {
       recieverId: null,
       depotId: null,
       requestPurposeId: data.selectedRequestPurposeId ?? data.defaultRequestPurposeId,
-      isFromAllowance: data.fromReserve === 'Yes',
+      isFromAllowance: data.fromReserve,
       usageDateFrom,
       usageTimeFrom: this.formatTimeOnly(data.usageTimeFrom),
       usageDateTo,

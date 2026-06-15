@@ -15,7 +15,6 @@ const FEATURE_ALIAS_PATTERNS = [
   '@assets/**',
   '@workflow/**',
   '@department/**',
-  '@forecast/**',
   '@admin/**',
   '@settings/**',
   '@notifications/**',

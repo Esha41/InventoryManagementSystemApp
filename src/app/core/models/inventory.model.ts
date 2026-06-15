@@ -90,8 +90,9 @@ export interface InventoryDetailDto {
   contractNumber?: string;
   notes?: string;
 
-  /** Selected primary purpose for this lot (inventory line) */
+  /** Backend typo for `primaryPurposeId` — see primary-purpose.model.ts */
   primaryPurposId?: number;
+  /** Backend typo for `primaryPurpose` navigation — see primary-purpose.model.ts */
   primaryPurpos?: {
     id: number;
     nameAr: string;

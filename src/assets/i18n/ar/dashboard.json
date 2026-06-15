@@ -324,43 +324,5 @@
     "exportingWithDetails": "جارٍ تحميل تفاصيل LOT للتصدير. الرجاء الانتظار...",
     "totalItems": "إجمالي المواد",
     "totalsHint": "إجماليات الكميات تعكس الصفحة الحالية (ومرشح البحث إن وُجد)."
-  },
-  "forecast": {
-    "title": "التوقعات",
-    "weeklyIssuesOverview": "نظرة عامة على الإصدارات الأسبوعية",
-    "monthlyPerformance": "الأداء الشهري",
-    "ammunitionConsumption": "استهلاك الذخيرة",
-    "budgetConsumption": "استهلاك الميزانية",
-    "annualBudgetForecast": "التنبؤ بالميزانية السنوية",
-    "details": "التفاصيل",
-    "lowReturnsInMay": "عوائد منخفضة في مايو",
-    "quantityReduced": "انخفضت كمية طلبات الذخيرة بنسبة",
-    "remaining": "المتبقي",
-    "consumed": "المستهلك",
-    "march2023": "مارس 2023"
-  },
-  "inventoryForecast": {
-    "title": "توقعات المخزون",
-    "timeframe": "الإطار الزمني",
-    "allTime": "كل الوقت",
-    "ammunition": "الذخيرة",
-    "requests": "الطلبات",
-    "all": "الكل",
-    "activeCustomers": "العملاء النشطون",
-    "orderFulfillment": "تنفيذ الطلبات",
-    "budgetForecast": "التنبؤ بالميزانية",
-    "activeSuppliers": "الموردون النشطون",
-    "currentStock": "المخزون الحالي",
-    "activityIncrease": "زيادة النشاط",
-    "hotItems": "الطلبات الشائعة",
-    "overstock": "الفائض",
-    "reStockForecast": "التنبؤ بإعادة التخزين",
-    "firstInFirstOut": "أولوية الصرف",
-    "expensesTracking": "تتبع المصروفات",
-    "shippingExpenses": "مصروفات الشحن",
-    "storageExpenses": "مصروفات التخزين",
-    "totalExpenses": "إجمالي المصروفات",
-    "entryDate": "تاريخ الدخول",
-    "consumed": "المستهلك"
   }
 }

@@ -2,16 +2,12 @@ import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { OrderDto } from '@models/order.model';
 import { getCurrentLang, getLocalizedName } from '@utils/localization.utils';
-import { formatNumber as formatNumberUtil, formatDate as formatDateUtil } from '@utils/format.utils';
+import { formatDate as formatDateUtil } from '@utils/format.utils';
 
 @Injectable()
 export class WeaponSupplyDisplayService {
 
     constructor(private translate: TranslateService) {}
-
-    formatNumber(num: number): string {
-        return formatNumberUtil(num);
-    }
 
     formatDate(date: Date | string | undefined): string {
         return formatDateUtil(date);

@@ -22,7 +22,7 @@ export interface CatalogOrchestratorContext {
   cartridgeState: CartridgeState;
   filterState: ExtendedFilterState;
   filterOptions: ExtendedFilterOptions;
-  fromReserve: string;
+  fromReserve: boolean;
   departmentId: number | null;
   cdr: ChangeDetectorRef;
 }

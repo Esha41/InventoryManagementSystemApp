@@ -27,6 +27,7 @@ type AdminTab = 'articles' | 'messages' | 'terms' | 'manual' | 'contact';
     HelpCenterContactTabComponent
   ],
   templateUrl: './help-center-management.component.html',
+  styleUrl: './help-center-management.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HelpCenterManagementComponent implements OnInit, OnDestroy {
@@ -68,16 +69,6 @@ export class HelpCenterManagementComponent implements OnInit, OnDestroy {
         const n = messages.filter(m => !m.isRead).length;
         this.unreadMessageCount.set(n);
       });
-  }
-
-  tabClasses(isActive: boolean): string {
-    const base =
-      'inline-flex items-center justify-center gap-2 rounded-lg border-0 px-4 py-2 text-sm font-semibold cursor-pointer transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand)]';
-    const active =
-      'bg-[var(--color-brand)] text-white shadow-sm hover:bg-[var(--color-brand-dark)] hover:text-white';
-    const inactive =
-      'bg-transparent text-[color-mix(in_srgb,var(--color-text)_72%,var(--color-background)_28%)] hover:bg-[var(--color-background)] hover:text-[var(--color-text)]';
-    return `${base} ${isActive ? active : inactive}`;
   }
 
   setTab(tab: AdminTab): void {

@@ -1,11 +1,13 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, OnDestroy, SimpleChanges, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Clock, CheckCircle, XCircle, Mail, File } from 'lucide-angular';
 import { ModalComponent } from '@components/modal/modal.component';
-import { ReportService, ScheduledReportExecution } from '@reports/services/report.service';
+import { ReportService } from '@reports/services/report.service';
+import { ScheduledReportExecution } from '@models/report.model';
+import { ConfigService } from '@services/config.service';
+import { Subject, of, takeUntil } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
-import { of } from 'rxjs';
 
 @Component({
   selector: 'app-execution-history-dialog',
@@ -17,9 +19,10 @@ import { of } from 'rxjs';
     ModalComponent
   ],
   templateUrl: './execution-history-dialog.component.html',
-  styleUrls: ['./execution-history-dialog.component.css']
+  styleUrls: ['./execution-history-dialog.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ExecutionHistoryDialogComponent implements OnInit, OnChanges {
+export class ExecutionHistoryDialogComponent implements OnInit, OnChanges, OnDestroy {
   @Input() isOpen = false;
   @Input() scheduledReportId: string = '';
   @Output() closed = new EventEmitter<void>();
@@ -34,9 +37,13 @@ export class ExecutionHistoryDialogComponent implements OnInit, OnChanges {
   readonly Mail = Mail;
   readonly File = File;
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     private reportService: ReportService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private config: ConfigService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -51,6 +58,11 @@ export class ExecutionHistoryDialogComponent implements OnInit, OnChanges {
     }
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   loadHistory(): void {
     if (!this.scheduledReportId) {
       return;
@@ -61,17 +73,21 @@ export class ExecutionHistoryDialogComponent implements OnInit, OnChanges {
 
     this.reportService.getExecutionHistory(this.scheduledReportId)
       .pipe(
+        takeUntil(this.destroy$),
         catchError((err) => {
-          console.error('Error loading execution history:', err);
+          this.config.logError('Error loading execution history', err);
           this.error = this.translateService.instant('common.error');
+          this.cdr.markForCheck();
           return of([]);
         }),
         finalize(() => {
           this.loading = false;
+          this.cdr.markForCheck();
         })
       )
       .subscribe((executions) => {
         this.executions = executions;
+        this.cdr.markForCheck();
       });
   }
 

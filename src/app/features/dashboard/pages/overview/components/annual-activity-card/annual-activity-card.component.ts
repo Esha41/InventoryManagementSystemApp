@@ -1,12 +1,11 @@
 import { Component, Input, ElementRef, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-annual-activity-card',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule],
+  imports: [CommonModule, TranslateModule],
   templateUrl: './annual-activity-card.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -47,6 +46,10 @@ export class AnnualActivityCardComponent {
   tooltipX = 0;
   tooltipY = 0;
   @ViewChild('wrap', { static: true }) wrapRef!: ElementRef<HTMLDivElement>;
+
+  onMonthChange(event: Event): void {
+    this.selectedMonth = (event.target as HTMLSelectElement).value;
+  }
 
   onBarEnter(index: number, event: MouseEvent): void {
     this.hoveredIndex = index;

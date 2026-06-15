@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
 import QRCode from 'qrcode';
-import { OrderSummary } from '@models/order-report.model';
-import { generateQrCodeData } from '../../utils/order-report.utils';
 
 /**
  * Service for generating QR codes for order reports
@@ -21,9 +19,8 @@ export class OrderReportQrService {
     }
 
     try {
-      const qrData = orderId;
       const qrCodeDataUrl = await QRCode.toDataURL(
-        qrData,
+        orderId,
         {
           width: 320,
           margin: 2,
@@ -36,16 +33,5 @@ export class OrderReportQrService {
       console.error('Failed to generate QR code', error);
       return null;
     }
-  }
-
-  /**
-   * Generate QR code data string for order summary
-   * This creates a human-readable and JSON format string for the QR code
-   * @param orderSummary - The order summary to encode
-   * @param localizedUsagePurpose - Optional localized usage purpose string
-   * @returns QR code data string
-   */
-  generateQrCodeData(orderSummary: OrderSummary, localizedUsagePurpose?: string): string {
-    return generateQrCodeData(orderSummary, localizedUsagePurpose);
   }
 }

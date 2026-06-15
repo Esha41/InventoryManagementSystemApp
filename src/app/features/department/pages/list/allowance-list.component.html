@@ -17,7 +17,7 @@
             </app-dropdown>
             <!-- Clear Department Filter Button - Only show for admin users -->
             <button
-              *ngIf="isAdminUser && selectedDepartment !== null && selectedDepartment !== undefined && selectedDepartment !== ''"
+              *ngIf="isAdminUser && selectedDepartment !== null"
               type="button" (click)="clearDepartmentFilter(); $event.stopPropagation()"
               class="absolute end-8 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-md hover:bg-[var(--color-background-hover)] active:bg-[var(--color-background-active)] transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] shadow-custom-sm z-20"
               style="pointer-events: auto;" [attr.aria-label]="'allowance.clearFilter' | translate"
@@ -45,7 +45,7 @@
               placeholder="{{ 'allowance.selectItem' | translate }}">
             </app-dropdown>
             <!-- Clear Item Filter Button -->
-            <button *ngIf="selectedItem !== null && selectedItem !== undefined && selectedItem !== ''" type="button"
+            <button *ngIf="selectedItem !== null" type="button"
               (click)="clearItemFilter(); $event.stopPropagation()"
               class="absolute end-8 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-md hover:bg-[var(--color-background-hover)] active:bg-[var(--color-background-active)] transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] shadow-custom-sm z-20"
               style="pointer-events: auto;" [attr.aria-label]="'allowance.clearFilter' | translate"

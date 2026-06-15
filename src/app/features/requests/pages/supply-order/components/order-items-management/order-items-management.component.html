@@ -31,7 +31,7 @@
             <span [appTableClampTooltip]="item.itemName">{{ item.itemName }}</span>
           </td>
           <td class="px-4 py-2 text-[var(--color-text-muted)]">{{ getItemProductId(item) }}</td>
-          <td class="px-4 py-2 text-[var(--color-text)]">{{ formatNumber(item.quantity) }}</td>
+          <td class="px-4 py-2 text-[var(--color-text)]">{{ item.quantity | appNumber }}</td>
           <td class="px-4 py-2">
             <ng-container *ngIf="canIncreaseQuantity || canDecreaseQuantity">
               <button *appHasPermission="PERMISSIONS.REQUESTS.ORDER.EDIT" type="button"

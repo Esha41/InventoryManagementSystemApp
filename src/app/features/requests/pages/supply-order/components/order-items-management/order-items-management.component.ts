@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, Plus } from 'lucide-angular';
 import { OrderRequestItemDto } from '@models/order.model';
-import { formatNumber as formatNumberUtil } from '@utils/format.utils';
+import { AppNumberPipe } from '@shared/pipes/app-number.pipe';
 import { getItemProductId } from '@requests/utils/supply-order-format.utils';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
@@ -23,7 +23,8 @@ import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/tabl
     TranslateModule,
     LucideAngularModule,
     HasPermissionDirective,
-    TableClampTooltipDirective
+    TableClampTooltipDirective,
+    AppNumberPipe
   ],
   templateUrl: './order-items-management.component.html',
   styleUrls: ['./order-items-management.component.css'],
@@ -42,8 +43,6 @@ export class OrderItemsManagementComponent {
   @Output() addItemClick = new EventEmitter<void>();
   @Output() editItemClick = new EventEmitter<OrderRequestItemDto>();
   @Output() removeItemClick = new EventEmitter<OrderRequestItemDto>();
-
-  formatNumber = formatNumberUtil;
 
   onAddItemClick(): void {
     this.addItemClick.emit();

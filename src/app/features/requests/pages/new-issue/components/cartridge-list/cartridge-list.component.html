@@ -110,7 +110,7 @@
     <!-- Ammunition Filters -->
     <ng-container *ngIf="selectedItemType === 'Ammunition'">
       <!-- Caliber Category -->
-      <div>
+      <div class="filter-full-width">
         <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
           <span>{{ 'addAsset.ammunitionSizeClass' | translate }}</span>
           <button *ngIf="selectedAmmunitionType" (click)="onAmmunitionTypeChange('')" type="button"
@@ -129,7 +129,7 @@
       </div>
 
       <!-- Select Caliber -->
-      <div>
+      <div class="filter-full-width">
         <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
           <span>{{ 'addAsset.caliber' | translate }}</span>
           <button *ngIf="selectedCaliber" (click)="onCaliberChange('')" type="button"
@@ -148,92 +148,93 @@
         </app-dropdown>
       </div>
 
-      <ng-container *ngTemplateOutlet="primaryPurposeClassificationFilters"></ng-container>
-
-      <!-- Linked/Not Linked -->
-      <div>
-        <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
-          <span>{{ 'newIssueRequest.linkedNotLinked' | translate }}</span>
-          <button *ngIf="selectedLinked" (click)="onLinkedChange('')" type="button"
-            class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-            <span>{{ 'common.clear' | translate }}</span>
-          </button>
-        </span>
-        <app-dropdown class="w-full" [ngModel]="selectedLinked" (ngModelChange)="onLinkedChange($event)"
-          [options]="linkedOptions" optionLabel="label" optionValue="value" [translateLabels]="true"
-          [showSearch]="false"
-          [placeholderSelectable]="false" [placeholderValue]="''"
-          placeholder="{{ 'newIssueRequest.linkedNotLinked' | translate }}">
-        </app-dropdown>
-      </div>
-
-      <!-- Case Type -->
-      <div>
-        <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
-          <span>{{ 'assetList.filters.caseType' | translate }}</span>
-          <button *ngIf="selectedCaseType" (click)="onCaseTypeChange('')" type="button"
-            class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-            <span>{{ 'common.clear' | translate }}</span>
-          </button>
-        </span>
-        <app-dropdown class="w-full" [ngModel]="selectedCaseType" (ngModelChange)="onCaseTypeChange($event)"
-          [options]="caseTypeOptions" optionLabel="label" optionValue="value"
-          [placeholderSelectable]="false" [placeholderValue]="''"
-          [noDataText]="'common.noData' | translate"
-          placeholder="{{ 'assetList.filters.allCaseTypes' | translate }}">
-        </app-dropdown>
-      </div>
-
-      <!-- Compatibility -->
-      <div>
-        <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
-          <span>{{ 'assetList.filters.compatibility' | translate }}</span>
-          <button *ngIf="selectedCompatibility" (click)="onCompatibilityChange('')" type="button"
-            class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-            <span>{{ 'common.clear' | translate }}</span>
-          </button>
-        </span>
-        <app-dropdown class="w-full" [ngModel]="selectedCompatibility" (ngModelChange)="onCompatibilityChange($event)"
-          [options]="compatibilityOptions" optionLabel="label" optionValue="value"
-          [placeholderSelectable]="false" [placeholderValue]="''"
-          [noDataText]="'common.noData' | translate"
-          placeholder="{{ 'assetList.filters.allCompatibility' | translate }}">
-        </app-dropdown>
-      </div>
-
-      <!-- Hazard Division -->
-      <div>
-        <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
-          <span>{{ 'addAsset.hazardDivision' | translate }}</span>
-          <button *ngIf="selectedHazardDivision" (click)="onHazardDivisionChange('')" type="button"
-            class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-            <span>{{ 'common.clear' | translate }}</span>
-          </button>
-        </span>
-        <app-dropdown class="w-full" [ngModel]="selectedHazardDivision" (ngModelChange)="onHazardDivisionChange($event)"
-          [options]="hazardDivisionOptions" optionLabel="label" optionValue="value"
-          [placeholderSelectable]="false" [placeholderValue]="''"
-          [noDataText]="'common.noData' | translate"
-          placeholder="{{ 'assetList.filters.allHazardDivisions' | translate }}">
-        </app-dropdown>
-      </div>
+      <ng-container *ngTemplateOutlet="classificationFilter"></ng-container>
+      <ng-container *ngTemplateOutlet="primaryPurposeFilter"></ng-container>
 
       <ng-container *ngTemplateOutlet="moreFiltersToggle"></ng-container>
 
       <ng-container *ngIf="showMoreFilters">
         <div class="additional-filters-grid filter-full-width mt-2 border-t border-[var(--color-border)] pt-4">
+          <!-- Linked/Not Linked -->
+          <div>
+            <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
+              <span>{{ 'newIssueRequest.linkedNotLinked' | translate }}</span>
+              <button *ngIf="selectedLinked" (click)="onLinkedChange('')" type="button"
+                class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                <span>{{ 'common.clear' | translate }}</span>
+              </button>
+            </span>
+            <app-dropdown class="w-full" [ngModel]="selectedLinked" (ngModelChange)="onLinkedChange($event)"
+              [options]="linkedOptions" optionLabel="label" optionValue="value" [translateLabels]="true"
+              [showSearch]="false"
+              [placeholderSelectable]="false" [placeholderValue]="''"
+              placeholder="{{ 'newIssueRequest.linkedNotLinked' | translate }}">
+            </app-dropdown>
+          </div>
+
+          <!-- Case Type -->
+          <div>
+            <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
+              <span>{{ 'assetList.filters.caseType' | translate }}</span>
+              <button *ngIf="selectedCaseType" (click)="onCaseTypeChange('')" type="button"
+                class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                <span>{{ 'common.clear' | translate }}</span>
+              </button>
+            </span>
+            <app-dropdown class="w-full" [ngModel]="selectedCaseType" (ngModelChange)="onCaseTypeChange($event)"
+              [options]="caseTypeOptions" optionLabel="label" optionValue="value"
+              [placeholderSelectable]="false" [placeholderValue]="''"
+              [noDataText]="'common.noData' | translate"
+              placeholder="{{ 'assetList.filters.allCaseTypes' | translate }}">
+            </app-dropdown>
+          </div>
+
+          <!-- Compatibility -->
+          <div>
+            <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
+              <span>{{ 'assetList.filters.compatibility' | translate }}</span>
+              <button *ngIf="selectedCompatibility" (click)="onCompatibilityChange('')" type="button"
+                class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                <span>{{ 'common.clear' | translate }}</span>
+              </button>
+            </span>
+            <app-dropdown class="w-full" [ngModel]="selectedCompatibility" (ngModelChange)="onCompatibilityChange($event)"
+              [options]="compatibilityOptions" optionLabel="label" optionValue="value"
+              [placeholderSelectable]="false" [placeholderValue]="''"
+              [noDataText]="'common.noData' | translate"
+              placeholder="{{ 'assetList.filters.allCompatibility' | translate }}">
+            </app-dropdown>
+          </div>
+
+          <!-- Hazard Division -->
+          <div>
+            <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
+              <span>{{ 'addAsset.hazardDivision' | translate }}</span>
+              <button *ngIf="selectedHazardDivision" (click)="onHazardDivisionChange('')" type="button"
+                class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                <span>{{ 'common.clear' | translate }}</span>
+              </button>
+            </span>
+            <app-dropdown class="w-full" [ngModel]="selectedHazardDivision" (ngModelChange)="onHazardDivisionChange($event)"
+              [options]="hazardDivisionOptions" optionLabel="label" optionValue="value"
+              [placeholderSelectable]="false" [placeholderValue]="''"
+              [noDataText]="'common.noData' | translate"
+              placeholder="{{ 'assetList.filters.allHazardDivisions' | translate }}">
+            </app-dropdown>
+          </div>
+
           <div>
             <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
               <span>{{ 'addAsset.propellant' | translate }}</span>
@@ -283,7 +284,7 @@
 
     <!-- Weapon Filters -->
     <ng-container *ngIf="selectedItemType === 'Weapon'">
-      <div>
+      <div class="filter-full-width">
         <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
           <span>{{ 'addAsset.weaponType' | translate }}</span>
           <button *ngIf="selectedWeaponType" (click)="onWeaponTypeChange('')" type="button"
@@ -300,7 +301,7 @@
           placeholder="{{ 'addAsset.selectWeaponType' | translate }}">
         </app-dropdown>
       </div>
-      <div>
+      <div class="filter-full-width">
         <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
           <span>{{ 'addAsset.caliber' | translate }}</span>
           <button *ngIf="selectedCaliber" (click)="onCaliberChange('')" type="button"
@@ -319,10 +320,11 @@
         </app-dropdown>
       </div>
 
-      <ng-container *ngTemplateOutlet="primaryPurposeClassificationFilters"></ng-container>
+      <ng-container *ngTemplateOutlet="primaryPurposeFilter"></ng-container>
+      <ng-container *ngTemplateOutlet="classificationFilter"></ng-container>
 
       <!-- Country of Manufacture -->
-      <div>
+      <div class="filter-full-width">
         <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
           <span>{{ 'assetList.filters.country' | translate }}</span>
           <button *ngIf="selectedCountryOfManufacture" (click)="onCountryOfManufactureChange('')" type="button"
@@ -342,7 +344,7 @@
       </div>
 
       <!-- UN Number -->
-      <div>
+      <div class="filter-full-width">
         <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between" for="cartridge-list-fld-weapon-un">
           <span>{{ 'addAsset.unNumber' | translate }}</span>
           <button *ngIf="selectedWeaponUNNumber" (click)="onWeaponUNNumberChange('')" type="button"
@@ -399,7 +401,7 @@
 
     <!-- Explosive Filters -->
     <ng-container *ngIf="selectedItemType === 'Explosive'">
-      <div>
+      <div class="filter-full-width">
         <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
           <span>{{ 'addAsset.explosiveType' | translate }}</span>
           <button *ngIf="selectedExplosiveType" (click)="onExplosiveTypeChange('')" type="button"
@@ -417,30 +419,8 @@
         </app-dropdown>
       </div>
 
-      <!-- Hazard Division -->
-      <div>
-        <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
-          <span>{{ 'assetList.filters.hazardDivision' | translate }}</span>
-          <button *ngIf="selectedExplosiveHazardDivision" (click)="onExplosiveHazardDivisionChange('')" type="button"
-            class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-            <span>{{ 'common.clear' | translate }}</span>
-          </button>
-        </span>
-        <app-dropdown class="w-full" [ngModel]="selectedExplosiveHazardDivision" (ngModelChange)="onExplosiveHazardDivisionChange($event)"
-          [options]="hazardDivisionOptions" optionLabel="label" optionValue="value"
-          [placeholderSelectable]="false" [placeholderValue]="''"
-          [noDataText]="'common.noData' | translate"
-          placeholder="{{ 'assetList.filters.allHazardDivisions' | translate }}">
-        </app-dropdown>
-      </div>
-
-      <ng-container *ngTemplateOutlet="primaryPurposeClassificationFilters"></ng-container>
-
       <!-- Compatibility -->
-      <div>
+      <div class="filter-full-width">
         <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
           <span>{{ 'assetList.filters.compatibility' | translate }}</span>
           <button *ngIf="selectedExplosiveCompatibility" (click)="onExplosiveCompatibilityChange('')" type="button"
@@ -459,27 +439,50 @@
         </app-dropdown>
       </div>
 
-      <!-- UN Number -->
-      <div>
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between" for="cartridge-list-fld-11-11">
-          <span>{{ 'addAsset.unNumber' | translate }}</span>
-          <button *ngIf="selectedUNNumber" (click)="onUnNumberChange('')" type="button"
-            class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-            <span>{{ 'common.clear' | translate }}</span>
-          </button>
-        </label>
-        <input id="cartridge-list-fld-11-11" type="text" [ngModel]="selectedUNNumber" (ngModelChange)="onUnNumberChange($event)"
-          placeholder="{{ 'addAsset.enterUnNumber' | translate }}"
-          class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent placeholder:text-[var(--color-text-muted)]">
-      </div>
+      <ng-container *ngTemplateOutlet="classificationFilter"></ng-container>
+      <ng-container *ngTemplateOutlet="primaryPurposeFilter"></ng-container>
 
       <ng-container *ngTemplateOutlet="moreFiltersToggle"></ng-container>
 
       <ng-container *ngIf="showMoreFilters">
         <div class="additional-filters-grid filter-full-width mt-2 border-t border-[var(--color-border)] pt-4">
+          <!-- Hazard Division -->
+          <div>
+            <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
+              <span>{{ 'assetList.filters.hazardDivision' | translate }}</span>
+              <button *ngIf="selectedExplosiveHazardDivision" (click)="onExplosiveHazardDivisionChange('')" type="button"
+                class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                <span>{{ 'common.clear' | translate }}</span>
+              </button>
+            </span>
+            <app-dropdown class="w-full" [ngModel]="selectedExplosiveHazardDivision" (ngModelChange)="onExplosiveHazardDivisionChange($event)"
+              [options]="hazardDivisionOptions" optionLabel="label" optionValue="value"
+              [placeholderSelectable]="false" [placeholderValue]="''"
+              [noDataText]="'common.noData' | translate"
+              placeholder="{{ 'assetList.filters.allHazardDivisions' | translate }}">
+            </app-dropdown>
+          </div>
+
+          <!-- UN Number -->
+          <div>
+            <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between" for="cartridge-list-fld-11-11">
+              <span>{{ 'addAsset.unNumber' | translate }}</span>
+              <button *ngIf="selectedUNNumber" (click)="onUnNumberChange('')" type="button"
+                class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                <span>{{ 'common.clear' | translate }}</span>
+              </button>
+            </label>
+            <input id="cartridge-list-fld-11-11" type="text" [ngModel]="selectedUNNumber" (ngModelChange)="onUnNumberChange($event)"
+              placeholder="{{ 'addAsset.enterUnNumber' | translate }}"
+              class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent placeholder:text-[var(--color-text-muted)]">
+          </div>
+
           <div>
             <label class="mb-1 block text-xs font-medium text-[var(--color-text-muted)]" for="cartridge-list-fld-explosive-arm">{{ 'addAsset.armNumber' | translate }}</label>
             <input id="cartridge-list-fld-explosive-arm" type="text" [ngModel]="draftArmNumber" (ngModelChange)="onArmNumberDraftChange($event)"
@@ -539,9 +542,9 @@
   </div>
 </ng-template>
 
-<ng-template #primaryPurposeClassificationFilters>
+<ng-template #primaryPurposeFilter>
   <!-- Primary Purpose -->
-  <div>
+  <div class="filter-full-width">
     <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
       <span>{{ 'assetList.filters.primaryPurpose' | translate }}</span>
       <button *ngIf="selectedPrimaryPurposeId" (click)="onPrimaryPurposeChange('')" type="button"
@@ -559,9 +562,11 @@
       placeholder="{{ 'assetList.filters.allPrimaryPurposes' | translate }}">
     </app-dropdown>
   </div>
+</ng-template>
 
+<ng-template #classificationFilter>
   <!-- Classification -->
-  <div>
+  <div class="filter-full-width">
     <span class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between">
       <span>{{ 'assetList.filters.classification' | translate }}</span>
       <button *ngIf="selectedClassificationId" (click)="onClassificationChange('')" type="button"

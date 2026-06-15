@@ -18,7 +18,7 @@ export class ThemeService {
     const savedTheme = this.storageService.get<Theme>(THEME_STORAGE_KEY) || 'light';
     this.currentThemeSubject = new BehaviorSubject<Theme>(savedTheme);
     this.currentTheme$ = this.currentThemeSubject.asObservable();
-    
+
     // Apply theme on initialization
     this.applyTheme(savedTheme);
   }
@@ -59,7 +59,7 @@ export class ThemeService {
    */
   private applyTheme(theme: Theme): void {
     const htmlElement = document.documentElement;
-    
+
     if (theme === 'dark') {
       htmlElement.classList.add('dark');
       htmlElement.setAttribute('data-theme', 'dark');
@@ -68,13 +68,4 @@ export class ThemeService {
       htmlElement.setAttribute('data-theme', 'light');
     }
   }
-
-  /**
-   * Initialize theme on app startup
-   */
-  initialize(): void {
-    const savedTheme = this.storageService.get<Theme>(THEME_STORAGE_KEY) || 'light';
-    this.setTheme(savedTheme);
-  }
 }
-

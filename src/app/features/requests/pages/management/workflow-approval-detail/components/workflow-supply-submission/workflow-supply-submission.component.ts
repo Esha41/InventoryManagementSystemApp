@@ -18,7 +18,7 @@ import { ToastService } from '@services/toast.service';
 import { ConfigService } from '@services/config.service';
 import { getRankDisplayName as getRankDisplayNameHelper, getLocalizedValue as getLocalizedValueHelper } from '../../utils/workflow-approval-helpers';
 import { EmployeeService } from '@admin/services/employee.service';
-import { EmployeeDto } from '@core/models/asset.model';
+import { EmployeeDto } from '@core/models/employee.model';
 import { getCurrentLang, Localizable } from '@utils/localization.utils';
 import { EmployeeFormModalComponent } from '@admin/components/employee-form-modal/employee-form-modal.component';
 import { PERMISSIONS } from '@constants/permissions.constants';

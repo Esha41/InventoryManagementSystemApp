@@ -176,21 +176,21 @@
             <label class="flex items-center cursor-pointer">
               <div
                 class="w-5 h-5 rounded-sm border-2 border-[var(--color-border)] flex items-center justify-center me-2"
-                [class.bg-[var(--color-brand)]]="fromReserve === 'Yes'"
-                [class.border-[var(--color-brand)]]="fromReserve === 'Yes'">
-                <span *ngIf="fromReserve === 'Yes'" class="text-white text-xs">✓</span>
+                [class.bg-[var(--color-brand)]]="fromReserve"
+                [class.border-[var(--color-brand)]]="fromReserve">
+                <span *ngIf="fromReserve" class="text-white text-xs">✓</span>
               </div>
-              <input type="radio" name="fromReserveReview" value="Yes" [ngModel]="fromReserve" disabled class="sr-only">
+              <input type="radio" name="fromReserveReview" [value]="true" [ngModel]="fromReserve" disabled class="sr-only">
               <span class="text-sm text-[var(--color-text)]">{{ 'newIssueRequest.yes' | translate }}</span>
             </label>
             <label class="flex items-center cursor-pointer">
               <div
                 class="w-5 h-5 rounded-sm border-2 border-[var(--color-border)] flex items-center justify-center me-2"
-                [class.bg-[var(--color-brand)]]="fromReserve === 'No'"
-                [class.border-[var(--color-brand)]]="fromReserve === 'No'">
-                <span *ngIf="fromReserve === 'No'" class="text-white text-xs">✓</span>
+                [class.bg-[var(--color-brand)]]="!fromReserve"
+                [class.border-[var(--color-brand)]]="!fromReserve">
+                <span *ngIf="!fromReserve" class="text-white text-xs">✓</span>
               </div>
-              <input type="radio" name="fromReserveReview" value="No" [ngModel]="fromReserve" disabled class="sr-only">
+              <input type="radio" name="fromReserveReview" [value]="false" [ngModel]="fromReserve" disabled class="sr-only">
               <span class="text-sm text-[var(--color-text)]">{{ 'newIssueRequest.no' | translate }}</span>
             </label>
           </div>

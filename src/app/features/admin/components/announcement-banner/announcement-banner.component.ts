@@ -118,7 +118,7 @@ export class AnnouncementBannerComponent implements OnInit, OnDestroy {
         this.loading.set(true);
         this.announcementService.getActive().subscribe({
             next: response => {
-                const data: ActiveAnnouncement[] = response?.data ?? (response as any)?.Data ?? [];
+                const data: ActiveAnnouncement[] = response ?? [];
                 const all = Array.isArray(data) ? data : [];
 
                 const bannerAnnouncements = all.filter(a => {

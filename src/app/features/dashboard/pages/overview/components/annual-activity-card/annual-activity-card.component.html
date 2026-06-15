@@ -2,7 +2,7 @@
   <div class="flex items-center justify-between mb-4">
     <h3 class="text-lg font-semibold text-[var(--color-text)]">{{ title }}</h3>
     <div>
-      <select [(ngModel)]="selectedMonth" class="text-sm text-[var(--color-brand)] bg-transparent outline-none">
+      <select [value]="selectedMonth" (change)="onMonthChange($event)" class="text-sm text-[var(--color-brand)] bg-transparent outline-none">
         <option *ngFor="let m of months" [value]="m">{{ m }}</option>
       </select>
     </div>

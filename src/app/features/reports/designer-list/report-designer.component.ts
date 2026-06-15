@@ -11,7 +11,8 @@ import { ConfirmDialogComponent } from '@components/confirm-dialog/confirm-dialo
 import { PERMISSIONS } from '@constants/permissions.constants';
 import { defaultPageSize } from '@constants/app.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
-import { ReportService, Report, ReportTemplate, ReportStatus } from '@reports/services/report.service';
+import { ReportService } from '@reports/services/report.service';
+import { Report, ReportTemplate, ReportStatus } from '@models/report.model';
 import { ToastService } from '@services/toast.service';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';

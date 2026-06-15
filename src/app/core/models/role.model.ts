@@ -50,7 +50,6 @@ export enum PermissionCategory {
   ASSETS = 'assets',
   INVENTORY = 'inventory',
   REQUESTS = 'requests',
-  FORECAST = 'forecast',
   REPORTS = 'reports',
   SETTINGS = 'settings'
 }

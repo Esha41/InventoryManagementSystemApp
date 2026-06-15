@@ -18,11 +18,11 @@ import { ButtonComponent } from '@components/button/button.component';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AllowanceSelectionComponent {
-  @Input() fromReserve: string = 'Yes';
-  @Output() fromReserveChange = new EventEmitter<string>();
+  @Input() fromReserve: boolean = true;
+  @Output() fromReserveChange = new EventEmitter<boolean>();
   @Output() next = new EventEmitter<void>();
 
-  onFromReserveChange(value: string): void {
+  onFromReserveChange(value: boolean): void {
     this.fromReserveChange.emit(value);
   }
 
@@ -30,4 +30,3 @@ export class AllowanceSelectionComponent {
     this.next.emit();
   }
 }
-

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ModalComponent } from '@components/modal/modal.component';
@@ -8,10 +8,12 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
 import { LookupService, LookupItem } from '@services/lookup.service';
 import { ToastService } from '@services/toast.service';
 import { EmployeeService } from '@admin/services/employee.service';
-import { CreateUpdateEmployeeDto } from '@core/models/employee.model';
-import { EmployeeDto } from '@core/models/asset.model';
-import { Observable } from 'rxjs';
+import { CreateUpdateEmployeeDto, EmployeeDto } from '@core/models/employee.model';
+import { Observable, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { ErrorHandler } from '@core/utils/error-handler.utils';
+import { FormUtils } from '@utils/form-utils';
+import { getCurrentLang, getLocalizedName } from '@utils/localization.utils';
 
 @Component({
   selector: 'app-employee-form-modal',
@@ -27,7 +29,7 @@ import { ErrorHandler } from '@core/utils/error-handler.utils';
   templateUrl: './employee-form-modal.component.html',
   styleUrls: ['./employee-form-modal.component.css']
 })
-export class EmployeeFormModalComponent implements OnInit, OnChanges {
+export class EmployeeFormModalComponent implements OnInit, OnChanges, OnDestroy {
   @Input() isOpen = false;
   @Input() mode: 'create' | 'edit' = 'create';
   @Input() employee?: EmployeeDto | null;
@@ -40,10 +42,12 @@ export class EmployeeFormModalComponent implements OnInit, OnChanges {
   isLoading = false;
   errorMessage = '';
 
+  private readonly destroy$ = new Subject<void>();
+
   readonly departmentOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null) =>
-    this.getLocalizedName(this.unwrapOption(option));
+    getLocalizedName(this.unwrapOption(option), getCurrentLang(this.translate));
   readonly rankOptionLabel = (option: DropdownOption<LookupItem> | LookupItem | null) =>
-    this.getLocalizedName(this.unwrapOption(option));
+    getLocalizedName(this.unwrapOption(option), getCurrentLang(this.translate));
 
   constructor(
     private fb: FormBuilder,
@@ -57,6 +61,11 @@ export class EmployeeFormModalComponent implements OnInit, OnChanges {
     this.initializeForm();
     this.loadDepartments();
     this.loadRanks();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -110,7 +119,7 @@ export class EmployeeFormModalComponent implements OnInit, OnChanges {
   }
 
   private loadDepartments(): void {
-    this.lookupService.getLookupItems('Department').subscribe({
+    this.lookupService.getLookupItems('Department').pipe(takeUntil(this.destroy$)).subscribe({
       next: (deps: LookupItem[]) => {
         this.departments = deps ?? [];
       },
@@ -121,7 +130,7 @@ export class EmployeeFormModalComponent implements OnInit, OnChanges {
   }
 
   private loadRanks(): void {
-    this.lookupService.getLookupItems('Rank').subscribe({
+    this.lookupService.getLookupItems('Rank').pipe(takeUntil(this.destroy$)).subscribe({
       next: (items: LookupItem[]) => {
         this.ranks = items ?? [];
       },
@@ -141,19 +150,9 @@ export class EmployeeFormModalComponent implements OnInit, OnChanges {
     return option as T;
   }
 
-  private getLocalizedName(entity: { nameEn?: string; nameAr?: string } | null | undefined): string {
-    if (!entity) {
-      return '';
-    }
-    const currentLang = this.translate.currentLang || 'en';
-    return currentLang === 'ar'
-      ? (entity.nameAr || entity.nameEn || '')
-      : (entity.nameEn || entity.nameAr || '');
-  }
-
   onSubmit(): void {
     if (this.form.invalid) {
-      this.markFormGroupTouched();
+      FormUtils.markFormGroupTouched(this.form);
       return;
     }
 
@@ -196,7 +195,7 @@ export class EmployeeFormModalComponent implements OnInit, OnChanges {
         this.saved.emit();
         this.close();
       },
-      error: (error: any) => {
+      error: (error: unknown) => {
         this.isLoading = false;
         const errorKey = isEdit ? 'employeeFormModal.updateError' : 'employeeFormModal.createError';
         const titleKey = isEdit ? 'employeeFormModal.updateTitle' : 'employeeFormModal.createTitle';
@@ -218,12 +217,6 @@ export class EmployeeFormModalComponent implements OnInit, OnChanges {
     this.form.reset();
     this.errorMessage = '';
     this.closed.emit();
-  }
-
-  private markFormGroupTouched(): void {
-    Object.keys(this.form.controls).forEach(key => {
-      this.form.get(key)?.markAsTouched();
-    });
   }
 
   getFieldError(fieldName: string): string {

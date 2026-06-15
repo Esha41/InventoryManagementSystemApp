@@ -7,7 +7,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { ToastService } from '@services/toast.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { getCurrentLang, getLocalizedName } from '@utils/localization.utils';
-import { InventoryDetailDto, UpdateInventoryDetailDto, UpdateInventoryDto } from '@models/inventory.model';
+import { InventoryDetailDto, ItemType, UpdateInventoryDetailDto, UpdateInventoryDto } from '@models/inventory.model';
 import { AssetBulkDeletionScope, AssetDto } from '@models/asset.model';
 import { AssetService } from '@assets/services/asset.service';
 import { BatchSummaryDto, BatchAssetFilter } from '@models/batch.model';
@@ -654,9 +654,9 @@ export class WarehouseInventoryFacadeService {
   /** Maps warehouse row + tab to asset-details `tab` query (same contract as workflow approval). */
   private resolveAssetTabForCatalogDetails(detail: InventoryDetailDto): 'ammunition' | 'weapon' | 'explosive' {
     const fromItem = this.filterService.normalizeItemType(detail.item?.itemType);
-    if (fromItem === 1) return 'ammunition';
-    if (fromItem === 2) return 'weapon';
-    if (fromItem === 3) return 'explosive';
+    if (fromItem === ItemType.Ammunition) return 'ammunition';
+    if (fromItem === ItemType.Weapon) return 'weapon';
+    if (fromItem === ItemType.Explosive) return 'explosive';
     const wt = this.store.activeTab();
     if (wt === 'batch') return 'weapon';
     if (wt === 'explosive') return 'explosive';

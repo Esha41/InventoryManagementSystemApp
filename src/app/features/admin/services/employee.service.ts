@@ -4,8 +4,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { ApiService } from '@services/api.service';
 import { ConfigService } from '@services/config.service';
-import { EmployeeDto } from '@core/models/asset.model';
-import { CreateUpdateEmployeeDto } from '@core/models/employee.model';
+import { CreateUpdateEmployeeDto, EmployeeDto } from '@core/models/employee.model';
 import { APIOperationResponse } from '@models/api-response.model';
 import { ImportResult } from '@models/import-result.model';
 import { IImportableService } from '@core/interfaces/importable-service.interface';
@@ -26,7 +25,7 @@ export class EmployeeService implements IImportableService {
    * Get all employees for assignment dropdowns
    */
   getEmployees(): Observable<EmployeeDto[]> {
-    this.config.log('Fetching employees for weapon supply review');
+    this.config.log('Fetching employees');
 
     return this.apiService.get<EmployeeDto[]>(this.baseEndpoint).pipe(
       map(response => Array.isArray(response) ? response : []),

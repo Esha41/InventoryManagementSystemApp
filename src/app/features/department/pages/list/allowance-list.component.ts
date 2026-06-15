@@ -100,7 +100,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   // Filter dropdowns
   departments: LookupItem[] = [];
   filteredDepartments: LookupItem[] = []; // Filtered departments based on user permissions
-  selectedDepartment: number | string | null = null;
+  selectedDepartment: number | null = null;
   isAdminUser = false;
   userDepartmentId: number | null = null;
   allItems: (AmmunitionReadDto | WeaponDto | ExplosiveDto)[] = []; // Full catalog snapshot from mapper (dropdown uses filteredItems — items with allowances only)
@@ -108,7 +108,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   weaponItems: WeaponDto[] = []; // Weapon items
   explosiveItems: ExplosiveDto[] = []; // Explosive items
   filteredItems: (AmmunitionReadDto | WeaponDto | ExplosiveDto)[] = []; // Items filtered by selected type and department
-  selectedItem: number | string | null = null;
+  selectedItem: number | null = null;
   selectedItemType: ItemType | null = null; // Filter by item type: Ammunition, Weapon, or Explosive
   itemTypeOptions: { value: ItemType | null; label: string }[] = []; // Item type dropdown options
 
@@ -328,7 +328,16 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   }
 
 
+  private toFilterId(value: number | string | null | undefined): number | null {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+    const id = typeof value === 'number' ? value : Number(value);
+    return Number.isFinite(id) ? id : null;
+  }
+
   onDepartmentChange(): void {
+    this.selectedDepartment = this.toFilterId(this.selectedDepartment);
     this.selectedItem = null; // Clear item selection when department changes
     this.updateFilteredItems();
     this.currentPage = 1;
@@ -346,12 +355,12 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
     this.allowanceItemLookupKeys.clear();
     let rows = this.allAllowances;
     const dept = this.selectedDepartment;
-    if (dept !== null && dept !== undefined && dept !== '') {
+    if (dept !== null) {
       rows = rows.filter(
         (r) =>
           r.departmentId !== undefined &&
           r.departmentId !== null &&
-          (r.departmentId === Number(dept) || String(r.departmentId) === String(dept))
+          r.departmentId === dept
       );
     }
     for (const row of rows) {
@@ -392,6 +401,7 @@ export class AllowanceListComponent implements OnInit, OnDestroy {
   }
 
   onItemChange(): void {
+    this.selectedItem = this.toFilterId(this.selectedItem);
     this.currentPage = 1;
     this.applyFilters();
   }

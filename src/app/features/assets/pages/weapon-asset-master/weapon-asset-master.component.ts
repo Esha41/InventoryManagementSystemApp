@@ -36,7 +36,8 @@ import {
 import { TranslationService } from '@services/translation.service';
 import { LookupService } from '@services/lookup.service';
 import { EmployeeService } from '@admin/services/employee.service';
-import { AssetDto, AssetStatus, EmployeeDto, getAssetStatusLabel } from '@models/asset.model';
+import { AssetDto, AssetStatus, getAssetStatusLabel } from '@models/asset.model';
+import { EmployeeDto } from '@models/employee.model';
 import { ItemType } from '@models/inventory.model';
 import { FilterData, PagedListRequest } from '@models/pagination.model';
 import { LookupItem } from '@models/lookup.model';
@@ -50,6 +51,7 @@ import {
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { AppDatePipe } from '@shared/pipes';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { getPrimaryPurposeNav } from '@models/primary-purpose.model';
 import { trackById } from '@utils/trackby.utils';
 import { ToastService } from '@services/toast.service';
 import { ButtonComponent } from '@components/button/button.component';
@@ -918,8 +920,10 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
   }
 
   primaryPurposeName(asset: AssetDto): string {
-    if (!asset.primaryPurpos) return '—';
-    return this.lookupOptionLabel(asset.primaryPurpos);
+    const purpose = getPrimaryPurposeNav(asset);
+    if (!purpose) return '—';
+    const lang = getCurrentLang(this.translateService);
+    return getLocalizedName(purpose, lang) || '—';
   }
 
   depotName(asset: AssetDto): string {
