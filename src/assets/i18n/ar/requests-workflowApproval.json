@@ -51,6 +51,8 @@
     "quantity": "الكمية",
     "associatedWeapons": "الأسلحة المرتبطة",
     "associatedWeaponOther": "أخرى",
+    "incompatibleWeaponsWarning": "بعض الأسلحة المرتبطة غير متوافقة مع عيار الذخيرة.",
+    "incompatibleWeaponsLineHint": "بعض الأسلحة أدناه غير متوافقة مع عيار هذه الذخيرة.",
     "noItemsFound": "لم يتم العثور على مواد",
     "status": "الحالة",
     "currentStatus": "الحالة الحالية",

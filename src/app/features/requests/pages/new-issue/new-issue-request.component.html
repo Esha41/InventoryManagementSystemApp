@@ -147,7 +147,7 @@
     [confirmText]="facade.confirmDialogConfig.confirmText"
     [cancelText]="facade.confirmDialogConfig.cancelText"
     [closeOnBackdrop]="true"
-    (confirmed)="facade.onConfirmSubmit()"
+    (confirmed)="facade.onConfirmDialogConfirmed()"
     (cancelled)="facade.onCancelConfirm()">
   </app-confirmation-dialog>
 </div>

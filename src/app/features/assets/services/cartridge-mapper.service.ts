@@ -91,6 +91,12 @@ export class CartridgeMapperService {
             : String(dto.caliber)
           : undefined,
       caliberId: resolveCatalogItemCaliberId(dto),
+      caliberNameEn: dto.caliber != null && typeof dto.caliber === 'object'
+        ? (dto.caliber.nameEn ?? dto.caliber.nameEN ?? undefined)
+        : undefined,
+      caliberNameAr: dto.caliber != null && typeof dto.caliber === 'object'
+        ? (dto.caliber.nameAr ?? dto.caliber.nameAR ?? undefined)
+        : undefined,
       linkedLabel,
       linkedLabelAr: linkedLabelAr || undefined,
       linkedLabelEn: linkedLabelEn || undefined,

@@ -186,7 +186,15 @@ function mapWeaponAssociationRows(
       associatedWeaponOtherName: readField<string | null>(row, 'associatedWeaponOtherName', 'AssociatedWeaponOtherName') ?? null,
       associatedWeaponCaliberId: readField<number | null>(row, 'associatedWeaponCaliberId', 'AssociatedWeaponCaliberId') ?? null,
       associatedWeaponName: readField<string | null>(row, 'associatedWeaponName', 'AssociatedWeaponName') ?? null,
-      associatedWeaponNameAr: readField<string | null>(row, 'associatedWeaponNameAr', 'AssociatedWeaponNameAr') ?? null
+      associatedWeaponNameAr: readField<string | null>(row, 'associatedWeaponNameAr', 'AssociatedWeaponNameAr') ?? null,
+      associatedWeaponCatalogCaliberId:
+        readField<number | null>(row, 'associatedWeaponCatalogCaliberId', 'AssociatedWeaponCatalogCaliberId') ?? null,
+      associatedWeaponCatalogCaliberNameEn:
+        readField<string | null>(row, 'associatedWeaponCatalogCaliberNameEn', 'AssociatedWeaponCatalogCaliberNameEn') ??
+        null,
+      associatedWeaponCatalogCaliberNameAr:
+        readField<string | null>(row, 'associatedWeaponCatalogCaliberNameAr', 'AssociatedWeaponCatalogCaliberNameAr') ??
+        null
     }));
 
   return mapped.length > 0 ? mapped : undefined;
@@ -221,6 +229,9 @@ export function mapRequestItems(items: unknown[]): RequestItem[] {
         unit: String(readField<unknown>(item, 'unit', 'Unit') ?? item['unitName'] ?? '-'),
         nsn: typeof readField<unknown>(item, 'nsn', 'Nsn') === 'string' ? String(readField<unknown>(item, 'nsn', 'Nsn')) : undefined,
         itemType: normalizedItemType > 0 ? normalizedItemType : undefined,
+        itemCaliberId: readField<number | null>(item, 'itemCaliberId', 'ItemCaliberId') ?? null,
+        itemCaliberNameEn: readField<string | null>(item, 'itemCaliberNameEn', 'ItemCaliberNameEn') ?? null,
+        itemCaliberNameAr: readField<string | null>(item, 'itemCaliberNameAr', 'ItemCaliberNameAr') ?? null,
         weaponAssociations: mapWeaponAssociationRows(
           readField<unknown[]>(item, 'weaponAssociations', 'WeaponAssociations')
         )

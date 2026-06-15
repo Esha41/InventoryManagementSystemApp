@@ -256,8 +256,14 @@
                                 [checked]="isWeaponSelected(ammo.id, weapon.id)"
                                 (change)="toggleWeaponInList(ammo, weapon.id, $event)"
                               />
-                              <span class="min-w-0 break-words text-[var(--color-text)]">
+                              <span class="min-w-0 flex-1 break-words text-[var(--color-text)]">
                                 {{ weaponDisplayLabel(weapon) }}
+                              </span>
+                              <span
+                                *ngIf="shouldShowWeaponCompatibilityBadge(ammo, weapon)"
+                                class="ms-auto shrink-0 rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-800 dark:text-amber-400"
+                              >
+                                {{ 'newIssueRequest.weaponAssociation.notCompatibleLabel' | translate }}
                               </span>
                             </label>
                           </li>
