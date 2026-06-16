@@ -3,7 +3,8 @@
  *
  * Backend:
  * - `ettadbackend/Project.User.Services/DTO/AdminAnalyticsDto.cs`
- * - `ettadbackend/Project.Module.User/Controllers/AdminAnalyticsController.cs` (`api/admin/analytics/*`)
+ * - `ettadbackend/Project.Module.User/Controllers/AdminAnalyticsController.cs` (`api/admin/analytics/*`; analytics endpoints require `Permissions.Analytics.View` or `Permissions.Analytics.Page`; `user-activity` requires `Permissions.AdminDashboard.View`)
+ * - `ettadbackend/Ettad.Inventory.API/Controllers/MonitoringController.cs` (headline/summary metrics also allow Analytics permissions for the analytics dashboard)
  */
 
 /** @see `SystemHealthMetricsDto` in AdminAnalyticsDto.cs */

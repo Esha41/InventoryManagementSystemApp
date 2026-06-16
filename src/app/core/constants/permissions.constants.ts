@@ -11,7 +11,9 @@ export const PERMISSIONS = {
     },
     ANALYTICS: {
       PAGE: 'analytics.page',
-      VIEW: 'analytics.view'
+      VIEW: 'analytics.view',
+      API_PAGE: 'Permissions.Analytics.Page',
+      API_VIEW: 'Permissions.Analytics.View'
     },
     DEPOTS: {
       PAGE: 'depots.page',
