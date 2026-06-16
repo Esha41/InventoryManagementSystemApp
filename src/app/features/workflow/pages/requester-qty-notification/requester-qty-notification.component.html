@@ -19,7 +19,8 @@
       <p class="text-[var(--color-text-muted)]">{{ 'common.loading' | translate }}</p>
     </div>
 
-    <app-card *ngIf="!loading">
+    <section *ngIf="!loading" #notificationSettingsSection class="scroll-mt-6">
+    <app-card>
       <div class="p-6">
         <h4 class="mb-6 text-xl font-semibold text-[var(--color-text)]">
           {{ 'workflow.requesterQtyNotifySectionTitle' | translate }}
@@ -73,6 +74,105 @@
             }}
           </app-button>
         </div>
+      </div>
+    </app-card>
+    </section>
+
+    <app-card *ngIf="!loading">
+      <div class="p-6 space-y-4">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <div class="space-y-1">
+            <h2 class="text-lg font-semibold text-[var(--color-text)] border-b border-[var(--color-border)] pb-2">
+              {{ 'workflow.requesterQtyNotifySavedStepsTitle' | translate }}
+            </h2>
+            <p class="text-sm text-[var(--color-text-muted)] max-w-3xl">
+              {{ 'workflow.requesterQtyNotifySavedStepsIntro' | translate }}
+            </p>
+          </div>
+          <button
+            type="button"
+            class="shrink-0 text-sm font-medium text-[var(--color-brand)] hover:underline disabled:opacity-50"
+            [disabled]="loadingSavedTable"
+            (click)="reloadSavedTable()">
+            {{ 'workflow.requesterQtyNotifyRefresh' | translate }}
+          </button>
+        </div>
+
+        <div
+          *ngIf="savedTableLoadError"
+          class="rounded-lg border border-[var(--color-error)]/30 bg-[var(--color-error)]/10 px-4 py-3 text-sm text-[var(--color-error)]">
+          {{ savedTableLoadError }}
+        </div>
+
+        <div *ngIf="loadingSavedTable && !savedTableLoadError" class="text-center py-10 text-[var(--color-text-muted)]">
+          {{ 'common.loading' | translate }}
+        </div>
+
+        <div
+          *ngIf="!loadingSavedTable && !savedTableLoadError && savedTableRows.length === 0"
+          class="text-center py-10 text-[var(--color-text-muted)]">
+          {{ 'workflow.requesterQtyNotifyEmpty' | translate }}
+        </div>
+
+        <div
+          *ngIf="!loadingSavedTable && savedTableRows.length > 0"
+          class="w-full overflow-x-auto rounded-lg border border-[var(--color-border)]">
+          <table class="min-w-[720px] w-full text-sm border-collapse">
+            <thead>
+              <tr class="bg-[var(--color-background-muted)] text-start border-b border-[var(--color-border)]">
+                <th class="px-4 py-3 font-semibold text-[var(--color-text)]">
+                  {{ 'workflow.requesterQtyNotifyTableColWorkflow' | translate }}
+                </th>
+                <th class="px-4 py-3 font-semibold text-[var(--color-text)]">
+                  {{ 'workflow.requesterQtyNotifyTableColType' | translate }}
+                </th>
+                <th class="px-4 py-3 font-semibold text-[var(--color-text)]">
+                  {{ 'workflow.requesterQtyNotifyTableColSteps' | translate }}
+                </th>
+                <th class="px-4 py-3 font-semibold text-[var(--color-text)] text-end">
+                  {{ 'workflow.requesterQtyNotifyTableColAction' | translate }}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                *ngFor="let row of savedTableRows; trackBy: trackByTableRow"
+                class="border-b border-[var(--color-border)] hover:bg-[var(--color-background-hover)]/60">
+                <td class="px-4 py-3 align-top text-[var(--color-text)] font-medium">
+                  {{ row.workflowName }}
+                </td>
+                <td class="px-4 py-3 align-top text-[var(--color-text-muted)]">
+                  {{ row.workflowTypeLabel }}
+                </td>
+                <td class="px-4 py-3 align-top">
+                  <div class="flex flex-col gap-1">
+                    <span *ngIf="row.stepNames.length === 0" class="text-[var(--color-text)]">
+                      {{ 'workflow.requesterQtyNotifyNotConfigured' | translate }}
+                    </span>
+                    <span *ngFor="let stepName of row.stepNames" class="text-[var(--color-text)]">
+                      {{ stepName }}
+                    </span>
+                  </div>
+                </td>
+                <td class="px-4 py-3 align-top text-end whitespace-nowrap">
+                  <button
+                    type="button"
+                    (click)="configureWorkflow(row)"
+                    class="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium rounded-lg border-2 border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-background-hover)] transition-colors">
+                    {{ 'workflow.requesterQtyNotifyConfigure' | translate }}
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p *ngIf="!loadingSavedTable" class="text-xs text-[var(--color-text-muted)] flex flex-wrap gap-x-2 gap-y-1 items-center">
+          <span>{{ 'workflow.requesterQtyNotifyFootnote' | translate }}</span>
+          <a routerLink="/workflow" class="text-[var(--color-brand)] hover:underline font-medium">
+            {{ 'workflow.requesterQtyNotifyOpenWorkflows' | translate }}
+          </a>
+        </p>
       </div>
     </app-card>
   </div>
