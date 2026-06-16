@@ -42,7 +42,7 @@ export class ReviewFormComponent {
   readonly Eye = Eye;
   @Input() requesterName: string = '';
   @Input() requesterDepartment = '';
-  @Input() fromReserve: string = '';
+  @Input() fromReserve: boolean = true;
   @Input() usePurpose: string = '';
   @Input() requestPurposeNotes: string = '';
   @Input() usageLocation: string = '';

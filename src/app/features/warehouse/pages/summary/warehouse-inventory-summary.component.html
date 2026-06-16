@@ -209,27 +209,24 @@
                             <div>
                                 <span class="text-[var(--color-text-muted)] text-xs block">{{ (activeTab === 'weapon' ?
                                     'inventorySummary.totalAssets' : 'inventorySummary.totalQty') | translate }}</span>
-                                <span class="font-bold text-[var(--color-text)]">{{ formatNumber(item.totalQuantity)
-                                    }}</span>
+                                <span class="font-bold text-[var(--color-text)]">{{ item.totalQuantity | appNumber }}</span>
                             </div>
 
                             <ng-container *ngIf="activeTab !== 'weapon'">
                                 <div>
                                     <span class="text-[var(--color-text-muted)] text-xs block">{{
                                         'inventorySummary.remainingQty' | translate }}</span>
-                                    <span class="font-bold text-[var(--color-success)]">{{
-                                        formatNumber(item.remainingQuantity) }}</span>
+                                    <span class="font-bold text-[var(--color-success)]">{{ item.remainingQuantity | appNumber }}</span>
                                 </div>
                                 <div>
                                     <span class="text-[var(--color-text-muted)] text-xs block">{{
                                         'inventorySummary.usedQty' | translate }}</span>
-                                    <span class="text-[var(--color-text)]">{{ formatNumber(item.usedQuantity) }}</span>
+                                    <span class="text-[var(--color-text)]">{{ item.usedQuantity | appNumber }}</span>
                                 </div>
                                 <div>
                                     <span class="text-[var(--color-text-muted)] text-xs block">{{
                                         'inventorySummary.reservedQty' | translate }}</span>
-                                    <span class="text-[var(--color-text)]">{{
-                                        formatNumber(item.reservedQuantityByOrdersOnProcessing) }}</span>
+                                    <span class="text-[var(--color-text)]">{{ item.reservedQuantityByOrdersOnProcessing | appNumber }}</span>
                                 </div>
                             </ng-container>
 
@@ -402,21 +399,19 @@
                                     <div class="grid grid-cols-4 gap-1 text-xs bg-gray-50 p-2 rounded text-center">
                                         <div>
                                             <div class="text-[var(--color-text-muted)] text-[10px]">Orig</div>
-                                            <div class="font-medium">{{ formatNumber(lot.originalQuantity) }}</div>
+                                            <div class="font-medium">{{ lot.originalQuantity | appNumber }}</div>
                                         </div>
                                         <div>
                                             <div class="text-[var(--color-text-muted)] text-[10px]">Used</div>
-                                            <div class="font-medium">{{ formatNumber(lot.usedQuantity) }}</div>
+                                            <div class="font-medium">{{ lot.usedQuantity | appNumber }}</div>
                                         </div>
                                         <div>
                                             <div class="text-[var(--color-text-muted)] text-[10px]">Res</div>
-                                            <div class="font-medium">{{
-                                                formatNumber(lot.reservedQuantityByOrdersOnProcessing) }}</div>
+                                            <div class="font-medium">{{ lot.reservedQuantityByOrdersOnProcessing | appNumber }}</div>
                                         </div>
                                         <div>
                                             <div class="text-[var(--color-text-muted)] text-[10px]">Rem</div>
-                                            <div class="font-bold text-[var(--color-success)]">{{
-                                                formatNumber(lot.remainingQuantity) }}</div>
+                                            <div class="font-bold text-[var(--color-success)]">{{ lot.remainingQuantity | appNumber }}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -521,19 +516,19 @@
                                     {{ item.partNo }}
                                 </td>
                                 <td class="inventory-table__cell-num px-6 py-4 text-sm text-[var(--color-text)] text-end align-top">
-                                    {{ formatNumber(item.totalQuantity) }}
+                                    {{ item.totalQuantity | appNumber }}
                                 </td>
                                 <td *ngIf="activeTab !== 'weapon'"
                                     class="inventory-table__cell-num px-6 py-4 text-sm text-[var(--color-text)] text-end align-top">
-                                    {{ formatNumber(item.usedQuantity) }}
+                                    {{ item.usedQuantity | appNumber }}
                                 </td>
                                 <td *ngIf="activeTab !== 'weapon'"
                                     class="inventory-table__cell-num px-6 py-4 text-sm text-[var(--color-text)] text-end align-top">
-                                    {{ formatNumber(item.reservedQuantityByOrdersOnProcessing) }}
+                                    {{ item.reservedQuantityByOrdersOnProcessing | appNumber }}
                                 </td>
                                 <td *ngIf="activeTab !== 'weapon'"
                                     class="inventory-table__cell-num px-6 py-4 text-sm font-medium text-[var(--color-success)] text-end align-top">
-                                    {{ formatNumber(item.remainingQuantity) }}
+                                    {{ item.remainingQuantity | appNumber }}
                                 </td>
                                 <td *ngIf="activeTab !== 'weapon'"
                                     class="inventory-table__cell-num px-6 py-4 text-sm text-[var(--color-text)] text-center align-top">
@@ -861,21 +856,19 @@
                                                             </td>
                                                             <td
                                                                 class="px-4 py-3 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
-                                                                {{ formatNumber(lot.originalQuantity) }}
+                                                                {{ lot.originalQuantity | appNumber }}
                                                             </td>
                                                             <td
                                                                 class="px-4 py-3 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
-                                                                {{ formatNumber(lot.usedQuantity) }}
+                                                                {{ lot.usedQuantity | appNumber }}
                                                             </td>
                                                             <td
                                                                 class="px-4 py-3 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
-                                                                {{
-                                                                formatNumber(lot.reservedQuantityByOrdersOnProcessing)
-                                                                }}
+                                                                {{ lot.reservedQuantityByOrdersOnProcessing | appNumber }}
                                                             </td>
                                                             <td
                                                                 class="px-4 py-3 whitespace-nowrap text-sm text-[var(--color-text)] text-end">
-                                                                {{ formatNumber(lot.remainingQuantity) }}
+                                                                {{ lot.remainingQuantity | appNumber }}
                                                             </td>
                                                         </tr>
                                                     </tbody>

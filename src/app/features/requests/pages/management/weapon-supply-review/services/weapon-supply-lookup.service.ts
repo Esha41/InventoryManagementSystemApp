@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { LookupService, LookupItem } from '@services/lookup.service';
 import { EmployeeService } from '@admin/services/employee.service';
-import { EmployeeDto } from '@core/models/asset.model';
+import { EmployeeDto } from '@core/models/employee.model';
 import { DropdownOption } from '@components/dropdown/dropdown.component';
 import { getCurrentLang, getLocalizedName } from '@utils/localization.utils';
 import { TranslateService } from '@ngx-translate/core';

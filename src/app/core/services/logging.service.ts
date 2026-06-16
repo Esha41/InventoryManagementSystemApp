@@ -54,7 +54,7 @@ export class LoggingService {
      * Check if logging is enabled based on environment
      */
     private shouldLog(): boolean {
-        return this.configService.enableLogging || !this.configService.isProduction;
+        return this.configService.isLoggingEnabled || !this.configService.isProduction;
     }
 
     /**

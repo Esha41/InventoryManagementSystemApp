@@ -8,6 +8,7 @@ import { LucideAngularModule, Edit2, Trash2, Eye, ArrowUp, ArrowDown, ArrowUpDow
 import { InventoryDetailDto } from '@models/inventory.model';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
+import { AppNumberPipe } from '@shared/pipes/app-number.pipe';
 import { trackById } from '@utils/trackby.utils';
 
 /** Sortable columns for warehouse inventory (ammo / explosives); maps to API sort fields in parent */
@@ -30,7 +31,8 @@ export type WarehouseInventoryTableSortColumn =
     TranslateModule,
     LucideAngularModule,
     HasPermissionDirective,
-    TableClampTooltipDirective
+    TableClampTooltipDirective,
+    AppNumberPipe
   ],
   templateUrl: './inventory-table.component.html',
   styleUrls: ['./inventory-table.component.css'],
@@ -48,7 +50,6 @@ export class InventoryTableComponent {
   /** When true, show primary purpose column (ammunition tab). */
   @Input() showPrimaryPurposeColumn = false;
   @Input() getPrimaryPurposeName: (detail: InventoryDetailDto) => string = () => '';
-  @Input() formatNumber: (num: number) => string = () => '';
   @Input() formatDate: (date?: Date | string) => string = () => '';
   /**
    * When set, item name renders as `<a routerLink>` so users can open catalog in a new tab.

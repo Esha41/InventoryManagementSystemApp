@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { ConfigService } from '@services/config.service';
 
 /**
  * Offline Map Service
@@ -19,7 +20,7 @@ export class OfflineMapService {
     maxLon: 51.6067
   };
 
-  constructor() {}
+  constructor(private config: ConfigService) {}
 
   /**
    * Get tile URL with offline fallback
@@ -88,7 +89,7 @@ export class OfflineMapService {
         return await cachedResponse.blob();
       }
     } catch (error) {
-      console.debug('Cache read failed:', error);
+      this.config.logError('Cache read failed', error);
     }
     
     return null;
@@ -117,8 +118,7 @@ export class OfflineMapService {
         await cache.put(url, response.clone());
       }
     } catch (error) {
-      // Silently fail for background caching
-      console.debug('Background cache failed:', error);
+      this.config.logError('Background tile cache failed', error);
     }
   }
 
@@ -131,7 +131,7 @@ export class OfflineMapService {
    */
   async preCacheTiles(zoomLevels: number[] = [8, 9, 10, 11]): Promise<void> {
     if (!('caches' in window)) {
-      console.warn('Cache API not available');
+      this.config.logError('Cache API not available for tile pre-caching');
       return;
     }
 
@@ -145,8 +145,6 @@ export class OfflineMapService {
         tilesToCache.push(...tiles);
       }
 
-      console.log(`Pre-caching ${tilesToCache.length} tiles...`);
-
       // Cache tiles in batches to avoid overwhelming the browser
       const batchSize = 50;
       for (let i = 0; i < tilesToCache.length; i += batchSize) {
@@ -155,15 +153,12 @@ export class OfflineMapService {
           batch.map(url => 
             fetch(url)
               .then(response => cache.put(url, response))
-              .catch(err => console.warn(`Failed to cache tile: ${url}`, err))
+              .catch(err => this.config.logError(`Failed to cache tile: ${url}`, err))
           )
         );
-        console.log(`Cached ${Math.min(i + batchSize, tilesToCache.length)}/${tilesToCache.length} tiles`);
       }
-
-      console.log('Tile pre-caching complete!');
     } catch (error) {
-      console.error('Error pre-caching tiles:', error);
+      this.config.logError('Error pre-caching tiles', error);
     }
   }
 
@@ -235,7 +230,6 @@ export class OfflineMapService {
   async clearCache(): Promise<void> {
     if ('caches' in window) {
       await caches.delete(this.TILE_CACHE_NAME);
-      console.log('Map tile cache cleared');
     }
   }
 

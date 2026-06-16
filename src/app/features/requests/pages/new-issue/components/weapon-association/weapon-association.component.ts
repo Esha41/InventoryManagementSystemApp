@@ -28,7 +28,9 @@ import { WeaponAssociation } from '@models/request-item.model';
 import { ButtonComponent } from '@components/button/button.component';
 import {
   resolveCatalogItemCaliberId,
-  isCatalogItemExplicitlyDeleted
+  isCatalogItemExplicitlyDeleted,
+  areCatalogItemCalibersCompatible,
+  hasCatalogItemCaliber
 } from '@utils/catalog-caliber.utils';
 
 export type WeaponAssociationPanel = 'compatible' | 'all' | 'other';
@@ -211,7 +213,7 @@ export class WeaponAssociationComponent implements OnChanges {
     if (panel === 'all' || !this.hasCaliberFilterEffect(ammo)) {
       return this.getAllAssignableWeapons();
     }
-    return this.getCompatibleWeapons(this.effectiveAmmoCaliberId(ammo));
+    return this.getCompatibleWeaponsForAmmo(ammo);
   }
 
   catalogWeaponsScopeCount(ammo: Cartridge): number {
@@ -327,7 +329,7 @@ export class WeaponAssociationComponent implements OnChanges {
 
   hasCaliberFilterEffect(ammo: Cartridge): boolean {
     if (!this.ammoHasCaliberForFilter(ammo)) return false;
-    const compatible = this.getCompatibleWeapons(this.effectiveAmmoCaliberId(ammo));
+    const compatible = this.getCompatibleWeaponsForAmmo(ammo);
     return compatible.length > 0 && compatible.length < this.getAllAssignableWeapons().length;
   }
 
@@ -341,26 +343,13 @@ export class WeaponAssociationComponent implements OnChanges {
     this.cdr.markForCheck();
   }
 
-  getCompatibleWeapons(ammoCaliberId: number | null | undefined): WeaponDto[] {
-    if (ammoCaliberId == null || !Number.isFinite(Number(ammoCaliberId))) {
+  getCompatibleWeaponsForAmmo(ammo: Cartridge): WeaponDto[] {
+    if (!this.ammoHasCaliberForFilter(ammo)) {
       return this.getAllAssignableWeapons();
     }
-    const ammoCal = Number(ammoCaliberId);
-
-    const byAmmoCal = this.weaponsByAmmunitionCaliberId;
-    if (byAmmoCal && byAmmoCal.size > 0) {
-      if (!byAmmoCal.has(ammoCal)) return [];
-      return (byAmmoCal.get(ammoCal) ?? []).filter(w => !isCatalogItemExplicitlyDeleted(w));
-    }
-
-    return this.allWeapons.filter(w => {
-      const wCal = this.effectiveWeaponCaliberId(w);
-      return (
-        wCal !== null &&
-        wCal === ammoCal &&
-        !isCatalogItemExplicitlyDeleted(w)
-      );
-    });
+    return this.getAllAssignableWeapons().filter(w =>
+      areCatalogItemCalibersCompatible(ammo, w)
+    );
   }
 
   onOtherNameChange(ammoItemId: number, name: string): void {
@@ -430,6 +419,27 @@ export class WeaponAssociationComponent implements OnChanges {
   weaponDisplayLabel(w: WeaponDto): string {
     const base = w.name ?? '';
     return w.model ? `${base} — ${w.model}` : base;
+  }
+
+  /** Show caliber compatibility badges only in the "View all weapons" panel. */
+  shouldShowWeaponCompatibilityLabel(ammo: Cartridge): boolean {
+    return this.isActivePanel(ammo.id, 'all') && this.ammoHasCaliberForFilter(ammo);
+  }
+
+  /** Show "Not compatible" only in "View all weapons" when weapon caliber does not match ammo. */
+  shouldShowWeaponCompatibilityBadge(ammo: Cartridge, weapon: WeaponDto): boolean {
+    return (
+      this.shouldShowWeaponCompatibilityLabel(ammo) &&
+      hasCatalogItemCaliber(weapon) &&
+      !this.isWeaponCompatibleWithAmmo(ammo, weapon)
+    );
+  }
+
+  isWeaponCompatibleWithAmmo(ammo: Cartridge, weapon: WeaponDto): boolean {
+    if (!this.ammoHasCaliberForFilter(ammo)) {
+      return false;
+    }
+    return areCatalogItemCalibersCompatible(ammo, weapon);
   }
 
   private expandCollapsedRowsThatAlreadyHaveAssociations(): void {

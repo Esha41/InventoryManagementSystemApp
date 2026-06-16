@@ -1,0 +1,43 @@
+<div class="activity-card">
+  <div class="card-header">
+    <lucide-icon [img]="Users" class="card-icon"></lucide-icon>
+    <h3 class="card-title">{{ 'adminDashboard.userActivity.title' | translate }}</h3>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-box primary">
+      <lucide-icon [img]="Users" class="stat-icon"></lucide-icon>
+      <div class="stat-content">
+        <div class="stat-value">{{ metrics.dailyActiveUsers }}</div>
+        <div class="stat-label">{{ 'adminDashboard.userActivity.dailyActive' | translate }}</div>
+      </div>
+    </div>
+
+    <div class="stat-box info">
+      <lucide-icon [img]="TrendingUp" class="stat-icon"></lucide-icon>
+      <div class="stat-content">
+        <div class="stat-value">{{ metrics.totalUsers }}</div>
+        <div class="stat-label">{{ 'adminDashboard.userActivity.totalUsers' | translate }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="departments-section">
+    <h4 class="section-title">{{ 'adminDashboard.userActivity.topDepartments' | translate }}</h4>
+    <div class="departments-list">
+      <div *ngFor="let dept of metrics.topDepartments" class="dept-item">
+        <div class="dept-name">{{ dept.name }}</div>
+        <div class="dept-count">{{ dept.userCount }}</div>
+      </div>
+      <div *ngIf="metrics.topDepartments.length === 0" class="no-data">
+        {{ 'adminDashboard.userActivity.noDepartments' | translate }}
+      </div>
+    </div>
+  </div>
+
+  <div class="card-footer">
+    <div class="last-updated">
+      {{ 'adminDashboard.lastUpdated' | translate }}: {{ metrics.lastUpdated | appDateTime }}
+    </div>
+  </div>
+</div>

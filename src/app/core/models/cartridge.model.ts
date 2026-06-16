@@ -36,6 +36,9 @@ export interface Cartridge {
   weaponType?: string;
   caliber?: string;
   caliberId?: number | null;
+  /** Bilingual caliber names from lookup (for cross-type caliber matching). */
+  caliberNameEn?: string;
+  caliberNameAr?: string;
   actionType?: string;
   barrelLength?: number;
   barrelLengthLabel?: string;

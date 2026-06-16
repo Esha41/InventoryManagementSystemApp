@@ -300,7 +300,11 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   }
 
   /** Refetch item table only (server page / weapon list) after page or page-size change. */
-  private fetchItemSummariesPageOnly(): void {
+  private fetchItemSummariesPageOnly(clearRows = false): void {
+    if (clearRows) {
+      this.itemSummaries = [];
+      this.serverNonWeaponTotalCount = 0;
+    }
     this.isItemTableLoading = true;
     this.cdr.markForCheck();
     this.loadDashboardItemsBundle$()
@@ -470,6 +474,7 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
   }
 
   setActiveTab(tab: ActiveTab): void {
+    if (this.isItemTableLoading || tab === this.activeTab) return;
     this.activeTab = tab;
     this.selectedItemFilterIds = [];
     this.caliberFilterId = null;
@@ -478,6 +483,8 @@ export class InventoryDashboardComponent implements OnInit, OnDestroy {
     this.lotDetails = [];
     this.assetDetails = [];
     this.assetServerTotalCount = 0;
+    this.itemSummaries = [];
+    this.serverNonWeaponTotalCount = 0;
     this.loadCaliberFilterLookups();
     this.fetchItemSummariesPageOnly();
   }

@@ -49,6 +49,7 @@ export interface WorkflowApprovalStep {
   approverName?: string;
   approverNameEn?: string;
   approverNameAr?: string;
+  approverUserName?: string;
   status: 'Pending' | 'Approved' | 'Rejected' | 'AutoRejected' | 'Returned' | 'ReturnedForReview' | 'Submitted' | 'Cancelled';
   approvedDate?: string;
   approvedDateTime?: string | Date;
@@ -103,6 +104,9 @@ export interface RequestItem {
   nsn?: string; // National Stock Number
   /** 1=Ammunition, 2=Weapon, 3=Explosive — when present, drives return summary column labels. */
   itemType?: number;
+  itemCaliberId?: number | null;
+  itemCaliberNameEn?: string | null;
+  itemCaliberNameAr?: string | null;
   weaponAssociations?: RequestManagementRequestItemWeaponAssociationDto[];
 }
 

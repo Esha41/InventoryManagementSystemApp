@@ -8,7 +8,10 @@ import { WorkflowApprovalStateService } from '../../services/workflow-approval-s
 import { WorkflowApprovalNavigationService } from '../../services/workflow-approval-navigation.service';
 import { TableClampTooltipDirective } from '@components/table-clamp-tooltip/table-clamp-tooltip.directive';
 import { WeaponAssociationListComponent } from '@components/weapon-association-list/weapon-association-list.component';
-import { hasWeaponAssociations as itemHasWeaponAssociations } from '@utils/weapon-association-label.utils';
+import {
+  hasIncompatibleWeaponAssociationsOnItem,
+  hasWeaponAssociations as itemHasWeaponAssociations
+} from '@utils/weapon-association-label.utils';
 import type { RequestManagementRequestItemWeaponAssociationDto } from '@models/request-management-base.model';
 import { ItemType } from '@models/inventory.model';
 import { getCurrentLang, localizedRequestLineItemName } from '@utils/localization.utils';
@@ -78,14 +81,17 @@ export class WorkflowRequestItemsComponent implements OnInit, OnDestroy {
     return itemHasWeaponAssociations(item);
   }
 
+  itemHasIncompatibleWeapons(item: RequestItem): boolean {
+    return hasIncompatibleWeaponAssociationsOnItem(item);
+  }
+
+  weaponAssociationCount(item: RequestItem): number {
+    return item.weaponAssociations?.length ?? 0;
+  }
+
   /** Order item tracking history applies only to issue orders, not returns/discards. */
   get showViewHistory(): boolean {
     return this.requestDetail?.requestType === 'Order';
-  }
-
-  /** Colspan for the full-width “associated weapons” row under a line item (weapons shown inline via weapon-association-list). */
-  get requestItemsTableColspan(): number {
-    return this.showViewHistory ? 4 : 3;
   }
 
   trackByItemId(_index: number, item: RequestItem): number {

@@ -18,7 +18,10 @@ import {
 } from '@dashboard/utils/dashboard-order.utils';
 import { getCurrentLang, localizedRequestLineItemName } from '@utils/localization.utils';
 import type { RequestManagementRequestItemDto } from '@models/request-management-base.model';
-import { hasWeaponAssociations as itemHasWeaponAssociations } from '@utils/weapon-association-label.utils';
+import {
+  hasIncompatibleWeaponAssociationsOnItem,
+  hasWeaponAssociations as itemHasWeaponAssociations
+} from '@utils/weapon-association-label.utils';
 import { WeaponAssociationListComponent } from '@components/weapon-association-list/weapon-association-list.component';
 
 @Component({
@@ -89,6 +92,10 @@ export class OrderDetailsModalComponent implements OnInit, OnDestroy {
 
   hasWeaponAssociations(item: OrderRequestItemDto | null | undefined): boolean {
     return itemHasWeaponAssociations(item);
+  }
+
+  itemHasIncompatibleWeapons(item: OrderRequestItemDto | null | undefined): boolean {
+    return hasIncompatibleWeaponAssociationsOnItem(item);
   }
 
   requestLineItemDisplayName(item: RequestManagementRequestItemDto | null | undefined): string {

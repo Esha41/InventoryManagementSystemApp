@@ -8,6 +8,7 @@ import { WeaponDto } from './weapon.model';
 import { DepotDto } from './depot.model';
 import { FileUploadDto } from './file-upload.model';
 import { DepartmentDto, LookupItem } from './lookup.model';
+import { EmployeeDto } from './employee.model';
 
 export { AssetStatus } from '@models/backend-enums';
 
@@ -24,26 +25,6 @@ export const ASSET_STATUS_FORM_OPTIONS_ORDER: readonly AssetStatus[] = [
     AssetStatus.Disposed
 ] as const;
 
-
-
-/**
- * Employee DTO (Custodian)
- */
-export interface EmployeeDto {
-    id: number;
-    userId?: string;
-    nameAr?: string;
-    nameEn?: string;
-    militaryId?: string;
-    departmentId?: number;
-    phone?: string;
-    email?: string;
-    notes?: string;
-    rankId?: number;
-    isDeleted?: boolean;
-    department?: { id?: number; nameEn?: string; nameAr?: string; code?: string };
-    rank?: { id?: number; nameEn?: string; nameAr?: string };
-}
 
 
 /**
@@ -75,6 +56,7 @@ export interface AssetDto {
     actualReturnDate?: Date | string;
     supplierId?: number;
     manufacturerId?: number;
+    /** Backend typo for `primaryPurposeId` — see {@link primary-purpose.model}. */
     primaryPurposId?: number;
 
     // Navigation properties
@@ -86,6 +68,7 @@ export interface AssetDto {
     custodian?: EmployeeDto;
     supplier?: LookupItem;
     manufacturer?: LookupItem;
+    /** Backend typo for `primaryPurpose` navigation — see {@link primary-purpose.model}. */
     primaryPurpos?: LookupItem;
     images?: FileUploadDto[];
 }
@@ -106,6 +89,7 @@ export interface CreateAssetDto {
     notes?: string;
     supplierId?: number;
     manufacturerId?: number;
+    /** Backend typo for `primaryPurposeId` — see {@link primary-purpose.model}. */
     primaryPurposId?: number;
     /** Optional: assign to this employee on intake (maps to backend AssignToEmployeeId). */
     assignToEmployeeId?: number;

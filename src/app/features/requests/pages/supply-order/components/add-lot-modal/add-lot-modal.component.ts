@@ -11,6 +11,7 @@ import { LotItem } from '@models/supply-order.model';
 import { SupplyOrderDataService } from '@requests/services/supply-order-data.service';
 import { ToastService } from '@services/toast.service';
 import { formatDate as formatDateUtil, formatNumber as formatNumberUtil } from '@utils/format.utils';
+import { AppNumberPipe } from '@shared/pipes/app-number.pipe';
 import { getLocalizedOrderItemName } from '@requests/utils/supply-order-format.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
 import { getLotConditionLabel as resolveLotConditionLabel } from '@utils/lot.utils';
@@ -30,7 +31,8 @@ import { getLotConditionLabel as resolveLotConditionLabel } from '@utils/lot.uti
     TranslateModule,
     LucideAngularModule,
     ModalComponent,
-    DropdownComponent
+    DropdownComponent,
+    AppNumberPipe
   ],
   templateUrl: './add-lot-modal.component.html',
   styleUrls: ['./add-lot-modal.component.css'],
@@ -49,7 +51,6 @@ export class AddLotModalComponent implements OnDestroy {
   readonly Package = Package;
   readonly AlertTriangle = AlertTriangle;
   formatDate = formatDateUtil;
-  formatNumber = formatNumberUtil;
 
   getLotConditionLabel(condition: string): string {
     return resolveLotConditionLabel(condition, this.translateService, 'supplyOrder');

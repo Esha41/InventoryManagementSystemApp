@@ -1,4 +1,4 @@
-import { EmployeeDto } from '@models/asset.model';
+import { EmployeeDto } from '@models/employee.model';
 
 /** Backend expects assignable employees with a resolvable department. */
 export function employeeCannotAssignById(

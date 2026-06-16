@@ -6,6 +6,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Lock, Eye, EyeOff, CheckCircle, KeyRound, LogIn, ArrowLeft, AlertCircle, Info } from 'lucide-angular';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { FormUtils } from '@utils/form-utils';
 import { ToastService } from '@services/toast.service';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -54,7 +55,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
         private cdr: ChangeDetectorRef
     ) {
         this.resetForm = this.fb.group({
-            newPassword: ['', [Validators.required, Validators.minLength(6)]],
+            newPassword: ['', [Validators.required, Validators.minLength(8)]],
             confirmPassword: ['', [Validators.required]]
         }, {
             validators: this.passwordMatchValidator
@@ -127,9 +128,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
 
     onSubmit(): void {
         if (this.resetForm.invalid) {
-            Object.keys(this.resetForm.controls).forEach(key => {
-                this.resetForm.get(key)?.markAsTouched();
-            });
+            FormUtils.markFormGroupTouched(this.resetForm);
             return;
         }
 
@@ -149,7 +148,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
                         this.translateService.instant('common.success')
                     );
                 },
-                error: (error) => {
+                error: (error: unknown) => {
                     this.isLoading = false;
                     this.cdr.markForCheck();
                     const errorMessage = ErrorHandler.extractAndTranslateErrorMessage(error, this.translateService.instant('auth.resetPassword.error'), this.translateService);

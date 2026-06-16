@@ -19,7 +19,8 @@ import {
 } from '../../utils/order-report.utils';
 import { 
   mapApprovalHistory, 
-  mapRequestStatus
+  mapRequestStatus,
+  resolveWorkflowApproverDisplayName
 } from '@utils/request-mapper.utils';
 import { resolveRequestDetailEndpoint } from '@utils/request-detail-endpoint.utils';
 import { 
@@ -226,25 +227,8 @@ export class OrderReportService {
    * Get localized approver name from step
    */
   getLocalizedApproverName(step: WorkflowApprovalStep): string {
-    const currentLang = getCurrentLang(this.translate);
-
-    if (step.isPending) {
-      if (currentLang === 'ar' && step.applicationRoleNameAr) {
-        return step.applicationRoleNameAr;
-      } else if (step.applicationRoleName) {
-        return step.applicationRoleName;
-      }
-    }
-
-    if (currentLang === 'ar' && step.approverNameAr) {
-      return step.approverNameAr;
-    } else if (step.approverNameEn) {
-      return step.approverNameEn;
-    } else if (step.approverName) {
-      return step.approverName;
-    }
-
-    return 'N/A';
+    const name = resolveWorkflowApproverDisplayName(step, getCurrentLang(this.translate));
+    return name || 'N/A';
   }
 
   /**

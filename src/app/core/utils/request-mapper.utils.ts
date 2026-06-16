@@ -186,7 +186,15 @@ function mapWeaponAssociationRows(
       associatedWeaponOtherName: readField<string | null>(row, 'associatedWeaponOtherName', 'AssociatedWeaponOtherName') ?? null,
       associatedWeaponCaliberId: readField<number | null>(row, 'associatedWeaponCaliberId', 'AssociatedWeaponCaliberId') ?? null,
       associatedWeaponName: readField<string | null>(row, 'associatedWeaponName', 'AssociatedWeaponName') ?? null,
-      associatedWeaponNameAr: readField<string | null>(row, 'associatedWeaponNameAr', 'AssociatedWeaponNameAr') ?? null
+      associatedWeaponNameAr: readField<string | null>(row, 'associatedWeaponNameAr', 'AssociatedWeaponNameAr') ?? null,
+      associatedWeaponCatalogCaliberId:
+        readField<number | null>(row, 'associatedWeaponCatalogCaliberId', 'AssociatedWeaponCatalogCaliberId') ?? null,
+      associatedWeaponCatalogCaliberNameEn:
+        readField<string | null>(row, 'associatedWeaponCatalogCaliberNameEn', 'AssociatedWeaponCatalogCaliberNameEn') ??
+        null,
+      associatedWeaponCatalogCaliberNameAr:
+        readField<string | null>(row, 'associatedWeaponCatalogCaliberNameAr', 'AssociatedWeaponCatalogCaliberNameAr') ??
+        null
     }));
 
   return mapped.length > 0 ? mapped : undefined;
@@ -221,6 +229,9 @@ export function mapRequestItems(items: unknown[]): RequestItem[] {
         unit: String(readField<unknown>(item, 'unit', 'Unit') ?? item['unitName'] ?? '-'),
         nsn: typeof readField<unknown>(item, 'nsn', 'Nsn') === 'string' ? String(readField<unknown>(item, 'nsn', 'Nsn')) : undefined,
         itemType: normalizedItemType > 0 ? normalizedItemType : undefined,
+        itemCaliberId: readField<number | null>(item, 'itemCaliberId', 'ItemCaliberId') ?? null,
+        itemCaliberNameEn: readField<string | null>(item, 'itemCaliberNameEn', 'ItemCaliberNameEn') ?? null,
+        itemCaliberNameAr: readField<string | null>(item, 'itemCaliberNameAr', 'ItemCaliberNameAr') ?? null,
         weaponAssociations: mapWeaponAssociationRows(
           readField<unknown[]>(item, 'weaponAssociations', 'WeaponAssociations')
         )
@@ -285,6 +296,7 @@ export function mapApprovalHistory(history: unknown[], requestStatus?: RequestSt
       const changedByVal = readField<string>(h, 'changedBy', 'ChangedBy');
       const approverNameEn = readField<string>(h, 'approverNameEn', 'ApproverNameEn');
       const approverNameAr = readField<string>(h, 'approverNameAr', 'ApproverNameAr');
+      const approverUserName = readField<string>(h, 'approverUserName', 'ApproverUserName');
 
       let approverName: string;
       if (isPending) {
@@ -294,8 +306,10 @@ export function mapApprovalHistory(history: unknown[], requestStatus?: RequestSt
           'Pending Approval';
       } else if (approverNameEn || approverNameAr) {
         approverName = (approverNameEn || approverNameAr) as string;
+      } else if (approverUserName) {
+        approverName = approverUserName;
       } else {
-        approverName = getApproverName(changedByVal);
+        approverName = getApproverNameFromChangedBy(changedByVal);
       }
 
       const isDel = readField<unknown>(h, 'isDelegation', 'IsDelegation');
@@ -312,6 +326,7 @@ export function mapApprovalHistory(history: unknown[], requestStatus?: RequestSt
         approverName: approverName,
         approverNameEn: approverNameEn,
         approverNameAr: approverNameAr,
+        approverUserName: approverUserName,
         changedAt: readField<string | Date>(h, 'changedAt', 'ChangedAt'),
         steporder: Number(readField<number | string>(h, 'steporder', 'stepOrder', 'StepOrder') ?? index + 1),
         applicationRoleId: readField<string>(h, 'applicationRoleId', 'ApplicationRoleId'),
@@ -356,17 +371,17 @@ export function mapApprovalHistory(history: unknown[], requestStatus?: RequestSt
 }
 
 /**
- * Extract approver name from changedBy field
+ * Extract approver display name from changedBy when no structured name fields exist.
  */
-export function getApproverName(changedBy?: string): string {
-  if (!changedBy) return 'Unknown Approver';
+export function getApproverNameFromChangedBy(changedBy?: string): string {
+  if (!changedBy) return '';
 
-  // User id (GUID) — do not treat as email local-part
+  // User id (GUID) — caller should use approverUserName from API when available
   const guidLike = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
     changedBy.trim()
   );
   if (guidLike) {
-    return 'Unknown Approver';
+    return '';
   }
 
   const parts = changedBy.split('@');
@@ -376,6 +391,57 @@ export function getApproverName(changedBy?: string): string {
   }
 
   return changedBy;
+}
+
+/** @deprecated Use getApproverNameFromChangedBy — kept for existing imports */
+export function getApproverName(changedBy?: string): string {
+  const name = getApproverNameFromChangedBy(changedBy);
+  return name || 'Unknown Approver';
+}
+
+/**
+ * Resolve localized approver label for workflow timeline display.
+ */
+export function resolveWorkflowApproverDisplayName(
+  approval: Pick<
+    WorkflowApprovalStep,
+    | 'approverNameEn'
+    | 'approverNameAr'
+    | 'approverName'
+    | 'approverUserName'
+    | 'applicationRoleName'
+    | 'applicationRoleNameAr'
+    | 'isPending'
+  >,
+  currentLang: string
+): string {
+  if (approval.isPending) {
+    if (currentLang === 'ar' && approval.applicationRoleNameAr?.trim()) {
+      return approval.applicationRoleNameAr.trim();
+    }
+    if (approval.applicationRoleName?.trim()) {
+      return approval.applicationRoleName.trim();
+    }
+    return '';
+  }
+
+  if (currentLang === 'ar' && approval.approverNameAr?.trim()) {
+    return approval.approverNameAr.trim();
+  }
+  if (approval.approverNameEn?.trim()) {
+    return approval.approverNameEn.trim();
+  }
+  if (approval.approverNameAr?.trim()) {
+    return approval.approverNameAr.trim();
+  }
+  if (approval.approverUserName?.trim()) {
+    return approval.approverUserName.trim();
+  }
+  if (approval.approverName?.trim() && approval.approverName !== 'Unknown Approver') {
+    return approval.approverName.trim();
+  }
+
+  return '';
 }
 
 export function formatApprovalDate(date: string | Date | undefined): string {

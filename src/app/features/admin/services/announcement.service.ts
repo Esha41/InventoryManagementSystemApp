@@ -7,7 +7,6 @@ import {
     UpdateAnnouncementDto,
     ActiveAnnouncement
 } from '@models/announcement.model';
-import { ApiResponse } from '@models/api-response.model';
 
 @Injectable({
     providedIn: 'root'
@@ -29,49 +28,49 @@ export class AnnouncementService {
     /**
      * Get all announcements (Admin only)
      */
-    getAll(): Observable<ApiResponse<Announcement[]>> {
-        return this.apiService.getRaw<Announcement[]>(this.endpoint) as unknown as Observable<ApiResponse<Announcement[]>>;
+    getAll(): Observable<Announcement[]> {
+        return this.apiService.get<Announcement[]>(this.endpoint);
     }
 
     /**
      * Get announcement by ID (Admin only)
      */
-    getById(id: number): Observable<ApiResponse<Announcement>> {
-        return this.apiService.getRaw<Announcement>(`${this.endpoint}/${id}`) as unknown as Observable<ApiResponse<Announcement>>;
+    getById(id: number): Observable<Announcement> {
+        return this.apiService.get<Announcement>(`${this.endpoint}/${id}`);
     }
 
     /**
      * Get active announcements for current user
      */
-    getActive(): Observable<ApiResponse<ActiveAnnouncement[]>> {
-        return this.apiService.getRaw<ActiveAnnouncement[]>(`${this.endpoint}/active`) as unknown as Observable<ApiResponse<ActiveAnnouncement[]>>;
+    getActive(): Observable<ActiveAnnouncement[]> {
+        return this.apiService.get<ActiveAnnouncement[]>(`${this.endpoint}/active`);
     }
 
     /**
      * Create new announcement (Admin only)
      */
-    create(dto: CreateAnnouncementDto): Observable<ApiResponse<Announcement>> {
-        return this.apiService.postRaw<Announcement>(this.endpoint, dto) as unknown as Observable<ApiResponse<Announcement>>;
+    create(dto: CreateAnnouncementDto): Observable<Announcement> {
+        return this.apiService.post<Announcement>(this.endpoint, dto);
     }
 
     /**
      * Update announcement (Admin only)
      */
-    update(id: number, dto: UpdateAnnouncementDto): Observable<ApiResponse<Announcement>> {
-        return this.apiService.putRaw<Announcement>(`${this.endpoint}/${id}`, dto) as unknown as Observable<ApiResponse<Announcement>>;
+    update(id: number, dto: UpdateAnnouncementDto): Observable<Announcement> {
+        return this.apiService.put<Announcement>(`${this.endpoint}/${id}`, dto);
     }
 
     /**
      * Delete announcement (Admin only)
      */
-    delete(id: number): Observable<ApiResponse<boolean>> {
-        return this.apiService.deleteRaw<boolean>(`${this.endpoint}/${id}`) as unknown as Observable<ApiResponse<boolean>>;
+    delete(id: number): Observable<boolean> {
+        return this.apiService.delete<boolean>(`${this.endpoint}/${id}`);
     }
 
     /**
      * Dismiss announcement for current user
      */
-    dismiss(id: number): Observable<ApiResponse<boolean>> {
-        return this.apiService.postRaw<boolean>(`${this.endpoint}/${id}/dismiss`, {}) as unknown as Observable<ApiResponse<boolean>>;
+    dismiss(id: number): Observable<boolean> {
+        return this.apiService.post<boolean>(`${this.endpoint}/${id}/dismiss`, {});
     }
 }

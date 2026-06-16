@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, OnDestroy, SimpleChanges, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -25,13 +25,12 @@ import { hasPendingStep } from '../../utils/workflow-approval-helpers';
   templateUrl: './workflow-return-delivery-date.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class WorkflowReturnDeliveryDateComponent implements OnChanges {
+export class WorkflowReturnDeliveryDateComponent implements OnChanges, OnDestroy {
   readonly Calendar = Calendar;
   readonly Edit3 = Edit3;
 
   @Input() requestId!: number;
   @Input() requestDetail: RequestDetail | null = null;
-  @Input() destroy$!: Subject<void>;
 
   @Output() deliveryDateSet = new EventEmitter<void>();
 
@@ -40,6 +39,8 @@ export class WorkflowReturnDeliveryDateComponent implements OnChanges {
   localDeliveryDate = '';
   processing = false;
   isEditMode = false;
+
+  private destroy$ = new Subject<void>();
 
   get isAlreadySet(): boolean {
     return !!this.requestDetail?.deliveryDate;
@@ -114,6 +115,11 @@ export class WorkflowReturnDeliveryDateComponent implements OnChanges {
     }
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   openDatePicker(): void {
     const el = this.deliveryDatePickerRef?.nativeElement;
     if (el?.showPicker) {
@@ -144,24 +150,16 @@ export class WorkflowReturnDeliveryDateComponent implements OnChanges {
           this.processing = false;
           this.isEditMode = false;
           this.deliveryDateSet.emit();
-          this.translateService.get(['toast.success', 'workflowApprovalDetail.success.returnDeliveryDateSet'])
-            .pipe(takeUntil(this.destroy$))
-            .subscribe(t => {
-              this.toastService.success(
-                t['workflowApprovalDetail.success.returnDeliveryDateSet'] || 'Delivery date set successfully',
-                t['toast.success'] || 'Success'
-              );
-            });
+          this.toastService.success(
+            this.translateService.instant('workflowApprovalDetail.success.returnDeliveryDateSet') || 'Delivery date set successfully',
+            this.translateService.instant('toast.success') || 'Success'
+          );
           this.cdr.markForCheck();
         },
         error: (error) => {
           this.processing = false;
           const msg = ErrorHandler.extractErrorMessage(error, 'Failed to set delivery date');
-          this.translateService.get('toast.error')
-            .pipe(takeUntil(this.destroy$))
-            .subscribe(title => {
-              this.toastService.error(msg, title);
-            });
+          this.toastService.error(msg, this.translateService.instant('toast.error'));
           this.cdr.markForCheck();
         }
       });

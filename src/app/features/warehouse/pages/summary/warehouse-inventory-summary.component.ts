@@ -24,6 +24,7 @@ import { TranslationService } from '@services/translation.service';
 import { ExcelService, ExcelColumn } from '@services/excel.service';
 import { ToastService } from '@services/toast.service';
 import { AppDatePipe } from '@shared/pipes/app-date.pipe';
+import { AppNumberPipe } from '@shared/pipes/app-number.pipe';
 import { trackById, trackByKey, trackByIndex } from '@utils/trackby.utils';
 import { defaultPageSize } from '@constants/app.constants';
 
@@ -43,6 +44,7 @@ type ExpandChevronIcon = typeof ChevronDown | typeof ChevronLeft | typeof Chevro
         PaginationComponent,
         RowsPerPageComponent,
         AppDatePipe,
+        AppNumberPipe,
         TableClampTooltipDirective
     ],
     templateUrl: './warehouse-inventory-summary.component.html',
@@ -559,11 +561,6 @@ export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
      */
     getAssetDepotName(asset: AssetDto): string {
         return asset.depot ? getLocalizedName(asset.depot, getCurrentLang(this.translateService)) || '-' : '-';
-    }
-
-    // Formatting methods using utils
-    formatNumber(num: number): string {
-        return InventorySummaryUtils.formatNumber(num);
     }
 
     formatDate(date?: string): string {

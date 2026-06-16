@@ -120,10 +120,10 @@
         <span>
           {{ 'weaponSupplyReview.showing' | translate }}
           <span class="font-semibold text-[var(--color-text)]">
-            {{ formatNumber(getPaginationStartIndex()) }} - {{ formatNumber(getPaginationEndIndex()) }}
+            {{ getPaginationStartIndex() | appNumber }} - {{ getPaginationEndIndex() | appNumber }}
           </span>
           {{ 'weaponSupplyReview.of' | translate }}
-          <span class="font-semibold text-[var(--color-text)]">{{ formatNumber(filteredAssets.length) }}</span>
+          <span class="font-semibold text-[var(--color-text)]">{{ filteredAssets.length | appNumber }}</span>
         </span>
       </div>
 

@@ -4,20 +4,20 @@ import { TranslateModule } from '@ngx-translate/core';
 import { UserManagementComponent } from './components/user-management/user-management.component';
 
 /**
- * Manage Admins Component
- * Component for managing system users
+ * Manage Users Component
+ * Shell page for managing system users.
  */
 @Component({
-  selector: 'app-manage-admins',
+  selector: 'app-manage-users',
   standalone: true,
   imports: [
     CommonModule,
     TranslateModule,
     UserManagementComponent
   ],
-  templateUrl: './manage-admins.component.html',
-  styleUrls: ['./manage-admins.component.css'],
+  templateUrl: './manage-users.component.html',
+  styleUrls: ['./manage-users.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ManageAdminsComponent {
+export class ManageUsersComponent {
 }

@@ -12,29 +12,57 @@
     *ngFor="let association of associations ?? []"
     class="flex gap-2 text-[var(--color-text)] min-w-0"
     [class.max-w-full]="inline"
+    [class.rounded-md]="isAssociationIncompatible(association)"
+    [class.bg-amber-500/5]="isAssociationIncompatible(association)"
+    [class.px-1]="isAssociationIncompatible(association) && inline"
     role="listitem">
     <span
       *ngIf="!inline"
       class="flex h-[1lh] shrink-0 items-center"
       aria-hidden="true">
-      <span class="h-1.5 w-1.5 rounded-full bg-[var(--color-brand)]"></span>
+      <span
+        class="h-1.5 w-1.5 rounded-full"
+        [ngClass]="incompatibleBulletClass(association)"></span>
     </span>
     <div class="min-w-0 flex flex-wrap items-center gap-x-2 gap-y-0.5 leading-snug">
       <button
         *ngIf="linkable && isCatalogAssociation(association); else associationLabel"
         type="button"
-        class="break-words text-start leading-snug text-[var(--color-brand)] underline-offset-2 transition-colors hover:text-[var(--color-brand-dark)] hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 rounded-sm"
+        class="break-words text-start leading-snug underline-offset-2 transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:ring-offset-1 rounded-sm"
+        [ngClass]="
+          isAssociationIncompatible(association)
+            ? 'text-amber-700 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300 font-medium'
+            : 'text-[var(--color-brand)] hover:text-[var(--color-brand-dark)] hover:underline'
+        "
         [attr.aria-label]="('common.viewDetails' | translate) + ': ' + getAssociationDisplay(association).title"
         (click)="onAssociationClick($event, association)">
         {{ getAssociationDisplay(association).title }}
       </button>
       <ng-template #associationLabel>
-        <span class="break-words leading-snug">{{ getAssociationDisplay(association).title }}</span>
+        <span
+          class="break-words leading-snug"
+          [ngClass]="incompatibleNameClass(association)">
+          {{ getAssociationDisplay(association).title }}
+        </span>
       </ng-template>
       <span
         *ngIf="getAssociationDisplay(association).isCustom"
         class="inline-flex shrink-0 items-center rounded-full border border-[var(--color-border)] bg-[var(--color-background-muted)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
         {{ customLabelKey | translate }}
+      </span>
+      <span
+        *ngIf="shouldShowCompatibilityBadge(association)"
+        class="inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[10px] font-medium"
+        [ngClass]="
+          isAssociationCaliberCompatible(association)
+            ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
+            : 'bg-amber-500/10 text-amber-800 dark:text-amber-400'
+        ">
+        {{
+          isAssociationCaliberCompatible(association)
+            ? ('newIssueRequest.weaponAssociation.compatibleLabel' | translate)
+            : ('newIssueRequest.weaponAssociation.notCompatibleLabel' | translate)
+        }}
       </span>
     </div>
   </li>

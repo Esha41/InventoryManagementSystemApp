@@ -2,6 +2,18 @@ import { Component, Input, Output, EventEmitter, HostListener, ElementRef, Chang
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, ChevronDown } from 'lucide-angular';
 
+/** Selectable request statuses — single source of truth for the dropdown input and options. */
+export const REQUEST_STATUS_OPTIONS = [
+  'New',
+  'Pending',
+  'Confirmed',
+  'Rejected',
+  'Returned',
+  'ReturnedForReview',
+] as const;
+
+export type RequestStatusOption = (typeof REQUEST_STATUS_OPTIONS)[number];
+
 @Component({
   selector: 'app-status-dropdown',
   standalone: true,
@@ -11,13 +23,12 @@ import { LucideAngularModule, ChevronDown } from 'lucide-angular';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StatusDropdownComponent {
-  @Input() status: 'New' | 'Pending' | 'Confirmed' | 'Rejected' | 'Returned' | 'ReturnedForReview' = 'New';
-  @Output() statusChange = new EventEmitter<string>();
+  @Input() status: RequestStatusOption = 'New';
+  @Output() statusChange = new EventEmitter<RequestStatusOption>();
 
   readonly ChevronDown = ChevronDown;
+  readonly statuses = REQUEST_STATUS_OPTIONS;
   isOpen = false;
-
-  statuses = ['New', 'Pending', 'Confirmed', 'Rejected', 'Returned'];
 
   constructor(private elementRef: ElementRef) { }
 
@@ -25,7 +36,7 @@ export class StatusDropdownComponent {
     this.isOpen = !this.isOpen;
   }
 
-  selectStatus(newStatus: string): void {
+  selectStatus(newStatus: RequestStatusOption): void {
     if (newStatus !== this.status) {
       this.statusChange.emit(newStatus);
     }

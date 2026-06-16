@@ -14,7 +14,7 @@
       </div>
       <div class="flex items-center justify-between text-sm">
         <span class="text-[var(--color-text-muted)]">{{ 'supplyRequestDetail.approvedQuantity' | translate }}:</span>
-        <span class="font-bold text-[var(--color-text)]">{{ formatNumber(selectedItem.approvedQuantity) }}</span>
+        <span class="font-bold text-[var(--color-text)]">{{ selectedItem.approvedQuantity | appNumber }}</span>
       </div>
     </div>
 
@@ -96,7 +96,7 @@
 
           <div class="text-end pe-5">
             <p class="text-sm font-semibold text-[var(--color-text)]">
-              {{ formatNumber(lot.quantity) }} {{ 'supplyRequestDetail.available' | translate }}
+              {{ lot.quantity | appNumber }} {{ 'supplyRequestDetail.available' | translate }}
             </p>
             <p *ngIf="lot.expiryDate" class="text-xs text-[var(--color-text-muted)] mt-1">
               {{ formatDate(lot.expiryDate) }}
@@ -126,7 +126,7 @@
             (input)="onLotQuantityChange(lot.lotNumber, +quantityInput.value)" placeholder="0"
             class="flex-1 px-3 py-2 border-2 border-[var(--color-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent" />
           <span class="text-sm text-[var(--color-text-muted)] whitespace-nowrap">
-            / {{ formatNumber(lot.quantity) }}
+            / {{ lot.quantity | appNumber }}
           </span>
         </div>
       </div>
@@ -141,7 +141,7 @@
           [class.text-green-600]="getTempTotalSelected() > 0 && getTempTotalSelected() <= selectedItem.approvedQuantity"
           [class.text-red-600]="getTempTotalSelected() > selectedItem.approvedQuantity"
           [class.text-[var(--color-text)]]="getTempTotalSelected() === 0">
-          {{ formatNumber(getTempTotalSelected()) }} / {{ formatNumber(selectedItem.approvedQuantity) }}
+          {{ getTempTotalSelected() | appNumber }} / {{ selectedItem.approvedQuantity | appNumber }}
         </span>
       </div>
       <p *ngIf="getTempTotalSelected() > selectedItem.approvedQuantity" class="text-xs text-red-600 font-medium">

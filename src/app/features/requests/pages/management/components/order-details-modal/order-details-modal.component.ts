@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from 
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, X } from 'lucide-angular';
 
-interface Request {
+interface OrderDetailsRequest {
   orderId: string;
   requestDate: string;
   priority: string;
@@ -20,7 +20,7 @@ interface Request {
 })
 export class OrderDetailsModalComponent {
   @Input() isOpen = false;
-  @Input() order: Request | null = null;
+  @Input() order: OrderDetailsRequest | null = null;
   @Output() close = new EventEmitter<void>();
 
   readonly X = X;

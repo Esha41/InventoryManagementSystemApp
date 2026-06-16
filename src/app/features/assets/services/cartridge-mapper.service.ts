@@ -4,6 +4,7 @@ import { AmmunitionReadDto, LookupDto } from '@models/ammunition.model';
 import { WeaponDto } from '@models/weapon.model';
 import { ExplosiveDto } from '@models/explosive.model';
 import { getLocalizedName } from '@utils/localization.utils';
+import { getPrimaryPurposeNav } from '@models/primary-purpose.model';
 import { resolveCatalogItemCaliberId } from '@utils/catalog-caliber.utils';
 import { getWeaponTypeName, getActionTypeName } from '@utils/weapon.utils';
 import { getExplosiveTypeName } from '@utils/explosive.utils';
@@ -74,7 +75,7 @@ export class CartridgeMapperService {
       itemNo: dto.itemNo,
       productId: dto.itemNo, // Using itemNo as productId fallback
       ncn: dto.nsn || undefined,
-      primaryPurpose: getLocalizedName(dto.primaryPurpos, currentLang),
+      primaryPurpose: getLocalizedName(getPrimaryPurposeNav(dto), currentLang),
       projectileColor: getLocalizedName(dto.projectileColor, currentLang),
       totalWeight: dto.totalWeight ? `${dto.totalWeight} g` : undefined,
       projectileMaterial: getLocalizedName(dto.projectailMaterial, currentLang),
@@ -91,6 +92,12 @@ export class CartridgeMapperService {
             : String(dto.caliber)
           : undefined,
       caliberId: resolveCatalogItemCaliberId(dto),
+      caliberNameEn: dto.caliber != null && typeof dto.caliber === 'object'
+        ? (dto.caliber.nameEn ?? dto.caliber.nameEN ?? undefined)
+        : undefined,
+      caliberNameAr: dto.caliber != null && typeof dto.caliber === 'object'
+        ? (dto.caliber.nameAr ?? dto.caliber.nameAR ?? undefined)
+        : undefined,
       linkedLabel,
       linkedLabelAr: linkedLabelAr || undefined,
       linkedLabelEn: linkedLabelEn || undefined,

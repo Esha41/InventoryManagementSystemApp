@@ -34,6 +34,7 @@ import { defaultPageSize } from '@constants/app.constants';
 import { PERMISSIONS } from '@constants/permissions.constants';
 import { BackendAuthService } from '@services/backend-auth.service';
 import { TopazSignatureComponent } from '@components/topaz-signature/topaz-signature.component';
+import { AppNumberPipe } from '@shared/pipes/app-number.pipe';
 
 @Component({
   selector: 'app-weapon-supply-review',
@@ -51,6 +52,7 @@ import { TopazSignatureComponent } from '@components/topaz-signature/topaz-signa
     PaginationComponent,
     RowsPerPageComponent,
     TopazSignatureComponent,
+    AppNumberPipe,
   ],
   providers: [
     WeaponSupplyReviewService,
@@ -678,10 +680,6 @@ export class WeaponSupplyReviewComponent implements OnInit, OnDestroy {
     }
     const requested = this.reviewService.getRequestedItems().get(asset.itemId);
     return requested?.itemName ?? `Item ${asset.itemId}`;
-  }
-
-  formatNumber(num: number): string {
-    return this.displayService.formatNumber(num);
   }
 
   formatDate(date: Date | string | undefined): string {

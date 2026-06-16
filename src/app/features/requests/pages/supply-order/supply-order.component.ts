@@ -446,8 +446,6 @@ export class SupplyOrderComponent implements OnInit, OnDestroy {
     this.confirmModalAction = null;
   }
 
-  formatNumber = formatNumberUtil;
-
   /**
    * Open add item modal
    */

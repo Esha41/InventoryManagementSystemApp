@@ -6,7 +6,8 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Package, Plus, CheckCircle, Clock } from 'lucide-angular';
 import { SupplyItemDisplay } from '@models/supply-order.model';
-import { formatNumber as formatNumberUtil, formatDate as formatDateUtil } from '@utils/format.utils';
+import { formatDate as formatDateUtil } from '@utils/format.utils';
+import { AppNumberPipe } from '@shared/pipes/app-number.pipe';
 import { getSupplyItemDisplayName } from '@requests/utils/supply-order-format.utils';
 import { HasPermissionDirective } from '@core/directives/has-permission.directive';
 import { TranslationService } from '@services/translation.service';
@@ -24,7 +25,8 @@ import { TranslationService } from '@services/translation.service';
     FormsModule,
     TranslateModule,
     LucideAngularModule,
-    HasPermissionDirective
+    HasPermissionDirective,
+    AppNumberPipe
   ],
   templateUrl: './supply-items-list.component.html',
   styleUrls: ['./supply-items-list.component.css'],
@@ -48,7 +50,6 @@ export class SupplyItemsListComponent {
   @Output() cancelEdit = new EventEmitter<SupplyItemDisplay>();
   @Output() deleteItem = new EventEmitter<SupplyItemDisplay>();
 
-  formatNumber = formatNumberUtil;
   formatDate = formatDateUtil;
 
   constructor(

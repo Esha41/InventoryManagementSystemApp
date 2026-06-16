@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { CartridgeState } from '@requests/pages/new-issue/new-issue-request.state';
+import { formatFromReserveQueryParam, parseFromReserveQueryParam } from '@requests/utils/issue-request.utils';
 
 export interface IssueRequestQueryParams {
   step?: number;
@@ -12,7 +13,7 @@ export interface IssueRequestQueryParams {
 
 export interface QueryParamsState {
   step: number;
-  fromReserve: string;
+  fromReserve: boolean;
   pendingSelections: Array<{ id: number; quantity: number; itemType?: string }> | null;
 }
 
@@ -39,7 +40,7 @@ export class IssueRequestStateService {
           }
         }
 
-        const fromReserve = params['fromReserve'] || 'Yes';
+        const fromReserve = parseFromReserveQueryParam(params['fromReserve']);
 
         let pendingSelections: Array<{ id: number; quantity: number; itemType?: string }> | null = null;
         const selectionsParam = params['selections'];
@@ -58,10 +59,10 @@ export class IssueRequestStateService {
   }
 
 
-  updateQueryParams(step: number, fromReserve: string, selectedEntries: Array<{ id: number; quantity: number; itemType?: string }>): void {
+  updateQueryParams(step: number, fromReserve: boolean, selectedEntries: Array<{ id: number; quantity: number; itemType?: string }>): void {
     const queryParams: IssueRequestQueryParams = {
       step: step,
-      fromReserve: fromReserve
+      fromReserve: formatFromReserveQueryParam(fromReserve)
     };
 
     // Persist selected entries if there are any

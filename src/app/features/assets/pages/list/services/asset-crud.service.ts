@@ -13,7 +13,6 @@ import { AccessoryService } from '@assets/services/accessory.service';
 import { FileUploadService } from '@services/file-upload.service';
 import { FileEntityType } from '@models/file-upload.model';
 import { AssetType } from '@models/asset-list.model';
-import { APIOperationResponse } from '@models/api-response.model';
 import { AmmunitionCreateDto } from '@models/ammunition.model';
 import { CreateUpdateWeaponDto } from '@models/weapon.model';
 import { CreateUpdateExplosiveDto } from '@models/explosive.model';
@@ -35,7 +34,7 @@ export interface EditImageResult {
 }
 
 type AssetUpdateService = {
-  update(id: number, data: AssetCreateUpdateDto): Observable<APIOperationResponse<unknown>>;
+  update(id: number, data: AssetCreateUpdateDto): Observable<unknown>;
   updateImage(id: number, file: File, existingFileId: number | null): Observable<number>;
 };
 
@@ -143,25 +142,18 @@ export class AssetCrudService {
     imageFile: File | null,
     imageFileId: number | null,
     removeImageRequested: boolean
-  ): Observable<APIOperationResponse<unknown>> {
+  ): Observable<void> {
     const service = this.getFileBlobService(activeTab) as AssetUpdateService;
 
     return service.update(id, dto).pipe(
-      switchMap(res => {
-        if (!res.succeeded) {
-          return of(res);
-        }
+      switchMap(() => {
         if (imageFile) {
-          return service.updateImage(id, imageFile, imageFileId).pipe(
-            map(() => res)
-          );
+          return service.updateImage(id, imageFile, imageFileId).pipe(map(() => undefined));
         }
         if (removeImageRequested && imageFileId) {
-          return this.fileUploadService.deleteFile(imageFileId).pipe(
-            map(() => res)
-          );
+          return this.fileUploadService.deleteFile(imageFileId).pipe(map(() => undefined));
         }
-        return of(res);
+        return of(undefined);
       })
     );
   }
@@ -172,7 +164,7 @@ export class AssetCrudService {
   deleteAsset(
     id: number,
     activeTab: AssetType
-  ): Observable<APIOperationResponse<boolean>> {
+  ): Observable<boolean> {
     const service = this.getAssetService(activeTab);
     return service.delete(id);
   }
@@ -183,7 +175,7 @@ export class AssetCrudService {
   permanentDeleteAsset(
     id: number,
     activeTab: AssetType
-  ): Observable<APIOperationResponse<boolean>> {
+  ): Observable<boolean> {
     const service = this.getAssetService(activeTab);
     return service.permanentDelete(id);
   }
@@ -194,7 +186,7 @@ export class AssetCrudService {
   restoreAsset(
     id: number,
     activeTab: AssetType
-  ): Observable<APIOperationResponse<boolean>> {
+  ): Observable<boolean> {
     const service = this.getAssetService(activeTab);
     return service.restore(id);
   }
