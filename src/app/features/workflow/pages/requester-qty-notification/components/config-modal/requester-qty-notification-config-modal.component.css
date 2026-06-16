@@ -1,0 +1,4 @@
+.rqn-config-modal__backdrop,
+.rqn-config-modal__body {
+  scrollbar-gutter: stable;
+}

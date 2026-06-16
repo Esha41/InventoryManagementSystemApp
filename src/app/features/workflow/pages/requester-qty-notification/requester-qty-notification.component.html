@@ -19,75 +19,14 @@
       <p class="text-[var(--color-text-muted)]">{{ 'common.loading' | translate }}</p>
     </div>
 
-    <section *ngIf="!loading" #notificationSettingsSection class="scroll-mt-6">
-    <app-card>
-      <div class="p-6">
-        <h4 class="mb-6 text-xl font-semibold text-[var(--color-text)]">
-          {{ 'workflow.requesterQtyNotifySectionTitle' | translate }}
-        </h4>
-
-        <div class="mb-4">
-          <span class="mb-2 block text-sm font-semibold text-[var(--color-text)]">
-            {{ 'workflow.requesterQtyNotifyWorkflowLabel' | translate }}
-          </span>
-          <app-dropdown
-            class="w-full"
-            [(ngModel)]="selectedWorkflowId"
-            (ngModelChange)="onWorkflowSelected($event)"
-            [options]="workflowDropdownOptions"
-            [placeholderSelectable]="true"
-            [placeholderValue]="null"
-            [showSearch]="true"
-            [disabled]="loading"
-            [placeholder]="'workflow.requesterQtyNotifySelectWorkflow' | translate">
-          </app-dropdown>
-        </div>
-
-      
-        <div *ngIf="selectedWorkflowId" class="mb-4">
-          <span class="mb-2 block text-sm font-semibold text-[var(--color-text)]">
-            {{ 'workflow.requesterQtyNotifyStepsFieldLabel' | translate }}
-          </span>
-          <div *ngIf="loadingDetail" class="py-8 text-center">
-            <p class="text-[var(--color-text-muted)]">{{ 'common.loading' | translate }}</p>
-          </div>
-          <app-dropdown
-            *ngIf="!loadingDetail && workflowDetail"
-            class="w-full"
-            [(ngModel)]="selectedStepIds"
-            (ngModelChange)="onStepSelectionChange()"
-            [options]="stepDropdownOptions"
-            [multiple]="true"
-            [showSearch]="true"
-            [disabled]="saving"
-            [noDataText]="'common.noData' | translate"
-            [placeholder]="'workflow.requesterQtyNotifyStepsPlaceholder' | translate">
-          </app-dropdown>
-        </div>
-
-        <div *appHasPermission="PERMISSIONS.SETTINGS.REQUESTER_QTY_NOTIFICATIONS.PAGE" class="mt-4 flex items-center justify-end gap-3 pt-4">
-          <app-button variant="primary" [disabled]="saving" (clicked)="save()">
-            {{
-              saving
-                ? ('common.saving' | translate)
-                : ('common.save' | translate)
-            }}
-          </app-button>
-        </div>
-      </div>
-    </app-card>
-    </section>
-
     <app-card *ngIf="!loading">
       <div class="p-6 space-y-4">
         <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <div class="space-y-1">
             <h2 class="text-lg font-semibold text-[var(--color-text)] border-b border-[var(--color-border)] pb-2">
               {{ 'workflow.requesterQtyNotifySavedStepsTitle' | translate }}
-            </h2>
-            <p class="text-sm text-[var(--color-text-muted)] max-w-3xl">
-              {{ 'workflow.requesterQtyNotifySavedStepsIntro' | translate }}
-            </p>
+            </h2>          
+            
           </div>
           <button
             type="button"
@@ -175,5 +114,13 @@
         </p>
       </div>
     </app-card>
+
+    <app-requester-qty-notification-config-modal
+      *ngIf="configureModal"
+      [workflowId]="configureModal.workflowId"
+      [workflowName]="configureModal.workflowName"
+      [workflowTypeLabel]="configureModal.workflowTypeLabel"
+      (closed)="onConfigureModalClosed($event)">
+    </app-requester-qty-notification-config-modal>
   </div>
 </div>
