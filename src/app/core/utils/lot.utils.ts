@@ -26,7 +26,9 @@ export function formatLocation(depot?: { nameEn?: string; nameAr?: string }): st
 /**
  * Determines condition based on expiry date
  */
-export function determineCondition(expiryDate?: string): 'Good' | 'Fair' | 'Near Expiry' | 'Expired' {
+export type LotCondition = 'Good' | 'Fair' | 'Near Expiry' | 'Expired';
+
+export function determineCondition(expiryDate?: string): LotCondition {
   if (!expiryDate) return 'Good';
 
   const days = calculateDaysUntilExpiry(expiryDate);
@@ -34,6 +36,42 @@ export function determineCondition(expiryDate?: string): 'Good' | 'Fair' | 'Near
   if (days < LOT_CONSTANTS.DAYS_NEAR_EXPIRY_THRESHOLD) return 'Near Expiry';
   if (days < LOT_CONSTANTS.DAYS_FAIR_CONDITION_THRESHOLD) return 'Fair';
   return 'Good';
+}
+
+export type LotConditionNamespace = 'common' | 'supplyRequestDetail' | 'supplyOrder';
+
+const LOT_CONDITION_SUFFIX_MAP: Record<LotCondition, string> = {
+  Good: 'good',
+  Fair: 'fair',
+  'Near Expiry': 'nearExpiry',
+  Expired: 'expired',
+};
+
+/**
+ * Translation key for lot condition badge labels ({namespace}.lotConditions.*).
+ * Returns null when the condition is not a known lot condition.
+ */
+export function getLotConditionTranslationKey(
+  condition: LotCondition | string,
+  namespace: LotConditionNamespace = 'common'
+): string | null {
+  const suffix = LOT_CONDITION_SUFFIX_MAP[condition as LotCondition];
+  if (!suffix) return null;
+  return `${namespace}.lotConditions.${suffix}`;
+}
+
+/**
+ * Resolves a lot condition for display: translates known values, otherwise returns the original.
+ */
+export function getLotConditionLabel(
+  condition: LotCondition | string,
+  translate: { instant(key: string): string },
+  namespace: LotConditionNamespace = 'common'
+): string {
+  const key = getLotConditionTranslationKey(condition, namespace);
+  if (!key) return condition;
+  const translated = translate.instant(key);
+  return translated === key ? condition : translated;
 }
 
 /**

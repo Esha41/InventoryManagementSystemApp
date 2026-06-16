@@ -85,7 +85,7 @@
               <span class="font-semibold text-[var(--color-text)]">{{ 'supplyRequestDetail.lotPrefix' | translate }}-{{ lot.lotNumber }}</span>
               <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border"
                 [ngClass]="getLotConditionClass(lot.condition)">
-                {{ lot.condition }}
+                {{ getLotConditionLabel(lot.condition) }}
               </span>
               <lucide-angular *ngIf="lot.condition === 'Near Expiry' || lot.condition === 'Expired'" [img]="AlertTriangle"
                 class="h-4 w-4 text-red-600">

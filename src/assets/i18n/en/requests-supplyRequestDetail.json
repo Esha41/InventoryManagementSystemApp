@@ -46,6 +46,12 @@
     "noExpiry": "No expiry date",
     "daysRemaining": "days remaining",
     "lotExpiredTimeline": "Expired",
+    "lotConditions": {
+      "good": "Good",
+      "fair": "Fair",
+      "nearExpiry": "Near Expiry",
+      "expired": "Expired"
+    },
     "dischargeQuantity": "Discharge Quantity",
     "totalSelected": "Total Selected",
     "selectItem": "Select Item",

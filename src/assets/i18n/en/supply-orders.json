@@ -78,6 +78,12 @@
     "requestedQuantity": "Requested Quantity",
     "depot": "Depot",
     "expiryDate": "Expiry Date",
+    "lotConditions": {
+      "good": "Good",
+      "fair": "Fair",
+      "nearExpiry": "Near Expiry",
+      "expired": "Expired"
+    },
     "available": "Available",
     "noLotsFound": "No LOT found for this item",
     "lotAdded": "LOT added successfully",

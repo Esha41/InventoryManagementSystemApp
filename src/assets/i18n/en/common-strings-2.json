@@ -64,6 +64,12 @@
     "selectFile": "Select file",
     "showing": "Showing",
     "status": "Status",
+    "lotConditions": {
+      "good": "Good",
+      "fair": "Fair",
+      "nearExpiry": "Near Expiry",
+      "expired": "Expired"
+    },
     "statuses": {
       "Pending": "Pending",
       "Approved": "Approved",

@@ -14,6 +14,7 @@ import { formatDate as formatDateUtil, formatNumber as formatNumberUtil } from '
 import { AppNumberPipe } from '@shared/pipes/app-number.pipe';
 import { getLocalizedOrderItemName } from '@requests/utils/supply-order-format.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { getLotConditionLabel as resolveLotConditionLabel } from '@utils/lot.utils';
 
 /**
  * Add Lot Modal Component
@@ -51,6 +52,10 @@ export class AddLotModalComponent implements OnDestroy {
   readonly AlertTriangle = AlertTriangle;
   formatDate = formatDateUtil;
 
+  getLotConditionLabel(condition: string): string {
+    return resolveLotConditionLabel(condition, this.translateService, 'supplyOrder');
+  }
+
   addLotForm!: FormGroup;
   selectedItemForLot: OrderRequestItemDto | null = null;
   availableLots: LotItem[] = [];
@@ -69,6 +74,7 @@ export class AddLotModalComponent implements OnDestroy {
     private cdr: ChangeDetectorRef
   ) {
     this.initializeForm();
+    this.translateService.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
   }
 
   ngOnDestroy(): void {

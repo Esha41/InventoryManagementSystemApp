@@ -64,6 +64,12 @@
     "selectFile": "اختر ملف",
     "showing": "عرض",
     "status": "الحالة",
+    "lotConditions": {
+      "good": "جيد",
+      "fair": "مقبول",
+      "nearExpiry": "قريب من انتهاء الصلاحية",
+      "expired": "منتهي الصلاحية"
+    },
     "statuses": {
       "Pending": "قيد الإجراء",
       "Approved": "تمت الموافقة",
