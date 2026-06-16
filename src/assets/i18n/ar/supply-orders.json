@@ -78,6 +78,12 @@
     "requestedQuantity": "الكمية المحجوزة",
     "depot": "المستودع",
     "expiryDate": "تاريخ الانتهاء",
+    "lotConditions": {
+      "good": "جيد",
+      "fair": "مقبول",
+      "nearExpiry": "قريب من انتهاء الصلاحية",
+      "expired": "منتهي الصلاحية"
+    },
     "available": "متاح",
     "noLotsFound": "No LOT found for this item",
     "lotAdded": "LOT added successfully",

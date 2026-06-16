@@ -13,6 +13,7 @@ import { ToastService } from '@services/toast.service';
 import { formatDate as formatDateUtil, formatNumber as formatNumberUtil } from '@utils/format.utils';
 import { getLocalizedOrderItemName } from '@requests/utils/supply-order-format.utils';
 import { ErrorHandler } from '@utils/error-handler.utils';
+import { getLotConditionLabel as resolveLotConditionLabel } from '@utils/lot.utils';
 
 /**
  * Add Lot Modal Component
@@ -50,6 +51,10 @@ export class AddLotModalComponent implements OnDestroy {
   formatDate = formatDateUtil;
   formatNumber = formatNumberUtil;
 
+  getLotConditionLabel(condition: string): string {
+    return resolveLotConditionLabel(condition, this.translateService, 'supplyOrder');
+  }
+
   addLotForm!: FormGroup;
   selectedItemForLot: OrderRequestItemDto | null = null;
   availableLots: LotItem[] = [];
@@ -68,6 +73,7 @@ export class AddLotModalComponent implements OnDestroy {
     private cdr: ChangeDetectorRef
   ) {
     this.initializeForm();
+    this.translateService.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
   }
 
   ngOnDestroy(): void {

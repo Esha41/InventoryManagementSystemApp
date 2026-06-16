@@ -3,14 +3,16 @@
  * Handles lot selection for a single order item
  */
 
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, OnDestroy, SimpleChanges, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, Package, AlertTriangle, X } from 'lucide-angular';
+import { Subject, takeUntil } from 'rxjs';
 import { ModalComponent } from '@components/modal/modal.component';
 import { OrderItem, LotItem } from '@models/supply-request.model';
 import { getLotConditionClass as lookupLotConditionClass } from '../../../utils/ui-helpers.utils';
+import { getLotConditionLabel as resolveLotConditionLabel } from '@utils/lot.utils';
 import { formatDate as formatDateUtil, formatNumber as formatNumberUtil } from '@utils/format.utils';
 
 @Component({
@@ -27,7 +29,8 @@ import { formatDate as formatDateUtil, formatNumber as formatNumberUtil } from '
   styleUrls: ['./lot-selection-modal.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LotSelectionModalComponent implements OnInit, OnChanges {
+export class LotSelectionModalComponent implements OnInit, OnChanges, OnDestroy {
+  private readonly destroy$ = new Subject<void>();
   @Input() isOpen: boolean = false;
   @Input() selectedItem: OrderItem | null = null;
   @Input() availableLots: LotItem[] = [];
@@ -51,8 +54,11 @@ export class LotSelectionModalComponent implements OnInit, OnChanges {
   manualLotNumber: string = '';
 
   constructor(
-    private translate: TranslateService
-  ) {}
+    private translate: TranslateService,
+    private cdr: ChangeDetectorRef
+  ) {
+    this.translate.onLangChange.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
+  }
 
   ngOnInit(): void {
     if (this.selectedItem) {
@@ -64,6 +70,11 @@ export class LotSelectionModalComponent implements OnInit, OnChanges {
     if (changes['selectedItem'] && this.selectedItem && this.isOpen) {
       this.initializeTempSelections();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private initializeTempSelections(): void {
@@ -145,6 +156,10 @@ export class LotSelectionModalComponent implements OnInit, OnChanges {
 
   getLotConditionClass(condition: string): string {
     return lookupLotConditionClass(condition);
+  }
+
+  getLotConditionLabel(condition: string): string {
+    return resolveLotConditionLabel(condition, this.translate, 'supplyRequestDetail');
   }
 
   formatDate(date: Date | string | undefined): string {

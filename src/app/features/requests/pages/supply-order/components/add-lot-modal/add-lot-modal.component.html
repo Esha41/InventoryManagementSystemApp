@@ -96,7 +96,7 @@
                   'bg-[var(--color-warning)]/20 text-[var(--color-warning)] border-[var(--color-warning)]/30': lot.condition === 'Fair',
                   'bg-[var(--color-success)]/20 text-[var(--color-success)] border-[var(--color-success)]/30': lot.condition === 'Good'
                 }">
-                  {{ lot.condition }}
+                  {{ getLotConditionLabel(lot.condition) }}
                 </span>
               </div>
               <p class="text-sm text-[var(--color-text-muted)]">{{ lot.location }}</p>
