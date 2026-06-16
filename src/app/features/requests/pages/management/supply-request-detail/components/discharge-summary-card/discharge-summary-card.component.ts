@@ -6,9 +6,13 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { SupplyRequestDetail } from '@models/supply-request.model';
-import { calculateDischargeTotals, canProcessDischarge } from '../../../utils/supply-request.mapper';
 import { AppNumberPipe } from '@shared/pipes/app-number.pipe';
+
+export interface DischargeTotals {
+  totalApproved: number;
+  totalSelected: number;
+  totalRemaining: number;
+}
 
 @Component({
   selector: 'app-discharge-summary-card',
@@ -19,17 +23,16 @@ import { AppNumberPipe } from '@shared/pipes/app-number.pipe';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DischargeSummaryCardComponent {
-  @Input() requestDetail: SupplyRequestDetail | null = null;
+  @Input() dischargeTotals: DischargeTotals | null = null;
   @Input() processingDischarge: boolean = false;
   @Output() processDischarge = new EventEmitter<void>();
 
-  get dischargeTotals() {
-    return this.requestDetail?.items ? calculateDischargeTotals(this.requestDetail.items) : null;
-  }
-
   canProcessDischarge(): boolean {
-    if (!this.requestDetail?.items) return false;
-    return canProcessDischarge(this.requestDetail.items);
+    if (!this.dischargeTotals) {
+      return false;
+    }
+    const { totalSelected, totalApproved } = this.dischargeTotals;
+    return totalSelected > 0 && totalSelected <= totalApproved;
   }
 
   onProcessDischarge(): void {

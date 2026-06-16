@@ -50,6 +50,7 @@ import {
   getItemStockAlertLevel,
   getProjectedRemainingQuantity
 } from './utils/supply-request-stock-status.util';
+import { calculateDischargeTotals } from '../utils/supply-request.mapper';
 
 @Component({
   selector: 'app-supply-request-detail',
@@ -151,6 +152,13 @@ export class SupplyRequestDetailComponent implements OnInit {
 
   get canDecreaseQuantity(): boolean {
     return this.authService.hasPermission(PERMISSIONS.REQUESTS.ORDER.EDIT) && this.authService.hasPermission(PERMISSIONS.REQUESTS.ORDER.DECREASE_QUANTITY);
+  }
+
+  get dischargeTotals() {
+    if (!this.requestDetail?.items?.length) {
+      return null;
+    }
+    return calculateDischargeTotals(this.requestDetail.items);
   }
 
   ngOnInit(): void {

@@ -55,12 +55,15 @@
   </div>
 
   <!-- Discharge Button -->
-  <button (click)="onProcessDischarge()" [disabled]="!canProcessDischarge() || processingDischarge"
-    class="w-full mt-4 px-4 py-3 rounded-lg font-semibold text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
-    [ngClass]="{
-      'bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)]': canProcessDischarge() && !processingDischarge,
-      'bg-[var(--color-background-muted)]': !canProcessDischarge() || processingDischarge
-    }">
+  <button
+    (click)="onProcessDischarge()"
+    [disabled]="!canProcessDischarge() || processingDischarge"
+    class="w-full mt-4 px-4 py-3 rounded-lg font-semibold transition-all disabled:cursor-not-allowed border-2"
+    [ngClass]="
+      canProcessDischarge() && !processingDischarge
+        ? 'bg-[var(--color-brand)] hover:bg-[var(--color-brand-dark)] text-white border-transparent shadow-md hover:shadow-lg'
+        : 'bg-[var(--color-background)] text-[var(--color-text-muted)] border-[var(--color-border)]'
+    ">
     <span *ngIf="!processingDischarge">{{ 'supplyRequestDetail.apply' | translate }}</span>
     <span *ngIf="processingDischarge">{{ 'common.processing' | translate }}...</span>
   </button>
