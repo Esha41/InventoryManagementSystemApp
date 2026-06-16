@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { LucideAngularModule, Crosshair, ClipboardList, Hourglass } from 'lucide-angular';
+import { LucideAngularModule, Crosshair } from 'lucide-angular';
 import { InventoryDashboardSummaryDto } from '@models/inventory-dashboard-monitoring.model';
 
 @Component({
@@ -14,10 +14,5 @@ import { InventoryDashboardSummaryDto } from '@models/inventory-dashboard-monito
 export class InventoryDashboardWeaponPipelineComponent {
   @Input({ required: true }) monitoring!: InventoryDashboardSummaryDto;
 
-  @Output() draftSuppliesClick = new EventEmitter<void>();
-  @Output() ordersAwaitingClick = new EventEmitter<void>();
-
   readonly Crosshair = Crosshair;
-  readonly ClipboardList = ClipboardList;
-  readonly Hourglass = Hourglass;
 }

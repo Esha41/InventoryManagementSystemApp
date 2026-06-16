@@ -678,14 +678,14 @@ export class WarehouseInventorySummaryComponent implements OnInit, OnDestroy {
     private buildExportColumns(): ExcelColumn[] {
         return [
             {
-                header: this.translateService.instant('inventorySummary.itemName'),
-                key: 'itemName',
-                width: 30
-            },
-            {
                 header: this.translateService.instant('inventorySummary.itemNo'),
                 key: 'itemNo',
                 width: 15
+            },
+            {
+                header: this.translateService.instant('inventorySummary.itemName'),
+                key: 'itemName',
+                width: 30
             },
             {
                 header: 'Part No',

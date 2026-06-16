@@ -132,7 +132,7 @@ export class AssetTableComponent implements OnInit, OnDestroy {
 
   /** Matches thead column count for empty-state row. HTML colspan must be an integer (not %). */
   get desktopTableColumnCount(): number {
-    const base = 3; // name, itemNo, nsn
+    const base = 3; // itemNo, name, nsn
     const tail = 3; // minimumQuantity, criticalQuantity, actions
     switch (this.activeTab) {
       case 'ammunition':
@@ -142,7 +142,7 @@ export class AssetTableComponent implements OnInit, OnDestroy {
       case 'explosive':
         return base + 3 + tail; // armNumber, primaryPurpose, unNumber
       case 'accessory':
-        return 5; // image, name, nameAr, itemNo, actions
+        return 5; // image, itemNo, name, nameAr, actions
       default:
         return base + tail;
     }

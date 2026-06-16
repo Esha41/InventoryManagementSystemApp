@@ -5,7 +5,7 @@ import { CartridgeListComponent } from '../cartridge-list/cartridge-list.compone
 import { Cartridge } from '@models/cartridge.model';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { ErrorBannerComponent } from '../error-banner/error-banner.component';
-import { FilterState, FilterOptions, CartridgeState, CatalogPaginationState } from '../../new-issue-request.state';
+import { FilterState, FilterOptions, CartridgeState, CatalogPaginationState, AdditionalTextFiltersPatch } from '../../new-issue-request.state';
 
 @Component({
     selector: 'app-step-selection',
@@ -99,16 +99,6 @@ export class StepSelectionComponent {
         this.triggerFilter();
     }
 
-    onAmmunitionArmNumberChange(value: string): void {
-        this.filterState.selectedAmmunitionArmNumber = value;
-        this.triggerFilter();
-    }
-
-    onAmmunitionPartNoChange(value: string): void {
-        this.filterState.selectedAmmunitionPartNo = value;
-        this.triggerFilter();
-    }
-
     onWeaponTypeChange(value: string): void {
         this.filterState.selectedWeaponType = value;
         this.triggerFilter();
@@ -126,21 +116,6 @@ export class StepSelectionComponent {
 
     onWeaponUNNumberChange(value: string): void {
         this.filterState.selectedWeaponUNNumber = value;
-        this.triggerFilter();
-    }
-
-    onPartNoChange(value: string): void {
-        this.filterState.selectedPartNo = value;
-        this.triggerFilter();
-    }
-
-    onWeaponModelChange(value: string): void {
-        this.filterState.selectedWeaponModel = value;
-        this.triggerFilter();
-    }
-
-    onWeaponReferenceNoChange(value: string): void {
-        this.filterState.selectedWeaponReferenceNo = value;
         this.triggerFilter();
     }
 
@@ -164,23 +139,34 @@ export class StepSelectionComponent {
         this.triggerFilter();
     }
 
-    onArmNumberChange(value: string): void {
-        this.filterState.selectedArmNumber = value;
-        this.triggerFilter();
-    }
-
-    onExplosivePartNoChange(value: string): void {
-        this.filterState.selectedExplosivePartNo = value;
-        this.triggerFilter();
-    }
-
-    onExplosiveReferenceNoChange(value: string): void {
-        this.filterState.selectedExplosiveReferenceNo = value;
-        this.triggerFilter();
-    }
-
-    onNSNChange(value: string): void {
-        this.filterState.selectedNSN = value;
+    onAdditionalTextFiltersApply(patch: AdditionalTextFiltersPatch): void {
+        if (patch.selectedNSN !== undefined) {
+            this.filterState.selectedNSN = patch.selectedNSN;
+        }
+        if (patch.selectedAmmunitionArmNumber !== undefined) {
+            this.filterState.selectedAmmunitionArmNumber = patch.selectedAmmunitionArmNumber;
+        }
+        if (patch.selectedAmmunitionPartNo !== undefined) {
+            this.filterState.selectedAmmunitionPartNo = patch.selectedAmmunitionPartNo;
+        }
+        if (patch.selectedPartNo !== undefined) {
+            this.filterState.selectedPartNo = patch.selectedPartNo;
+        }
+        if (patch.selectedWeaponModel !== undefined) {
+            this.filterState.selectedWeaponModel = patch.selectedWeaponModel;
+        }
+        if (patch.selectedWeaponReferenceNo !== undefined) {
+            this.filterState.selectedWeaponReferenceNo = patch.selectedWeaponReferenceNo;
+        }
+        if (patch.selectedArmNumber !== undefined) {
+            this.filterState.selectedArmNumber = patch.selectedArmNumber;
+        }
+        if (patch.selectedExplosivePartNo !== undefined) {
+            this.filterState.selectedExplosivePartNo = patch.selectedExplosivePartNo;
+        }
+        if (patch.selectedExplosiveReferenceNo !== undefined) {
+            this.filterState.selectedExplosiveReferenceNo = patch.selectedExplosiveReferenceNo;
+        }
         this.triggerFilter();
     }
 

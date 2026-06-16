@@ -37,10 +37,10 @@
             <tr>
               <th
                 class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
-                {{ 'inventoryDashboard.expiringLots.itemName' | translate }}</th>
+                {{ 'inventoryDashboard.expiringLots.itemNo' | translate }}</th>
               <th
                 class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
-                {{ 'inventoryDashboard.expiringLots.itemNo' | translate }}</th>
+                {{ 'inventoryDashboard.expiringLots.itemName' | translate }}</th>
               <th
                 class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
                 {{ 'inventoryDashboard.expiringLots.lot' | translate }}</th>
@@ -70,11 +70,11 @@
           <tbody class="bg-[var(--color-background)] divide-y divide-[var(--color-border)]">
             <tr *ngFor="let lot of expiringLots"
               class="hover:bg-[var(--color-background-hover)] transition-colors">
-              <td class="px-6 py-4 text-sm font-medium text-[var(--color-text)] min-w-0">
-                <span [appTableClampTooltip]="expiringLotItemDisplayName(lot)">{{ expiringLotItemDisplayName(lot) }}</span>
-              </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
                 {{ lot.itemNo || 'N/A' }}
+              </td>
+              <td class="px-6 py-4 text-sm font-medium text-[var(--color-text)] min-w-0">
+                <span [appTableClampTooltip]="expiringLotItemDisplayName(lot)">{{ expiringLotItemDisplayName(lot) }}</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
                 {{ lot.lot }}

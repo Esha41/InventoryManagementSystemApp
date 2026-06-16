@@ -69,4 +69,5 @@ export interface BatchAssetFilter {
     supplierIds?: number[];
     manufacturerIds?: number[];
     primaryPurposeIds?: number[];
+    caliberIds?: number[];
 }

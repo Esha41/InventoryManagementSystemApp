@@ -94,14 +94,14 @@
               class="w-full h-full object-cover" />
           </div>
           <div class="min-w-0">
-            <h3 class="asset-table__name-label font-bold text-[var(--color-text)] text-sm m-0"
+            <span
+              class="text-xs font-mono bg-[var(--color-background-subtle)] px-1.5 py-0.5 rounded text-[var(--color-text-muted)] border border-[var(--color-border-muted)]">
+              {{ asset.itemNo }}
+            </span>
+            <h3 class="asset-table__name-label font-bold text-[var(--color-text)] text-sm m-0 mt-1"
               [attr.title]="getAssetName(asset)">{{ getAssetName(asset) }}</h3>
-            <div class="flex items-center gap-2 mt-1">
-              <span
-                class="text-xs font-mono bg-[var(--color-background-subtle)] px-1.5 py-0.5 rounded text-[var(--color-text-muted)] border border-[var(--color-border-muted)]">
-                {{ asset.itemNo }}
-              </span>
-              <span *ngIf="activeTab !== 'accessory' && asset.nsn" class="text-xs text-[var(--color-text-muted)]">NSN: {{ asset.nsn }}</span>
+            <div *ngIf="activeTab !== 'accessory' && asset.nsn" class="mt-1">
+              <span class="text-xs text-[var(--color-text-muted)]">NSN: {{ asset.nsn }}</span>
             </div>
             <p *ngIf="activeTab === 'accessory' && asset.nameAr" class="text-xs text-[var(--color-text-muted)] mt-1 text-start">
               <bdi>{{ asset.nameAr }}</bdi>
@@ -178,11 +178,11 @@
               class="px-6 py-3 text-start text-xs font-semibold text-[var(--color-text)] uppercase tracking-wider w-20">
               {{ 'assetList.table.image' | translate }}
             </th>
+            <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'itemNo', labelKey: 'assetList.table.itemNo' }"></ng-container>
             <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'name', labelKey: 'assetList.table.name' }"></ng-container>
             <ng-container *ngIf="activeTab === 'accessory'">
               <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'nameAr', labelKey: 'addAsset.nameArabic' }"></ng-container>
             </ng-container>
-            <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'itemNo', labelKey: 'assetList.table.itemNo' }"></ng-container>
             <ng-container *ngIf="activeTab !== 'accessory'">
               <ng-container *ngTemplateOutlet="sortHeaderCell; context: { column: 'nsn', labelKey: 'assetList.table.nsn' }"></ng-container>
             </ng-container>
@@ -222,15 +222,15 @@
                   class="w-full h-full object-cover" />
               </div>
             </td>
+            <td class="px-6 py-4">
+              <div class="text-sm text-[var(--color-text)]">{{ asset.itemNo }}</div>
+            </td>
             <td class="asset-table__name-col px-6 py-4 align-top">
               <div class="asset-table__cell-wrap font-medium text-[var(--color-text)] min-w-0"
                 [attr.title]="getAssetName(asset)">{{ getAssetName(asset) }}</div>
             </td>
             <td *ngIf="activeTab === 'accessory'" class="px-6 py-4">
               <div class="text-sm text-[var(--color-text)] text-start"><bdi>{{ asset.nameAr || '-' }}</bdi></div>
-            </td>
-            <td class="px-6 py-4">
-              <div class="text-sm text-[var(--color-text)]">{{ asset.itemNo }}</div>
             </td>
             <td *ngIf="activeTab !== 'accessory'" class="px-6 py-4">
               <div class="text-sm text-[var(--color-text)]">{{ asset.nsn || '-' }}</div>

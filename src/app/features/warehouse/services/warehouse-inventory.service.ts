@@ -14,6 +14,7 @@ export interface WarehouseInventoryRequestBuildInput {
   supplierId: number | null;
   manufacturerId: number | null;
   primaryPurposeId: number | null;
+  caliberId: number | null;
   sortColumn: WarehouseInventoryTableSortColumn;
   sortDirection: 'asc' | 'desc';
   language: string;
@@ -28,14 +29,16 @@ export class WarehouseInventoryService {
     supplierIds: number[];
     manufacturerIds: number[];
     primaryPurposeIds: number[];
+    caliberId: number | null;
   }): BatchAssetFilter | undefined {
     const filter: BatchAssetFilter = {};
     if (input.itemIds.length) filter.itemIds = input.itemIds;
     if (input.supplierIds.length) filter.supplierIds = input.supplierIds;
     if (input.manufacturerIds.length) filter.manufacturerIds = input.manufacturerIds;
     if (input.primaryPurposeIds.length) filter.primaryPurposeIds = input.primaryPurposeIds;
+    if (input.caliberId != null) filter.caliberIds = [input.caliberId];
 
-    return filter.itemIds || filter.supplierIds || filter.manufacturerIds || filter.primaryPurposeIds
+    return filter.itemIds || filter.supplierIds || filter.manufacturerIds || filter.primaryPurposeIds || filter.caliberIds
       ? filter
       : undefined;
   }
@@ -77,6 +80,9 @@ export class WarehouseInventoryService {
       }
       if (input.primaryPurposeId != null) {
         filters.push({ field: 'PrimaryPurposId', operator: 'eq', value: String(input.primaryPurposeId) });
+      }
+      if (input.activeTab === 'ammunition' && input.caliberId != null) {
+        filters.push({ field: 'Item.CaliberId', operator: 'eq', value: String(input.caliberId) });
       }
 
       if (input.invoiceFilter) {

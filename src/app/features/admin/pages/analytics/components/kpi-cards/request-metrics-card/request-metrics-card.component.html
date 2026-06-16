@@ -1,0 +1,39 @@
+<div class="flex flex-col h-full min-h-0">
+  <div class="flex items-center gap-2 mb-4">
+    <lucide-icon [img]="FileText" class="w-5 h-5 text-[var(--color-brand)]"></lucide-icon>
+    <h3 class="text-base font-semibold text-[var(--color-text)] m-0">{{ 'adminDashboard.requests.title' | translate }}</h3>
+  </div>
+
+  <div class="grid grid-cols-2 xl:grid-cols-4 gap-2 sm:gap-3 mb-4">
+    @for (tile of statusTiles; track tile.labelKey) {
+      <div class="rounded-lg border p-2.5 sm:p-3 text-center" [class]="tile.boxClass">
+        <div class="text-xl sm:text-2xl font-bold tabular-nums leading-none" [class]="tile.valueClass">
+          {{ tile.value(metrics) | number }}
+        </div>
+        <div class="text-xs text-[var(--color-text-muted)] mt-1.5 truncate">{{ tile.labelKey | translate }}</div>
+      </div>
+    }
+  </div>
+
+  <div class="flex flex-col gap-2 flex-1">
+    <div class="flex items-center justify-between gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2.5">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="w-2 h-2 rounded-full bg-blue-500 shrink-0"></span>
+        <span class="text-xs text-[var(--color-text-muted)] truncate">{{ 'adminDashboard.requests.orders' | translate }}</span>
+      </div>
+      <span class="text-lg font-bold tabular-nums text-[var(--color-text)]">{{ metrics.pendingOrders | number }}</span>
+    </div>
+
+    <div class="flex items-center justify-between gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2.5">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="w-2 h-2 rounded-full bg-purple-500 shrink-0"></span>
+        <span class="text-xs text-[var(--color-text-muted)] truncate">{{ 'adminDashboard.requests.returns' | translate }}</span>
+      </div>
+      <span class="text-lg font-bold tabular-nums text-[var(--color-text)]">{{ metrics.pendingReturns | number }}</span>
+    </div>
+  </div>
+
+  <div class="mt-auto pt-4 border-t border-[var(--color-border)] text-xs text-[var(--color-text-muted)]">
+    {{ 'adminDashboard.lastUpdated' | translate }}: {{ metrics.lastUpdated | appDateTime }}
+  </div>
+</div>

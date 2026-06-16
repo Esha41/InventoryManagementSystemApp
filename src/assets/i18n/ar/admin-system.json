@@ -114,7 +114,10 @@
       "totalItems": "مواد مخزّنة",
       "totalQuantity": "الكمية الإجمالية",
       "lowStock": "مخزون منخفض",
-      "expiringSoon": "تنتهي صلاحيته قريباً (30 يوماً)",
+      "criticalStock": "مخزون حرج",
+      "expiringSoon": "LOT تنتهي قريباً (30 يوماً)",
+      "pendingIssuance": "طلبات بانتظار الصرف",
+      "ordersNotFullyFulfilled": "طلبات تم صرفها جزئيا",
       "overstock": "مخزون زائد"
     },
     "requests": {
