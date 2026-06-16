@@ -165,7 +165,9 @@
 
       <!-- Right Column - Discharge Summary -->
       <div class="lg:col-span-1">
-        <app-discharge-summary-card [requestDetail]="requestDetail" [processingDischarge]="processingDischarge"
+        <app-discharge-summary-card
+          [dischargeTotals]="dischargeTotals"
+          [processingDischarge]="processingDischarge"
           (processDischarge)="onProcessDischarge()">
         </app-discharge-summary-card>
       </div>
