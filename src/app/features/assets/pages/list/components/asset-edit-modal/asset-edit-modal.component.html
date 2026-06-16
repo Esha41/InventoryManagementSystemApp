@@ -327,6 +327,22 @@
                     [placeholder]="'addAsset.selectClassification' | translate">
                   </app-dropdown>
                 </div>
+                <div>
+                  <span class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.projectileMaterial' |
+                    translate }}</span>
+                  <app-dropdown class="w-full" formControlName="projectailMaterialId" [options]="projectailMaterials"
+                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
+                    [placeholderValue]="null" [placeholder]="'addAsset.selectProjectileMaterial' | translate">
+                  </app-dropdown>
+                </div>
+                <div>
+                  <span class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.projectileColor' |
+                    translate }}</span>
+                  <app-dropdown class="w-full" formControlName="projectileColorId" [options]="projectileColors"
+                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
+                    [placeholderValue]="null" [placeholder]="'addAsset.selectProjectileColor' | translate">
+                  </app-dropdown>
+                </div>
                 <div class="col-span-2">
                   <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="asset-edit-modal-notes-26">{{ 'addAsset.notes' | translate
                     }}</label>
