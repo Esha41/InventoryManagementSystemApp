@@ -309,32 +309,34 @@
     </div>
 
     <!-- Security Section -->
-    <div *ngIf="!loading && currentUser && !currentUser.isLdapUser"
-      class="bg-[var(--color-background)] rounded-xl shadow-custom-lg border-2 border-[var(--color-border)] overflow-hidden">
-      <div
-        class="px-6 py-4 border-b border-[var(--color-border)] bg-gradient-to-r from-[var(--color-brand)]/5 to-transparent">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
-            <lucide-angular [img]="Lock" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
-          </div>
-          <div>
-            <h3 class="text-lg font-bold text-[var(--color-text)]">
-              {{ 'profile.security.title' | translate }}
-            </h3>
-            <p class="text-sm text-[var(--color-text-muted)]">
-              {{ 'profile.security.subtitle' | translate }}
-            </p>
+    <ng-container *appHasPermission="PERMISSIONS.ADMIN.SYSTEM_FEATURES.CAN_CHANGE_PASSWORD">
+      <div *ngIf="!loading && currentUser && !currentUser.isLdapUser"
+        class="bg-[var(--color-background)] rounded-xl shadow-custom-lg border-2 border-[var(--color-border)] overflow-hidden">
+        <div
+          class="px-6 py-4 border-b border-[var(--color-border)] bg-gradient-to-r from-[var(--color-brand)]/5 to-transparent">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-[var(--color-brand)]/10 flex items-center justify-center">
+              <lucide-angular [img]="Lock" class="h-5 w-5 text-[var(--color-brand)]"></lucide-angular>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-[var(--color-text)]">
+                {{ 'profile.security.title' | translate }}
+              </h3>
+              <p class="text-sm text-[var(--color-text-muted)]">
+                {{ 'profile.security.subtitle' | translate }}
+              </p>
+            </div>
           </div>
         </div>
+        <div class="px-6 py-6">
+          <button (click)="openChangePasswordModal()"
+            class="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-[var(--color-brand)] to-[var(--color-brand-dark)] hover:from-[var(--color-brand-dark)] hover:to-[var(--color-brand)] text-white rounded-lg transition-all shadow-custom-sm hover:shadow-custom-md">
+            <lucide-angular [img]="Lock" class="h-5 w-5"></lucide-angular>
+            <span class="font-semibold">{{ 'profile.security.changePassword' | translate }}</span>
+          </button>
+        </div>
       </div>
-      <div class="px-6 py-6">
-        <button (click)="openChangePasswordModal()"
-          class="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-[var(--color-brand)] to-[var(--color-brand-dark)] hover:from-[var(--color-brand-dark)] hover:to-[var(--color-brand)] text-white rounded-lg transition-all shadow-custom-sm hover:shadow-custom-md">
-          <lucide-angular [img]="Lock" class="h-5 w-5"></lucide-angular>
-          <span class="font-semibold">{{ 'profile.security.changePassword' | translate }}</span>
-        </button>
-      </div>
-    </div>
+    </ng-container>
 
     <!-- No User State -->
     <div *ngIf="!loading && !currentUser" class="flex items-center justify-center min-h-[60vh]">
@@ -360,5 +362,7 @@
 
 
 <!-- Change Password Modal -->
-<app-change-password-modal [isOpen]="showChangePasswordModal" (closeModal)="closeChangePasswordModal()"
-  (submitPassword)="onChangePassword($event)"></app-change-password-modal>
+<ng-container *appHasPermission="PERMISSIONS.ADMIN.SYSTEM_FEATURES.CAN_CHANGE_PASSWORD">
+  <app-change-password-modal [isOpen]="showChangePasswordModal" (closeModal)="closeChangePasswordModal()"
+    (submitPassword)="onChangePassword($event)"></app-change-password-modal>
+</ng-container>

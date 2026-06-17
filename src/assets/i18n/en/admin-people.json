@@ -85,6 +85,11 @@
     "tryAdjusting": "Try adjusting your filters or search term.",
     "clearSearch": "Clear search",
     "selected": "selected",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "searchHint": "Search across all permissions, entities, and pages",
+    "featurePermissions": "Feature Permissions",
+    "featurePermissionsDescription": "Standalone feature access — not tied to entity CRUD actions",
     "searchPlaceholder": "Search permissions by name, entity, description, or page..."
   },
   "userFormModal": {

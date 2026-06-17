@@ -85,6 +85,11 @@
     "tryAdjusting": "حاول تعديل معايير البحث أو التصفية.",
     "clearSearch": "مسح البحث",
     "selected": "مختارة",
+    "selectAll": "تحديد الكل",
+    "deselectAll": "إلغاء تحديد الكل",
+    "searchHint": "البحث في جميع الصلاحيات والكيانات والصفحات",
+    "featurePermissions": "صلاحيات الميزات",
+    "featurePermissionsDescription": "صلاحيات وصول مستقلة — غير مرتبطة بإجراءات CRUD للكيانات",
     "searchPlaceholder": "البحث عن الصلاحيات بالاسم أو الكيان أو الوصف أو الصفحة..."
   },
   "userFormModal": {

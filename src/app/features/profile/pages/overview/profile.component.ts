@@ -23,6 +23,8 @@ import { ErrorHandler } from '@utils/error-handler.utils';
 import { ONBOARDING_TOUR } from '@core/tokens/onboarding-tour.token';
 import { IOnboardingTourProvider } from '@core/interfaces/onboarding-tour-provider.interface';
 import { SwitchRoleModalService } from '@auth/components/switch-role-modal/switch-role-modal.service';
+import { HasPermissionDirective } from '@core/directives/has-permission.directive';
+import { PERMISSIONS } from '@constants/permissions.constants';
 
 @Component({
   selector: 'app-profile',
@@ -34,13 +36,15 @@ import { SwitchRoleModalService } from '@auth/components/switch-role-modal/switc
     LoadingStateComponent,
     ErrorStateComponent,
     ChangePasswordModalComponent,
-    DelegationListComponent
+    DelegationListComponent,
+    HasPermissionDirective
   ],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProfileComponent implements OnInit, OnDestroy {
+  readonly PERMISSIONS = PERMISSIONS;
   readonly User = User;
   readonly Users = Users;
   readonly Mail = Mail;
@@ -248,6 +252,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
    * Open change password modal
    */
   openChangePasswordModal(): void {
+    if (!this.authService.hasPermission(PERMISSIONS.ADMIN.SYSTEM_FEATURES.CAN_CHANGE_PASSWORD)) {
+      return;
+    }
     this.showChangePasswordModal = true;
     this.cdr.markForCheck();
   }
@@ -271,6 +278,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
   }
 
   onChangePassword(request: ChangePasswordRequest): void {
+    if (!this.authService.hasPermission(PERMISSIONS.ADMIN.SYSTEM_FEATURES.CAN_CHANGE_PASSWORD)) {
+      return;
+    }
+
     this.changingPassword = true;
     this.cdr.markForCheck();
 

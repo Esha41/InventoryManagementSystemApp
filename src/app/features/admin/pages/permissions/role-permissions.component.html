@@ -146,9 +146,9 @@
                 </button>
               </div>
               <p class="text-xs text-[var(--color-text-muted)] mt-1.5">
-                <span *ngIf="permissionSearchTerm">{{ filteredCategories.length }} of {{ categories.length }} categories
+                <span *ngIf="permissionSearchTerm">{{ filteredCategoryCount }} of {{ totalCategoryCount }} categories
                   shown</span>
-                <span *ngIf="!permissionSearchTerm">Search across all permissions, entities, and pages</span>
+                <span *ngIf="!permissionSearchTerm">{{ 'rolePermissions.searchHint' | translate }}</span>
               </p>
             </div>
           </app-card>
@@ -160,7 +160,7 @@
           </app-card>
 
           <!-- No Results State -->
-          <app-card *ngIf="!isLoading && selectedRole && permissionSearchTerm && filteredCategories.length === 0"
+          <app-card *ngIf="!isLoading && selectedRole && permissionSearchTerm && !hasFilteredPermissions"
             [shadow]="true">
             <div class="p-12 text-center">
               <lucide-angular [img]="Search"
@@ -176,9 +176,11 @@
             </div>
           </app-card>
 
-          <!-- Permissions by Category -->
-          <form [formGroup]="permissionForm" *ngIf="!isLoading && selectedRole && filteredCategories.length > 0">
+          <!-- CRUD Permissions by Category -->
+          <form [formGroup]="permissionForm" *ngIf="!isLoading && selectedRole && hasFilteredPermissions">
             <div class="flex flex-col gap-6">
+
+              <!-- Entity / CRUD permissions -->
               <app-card *ngFor="let category of filteredCategories" [shadow]="true">
                 <div class="overflow-hidden">
 
@@ -199,7 +201,7 @@
                             <button type="button"
                               (click)="onCategoryToggleAll(category, !isCategoryFullySelected(category)); $event.stopPropagation()"
                               class="text-xs font-semibold text-[var(--color-brand)] hover:underline">
-                              {{ isCategoryFullySelected(category) ? 'DeselectAll' : 'SelectAll' }}
+                              {{ isCategoryFullySelected(category) ? ('rolePermissions.deselectAll' | translate) : ('rolePermissions.selectAll' | translate) }}
                             </button>
                           </div>
                         </div>
@@ -323,6 +325,54 @@
 
                 </div>
               </app-card>
+
+              <!-- Plain / feature permissions -->
+              <app-card *ngFor="let category of filteredPlainCategories" [shadow]="true">
+                <div class="overflow-hidden">
+
+                  <div (click)="togglePlainCategory(category)"
+                    class="p-4 cursor-pointer hover:bg-[var(--color-background-muted)] transition-colors border-b border-[var(--color-border)]">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-3">
+                        <div class="text-2xl">{{ category.icon }}</div>
+                        <div class="flex-1">
+                          <h3 class="text-base font-bold text-[var(--color-text)]">{{ category.displayName }}</h3>
+                          <p class="text-xs text-[var(--color-text-muted)] mt-0.5">{{ category.description }}</p>
+                          <div class="flex items-center gap-3 mt-1.5">
+                            <span class="text-xs text-[var(--color-brand)] font-medium">
+                              {{ getPlainCategorySelectedCount(category).selected }} / {{
+                              getPlainCategorySelectedCount(category).total }} {{ 'rolePermissions.selected' | translate }}
+                            </span>
+                            <button type="button"
+                              (click)="onPlainCategoryToggleAll(category, !isPlainCategoryFullySelected(category)); $event.stopPropagation()"
+                              class="text-xs font-semibold text-[var(--color-brand)] hover:underline">
+                              {{ isPlainCategoryFullySelected(category) ? ('rolePermissions.deselectAll' | translate) : ('rolePermissions.selectAll' | translate) }}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <lucide-angular [img]="category.expanded ? ChevronUp : ChevronDown"
+                        class="h-5 w-5 text-[var(--color-text-muted)] transition-transform flex-shrink-0">
+                      </lucide-angular>
+                    </div>
+                  </div>
+
+                  <div *ngIf="category.expanded" class="p-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      <label *ngFor="let perm of category.permissions"
+                        class="flex items-center gap-3 cursor-pointer p-2 rounded hover:bg-[var(--color-background-muted)] transition-colors">
+                        <input type="checkbox" [formControlName]="sanitizeControlName(perm.displayValue)"
+                          class="h-5 w-5 rounded border-2 border-[var(--color-border)] text-blue-600 focus:ring-2 focus:ring-blue-600/20 cursor-pointer flex-shrink-0" />
+                        <span class="text-sm font-medium text-[var(--color-text)] break-words">
+                          {{ getPermissionInfo(perm.displayValue).label }}
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+
+                </div>
+              </app-card>
+
             </div>
           </form>
 
