@@ -13,7 +13,7 @@ import { AssetDto, AssetStatus, getAssetStatusLabel } from '@models/asset.model'
 import { PagedListRequest } from '@models/pagination.model';
 import { localizedItemSummaryDisplayName, pageCountForLength } from '@inventory/pages/overview/inventory-dashboard.helpers';
 import { CardComponent } from '@components/card/card.component';
-import { LoadingStateComponent, ErrorStateComponent, TableClampTooltipDirective } from '@components/index';
+import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { InventorySummaryDataService } from '@inventory/services/inventory-summary-data.service';
@@ -44,8 +44,7 @@ type ExpandChevronIcon = typeof ChevronDown | typeof ChevronLeft | typeof Chevro
         PaginationComponent,
         RowsPerPageComponent,
         AppDatePipe,
-        AppNumberPipe,
-        TableClampTooltipDirective
+        AppNumberPipe
     ],
     templateUrl: './warehouse-inventory-summary.component.html',
     styleUrls: ['./warehouse-inventory-summary.component.css'],

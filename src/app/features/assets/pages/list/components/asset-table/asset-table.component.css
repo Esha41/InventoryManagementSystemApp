@@ -43,7 +43,7 @@
   font-weight: 600;
 }
 
-/* Name column: truncate long labels without fixed table layout */
+/* Name column: wrap long labels within a bounded width */
 .asset-table__name-col {
   max-width: min(20rem, 28vw);
   min-width: 0;
@@ -52,15 +52,15 @@
 .asset-table__name-label {
   display: block;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .asset-table__name-col .asset-table__cell-wrap {
   display: block;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }

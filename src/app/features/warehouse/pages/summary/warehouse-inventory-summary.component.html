@@ -504,7 +504,7 @@
                                 </td>
                                 <td
                                     class="inventory-table__cell-text inventory-table__cell-text--wide px-6 py-4 text-sm font-medium text-[var(--color-text)] align-top min-w-0">
-                                    <span [appTableClampTooltip]="itemDisplayName(item)">{{ itemDisplayName(item) }}</span>
+                                    <span [attr.title]="itemDisplayName(item)">{{ itemDisplayName(item) }}</span>
                                 </td>
                                 <td class="inventory-table__cell-text px-6 py-4 text-sm text-[var(--color-text)] align-top">
                                     {{ getItemTypeName(item.itemType) }}

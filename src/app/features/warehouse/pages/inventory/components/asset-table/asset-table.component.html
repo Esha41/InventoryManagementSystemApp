@@ -28,8 +28,8 @@
     <!-- Weapon Assets -->
     <tr *ngFor="let asset of assets; trackBy: trackById"
       class="bg-[var(--color-background)] hover:bg-[var(--color-background-hover)] transition-colors">
-      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)] text-start">
-        {{ getAssetItemName(asset) }}
+      <td class="px-6 py-4 align-top text-sm font-medium text-[var(--color-text)] text-start min-w-0 max-w-[min(20rem,28vw)]">
+        <span class="block whitespace-normal break-words [overflow-wrap:anywhere]">{{ getAssetItemName(asset) }}</span>
       </td>
       <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-brand)] text-start">
         {{ asset.batchNumber || '-' }}

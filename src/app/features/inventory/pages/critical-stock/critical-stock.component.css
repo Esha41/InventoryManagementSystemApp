@@ -1,2 +1,13 @@
-/* Critical Stock Component Styles */
-/* Using standard page-wrapper and page-container classes from styles.css */
+/* Item name column: wrap long labels within a bounded width */
+.stock-table__name-col {
+  max-width: min(20rem, 28vw);
+  min-width: 0;
+}
+
+.stock-table__name-label {
+  display: block;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}

@@ -39,7 +39,7 @@
                 class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] tracking-wide">
                 {{ 'inventoryDashboard.criticalStock.itemNo' | translate }}</th>
               <th
-                class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] tracking-wide">
+                class="stock-table__name-col px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] tracking-wide align-top">
                 {{ 'inventoryDashboard.criticalStock.itemName' | translate }}</th>
               <th
                 class="px-6 py-3 text-start text-xs font-medium text-[var(--color-text-muted)] tracking-wide">
@@ -67,8 +67,8 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
                 {{ item.itemNo || 'N/A' }}
               </td>
-              <td class="px-6 py-4 text-sm font-medium text-[var(--color-text)] min-w-0">
-                <span [appTableClampTooltip]="criticalStockItemDisplayName(item)">{{ criticalStockItemDisplayName(item) }}</span>
+              <td class="stock-table__name-col px-6 py-4 align-top text-sm font-medium text-[var(--color-text)] min-w-0">
+                <span class="stock-table__name-label" [attr.title]="criticalStockItemDisplayName(item)">{{ criticalStockItemDisplayName(item) }}</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
                 {{ item.nsn || 'N/A' }}
