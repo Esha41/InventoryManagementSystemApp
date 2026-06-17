@@ -183,6 +183,8 @@
 
       <!-- Filters: search + supplier / manufacturer (inventory tabs only) -->
       <app-inventory-filters [searchControl]="store.searchControl"
+        [activeTab]="store.activeTab()"
+        [columnFilters]="store.columnFilterDraft"
         [searchPlaceholderKey]="store.activeTab() === 'batch' ? 'warehouseInventory.searchPlaceholderBatch' : 'warehouseInventory.searchPlaceholder'"
         [showSupplierManufacturerFilters]="store.activeTab() !== 'batch'"
         [showCaliberFilter]="store.activeTab() === 'ammunition'"
@@ -206,7 +208,8 @@
         [batchManufacturerOptionLabelFn]="lookupLabel"
         [batchPrimaryPurposeOptionLabelFn]="lookupLabel"
         (searchTriggered)="orchestrator.onSearch()" (clearFilters)="orchestrator.onClearInventoryFilters()"
-        (applyBatchFilters)="orchestrator.onApplyBatchFilters()">
+        (applyBatchFilters)="orchestrator.onApplyBatchFilters()"
+        (applyAdditionalColumnFilters)="orchestrator.onApplyAdditionalColumnFilters()">
       </app-inventory-filters>
 
       <!-- Loading State -->

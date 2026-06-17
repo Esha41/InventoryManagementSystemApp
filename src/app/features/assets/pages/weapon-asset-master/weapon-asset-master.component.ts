@@ -51,6 +51,7 @@ import {
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { AppDatePipe } from '@shared/pipes';
 import { getLocalizedName, getCurrentLang } from '@utils/localization.utils';
+import { getLookupDropdownLabel, filterRenderableLookupItems } from '@utils/asset-list.utils';
 import { getPrimaryPurposeNav } from '@models/primary-purpose.model';
 import { trackById } from '@utils/trackby.utils';
 import { ToastService } from '@services/toast.service';
@@ -126,6 +127,8 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
   appliedEmployeeIds: number[] = [];
   appliedFilterCustody: CustodyFilter = 'all';
   appliedDepotIds: number[] = [];
+  /** Main-row caliber filter (applied immediately on change, like asset list). */
+  caliberFilterId: number | null = null;
 
   /** When true, date / custody / advanced filter row is visible. */
   showMoreFilters = false;
@@ -139,6 +142,7 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
   primaryPurposes: LookupItem[] = [];
   suppliers: LookupItem[] = [];
   manufacturers: LookupItem[] = [];
+  calibersWeapon: LookupItem[] = [];
   employees: EmployeeDto[] = [];
 
   readonly statusFilterOptions: { value: AssetStatus; labelKey: string }[] = [
@@ -170,6 +174,15 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
     const item = this.unwrapLookupOption(option);
     return item ? this.lookupOptionLabel(item) : '';
   };
+
+  readonly caliberDropdownLabelFn = (option: DropdownOption<LookupItem> | LookupItem | null): string => {
+    const item = this.unwrapLookupOption(option);
+    return item ? getLookupDropdownLabel(item, this.translateService) : '';
+  };
+
+  get calibersWeaponForFilter(): LookupItem[] {
+    return filterRenderableLookupItems(this.calibersWeapon, this.translateService);
+  }
 
   readonly employeeDropdownLabelFn = (option: DropdownOption<EmployeeDto> | EmployeeDto | null): string => {
     const e = this.unwrapEmployeeOption(option);
@@ -306,6 +319,20 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
         }
       });
 
+    this.lookupService
+      .getCalibersByItemType(ItemType.Weapon)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (list) => {
+          this.calibersWeapon = list ?? [];
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.calibersWeapon = [];
+          this.cdr.markForCheck();
+        }
+      });
+
     this.employeeService
       .getEmployees()
       .pipe(takeUntil(this.destroy$))
@@ -342,6 +369,12 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
   clearSearch(): void {
     this.searchInput = '';
     this.applySearch();
+  }
+
+  onCaliberFilterChange(): void {
+    this.currentPage = 1;
+    this.persistListState();
+    this.loadAssets();
   }
 
   /** Call before navigating to catalog so the latest filters are saved immediately. */
@@ -420,6 +453,7 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
     this.appliedEmployeeIds = [];
     this.appliedFilterCustody = 'all';
     this.appliedDepotIds = [];
+    this.caliberFilterId = null;
     this.currentPage = 1;
     this.persistListState();
     this.loadAssets();
@@ -445,6 +479,7 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
     this.appliedEmployeeIds = [...(saved.appliedEmployeeIds ?? [])];
     this.appliedFilterCustody = this.normalizeCustodyFilter(saved.appliedFilterCustody);
     this.appliedDepotIds = [...(saved.appliedDepotIds ?? [])];
+    this.caliberFilterId = saved.caliberFilterId ?? null;
 
     this.filterDateFrom = saved.filterDateFrom ?? this.appliedFilterDateFrom;
     this.filterDateTo = saved.filterDateTo ?? this.appliedFilterDateTo;
@@ -480,6 +515,7 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
       appliedEmployeeIds: [...this.appliedEmployeeIds],
       appliedFilterCustody: this.appliedFilterCustody,
       appliedDepotIds: [...this.appliedDepotIds],
+      caliberFilterId: this.caliberFilterId,
       filterDateFrom: this.filterDateFrom,
       filterDateTo: this.filterDateTo,
       filterPrimaryPurposeIds: [...this.filterPrimaryPurposeIds],
@@ -524,6 +560,7 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
       this.appliedManufacturerIds.length > 0 ||
       this.appliedEmployeeIds.length > 0 ||
       this.appliedDepotIds.length > 0 ||
+      this.caliberFilterId != null ||
       this.appliedFilterCustody !== 'all' ||
       !!this.appliedFilterDateFrom?.trim() ||
       !!this.appliedFilterDateTo?.trim()
@@ -733,6 +770,10 @@ export class WeaponAssetMasterComponent implements OnInit, OnDestroy {
     this.appendOrEqNumericIds(filters, 'SupplierId', this.appliedSupplierIds);
     this.appendOrEqNumericIds(filters, 'ManufacturerId', this.appliedManufacturerIds);
     this.appendOrEqNumericIds(filters, 'CurrentAssignment.CustodianId', this.appliedEmployeeIds);
+
+    if (this.caliberFilterId != null && this.caliberFilterId > 0) {
+      filters.push({ field: 'Item.CaliberId', operator: 'eq', value: String(this.caliberFilterId) });
+    }
 
     // Multiple depots: OR in filter body. Single depot uses query param only (see loadAssets).
     if (this.appliedDepotIds.length > 1) {

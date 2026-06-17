@@ -14,6 +14,7 @@ import { BatchAssetFilter, BatchSummaryDto, BatchAssetItemCountDto } from '@mode
 import { PreviewData } from '@components/import-preview-dialog/import-preview-dialog.component';
 import { WarehouseInventoryService } from './warehouse-inventory.service';
 import { WarehouseInventoryViewModelService } from './warehouse-inventory-view-model.service';
+import { AssetColumnFilters, createEmptyColumnFilters } from '@models/asset-list.model';
 import { WarehouseInventoryTableSortColumn } from '../pages/inventory/components/inventory-table/inventory-table.component';
 import { BatchTableSortColumn } from '../pages/inventory/components/batch-table/batch-table.component';
 
@@ -73,6 +74,10 @@ export class WarehouseInventoryStore {
   private readonly _calibersAmmunition = signal<LookupItem[]>([]);
   private readonly _calibersWeapon = signal<LookupItem[]>([]);
   private readonly _invoiceFilter = signal<string | null>(null);
+  private readonly _appliedColumnFilters = signal<AssetColumnFilters>(createEmptyColumnFilters());
+
+  /** Draft column filters (applied only after "Apply additional filters"). */
+  readonly columnFilterDraft: AssetColumnFilters = createEmptyColumnFilters();
 
   private readonly _showImportModal = signal(false);
   private readonly _showPreviewModal = signal(false);
@@ -137,6 +142,7 @@ export class WarehouseInventoryStore {
   readonly calibersAmmunition: Signal<LookupItem[]> = this._calibersAmmunition.asReadonly();
   readonly calibersWeapon: Signal<LookupItem[]> = this._calibersWeapon.asReadonly();
   readonly invoiceFilter: Signal<string | null> = this._invoiceFilter.asReadonly();
+  readonly appliedColumnFilters: Signal<AssetColumnFilters> = this._appliedColumnFilters.asReadonly();
   readonly showImportModal: Signal<boolean> = this._showImportModal.asReadonly();
   readonly showPreviewModal: Signal<boolean> = this._showPreviewModal.asReadonly();
   readonly previewData: Signal<PreviewData | null> = this._previewData.asReadonly();
@@ -376,6 +382,15 @@ export class WarehouseInventoryStore {
     this._expandedBatchAssets.set([]);
     this.resetExpandedBatchAssetState();
   }
+  applyColumnFilters(): void {
+    this._appliedColumnFilters.set({ ...this.columnFilterDraft });
+  }
+
+  resetColumnFilters(): void {
+    Object.assign(this.columnFilterDraft, createEmptyColumnFilters());
+    this._appliedColumnFilters.set(createEmptyColumnFilters());
+  }
+
   clearAllFilters(): void {
     this.searchControl.setValue('', { emitEvent: false });
     this.supplierFilterControl.setValue(null, { emitEvent: false });
@@ -388,6 +403,7 @@ export class WarehouseInventoryStore {
     this.batchManufacturerFilterControl.setValue([], { emitEvent: false });
     this.batchPrimaryPurposeFilterControl.setValue([], { emitEvent: false });
     this._invoiceFilter.set(null);
+    this.resetColumnFilters();
     this._currentPage.set(1);
   }
   cancelPreview(): void {

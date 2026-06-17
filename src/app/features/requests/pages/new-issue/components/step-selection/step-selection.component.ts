@@ -114,11 +114,6 @@ export class StepSelectionComponent {
         this.triggerFilter();
     }
 
-    onWeaponUNNumberChange(value: string): void {
-        this.filterState.selectedWeaponUNNumber = value;
-        this.triggerFilter();
-    }
-
     onExplosiveTypeChange(value: string): void {
         this.filterState.selectedExplosiveType = value;
         this.triggerFilter();
@@ -140,6 +135,9 @@ export class StepSelectionComponent {
     }
 
     onAdditionalTextFiltersApply(patch: AdditionalTextFiltersPatch): void {
+        if (patch.selectedItemNo !== undefined) {
+            this.filterState.selectedItemNo = patch.selectedItemNo;
+        }
         if (patch.selectedNSN !== undefined) {
             this.filterState.selectedNSN = patch.selectedNSN;
         }
@@ -151,6 +149,9 @@ export class StepSelectionComponent {
         }
         if (patch.selectedPartNo !== undefined) {
             this.filterState.selectedPartNo = patch.selectedPartNo;
+        }
+        if (patch.selectedWeaponUNNumber !== undefined) {
+            this.filterState.selectedWeaponUNNumber = patch.selectedWeaponUNNumber;
         }
         if (patch.selectedWeaponModel !== undefined) {
             this.filterState.selectedWeaponModel = patch.selectedWeaponModel;

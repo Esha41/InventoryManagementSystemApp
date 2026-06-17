@@ -93,6 +93,15 @@ export class WarehouseInventoryFacadeService {
     this.loadServerSideBatches();
   }
 
+  onApplyAdditionalColumnFilters(): void {
+    if (this.store.activeTab() === 'batch') return;
+    this.store.applyColumnFilters();
+    this.store.setInvoiceFilter(null);
+    this.store.setCurrentPage(1);
+    this.updatePageInUrl();
+    this.loadTabContent();
+  }
+
   searchByInvoice(invoiceNumber: string): void {
     this.store.setInvoiceFilter(invoiceNumber);
     this.store.searchControl.setValue('');
@@ -579,6 +588,7 @@ export class WarehouseInventoryFacadeService {
       manufacturerId: this.store.manufacturerFilterControl.value,
       primaryPurposeId: this.store.primaryPurposeFilterControl.value,
       caliberId: this.store.caliberFilterControl.value,
+      columnFilters: this.store.appliedColumnFilters(),
       sortColumn: this.store.inventorySortColumn(),
       sortDirection: this.store.inventorySortDirection(),
       language: getCurrentLang(this.translateService)

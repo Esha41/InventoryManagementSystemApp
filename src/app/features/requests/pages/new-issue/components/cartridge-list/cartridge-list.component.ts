@@ -91,6 +91,7 @@ export class CartridgeListComponent implements OnChanges, OnInit, OnDestroy {
   @Input() selectedExplosiveReferenceNo: string = '';
 
   @Input() selectedNSN: string = '';
+  @Input() selectedItemNo: string = '';
   @Input() canProceed: boolean = false;
   @Input() fromReserve: boolean = false;
   @Input() selectedCartridges: Cartridge[] = []; // Currently selected cartridges for validation
@@ -126,7 +127,6 @@ export class CartridgeListComponent implements OnChanges, OnInit, OnDestroy {
   @Output() weaponTypeChange = new EventEmitter<string>();
   @Output() caliberChange = new EventEmitter<string>();
   @Output() countryOfManufactureChange = new EventEmitter<string>();
-  @Output() weaponUNNumberChange = new EventEmitter<string>();
   @Output() partNoChange = new EventEmitter<string>();
   @Output() weaponModelChange = new EventEmitter<string>();
   @Output() weaponReferenceNoChange = new EventEmitter<string>();
@@ -158,9 +158,11 @@ export class CartridgeListComponent implements OnChanges, OnInit, OnDestroy {
   searchTerm: string = '';
   draftSearchTerm = '';
   draftNsn = '';
+  draftItemNo = '';
   draftAmmunitionArmNumber = '';
   draftAmmunitionPartNo = '';
   draftPartNo = '';
+  draftWeaponUNNumber = '';
   draftWeaponModel = '';
   draftWeaponReferenceNo = '';
   draftArmNumber = '';
@@ -202,9 +204,11 @@ export class CartridgeListComponent implements OnChanges, OnInit, OnDestroy {
     }
     if (
       changes['selectedNSN'] ||
+      changes['selectedItemNo'] ||
       changes['selectedAmmunitionArmNumber'] ||
       changes['selectedAmmunitionPartNo'] ||
       changes['selectedPartNo'] ||
+      changes['selectedWeaponUNNumber'] ||
       changes['selectedWeaponModel'] ||
       changes['selectedWeaponReferenceNo'] ||
       changes['selectedArmNumber'] ||
@@ -213,16 +217,18 @@ export class CartridgeListComponent implements OnChanges, OnInit, OnDestroy {
     ) {
       this.syncAdditionalFilterDraftsFromApplied();
     }
-    if (changes['appliedSearchTerm'] || changes['selectedNSN']) {
+    if (changes['appliedSearchTerm'] || changes['selectedNSN'] || changes['selectedItemNo']) {
       this.cdr.markForCheck();
     }
   }
 
   private syncAdditionalFilterDraftsFromApplied(): void {
     this.draftNsn = this.selectedNSN ?? '';
+    this.draftItemNo = this.selectedItemNo ?? '';
     this.draftAmmunitionArmNumber = this.selectedAmmunitionArmNumber ?? '';
     this.draftAmmunitionPartNo = this.selectedAmmunitionPartNo ?? '';
     this.draftPartNo = this.selectedPartNo ?? '';
+    this.draftWeaponUNNumber = this.selectedWeaponUNNumber ?? '';
     this.draftWeaponModel = this.selectedWeaponModel ?? '';
     this.draftWeaponReferenceNo = this.selectedWeaponReferenceNo ?? '';
     this.draftArmNumber = this.selectedArmNumber ?? '';
@@ -428,8 +434,10 @@ export class CartridgeListComponent implements OnChanges, OnInit, OnDestroy {
   }
 
   private buildAdditionalTextFiltersPatch(): AdditionalTextFiltersPatch {
+    const itemNo = this.draftItemNo.trim();
     if (this.selectedItemType === 'Ammunition') {
       return {
+        selectedItemNo: itemNo,
         selectedNSN: this.draftNsn.trim(),
         selectedAmmunitionArmNumber: this.draftAmmunitionArmNumber.trim(),
         selectedAmmunitionPartNo: this.draftAmmunitionPartNo.trim()
@@ -437,13 +445,16 @@ export class CartridgeListComponent implements OnChanges, OnInit, OnDestroy {
     }
     if (this.selectedItemType === 'Weapon') {
       return {
+        selectedItemNo: itemNo,
         selectedPartNo: this.draftPartNo.trim(),
+        selectedWeaponUNNumber: this.draftWeaponUNNumber.trim(),
         selectedNSN: this.draftNsn.trim(),
         selectedWeaponModel: this.draftWeaponModel.trim(),
         selectedWeaponReferenceNo: this.draftWeaponReferenceNo.trim()
       };
     }
     return {
+      selectedItemNo: itemNo,
       selectedArmNumber: this.draftArmNumber.trim(),
       selectedNSN: this.draftNsn.trim(),
       selectedExplosivePartNo: this.draftExplosivePartNo.trim(),
@@ -526,13 +537,12 @@ export class CartridgeListComponent implements OnChanges, OnInit, OnDestroy {
     this.onFilterChange();
   }
 
-  onWeaponUNNumberChange(value: string): void {
-    this.weaponUNNumberChange.emit(value);
-    this.onFilterChange();
-  }
-
   onPartNoDraftChange(value: string): void {
     this.draftPartNo = value;
+  }
+
+  onWeaponUNNumberDraftChange(value: string): void {
+    this.draftWeaponUNNumber = value;
   }
 
   onWeaponModelDraftChange(value: string): void {
@@ -577,6 +587,18 @@ export class CartridgeListComponent implements OnChanges, OnInit, OnDestroy {
 
   onNsnDraftChange(value: string): void {
     this.draftNsn = value;
+  }
+
+  onItemNoDraftChange(value: string): void {
+    this.draftItemNo = value;
+  }
+
+  onItemNoClear(): void {
+    this.draftItemNo = '';
+    if (this.selectedItemNo) {
+      this.additionalTextFiltersApply.emit({ selectedItemNo: '' });
+    }
+    this.cdr.markForCheck();
   }
 
   onSearchChange(value: string): void {

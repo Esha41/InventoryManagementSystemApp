@@ -112,6 +112,7 @@
     "natureOptions": "التصنيف",
     "nsn": "NSN",
     "enterNSN": "أدخل رقم NSN",
+    "enterItemNo": "أدخل رقم المادة",
     "militaryTimeFormat": "التنسيق: HHMM",
     "dateFormat": "التنسيق: DD/MM/YYYY",
     "selectDatePlaceholder": "اختر التاريخ",

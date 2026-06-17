@@ -426,13 +426,14 @@ export class WeaponAssociationComponent implements OnChanges {
     return this.isActivePanel(ammo.id, 'all') && this.ammoHasCaliberForFilter(ammo);
   }
 
-  /** Show "Not compatible" only in "View all weapons" when weapon caliber does not match ammo. */
-  shouldShowWeaponCompatibilityBadge(ammo: Cartridge, weapon: WeaponDto): boolean {
-    return (
-      this.shouldShowWeaponCompatibilityLabel(ammo) &&
-      hasCatalogItemCaliber(weapon) &&
-      !this.isWeaponCompatibleWithAmmo(ammo, weapon)
-    );
+  getWeaponCompatibilityBadgeKind(
+    ammo: Cartridge,
+    weapon: WeaponDto
+  ): 'compatible' | 'notCompatible' | null {
+    if (!this.shouldShowWeaponCompatibilityLabel(ammo) || !hasCatalogItemCaliber(weapon)) {
+      return null;
+    }
+    return this.isWeaponCompatibleWithAmmo(ammo, weapon) ? 'compatible' : 'notCompatible';
   }
 
   isWeaponCompatibleWithAmmo(ammo: Cartridge, weapon: WeaponDto): boolean {

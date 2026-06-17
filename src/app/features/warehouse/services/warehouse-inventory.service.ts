@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { FilterData } from '@models/pagination.model';
 import { ItemType } from '@models/inventory.model';
 import { BatchAssetFilter, BatchSummaryDto } from '@models/batch.model';
+import { AssetColumnFilters, createEmptyColumnFilters } from '@models/asset-list.model';
 import { WarehouseInventoryTableSortColumn } from '../pages/inventory/components/inventory-table/inventory-table.component';
 import { BatchTableSortColumn } from '../pages/inventory/components/batch-table/batch-table.component';
 
@@ -15,9 +16,25 @@ export interface WarehouseInventoryRequestBuildInput {
   manufacturerId: number | null;
   primaryPurposeId: number | null;
   caliberId: number | null;
+  columnFilters?: AssetColumnFilters;
   sortColumn: WarehouseInventoryTableSortColumn;
   sortDirection: 'asc' | 'desc';
   language: string;
+}
+
+function appendInventoryItemContainsFilter(filters: FilterData[], field: string, raw: string | undefined): void {
+  const t = (raw ?? '').trim();
+  if (!t) return;
+  filters.push({ field: `Item.${field}`, operator: 'contains', value: t });
+}
+
+function appendInventoryColumnFilters(filters: FilterData[], cf: AssetColumnFilters): void {
+  appendInventoryItemContainsFilter(filters, 'Name', cf.name);
+  appendInventoryItemContainsFilter(filters, 'ItemNo', cf.itemNo);
+  appendInventoryItemContainsFilter(filters, 'PartNo', cf.partNo);
+  appendInventoryItemContainsFilter(filters, 'Nsn', cf.nsn);
+  appendInventoryItemContainsFilter(filters, 'UNNumber', cf.unNumber);
+  appendInventoryItemContainsFilter(filters, 'ArmNumber', cf.armNumber);
 }
 
 @Injectable({
@@ -84,6 +101,8 @@ export class WarehouseInventoryService {
       if (input.activeTab === 'ammunition' && input.caliberId != null) {
         filters.push({ field: 'Item.CaliberId', operator: 'eq', value: String(input.caliberId) });
       }
+
+      appendInventoryColumnFilters(filters, input.columnFilters ?? createEmptyColumnFilters());
 
       if (input.invoiceFilter) {
         filters.push({

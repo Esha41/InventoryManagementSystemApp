@@ -1,13 +1,16 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { LucideAngularModule, Search, X, FunnelX } from 'lucide-angular';
+import { LucideAngularModule, Search, X, FunnelX, ChevronDown } from 'lucide-angular';
 import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown.component';
 import { LookupItem } from '@models/lookup.model';
 import { CardComponent } from '@components/card/card.component';
+import { AssetColumnFilters } from '@models/asset-list.model';
+import { WarehouseInventoryTab } from '@warehouse/services/warehouse-inventory.store';
 import { getLookupDropdownLabel, filterRenderableLookupItems } from '@utils/asset-list.utils';
 import { unwrapDropdownOption } from '@utils/dropdown.utils';
+import { INVENTORY_FILTERS_MORE_FILTER_TEXT_INPUT_CLASS } from './inventory-filters.ui-classes';
 
 @Component({
   selector: 'app-inventory-filters',
@@ -27,7 +30,10 @@ import { unwrapDropdownOption } from '@utils/dropdown.utils';
 })
 export class InventoryFiltersComponent {
   private readonly translateService = inject(TranslateService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
+  @Input() activeTab: WarehouseInventoryTab = 'ammunition';
+  @Input() columnFilters!: AssetColumnFilters;
   @Input() searchControl: FormControl<string> = new FormControl<string>('', { nonNullable: true });
   /** When true, show supplier and manufacturer dropdowns (ammo / explosives inventory). */
   @Input() showSupplierManufacturerFilters = false;
@@ -66,10 +72,15 @@ export class InventoryFiltersComponent {
   @Output() clearFilters = new EventEmitter<void>();
   /** Batch tab: explicit apply for item/supplier/manufacturer/primary-purpose filters (server request). */
   @Output() applyBatchFilters = new EventEmitter<void>();
+  @Output() applyAdditionalColumnFilters = new EventEmitter<void>();
 
   readonly Search = Search;
   readonly X = X;
   readonly FunnelX = FunnelX;
+  readonly ChevronDown = ChevronDown;
+  readonly moreFilterInputClass = INVENTORY_FILTERS_MORE_FILTER_TEXT_INPUT_CLASS;
+
+  showMoreFilters = false;
 
   readonly lookupOptionLabel = (option: DropdownOption<LookupItem> | LookupItem) =>
     getLookupDropdownLabel(unwrapDropdownOption(option), this.translateService);
@@ -97,6 +108,23 @@ export class InventoryFiltersComponent {
 
   onApplyBatchFiltersClick(): void {
     this.applyBatchFilters.emit();
+  }
+
+  toggleMoreFilters(): void {
+    this.showMoreFilters = !this.showMoreFilters;
+    this.cdr.markForCheck();
+  }
+
+  applyColumnFilters(): void {
+    this.applyAdditionalColumnFilters.emit();
+    this.cdr.markForCheck();
+  }
+
+  onColumnFilterKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      this.applyColumnFilters();
+    }
   }
 }
 

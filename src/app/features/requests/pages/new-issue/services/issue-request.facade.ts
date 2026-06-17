@@ -417,6 +417,16 @@ export class IssueRequestFacade {
     this.weaponAssociationState.associations.delete(cartridgeId);
     this.persistSelectionsToQueryParams();
     this.syncRequestPurposeAfterSelectionChange();
+
+    if (this.cartridgeState.selectedEntries.length === 0 && this.currentStep === 3) {
+      this.steps[1].completed = false;
+      if (this.hasAmmunitionSelected) {
+        this.steps[2].completed = false;
+      }
+      this.applyInternalStepChange(1);
+      return;
+    }
+
     this.cdr.markForCheck();
   }
 

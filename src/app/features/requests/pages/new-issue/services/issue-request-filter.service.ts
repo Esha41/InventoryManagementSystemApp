@@ -20,22 +20,26 @@ export class IssueRequestFilterService {
         (cartridge.productId?.toLowerCase().includes(searchLower)) ||
         (cartridge.ncn?.toLowerCase().includes(searchLower));
 
+      const itemNoFilterLower = filterState.selectedItemNo?.toLowerCase() ?? '';
+      const itemNo = cartridge.itemNo ?? cartridge.productId ?? '';
+      const byItemNo = !itemNoFilterLower || (itemNo && itemNo.toLowerCase().includes(itemNoFilterLower));
+
+      const nsnFilterLower = filterState.selectedNSN?.toLowerCase() ?? '';
+      const nsn = cartridge.ncn ?? '';
+      const byNSN = !nsnFilterLower || (nsn && nsn.toLowerCase().includes(nsnFilterLower));
+
       if (filterState.selectedItemType === 'Ammunition') {
         const linkedLabelForFilter = cartridge.linkedLabelEn ?? cartridge.linkedLabel ?? '';
-        const nsn = cartridge.ncn ?? '';
 
         const selectedCaliberId = filterState.selectedCaliber?.trim() ?? '';
         const byCaliber = !selectedCaliberId || String(cartridge.caliberId ?? '') === selectedCaliberId;
         const byLinked = !filterState.selectedLinked || filterState.selectedLinked === linkedLabelForFilter;
 
-        const nsnFilterLower = filterState.selectedNSN?.toLowerCase() ?? '';
-        const byNSN = !nsnFilterLower || (nsn && nsn.toLowerCase().includes(nsnFilterLower));
-
         const byAmmunitionType = !filterState.selectedAmmunitionType ||
           (cartridge.ammunitionType !== undefined &&
             String(cartridge.ammunitionType).toLowerCase() === filterState.selectedAmmunitionType.toLowerCase());
 
-        return byCaliber && byLinked && byNSN && byAmmunitionType && bySearch;
+        return byCaliber && byLinked && byItemNo && byNSN && byAmmunitionType && bySearch;
 
       } else if (filterState.selectedItemType === 'Weapon') {
         const byWeaponType = !filterState.selectedWeaponType || cartridge.weaponType === filterState.selectedWeaponType;
@@ -44,11 +48,7 @@ export class IssueRequestFilterService {
         const selectedCaliberId = filterState.selectedCaliber?.trim() ?? '';
         const byCaliber = !selectedCaliberId || String(cartridge.caliberId ?? '') === selectedCaliberId;
 
-        const nsn = cartridge.ncn ?? '';
-        const nsnFilterLower = filterState.selectedNSN?.toLowerCase() ?? '';
-        const byNSN = !nsnFilterLower || (nsn && nsn.toLowerCase().includes(nsnFilterLower));
-
-        return byWeaponType && byCaliber && byNSN && bySearch;
+        return byWeaponType && byCaliber && byItemNo && byNSN && bySearch;
 
       } else if (filterState.selectedItemType === 'Explosive') {
         const byExplosiveType = !filterState.selectedExplosiveType || cartridge.explosiveType === filterState.selectedExplosiveType;
@@ -56,7 +56,7 @@ export class IssueRequestFilterService {
         const unfilter = filterState.selectedUNNumber?.toLowerCase() ?? '';
         const byUN = !unfilter || (cartridge.unNumber && String(cartridge.unNumber).toLowerCase().includes(unfilter));
 
-        return byExplosiveType && byUN && bySearch;
+        return byExplosiveType && byUN && byItemNo && byNSN && bySearch;
       }
 
       return bySearch;
@@ -100,6 +100,7 @@ export class IssueRequestFilterService {
     }
 
     filterState.selectedNSN = '';
+    filterState.selectedItemNo = '';
     filterState.searchTerm = '';
   }
 }

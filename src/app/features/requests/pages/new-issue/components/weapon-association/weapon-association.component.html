@@ -259,12 +259,20 @@
                               <span class="min-w-0 flex-1 break-words text-[var(--color-text)]">
                                 {{ weaponDisplayLabel(weapon) }}
                               </span>
-                              <span
-                                *ngIf="shouldShowWeaponCompatibilityBadge(ammo, weapon)"
-                                class="ms-auto shrink-0 rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-800 dark:text-amber-400"
-                              >
-                                {{ 'newIssueRequest.weaponAssociation.notCompatibleLabel' | translate }}
-                              </span>
+                              <ng-container [ngSwitch]="getWeaponCompatibilityBadgeKind(ammo, weapon)">
+                                <span
+                                  *ngSwitchCase="'compatible'"
+                                  class="ms-auto shrink-0 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-400"
+                                >
+                                  {{ 'newIssueRequest.weaponAssociation.compatibleLabel' | translate }}
+                                </span>
+                                <span
+                                  *ngSwitchCase="'notCompatible'"
+                                  class="ms-auto shrink-0 rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-800 dark:text-amber-400"
+                                >
+                                  {{ 'newIssueRequest.weaponAssociation.notCompatibleLabel' | translate }}
+                                </span>
+                              </ng-container>
                             </label>
                           </li>
                           </ul>

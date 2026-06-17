@@ -98,6 +98,7 @@ export function buildAmmunitionPagedRequest(page: number, pageSize: number, fs: 
   appendLookupIdFilter(filters, 'PropellantId', fs.selectedPropellant);
   appendContainsFilter(filters, 'ArmNumber', fs.selectedAmmunitionArmNumber);
   appendContainsFilter(filters, 'PartNo', fs.selectedAmmunitionPartNo);
+  appendContainsFilter(filters, 'ItemNo', fs.selectedItemNo);
   appendContainsFilter(filters, 'Nsn', fs.selectedNSN);
   return wrapPagedRequest(page, pageSize, filters);
 }
@@ -120,6 +121,7 @@ export function buildWeaponPagedRequest(page: number, pageSize: number, fs: Filt
   appendContainsFilter(filters, 'PartNo', fs.selectedPartNo);
   appendContainsFilter(filters, 'Model', fs.selectedWeaponModel);
   appendContainsFilter(filters, 'ReferenceNo', fs.selectedWeaponReferenceNo);
+  appendContainsFilter(filters, 'ItemNo', fs.selectedItemNo);
   appendContainsFilter(filters, 'Nsn', fs.selectedNSN);
   return wrapPagedRequest(page, pageSize, filters);
 }
@@ -142,6 +144,7 @@ export function buildExplosivePagedRequest(page: number, pageSize: number, fs: F
   appendContainsFilter(filters, 'UNNumber', fs.selectedUNNumber);
   appendContainsFilter(filters, 'PartNo', fs.selectedExplosivePartNo);
   appendContainsFilter(filters, 'ReferenceNo', fs.selectedExplosiveReferenceNo);
+  appendContainsFilter(filters, 'ItemNo', fs.selectedItemNo);
   appendContainsFilter(filters, 'Nsn', fs.selectedNSN);
   return wrapPagedRequest(page, pageSize, filters);
 }

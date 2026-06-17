@@ -9,17 +9,19 @@
 
   <div class="page-container flex flex-col gap-6 !pt-2 !pb-4 md:!pt-3 md:!pb-5 lg:!pt-3 lg:!pb-6">
     <app-card [shadow]="true" [padding]="false">
-      <div class="p-5 sm:p-6">
-        <div class="mb-5">
-          <h2 class="text-lg font-semibold text-[var(--color-text)]">
+      <div class="p-5">
+        <div class="mb-3">
+          <h3 class="text-lg font-semibold text-[var(--color-text)]">
             {{ 'assetList.filters.title' | translate }}
-          </h2>
+          </h3>
         </div>
 
-        <div class="space-y-5">
-          <div class="flex flex-wrap items-end gap-4">
-            <div class="relative min-w-0 flex-1 basis-full sm:min-w-[200px] sm:basis-[min(100%,20rem)]">
-              <div class="app-search-field w-full">
+        <div class="flex flex-wrap items-end gap-3">
+          <div class="relative flex-1 min-w-0 w-full sm:min-w-[200px]">
+            <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'assetList.filters.search' | translate }}
+            </span>
+            <div class="app-search-field w-full">
               <lucide-angular [img]="Search" class="app-search-field__icon app-search-field__icon--lg"></lucide-angular>
               <input
                 id="wam-search"
@@ -31,14 +33,14 @@
                 [placeholder]="'weaponAssetMaster.filters.searchPlaceholder' | translate"
                 [attr.aria-label]="'assetList.filters.search' | translate"
                 autocomplete="off"
-                class="app-search-field__input-ps-lg w-full min-h-[44px] pe-[7.25rem] py-2.5 text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] focus:bg-[var(--color-background)] outline-none transition-all"
+                class="app-search-field__input-ps-lg w-full pe-24 py-2.5 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] focus:bg-[var(--color-background)] outline-none transition-all"
               />
               <div class="absolute inset-y-0 end-0 flex items-center gap-1 pe-2">
                 <button
                   *ngIf="searchInput"
                   type="button"
                   (click)="clearSearch()"
-                  class="inline-flex size-9 shrink-0 items-center justify-center rounded-md text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-error)]"
+                  class="p-1 text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors"
                   [attr.aria-label]="'common.clear' | translate"
                 >
                   <lucide-angular [img]="X" class="h-4 w-4"></lucide-angular>
@@ -46,58 +48,69 @@
                 <button
                   type="button"
                   (click)="applySearch()"
-                  class="inline-flex h-9 min-w-[5.5rem] shrink-0 items-center justify-center rounded-md bg-[var(--color-brand)] px-3.5 text-xs font-bold uppercase tracking-wider text-white shadow-soft transition-all hover:bg-[var(--color-brand-hover)] active:scale-[0.98]"
+                  class="px-3 py-1 bg-[var(--color-brand)] text-white text-[10px] font-bold uppercase tracking-wider rounded-md hover:bg-[var(--color-brand-hover)] transition-all active:scale-95 shadow-soft"
                 >
                   {{ 'common.search' | translate }}
                 </button>
               </div>
             </div>
-            </div>
+          </div>
+
+          <div class="w-full sm:w-auto sm:flex-1 sm:min-w-[170px] sm:max-w-[260px]">
+            <span class="block text-sm font-medium text-[var(--color-text)] mb-2">
+              {{ 'addAsset.caliber' | translate }}
+            </span>
+            <app-dropdown
+              name="wamFilterCaliber"
+              class="w-full"
+              [(ngModel)]="caliberFilterId"
+              (selectionChange)="onCaliberFilterChange()"
+              [options]="calibersWeaponForFilter"
+              optionValue="id"
+              [optionLabelFn]="caliberDropdownLabelFn"
+              [placeholderSelectable]="true"
+              [placeholderValue]="null"
+              [placeholder]="'addAsset.selectCaliber' | translate"
+              [noDataText]="'common.noData' | translate"
+            ></app-dropdown>
+          </div>
+
+          <div class="w-full flex flex-wrap items-end gap-2 sm:ms-auto sm:w-auto">
             <button
               type="button"
               (click)="toggleMoreFilters()"
               [attr.aria-expanded]="showMoreFilters"
-              class="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-lg border-2 border-[var(--color-border)] bg-[var(--color-background)] px-4 py-2.5 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-background-hover)]"
+              class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 border-[var(--color-border)] bg-[var(--color-background)] text-sm font-medium text-[var(--color-text)] hover:bg-[var(--color-background-hover)] transition-colors w-full sm:w-auto justify-center"
             >
               <lucide-angular
                 [img]="ChevronDown"
-                class="size-4 shrink-0 text-[var(--color-text-muted)] transition-transform duration-200"
+                class="h-4 w-4 text-[var(--color-text-muted)] transition-transform duration-200 shrink-0"
                 [class.rotate-180]="showMoreFilters"
               ></lucide-angular>
               <span>{{ (showMoreFilters ? 'assetList.filters.hideColumnFilters' : 'assetList.filters.moreColumnFilters') | translate }}</span>
             </button>
-            <button
-              *ngIf="hasActiveFilters() && !showMoreFilters"
-              type="button"
-              (click)="clearColumnFilters()"
-              class="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-lg border-2 border-[var(--color-border)] bg-[var(--color-background)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-background-hover)]"
+          </div>
+        </div>
+
+        <div
+          *ngIf="hasAppliedCreationDateFilter && !showMoreFilters"
+          class="mt-3 rounded-lg border border-[var(--color-border)]/80 bg-[var(--color-background-hover)] px-3 py-2.5 text-sm text-[var(--color-text)]"
+        >
+          <span class="me-2 text-xs font-medium text-[var(--color-text-muted)]">{{
+            'weaponAssetMaster.filters.appliedCreationDates' | translate
+          }}</span>
+          <span class="inline-flex flex-wrap items-baseline gap-x-1 gap-y-0.5 font-medium tracking-tight" aria-live="polite">
+            <ng-container *ngIf="appliedFilterDateFrom?.trim()">{{ appliedFilterDateFrom | appDate }}</ng-container>
+            <span *ngIf="appliedFilterDateFrom?.trim() && appliedFilterDateTo?.trim()" class="text-[var(--color-text-muted)]" aria-hidden="true"
+              >&nbsp;–&nbsp;</span
             >
-              <lucide-angular [img]="FilterX" class="size-4 shrink-0" aria-hidden="true"></lucide-angular>
-              <span>{{ 'assetList.filters.clear' | translate }}</span>
-            </button>
-          </div>
+            <ng-container *ngIf="appliedFilterDateTo?.trim()">{{ appliedFilterDateTo | appDate }}</ng-container>
+          </span>
+        </div>
 
-          <!-- Locale-formatted view of applied creation range (pipes); native date controls stay ISO yyyy-MM-dd for filtering. -->
-          <div
-            *ngIf="hasAppliedCreationDateFilter && !showMoreFilters"
-            class="rounded-lg border border-[var(--color-border)]/80 bg-[var(--color-background-hover)] px-3 py-2.5 text-sm text-[var(--color-text)]"
-          >
-            <span class="me-2 text-xs font-medium text-[var(--color-text-muted)]">{{
-              'weaponAssetMaster.filters.appliedCreationDates' | translate
-            }}</span>
-            <span class="inline-flex flex-wrap items-baseline gap-x-1 gap-y-0.5 font-medium tracking-tight" aria-live="polite">
-              <ng-container *ngIf="appliedFilterDateFrom?.trim()">{{ appliedFilterDateFrom | appDate }}</ng-container>
-              <span *ngIf="appliedFilterDateFrom?.trim() && appliedFilterDateTo?.trim()" class="text-[var(--color-text-muted)]" aria-hidden="true"
-                >&nbsp;–&nbsp;</span
-              >
-              <ng-container *ngIf="appliedFilterDateTo?.trim()">{{ appliedFilterDateTo | appDate }}</ng-container>
-            </span>
-          </div>
-
-          <ng-container *ngIf="showMoreFilters">
-            <div class="space-y-6 border-t border-[var(--color-border)] pt-6">
-              <!-- Row 1: dates + custody + purpose + status — equal-width grid on xl -->
-              <div class="grid w-full grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        <ng-container *ngIf="showMoreFilters">
+          <div class="mt-4 space-y-4 border-t border-[var(--color-border)] pt-4">
+            <div class="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                 <div class="flex min-w-0 flex-col gap-2">
                   <span
                     id="wam-filter-lbl-created-after"
@@ -227,8 +240,7 @@
                 </div>
               </div>
 
-              <!-- Row 2: supplier, manufacturer, depot, employee + actions -->
-              <div class="grid w-full grid-cols-1 gap-x-5 gap-y-6 md:grid-cols-2 xl:grid-cols-5 xl:items-end">
+              <div class="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5 xl:items-end">
                 <div class="flex min-w-0 flex-col gap-2">
                   <span class="block text-xs font-medium leading-snug text-[var(--color-text-muted)]">{{ 'weaponAssetMaster.col.supplier' | translate }}</span>
                   <app-dropdown
@@ -285,29 +297,29 @@
                     placeholder="{{ 'common.all' | translate }}"
                   ></app-dropdown>
                 </div>
-                <div class="flex min-w-0 flex-col justify-end gap-3 sm:col-span-2 xl:col-span-1">
-                  <span class="pointer-events-none hidden h-5 shrink-0 xl:block" aria-hidden="true"></span>
-                  <div class="flex w-full flex-col gap-3 sm:flex-row sm:items-stretch">
-                    <button
-                      type="button"
-                      (click)="applyAdditionalFilters()"
-                      class="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-lg bg-[var(--color-brand)] px-5 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-brand-hover)] xl:min-h-[42px]"
-                    >
-                      {{ 'assetList.filters.applyColumnFilters' | translate }}
-                    </button>
-                    <button
-                      type="button"
-                      (click)="clearColumnFilters()"
-                      class="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-lg border-2 border-[var(--color-border)] bg-[var(--color-background)] px-4 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-background-hover)] xl:min-h-[42px]"
-                    >
-                      <lucide-angular [img]="FilterX" class="size-4 shrink-0 text-[var(--color-text-muted)]" aria-hidden="true"></lucide-angular>
-                      <span>{{ 'assetList.filters.clear' | translate }}</span>
-                    </button>
-                  </div>
+                <div class="flex min-w-0 flex-col justify-end gap-2">
+                  <span class="pointer-events-none mb-1 hidden h-[1.125rem] shrink-0 xl:block" aria-hidden="true"></span>
+                  <button
+                    type="button"
+                    (click)="applyAdditionalFilters()"
+                    class="inline-flex min-h-[42px] w-full items-center justify-center rounded-lg bg-[var(--color-brand)] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-brand-hover)] xl:shrink-0"
+                  >
+                    {{ 'assetList.filters.applyColumnFilters' | translate }}
+                  </button>
                 </div>
               </div>
             </div>
           </ng-container>
+
+        <div class="mt-3 flex justify-end">
+          <button
+            type="button"
+            (click)="clearColumnFilters()"
+            class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-[var(--color-text)] bg-[var(--color-background)] border-2 border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background-hover)] transition-colors"
+          >
+            <lucide-angular [img]="FilterX" class="h-4 w-4 shrink-0"></lucide-angular>
+            <span>{{ 'assetList.filters.clear' | translate }}</span>
+          </button>
         </div>
       </div>
     </app-card>

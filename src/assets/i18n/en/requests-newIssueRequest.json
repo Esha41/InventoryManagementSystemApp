@@ -138,6 +138,7 @@
     "natureOptions": "Nature Options",
     "nsn": "NSN",
     "enterNSN": "Enter NSN number",
+    "enterItemNo": "Enter item number",
     "militaryTimeFormat": "Format: HHMM",
     "dateFormat": "Format: DD/MM/YYYY",
     "selectDatePlaceholder": "Select date",

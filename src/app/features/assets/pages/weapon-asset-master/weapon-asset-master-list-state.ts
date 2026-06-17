@@ -19,6 +19,7 @@ export interface WeaponAssetMasterListState {
   appliedEmployeeIds: number[];
   appliedFilterCustody: WamCustodyFilter;
   appliedDepotIds: number[];
+  caliberFilterId: number | null;
   filterDateFrom: string;
   filterDateTo: string;
   filterPrimaryPurposeIds: number[];

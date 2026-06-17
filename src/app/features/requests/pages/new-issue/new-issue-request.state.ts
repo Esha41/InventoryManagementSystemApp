@@ -40,6 +40,7 @@ export interface FilterState {
   selectedPrimaryPurposeId: string;
   selectedClassificationId: string;
   selectedNSN: string;
+  selectedItemNo: string;
   searchTerm: string;
 
   selectedWeaponType?: string;
@@ -72,10 +73,12 @@ export interface FilterState {
 
 /** Text fields in the “more filters” panel; applied in one batch via Apply. */
 export interface AdditionalTextFiltersPatch {
+  selectedItemNo?: string;
   selectedNSN?: string;
   selectedAmmunitionArmNumber?: string;
   selectedAmmunitionPartNo?: string;
   selectedPartNo?: string;
+  selectedWeaponUNNumber?: string;
   selectedWeaponModel?: string;
   selectedWeaponReferenceNo?: string;
   selectedArmNumber?: string;
@@ -208,6 +211,7 @@ export function createInitialFilterState(): ExtendedFilterState {
     selectedPrimaryPurposeId: '',
     selectedClassificationId: '',
     selectedNSN: '',
+    selectedItemNo: '',
     searchTerm: '',
     selectedWeaponType: '',
     selectedCaliber: '',

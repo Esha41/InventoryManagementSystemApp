@@ -107,6 +107,23 @@
       </div>
     </div>
 
+    <!-- Item No filter (all types) -->
+    <div class="filter-full-width">
+      <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between" for="cartridge-list-fld-item-no">
+        <span>{{ 'newIssueRequest.itemNo' | translate }}</span>
+        <button *ngIf="draftItemNo || selectedItemNo" (click)="onItemNoClear()" type="button"
+          class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+          <span>{{ 'common.clear' | translate }}</span>
+        </button>
+      </label>
+      <input id="cartridge-list-fld-item-no" type="text" [ngModel]="draftItemNo" (ngModelChange)="onItemNoDraftChange($event)"
+        (keydown)="onAdditionalFilterKeydown($event)"
+        placeholder="{{ 'newIssueRequest.enterItemNo' | translate }}" [class]="moreFilterInputClass">
+    </div>
+
     <!-- Ammunition Filters -->
     <ng-container *ngIf="selectedItemType === 'Ammunition'">
       <!-- Caliber Category -->
@@ -343,27 +360,17 @@
         </app-dropdown>
       </div>
 
-      <!-- UN Number -->
-      <div class="filter-full-width">
-        <label class="block text-sm font-semibold text-[var(--color-text)] mb-2 flex items-center justify-between" for="cartridge-list-fld-weapon-un">
-          <span>{{ 'addAsset.unNumber' | translate }}</span>
-          <button *ngIf="selectedWeaponUNNumber" (click)="onWeaponUNNumberChange('')" type="button"
-            class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-error)] transition-colors flex items-center gap-1">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-            <span>{{ 'common.clear' | translate }}</span>
-          </button>
-        </label>
-        <input id="cartridge-list-fld-weapon-un" type="text" [ngModel]="selectedWeaponUNNumber" (ngModelChange)="onWeaponUNNumberChange($event)"
-          placeholder="{{ 'addAsset.enterUnNumber' | translate }}"
-          class="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)] bg-[var(--color-background)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)] focus:border-transparent placeholder:text-[var(--color-text-muted)]">
-      </div>
-
       <ng-container *ngTemplateOutlet="moreFiltersToggle"></ng-container>
 
       <ng-container *ngIf="showMoreFilters">
         <div class="additional-filters-grid filter-full-width mt-2 border-t border-[var(--color-border)] pt-4">
+          <div>
+            <label class="mb-1 block text-xs font-medium text-[var(--color-text-muted)]" for="cartridge-list-fld-weapon-un">{{ 'addAsset.unNumber' | translate }}</label>
+            <input id="cartridge-list-fld-weapon-un" type="text" [ngModel]="draftWeaponUNNumber" (ngModelChange)="onWeaponUNNumberDraftChange($event)"
+              (keydown)="onAdditionalFilterKeydown($event)"
+              placeholder="{{ 'addAsset.enterUnNumber' | translate }}" [class]="moreFilterInputClass">
+          </div>
+
           <div>
             <label class="mb-1 block text-xs font-medium text-[var(--color-text-muted)]" for="cartridge-list-fld-weapon-partno">{{ 'assetList.table.partNo' | translate }}</label>
             <input id="cartridge-list-fld-weapon-partno" type="text" [ngModel]="draftPartNo" (ngModelChange)="onPartNoDraftChange($event)"
@@ -600,8 +607,9 @@
           [attr.aria-label]="('newIssueRequest.viewDetails' | translate) + ' — ' + cartridgeDisplayName(cartridge)"
           (click)="$event.stopPropagation()">{{ cartridgeDisplayName(cartridge) }}</a>
         <div class="mt-1 space-y-1">
-          <p class="text-xs text-[var(--color-text-muted)]" *ngIf="cartridge.ncn">
-            {{ 'newIssueRequest.nsn' | translate }}: {{ cartridge.ncn }}
+          <p class="text-xs text-[var(--color-text-muted)]"
+            *ngIf="cartridge.itemNo || cartridge.productId">
+            {{ 'newIssueRequest.itemNo' | translate }}: {{ cartridge.itemNo || cartridge.productId }}
           </p>
           <p class="text-xs text-[var(--color-text-muted)]"
             *ngIf="selectedItemType === 'Weapon' && cartridge.weaponType">
