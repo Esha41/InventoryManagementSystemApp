@@ -1,1 +1,13 @@
-/* Rows-per-page layout is centralized on `app-rows-per-page`. */
+/* Name columns: wrap long labels within a bounded width */
+.depot-table__name-col {
+  max-width: min(20rem, 28vw);
+  min-width: 0;
+}
+
+.depot-table__name-label {
+  display: block;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}

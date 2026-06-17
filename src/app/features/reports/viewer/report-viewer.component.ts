@@ -5,11 +5,8 @@ import { TranslateModule } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, ArrowRight, X } from 'lucide-angular';
 import { DxReportViewerModule } from 'devexpress-reporting-angular';
 import { TranslationService } from '@services/translation.service';
-import { ReportService } from '@reports/services/report.service';
-import { BackendAuthService } from '@services/backend-auth.service';
 import { ConfigService } from '@services/config.service';
 import { StorageService } from '@services/storage.service';
-import { UserContextService } from '@services/user-context.service';
 import { configureDevexpressAuthHeaders } from '@utils/devexpress-auth.util';
 
 @Component({
@@ -38,9 +35,6 @@ export class ReportViewerComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private translationService: TranslationService,
-    private reportService: ReportService,
-    private authService: BackendAuthService,
-    private userContextService: UserContextService,
     private configService: ConfigService,
     private storageService: StorageService
   ) {
@@ -50,50 +44,8 @@ export class ReportViewerComponent implements OnInit {
   ngOnInit(): void {
     configureDevexpressAuthHeaders(this.storageService.get<string>('auth_token'));
 
-    const baseReportUrl = this.route.snapshot.queryParamMap.get('reportUrl') || '';
+    this.reportUrl = this.route.snapshot.queryParamMap.get('reportUrl') || '';
     this.reportName = this.route.snapshot.queryParamMap.get('reportName') || 'Report';
-    
-    // Get departmentId(s) from user claims/token
-    // User can have single department, multiple departments, or null
-    const currentUser = this.authService.getCurrentUser();
-    const departmentId = currentUser?.departmentId;
-    
-    // Get superadmin status from claims
-    const isSuperAdmin = this.userContextService.isAdminUser() ;
-    
-    // Build query parameters
-    const queryParams: string[] = [];
-    
-    // Append departmentId to reportUrl
-    // Support multiple departments by comma-separating them
-    if (baseReportUrl) {
-      // If departmentId is an array, join with commas; otherwise use as-is
-      const deptIdValue = Array.isArray(departmentId) 
-        ? departmentId.join(',') 
-        : departmentId?.toString();
-      queryParams.push(`departmentId=${deptIdValue}`);
-    }
-    
-    // Append superadmin parameter
-    queryParams.push(`superadmin=${isSuperAdmin}`);
-    
-    // Construct final report URL with parameters
-    if (queryParams.length > 0 && baseReportUrl) {
-      const separator = baseReportUrl.includes('?') ? '&' : '?';
-      this.reportUrl = `${baseReportUrl}${separator}${queryParams.join('&')}`;
-    } else {
-      this.reportUrl = baseReportUrl;
-    }
-    
-    console.log('Report Viewer Configuration:', {
-      reportUrl: this.reportUrl,
-      baseReportUrl: baseReportUrl,
-      reportName: this.reportName,
-      host: this.host,
-      invokeAction: this.invokeAction,
-      departmentId: departmentId,
-      isSuperAdmin: isSuperAdmin
-    });
   }
 
   get isRTL(): boolean {

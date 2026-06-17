@@ -63,6 +63,17 @@ import { defaultPageSize } from '@constants/app.constants';
         width: 100%;
         box-sizing: border-box;
       }
+      .item-summary-table__name-col {
+        max-width: min(20rem, 28vw);
+        min-width: 0;
+      }
+      .item-summary-table__name-label {
+        display: block;
+        min-width: 0;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
     `
   ]
 })
