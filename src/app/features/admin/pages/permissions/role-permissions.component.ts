@@ -33,6 +33,15 @@ interface PermissionCategory {
   permissionTypes?: string[]; // Cached for performance
 }
 
+interface PlainPermissionCategory {
+  name: string;
+  displayName: string;
+  description: string;
+  icon: string;
+  permissions: CheckBox[];
+  expanded: boolean;
+}
+
 interface PermissionInfo {
   key: string;
   label: string;
@@ -87,6 +96,8 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
 
   categories: PermissionCategory[] = [];
   filteredCategories: PermissionCategory[] = [];
+  plainCategories: PlainPermissionCategory[] = [];
+  filteredPlainCategories: PlainPermissionCategory[] = [];
 
   roleSearchTerm = '';
   permissionSearchTerm = '';
@@ -267,7 +278,7 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
   private organizePermissions(): void {
     const categoryMap = new Map<string, PermissionCategory>();
 
-    // Process CRUD permissions
+    // CRUD permissions only — entity/action grid
     this.permissions.forEach(group => {
       const category = group.category || 'Other';
       if (!categoryMap.has(category)) {
@@ -283,34 +294,32 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
       categoryMap.get(category)!.permissions.push(group);
     });
 
-    // Process Plain permissions
-    this.plainPermissions.forEach(group => {
-      const category = group.entityName || 'Other';
-      if (!categoryMap.has(category)) {
-        categoryMap.set(category, {
-          name: category,
-          displayName: category,
-          description: this.getCategoryDescription(category),
-          icon: this.getCategoryIcon(category),
-          permissions: [],
-          expanded: true
-        });
-      }
-      categoryMap.get(category)!.permissions.push(group);
-    });
-
-    // Sort categories by priority
     this.categories = Array.from(categoryMap.values()).sort((a, b) => {
-      const order = ['Dashboard', 'Requests', 'Inventory', 'User Management', 'System Features', 'Other'];
+      const order = ['Dashboard', 'Requests', 'Inventory', 'UserManagement', 'User Management', 'System Features', 'Other'];
       return order.indexOf(a.name) - order.indexOf(b.name);
     });
 
-    // Pre-calculate permission types for performance (avoids recalculation in template)
     this.categories.forEach(category => {
       category.permissionTypes = this.calculateUniquePermissionTypes(category);
     });
 
+    // Plain permissions — separate feature toggles, not entity CRUD
+    this.plainCategories = this.plainPermissions
+      .map(group => ({
+        name: group.entityName || 'Other',
+        displayName: this.getPlainCategoryDisplayName(group.entityName),
+        description: this.getPlainCategoryDescription(group.entityName),
+        icon: this.getPlainCategoryIcon(group.entityName),
+        permissions: group.permissionsList,
+        expanded: true
+      }))
+      .sort((a, b) => {
+        const order = ['Dashboard', 'Workflow', 'Inventory', 'Reports', 'BITool', 'System Features', 'User Management', 'Other'];
+        return order.indexOf(a.name) - order.indexOf(b.name);
+      });
+
     this.filteredCategories = this.categories;
+    this.filteredPlainCategories = this.plainCategories;
   }
 
   // ============================================================================
@@ -364,6 +373,45 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
     return icons[category] || '📁';
   }
 
+  private getPlainCategoryDisplayName(category: string): string {
+    const names: { [key: string]: string } = {
+      'Dashboard': 'Dashboard',
+      'Workflow': 'Workflow Actions',
+      'Inventory': 'Inventory Features',
+      'Reports': 'Report Pages',
+      'BITool': 'BI Tools',
+      'System Features': 'System Features',
+      'User Management': 'User Management'
+    };
+    return names[category] || category;
+  }
+
+  private getPlainCategoryDescription(category: string): string {
+    const descriptions: { [key: string]: string } = {
+      'Dashboard': 'Dashboard pages and overview access',
+      'Workflow': 'Workflow step actions and supply management',
+      'Inventory': 'Special inventory and asset page access',
+      'Reports': 'Access to inventory and stock report pages',
+      'BITool': 'Report designer, dashboards, and scheduled reports',
+      'System Features': 'Additional system capabilities like reports and imports',
+      'User Management': 'User and delegation management features'
+    };
+    return descriptions[category] || `Feature permissions for ${category}`;
+  }
+
+  private getPlainCategoryIcon(category: string): string {
+    const icons: { [key: string]: string } = {
+      'Dashboard': '📊',
+      'Workflow': '🔄',
+      'Inventory': '📦',
+      'Reports': '📈',
+      'BITool': '📉',
+      'System Features': '⚙️',
+      'User Management': '👥'
+    };
+    return icons[category] || '🔑';
+  }
+
   // ============================================================================
   // SEARCH & FILTERING
   // ============================================================================
@@ -371,13 +419,54 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
     this.filterPermissions();
   }
 
+  get hasFilteredPermissions(): boolean {
+    return this.filteredCategories.length > 0 || this.filteredPlainCategories.length > 0;
+  }
+
+  get totalCategoryCount(): number {
+    return this.categories.length + this.plainCategories.length;
+  }
+
+  get filteredCategoryCount(): number {
+    return this.filteredCategories.length + this.filteredPlainCategories.length;
+  }
+
   private filterPermissions(): void {
     if (!this.permissionSearchTerm || this.permissionSearchTerm.trim() === '') {
       this.filteredCategories = this.categories;
+      this.filteredPlainCategories = this.plainCategories;
       return;
     }
 
     const searchLower = this.permissionSearchTerm.toLowerCase().trim();
+
+    this.filteredPlainCategories = this.plainCategories
+      .map(category => {
+        const categoryMatches =
+          category.name.toLowerCase().includes(searchLower) ||
+          category.displayName.toLowerCase().includes(searchLower) ||
+          category.description.toLowerCase().includes(searchLower);
+
+        const filteredPermissions = category.permissions.filter(perm => {
+          const permInfo = this.getPermissionInfo(perm.displayValue);
+          return (
+            perm.displayValue.toLowerCase().includes(searchLower) ||
+            permInfo.label.toLowerCase().includes(searchLower) ||
+            permInfo.description.toLowerCase().includes(searchLower) ||
+            (permInfo.page && permInfo.page.toLowerCase().includes(searchLower))
+          );
+        });
+
+        if (categoryMatches || filteredPermissions.length > 0) {
+          return {
+            ...category,
+            permissions: categoryMatches ? category.permissions : filteredPermissions,
+            expanded: true
+          };
+        }
+        return null;
+      })
+      .filter((category): category is PlainPermissionCategory => category !== null);
 
     this.filteredCategories = this.categories
       .map(category => {
@@ -512,6 +601,38 @@ export class RolePermissionsComponent implements OnInit, OnDestroy {
   // ============================================================================
   toggleCategory(category: PermissionCategory): void {
     category.expanded = !category.expanded;
+  }
+
+  togglePlainCategory(category: PlainPermissionCategory): void {
+    category.expanded = !category.expanded;
+  }
+
+  onPlainCategoryToggleAll(category: PlainPermissionCategory, selectAll: boolean): void {
+    category.permissions.forEach(perm => {
+      const control = this.permissionForm.get(this.sanitizeControlName(perm.displayValue));
+      if (control) {
+        control.setValue(selectAll);
+      }
+    });
+  }
+
+  isPlainCategoryFullySelected(category: PlainPermissionCategory): boolean {
+    return category.permissions.every(perm =>
+      this.permissionForm.get(this.sanitizeControlName(perm.displayValue))?.value === true
+    );
+  }
+
+  getPlainCategorySelectedCount(category: PlainPermissionCategory): { selected: number; total: number } {
+    let selected = 0;
+    const total = category.permissions.length;
+
+    category.permissions.forEach(perm => {
+      if (this.permissionForm.get(this.sanitizeControlName(perm.displayValue))?.value === true) {
+        selected++;
+      }
+    });
+
+    return { selected, total };
   }
 
   onCategoryToggleAll(category: PermissionCategory, selectAll: boolean): void {
