@@ -1,0 +1,22 @@
+/* Name / created depot columns: wrap long labels within a bounded width */
+.wam-table__name-col,
+.wam-table__text-col {
+  max-width: min(20rem, 28vw);
+  min-width: 0;
+}
+
+.wam-table__name-label {
+  display: block;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.wam-table__name-link {
+  display: block;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}

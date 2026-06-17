@@ -88,6 +88,7 @@ type CustodyFilter = WamCustodyFilter;
     TableClampTooltipDirective
   ],
   templateUrl: './weapon-asset-master.component.html',
+  styleUrls: ['./weapon-asset-master.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WeaponAssetMasterComponent implements OnInit, OnDestroy {

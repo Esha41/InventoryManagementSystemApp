@@ -30,7 +30,7 @@
     </app-error-state>
 
     <!-- Profile Content -->
-    <div *ngIf="!loading && currentUser" class="space-y-6">
+    <div *ngIf="!loading && currentUser" class="profile-cards space-y-8">
       <!-- Profile Header Card -->
       <div
         class="bg-[var(--color-background)] rounded-xl shadow-custom-lg border-2 border-[var(--color-border)] overflow-hidden">
@@ -273,7 +273,6 @@
           </div>
         </div>
       </div>
-    </div>
 
     <!-- Delegation Section -->
     <div *ngIf="!loading && currentUser"

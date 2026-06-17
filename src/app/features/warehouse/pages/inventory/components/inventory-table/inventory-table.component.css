@@ -4,6 +4,20 @@
   word-break: break-word;
 }
 
+/* Name column: wrap long labels within a bounded width */
+.inv-table-name-col {
+  max-width: min(20rem, 28vw);
+  min-width: 0;
+}
+
+.inv-table-name-link {
+  display: block;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 /* Header labels: wrap at word boundaries; avoid mid-word breaks (e.g. "Quantity"). */
 .inv-table-th {
   overflow-wrap: break-word;

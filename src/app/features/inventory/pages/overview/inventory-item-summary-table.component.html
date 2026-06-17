@@ -37,7 +37,7 @@
             </span>
           </div>
         </th>
-        <th scope="col" class="px-3 py-2.5 align-middle text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)]" (click)="onItemSort('itemName')">
+        <th scope="col" class="item-summary-table__name-col px-3 py-2.5 align-top text-start text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider cursor-pointer hover:bg-[var(--color-background-hover)]" (click)="onItemSort('itemName')">
           <div class="flex w-full min-w-0 items-center justify-between gap-2">
             <span class="min-w-0 break-words leading-snug">{{ 'inventoryDashboard.itemSummary.cols.itemName' | translate }}</span>
             <span class="shrink-0 inline-flex">
@@ -118,8 +118,8 @@
           <td class="px-3 py-2.5 align-middle text-start text-sm text-[var(--color-text-muted)] whitespace-nowrap tabular-nums">
             <span dir="ltr" class="inline-block">{{ item.itemNo || '—' }}</span>
           </td>
-          <td class="px-3 py-2.5 align-middle min-w-0">
-            <span class="text-sm font-medium text-[var(--color-text)]" [appTableClampTooltip]="itemSummaryDisplayName(item)">{{ itemSummaryDisplayName(item) }}</span>
+          <td class="item-summary-table__name-col px-3 py-2.5 align-top min-w-0">
+            <span class="item-summary-table__name-label text-sm font-medium text-[var(--color-text)]" [attr.title]="itemSummaryDisplayName(item)">{{ itemSummaryDisplayName(item) }}</span>
           </td>
           <td dir="ltr" class="py-2.5 align-middle text-sm text-end tabular-nums text-[var(--color-text)] whitespace-nowrap"
             [ngClass]="showLotQuantityColumns ? 'px-2' : 'ps-2 pe-4 sm:pe-6'">{{ item.totalQuantity | number }}</td>

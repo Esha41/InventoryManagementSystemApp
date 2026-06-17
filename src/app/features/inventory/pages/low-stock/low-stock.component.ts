@@ -9,7 +9,7 @@ import { ErrorHandler } from '@utils/error-handler.utils';
 import { TranslationService } from '@services/translation.service';
 import { PaginationComponent } from '@components/pagination/pagination.component';
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
-import { LoadingStateComponent, ErrorStateComponent, TableClampTooltipDirective } from '@components/index';
+import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { defaultPageSize } from '@constants/app.constants';
 import { PagedListRequest } from '@models/pagination.model';
 import { getCurrentLang, getLocalizedName } from '@utils/localization.utils';
@@ -24,8 +24,7 @@ import { getCurrentLang, getLocalizedName } from '@utils/localization.utils';
     PaginationComponent,
     RowsPerPageComponent,
     LoadingStateComponent,
-    ErrorStateComponent,
-    TableClampTooltipDirective
+    ErrorStateComponent
   ],
   templateUrl: './low-stock.component.html',
   styleUrls: ['./low-stock.component.css'],

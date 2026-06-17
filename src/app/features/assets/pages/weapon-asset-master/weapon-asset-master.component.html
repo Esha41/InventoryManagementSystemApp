@@ -345,7 +345,7 @@
                 <span class="sr-only">{{ 'weaponAssetMaster.expandColumn' | translate }}</span>
               </th>
               <th
-                class="px-3 py-3 text-start text-xs font-semibold tracking-wider text-[var(--color-text)] cursor-pointer hover:bg-[var(--color-background-hover)]"
+                class="wam-table__name-col px-3 py-3 text-start text-xs font-semibold tracking-wider text-[var(--color-text)] cursor-pointer hover:bg-[var(--color-background-hover)] align-top"
                 (click)="setSort('name')"
                 scope="col"
               >
@@ -374,7 +374,7 @@
               >
                 {{ 'assetList.table.status' | translate }} {{ sortIndicator('status') }}
               </th>
-              <th class="px-3 py-3 text-start text-xs font-semibold tracking-wider text-[var(--color-text)]" scope="col">
+              <th class="wam-table__text-col px-3 py-3 text-start text-xs font-semibold tracking-wider text-[var(--color-text)] align-top" scope="col">
                 {{ 'weaponAssetMaster.col.createdDepot' | translate }}
               </th>
               <th class="px-3 py-3 text-start text-xs font-semibold tracking-wider text-[var(--color-text)]" scope="col">
@@ -406,18 +406,18 @@
                     <lucide-angular [img]="getExpandIcon(isExpanded(asset.id))" class="h-4 w-4 text-[var(--color-text-muted)]"></lucide-angular>
                   </button>
                 </td>
-                <td class="px-3 py-3 align-top max-w-[14rem] min-w-0">
+                <td class="wam-table__name-col px-3 py-3 align-top min-w-0">
                   <a
                     *ngIf="asset.itemId"
                     [routerLink]="['/assets/asset-list', asset.itemId]"
                     [queryParams]="catalogItemQueryParams"
-                    class="font-medium text-[var(--color-brand)] hover:underline"
-                    [appTableClampTooltip]="itemName(asset)"
+                    class="wam-table__name-link font-medium text-[var(--color-brand)] hover:underline"
+                    [attr.title]="itemName(asset)"
                     (click)="onCatalogItemNavigate(); $event.stopPropagation()"
                   >
                     {{ itemName(asset) }}
                   </a>
-                  <span *ngIf="!asset.itemId" class="font-medium text-[var(--color-text)]" [appTableClampTooltip]="itemName(asset)">
+                  <span *ngIf="!asset.itemId" class="wam-table__name-label font-medium text-[var(--color-text)]" [attr.title]="itemName(asset)">
                     {{ itemName(asset) }}
                   </span>
                 </td>
@@ -432,8 +432,8 @@
                   <span [appTableClampTooltip]="primaryPurposeName(asset)" [clampLines]="1">{{ primaryPurposeName(asset) }}</span>
                 </td>
                 <td class="px-3 py-3 align-top">{{ statusLabel(asset) }}</td>
-                <td class="px-3 py-3 align-top max-w-[10rem] min-w-0">
-                  <span [appTableClampTooltip]="depotName(asset)" [clampLines]="1">{{ depotName(asset) }}</span>
+                <td class="wam-table__text-col px-3 py-3 align-top min-w-0">
+                  <span class="wam-table__name-label" [attr.title]="depotName(asset)">{{ depotName(asset) }}</span>
                 </td>
                 <td class="px-3 py-3 align-top whitespace-nowrap text-[var(--color-text-secondary)]">
                   <ng-container *ngIf="asset.creationDate; else noCreatedDate">{{ asset.creationDate | appDate: 'military' }}</ng-container>
@@ -657,7 +657,7 @@
             <div class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
               {{ 'weaponAssetMaster.col.name' | translate }}
             </div>
-            <p class="mt-1 text-[var(--color-text)]">{{ itemName(viewModalAsset) }}</p>
+            <p class="mt-1 text-[var(--color-text)] wam-table__name-label">{{ itemName(viewModalAsset) }}</p>
           </div>
           <div>
             <div class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
@@ -705,7 +705,7 @@
             <div class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
               {{ 'weaponAssetMaster.col.createdDepot' | translate }}
             </div>
-            <p class="mt-1 text-[var(--color-text)]">{{ depotName(viewModalAsset) }}</p>
+            <p class="mt-1 text-[var(--color-text)] wam-table__name-label">{{ depotName(viewModalAsset) }}</p>
           </div>
           <div>
             <div class="text-xs font-semibold text-[var(--color-text-muted)] uppercase">
