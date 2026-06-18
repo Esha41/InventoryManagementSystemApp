@@ -74,6 +74,7 @@ export class AssetViewModalComponent implements OnChanges {
   getPrice = () => this.propertyAccessor.getPrice(this.selectedAsset);
   getMinimumQuantity = () => this.propertyAccessor.getMinimumQuantity(this.selectedAsset);
   getCriticalQuantity = () => this.propertyAccessor.getCriticalQuantity(this.selectedAsset);
+  getMaximumStock = () => this.propertyAccessor.getMaximumStock(this.selectedAsset);
   getBatchNo = () => this.propertyAccessor.getBatchNo(this.selectedAsset);
   getExpiryDate = () => this.propertyAccessor.getExpiryDate(this.selectedAsset);
   getReadyForIssue = () => this.propertyAccessor.getReadyForIssue(this.selectedAsset);

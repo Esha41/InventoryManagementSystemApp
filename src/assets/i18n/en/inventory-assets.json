@@ -81,6 +81,8 @@
     "minimumQuantityPlaceholder": "Enter Low Stock threshold",
     "criticalQuantity": "Critical Stock",
     "criticalQuantityPlaceholder": "Enter Critical Stock threshold",
+    "maximumStock": "Maximum Stock",
+    "maximumStockPlaceholder": "Enter maximum stock",
     "enterAmmunitionName": "Enter ammunition name",
     "enterNameAr": "Enter arabic name",
     "enterWeaponName": "Enter weapon name",

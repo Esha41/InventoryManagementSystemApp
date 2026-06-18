@@ -62,6 +62,7 @@ export interface CreateUpdateExplosiveDto {
   price?: number;
   minimumQuantity?: number;
   criticalQuantity?: number;
+  maximumStock?: number;
   distribution?: string;
   referenceNo?: string;
   notes?: string;

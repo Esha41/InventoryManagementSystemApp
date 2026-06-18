@@ -307,7 +307,8 @@ export class AssetListService {
         caliber: 'LookupCaliber.NameEn',
         price: 'Price',
         minimumQuantity: 'MinimumQuantity',
-        criticalQuantity: 'CriticalQuantity'
+        criticalQuantity: 'CriticalQuantity',
+        maximumStock: 'MaximumStock'
       };
 
       sortField = fieldMap[sortState.column] || sortState.column;
@@ -440,7 +441,8 @@ export class AssetListService {
         caliber: 'LookupCaliber.NameEn',
         price: 'Price',
         minimumQuantity: 'MinimumQuantity',
-        criticalQuantity: 'CriticalQuantity'
+        criticalQuantity: 'CriticalQuantity',
+        maximumStock: 'MaximumStock'
       };
 
       sortField = fieldMap[sortState.column] || sortState.column;
@@ -594,7 +596,8 @@ export class AssetListService {
         compatibility: 'Compatibility.NameEn',
         price: 'Price',
         minimumQuantity: 'MinimumQuantity',
-        criticalQuantity: 'CriticalQuantity'
+        criticalQuantity: 'CriticalQuantity',
+        maximumStock: 'MaximumStock'
       };
 
       sortField = fieldMap[sortState.column] || sortState.column;

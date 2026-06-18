@@ -41,6 +41,7 @@ interface AssetForm {
   price: string;
   minimumQuantity: string;
   criticalQuantity: string;
+  maximumStock: string;
   unNumber: string;
   distribution: string;
   referenceNo: string;
@@ -171,6 +172,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
       price: '',
       minimumQuantity: '',
       criticalQuantity: '',
+      maximumStock: '',
       unNumber: '',
       distribution: '',
       referenceNo: '',
@@ -405,6 +407,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.assetForm.price) dto.price = parseFloat(this.assetForm.price);
     if (this.assetForm.minimumQuantity) dto.minimumQuantity = parseInt(this.assetForm.minimumQuantity);
     if (this.assetForm.criticalQuantity) dto.criticalQuantity = parseInt(this.assetForm.criticalQuantity, 10);
+    if (this.assetForm.maximumStock) dto.maximumStock = parseInt(this.assetForm.maximumStock, 10);
     if (this.assetForm.isLinked) dto.isLinked = this.assetForm.isLinked === 'true';
 
     const formData = new FormData();
@@ -451,6 +454,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.assetForm.price) dto.price = parseFloat(this.assetForm.price);
     if (this.assetForm.minimumQuantity) dto.minimumQuantity = parseInt(this.assetForm.minimumQuantity);
     if (this.assetForm.criticalQuantity) dto.criticalQuantity = parseInt(this.assetForm.criticalQuantity, 10);
+    if (this.assetForm.maximumStock) dto.maximumStock = parseInt(this.assetForm.maximumStock, 10);
     if (this.assetForm.primaryPurposIds?.length) {
       dto.primaryPurposIds = [...this.assetForm.primaryPurposIds];
     }
@@ -487,6 +491,7 @@ export class AddAssetComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.assetForm.price) dto.price = parseFloat(this.assetForm.price);
     if (this.assetForm.minimumQuantity) dto.minimumQuantity = parseInt(this.assetForm.minimumQuantity);
     if (this.assetForm.criticalQuantity) dto.criticalQuantity = parseInt(this.assetForm.criticalQuantity, 10);
+    if (this.assetForm.maximumStock) dto.maximumStock = parseInt(this.assetForm.maximumStock, 10);
     if (this.assetForm.distribution?.trim()) dto.distribution = this.assetForm.distribution.trim();
     if (this.assetForm.referenceNo?.trim()) dto.referenceNo = this.assetForm.referenceNo.trim();
     if (this.assetForm.unNumber?.trim()) dto.unNumber = this.assetForm.unNumber.trim();

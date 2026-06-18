@@ -65,6 +65,7 @@ export function mapAmmunitionToAsset(
     price: nilUndef(dto.price),
     minimumQuantity: nilUndef(dto.minimumQuantity),
     criticalQuantity: nilUndef(dto.criticalQuantity),
+    maximumStock: nilUndef(dto.maximumStock),
     imageUrl: undefined, // Will be set in loadAmmunitionImages() using image ID from response
     originalData: dto
   };
@@ -93,6 +94,7 @@ export function mapWeaponToAsset(dto: WeaponDto, currentLang: string): Asset {
     price: nilUndef(dto.price),
     minimumQuantity: nilUndef(dto.minimumQuantity),
     criticalQuantity: nilUndef(dto.criticalQuantity),
+    maximumStock: nilUndef(dto.maximumStock),
     imageUrl: undefined, // Will be set in loadImagesFromResponse() using image ID from response
     originalData: dto
   };
@@ -138,6 +140,7 @@ export function mapExplosiveToAsset(dto: ExplosiveDto, currentLang: string): Ass
     price: nilUndef(dto.price),
     minimumQuantity: nilUndef(dto.minimumQuantity),
     criticalQuantity: nilUndef(dto.criticalQuantity),
+    maximumStock: nilUndef(dto.maximumStock),
     imageUrl: undefined, // Will be set in loadImagesFromResponse() using image ID from response
     originalData: dto
   };

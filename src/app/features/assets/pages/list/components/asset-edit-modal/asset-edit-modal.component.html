@@ -223,6 +223,15 @@
                     class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
                     [placeholder]="'addAsset.criticalQuantityPlaceholder' | translate" step="1" min="0" />
                 </div>
+
+                <!-- Maximum Stock -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="asset-edit-modal-maximumstock-9">{{
+                    'addAsset.maximumStock' | translate }}</label>
+                  <input id="asset-edit-modal-maximumstock-9" type="number" formControlName="maximumStock"
+                    class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                    [placeholder]="'addAsset.maximumStockPlaceholder' | translate" step="1" min="0" />
+                </div>
               </ng-container>
 
               <!-- Ammunition Specific Fields -->
@@ -328,19 +337,19 @@
                   </app-dropdown>
                 </div>
                 <div>
-                  <span class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.projectileMaterial' |
-                    translate }}</span>
-                  <app-dropdown class="w-full" formControlName="projectailMaterialId" [options]="projectailMaterials"
-                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
-                    [placeholderValue]="null" [placeholder]="'addAsset.selectProjectileMaterial' | translate">
-                  </app-dropdown>
-                </div>
-                <div>
                   <span class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.projectileColor' |
                     translate }}</span>
                   <app-dropdown class="w-full" formControlName="projectileColorId" [options]="projectileColors"
                     optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholderValue]="null" [placeholder]="'addAsset.selectProjectileColor' | translate">
+                  </app-dropdown>
+                </div>
+                <div>
+                  <span class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.projectileMaterial' |
+                    translate }}</span>
+                  <app-dropdown class="w-full" formControlName="projectailMaterialId" [options]="projectailMaterials"
+                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
+                    [placeholderValue]="null" [placeholder]="'addAsset.selectProjectileMaterial' | translate">
                   </app-dropdown>
                 </div>
                 <div class="col-span-2">
@@ -426,24 +435,6 @@
                     [placeholder]="'assetList.editModal.pricePlaceholder' | translate" step="0.01" />
                 </div>
 
-                <!-- Minimum Quantity (Right Column) -->
-                <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="asset-edit-modal-minimumquantity-36">{{
-                    'assetList.table.minimumQuantity' | translate }}</label>
-                  <input id="asset-edit-modal-minimumquantity-36" type="number" formControlName="minimumQuantity"
-                    class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                    [placeholder]="'assetList.editModal.minimumQuantityPlaceholder' | translate" />
-                </div>
-
-                <!-- Critical Quantity -->
-                <div>
-                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="asset-edit-modal-criticalquantity-37">{{
-                    'addAsset.criticalQuantity' | translate }}</label>
-                  <input id="asset-edit-modal-criticalquantity-37" type="number" formControlName="criticalQuantity"
-                    class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
-                    [placeholder]="'addAsset.criticalQuantityPlaceholder' | translate" step="1" min="0" />
-                </div>
-
                 <!-- Caliber Unit (Right Column) -->
                 <div>
                   <span class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.caliberUnit' |
@@ -451,16 +442,6 @@
                   <app-dropdown class="w-full" formControlName="caliberUnitId" [options]="units" optionValue="id"
                     [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholder]="'addAsset.selectUnit' | translate">
-                  </app-dropdown>
-                </div>
-
-                <!-- Country of Manufacture (Right Column) -->
-                <div>
-                  <span class="block text-sm font-medium text-[var(--color-text)] mb-2">{{
-                    'addAsset.countryOfManufacture' | translate }}</span>
-                  <app-dropdown class="w-full" formControlName="countryOfManufactureId" [options]="countries"
-                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
-                    [placeholder]="'addAsset.selectCountry' | translate">
                   </app-dropdown>
                 </div>
 
@@ -474,15 +455,50 @@
                   </app-dropdown>
                 </div>
 
-                <!-- Primary Purpose -->
-                <div>
-                  <span class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.primaryPurpose' |
-                    translate }}</span>
-                  <app-dropdown class="w-full" formControlName="primaryPurposIds" [options]="primaryPurposes"
-                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [multiple]="true"
-                    [placeholderSelectable]="false" [placeholderValue]="null"
-                    [placeholder]="'addAsset.selectPrimaryPurpose' | translate">
-                  </app-dropdown>
+                <!-- Primary Purpose & stock thresholds -->
+                <div class="col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <span class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.primaryPurpose' |
+                      translate }}</span>
+                    <app-dropdown class="w-full" formControlName="primaryPurposIds" [options]="primaryPurposes"
+                      optionValue="id" [optionLabelFn]="lookupOptionLabel" [multiple]="true"
+                      [placeholderSelectable]="false" [placeholderValue]="null"
+                      [placeholder]="'addAsset.selectPrimaryPurpose' | translate">
+                    </app-dropdown>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="asset-edit-modal-minimumquantity-36">{{
+                      'assetList.table.minimumQuantity' | translate }}</label>
+                    <input id="asset-edit-modal-minimumquantity-36" type="number" formControlName="minimumQuantity"
+                      class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                      [placeholder]="'assetList.editModal.minimumQuantityPlaceholder' | translate" />
+                  </div>
+                </div>
+                <div class="col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="asset-edit-modal-maximumstock-37">{{
+                      'addAsset.maximumStock' | translate }}</label>
+                    <input id="asset-edit-modal-maximumstock-37" type="number" formControlName="maximumStock"
+                      class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                      [placeholder]="'addAsset.maximumStockPlaceholder' | translate" step="1" min="0" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="asset-edit-modal-criticalquantity-37">{{
+                      'addAsset.criticalQuantity' | translate }}</label>
+                    <input id="asset-edit-modal-criticalquantity-37" type="number" formControlName="criticalQuantity"
+                      class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                      [placeholder]="'addAsset.criticalQuantityPlaceholder' | translate" step="1" min="0" />
+                  </div>
+                </div>
+                <div class="col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <span class="block text-sm font-medium text-[var(--color-text)] mb-2">{{
+                      'addAsset.countryOfManufacture' | translate }}</span>
+                    <app-dropdown class="w-full" formControlName="countryOfManufactureId" [options]="countries"
+                      optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
+                      [placeholder]="'addAsset.selectCountry' | translate">
+                    </app-dropdown>
+                  </div>
                 </div>
 
                 <!-- Notes (Last Field) -->
@@ -514,6 +530,25 @@
                     optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholder]="'addAsset.selectHazardDivision' | translate">
                   </app-dropdown>
+                </div>
+
+                <!-- Classification -->
+                <div>
+                  <span class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.classification' |
+                    translate }}</span>
+                  <app-dropdown class="w-full" formControlName="classificationId" [options]="classifications"
+                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
+                    [placeholder]="'addAsset.selectClassification' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Maximum Stock -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="asset-edit-modal-maximumstock-54">{{
+                    'addAsset.maximumStock' | translate }}</label>
+                  <input id="asset-edit-modal-maximumstock-54" type="number" formControlName="maximumStock"
+                    class="w-full px-4 py-2.5 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-brand)] focus:border-[var(--color-brand)] outline-none"
+                    [placeholder]="'addAsset.maximumStockPlaceholder' | translate" step="1" min="0" />
                 </div>
 
                 <!-- UN Number -->
@@ -570,6 +605,17 @@
                     [placeholder]="'assetList.editModal.pricePlaceholder' | translate" step="0.01" />
                 </div>
 
+                <!-- Primary Purpose -->
+                <div>
+                  <span class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.primaryPurpose' |
+                    translate }}</span>
+                  <app-dropdown class="w-full" formControlName="primaryPurposIds" [options]="primaryPurposes"
+                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [multiple]="true"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectPrimaryPurpose' | translate">
+                  </app-dropdown>
+                </div>
+
                 <!-- Minimum Quantity -->
                 <div>
                   <label class="block text-sm font-medium text-[var(--color-text)] mb-2" for="asset-edit-modal-minimumquantity-53">{{
@@ -595,27 +641,6 @@
                   <app-dropdown class="w-full" formControlName="unitId" [options]="units" optionValue="id"
                     [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholder]="'addAsset.selectUnit' | translate">
-                  </app-dropdown>
-                </div>
-
-                <!-- Classification -->
-                <div>
-                  <span class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.classification' |
-                    translate }}</span>
-                  <app-dropdown class="w-full" formControlName="classificationId" [options]="classifications"
-                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
-                    [placeholder]="'addAsset.selectClassification' | translate">
-                  </app-dropdown>
-                </div>
-
-                <!-- Primary Purpose -->
-                <div>
-                  <span class="block text-sm font-medium text-[var(--color-text)] mb-2">{{ 'addAsset.primaryPurpose' |
-                    translate }}</span>
-                  <app-dropdown class="w-full" formControlName="primaryPurposIds" [options]="primaryPurposes"
-                    optionValue="id" [optionLabelFn]="lookupOptionLabel" [multiple]="true"
-                    [placeholderSelectable]="false" [placeholderValue]="null"
-                    [placeholder]="'addAsset.selectPrimaryPurpose' | translate">
                   </app-dropdown>
                 </div>
 
