@@ -488,6 +488,12 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           format: (value: number) => value ? value.toString() : '-'
         },
         {
+          header: this.translateService.instant('addAsset.maximumStock'),
+          key: 'maximumStock',
+          width: 18,
+          format: (value: number) => value != null ? value.toString() : '-'
+        },
+        {
           header: this.translateService.instant('warehouseInventory.bulletDiameter') || 'Bullet Diameter',
           key: 'bulletDiameter',
           width: 15,
@@ -618,6 +624,12 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           format: (value: number) => value ? value.toString() : '-'
         },
         {
+          header: this.translateService.instant('addAsset.maximumStock'),
+          key: 'maximumStock',
+          width: 18,
+          format: (value: number) => value != null ? value.toString() : '-'
+        },
+        {
           header: this.translateService.instant('addAsset.caliber'),
           key: 'caliber',
           width: 15,
@@ -710,6 +722,12 @@ export class AssetsImportExportComponent implements OnInit, OnDestroy {
           key: 'minimumQuantity',
           width: 18,
           format: (value: number) => value ? value.toString() : '-'
+        },
+        {
+          header: this.translateService.instant('addAsset.maximumStock'),
+          key: 'maximumStock',
+          width: 18,
+          format: (value: number) => value != null ? value.toString() : '-'
         },
         {
           header: this.translateService.instant('addAsset.unNumber'),

@@ -362,6 +362,18 @@ export class AssetPropertyAccessor {
     return '-';
   }
 
+  getMaximumStock(asset: AssetUnion): string {
+    if (!asset) return '-';
+    if ('maximumStock' in asset && (asset as { maximumStock?: number }).maximumStock != null) {
+      return String((asset as { maximumStock?: number }).maximumStock);
+    }
+    if ('originalData' in asset && (asset as Asset).originalData) {
+      const od = (asset as Asset).originalData as AmmunitionReadDto;
+      if (od?.maximumStock != null) return od.maximumStock.toString();
+    }
+    return '-';
+  }
+
   getBatchNo(asset: AssetUnion): string {
     if (!asset || !('batchNo' in asset)) return '-';
     return asset.batchNo || '-';

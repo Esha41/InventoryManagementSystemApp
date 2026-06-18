@@ -198,18 +198,6 @@
                     [placeholder]="'addAsset.selectClassification' | translate">
                   </app-dropdown>
                 </div>
-
-                <!-- Primary Purpose -->
-                <div>
-                  <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.primaryPurpose' | translate
-                    }}</span>
-                  <app-dropdown class="w-full" [(ngModel)]="assetForm.primaryPurposIds" name="weaponPrimaryPurposIds"
-                    [options]="primaryPurposes" optionValue="id" [optionLabelFn]="lookupOptionLabel"
-                    [multiple]="true"
-                    [placeholderSelectable]="false" [placeholderValue]="null"
-                    [placeholder]="'addAsset.selectPrimaryPurpose' | translate">
-                  </app-dropdown>
-                </div>
               </ng-container>
 
               <!-- ============ EXPLOSIVE SPECIFIC FIELDS ============ -->
@@ -269,6 +257,26 @@
                     optionValue="id" [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false"
                     [placeholderValue]="null" [placeholder]="'addAsset.selectUnit' | translate">
                   </app-dropdown>
+                </div>
+
+                <!-- Classification -->
+                <div>
+                  <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.classification' | translate
+                    }}</span>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.classificationId" name="classificationId"
+                    [options]="classifications" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectClassification' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Maximum Stock — same row as Critical Quantity (right column) -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-maximumstockexplosive-41">{{ 'addAsset.maximumStock' | translate
+                    }}</label>
+                  <input id="add-maximumstockexplosive-41" type="number" [(ngModel)]="assetForm.maximumStock" name="maximumStockExplosive"
+                    class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.maximumStockPlaceholder' | translate" step="1" min="0" />
                 </div>
               </ng-container>
 
@@ -342,7 +350,7 @@
                     [placeholder]="'addAsset.enterDistribution' | translate" maxlength="200" />
                 </div>
 
-                <!-- Hazard Division — paired with Primary Purpose (right column) -->
+                <!-- Hazard Division -->
                 <div>
                   <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.hazardDivision' | translate
                     }}</span>
@@ -372,6 +380,28 @@
                     [options]="classifications" optionValue="id" [optionLabelFn]="lookupOptionLabel"
                     [placeholderSelectable]="false" [placeholderValue]="null"
                     [placeholder]="'addAsset.selectClassification' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Projectile Material — same row as Primary Purpose (right column) -->
+                <div>
+                  <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.projectileMaterial' |
+                    translate }}</span>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.projectailMaterialId" name="projectailMaterialId"
+                    [options]="projectailMaterials" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectProjectileMaterial' | translate">
+                  </app-dropdown>
+                </div>
+
+                <!-- Projectile Color -->
+                <div>
+                  <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.projectileColor' |
+                    translate }}</span>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.projectileColorId" name="projectileColorId"
+                    [options]="projectileColors" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectProjectileColor' | translate">
                   </app-dropdown>
                 </div>
 
@@ -464,15 +494,6 @@
                   <p *ngIf="fieldErrors['price']" class="mt-1 text-sm text-[var(--color-error)]">{{ fieldErrors['price'] }}</p>
                 </div>
 
-                <!-- Minimum Quantity (Optional) -->
-                <div>
-                  <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-minimumquantityweapon-32">{{ 'addAsset.minimumQuantity' | translate
-                    }}</label>
-                  <input id="add-minimumquantityweapon-32" type="number" [(ngModel)]="assetForm.minimumQuantity" name="minimumQuantityWeapon"
-                    class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-                    [placeholder]="'addAsset.minimumQuantityPlaceholder' | translate" step="1" min="0" />
-                </div>
-
               </ng-container>
 
               <!-- ============ EXPLOSIVE SPECIFIC FIELDS ============ -->
@@ -527,6 +548,18 @@
                   <p *ngIf="fieldErrors['price']" class="mt-1 text-sm text-[var(--color-error)]">{{ fieldErrors['price'] }}</p>
                 </div>
 
+                <!-- Primary Purpose -->
+                <div>
+                  <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.primaryPurpose' | translate
+                    }}</span>
+                  <app-dropdown class="w-full" [(ngModel)]="assetForm.primaryPurposIds" name="explosivePrimaryPurposIds"
+                    [options]="primaryPurposes" optionValue="id" [optionLabelFn]="lookupOptionLabel"
+                    [multiple]="true"
+                    [placeholderSelectable]="false" [placeholderValue]="null"
+                    [placeholder]="'addAsset.selectPrimaryPurpose' | translate">
+                  </app-dropdown>
+                </div>
+
                 <!-- Minimum Quantity (Optional) -->
                 <div>
                   <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-minimumquantityexplosive-40">{{ 'addAsset.minimumQuantity' | translate
@@ -536,7 +569,7 @@
                     [placeholder]="'addAsset.minimumQuantityPlaceholder' | translate" step="1" min="0" />
                 </div>
 
-                <!-- Critical Quantity -->
+                <!-- Critical Quantity — same row as Maximum Stock (left column) -->
                 <div>
                   <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-criticalquantityexplosive-41">{{ 'addAsset.criticalQuantity' | translate
                     }}</label>
@@ -629,6 +662,15 @@
                     [placeholder]="'addAsset.criticalQuantityPlaceholder' | translate" step="1" min="0" />
                 </div>
 
+                <!-- Maximum Stock -->
+                <div>
+                  <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-maximumstock-52">{{ 'addAsset.maximumStock' | translate
+                    }}</label>
+                  <input id="add-maximumstock-52" type="number" [(ngModel)]="assetForm.maximumStock" name="maximumStockAmmunition"
+                    class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                    [placeholder]="'addAsset.maximumStockPlaceholder' | translate" step="1" min="0" />
+                </div>
+
                 <!-- Unit (formerly Bullet Diameter Unit) -->
                 <div>
                   <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.unit' | translate
@@ -662,7 +704,7 @@
                   </app-dropdown>
                 </div>
 
-                <!-- Primary Purpose — paired with Hazard Division (left column) -->
+                <!-- Primary Purpose — same row as Projectile Material (left column) -->
                 <div>
                   <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.primaryPurpose' | translate
                     }}</span>
@@ -677,67 +719,45 @@
               </ng-container>
             </div>
 
-            <!-- Projectile Material & Color — same row -->
-            <div *ngIf="activeTab === 'ammunition'" class="col-span-full grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div>
-                <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.projectileMaterial' |
-                  translate }}</span>
-                <app-dropdown class="w-full" [(ngModel)]="assetForm.projectailMaterialId" name="projectailMaterialId"
-                  [options]="projectailMaterials" optionValue="id" [optionLabelFn]="lookupOptionLabel"
-                  [placeholderSelectable]="false" [placeholderValue]="null"
-                  [placeholder]="'addAsset.selectProjectileMaterial' | translate">
-                </app-dropdown>
-              </div>
-              <div>
-                <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.projectileColor' |
-                  translate }}</span>
-                <app-dropdown class="w-full" [(ngModel)]="assetForm.projectileColorId" name="projectileColorId"
-                  [options]="projectileColors" optionValue="id" [optionLabelFn]="lookupOptionLabel"
-                  [placeholderSelectable]="false" [placeholderValue]="null"
-                  [placeholder]="'addAsset.selectProjectileColor' | translate">
-                </app-dropdown>
-              </div>
-            </div>
-
-            <!-- Critical Stock & Country of Manufacture — same row (weapon) -->
+            <!-- Weapon — Primary Purpose & stock thresholds -->
             <div *ngIf="activeTab === 'weapon'" class="col-span-full grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
-                <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-criticalquantityweapon-33">{{ 'addAsset.criticalQuantity' | translate
-                  }}</label>
-                <input id="add-criticalquantityweapon-33" type="number" [(ngModel)]="assetForm.criticalQuantity" name="criticalQuantityWeapon"
-                  class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
-                  [placeholder]="'addAsset.criticalQuantityPlaceholder' | translate" step="1" min="0" />
-              </div>
-              <div>
-                <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.countryOfManufacture' |
-                  translate }}</span>
-                <app-dropdown class="w-full" [(ngModel)]="assetForm.countryOfManufactureId"
-                  name="countryOfManufactureId" [options]="countries" optionValue="id"
-                  [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false" [placeholderValue]="null"
-                  [placeholder]="'addAsset.selectCountry' | translate">
-                </app-dropdown>
-              </div>
-            </div>
-
-            <!-- Classification & Primary Purpose — same row (explosive) -->
-            <div *ngIf="activeTab === 'explosive'" class="col-span-full grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div>
-                <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.classification' | translate
-                  }}</span>
-                <app-dropdown class="w-full" [(ngModel)]="assetForm.classificationId" name="classificationId"
-                  [options]="classifications" optionValue="id" [optionLabelFn]="lookupOptionLabel"
-                  [placeholderSelectable]="false" [placeholderValue]="null"
-                  [placeholder]="'addAsset.selectClassification' | translate">
-                </app-dropdown>
-              </div>
-              <div>
-                <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.primaryPurpose' | translate
-                  }}</span>
-                <app-dropdown class="w-full" [(ngModel)]="assetForm.primaryPurposIds" name="explosivePrimaryPurposIds"
+                <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.primaryPurpose' | translate }}</span>
+                <app-dropdown class="w-full" [(ngModel)]="assetForm.primaryPurposIds" name="weaponPrimaryPurposIds"
                   [options]="primaryPurposes" optionValue="id" [optionLabelFn]="lookupOptionLabel"
                   [multiple]="true"
                   [placeholderSelectable]="false" [placeholderValue]="null"
                   [placeholder]="'addAsset.selectPrimaryPurpose' | translate">
+                </app-dropdown>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-minimumquantityweapon-32">{{ 'addAsset.minimumQuantity' | translate }}</label>
+                <input id="add-minimumquantityweapon-32" type="number" [(ngModel)]="assetForm.minimumQuantity" name="minimumQuantityWeapon"
+                  class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                  [placeholder]="'addAsset.minimumQuantityPlaceholder' | translate" step="1" min="0" />
+              </div>
+            </div>
+            <div *ngIf="activeTab === 'weapon'" class="col-span-full grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-maximumstockweapon-32">{{ 'addAsset.maximumStock' | translate }}</label>
+                <input id="add-maximumstockweapon-32" type="number" [(ngModel)]="assetForm.maximumStock" name="maximumStockWeapon"
+                  class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                  [placeholder]="'addAsset.maximumStockPlaceholder' | translate" step="1" min="0" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-[var(--color-text-muted)] mb-2" for="add-criticalquantityweapon-32">{{ 'addAsset.criticalQuantity' | translate }}</label>
+                <input id="add-criticalquantityweapon-32" type="number" [(ngModel)]="assetForm.criticalQuantity" name="criticalQuantityWeapon"
+                  class="w-full px-4 py-2.5 bg-[var(--color-background)] rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+                  [placeholder]="'addAsset.criticalQuantityPlaceholder' | translate" step="1" min="0" />
+              </div>
+            </div>
+            <div *ngIf="activeTab === 'weapon'" class="col-span-full grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <span class="block text-sm font-medium text-[var(--color-text-muted)] mb-2">{{ 'addAsset.countryOfManufacture' | translate }}</span>
+                <app-dropdown class="w-full" [(ngModel)]="assetForm.countryOfManufactureId"
+                  name="countryOfManufactureId" [options]="countries" optionValue="id"
+                  [optionLabelFn]="lookupOptionLabel" [placeholderSelectable]="false" [placeholderValue]="null"
+                  [placeholder]="'addAsset.selectCountry' | translate">
                 </app-dropdown>
               </div>
             </div>

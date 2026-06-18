@@ -37,6 +37,7 @@ export class AssetDetailsFormatterService {
       price: computed(() => this.propertyAccessor.getPrice(asset()) || '-'),
       minimumQuantity: computed(() => this.propertyAccessor.getMinimumQuantity(asset()) || '-'),
       criticalQuantity: computed(() => this.propertyAccessor.getCriticalQuantity(asset()) || '-'),
+      maximumStock: computed(() => this.propertyAccessor.getMaximumStock(asset()) || '-'),
       expiryDate: computed(() => this.propertyAccessor.getExpiryDate(asset()) || '-'),
       readyForIssue: computed(() => this.propertyAccessor.getReadyForIssue(asset()) || '-'),
 

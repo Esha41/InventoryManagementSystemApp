@@ -83,6 +83,8 @@
     "minimumQuantityPlaceholder": "أدخل الحد الأدنى للكمية",
     "criticalQuantity": "الكمية الحرجة",
     "criticalQuantityPlaceholder": "أدخل الكمية الحرجة",
+    "maximumStock": "الحد الأقصى للمخزون",
+    "maximumStockPlaceholder": "أدخل الحد الأقصى للمخزون",
     "enterAmmunitionName": "أدخل اسم الماده",
     "enterNameAr": "أدخل الاسم بالعربية",
     "enterWeaponName": "أدخل اسم السلاح",

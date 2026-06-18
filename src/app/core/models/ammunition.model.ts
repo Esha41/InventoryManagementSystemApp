@@ -21,6 +21,7 @@ export interface CatalogBaseItemDto {
   price?: number | null;
   minimumQuantity?: number | null;
   criticalQuantity?: number | null;
+  maximumStock?: number | null;
   distribution?: string | null;
   referenceNo?: string | null;
   unNumber?: string | null;
@@ -120,6 +121,7 @@ export interface AmmunitionCreateDto {
   price?: number;
   minimumQuantity?: number;
   criticalQuantity?: number;
+  maximumStock?: number;
 }
 
 export interface AmmunitionUpdateDto {

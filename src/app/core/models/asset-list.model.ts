@@ -31,6 +31,7 @@ export interface Asset {
   price?: number;
   minimumQuantity?: number;
   criticalQuantity?: number;
+  maximumStock?: number;
   imageUrl?: string;
   expiryDate?: string;
   expiryDateRaw?: string;

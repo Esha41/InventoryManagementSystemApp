@@ -424,6 +424,11 @@
               <p class="text-[var(--color-text)]">{{ getCriticalQuantity() }}</p>
             </div>
 
+            <div *ngIf="getMaximumStock() !== '-'">
+              <p class="text-[var(--color-text-muted)] mb-1">{{ 'addAsset.maximumStock' | translate }}</p>
+              <p class="text-[var(--color-text)]">{{ getMaximumStock() }}</p>
+            </div>
+
             <div *ngIf="getExpiryDate() !== '-'">
               <p class="text-[var(--color-text-muted)] mb-1">{{ 'assetList.table.expiryDate' | translate }}</p>
               <p class="text-[var(--color-text)]">{{ getExpiryDate() }}</p>
