@@ -6,8 +6,6 @@ import { DASHBOARD_CONSTANTS } from '@constants/app.constants';
 import { MonitoringService } from '@services/monitoring.service';
 import type {
   CategoryDistribution,
-  InventoryDistribution,
-  InventoryDistributionDto,
   InventoryMetrics,
   RequestMetrics,
   RequestMetricsDto,
@@ -62,7 +60,6 @@ export class AdminAnalyticsService implements OnDestroy {
   private requestMetricsCache$?: Observable<RequestMetrics>;
   private userActivityCache$?: Observable<UserActivityMetrics>;
   private trendsCache = new Map<string, Observable<RequestTrend>>();
-  private distributionCache$?: Observable<InventoryDistribution>;
   private topItemsCache$?: Observable<TopRequestedItems>;
 
   constructor(
@@ -123,16 +120,6 @@ export class AdminAnalyticsService implements OnDestroy {
       this.trendsCache.set(period, cache$);
     }
     return this.trendsCache.get(period)!;
-  }
-
-  getInventoryDistribution(): Observable<InventoryDistribution> {
-    if (!this.distributionCache$) {
-      this.distributionCache$ = this.refresh$.pipe(
-        switchMap(() => this.fetchInventoryDistribution()),
-        shareReplay(1)
-      );
-    }
-    return this.distributionCache$;
   }
 
   refresh(): void {
@@ -219,10 +206,6 @@ export class AdminAnalyticsService implements OnDestroy {
 
   private fetchRequestTrends(period: string): Observable<RequestTrend> {
     return this.apiService.get<RequestTrendsDto>(`/admin/analytics/request-trends?period=${encodeURIComponent(period)}`);
-  }
-
-  private fetchInventoryDistribution(): Observable<InventoryDistribution> {
-    return this.apiService.get<InventoryDistributionDto>('/admin/analytics/inventory-distribution');
   }
 
   private fetchTopRequestedItems(limit: number): Observable<TopRequestedItems> {

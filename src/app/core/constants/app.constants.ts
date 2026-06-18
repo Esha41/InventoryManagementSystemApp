@@ -308,7 +308,7 @@ export const SUPPLY_ORDER_CONSTANTS = {
 
 // Admin Dashboard Constants
 export const DASHBOARD_CONSTANTS = {
-  AUTO_REFRESH_INTERVAL_MS: 30000, // 30 seconds
+  AUTO_REFRESH_INTERVAL_MS: 120000, // 2 minutes (heavy analytics aggregates; backend caches results ~60s)
   LOW_STOCK_THRESHOLD: 100,
   TOP_ITEMS_LIMIT: 10,
   DEFAULT_CHART_PERIOD: 'weekly'

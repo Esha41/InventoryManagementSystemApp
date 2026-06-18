@@ -57,8 +57,6 @@ export interface RequestMetricsDto {
   inProgressRequests: number;
   completedRequests: number;
   rejectedRequests: number;
-  avgApprovalTime: number;
-  slaCompliance: number;
   lastUpdated: string;
 }
 
@@ -93,7 +91,11 @@ export type CategoryDistribution = CategoryDistributionDto;
 /** @see `RequestedItemDto` in AdminAnalyticsDto.cs */
 export interface RequestedItemDto {
   itemName: string;
+  /** Arabic catalog name when API provides it */
+  itemNameAr?: string | null;
   requestCount: number;
+  /** Total ordered quantity across all order lines for this item */
+  totalQuantity: number;
   category: string;
 }
 

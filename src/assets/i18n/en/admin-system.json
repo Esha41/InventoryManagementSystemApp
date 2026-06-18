@@ -129,9 +129,7 @@
       "rejected": "Rejected",
       "orders": "Orders",
       "returns": "Returns",
-      "discards": "Discards",
-      "avgApprovalTime": "Avg Approval Time",
-      "slaCompliance": "SLA Compliance"
+      "discards": "Discards"
     },
     "userActivity": {
       "title": "User Activity",

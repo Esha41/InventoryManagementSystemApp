@@ -7,6 +7,7 @@ import type { RequestedItem, TopRequestedItems } from '@admin/models/admin-analy
 import { Subject, takeUntil } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, TrendingUp, RefreshCw, AlertCircle } from 'lucide-angular';
+import { ThemeService } from '@services/theme.service';
 
 @Component({
     selector: 'app-top-requested-items-chart',
@@ -18,6 +19,7 @@ import { LucideAngularModule, TrendingUp, RefreshCw, AlertCircle } from 'lucide-
 })
 export class TopRequestedItemsChartComponent implements OnInit, OnDestroy {
     private destroy$ = new Subject<void>();
+    private latestData: TopRequestedItems | null = null;
     chartOptions: EChartsOption = {};
     loading = true;
     error = false;
@@ -29,11 +31,18 @@ export class TopRequestedItemsChartComponent implements OnInit, OnDestroy {
     constructor(
         private analyticsService: AdminAnalyticsService,
         private translate: TranslateService,
+        private themeService: ThemeService,
         private cdr: ChangeDetectorRef
     ) { }
 
     ngOnInit(): void {
         this.loadData();
+        // Re-render with theme-aware colors when the theme toggles (mirrors the other analytics charts).
+        this.themeService.currentTheme$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+            if (this.latestData) {
+                this.initChart(this.latestData);
+            }
+        });
     }
 
     ngOnDestroy(): void {
@@ -49,6 +58,7 @@ export class TopRequestedItemsChartComponent implements OnInit, OnDestroy {
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (data: TopRequestedItems) => {
+                    this.latestData = data;
                     this.initChart(data);
                     this.loading = false;
                     this.error = false;
@@ -64,7 +74,19 @@ export class TopRequestedItemsChartComponent implements OnInit, OnDestroy {
     }
 
     private initChart(data: TopRequestedItems): void {
-        const itemNames = data.items.map((item: RequestedItem) => item.itemName);
+        const isDarkMode = this.themeService.isDarkMode();
+        const mutedTextColor = isDarkMode ? '#9CA3AF' : '#6b7280';
+        const axisLineColor = isDarkMode ? '#4B5563' : '#e5e7eb';
+        const splitLineColor = isDarkMode ? '#4B5563' : '#f3f4f6';
+        const labelColor = isDarkMode ? '#E5E7EB' : '#6b7280';
+        const tooltipBg = isDarkMode ? 'rgba(26, 29, 36, 0.95)' : 'rgba(255, 255, 255, 0.9)';
+        const tooltipTextColor = isDarkMode ? '#E5E7EB' : '#1f2937';
+
+        // Prefer the Arabic catalog name when the UI is in Arabic and the API supplied one.
+        const lang = (this.translate.currentLang || this.translate.defaultLang || '').toLowerCase();
+        const useArabic = lang.startsWith('ar');
+        const itemNames = data.items.map((item: RequestedItem) =>
+            useArabic && item.itemNameAr ? item.itemNameAr : item.itemName);
         const requestCounts = data.items.map((item: RequestedItem) => item.requestCount);
 
         this.chartOptions = {
@@ -73,14 +95,14 @@ export class TopRequestedItemsChartComponent implements OnInit, OnDestroy {
                 axisPointer: {
                     type: 'shadow'
                 },
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                backgroundColor: tooltipBg,
                 textStyle: {
-                    color: '#1f2937'
+                    color: tooltipTextColor
                 },
                 borderRadius: 8,
                 padding: 12,
                 shadowBlur: 10,
-                shadowColor: 'rgba(0, 0, 0, 0.1)'
+                shadowColor: isDarkMode ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.1)'
             },
             grid: {
                 left: '3%',
@@ -92,12 +114,12 @@ export class TopRequestedItemsChartComponent implements OnInit, OnDestroy {
             xAxis: {
                 type: 'value',
                 axisLabel: {
-                    color: '#9ca3af',
+                    color: mutedTextColor,
                     fontSize: 11
                 },
                 splitLine: {
                     lineStyle: {
-                        color: '#f3f4f6',
+                        color: splitLineColor,
                         type: 'dashed'
                     }
                 }
@@ -106,12 +128,12 @@ export class TopRequestedItemsChartComponent implements OnInit, OnDestroy {
                 type: 'category',
                 data: itemNames,
                 axisLabel: {
-                    color: '#9ca3af',
+                    color: mutedTextColor,
                     fontSize: 11
                 },
                 axisLine: {
                     lineStyle: {
-                        color: '#e5e7eb'
+                        color: axisLineColor
                     }
                 }
             },
@@ -125,7 +147,7 @@ export class TopRequestedItemsChartComponent implements OnInit, OnDestroy {
                 label: {
                     show: true,
                     position: 'right',
-                    color: '#6b7280',
+                    color: labelColor,
                     fontSize: 11,
                     fontWeight: 600
                 },

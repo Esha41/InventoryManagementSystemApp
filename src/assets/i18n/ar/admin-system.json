@@ -129,9 +129,7 @@
       "rejected": "مرفوض",
       "orders": "الطلبات",
       "returns": "الأرجاعات",
-      "discards": "الإتلافات",
-      "avgApprovalTime": "متوسط وقت الموافقة",
-      "slaCompliance": "الامتثال لاتفاقية مستوى الخدمة"
+      "discards": "الإتلافات"
     },
     "userActivity": {
       "title": "نشاط المستخدم",
