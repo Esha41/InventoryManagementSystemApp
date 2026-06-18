@@ -205,6 +205,7 @@ export class ReportDesignerComponent implements OnInit {
           'AssetsReportTemplate',
           'LoginAuditReportTemplate',
           'AuditorPendingApprovalsReportTemplate',
+          'AutoRejectedOrdersReportTemplate',
           'BaseReportTemplate'
         ];
         this.reportTemplates = [...templates].sort((a, b) => {

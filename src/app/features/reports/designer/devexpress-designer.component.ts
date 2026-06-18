@@ -34,7 +34,8 @@ export class DevExpressReportDesignerComponent implements OnInit, AfterViewInit,
     'AssetsReportTemplate',
     'UsersReportTemplate',
     'LoginAuditReportTemplate',
-    'AuditorPendingApprovalsReportTemplate'
+    'AuditorPendingApprovalsReportTemplate',
+    'AutoRejectedOrdersReportTemplate'
   ]);
 
   // IIS: `^DXXRD(.*)` → backend `/api/DXXRD...` — keep path at site root, not `/api/DXXRD`
