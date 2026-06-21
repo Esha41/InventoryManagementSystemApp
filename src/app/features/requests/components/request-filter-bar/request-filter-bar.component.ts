@@ -7,7 +7,7 @@ import { DropdownComponent, DropdownOption } from '@components/dropdown/dropdown
 import { CardStatus } from '@utils/dashboard.utils';
 
 export type PriorityFilter = 'all' | 'Normal' | 'Urgent' | 'VeryUrgent';
-export type StatusFilter = CardStatus | 'all' | 'action-required';
+export type StatusFilter = CardStatus | 'all' | 'action-required' | 'auto-rejected';
 /** Filter orders by auto-reject days remaining */
 export type AutoRejectFilter = 'all' | 'expiring-1day' | 'expiring-3days' | 'expiring-7days';
 
@@ -59,6 +59,7 @@ export class RequestFilterBarComponent {
         { label: 'dashboard.statusLabels.underProcess', value: 'on-progress' },
         { label: 'requestsManagement.orderReport.workflowStatus.completed', value: 'completed' },
         { label: 'dashboard.statusLabels.rejected', value: 'declined' },
+        { label: 'dashboard.statusLabels.autoRejected', value: 'auto-rejected' },
         { label: 'dashboard.statusLabels.cancelled', value: 'cancelled' },
         { label: 'dashboard.statusLabels.returnedForReview', value: 'returned' }
     ];
