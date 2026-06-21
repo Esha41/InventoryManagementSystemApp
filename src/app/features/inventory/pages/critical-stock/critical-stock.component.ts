@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { resolveInventoryReportReturnUrl } from '@inventory/pages/overview/inventory-dashboard.data-load';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LucideAngularModule, ArrowLeft, ArrowRight } from 'lucide-angular';
 import { Subject, takeUntil } from 'rxjs';
@@ -61,6 +62,7 @@ export class CriticalStockComponent implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private monitoringService: MonitoringService,
     private translationService: TranslationService,
     private translate: TranslateService,
@@ -110,7 +112,7 @@ export class CriticalStockComponent implements OnInit, OnDestroy {
   }
 
   onBack(): void {
-    this.router.navigate(['/inventory-dashboard']);
+    this.router.navigateByUrl(resolveInventoryReportReturnUrl(this.route.snapshot.queryParams['returnTo']));
   }
 
   onPageChange(page: number): void {

@@ -13,6 +13,7 @@ import { PaginationComponent } from '@components/pagination/pagination.component
 import { RowsPerPageComponent } from '@components/rows-per-page/rows-per-page.component';
 import { LoadingStateComponent, ErrorStateComponent } from '@components/index';
 import { defaultPageSize } from '@constants/app.constants';
+import { resolveInventoryReportReturnUrl } from '@inventory/pages/overview/inventory-dashboard.data-load';
 
 @Component({
   selector: 'app-draft-supplies',
@@ -103,7 +104,7 @@ export class DraftSuppliesComponent implements OnInit, OnDestroy {
   }
 
   onBack(): void {
-    this.router.navigate(['/inventory-dashboard']);
+    this.router.navigateByUrl(resolveInventoryReportReturnUrl(this.route.snapshot.queryParams['returnTo']));
   }
 
   onPageChange(page: number): void {

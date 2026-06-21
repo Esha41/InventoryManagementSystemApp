@@ -16,7 +16,9 @@ import type {
   TopRequestedItems,
   TopRequestedItemsDto,
   UserActivityMetrics,
-  UserActivityMetricsDto
+  UserActivityMetricsDto,
+  WorkflowPerformance,
+  WorkflowPerformanceDto
 } from '@admin/models/admin-analytics.model';
 
 export type {
@@ -32,7 +34,8 @@ export type {
   UserActivityMetrics,
   SystemHealthMetricsDto,
   RequestTrendsDto,
-  DepartmentStatDto
+  DepartmentStatDto,
+  WorkflowPerformance
 } from '@admin/models/admin-analytics.model';
 
 function parseApiDate(value: string | undefined | null): Date {
@@ -61,6 +64,7 @@ export class AdminAnalyticsService implements OnDestroy {
   private userActivityCache$?: Observable<UserActivityMetrics>;
   private trendsCache = new Map<string, Observable<RequestTrend>>();
   private topItemsCache$?: Observable<TopRequestedItems>;
+  private workflowPerformanceCache = new Map<number, Observable<WorkflowPerformance>>();
 
   constructor(
     private apiService: ApiService,
@@ -220,5 +224,25 @@ export class AdminAnalyticsService implements OnDestroy {
       );
     }
     return this.topItemsCache$;
+  }
+
+  getWorkflowPerformance(days: number = 90): Observable<WorkflowPerformance> {
+    if (!this.workflowPerformanceCache.has(days)) {
+      const cache$ = this.refresh$.pipe(
+        switchMap(() => this.fetchWorkflowPerformance(days)),
+        shareReplay(1)
+      );
+      this.workflowPerformanceCache.set(days, cache$);
+    }
+    return this.workflowPerformanceCache.get(days)!;
+  }
+
+  private fetchWorkflowPerformance(days: number): Observable<WorkflowPerformance> {
+    return this.apiService.get<WorkflowPerformanceDto>(`/admin/analytics/workflow-performance?days=${days}`).pipe(
+      map(dto => ({
+        ...dto,
+        lastUpdated: parseApiDate(dto.lastUpdated)
+      }))
+    );
   }
 }

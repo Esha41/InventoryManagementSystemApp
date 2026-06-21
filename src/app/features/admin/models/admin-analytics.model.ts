@@ -107,6 +107,32 @@ export interface TopRequestedItemsDto {
 export type TopRequestedItems = TopRequestedItemsDto;
 export type RequestedItem = RequestedItemDto;
 
+/** @see `AgingBucketsDto` in AdminAnalyticsDto.cs */
+export interface AgingBucketsDto {
+  upTo3Days: number;
+  from3To7Days: number;
+  from7To14Days: number;
+  over14Days: number;
+}
+
+/** @see `WorkflowPerformanceDto` in AdminAnalyticsDto.cs */
+export interface WorkflowPerformanceDto {
+  days: number;
+  completedCount: number;
+  avgCycleHours: number;
+  medianCycleHours: number;
+  p90CycleHours: number;
+  approvedCount: number;
+  rejectedCount: number;
+  approvalRate: number;
+  totalPending: number;
+  completedAging: AgingBucketsDto;
+  pendingAging: AgingBucketsDto;
+  lastUpdated: string;
+}
+
+export type WorkflowPerformance = Omit<WorkflowPerformanceDto, 'lastUpdated'> & { lastUpdated: Date };
+
 /**
  * Client-composed inventory summary (not a single admin API entity).
  * Built from monitoring headline metrics (`GET Monitoring/dashboard/inventory-headline-metrics`) in `AdminAnalyticsService`.

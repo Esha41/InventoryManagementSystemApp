@@ -5,12 +5,13 @@ import { LucideAngularModule, Package } from 'lucide-angular';
 import { InventoryMetrics } from '@admin/services/admin-analytics.service';
 import { AppDateTimePipe } from '@shared/pipes/app-date-time.pipe';
 import { Router } from '@angular/router';
+import { ADMIN_ANALYTICS_DASHBOARD_URL } from '@inventory/pages/overview/inventory-dashboard.data-load';
 
 interface InventoryAlertTile {
   value: (m: InventoryMetrics) => number;
   labelKey: string;
   wideOnMobile?: boolean;
-  navigate: () => void;
+  route: string;
   activeClasses: string;
   activeValueClass: string;
 }
@@ -32,60 +33,46 @@ export class InventoryOverviewCardComponent {
     {
       value: m => m.lowStockItems ?? 0,
       labelKey: 'adminDashboard.inventory.lowStock',
+      route: 'low-stock',
       activeClasses: 'border-red-200 bg-red-50',
-      activeValueClass: 'text-red-600',
-      navigate: () => this.navigateToLowStock()
+      activeValueClass: 'text-red-600'
     },
     {
       value: m => m.criticalStockItems ?? 0,
       labelKey: 'adminDashboard.inventory.criticalStock',
+      route: 'critical-stock',
       activeClasses: 'border-red-300 bg-red-50',
-      activeValueClass: 'text-red-700',
-      navigate: () => this.navigateToCriticalStock()
+      activeValueClass: 'text-red-700'
     },
     {
       value: m => m.expiringItems ?? 0,
       labelKey: 'adminDashboard.inventory.expiringSoon',
+      route: 'expiring-lots',
       activeClasses: 'border-orange-200 bg-orange-50',
-      activeValueClass: 'text-orange-600',
-      navigate: () => this.navigateToExpiring()
+      activeValueClass: 'text-orange-600'
     },
     {
       value: m => m.pendingIssuanceRequests ?? 0,
       labelKey: 'adminDashboard.inventory.pendingIssuance',
+      route: 'draft-supplies',
       activeClasses: 'border-amber-200 bg-amber-50',
-      activeValueClass: 'text-amber-600',
-      navigate: () => this.navigateToDraftSupplies()
+      activeValueClass: 'text-amber-600'
     },
     {
       value: m => m.ordersNotFullyFulfilled ?? 0,
       labelKey: 'adminDashboard.inventory.ordersNotFullyFulfilled',
+      route: 'orders-awaiting-fulfillment',
       activeClasses: 'border-orange-200 bg-orange-50',
       activeValueClass: 'text-orange-700',
-      wideOnMobile: true,
-      navigate: () => this.navigateToOrdersAwaiting()
+      wideOnMobile: true
     }
   ];
 
   constructor(private router: Router) { }
 
-  navigateToLowStock(): void {
-    this.router.navigate(['/inventory-dashboard/low-stock']);
-  }
-
-  navigateToCriticalStock(): void {
-    this.router.navigate(['/inventory-dashboard/critical-stock']);
-  }
-
-  navigateToExpiring(): void {
-    this.router.navigate(['/inventory-dashboard/expiring-lots']);
-  }
-
-  navigateToDraftSupplies(): void {
-    this.router.navigate(['/inventory-dashboard/draft-supplies']);
-  }
-
-  navigateToOrdersAwaiting(): void {
-    this.router.navigate(['/inventory-dashboard/orders-awaiting-fulfillment']);
+  openReport(route: string): void {
+    this.router.navigate(['/inventory-dashboard', route], {
+      queryParams: { returnTo: ADMIN_ANALYTICS_DASHBOARD_URL }
+    });
   }
 }

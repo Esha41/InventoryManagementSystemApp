@@ -8,6 +8,7 @@ import { AdminAnalyticsService, InventoryMetrics, RequestMetrics } from '@admin/
 import { LoggingService } from '@services/logging.service';
 import { InventoryOverviewCardComponent } from './components/kpi-cards/inventory-overview-card/inventory-overview-card.component';
 import { RequestMetricsCardComponent } from './components/kpi-cards/request-metrics-card/request-metrics-card.component';
+// import { WorkflowPerformanceCardComponent } from './components/kpi-cards/workflow-performance-card/workflow-performance-card.component';
 import { RequestTrendsChartComponent } from './components/request-trends-chart/request-trends-chart.component';
 import { InventoryDistributionChartComponent } from './components/inventory-distribution-chart/inventory-distribution-chart.component';
 import { TopRequestedItemsChartComponent } from './components/top-requested-items-chart/top-requested-items-chart.component';
@@ -27,6 +28,7 @@ import { createEcharts } from '@core/echarts.factory';
         LucideAngularModule,
         InventoryOverviewCardComponent,
         RequestMetricsCardComponent,
+        // WorkflowPerformanceCardComponent,
         RequestTrendsChartComponent,
         InventoryDistributionChartComponent,
         TopRequestedItemsChartComponent,
@@ -100,9 +102,8 @@ export class AnalyticsDashboardComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        // Start auto-refresh timer (30 seconds)
+        // Bust in-memory shareReplay so returning here after approvals shows live counts.
+        this.adminAnalyticsService.refresh();
         this.adminAnalyticsService.startAutoRefresh();
-        
-        // Metrics are automatically loaded via toSignal() - no manual subscription needed!
     }
 }

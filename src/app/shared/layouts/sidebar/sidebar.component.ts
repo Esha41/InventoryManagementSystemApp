@@ -9,6 +9,11 @@ import { BackendAuthService } from '@services/backend-auth.service';
 import { TranslationService } from '@services/translation.service';
 import { SidebarRailTooltipDirective } from '@shared/ui/sidebar-rail-tooltip/sidebar-rail-tooltip.directive';
 import { SidebarCollapsedFlyoutComponent } from '@shared/ui/sidebar-collapsed-flyout/sidebar-collapsed-flyout.component';
+import {
+  ADMIN_ANALYTICS_DASHBOARD_URL,
+  isAnalyticsSourcedInventoryReport,
+  pathOnly
+} from '@inventory/pages/overview/inventory-dashboard.data-load';
 
 interface MenuItem {
   label: string;
@@ -310,8 +315,8 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
         filter(event => event instanceof NavigationEnd),
         takeUntil(this.destroy$)
       )
-      .subscribe((event: any) => {
-        this.checkAndExpandMenus(event.url);
+      .subscribe(() => {
+        this.checkAndExpandMenus(this.router.url);
       });
 
     // Initial filter and menu expansion check
@@ -320,40 +325,45 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private checkAndExpandMenus(url: string): void {
+    const parsed = this.router.parseUrl(url);
+    const path = pathOnly(url);
+    const analyticsSourced = isAnalyticsSourcedInventoryReport(url, parsed.queryParams['returnTo']);
+
     // Auto-expand warehouse menu if on warehouse routes
-    if (url.startsWith('/warehouse')) {
+    if (path.startsWith('/warehouse')) {
       this.expandedMenus.add('nav.warehouse');
     }
     // Auto-expand department menu if on department routes
-    if (url.startsWith('/department')) {
+    if (path.startsWith('/department')) {
       this.expandedMenus.add('nav.department');
     }
 
-    // Auto-expand reports menu if on report routes
+    // Auto-expand reports menu if on report routes (not when opened from analytics)
     if (
-      url.startsWith('/inventory-summary') ||
-      url.startsWith('/inventory-dashboard/low-stock') ||
-      url.startsWith('/inventory-dashboard/critical-stock') ||
-      url.startsWith('/inventory-dashboard/expiring-lots')
+      !analyticsSourced &&
+      (path.startsWith('/inventory-summary') ||
+        path.startsWith('/inventory-dashboard/low-stock') ||
+        path.startsWith('/inventory-dashboard/critical-stock') ||
+        path.startsWith('/inventory-dashboard/expiring-lots'))
     ) {
       this.expandedMenus.add('nav.reports');
       this.expandedMenus.add('nav.inventoryReports');
     }
-    if (url.startsWith('/reports/report-dashboard')) {
+    if (path.startsWith('/reports/report-dashboard')) {
       this.expandedMenus.add('nav.reports');
     }
 
     if (
-      url.startsWith('/requests/new-issue-request') ||
-      url.startsWith('/requests/return-request') ||
-      // url.startsWith('/requests/discard-request') ||
-      url.startsWith('/requests/requests-management')
+      path.startsWith('/requests/new-issue-request') ||
+      path.startsWith('/requests/return-request') ||
+      // path.startsWith('/requests/discard-request') ||
+      path.startsWith('/requests/requests-management')
     ) {
       this.expandedMenus.add('nav.requestManagement');
     }
 
     // Auto-expand BI Tool menu if on report designer or scheduled reports route
-    if (url.startsWith('/reports/report-designer') || url.startsWith('/reports/scheduled-reports')) {
+    if (path.startsWith('/reports/report-designer') || path.startsWith('/reports/scheduled-reports')) {
       this.expandedMenus.add('nav.biTool');
     }
   }
@@ -545,8 +555,40 @@ export class SidebarComponent implements OnInit, OnDestroy, OnChanges {
     }
   }
 
+  private isAnalyticsSourcedReport(): boolean {
+    const parsed = this.router.parseUrl(this.router.url);
+    return isAnalyticsSourcedInventoryReport(this.router.url, parsed.queryParams['returnTo']);
+  }
+
+  isTopLevelMenuItemActive(item: MenuItem): boolean {
+    if (!item.route) {
+      return false;
+    }
+    if (this.isAnalyticsSourcedReport()) {
+      return item.route === ADMIN_ANALYTICS_DASHBOARD_URL;
+    }
+    const path = pathOnly(this.router.url);
+    if (item.route === '/inventory-dashboard') {
+      return path === '/inventory-dashboard' || path.startsWith('/inventory-dashboard/');
+    }
+    return path === item.route || path.startsWith(item.route + '/');
+  }
+
+  isSubmenuLinkActive(route: string | undefined): boolean {
+    if (!route) {
+      return false;
+    }
+    if (this.isAnalyticsSourcedReport()) {
+      return false;
+    }
+    return pathOnly(this.router.url) === route;
+  }
+
   isSubmenuRouteActive(item: MenuItem): boolean {
-    const url = this.router.url.split('?')[0];
+    if (this.isAnalyticsSourcedReport() && item.label === 'nav.reports') {
+      return false;
+    }
+    const url = pathOnly(this.router.url);
     return this.menuItemContainsRoute(item, url);
   }
 

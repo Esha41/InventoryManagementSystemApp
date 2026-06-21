@@ -20,7 +20,7 @@
             count > 0 ? tile.activeClasses : 'border-[var(--color-border)] bg-[var(--color-background)]',
             tile.wideOnMobile ? 'col-span-2 lg:col-span-1' : ''
           ]"
-          (click)="tile.navigate()">
+          (click)="openReport(tile.route)">
           <div class="text-xl sm:text-2xl font-bold tabular-nums leading-none"
                [class]="count > 0 ? tile.activeValueClass : 'text-[var(--color-text)]'">
             {{ count | number }}
